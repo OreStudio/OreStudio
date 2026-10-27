@@ -19,6 +19,7 @@
  */
 #include "../src/feed_config_handler.hpp"
 #include "../src/generator_fleet.hpp"
+#include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -57,6 +58,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "provider_seed.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -80,9 +82,6 @@
 namespace {
 
 const std::string test_secret("feed-config-test-secret");
-const std::string test_issuer("ores.iam.test");
-const std::string test_audience("ores.synthetic.service");
-
 // Test-scoped subjects: the running service subscribes to the real
 // start/stop/list subjects on the same queue group, so a request sent on
 // them can be answered by the service's own verifier (a different
@@ -93,19 +92,6 @@ const std::string test_audience("ores.synthetic.service");
 const std::string test_start_subject("ores.test.feed_config.start");
 const std::string test_stop_subject("ores.test.feed_config.stop");
 const std::string test_list_subject("ores.test.feed_config.list");
-
-// Every seeded row is party-scoped and the JWT carries the same party, so
-// the handler's RLS reads see what the test wrote. The party must exist in
-// the parties table: set_party() and the JWT context both validate it.
-boost::uuids::uuid resolve_test_party(ores::testing::scoped_database_helper& h) {
-    namespace refdata_repo = ores::refdata::repository;
-    const auto parties = refdata_repo::party_repository().read_latest(h.context());
-    for (const auto& p : parties)
-        if (p.tenant_id == h.tenant_id() && p.party_category == "System")
-            return p.id;
-    FAIL("No System party for tenant " << h.tenant_id().to_string());
-    return {};
-}
 
 // Mints an HS256 token the handler's verifier accepts, scoped to the test
 // tenant and party with the given roles.
@@ -123,22 +109,6 @@ std::string mint_token(const std::string& tenant_id,
     claims.visible_party_ids = {boost::uuids::to_string(party_id)};
     claims.roles = roles;
     return *signer.create_token(claims);
-}
-
-// Sends one feed-config request on the given subject with the Bearer header
-// and decodes the response.
-template <typename Req, typename Resp>
-Resp send_request(ores::nats::service::client& nats,
-                  const std::string& subject,
-                  const std::string& token,
-                  const Req& req) {
-    auto reply = nats.request_sync(subject,
-                                   ores::nats::default_wire_codec().encode(req),
-                                   {{std::string(ores::nats::headers::authorization),
-                                     std::string(ores::nats::headers::bearer_prefix) + token}});
-    auto decoded = ores::nats::default_wire_codec().decode<Resp>(reply.data);
-    REQUIRE(decoded);
-    return *decoded;
 }
 
 struct seeded_configs {
@@ -394,6 +364,7 @@ struct config_fixture {
     ores::testing::scoped_database_helper db;
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
+    ores::analytics::quant::service::running_scheduler run;
     ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     ores::synthetic::service::feed_kind_registry registry;
@@ -414,19 +385,19 @@ struct config_fixture {
         start_sub = nats.queue_subscribe(
             test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.stop(std::move(msg));
             });
         list_sub = nats.queue_subscribe(
             test_list_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.list(std::move(msg));
             });
     }

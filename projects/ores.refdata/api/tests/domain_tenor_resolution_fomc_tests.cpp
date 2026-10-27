@@ -43,6 +43,7 @@
 // The meeting-date set below is the same data task D4 (calendar-seeding)
 // transcribes into calendar_event from federalreserve.gov.
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
+#include "test_helpers.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -85,15 +86,6 @@ std::chrono::year_month_day nth_on_or_after(const std::vector<std::chrono::year_
         dates.begin(), dates.end(), [anchor](year_month_day d) { return d >= anchor; });
     std::advance(it, n - 1);
     return *it;
-}
-
-tenor make_fomc_tenor(int n) {
-    tenor t;
-    t.code = std::to_string(n) + "F";
-    t.kind = "SPECIAL";
-    t.unit = "NONE";
-    t.multiplier = n;
-    return t;
 }
 
 tenor_convention make_fomc_convention() {

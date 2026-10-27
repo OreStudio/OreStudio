@@ -43,10 +43,11 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view logger_name = "ores.marketdata.core.series_identity_lister";
+inline std::string_view series_identity_lister_logger_name =
+    "ores.marketdata.core.series_identity_lister";
 
-[[nodiscard]] auto& lg() {
-    static auto instance = make_logger(logger_name);
+[[nodiscard]] auto& series_identity_lister_lg() {
+    static auto instance = make_logger(series_identity_lister_logger_name);
     return instance;
 }
 
@@ -178,10 +179,12 @@ series_identity_lister::list(ores::database::context ctx,
     if (response.series.size() > max_series) {
         response.series.resize(max_series);
         response.truncated = true;
-        BOOST_LOG_SEV(lg(), info) << "The series list was cut at " << max_series;
+        BOOST_LOG_SEV(series_identity_lister_lg(), info)
+            << "The series list was cut at " << max_series;
     }
     response.success = true;
-    BOOST_LOG_SEV(lg(), debug) << "Listed " << response.series.size() << " series identities";
+    BOOST_LOG_SEV(series_identity_lister_lg(), debug)
+        << "Listed " << response.series.size() << " series identities";
     return response;
 }
 

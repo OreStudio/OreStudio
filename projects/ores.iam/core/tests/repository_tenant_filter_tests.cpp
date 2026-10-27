@@ -26,6 +26,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -49,10 +50,6 @@ std::string unique_marker() {
     auto text = boost::uuids::to_string(boost::uuids::random_generator()());
     text.erase(std::remove(text.begin(), text.end(), '-'), text.end());
     return "flt" + text.substr(0, 10);
-}
-
-context system_context(ores::testing::database_helper& h) {
-    return h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 }
 
 ores::iam::domain::tenant

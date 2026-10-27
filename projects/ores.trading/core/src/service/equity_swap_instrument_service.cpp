@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -108,10 +107,6 @@ equity_swap_instrument_to_domain(const messaging::equity_swap_instrument_write& 
     v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_activity_id = write.trade_activity_id;
     v.underlying_name = write.underlying_name;
-    v.basket_json = write.basket_json;
-    v.initial_prices_json = write.initial_prices_json;
-    v.knock_out_levels_json = write.knock_out_levels_json;
-    v.fixed_trigger_levels_json = write.fixed_trigger_levels_json;
     v.currency = write.currency;
     v.notional = write.notional;
     v.return_type = write.return_type;
@@ -201,8 +196,8 @@ equity_swap_instrument_service::put_equity_swap_instrument(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(value)), ctx_);
+    auto written =
+        equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(value));
     if (!written.empty())
         response.equity_swap_instrument = std::move(written.front());
     return response;
@@ -235,9 +230,8 @@ equity_swap_instrument_service::put_many_equity_swap_instruments(
     repo_.write(ctx_, batch, claims);
     response.equity_swap_instruments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(value)),
-            ctx_);
+        auto written =
+            equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(value));
         response.equity_swap_instruments.push_back(written.empty() ? value :
                                                                      std::move(written.front()));
     }
@@ -366,10 +360,8 @@ ores::utility::domain::result equity_swap_instrument_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = equity_swap_instrument_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(out)), ctx_);
+    const auto current =
+        equity_swap_instrument_read_one(repo_, ctx_, equity_swap_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

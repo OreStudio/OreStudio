@@ -28,6 +28,7 @@
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <atomic>
@@ -59,15 +60,6 @@ messaging::adapter_tick tick_at(std::chrono::system_clock::time_point at, std::s
     tick.value = std::move(value);
     tick.vendor_time = at;
     return tick;
-}
-
-bool eventually(const std::function<bool()>& done) {
-    for (int i = 0; i < 400; ++i) {
-        if (done())
-            return true;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    return done();
 }
 
 }

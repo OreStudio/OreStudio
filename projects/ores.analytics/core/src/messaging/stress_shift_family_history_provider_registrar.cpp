@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -37,7 +38,12 @@ void register_stress_shift_family_history_provider(
         "ores.analytics.stress_shift_family",
         "analytics::stress_shift_families:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-            service::stress_shift_family_service svc(scoped_ctx);
+            // The rows are the registry's, held by the system tenant, so the
+            // read is scoped there. A read in the caller's tenant answers an
+            // empty history for a row the caller may read.
+            const auto sys_ctx = scoped_ctx.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                        scoped_ctx.actor());
+            service::stress_shift_family_service svc(sys_ctx);
             auto versions = svc.get_family_history(entity_id);
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_stress_shift_family_fields);

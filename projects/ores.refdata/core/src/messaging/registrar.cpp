@@ -322,7 +322,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view registrar_queue_group = "ores.refdata.service";
 
 // Function-local static: must outlive the history.v1.get subscription
 // (see ores::history::messaging::register_history_handlers's doc), and
@@ -574,7 +574,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         for (const auto subject : publish_subjects)
             routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
 
-        subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
+        subs.push_back(
+            ores::service::messaging::serve_step_commands(nats, registrar_queue_group, routes));
     }
 
     // ----------------------------------------------------------------
@@ -697,7 +698,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_party_identifier_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(
-            nats, hist_registry, "refdata", queue_group, ctx, verifier));
+            nats, hist_registry, "refdata", registrar_queue_group, ctx, verifier));
     }
 
     return subs;

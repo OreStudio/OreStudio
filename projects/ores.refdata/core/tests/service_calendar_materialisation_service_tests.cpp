@@ -58,8 +58,8 @@ using ores::testing::scoped_database_helper;
 
 namespace {
 
-void write_zz_country_sentinel(scoped_database_helper& h,
-                               ores::utility::generation::generation_context& gctx) {
+void service_calendar_materialisation_service_write_zz_country_sentinel(
+    scoped_database_helper& h, ores::utility::generation::generation_context& gctx) {
     country_repository cty_repo;
     cty_repo.write(h.context(), {generate_country_sentinel(gctx)});
 }
@@ -133,7 +133,7 @@ TEST_CASE("regenerate_base_less_calendar_applies_rules_and_exceptions",
     calendar_materialisation_service service(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
 
     auto cal = generate_synthetic_calendar(gctx);
     cal.source = "user";
@@ -199,7 +199,7 @@ TEST_CASE("regenerate_leaves_a_saturday_rule_where_it_is_when_only_sundays_move"
     calendar_materialisation_service service(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
 
     auto cal = generate_synthetic_calendar(gctx);
     cal.source = "user";
@@ -259,7 +259,7 @@ TEST_CASE("regenerate_exception_overrides_rule_holiday_back_to_business_day",
     calendar_materialisation_service service(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
 
     auto cal = generate_synthetic_calendar(gctx);
     cal.source = "user";
@@ -299,7 +299,7 @@ TEST_CASE("regenerate_based_calendar_inherits_base_and_overlays_own_exceptions",
     calendar_materialisation_service service(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
 
     auto base = generate_synthetic_calendar(gctx);
     base.source = "user";
@@ -354,7 +354,7 @@ TEST_CASE("regenerate_is_extend_only_and_does_not_rewrite_existing_watermark",
     calendar_materialisation_service service(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
 
     auto cal = generate_synthetic_calendar(gctx);
     cal.source = "user";
@@ -394,7 +394,7 @@ TEST_CASE("regenerate_throws_when_base_calendar_removed_after_being_referenced",
     calendar_materialisation_service service(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
 
     // calendars_insert_fn's soft-FK trigger validates base_calendar_code
     // against an existing calendar row at write time, so a genuine cycle

@@ -31,14 +31,14 @@ using ores::synthetic::feed::ir_simple_view;
 
 namespace {
 
-const ir_simple_view sample{
+const ir_simple_view ir_parameter_conversion_sample{
     .start_rate = 0.03, .long_run_rate = 0.04, .half_life_years = 2.0, .yearly_move_bp = 100.0};
 
 }
 
 TEST_CASE("ir_parameter_conversion turns a half-life into κ and a move into σ for Vasicek",
           "[ir_parameter_conversion]") {
-    const auto p = ir_parameters_from_simple("VASICEK", sample);
+    const auto p = ir_parameters_from_simple("VASICEK", ir_parameter_conversion_sample);
     CHECK(p.at("kappa") == Approx(std::log(2.0) / 2.0));
     CHECK(p.at("theta") == Approx(0.04));
     CHECK(p.at("sigma") == Approx(0.01));
@@ -47,20 +47,20 @@ TEST_CASE("ir_parameter_conversion turns a half-life into κ and a move into σ 
 
 TEST_CASE("ir_parameter_conversion scales σ by the square root of the level for CIR",
           "[ir_parameter_conversion]") {
-    const auto p = ir_parameters_from_simple("COX_INGERSOLL_ROSS", sample);
+    const auto p = ir_parameters_from_simple("COX_INGERSOLL_ROSS", ir_parameter_conversion_sample);
     CHECK(p.at("sigma") == Approx(0.01 / std::sqrt(0.04)));
 }
 
 TEST_CASE("ir_parameter_conversion writes Black-Karasinski on the log rate",
           "[ir_parameter_conversion]") {
-    const auto p = ir_parameters_from_simple("BLACK_KARASINSKI", sample);
+    const auto p = ir_parameters_from_simple("BLACK_KARASINSKI", ir_parameter_conversion_sample);
     CHECK(p.at("theta") == Approx(std::log(0.04)));
     CHECK(p.at("sigma") == Approx(0.01 / 0.04));
 }
 
 TEST_CASE("ir_parameter_conversion gives Two-Factor Gaussian a derived second factor",
           "[ir_parameter_conversion]") {
-    const auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", sample);
+    const auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", ir_parameter_conversion_sample);
     CHECK(p.size() == 7);
     CHECK(p.at("kappa_y") == Approx(0.6 * p.at("kappa_x")));
     CHECK(p.at("sigma_y") == Approx(0.5 * p.at("sigma_x")));
@@ -78,35 +78,38 @@ TEST_CASE("ir_parameter_conversion reads every engine's parameters back to the s
                                "BLACK_KARASINSKI",
                                "TWO_FACTOR_GAUSSIAN"}) {
         CAPTURE(engine);
-        const auto reading =
-            ir_simple_from_parameters(engine, ir_parameters_from_simple(engine, sample));
+        const auto reading = ir_simple_from_parameters(
+            engine, ir_parameters_from_simple(engine, ir_parameter_conversion_sample));
         REQUIRE(reading.view.has_value());
         CHECK(reading.exact);
-        CHECK(reading.view->start_rate == Approx(sample.start_rate));
-        CHECK(reading.view->long_run_rate == Approx(sample.long_run_rate));
-        CHECK(reading.view->half_life_years == Approx(sample.half_life_years));
-        CHECK(reading.view->yearly_move_bp == Approx(sample.yearly_move_bp));
+        CHECK(reading.view->start_rate == Approx(ir_parameter_conversion_sample.start_rate));
+        CHECK(reading.view->long_run_rate == Approx(ir_parameter_conversion_sample.long_run_rate));
+        CHECK(reading.view->half_life_years ==
+              Approx(ir_parameter_conversion_sample.half_life_years));
+        CHECK(reading.view->yearly_move_bp ==
+              Approx(ir_parameter_conversion_sample.yearly_move_bp));
     }
 }
 
 TEST_CASE("ir_parameter_conversion warns when a CIR rate can reach zero",
           "[ir_parameter_conversion]") {
-    auto p = ir_parameters_from_simple("COX_INGERSOLL_ROSS", sample);
+    auto p = ir_parameters_from_simple("COX_INGERSOLL_ROSS", ir_parameter_conversion_sample);
     CHECK(ir_simple_from_parameters("COX_INGERSOLL_ROSS", p).caution.empty());
     p["sigma"] = 0.5;
     CHECK(ir_simple_from_parameters("COX_INGERSOLL_ROSS", p).caution == "touches_zero");
-    CHECK(ir_simple_from_parameters("VASICEK", ir_parameters_from_simple("VASICEK", sample))
+    CHECK(ir_simple_from_parameters(
+              "VASICEK", ir_parameters_from_simple("VASICEK", ir_parameter_conversion_sample))
               .caution.empty());
 }
 
 TEST_CASE("ir_parameter_conversion accepts the process type in either case",
           "[ir_parameter_conversion]") {
-    CHECK(ir_parameters_from_simple("vasicek", sample).size() == 4);
+    CHECK(ir_parameters_from_simple("vasicek", ir_parameter_conversion_sample).size() == 4);
 }
 
 TEST_CASE("ir_parameter_conversion has no simple view without a reversion",
           "[ir_parameter_conversion]") {
-    auto p = ir_parameters_from_simple("VASICEK", sample);
+    auto p = ir_parameters_from_simple("VASICEK", ir_parameter_conversion_sample);
     p["kappa"] = 0.0;
     const auto reading = ir_simple_from_parameters("VASICEK", p);
     CHECK_FALSE(reading.view.has_value());
@@ -115,7 +118,7 @@ TEST_CASE("ir_parameter_conversion has no simple view without a reversion",
 
 TEST_CASE("ir_parameter_conversion has no simple view for a hand-set second factor",
           "[ir_parameter_conversion]") {
-    auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", sample);
+    auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", ir_parameter_conversion_sample);
     p["rho"] = 0.4;
     const auto reading = ir_simple_from_parameters("TWO_FACTOR_GAUSSIAN", p);
     CHECK(reading.view.has_value());
@@ -124,11 +127,12 @@ TEST_CASE("ir_parameter_conversion has no simple view for a hand-set second fact
 }
 
 TEST_CASE("ir_parameter_conversion refuses what no engine can read", "[ir_parameter_conversion]") {
-    CHECK_THROWS_AS(ir_parameters_from_simple("NOPE", sample), std::invalid_argument);
-    auto zero_life = sample;
+    CHECK_THROWS_AS(ir_parameters_from_simple("NOPE", ir_parameter_conversion_sample),
+                    std::invalid_argument);
+    auto zero_life = ir_parameter_conversion_sample;
     zero_life.half_life_years = 0.0;
     CHECK_THROWS_AS(ir_parameters_from_simple("VASICEK", zero_life), std::invalid_argument);
-    auto no_level = sample;
+    auto no_level = ir_parameter_conversion_sample;
     no_level.long_run_rate = 0.0;
     CHECK_THROWS_AS(ir_parameters_from_simple("COX_INGERSOLL_ROSS", no_level),
                     std::invalid_argument);

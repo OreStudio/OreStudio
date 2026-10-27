@@ -70,6 +70,7 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/domain/tenor_schedule.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
@@ -150,17 +151,6 @@ tenor_schedule make_tenor_schedule(const std::string& code) {
         s.diary_entry_type = "central_bank_meeting";
     }
     return s;
-}
-
-// The 1F..8F tenors, transcribed from refdata_tenors_populate.sql (task
-// D2): kind SPECIAL, unit NONE, multiplier the meeting ordinal.
-tenor make_fomc_tenor(int n) {
-    tenor t;
-    t.code = std::to_string(n) + "F";
-    t.kind = "SPECIAL";
-    t.unit = "NONE";
-    t.multiplier = n;
-    return t;
 }
 
 }

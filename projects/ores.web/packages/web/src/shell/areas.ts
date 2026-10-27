@@ -76,6 +76,7 @@ export const MENU: readonly MenuItem[] = [
         permission: [
             'reporting::report_definitions:read',
             'analytics::pricing_model_configs:read',
+            'analytics::sensitivity_templates:read',
             'reporting::engine_settings:read',
         ],
     },

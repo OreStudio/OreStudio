@@ -41,6 +41,8 @@ set(files
     "repository_pricing_model_product_parameter_repository_tests.cpp"
     "repository_pricing_model_product_repository_tests.cpp"
     "repository_shift_vocabulary_seed_tests.cpp"
+    "sensitivity_asset_class_eventing_integration_tests.cpp"
+    "sensitivity_method_eventing_integration_tests.cpp"
     "sensitivity_template_eventing_integration_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
     "shift_type_eventing_integration_tests.cpp"

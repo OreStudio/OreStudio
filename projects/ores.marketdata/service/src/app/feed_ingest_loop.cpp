@@ -72,7 +72,7 @@ struct feed_ingest_loop::item {
 /// whose elements stay where they are when the batch is handed on, and the rows view the text of
 /// the targets and of @c series_text.
 struct feed_ingest_loop::prepared_batch {
-    std::vector<messaging::market_tick> ticks;
+    std::vector<ores::marketdata::messaging::market_tick> ticks;
     std::vector<std::optional<tick_plan>> plans;
     std::vector<item> items;
     std::map<std::string, ores::database::context> tenant_ctxs;
@@ -231,7 +231,7 @@ std::shared_ptr<adapter_tick_translator> feed_ingest_loop::translator() const {
 
 std::optional<adapter_tick_drop>
 feed_ingest_loop::accept_adapter_tick(std::string_view adapter_id,
-                                      const messaging::adapter_tick& tick) {
+                                      const ores::marketdata::messaging::adapter_tick& tick) {
     const auto current = translator();
     auto translated = current->translate(adapter_id, tick, std::chrono::system_clock::now());
     if (!translated) {
@@ -294,7 +294,8 @@ void feed_ingest_loop::on_adapter_tick(const ores::nats::message& msg) {
                                   << "': not an ingress subject of an adapter";
         return;
     }
-    auto tick = ores::nats::default_wire_codec().decode<messaging::adapter_tick>(msg.data);
+    auto tick = ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
+        msg.data);
     if (!tick) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode adapter_tick on '" << msg.subject
                                   << "': " << tick.error().what();
@@ -304,7 +305,8 @@ void feed_ingest_loop::on_adapter_tick(const ores::nats::message& msg) {
 }
 
 void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
-    auto tick = ores::nats::default_wire_codec().decode<messaging::market_tick>(msg.data);
+    auto tick =
+        ores::nats::default_wire_codec().decode<ores::marketdata::messaging::market_tick>(msg.data);
     if (!tick) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode market_tick on '" << msg.subject
                                   << "': " << tick.error().what();
@@ -315,7 +317,7 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
 }
 
 void feed_ingest_loop::worker_loop() {
-    std::vector<messaging::market_tick> batch;
+    std::vector<ores::marketdata::messaging::market_tick> batch;
     auto last_stale_log = std::chrono::steady_clock::time_point::min();
     std::size_t limit = initial_batch_ticks;
     for (;;) {
@@ -386,18 +388,20 @@ void feed_ingest_loop::worker_loop() {
     }
 }
 
-std::optional<tick_drop> feed_ingest_loop::handle_tick(const messaging::market_tick& tick) {
+std::optional<tick_drop>
+feed_ingest_loop::handle_tick(const ores::marketdata::messaging::market_tick& tick) {
     return handle_batch({tick}).front();
 }
 
 std::vector<std::optional<tick_drop>>
-feed_ingest_loop::handle_batch(const std::vector<messaging::market_tick>& ticks) {
+feed_ingest_loop::handle_batch(const std::vector<ores::marketdata::messaging::market_tick>& ticks) {
     std::vector<std::optional<tick_drop>> outcomes(ticks.size());
     process(ticks, &outcomes);
     return outcomes;
 }
 
-void feed_ingest_loop::warn_dropped(const messaging::market_tick& tick, tick_drop reason) {
+void feed_ingest_loop::warn_dropped(const ores::marketdata::messaging::market_tick& tick,
+                                    tick_drop reason) {
     std::lock_guard lock(mu_);
     switch (reason) {
         case tick_drop::unbound_source:
@@ -419,7 +423,7 @@ void feed_ingest_loop::warn_dropped(const messaging::market_tick& tick, tick_dro
 }
 
 std::unique_ptr<feed_ingest_loop::prepared_batch>
-feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
+feed_ingest_loop::prepare(std::vector<ores::marketdata::messaging::market_tick> received,
                           std::vector<std::optional<tick_drop>>* outcomes) {
     auto batch = std::make_unique<prepared_batch>();
     batch->started = std::chrono::steady_clock::now();
@@ -500,7 +504,7 @@ feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
     return batch;
 }
 
-void feed_ingest_loop::process(std::vector<messaging::market_tick> ticks,
+void feed_ingest_loop::process(std::vector<ores::marketdata::messaging::market_tick> ticks,
                                std::vector<std::optional<tick_drop>>* outcomes) {
     const auto batch = prepare(std::move(ticks), outcomes);
     complete(*batch);

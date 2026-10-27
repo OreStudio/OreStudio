@@ -602,7 +602,8 @@ std::string ore_instrument_type(const market_datum& d) {
 }
 
 /// Every difference between the datum and ORE's reading of the same key.
-std::vector<std::string> differences(const market_datum& d, const catalogue_line& ore) {
+std::vector<std::string> datum_ore_key_codec_differences(const market_datum& d,
+                                                         const catalogue_line& ore) {
     std::vector<std::string> out;
     if (ore.at("instrumentType") != ore_instrument_type(d))
         out.push_back("instrumentType: ORE " + ore.at("instrumentType"));
@@ -627,7 +628,7 @@ std::vector<std::string> differences(const market_datum& d, const catalogue_line
     return out;
 }
 
-struct tally {
+struct datum_ore_key_codec_tally {
     std::size_t lines = 0;
     std::vector<std::string> failures;
 
@@ -657,8 +658,8 @@ std::string quote_token_of(const std::string& key) {
 }
 
 /// Checks every catalogue line: refusals, write-back and ORE's fields.
-tally check(const std::vector<catalogue_line>& lines) {
-    tally t;
+datum_ore_key_codec_tally datum_ore_key_codec_check(const std::vector<catalogue_line>& lines) {
+    datum_ore_key_codec_tally t;
     for (const auto& line : lines) {
         ++t.lines;
         const auto& key = line.at("key");
@@ -690,7 +691,7 @@ tally check(const std::vector<catalogue_line>& lines) {
             t.fail(key, "does not write back: " + written.error());
         else if (*written != canonical_key(key))
             t.fail(key, "writes back as " + *written);
-        for (const auto& d : differences(*datum, line))
+        for (const auto& d : datum_ore_key_codec_differences(*datum, line))
             t.fail(key, d);
     }
     return t;
@@ -700,7 +701,7 @@ tally check(const std::vector<catalogue_line>& lines) {
 
 TEST_CASE("the_codec_reads_every_documented_ore_form_as_ore_does",
           "[marketdata][datum][ore_key_codec]") {
-    const auto t = check(catalogue_forms());
+    const auto t = datum_ore_key_codec_check(catalogue_forms());
     CHECK(t.lines == catalogue_forms().size());
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
@@ -708,7 +709,7 @@ TEST_CASE("the_codec_reads_every_documented_ore_form_as_ore_does",
 }
 
 TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", "[marketdata][datum][ore_key_codec]") {
-    const auto t = check(catalogue_corpus());
+    const auto t = datum_ore_key_codec_check(catalogue_corpus());
     CHECK(t.lines == catalogue_corpus().size());
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
@@ -717,7 +718,7 @@ TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", "[marketdata][datum][o
 
 TEST_CASE("the_codec_admits_the_quote_types_ore_admits_for_each_form",
           "[marketdata][datum][ore_key_codec]") {
-    const auto t = check(catalogue_quote_matrix());
+    const auto t = datum_ore_key_codec_check(catalogue_quote_matrix());
     CHECK(t.lines == catalogue_quote_matrix().size());
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);

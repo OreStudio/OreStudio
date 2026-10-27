@@ -45,8 +45,8 @@ struct sensitivity_template_entity {
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
-    std::string asset_class;
-    std::string method;
+    std::string method_code;
+    std::optional<std::string> asset_class_code;
     std::string description;
     std::string modified_by;
     std::string performed_by;

@@ -26,6 +26,7 @@
 #include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "shared_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -64,11 +65,6 @@ void lock_import_row(const ores::database::context& ctx, const boost::uuids::uui
     const auto result = (*transaction)->execute(sql);
     if (!result)
         throw std::runtime_error(result.error().what());
-}
-
-boost::uuids::uuid new_uuid() {
-    static thread_local ores::utility::uuid::uuid_v7_generator generator;
-    return generator();
 }
 
 /**

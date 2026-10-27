@@ -171,12 +171,12 @@ double seconds_since(stopwatch::time_point start) {
     return std::chrono::duration<double>(stopwatch::now() - start).count();
 }
 
-void report(const std::string& shape,
-            const std::string& writer,
-            std::size_t batch,
-            std::size_t groups,
-            std::size_t rows,
-            double secs) {
+void repository_market_write_ceiling_report(const std::string& shape,
+                                            const std::string& writer,
+                                            std::size_t batch,
+                                            std::size_t groups,
+                                            std::size_t rows,
+                                            double secs) {
     std::cout << std::format("RESULT shape={} writer={} batch={} transactions_per_batch={} rows={} "
                              "secs={:.2f} rows_per_s={:.0f}\n",
                              shape,
@@ -286,7 +286,8 @@ TEST_CASE("write_ceiling_of_the_repository_insert", repository_tags) {
             }
             obs_repo.insert(h.context(), rows);
         }
-        report("observation", "repository", batch, 1, batch * batches, seconds_since(started));
+        repository_market_write_ceiling_report(
+            "observation", "repository", batch, 1, batch * batches, seconds_since(started));
     }
     SUCCEED();
 }
@@ -446,12 +447,12 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
                                 observation_text(per_group, next, series, tenant, party, gen));
                     }
                 }
-                report(shape,
-                       "copy",
-                       batch,
-                       groups,
-                       batches * (batch / groups) * groups,
-                       seconds_since(started));
+                repository_market_write_ceiling_report(shape,
+                                                       "copy",
+                                                       batch,
+                                                       groups,
+                                                       batches * (batch / groups) * groups,
+                                                       seconds_since(started));
             }
         }
     }

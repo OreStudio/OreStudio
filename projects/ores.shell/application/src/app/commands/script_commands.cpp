@@ -22,6 +22,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/script_runner.hpp"
+#include "shared_helpers.hpp"
 #include <cli/cli.h>
 #include <fstream>
 #include <ostream>
@@ -32,10 +33,11 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view anon_logger_name = "ores.shell.app.commands.script_commands";
+inline std::string_view script_commands_anon_logger_name =
+    "ores.shell.app.commands.script_commands";
 
-auto& anon_lg() {
-    static auto instance = make_logger(anon_logger_name);
+auto& script_commands_anon_lg() {
+    static auto instance = make_logger(script_commands_anon_logger_name);
     return instance;
 }
 
@@ -65,12 +67,13 @@ void script_commands::register_commands(cli::Menu& root, cli::CliSession*& activ
             std::ifstream file(filename);
             if (!file.is_open()) {
                 fail(out) << "Error: cannot open file: " << filename << std::endl;
-                BOOST_LOG_SEV(anon_lg(), error) << "Cannot open script file: " << filename;
+                BOOST_LOG_SEV(script_commands_anon_lg(), error)
+                    << "Cannot open script file: " << filename;
                 return;
             }
 
             out << "Loading script: " << filename << std::endl;
-            BOOST_LOG_SEV(anon_lg(), info) << "Loading script: " << filename;
+            BOOST_LOG_SEV(script_commands_anon_lg(), info) << "Loading script: " << filename;
 
             auto result = run_script(
                 file,
@@ -84,7 +87,7 @@ void script_commands::register_commands(cli::Menu& root, cli::CliSession*& activ
                 // nest) aborts too.
                 fail(out) << "Script aborted at line " << result.aborted_line << ": "
                           << result.aborted_command << std::endl;
-                BOOST_LOG_SEV(anon_lg(), error)
+                BOOST_LOG_SEV(script_commands_anon_lg(), error)
                     << "Script aborted at line " << result.aborted_line << " of " << filename
                     << ": " << result.aborted_command;
                 return;
@@ -92,7 +95,7 @@ void script_commands::register_commands(cli::Menu& root, cli::CliSession*& activ
 
             out << "Script complete: " << result.executed << " command"
                 << (result.executed != 1 ? "s" : "") << " executed." << std::endl;
-            BOOST_LOG_SEV(anon_lg(), info)
+            BOOST_LOG_SEV(script_commands_anon_lg(), info)
                 << "Script complete: " << result.executed << " commands executed from " << filename;
         },
         "Load and execute a .ores script file (aborts on first error; "

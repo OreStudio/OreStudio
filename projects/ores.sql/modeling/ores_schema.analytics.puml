@@ -425,6 +425,7 @@ package "analytics" #E8F5E9 {
         * version : integer
         * asset_class : text
         * method : text
+        * method_code : text
         * description : text
         * modified_by : text
         * performed_by : text
@@ -439,7 +440,8 @@ package "analytics" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Sensitivity Template Table
-    A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD.
+    A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
+    The key's spelling is the tenant's. ORE resolves a template key by looking up the key the sensitivity configuration states, and a configuration may state a key that ORE's own list does not hold, so a tenant can add a key of its own. The table therefore holds every row to the metadata it states and does not hold the key to a shape built out of it.
     end note
 
     entity ores_analytics_shift_types_tbl <<temporal>> #C6F0D8 {

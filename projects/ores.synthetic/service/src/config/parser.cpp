@@ -23,6 +23,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <cstdint>
 #include <ostream>
 
 namespace {
@@ -63,7 +64,11 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    const auto od(standard_service_options::make_options_description("ores.synthetic.service.log"));
+    auto od(standard_service_options::make_options_description("ores.synthetic.service.log"));
+    od.add_options()("run-seed",
+                     boost::program_options::value<std::uint64_t>()->default_value(42),
+                     "Seed every random stream of the run is keyed by. One seed reproduces a "
+                     "run.");
     const auto vm(standard_service_options::parse(od, arguments, "SYNTHETIC_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -81,6 +86,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
+    r.run_seed = vm["run-seed"].as<std::uint64_t>();
     return r;
 }
 

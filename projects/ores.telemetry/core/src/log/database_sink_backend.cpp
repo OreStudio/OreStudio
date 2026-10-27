@@ -22,6 +22,7 @@
 #include "ores.telemetry.core/domain/span_id.hpp"
 #include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
+#include "shared_helpers.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/log/attributes/value_extraction.hpp>
@@ -35,17 +36,6 @@ namespace {
 /**
  * @brief Converts boost::posix_time::ptime to std::chrono::system_clock::time_point.
  */
-std::chrono::system_clock::time_point to_system_clock(const boost::posix_time::ptime& pt) {
-    if (pt.is_not_a_date_time()) {
-        return std::chrono::system_clock::now();
-    }
-
-    static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-    const auto duration = pt - epoch;
-    const auto microseconds = duration.total_microseconds();
-    return std::chrono::system_clock::time_point(std::chrono::microseconds(microseconds));
-}
-
 /**
  * @brief Converts boost severity to string representation.
  */

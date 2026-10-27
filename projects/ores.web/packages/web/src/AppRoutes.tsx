@@ -119,6 +119,8 @@ import { EngineSettingsRecordPage } from './engineSettings/EngineSettingsRecordP
 import { PricingEnginesPage } from './pricingEngines/PricingEnginesPage.js';
 import { PricingEnginePage } from './pricingEngines/PricingEnginePage.js';
 import { PricingEngineJourney } from './pricingEngines/PricingEngineJourney.js';
+import { SensitivityTemplatesPage } from './sensitivityTemplates/SensitivityTemplatesPage.js';
+import { SensitivityTemplatePage } from './sensitivityTemplates/SensitivityTemplatePage.js';
 import { ReportPage } from './reporting/ReportPage.js';
 import { ReportRunPage } from './reporting/ReportRunPage.js';
 import { ReportingPage } from './reporting/ReportingPage.js';
@@ -903,6 +905,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <CurveConfigurationPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.sensitivityTemplates}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <SensitivityTemplatesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.sensitivityTemplates}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <SensitivityTemplatePage />
                     ),
                     'workspace',
                 )}

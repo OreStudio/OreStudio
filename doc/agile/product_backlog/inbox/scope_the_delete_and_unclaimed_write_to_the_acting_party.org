@@ -28,4 +28,4 @@ The hotfix filters after the read: =read_one= loads every visible row of the key
 
 * See also
 
--
+- Promoted to the story [[id:1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5][Scope a delete and an unclaimed write to the acting party]].

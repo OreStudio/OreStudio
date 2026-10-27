@@ -61,13 +61,16 @@ def internal_names(text: str) -> set[tuple[str, str]]:
     stack: list[str | None] = []
     scope_depths: list[int] = []
     depth = 0
+    parens = 0
     found = set()
     for line in blank_lexemes(text).split("\n"):
         stripped = line.strip()
-        at_namespace_scope = depth == (scope_depths[-1] if scope_depths else 0)
+        at_namespace_scope = depth == (scope_depths[-1] if scope_depths else 0) and parens == 0
+        if not stripped.startswith("#"):
+            parens += line.count("(") - line.count(")")
         if at_namespace_scope and stripped and not stripped.startswith(NOT_A_DECLARATION):
             m = DECL.match(stripped)
-            if m:
+            if m and not stripped[:m.start("name")].endswith("::"):
                 quals = m.group("quals").split()
                 anonymous = any(n is None for n in stack)
                 constant = ("const" in quals or "constexpr" in quals) and "inline" not in quals

@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -46,39 +47,6 @@ using ores::testing::scoped_database_helper;
 
 /// Two operational parties of the test tenant, and a context for each. Row level
 /// security shows a session only the rows of the parties it may see.
-struct two_parties {
-    boost::uuids::uuid a;
-    boost::uuids::uuid b;
-    ores::database::context a_context;
-    ores::database::context b_context;
-};
-
-two_parties make_two_parties(scoped_database_helper& h) {
-    auto& ctx = h.context();
-    const auto tenant = h.tenant_id();
-    ores::refdata::repository::party_repository repo;
-
-    boost::uuids::uuid system_party{};
-    for (const auto& p : repo.read_latest(ctx)) {
-        if (p.tenant_id == tenant && p.party_category == "System")
-            system_party = p.id;
-    }
-    REQUIRE(system_party != boost::uuids::uuid{});
-
-    auto generation = ores::testing::make_generation_context(h);
-    const auto make_party = [&] {
-        auto party = ores::refdata::generators::generate_synthetic_party(generation);
-        party.party_category = "Operational";
-        party.parent_party_id = system_party;
-        party.change_reason_code = "system.test";
-        repo.write(ctx, party);
-        return party.id;
-    };
-    const auto a = make_party();
-    const auto b = make_party();
-    return {a, b, ctx.with_party(tenant, a, {a}, ""), ctx.with_party(tenant, b, {b}, "")};
-}
-
 /// A surface on a pair no other suite reads, with a coordinate on each axis.
 const std::string surface = "20170910 FX_OPTION/RATE_LNVOL/SGD/MXN/1Y/ATM 0.080\n"
                             "20170910 FX_OPTION/RATE_LNVOL/SGD/MXN/2Y/25RR 0.011\n";

@@ -36,7 +36,7 @@ using namespace ores::logging;
 
 namespace {
 
-inline auto& lg() {
+inline auto& tenant_session_service_lg() {
     static auto instance = make_logger("ores.iam.service.tenant_session_service");
     return instance;
 }
@@ -144,7 +144,8 @@ tenant_session_service::enter(const tenant_session_caller& caller,
     claims.expires_at = now + lifetime_;
     const auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to sign the session for tenant " << target_id;
+        BOOST_LOG_SEV(tenant_session_service_lg(), error)
+            << "Failed to sign the session for tenant " << target_id;
         return {.success = false, .message = "The session could not be issued."};
     }
 
@@ -159,7 +160,8 @@ tenant_session_service::enter(const tenant_session_caller& caller,
                                caller.session_id,
                                party_id);
 
-    BOOST_LOG_SEV(lg(), info) << caller.username << " entered tenant " << tenant.code;
+    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+        << caller.username << " entered tenant " << tenant.code;
     return {.success = true,
             .token = *token,
             .tenant_id = target_id,
@@ -181,7 +183,7 @@ tenant_session_service::party_inside(const utility::uuid::tenant_id& target,
         target_ctx,
         "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
         {target_id},
-        lg(),
+        tenant_session_service_lg(),
         "Reading the system party of the tenant acted inside");
     if (system_party.empty() || system_party.front().size() < 2 || !system_party.front()[0])
         return std::nullopt;
@@ -192,7 +194,7 @@ tenant_session_service::party_inside(const utility::uuid::tenant_id& target,
         target_ctx,
         "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
         {target_id, r.party_id},
-        lg(),
+        tenant_session_service_lg(),
         "Reading the parties the tenant's system party sees");
     return r;
 }
@@ -201,14 +203,15 @@ eventing::service::cache::partition_token tenant_session_service::read_inside(
     const tenant_reader& reader, const std::string& tenant_id, std::chrono::seconds lifetime) {
     const auto target = utility::uuid::tenant_id::from_string(tenant_id);
     if (!target) {
-        BOOST_LOG_SEV(lg(), warn) << "No token for " << reader.username << ": unreadable tenant id "
-                                  << tenant_id;
+        BOOST_LOG_SEV(tenant_session_service_lg(), warn)
+            << "No token for " << reader.username << ": unreadable tenant id " << tenant_id;
         return {};
     }
     const auto inside = party_inside(*target, reader.username);
     if (!inside) {
-        BOOST_LOG_SEV(lg(), warn) << "No token for " << reader.username << " inside tenant "
-                                  << tenant_id << ": the tenant has no system party";
+        BOOST_LOG_SEV(tenant_session_service_lg(), warn)
+            << "No token for " << reader.username << " inside tenant " << tenant_id
+            << ": the tenant has no system party";
         return {};
     }
     const auto now = std::chrono::system_clock::now();
@@ -225,12 +228,13 @@ eventing::service::cache::partition_token tenant_session_service::read_inside(
     claims.expires_at = now + lifetime;
     const auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(lg(), error)
+        BOOST_LOG_SEV(tenant_session_service_lg(), error)
             << "Failed to sign the token for " << reader.username << " inside tenant " << tenant_id;
         return {};
     }
-    BOOST_LOG_SEV(lg(), info) << "Issued a token for " << reader.username << " inside tenant "
-                              << tenant_id << " for " << lifetime.count() << "s";
+    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+        << "Issued a token for " << reader.username << " inside tenant " << tenant_id << " for "
+        << lifetime.count() << "s";
     return {.token = *token, .expires_at = claims.expires_at};
 }
 
@@ -252,7 +256,8 @@ tenant_session_service::leave(const tenant_session_caller& caller) {
                             caller.username,
                             caller.session_id,
                             caller.party_id.value_or(""));
-    BOOST_LOG_SEV(lg(), info) << caller.username << " left tenant " << tenant_id;
+    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+        << caller.username << " left tenant " << tenant_id;
     return {.success = true};
 }
 

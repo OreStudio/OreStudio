@@ -822,7 +822,76 @@ void synthetic_commands::process_regime_get(std::ostream& out,
     }
     out << "state: " << response->state << "\n"
         << "multiplier: " << response->multiplier << "\n"
-        << "pinned: " << (response->pinned ? "yes" : "no") << std::endl;
+        << "pinned: " << (response->pinned ? "yes" : "no") << "\n"
+        << "heat: " << response->heat << "\n"
+        << "jump: " << response->jump << "\n"
+        << "decay: " << response->decay << "\n"
+        << "loop gain: " << response->loop_gain << "\n"
+        << "pace: " << response->pace << "\n"
+        << "tau: " << response->tau << "\n"
+        << "enrolled rate: " << response->population_rate << " a second\n"
+        << "run seed: " << response->run_seed << std::endl;
+}
+
+void synthetic_commands::process_regime_trace(std::ostream& out,
+                                              nats_client& session,
+                                              const std::vector<std::string>& args) {
+    if (args.size() > 2) {
+        fail(out) << "synthetic regime trace takes an optional source name and an optional "
+                     "window in seconds; see help."
+                  << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    ores::synthetic::messaging::get_market_trace_request request;
+    if (!args.empty() && args[0] != "all")
+        request.source_name = args[0];
+    if (args.size() == 2) {
+        try {
+            request.seconds = std::stod(args[1]);
+        } catch (const std::exception&) {
+            fail(out) << "The window must be a number of seconds." << std::endl;
+            return;
+        }
+    }
+    const auto response = ores::nats::service::authenticated_request_and_decode<
+        ores::synthetic::messaging::get_market_trace_response>(
+        session, ores::synthetic::messaging::get_market_trace_request::nats_subject, request);
+    if (!response)
+        return;
+    if (!response->success) {
+        fail(out) << response->message << std::endl;
+        return;
+    }
+
+    std::map<std::string, std::size_t> counts;
+    for (const auto& e : response->events)
+        ++counts[e.kind];
+    out << "run seed: " << response->run_seed << "\n"
+        << "series: " << response->series << "\n"
+        << "ticks a second: " << response->ticks_per_second << "\n"
+        << "heap size: " << response->heap_size << "\n"
+        << "lateness: " << response->lateness_seconds << " s, at most "
+        << response->max_lateness_seconds << " s\n"
+        << "events: " << response->events.size();
+    for (const auto& [kind, n] : counts)
+        out << ", " << kind << " " << n;
+    out << "\n";
+    constexpr std::size_t shown = 10;
+    const auto first = response->events.size() > shown ? response->events.size() - shown : 0;
+    for (auto i = first; i < response->events.size(); ++i) {
+        const auto& e = response->events[i];
+        out << "  " << e.kind << " " << (e.source_name.empty() ? "-" : e.source_name)
+            << " tau=" << e.tau << " state=" << e.state;
+        if (e.kind == "tick")
+            out << " gap=" << e.operational_gap << " wall=" << e.wall_gap;
+        out << "\n";
+    }
+    out << std::flush;
 }
 
 void synthetic_commands::process_regime_pin(std::ostream& out,
@@ -895,6 +964,13 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                         },
                         "Pin the market regime, or hand it back to the chain",
                         {"<auto|calm|active>"});
+    regime_menu->Insert("trace",
+                        [&session](std::ostream& out, std::vector<std::string> args) {
+                            process_regime_trace(std::ref(out), std::ref(session), args);
+                        },
+                        "Show the scheduler's recent decisions and its own numbers: one feed's "
+                        "and the market's, or all of them",
+                        {"[source|all]", "[seconds]"});
     synthetic_menu->Insert(std::move(regime_menu));
 
 

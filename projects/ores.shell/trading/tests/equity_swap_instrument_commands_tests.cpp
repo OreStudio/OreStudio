@@ -158,7 +158,7 @@ TEST_CASE("equity_swap_instrument_commands_process_add_requires_a_session", "[co
     std::ostringstream out;
 
     command_feedback::reset();
-    equity_swap_instrument_commands::process_add(out, session, equity_swap_instrument_tokens(16));
+    equity_swap_instrument_commands::process_add(out, session, equity_swap_instrument_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -192,7 +192,7 @@ TEST_CASE("equity_swap_instrument_commands_process_set_requires_a_session", "[co
     std::ostringstream out;
 
     command_feedback::reset();
-    equity_swap_instrument_commands::process_set(out, session, equity_swap_instrument_tokens(16));
+    equity_swap_instrument_commands::process_set(out, session, equity_swap_instrument_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -227,7 +227,7 @@ TEST_CASE("equity_swap_instrument_commands_process_put_many_requires_a_session",
 
     command_feedback::reset();
     equity_swap_instrument_commands::process_put_many(
-        out, session, equity_swap_instrument_tokens(16));
+        out, session, equity_swap_instrument_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

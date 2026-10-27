@@ -164,7 +164,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_factory.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_filter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_overview.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/feed_seed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/fx_mixture_conversion.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/fx_simple_conversion.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/fx_spot_feed.hpp"

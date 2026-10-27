@@ -320,10 +320,16 @@ export function SettingValue({
     const allowed = vocabulary.valueSets[`${linkScope(scope)}|${name}`];
     const kind = setting?.kind ?? 'text';
     const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
-    const meaning =
+    /*
+     * A trade-level template names no class, so the words stand as the method
+     * and the description rather than an empty space before a separator.
+     */
+    const headline =
         template === undefined
-            ? (setting?.help ?? '')
-            : `${template.assetClass} · ${template.method}. ${template.description}`;
+            ? ''
+            : [template.assetClass, template.method].filter((part) => part !== '').join(' · ');
+    const meaning =
+        template === undefined ? (setting?.help ?? '') : `${headline}. ${template.description}`;
     const label = `${name} (${scope})`;
     return (
         <ParameterRow

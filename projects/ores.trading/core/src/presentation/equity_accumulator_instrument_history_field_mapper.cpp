@@ -55,7 +55,6 @@ render_equity_accumulator_instrument_fields(const domain::equity_accumulator_ins
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Knock Out Level",
                       .value = v.knock_out_level ? v.knock_out_level->to_string() : std::string{}});
-    fields.push_back({.name = "Range Bounds Json", .value = v.range_bounds_json});
     fields.push_back({.name = "Target Amount",
                       .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
     fields.push_back({.name = "Target Type", .value = v.target_type});

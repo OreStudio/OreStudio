@@ -20,6 +20,7 @@
 #include "../src/feed_selection_handler.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/generator_fleet.hpp"
+#include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -61,6 +62,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "provider_seed.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -82,10 +84,7 @@
 
 namespace {
 
-const std::string test_secret("folder-cascade-test-secret");
-const std::string test_issuer("ores.iam.test");
-const std::string test_audience("ores.synthetic.service");
-
+const std::string folder_feed_control_handler_test_secret("folder-cascade-test-secret");
 // Test-scoped subjects: the running service subscribes to the real
 // start/stop_folder subjects on the same queue group, so a request sent
 // on them can be answered by the service's own verifier (a different
@@ -93,31 +92,20 @@ const std::string test_audience("ores.synthetic.service");
 // decode. The handler is subject-agnostic -- it only logs the subject
 // and replies on the request's reply subject -- so the whole handler
 // runs against these test subjects unchanged.
-const std::string test_start_subject("ores.test.folder_feed_control.start_folder");
-const std::string test_stop_subject("ores.test.folder_feed_control.stop_folder");
+const std::string
+    folder_feed_control_handler_test_start_subject("ores.test.folder_feed_control.start_folder");
+const std::string
+    folder_feed_control_handler_test_stop_subject("ores.test.folder_feed_control.stop_folder");
 const std::string test_select_start_subject("ores.test.folder_feed_control.start_selected");
 const std::string test_select_stop_subject("ores.test.folder_feed_control.stop_selected");
 
-// Every seeded row is party-scoped and the JWT carries the same party, so
-// the handler's RLS reads see what the test wrote. The party must exist in
-// the parties table: set_party() and the JWT context both validate it.
-boost::uuids::uuid resolve_test_party(ores::testing::scoped_database_helper& h) {
-    namespace refdata_repo = ores::refdata::repository;
-    const auto parties = refdata_repo::party_repository().read_latest(h.context());
-    for (const auto& p : parties)
-        if (p.tenant_id == h.tenant_id() && p.party_category == "System")
-            return p.id;
-    FAIL("No System party for tenant " << h.tenant_id().to_string());
-    return {};
-}
-
 // Mints an HS256 token the handler's verifier accepts, scoped to the test
 // tenant and party with the given roles.
-std::string mint_token(const std::string& tenant_id,
-                       const boost::uuids::uuid& party_id,
-                       const std::vector<std::string>& roles) {
+std::string folder_feed_control_handler_mint_token(const std::string& tenant_id,
+                                                   const boost::uuids::uuid& party_id,
+                                                   const std::vector<std::string>& roles) {
     auto signer = ores::security::jwt::jwt_authenticator::create_hs256(
-        test_secret, test_issuer, test_audience);
+        folder_feed_control_handler_test_secret, test_issuer, test_audience);
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.subject = "folder-cascade-test";
     claims.issuer = test_issuer;
@@ -127,22 +115,6 @@ std::string mint_token(const std::string& tenant_id,
     claims.visible_party_ids = {boost::uuids::to_string(party_id)};
     claims.roles = roles;
     return *signer.create_token(claims);
-}
-
-// Sends one folder request on the given subject with the Bearer header
-// and decodes the response.
-template <typename Req, typename Resp>
-Resp send_request(ores::nats::service::client& nats,
-                  const std::string& subject,
-                  const std::string& token,
-                  const Req& req) {
-    auto reply = nats.request_sync(subject,
-                                   ores::nats::default_wire_codec().encode(req),
-                                   {{std::string(ores::nats::headers::authorization),
-                                     std::string(ores::nats::headers::bearer_prefix) + token}});
-    auto decoded = ores::nats::default_wire_codec().decode<Resp>(reply.data);
-    REQUIRE(decoded);
-    return *decoded;
 }
 
 struct seeded_cascade {
@@ -388,6 +360,7 @@ struct cascade_fixture {
     ores::testing::scoped_database_helper db;
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
+    ores::analytics::quant::service::running_scheduler run;
     ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     ores::synthetic::service::feed_kind_registry registry;
@@ -403,33 +376,37 @@ struct cascade_fixture {
         REQUIRE(nats.is_connected());
 
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
-            test_secret, test_issuer, test_audience);
+            folder_feed_control_handler_test_secret, test_issuer, test_audience);
         registry = ores::synthetic::service::make_default_feed_kind_registry();
 
         using ores::marketdata::messaging::start_feeds_under_folder_request;
         using ores::marketdata::messaging::stop_feeds_under_folder_request;
         start_sub = nats.queue_subscribe(
-            test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
+            folder_feed_control_handler_test_start_subject,
+            "ores.synthetic.service",
+            [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
-            test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
+            folder_feed_control_handler_test_stop_subject,
+            "ores.synthetic.service",
+            [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
                 h.stop(std::move(msg));
             });
         select_start_sub = nats.queue_subscribe(
             test_select_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_selection_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
                 h.start(std::move(msg));
             });
         select_stop_sub = nats.queue_subscribe(
             test_select_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_selection_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
                 h.stop(std::move(msg));
             });
     }
@@ -444,11 +421,12 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts",
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read",
-                                   "synthetic::feeds:run"});
+    const auto token =
+        folder_feed_control_handler_mint_token(f.db.tenant_id().to_string(),
+                                               test_party,
+                                               {"synthetic::fx_spot_generation_configs:read",
+                                                "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::feeds:run"});
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
     const std::string fx_kind(ores::synthetic::feed::fx_spot_feed_kind);
     const std::string ir_kind(ores::synthetic::feed::ir_curve_feed_kind);
@@ -458,7 +436,7 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts",
     const auto start1 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
             f.nats,
-            test_start_subject,
+            folder_feed_control_handler_test_start_subject,
             token,
             start_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(start1.success);
@@ -483,7 +461,7 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts",
     const auto start2 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
             f.nats,
-            test_start_subject,
+            folder_feed_control_handler_test_start_subject,
             token,
             start_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(start2.success);
@@ -500,7 +478,10 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts",
     // Stop: both stop, split per kind.
     const auto stop =
         send_request<stop_feeds_under_folder_request, stop_feeds_under_folder_response>(
-            f.nats, test_stop_subject, token, stop_feeds_under_folder_request{.folder_id = folder});
+            f.nats,
+            folder_feed_control_handler_test_stop_subject,
+            token,
+            stop_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(stop.success);
     CHECK(stop.stopped == 2);
     REQUIRE(stop.stopped_by_kind.contains(fx_kind));
@@ -515,13 +496,13 @@ TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission",
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
-    const auto token = mint_token(
+    const auto token = folder_feed_control_handler_mint_token(
         f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
 
     // The request is well-formed; only the missing IR permission can stop
     // it, so the reply carries X-Error: forbidden and no feed starts.
     const auto reply = f.nats.request_sync(
-        test_start_subject,
+        folder_feed_control_handler_test_start_subject,
         ores::nats::default_wire_codec().encode(start_feeds_under_folder_request{
             .folder_id = boost::uuids::to_string(seeds.root_folder_id)}),
         {{std::string(ores::nats::headers::authorization),
@@ -535,16 +516,17 @@ TEST_CASE("folder_cascade_rejects_a_malformed_folder_id",
           "[folder_feed_control_handler][integration]") {
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read",
-                                   "synthetic::feeds:run"});
+    const auto token =
+        folder_feed_control_handler_mint_token(f.db.tenant_id().to_string(),
+                                               test_party,
+                                               {"synthetic::fx_spot_generation_configs:read",
+                                                "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::feeds:run"});
 
     const auto resp =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
             f.nats,
-            test_start_subject,
+            folder_feed_control_handler_test_start_subject,
             token,
             start_feeds_under_folder_request{.folder_id = "not-a-uuid"});
     CHECK_FALSE(resp.success);
@@ -560,11 +542,12 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick",
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read",
-                                   "synthetic::feeds:run"});
+    const auto token =
+        folder_feed_control_handler_mint_token(f.db.tenant_id().to_string(),
+                                               test_party,
+                                               {"synthetic::fx_spot_generation_configs:read",
+                                                "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::feeds:run"});
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
 
     // The filter names the folder and the provider of its collection: the same feeds the
@@ -619,11 +602,12 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
 
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read",
-                                   "synthetic::feeds:run"});
+    const auto token =
+        folder_feed_control_handler_mint_token(f.db.tenant_id().to_string(),
+                                               test_party,
+                                               {"synthetic::fx_spot_generation_configs:read",
+                                                "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::feeds:run"});
 
     const auto malformed =
         send_request<start_selected_feeds_request, start_selected_feeds_response>(
@@ -640,7 +624,7 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
     CHECK_FALSE(empty.success);
     CHECK(f.fleet.running_count() == 0);
 
-    const auto narrow = mint_token(
+    const auto narrow = folder_feed_control_handler_mint_token(
         f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
     const auto reply = f.nats.request_sync(
         test_select_start_subject,
@@ -659,10 +643,11 @@ TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them",
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
-    const auto reader = mint_token(f.db.tenant_id().to_string(),
-                                   test_party,
-                                   {"synthetic::fx_spot_generation_configs:read",
-                                    "synthetic::ir_curve_generation_configs:read"});
+    const auto reader =
+        folder_feed_control_handler_mint_token(f.db.tenant_id().to_string(),
+                                               test_party,
+                                               {"synthetic::fx_spot_generation_configs:read",
+                                                "synthetic::ir_curve_generation_configs:read"});
     const auto forbidden = [&](const std::string& subject, auto body) {
         const auto reply =
             f.nats.request_sync(subject,
@@ -673,10 +658,10 @@ TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them",
         CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
     };
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
-    forbidden(test_start_subject,
+    forbidden(folder_feed_control_handler_test_start_subject,
               ores::nats::default_wire_codec().encode(
                   start_feeds_under_folder_request{.folder_id = folder}));
-    forbidden(test_stop_subject,
+    forbidden(folder_feed_control_handler_test_stop_subject,
               ores::nats::default_wire_codec().encode(
                   stop_feeds_under_folder_request{.folder_id = folder}));
     forbidden(

@@ -65,7 +65,7 @@ constexpr std::uint32_t default_export_limit = 10000;
 constexpr std::size_t max_inline_run_input = 900 * 1024;
 
 std::optional<boost::uuids::uuid>
-parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
+ore_commands_parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
     try {
         return boost::uuids::string_generator()(value);
     } catch (const std::exception&) {
@@ -611,7 +611,7 @@ void ore_commands::process_import(std::ostream& out,
         fail(out) << "No default party on this account and no --party-id given." << std::endl;
         return;
     }
-    auto party_uuid = parse_uuid(out, party_ref, "party ID");
+    auto party_uuid = ore_commands_parse_uuid(out, party_ref, "party ID");
     if (!party_uuid)
         return;
     // The platform scopes every read and write to the session's party and
@@ -621,7 +621,7 @@ void ore_commands::process_import(std::ostream& out,
     if (!session.auth().default_party_id.empty()) {
         std::ostringstream ignored;
         const auto session_uuid =
-            parse_uuid(ignored, session.auth().default_party_id, "session party");
+            ore_commands_parse_uuid(ignored, session.auth().default_party_id, "session party");
         if (session_uuid && *session_uuid != *party_uuid) {
             fail(out) << "The import runs in the session's party ("
                       << session.auth().default_party_id << "), not " << party_ref
@@ -776,7 +776,7 @@ void ore_commands::process_fetch_packages(std::ostream& out,
         fail(out) << "Not logged in." << std::endl;
         return;
     }
-    if (!parse_uuid(out, report_instance_id, "report instance id"))
+    if (!ore_commands_parse_uuid(out, report_instance_id, "report instance id"))
         return;
 
     const auto folders = fetch_packages_into(out, session, report_instance_id, out_dir);
@@ -805,7 +805,8 @@ void ore_commands::process_build_packages(std::ostream& out,
         return;
     }
     const auto definition = resolve_report_definition(out, session, report_definition_name);
-    const auto tenant = parse_uuid(out, session.auth().tenant_id, "tenant id of the session");
+    const auto tenant =
+        ore_commands_parse_uuid(out, session.auth().tenant_id, "tenant id of the session");
     if (!definition || !tenant)
         return;
 

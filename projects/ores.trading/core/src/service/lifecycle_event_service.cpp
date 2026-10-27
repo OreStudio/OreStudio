@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -177,8 +176,7 @@ messaging::put_lifecycle_event_response lifecycle_event_service::put_lifecycle_e
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        lifecycle_event_read_one(repo_, ctx_, lifecycle_event_key_from(value)), ctx_);
+    auto written = lifecycle_event_read_one(repo_, ctx_, lifecycle_event_key_from(value));
     if (!written.empty())
         response.lifecycle_event = std::move(written.front());
     return response;
@@ -210,8 +208,7 @@ messaging::put_many_lifecycle_events_response lifecycle_event_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.events.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            lifecycle_event_read_one(repo_, ctx_, lifecycle_event_key_from(value)), ctx_);
+        auto written = lifecycle_event_read_one(repo_, ctx_, lifecycle_event_key_from(value));
         response.events.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -333,10 +330,7 @@ lifecycle_event_service::prepare_change(const messaging::lifecycle_event_change&
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = lifecycle_event_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(lifecycle_event_read_one(repo_, ctx_, lifecycle_event_key_from(out)), ctx_);
+    const auto current = lifecycle_event_read_one(repo_, ctx_, lifecycle_event_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

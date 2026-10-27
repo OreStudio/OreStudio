@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -185,8 +184,7 @@ cds_convention_service::put_cds_convention(const messaging::put_cds_convention_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(cds_convention_read_one(repo_, ctx_, cds_convention_key_from(value)), ctx_);
+    auto written = cds_convention_read_one(repo_, ctx_, cds_convention_key_from(value));
     if (!written.empty())
         response.cds_convention = std::move(written.front());
     return response;
@@ -218,8 +216,7 @@ messaging::put_many_cds_conventions_response cds_convention_service::put_many_cd
     repo_.write(ctx_, batch, claims);
     response.cds_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            cds_convention_read_one(repo_, ctx_, cds_convention_key_from(value)), ctx_);
+        auto written = cds_convention_read_one(repo_, ctx_, cds_convention_key_from(value));
         response.cds_conventions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -338,10 +335,7 @@ cds_convention_service::prepare_change(const messaging::cds_convention_change& c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = cds_convention_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(cds_convention_read_one(repo_, ctx_, cds_convention_key_from(out)), ctx_);
+    const auto current = cds_convention_read_one(repo_, ctx_, cds_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

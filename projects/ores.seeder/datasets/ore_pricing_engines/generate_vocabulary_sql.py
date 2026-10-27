@@ -18,6 +18,7 @@ checkout.
 
 Usage:
     python3 generate_vocabulary_sql.py <ore-checkout>
+    python3 generate_vocabulary_sql.py --templates
 """
 import json
 import os
@@ -56,6 +57,32 @@ LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -
 TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_analytics_service', 'system.initial_load'"
 SEED = "Seed pricing engine vocabulary"
+
+# The two lookups a sensitivity template names, as the tables hold them. The
+# curation states the codes, and the seed writes them: the words a person reads
+# live in the method and asset class tables, so a template states no English.
+#
+#   - the method is one of the five ORE defines, and its token is what a key
+#     spells (FD in IR_FD);
+#   - the class is the reference data's asset class code, and it is null on a
+#     trade-level template, which is the one method ORE defines without a class.
+#
+# A code the tables do not hold is a fail here, not a guess.
+METHOD_CODES = {
+    "Analytical": "Analytical",
+    "Semianalytical": "Semianalytical",
+    "Finite difference": "FD",
+    "Monte Carlo": "MC",
+    "Trade level": "Trade",
+}
+
+ASSET_CLASS_CODES = {
+    "IR": "interest_rates",
+    "FX": "fx",
+    "EQ": "equity",
+    "COMM": "commodity",
+    "CR": "credit",
+}
 
 
 def q(value):
@@ -110,6 +137,36 @@ def described_rows(table, codes):
              q(table[c]["source"]), ACTOR, q(SEED)] for c in sorted(codes)]
 
 
+def write_templates():
+    """The sensitivity templates, whose rows the curation states in full.
+
+    This file needs no ORE checkout: it reads curation alone, so a change to a
+    template's words or its method is regenerated without one.
+    """
+    rows = []
+    for code, entry in CURATED.templates.items():
+        method_code = entry["method_code"]
+        if method_code not in METHOD_CODES.values():
+            sys.exit(f"curation/templates.json: {code} states the method code "
+                     f"{method_code!r}, which the methods table does not hold")
+        asset_class_code = entry["asset_class_code"]
+        if asset_class_code is not None and asset_class_code not in ASSET_CLASS_CODES.values():
+            sys.exit(f"curation/templates.json: {code} states the asset class code "
+                     f"{asset_class_code!r}, which the bridge table does not hold")
+        # The table checks that a class is stated exactly when the method needs
+        # one, and the trade-level method is the one that does not.
+        if (asset_class_code is None) != (method_code == "Trade"):
+            sys.exit(f"curation/templates.json: {code} states the class "
+                     f"{asset_class_code!r} with the method {method_code!r}, and the "
+                     "table holds a class to be absent exactly on a trade-level template")
+        rows.append([q(code), TENANT, "0", q(asset_class_code), q(method_code),
+                     q(entry["description"]), ACTOR, q(SEED)])
+    write("analytics_sensitivity_templates_populate.sql",
+          "Sensitivity Templates Population Script\n *\n * The sensitivity template keys that ORE examples put on products.",
+          "ores_analytics_sensitivity_templates_tbl",
+          "asset_class_code, method_code, description", rows, "Sensitivity Templates")
+
+
 def main(ore):
     vocabulary = extract.main_result(ore)
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
@@ -160,13 +217,11 @@ def main(ore):
           "Pricing Methods Population Script\n *\n * The description of each engine that a pair names. ORE calls a pricing method an\n * engine.",
           "ores_analytics_pricing_methods_tbl", "description, detail, source",
           described_rows(CURATED.engines, engines), "Pricing Methods")
-    write("analytics_sensitivity_templates_populate.sql",
-          "Sensitivity Templates Population Script\n *\n * The sensitivity template keys that ORE examples put on products.",
-          "ores_analytics_sensitivity_templates_tbl", "asset_class, method, description",
-          [[q(c), TENANT, "0", q(e["asset_class"]), q(e["method"]), q(e["description"]),
-            ACTOR, q(SEED)] for c, e in CURATED.templates.items()],
-          "Sensitivity Templates")
+    write_templates()
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1:] == ["--templates"]:
+        write_templates()
+    else:
+        main(sys.argv[1])

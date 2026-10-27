@@ -22,6 +22,7 @@
 #include "ores.analytics.quant/domain/staleness_policy.hpp"
 #include "ores.analytics.quant/service/rate_engine.hpp"
 #include "ores.analytics.quant/service/topology_builder.hpp"
+#include "test_helpers.hpp"
 #include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -36,13 +37,6 @@ using ores::analytics::quant::domain::staleness_policy;
 using ores::analytics::quant::service::rate_engine;
 using ores::analytics::quant::service::topology_builder;
 
-namespace {
-
-auto epoch(int seconds) {
-    return std::chrono::system_clock::time_point{} + std::chrono::seconds(seconds);
-}
-
-} // namespace
 
 TEST_CASE("a direct driver rate is served back unchanged", "[rate_engine]") {
     const std::vector<ccy_pair_input> pairs = {{"EUR", "USD", true}};

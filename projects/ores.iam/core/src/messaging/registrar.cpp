@@ -122,9 +122,9 @@ namespace ores::iam::messaging {
 namespace {
 
 using namespace ores::logging;
-inline static std::string_view logger_name = "ores.iam.messaging.registrar";
-static auto& lg() {
-    static auto instance = make_logger(logger_name);
+inline static std::string_view registrar_logger_name = "ores.iam.messaging.registrar";
+static auto& registrar_lg() {
+    static auto instance = make_logger(registrar_logger_name);
     return instance;
 }
 
@@ -553,7 +553,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             subs.push_back(nats.queue_subscribe(std::string(subject), qg, reload));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size() << " IAM message handlers.";
+    BOOST_LOG_SEV(registrar_lg(), debug)
+        << "Registered " << subs.size() << " IAM message handlers.";
 
     // === Phase 2: Post-Readiness Activities ===
     // Every IAM subject is now live, so party_cache can be warmed. Each
@@ -566,8 +567,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     const auto self =
         repository::account_repository().read_latest_by_username(system_ctx, ctx.service_account());
     if (self.empty()) {
-        BOOST_LOG_SEV(lg(), error) << "IAM's service account " << ctx.service_account()
-                                   << " is missing, so party_cache cannot be loaded.";
+        BOOST_LOG_SEV(registrar_lg(), error) << "IAM's service account " << ctx.service_account()
+                                             << " is missing, so party_cache cannot be loaded.";
     } else {
         const service::tenant_reader reader{.account_id = self.front().id,
                                             .username = ctx.service_account(),
@@ -590,7 +591,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         for (const auto& t : tenants)
             tenant_ids.push_back(boost::uuids::to_string(t.id));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Party cache warm-up failed: " << e.what();
+        BOOST_LOG_SEV(registrar_lg(), warn) << "Party cache warm-up failed: " << e.what();
     }
     // One subscription per event action, so the cache follows the canonical
     // events rather than a single changed-event subject.

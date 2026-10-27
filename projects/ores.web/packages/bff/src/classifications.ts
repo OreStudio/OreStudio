@@ -105,6 +105,8 @@ const HISTORY_TYPES = new Set([
     // A curve configuration is refdata's own record and is reached through the
     // report configuration it fills, not through the record table.
     'ores.refdata.curve_configuration',
+    // A sensitivity template is analytics' own record too, and its history tab reads it here.
+    'ores.analytics.sensitivity_template',
     // Parties and counterparties are not in the record table; their screens read their versions here.
     'ores.refdata.party',
     'ores.refdata.party_identifier',

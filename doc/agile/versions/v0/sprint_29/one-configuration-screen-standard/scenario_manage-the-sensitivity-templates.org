@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 5ED3912F-1A68-4247-A080-1C091F181485
+:END:
+#+title: Test Scenario: Manage the sensitivity templates
+#+description: Check that the sensitivity templates list and record pages read, create, correct and remove a key, that the method code is derived rather than typed, and that the seeded keys are left alone.
+#+type: test_scenario
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: solid_dirac
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9D5084F3-EF0B-4703-BF30-C1D915603CE9][Manage the sensitivity templates]] in [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]. Run it on the provisioned environment and record each step's outcome in its own table.
+
+* Before you start
+
+These are yours to run before the tester opens the browser.
+
+- Confirm the environment matches this checkout. =compass db status= shows the fingerprint in sync; if it is stale, run =compass db recreate -y -k=.
+- Start the fleet and confirm 24 services are active. =compass services status=.
+- Provision the tenant if it is not there, and confirm no step failed. The vocabulary holds 5 methods, 5 asset classes and 19 templates.
+- The screen's writing role is *Operations*. =tenant_admin= holds the wildcard and may write; =adrian.vance@acme_corporation= holds Operations and is the account to use when checking the role boundary.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9D5084F3-EF0B-4703-BF30-C1D915603CE9][Manage the sensitivity templates]] |
+| Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
+| Target screen | Reporting → Sensitivity templates, on http://localhost:21002 |
+| Clients       |                                          |
+| State         | FAILED |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open =http://localhost:21002=.
+- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Choose the party *ACME Corporation HK Ltd*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Read the list
+
+- Open Reporting, then *Sensitivity templates*.
+- The list states the code, the asset class, the method and the description of each template.
+- The asset class and the method read in words, such as *Interest rate* and *Finite difference*, not as codes.
+- The first page holds 15 of the 19 keys, and the pager says so.
+- The keys read alphabetically, with SensiTrade after the CR keys.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Search on the server
+
+- Type =IR_ in the search.
+- The list narrows to the four interest rate keys and the pager count follows.
+- Clear the search and the list returns to 19.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Read one key
+
+- Open *IR_FD*.
+- The title is the code and the line under it shows the version.
+- Details states the asset class *Interest rate*, the method *Finite difference*, the method code *FD*, the template prefix *IR*, and the seeded description.
+- The screen says the key names what a pricing engine configuration puts on a product, that the class is the class of that product, and that the shift sizes the key applies are set per market key in the sensitivity configuration, which may set them on keys outside that class.
+- History shows its first version with the reason the seed gave.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Read the trade-level key
+
+- Return to the list and open *SensiTrade*.
+- The Details state no asset class, the method *Trade level*, the method code *Trade*, and the seeded description.
+- The record explains that a trade-level template names no asset class, because the trade states its own sensitivities.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create a key
+
+- Choose *New template*.
+- The dialog asks for a code, an asset class, a method and a description.
+- Asset class and method are selects, not text fields. The asset class select offers the five classes ORE presents, by name; the method select offers the five methods by name.
+- Choosing *Finite difference* shows the method code *FD* as the token the key carries; no field accepts a method code.
+- Enter code =PW_SENS_FD=, asset class *Interest rate*, method *Finite difference*, and a description of your own, then give a reason and save.
+- The record page opens on the new key and the list shows 20.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | created but got; ; A request did not finish; ; The server refused the request (bad_request). (PUT /api/analytics/sensitivity-templates/SensiTrade, request 248f1191) |
+
+** A key the tenant holds is refused
+
+- Choose *New template* again and enter the code =IR_FD=.
+- Saving is refused and the refusal names the code the tenant already holds.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** The trade-level method names no class
+
+- Choose *New template* and choose the method *Trade level*.
+- The asset class select clears and is disabled, and the dialog says a trade-level template names no asset class.
+- Choose *Cancel*; nothing is written.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Correct the key
+
+- On =PW_SENS_FD=, choose *Edit*.
+- The code is shown but cannot be changed; asset class and method are the two selects; the method code follows the method.
+- Change the description, give a reason and a commentary, and save.
+- The record page shows the new words and the version one higher.
+- History lists the new version with the reason and the commentary.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Remove the key
+
+- Choose *Delete* on =PW_SENS_FD=. The dialog states the row it removes.
+- Confirm. The list returns to the 19 seeded keys.
+- Open *IR_FD* again: it is still version 1, with the seeded words, and its history is unchanged.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-10-27T19:04:10Z |
+| Branch        |   |
+| Commit        |   |
+| Worktree      |   |
+
+* Notes
+
+- The method code is derived from the method and is never typed. The method's row states both forms; the table checks that the class is null exactly for the trade-level method.
+- The screen manages keys only. A key's shift sizes, tenors and shift schemes belong to the sensitivity configuration, and its =key= attributes are how a template reaches market keys of any class.
+- The seeded 19 keys are the ones ORE's examples use. A tenant may add a key of its own; the table does not hold the key to a spelling, because ORE resolves the key a configuration states.
+- The asset class is a soft reference to the reference data asset class codes. The prefix the key carries (*COMM* for commodity) comes from the bridge the screen reads.

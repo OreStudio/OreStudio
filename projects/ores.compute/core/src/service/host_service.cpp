@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -182,7 +181,7 @@ messaging::put_host_response host_service::put_host(const messaging::put_host_re
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(host_read_one(repo_, ctx_, host_key_from(value)), ctx_);
+    auto written = host_read_one(repo_, ctx_, host_key_from(value));
     if (!written.empty())
         response.host = std::move(written.front());
     return response;
@@ -214,7 +213,7 @@ host_service::put_many_hosts(const messaging::put_many_hosts_request& request) {
     repo_.write(ctx_, batch, claims);
     response.hosts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(host_read_one(repo_, ctx_, host_key_from(value)), ctx_);
+        auto written = host_read_one(repo_, ctx_, host_key_from(value));
         response.hosts.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -366,9 +365,7 @@ host_service::prepare_change(const messaging::host_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = host_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(host_read_one(repo_, ctx_, host_key_from(out)), ctx_);
+    const auto current = host_read_one(repo_, ctx_, host_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

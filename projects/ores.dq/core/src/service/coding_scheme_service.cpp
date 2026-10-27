@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -181,8 +180,7 @@ coding_scheme_service::put_coding_scheme(const messaging::put_coding_scheme_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(coding_scheme_read_one(repo_, ctx_, coding_scheme_key_from(value)), ctx_);
+    auto written = coding_scheme_read_one(repo_, ctx_, coding_scheme_key_from(value));
     if (!written.empty())
         response.coding_scheme = std::move(written.front());
     return response;
@@ -214,8 +212,7 @@ messaging::put_many_coding_schemes_response coding_scheme_service::put_many_codi
     repo_.write(ctx_, batch, claims);
     response.schemes.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            coding_scheme_read_one(repo_, ctx_, coding_scheme_key_from(value)), ctx_);
+        auto written = coding_scheme_read_one(repo_, ctx_, coding_scheme_key_from(value));
         response.schemes.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -333,10 +330,7 @@ coding_scheme_service::prepare_change(const messaging::coding_scheme_change& cha
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = coding_scheme_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(coding_scheme_read_one(repo_, ctx_, coding_scheme_key_from(out)), ctx_);
+    const auto current = coding_scheme_read_one(repo_, ctx_, coding_scheme_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

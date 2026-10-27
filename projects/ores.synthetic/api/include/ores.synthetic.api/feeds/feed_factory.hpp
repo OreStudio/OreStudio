@@ -54,15 +54,8 @@ struct feed_build_context final {
     /// The clock every feed asks for the date it starts from, so no two feeds start from two days.
     std::shared_ptr<const ores::marketdata::domain::market_clock> clock =
         std::make_shared<ores::marketdata::domain::system_market_clock>();
-    /// The market every feed built from this context shares, or null for a run
-    /// with no market. One run, one market: a state that fed only one feed
-    /// would not be a market.
-    ores::analytics::quant::domain::market_regime* market = nullptr;
-    /// The heat every event in the run feeds, or null for a run with no
-    /// endogenous factor.
-    ores::analytics::quant::domain::shared_intensity* intensity = nullptr;
-    /// The run's one clock, or null for a run where each feed keeps its own.
-    ores::analytics::quant::service::tick_scheduler* scheduler = nullptr;
+    /// The run's one loop: it owns the market and decides when every feed ticks.
+    ores::analytics::quant::service::tick_scheduler& scheduler;
 };
 
 /**

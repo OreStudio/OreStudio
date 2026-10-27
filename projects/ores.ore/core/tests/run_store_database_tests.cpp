@@ -59,11 +59,12 @@ using namespace ores::ore;
 using ores::ore::tests::rows_of;
 using ores::platform::filesystem::file;
 
-const std::string example = "external/ore/examples/ORE-Python/Notebooks/Example_1/Input/";
+const std::string run_store_database_example =
+    "external/ore/examples/ORE-Python/Notebooks/Example_1/Input/";
 
 store::input_files example_input() {
     store::input_files files;
-    const auto dir = ores::testing::project_root::resolve(example);
+    const auto dir = ores::testing::project_root::resolve(run_store_database_example);
     for (const auto& entry : std::filesystem::directory_iterator(dir))
         if (entry.is_regular_file())
             files[entry.path().filename().string()] = file::read_content(entry.path());
@@ -99,10 +100,11 @@ std::string record_difference(const store::input_files& original,
     const auto it = exported.find(name);
     if (it == exported.end())
         return name + " was not exported";
-    const auto left = Projection::read(original.at(name), example + name);
+    const auto left = Projection::read(original.at(name), run_store_database_example + name);
     const auto right = Projection::read(it->second, name);
     const auto found = xml::compare_records(*type.root, &left, &right);
-    return found ? example + name + ": " + found->path + ": " + found->detail : std::string();
+    return found ? run_store_database_example + name + ": " + found->path + ": " + found->detail :
+                   std::string();
 }
 
 template <typename List>
@@ -114,7 +116,7 @@ std::map<std::string, std::string> parameters_of(const List& list) {
 }
 
 template <typename Rows>
-std::set<std::string> ids_of(const Rows& rows) {
+std::set<std::string> run_store_database_ids_of(const Rows& rows) {
     std::set<std::string> out;
     for (const auto& r : rows)
         out.insert(r.id);
@@ -203,7 +205,7 @@ TEST_CASE("a run's configuration imports and exports as the same files", "[ore][
     const auto holds_all = []<typename Row>(const domain::conventions_package& written,
                                             const domain::conventions_package& read,
                                             std::string_view family) {
-        const auto read_ids = ids_of(rows_of<Row>(read, family));
+        const auto read_ids = run_store_database_ids_of(rows_of<Row>(read, family));
         const auto rows = rows_of<Row>(written, family);
         return std::ranges::all_of(rows, [&](const auto& r) { return read_ids.contains(r.id); });
     };

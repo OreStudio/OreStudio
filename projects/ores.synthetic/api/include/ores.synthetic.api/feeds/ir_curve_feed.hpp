@@ -22,10 +22,7 @@
 
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
-#include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
-#include "ores.analytics.quant/domain/market_link.hpp"
-#include "ores.analytics.quant/service/tick_clock.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
@@ -101,13 +98,13 @@ public:
                   std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
                   const ores::analytics::quant::domain::arrival_spec& arrival,
                   std::vector<ir_curve_resolved_entry> entries,
-                  ores::analytics::quant::domain::market_link link = {},
-                  ores::analytics::quant::service::tick_scheduler* scheduler = nullptr,
+                  ores::analytics::quant::service::tick_scheduler& scheduler,
+                  double sensitivity = 1.0,
                   std::vector<ir_pillar_quote_target> adapter_targets = {});
 
     void start() override;
-    /// One tick, as the scheduler or the feed's own clock drives it.
-    std::string tick(double elapsed_seconds);
+    /// One tick, as the scheduler drives it.
+    std::string tick(const ores::analytics::quant::service::tick_context& context);
     void stop() override;
     std::uint64_t publish_count() const override {
         return published_.load(std::memory_order_relaxed);
@@ -151,25 +148,16 @@ private:
     std::vector<std::string> series_uris_;
     std::vector<std::string> datum_uris_;
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process_;
-    std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
-    ores::analytics::quant::service::tick_clock clock_;
-    /// The arrival rate in ticks per second, the unit a step is counted in and
-    /// the one the arrival process itself divides by.
+    /// The arrival rate in ticks per second, the unit a step is counted in.
     double ticks_per_second_;
-    /// The heat this feed adds to when it ticks, or null for a run with no
-    /// endogenous factor.
-    ores::analytics::quant::domain::shared_intensity* intensity_;
-    /// This feed's rate in the population the heat is shared over, while the feed lives.
-    ores::analytics::quant::domain::shared_intensity::enrolment enrolment_;
-    /// The row's rate, which a scheduler needs to re-arm this series.
+    /// The row's arrival law, which the scheduler draws this series' gaps from.
     ores::analytics::quant::domain::arrival_spec arrival_;
-    /// The factors this feed follows.
-    ores::analytics::quant::domain::market_link link_;
-    /// The run's scheduler, or null when the feed runs its own clock.
-    ores::analytics::quant::service::tick_scheduler* scheduler_;
+    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    /// How strongly this feed follows the market.
+    double sensitivity_;
     /// The series' registration in the scheduler, while it is registered.
     std::optional<std::size_t> handle_;
-    /// Ticks this feed has published, whichever clock drove them.
+    /// Ticks this feed has published.
     std::atomic<std::uint64_t> published_{0};
     std::vector<ir_curve_resolved_entry> entries_;
     /// The adapter id of each entry, in the same order, or nothing for an entry that publishes a
@@ -218,9 +206,8 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
+    ores::analytics::quant::service::tick_scheduler& scheduler,
     const ores::marketdata::domain::market_clock* clock = nullptr,
-    ores::analytics::quant::domain::market_link link = {},
-    ores::analytics::quant::service::tick_scheduler* scheduler = nullptr,
     std::vector<ir_pillar_quote_target> adapter_targets = {});
 
 /**

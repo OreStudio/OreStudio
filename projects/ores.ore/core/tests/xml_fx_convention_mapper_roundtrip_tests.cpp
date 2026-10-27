@@ -56,13 +56,13 @@ std::filesystem::path conventions_path() {
     return ores::testing::project_root::resolve("external/ore/examples/Input/conventions.xml");
 }
 
-conventions load_conventions() {
+conventions xml_fx_convention_mapper_roundtrip_load_conventions() {
     using ores::platform::filesystem::file;
     return conventions_mapper::read(file::read_content(conventions_path()),
                                     conventions_path().string());
 }
 
-record_reader root_of(const conventions& document) {
+record_reader xml_fx_convention_mapper_roundtrip_root_of(const conventions& document) {
     return record_reader(*ores::ore::xml::generated::conventions::conventions_document().root,
                          &document);
 }
@@ -91,13 +91,14 @@ conventions roundtrip_single(const record_reader& original) {
 TEST_CASE("fx_convention_roundtrip_real_example_file_field_values",
           "[ore][xml][mapper][roundtrip][fx_convention]") {
     auto lg(make_logger(test_suite));
-    const auto original = load_conventions();
-    const auto entries = root_of(original).children("FX");
+    const auto original = xml_fx_convention_mapper_roundtrip_load_conventions();
+    const auto entries = xml_fx_convention_mapper_roundtrip_root_of(original).children("FX");
     REQUIRE(!entries.empty());
 
     for (const auto& fx : entries) {
         const auto reversed = roundtrip_single(fx);
-        const auto roundtripped = root_of(reversed).children("FX").front();
+        const auto roundtripped =
+            xml_fx_convention_mapper_roundtrip_root_of(reversed).children("FX").front();
 
         CHECK(roundtripped.spelling("SourceCurrency") == fx.spelling("SourceCurrency"));
         CHECK(roundtripped.spelling("TargetCurrency") == fx.spelling("TargetCurrency"));
@@ -134,8 +135,8 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values",
 TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented",
           "[ore][xml][mapper][roundtrip][fx_convention]") {
     auto lg(make_logger(test_suite));
-    const auto original = load_conventions();
-    const auto entries = root_of(original).children("FX");
+    const auto original = xml_fx_convention_mapper_roundtrip_load_conventions();
+    const auto entries = xml_fx_convention_mapper_roundtrip_root_of(original).children("FX");
 
     std::map<std::pair<std::string, std::string>, int> pair_counts;
     for (const auto& fx : entries)
@@ -181,8 +182,10 @@ TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention",
                                                    "</FX>"
                                                    "</Conventions>");
 
-    const auto reversed = roundtrip_single(root_of(original).children("FX").front());
-    const auto roundtripped = root_of(reversed).children("FX").front();
+    const auto reversed = roundtrip_single(
+        xml_fx_convention_mapper_roundtrip_root_of(original).children("FX").front());
+    const auto roundtripped =
+        xml_fx_convention_mapper_roundtrip_root_of(reversed).children("FX").front();
 
     CHECK(roundtripped.flag("EOM") == true);
     CHECK(roundtripped.spelling("Convention") == "Following");

@@ -38,16 +38,20 @@ namespace {
 using ores::utility::decimal::decimal;
 
 using trading::domain::equity_accumulator_instrument;
+using trading::domain::equity_basket_constituent;
 using trading::domain::equity_asian_option_instrument;
 using trading::domain::equity_barrier_option_instrument;
 using trading::domain::equity_digital_option_instrument;
 using trading::domain::equity_forward_instrument;
 using trading::domain::equity_instrument_data;
+using trading::domain::equity_instrument_variant;
 using trading::domain::equity_option_instrument;
 using trading::domain::equity_position_instrument;
 using trading::domain::equity_position_option_underlying;
 using trading::domain::equity_swap_instrument;
+using trading::domain::equity_swap_period;
 using trading::domain::equity_variance_swap_instrument;
+using trading::domain::range_bound;
 
 using xml::record_reader;
 using xml::record_writer;
@@ -57,9 +61,10 @@ using xml::record_writer;
 // ---------------------------------------------------------------------------
 
 /// The actor and reason every imported row states.
-constexpr std::string_view actor = "ores";
-constexpr std::string_view change_reason = "system.external_data_import";
-constexpr std::string_view change_commentary = "Imported from ORE XML";
+constexpr std::string_view equity_instrument_projection_actor = "ores";
+constexpr std::string_view equity_instrument_projection_change_reason =
+    "system.external_data_import";
+constexpr std::string_view equity_instrument_projection_change_commentary = "Imported from ORE XML";
 
 /// The trade types the family states, which are the ones the old dispatcher took.
 constexpr bool is_equity_trade_type(std::string_view type) {
@@ -75,21 +80,21 @@ constexpr bool is_equity_trade_type(std::string_view type) {
 
 template <typename Row>
 void stamp_audit(Row& row) {
-    row.audit.modified_by = std::string(actor);
-    row.audit.performed_by = std::string(actor);
-    row.audit.change_reason_code = std::string(change_reason);
-    row.audit.change_commentary = std::string(change_commentary);
+    row.audit.modified_by = std::string(equity_instrument_projection_actor);
+    row.audit.performed_by = std::string(equity_instrument_projection_actor);
+    row.audit.change_reason_code = std::string(equity_instrument_projection_change_reason);
+    row.audit.change_commentary = std::string(equity_instrument_projection_change_commentary);
 }
 
-void stamp_columns(equity_position_option_underlying& row) {
-    row.modified_by = std::string(actor);
-    row.performed_by = std::string(actor);
-    row.change_reason_code = std::string(change_reason);
-    row.change_commentary = std::string(change_commentary);
+void equity_instrument_projection_stamp_columns(equity_position_option_underlying& row) {
+    row.modified_by = std::string(equity_instrument_projection_actor);
+    row.performed_by = std::string(equity_instrument_projection_actor);
+    row.change_reason_code = std::string(equity_instrument_projection_change_reason);
+    row.change_commentary = std::string(equity_instrument_projection_change_commentary);
 }
 
 template <typename Row>
-auto make_row(std::string_view trade_type_code) -> Row {
+auto equity_instrument_projection_make_row(std::string_view trade_type_code) -> Row {
     Row r;
     r.identity.trade_type_code = std::string(trade_type_code);
     stamp_audit(r);
@@ -100,41 +105,46 @@ auto make_row(std::string_view trade_type_code) -> Row {
 // Reading: the values, dates and spellings a row states
 // ---------------------------------------------------------------------------
 
-auto to_domain_date(const std::string& text) -> std::chrono::year_month_day {
+auto equity_instrument_projection_to_domain_date(const std::string& text)
+    -> std::chrono::year_month_day {
     if (text.empty())
         return {};
     return ores::platform::time::datetime::from_iso8601_date(text);
 }
 
-auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
+auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto text_of(const record_reader& r, std::string_view name) -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto spelling_of(const record_reader& r, std::string_view name) -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto decimal_of(const record_reader& r, std::string_view name) -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
 }
 
-auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::optional<decimal> {
+auto equity_instrument_projection_optional_decimal_of(const record_reader& r, std::string_view name)
+    -> std::optional<decimal> {
     return r.decimal(name);
 }
 
 /// The exact decimal an element of a xs:simpleContent decimal type carries.
-auto own_decimal_of(const record_reader& r) -> decimal {
+auto equity_instrument_projection_own_decimal_of(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
@@ -149,19 +159,21 @@ auto expiry_date_of(const std::optional<record_reader>& option) -> std::chrono::
     const auto values = dates->values("ExerciseDate");
     if (values.empty())
         return {};
-    return to_domain_date(values.front());
+    return equity_instrument_projection_to_domain_date(values.front());
 }
 
-auto option_type_of(const std::optional<record_reader>& option) -> std::string {
+auto equity_instrument_projection_option_type_of(const std::optional<record_reader>& option)
+    -> std::string {
     if (!option)
         return {};
-    return text_of(*option, "OptionType");
+    return equity_instrument_projection_text_of(*option, "OptionType");
 }
 
-auto exercise_style_of(const std::optional<record_reader>& option) -> std::string {
+auto equity_instrument_projection_exercise_style_of(const std::optional<record_reader>& option)
+    -> std::string {
     if (!option)
         return {};
-    return text_of(*option, "Style");
+    return equity_instrument_projection_text_of(*option, "Style");
 }
 
 /**
@@ -171,11 +183,11 @@ auto exercise_style_of(const std::optional<record_reader>& option) -> std::strin
  * either the underlying itself or a basket; only the two forms that carry one
  * name are read, which is the pair the old mapper read.
  */
-auto underlying_name_of(const record_reader& data) -> std::string {
+auto equity_instrument_projection_underlying_name_of(const record_reader& data) -> std::string {
     if (const auto name = data.text("Name"))
         return *name;
     if (const auto underlying = data.child("Underlying"))
-        return text_of(*underlying, "Name");
+        return equity_instrument_projection_text_of(*underlying, "Name");
     return {};
 }
 
@@ -188,7 +200,7 @@ auto strike_of(const record_reader& data) -> decimal {
         }
     }
     if (const auto strike_data = data.child("StrikeData"))
-        return decimal_of(*strike_data, "Value");
+        return equity_instrument_projection_decimal_of(*strike_data, "Value");
     return decimal{};
 }
 
@@ -199,40 +211,8 @@ auto barrier_levels_of(const record_reader& barrier) -> std::vector<decimal> {
     return levels->decimals("Level");
 }
 
-auto json_escape(std::string_view text) -> std::string {
-    std::string out;
-    for (const char c : text) {
-        if (c == '"')
-            out += "\\\"";
-        else if (c == '\\')
-            out += "\\\\";
-        else
-            out += c;
-    }
-    return out;
-}
 
-auto numbers_json(const std::vector<decimal>& values) -> std::string {
-    std::string out = "[";
-    for (std::size_t i = 0; i < values.size(); ++i) {
-        if (i != 0)
-            out.push_back(',');
-        out += values[i].to_string();
-    }
-    out += "]";
-    return out;
-}
 
-auto names_json(const std::vector<std::string>& values) -> std::string {
-    std::string out = "[";
-    for (std::size_t i = 0; i < values.size(); ++i) {
-        if (i != 0)
-            out.push_back(',');
-        out += "\"" + json_escape(values[i]) + "\"";
-    }
-    out += "]";
-    return out;
-}
 
 // ---------------------------------------------------------------------------
 // Reading: the accumulator's range bounds, which the table keeps as JSON text
@@ -253,133 +233,40 @@ struct range_bound_text final {
     std::optional<decimal> strike_adjustment;
 };
 
-auto range_bounds_json(const record_reader& data) -> std::string {
-    const auto bounds = data.child("RangeBounds");
-    if (!bounds)
-        return {};
-    const auto rows = bounds->children("RangeBound");
-    if (rows.empty())
-        return {};
 
-    std::string out = "[";
-    for (std::size_t i = 0; i < rows.size(); ++i) {
-        if (i != 0)
-            out.push_back(',');
-        std::string fields;
-        const auto add = [&fields](std::string_view key, const std::string& value) {
-            if (!fields.empty())
-                fields.push_back(',');
-            fields += "\"" + std::string(key) + "\":" + value;
-        };
-        if (const auto start = rows[i].text("startDate"))
-            add("StartDate", "\"" + json_escape(*start) + "\"");
-        if (const auto value = rows[i].decimal("RangeFrom"))
-            add("RangeFrom", value->to_string());
-        if (const auto value = rows[i].decimal("RangeTo"))
-            add("RangeTo", value->to_string());
-        if (const auto value = rows[i].decimal("Leverage"))
-            add("Leverage", value->to_string());
-        if (const auto value = rows[i].decimal("Strike"))
-            add("Strike", value->to_string());
-        if (const auto value = rows[i].decimal("StrikeAdjustment"))
-            add("StrikeAdjustment", value->to_string());
-        out += "{" + fields + "}";
-    }
-    out += "]";
-    return out;
-}
-
-auto parse_range_bounds(std::string_view json) -> std::vector<range_bound_text> {
-    std::vector<range_bound_text> rows;
-    std::size_t i = 0;
-    while (i < json.size()) {
-        const auto open = json.find('{', i);
-        if (open == std::string_view::npos)
-            break;
-        const auto close = json.find('}', open);
-        if (close == std::string_view::npos)
-            break;
-        range_bound_text row;
-        auto p = open + 1;
-        while (p < close) {
-            const auto key_open = json.find('"', p);
-            if (key_open == std::string_view::npos || key_open >= close)
-                break;
-            const auto key_close = json.find('"', key_open + 1);
-            if (key_close == std::string_view::npos)
-                break;
-            const auto key = std::string(json.substr(key_open + 1, key_close - key_open - 1));
-            const auto colon = json.find(':', key_close);
-            if (colon == std::string_view::npos || colon >= close)
-                break;
-            auto value_at = colon + 1;
-            while (value_at < close && (json[value_at] == ' ' || json[value_at] == '\t'))
-                ++value_at;
-            if (value_at < close && json[value_at] == '"') {
-                const auto value_open = value_at + 1;
-                const auto value_close = json.find('"', value_open);
-                if (value_close == std::string_view::npos)
-                    break;
-                if (key == "StartDate")
-                    row.start_date = std::string(json.substr(value_open, value_close - value_open));
-                p = value_close + 1;
-                continue;
-            }
-            auto value_end = json.find(',', value_at);
-            if (value_end == std::string_view::npos || value_end > close)
-                value_end = close;
-            auto parsed = decimal::from_string(json.substr(value_at, value_end - value_at));
-            if (parsed) {
-                if (key == "RangeFrom")
-                    row.range_from = *parsed;
-                else if (key == "RangeTo")
-                    row.range_to = *parsed;
-                else if (key == "Leverage")
-                    row.leverage = *parsed;
-                else if (key == "Strike")
-                    row.strike = *parsed;
-                else if (key == "StrikeAdjustment")
-                    row.strike_adjustment = *parsed;
-            }
-            p = value_end;
-        }
-        rows.push_back(std::move(row));
-        i = close + 1;
-    }
-    return rows;
-}
 
 // ---------------------------------------------------------------------------
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade,
-                        std::string_view trade_type) -> equity_option_instrument {
-    auto r = make_row<equity_option_instrument>(trade_type);
+auto read_equity_option(const record_reader& trade, std::string_view trade_type)
+    -> equity_option_instrument {
+    auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
-    r.currency = text_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Quantity");
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.currency = equity_instrument_projection_text_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
-    r.exercise_type = exercise_style_of(option);
+    r.option_type = equity_instrument_projection_option_type_of(option);
+    r.exercise_type = equity_instrument_projection_exercise_style_of(option);
     r.expiry_date = expiry_date_of(option);
     r.strike = strike_of(*data);
     return r;
 }
 
 auto read_equity_forward(const record_reader& trade) -> equity_forward_instrument {
-    auto r = make_row<equity_forward_instrument>("EquityForward");
+    auto r = equity_instrument_projection_make_row<equity_forward_instrument>("EquityForward");
     const auto data = trade.child("EquityForwardData");
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
-    r.currency = text_of(*data, "Currency");
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.currency = equity_instrument_projection_text_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
-    r.forward_price = optional_decimal_of(*data, "Strike");
-    r.expiry_date = to_domain_date(text_of(*data, "Maturity"));
+    r.forward_price = equity_instrument_projection_optional_decimal_of(*data, "Strike");
+    r.expiry_date = equity_instrument_projection_to_domain_date(
+        equity_instrument_projection_text_of(*data, "Maturity"));
     return r;
 }
 
@@ -387,15 +274,16 @@ auto read_equity_forward(const record_reader& trade) -> equity_forward_instrumen
 // currency, the notional and the schedule; a leg that states both overwrites
 // the other's values in the order the document wrote them.
 auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
-    auto r = make_row<equity_swap_instrument>("EquitySwap");
+    auto r = equity_instrument_projection_make_row<equity_swap_instrument>("EquitySwap");
     const auto data = trade.child("EquitySwapData");
     if (!data)
         return r;
     for (const auto& leg : data->children("LegData")) {
         if (const auto equity = leg.child("EquityLegData")) {
-            r.underlying_name = underlying_name_of(*equity);
-            r.return_type = text_of(*equity, "ReturnType");
-            if (const auto quantity = optional_decimal_of(*equity, "Quantity"))
+            r.underlying_name = equity_instrument_projection_underlying_name_of(*equity);
+            r.return_type = equity_instrument_projection_text_of(*equity, "ReturnType");
+            if (const auto quantity =
+                    equity_instrument_projection_optional_decimal_of(*equity, "Quantity"))
                 r.notional = *quantity;
         } else {
             if (const auto currency = leg.text("Currency"))
@@ -403,16 +291,17 @@ auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
             if (const auto notionals = leg.child("Notionals")) {
                 const auto rows = notionals->children("Notional");
                 if (!rows.empty())
-                    r.notional = own_decimal_of(rows.front());
+                    r.notional = equity_instrument_projection_own_decimal_of(rows.front());
             }
             if (const auto schedule = leg.child("ScheduleData")) {
                 const auto rules = schedule->children("Rules");
                 if (!rules.empty()) {
-                    r.start_date = to_domain_date(text_of(rules.front(), "StartDate"));
+                    r.start_date = equity_instrument_projection_to_domain_date(
+                        equity_instrument_projection_text_of(rules.front(), "StartDate"));
                     if (const auto end = rules.front().text("EndDate"))
-                        r.maturity_date = to_domain_date(*end);
-                    r.payment_frequency_code =
-                        tenor_to_payment_frequency(text_of(rules.front(), "Tenor"));
+                        r.maturity_date = equity_instrument_projection_to_domain_date(*end);
+                    r.payment_frequency_code = tenor_to_payment_frequency(
+                        equity_instrument_projection_text_of(rules.front(), "Tenor"));
                 }
             }
         }
@@ -421,16 +310,19 @@ auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
 }
 
 auto read_equity_variance_swap(const record_reader& trade) -> equity_variance_swap_instrument {
-    auto r = make_row<equity_variance_swap_instrument>("EquityVarianceSwap");
+    auto r = equity_instrument_projection_make_row<equity_variance_swap_instrument>(
+        "EquityVarianceSwap");
     const auto data = trade.child("EquityVarianceSwapData");
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
-    r.currency = spelling_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Notional");
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
     r.variance_strike = decimal_as_double(*data, "Strike").value_or(0.0);
-    r.start_date = to_domain_date(text_of(*data, "StartDate"));
-    r.maturity_date = to_domain_date(text_of(*data, "EndDate"));
+    r.start_date = equity_instrument_projection_to_domain_date(
+        equity_instrument_projection_text_of(*data, "StartDate"));
+    r.maturity_date = equity_instrument_projection_to_domain_date(
+        equity_instrument_projection_text_of(*data, "EndDate"));
     return r;
 }
 
@@ -439,20 +331,20 @@ auto read_equity_variance_swap(const record_reader& trade) -> equity_variance_sw
 auto read_equity_barrier_option(const record_reader& trade,
                                 std::string_view element,
                                 std::string_view trade_type) -> equity_barrier_option_instrument {
-    auto r = make_row<equity_barrier_option_instrument>(trade_type);
+    auto r = equity_instrument_projection_make_row<equity_barrier_option_instrument>(trade_type);
     const auto data = trade.child(element);
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
-    r.currency = spelling_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Quantity");
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
-    r.exercise_type = exercise_style_of(option);
+    r.option_type = equity_instrument_projection_option_type_of(option);
+    r.exercise_type = equity_instrument_projection_exercise_style_of(option);
     r.expiry_date = expiry_date_of(option);
     r.strike = strike_of(*data);
     if (const auto barrier = data->child("BarrierData")) {
-        r.lower_barrier_type = spelling_of(*barrier, "Type");
+        r.lower_barrier_type = equity_instrument_projection_spelling_of(*barrier, "Type");
         const auto levels = barrier_levels_of(*barrier);
         if (!levels.empty())
             r.lower_barrier = levels.front();
@@ -463,56 +355,60 @@ auto read_equity_barrier_option(const record_reader& trade,
 }
 
 auto read_equity_asian_option(const record_reader& trade) -> equity_asian_option_instrument {
-    auto r = make_row<equity_asian_option_instrument>("EquityAsianOption");
+    auto r =
+        equity_instrument_projection_make_row<equity_asian_option_instrument>("EquityAsianOption");
     const auto data = trade.child("EquityAsianOptionData");
     if (!data)
         return r;
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_name = text_of(*underlying, "Name");
-    r.currency = spelling_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Quantity");
+        r.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
+    r.option_type = equity_instrument_projection_option_type_of(option);
     r.expiry_date = expiry_date_of(option);
     r.strike = strike_of(*data);
     if (const auto dates = data->child("ObservationDates")) {
         const auto rules = dates->children("Rules");
         if (!rules.empty())
-            r.averaging_start_date = to_domain_date(text_of(rules.front(), "StartDate"));
+            r.averaging_start_date = equity_instrument_projection_to_domain_date(
+                equity_instrument_projection_text_of(rules.front(), "StartDate"));
     }
     return r;
 }
 
 auto read_equity_digital_option(const record_reader& trade) -> equity_digital_option_instrument {
-    auto r = make_row<equity_digital_option_instrument>("EquityDigitalOption");
+    auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(
+        "EquityDigitalOption");
     const auto data = trade.child("EquityDigitalOptionData");
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
+    r.option_type = equity_instrument_projection_option_type_of(option);
     r.expiry_date = expiry_date_of(option);
-    r.strike = optional_decimal_of(*data, "Strike");
-    r.notional = decimal_of(*data, "PayoffAmount");
-    r.currency = spelling_of(*data, "PayoffCurrency");
+    r.strike = equity_instrument_projection_optional_decimal_of(*data, "Strike");
+    r.notional = equity_instrument_projection_decimal_of(*data, "PayoffAmount");
+    r.currency = equity_instrument_projection_spelling_of(*data, "PayoffCurrency");
     return r;
 }
 
 // A touch option is the digital row with a barrier instead of a strike, which
 // is the shape the old mapper gave it.
 auto read_equity_touch_option(const record_reader& trade) -> equity_digital_option_instrument {
-    auto r = make_row<equity_digital_option_instrument>("EquityTouchOption");
+    auto r = equity_instrument_projection_make_row<equity_digital_option_instrument>(
+        "EquityTouchOption");
     const auto data = trade.child("EquityTouchOptionData");
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
-    r.currency = spelling_of(*data, "PayoffCurrency");
-    r.notional = decimal_of(*data, "PayoffAmount");
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.currency = equity_instrument_projection_spelling_of(*data, "PayoffCurrency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "PayoffAmount");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
+    r.option_type = equity_instrument_projection_option_type_of(option);
     r.expiry_date = expiry_date_of(option);
     if (const auto barrier = data->child("BarrierData")) {
-        r.barrier_type = spelling_of(*barrier, "Type");
+        r.barrier_type = equity_instrument_projection_spelling_of(*barrier, "Type");
         const auto levels = barrier_levels_of(*barrier);
         if (!levels.empty() && levels.front() > decimal{})
             r.barrier_level = levels.front();
@@ -521,40 +417,43 @@ auto read_equity_touch_option(const record_reader& trade) -> equity_digital_opti
 }
 
 auto read_equity_outperformance_option(const record_reader& trade) -> equity_option_instrument {
-    auto r = make_row<equity_option_instrument>("EquityOutperformanceOption");
+    auto r = equity_instrument_projection_make_row<equity_option_instrument>(
+        "EquityOutperformanceOption");
     const auto data = trade.child("EquityOutperformanceOptionData");
     if (!data)
         return r;
-    r.currency = spelling_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Notional");
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
+    r.option_type = equity_instrument_projection_option_type_of(option);
     r.expiry_date = expiry_date_of(option);
-    r.strike = decimal_of(*data, "StrikeReturn");
+    r.strike = equity_instrument_projection_decimal_of(*data, "StrikeReturn");
 
     // The option row has no basket column, so the pair travels as one name.
     const auto first = data->child("Underlying1");
     const auto second = data->child("Underlying2");
-    r.underlying_name = (first ? text_of(*first, "Name") : std::string{}) + "/" +
-                        (second ? text_of(*second, "Name") : std::string{});
+    r.underlying_name =
+        (first ? equity_instrument_projection_text_of(*first, "Name") : std::string{}) + "/" +
+        (second ? equity_instrument_projection_text_of(*second, "Name") : std::string{});
     return r;
 }
 
-auto read_equity_accumulator(const record_reader& trade) -> equity_accumulator_instrument {
-    auto r = make_row<equity_accumulator_instrument>("EquityAccumulator");
+auto read_equity_accumulator(const record_reader& trade) -> equity_instrument_data {
+    auto r =
+        equity_instrument_projection_make_row<equity_accumulator_instrument>("EquityAccumulator");
     const auto data = trade.child("EquityAccumulatorData");
     if (!data)
-        return r;
+        return equity_instrument_data{equity_instrument_variant{r}, {}};
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_name = text_of(*underlying, "Name");
-    r.currency = spelling_of(*data, "Currency");
-    r.fixing_amount = decimal_of(*data, "FixingAmount");
-    r.strike = decimal_of(*data, "Strike");
+        r.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
+    r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
     if (const auto start = data->text("StartDate"))
-        r.start_date = to_domain_date(*start);
+        r.start_date = equity_instrument_projection_to_domain_date(*start);
     if (const auto barriers = data->child("Barriers")) {
         for (const auto& barrier : barriers->children("BarrierData")) {
-            const auto type = spelling_of(barrier, "Type");
+            const auto type = equity_instrument_projection_spelling_of(barrier, "Type");
             if (type != "DownAndOut" && type != "UpAndOut")
                 continue;
             const auto levels = barrier_levels_of(barrier);
@@ -564,23 +463,42 @@ auto read_equity_accumulator(const record_reader& trade) -> equity_accumulator_i
             break;
         }
     }
-    r.range_bounds_json = range_bounds_json(*data);
-    return r;
+    /*
+     * The document requires at least one range bound, so they are rows of the
+     * shared table and not a column: each states the range it pays inside and
+     * the leverage it pays at.
+     */
+    std::vector<range_bound> bounds;
+    if (const auto rows = data->child("RangeBounds")) {
+        std::uint32_t ordinal = 1;
+        for (const auto& element : rows->children("RangeBound")) {
+            range_bound row;
+            row.sequence_number = static_cast<int>(ordinal++);
+            if (const auto from = element.decimal("RangeFrom"))
+                row.range_from = *from;
+            if (const auto to = element.decimal("RangeTo"))
+                row.range_to = *to;
+            if (const auto leverage = element.decimal("Leverage"))
+                row.leverage = leverage->to_double();
+            bounds.push_back(std::move(row));
+        }
+    }
+    return equity_instrument_data{equity_instrument_variant{r}, {}, {}, {}, std::move(bounds)};
 }
 
 auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrument {
-    auto r = make_row<equity_accumulator_instrument>("EquityTaRF");
+    auto r = equity_instrument_projection_make_row<equity_accumulator_instrument>("EquityTaRF");
     const auto data = trade.child("EquityTaRFData");
     if (!data)
         return r;
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_name = text_of(*underlying, "Name");
-    r.currency = spelling_of(*data, "Currency");
-    r.fixing_amount = decimal_of(*data, "FixingAmount");
-    r.strike = decimal_of(*data, "Strike");
+        r.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
+    r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
     if (const auto barriers = data->child("Barriers")) {
         for (const auto& barrier : barriers->children("BarrierData")) {
-            if (spelling_of(barrier, "Type") != "FixingCap")
+            if (equity_instrument_projection_spelling_of(barrier, "Type") != "FixingCap")
                 continue;
             const auto levels = barrier_levels_of(barrier);
             if (levels.empty())
@@ -593,21 +511,21 @@ auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrume
 }
 
 auto read_equity_cliquet_option(const record_reader& trade) -> equity_option_instrument {
-    auto r = make_row<equity_option_instrument>("EquityCliquetOption");
+    auto r = equity_instrument_projection_make_row<equity_option_instrument>("EquityCliquetOption");
     const auto data = trade.child("EquityCliquetOptionData");
     if (!data)
         return r;
-    r.underlying_name = underlying_name_of(*data);
-    r.currency = spelling_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Notional");
-    r.option_type = spelling_of(*data, "OptionType");
+    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
+    r.option_type = equity_instrument_projection_spelling_of(*data, "OptionType");
 
     const auto schedule = data->child("ScheduleData");
     if (!schedule)
         return r;
     const auto rules = schedule->children("Rules");
     if (!rules.empty()) {
-        r.cliquet_frequency = text_of(rules.front(), "Tenor");
+        r.cliquet_frequency = equity_instrument_projection_text_of(rules.front(), "Tenor");
         return r;
     }
     const auto dates = schedule->children("Dates");
@@ -618,51 +536,86 @@ auto read_equity_cliquet_option(const record_reader& trade) -> equity_option_ins
         return r;
     const auto values = inner->values("Date");
     if (values.size() >= 2)
-        r.expiry_date = to_domain_date(values.back());
+        r.expiry_date = equity_instrument_projection_to_domain_date(values.back());
     return r;
 }
 
-auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_swap_instrument {
-    auto r = make_row<equity_swap_instrument>("EquityWorstOfBasketSwap");
+auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_instrument_data {
+    auto r =
+        equity_instrument_projection_make_row<equity_swap_instrument>("EquityWorstOfBasketSwap");
     const auto data = trade.child("EquityWorstOfBasketSwapData");
     if (!data)
-        return r;
-    r.currency = spelling_of(*data, "Currency");
-    r.notional = decimal_of(*data, "Quantity");
+        return equity_instrument_data{equity_instrument_variant{r}, {}};
+    r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
+    r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
 
-    std::vector<std::string> names;
-    if (const auto underlyings = data->child("Underlyings"))
-        for (const auto& underlying : underlyings->children("Underlying"))
-            names.push_back(text_of(underlying, "Name"));
-    r.basket_json = names_json(names);
-    if (!names.empty())
-        r.underlying_name = names.front();
+    /*
+     * The basket is a list, so it becomes rows: one constituent per Underlying,
+     * carrying the ordinal the document stated it in.
+     */
+    std::vector<equity_basket_constituent> constituents;
+    if (const auto underlyings = data->child("Underlyings")) {
+        std::uint32_t ordinal = 1;
+        for (const auto& underlying : underlyings->children("Underlying")) {
+            equity_basket_constituent row;
+            row.sequence_number = static_cast<int>(ordinal++);
+            row.underlying_name = equity_instrument_projection_text_of(underlying, "Name");
+            constituents.push_back(std::move(row));
+        }
+    }
+    if (!constituents.empty())
+        r.underlying_name = constituents.front().underlying_name;
 
-    const auto levels_json = [&data](std::string_view element, std::string_view leaf) {
-        const auto rows = data->child(element);
-        if (!rows)
-            return std::string{};
-        return numbers_json(rows->decimals(leaf));
+    /*
+     * The three lists run beside the basket and the schedule: InitialPrices is
+     * one per underlying, and the two level lists are one per determination
+     * date, so a basket of two names over four dates states two prices and
+     * four levels.
+     */
+    const auto levels = [&data](std::string_view element, std::string_view leaf) {
+        if (const auto rows = data->child(element))
+            return rows->decimals(leaf);
+        return std::vector<decimal>{};
     };
-    r.initial_prices_json = levels_json("InitialPrices", "InitialPrice");
-    r.knock_out_levels_json = levels_json("KnockOutLevels", "KnockOutLevel");
-    r.fixed_trigger_levels_json = levels_json("FixedTriggerLevels", "FixedTriggerLevel");
-    return r;
+
+    const auto prices = levels("InitialPrices", "InitialPrice");
+    for (std::size_t i = 0; i < prices.size() && i < constituents.size(); ++i)
+        constituents[i].initial_price = prices[i].to_double();
+
+    const auto knock_outs = levels("KnockOutLevels", "KnockOutLevel");
+    const auto triggers = levels("FixedTriggerLevels", "FixedTriggerLevel");
+    std::vector<equity_swap_period> periods;
+    const auto period_count = std::max(knock_outs.size(), triggers.size());
+    for (std::size_t i = 0; i < period_count; ++i) {
+        equity_swap_period row;
+        row.sequence_number = static_cast<int>(i + 1);
+        if (i < knock_outs.size())
+            row.knock_out_level = knock_outs[i].to_double();
+        if (i < triggers.size())
+            row.fixed_trigger_level = triggers[i].to_double();
+        periods.push_back(std::move(row));
+    }
+
+    return equity_instrument_data{equity_instrument_variant{r},
+                                  {},
+                                  std::move(constituents),
+                                  std::move(periods)};
 }
 
 auto read_equity_position(const record_reader& trade) -> equity_instrument_data {
-    auto inst = make_row<equity_position_instrument>("EquityPosition");
+    auto inst = equity_instrument_projection_make_row<equity_position_instrument>("EquityPosition");
     if (const auto data = trade.child("EquityPositionData")) {
         inst.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
         const auto rows = data->children("Underlying");
         if (!rows.empty())
-            inst.underlying_name = text_of(rows.front(), "Name");
+            inst.underlying_name = equity_instrument_projection_text_of(rows.front(), "Name");
     }
     return equity_instrument_data{std::move(inst), {}};
 }
 
 auto read_equity_option_position(const record_reader& trade) -> equity_instrument_data {
-    auto inst = make_row<equity_position_instrument>("EquityOptionPosition");
+    auto inst =
+        equity_instrument_projection_make_row<equity_position_instrument>("EquityOptionPosition");
     std::vector<equity_position_option_underlying> underlyings;
     if (const auto data = trade.child("EquityOptionPositionData")) {
         inst.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
@@ -671,17 +624,18 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
             equity_position_option_underlying row;
             row.sequence_number = ++sequence_number;
             if (const auto underlying = entry.child("Underlying")) {
-                row.underlying_name = text_of(*underlying, "Name");
+                row.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
                 row.weight = decimal_as_double(*underlying, "Weight");
             }
-            row.strike = decimal_of(entry, "Strike");
+            row.strike = equity_instrument_projection_decimal_of(entry, "Strike");
             if (const auto option = entry.child("OptionData")) {
-                row.long_short = text_of(*option, "LongShort");
-                row.option_type = option_type_of(option);
-                row.exercise_type = exercise_style_of(option);
-                row.settlement_type = spelling_of(*option, "Settlement");
+                row.long_short = equity_instrument_projection_text_of(*option, "LongShort");
+                row.option_type = equity_instrument_projection_option_type_of(option);
+                row.exercise_type = equity_instrument_projection_exercise_style_of(option);
+                row.settlement_type =
+                    equity_instrument_projection_spelling_of(*option, "Settlement");
             }
-            stamp_columns(row);
+            equity_instrument_projection_stamp_columns(row);
             underlyings.push_back(std::move(row));
         }
     }
@@ -694,7 +648,7 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
 // Writing: the shared shapes
 // ---------------------------------------------------------------------------
 
-auto flag_text(bool value) -> std::string_view {
+auto equity_instrument_projection_flag_text(bool value) -> std::string_view {
     return value ? "true" : "false";
 }
 
@@ -710,7 +664,8 @@ void write_option_entry(record_writer option, const Row& v) {
             option.set_text("Style", v.exercise_type);
     }
     if (v.expiry_date.ok())
-        option.child("ExerciseDates").append_value("ExerciseDate", to_ore_date(v.expiry_date));
+        option.child("ExerciseDates")
+            .append_value("ExerciseDate", equity_instrument_projection_to_ore_date(v.expiry_date));
 }
 
 /// The six styles the barrier rows round-trip, refused by name like the mapper.
@@ -734,27 +689,6 @@ auto settlement_spelling_of(const std::string& type) -> std::string {
     return type == "Physical" ? "Physical" : "Cash";
 }
 
-void write_range_bounds(record_writer& data, std::string_view json) {
-    const auto rows = parse_range_bounds(json);
-    if (rows.empty())
-        return;
-    auto bounds = data.child("RangeBounds");
-    for (const auto& row : rows) {
-        auto writer = bounds.append("RangeBound");
-        if (row.start_date)
-            writer.set_text("startDate", *row.start_date);
-        if (row.range_from)
-            writer.set_decimal("RangeFrom", *row.range_from);
-        if (row.range_to)
-            writer.set_decimal("RangeTo", *row.range_to);
-        if (row.leverage)
-            writer.set_decimal("Leverage", *row.leverage);
-        if (row.strike)
-            writer.set_decimal("Strike", *row.strike);
-        if (row.strike_adjustment)
-            writer.set_decimal("StrikeAdjustment", *row.strike_adjustment);
-    }
-}
 
 void write_levels(record_writer& data,
                   std::string_view element,
@@ -767,43 +701,7 @@ void write_levels(record_writer& data,
         list.append_decimal(leaf, value);
 }
 
-auto numbers_of(std::string_view json) -> std::vector<decimal> {
-    std::vector<decimal> values;
-    std::size_t i = 0;
-    while (i < json.size()) {
-        const auto start = json.find_first_of("-0123456789.", i);
-        if (start == std::string_view::npos)
-            break;
-        auto end = start;
-        while (end < json.size() &&
-               std::string_view("0123456789.eE+-").find(json[end]) != std::string_view::npos)
-            ++end;
-        if (auto parsed = decimal::from_string(json.substr(start, end - start)))
-            values.push_back(std::move(*parsed));
-        i = end;
-    }
-    return values;
-}
 
-auto names_of(std::string_view json) -> std::vector<std::string> {
-    std::vector<std::string> values;
-    std::size_t i = 0;
-    while (i < json.size()) {
-        const auto open = json.find('"', i);
-        if (open == std::string_view::npos)
-            break;
-        std::string value;
-        auto p = open + 1;
-        while (p < json.size() && json[p] != '"') {
-            if (json[p] == '\\' && p + 1 < json.size())
-                ++p;
-            value += json[p++];
-        }
-        values.push_back(std::move(value));
-        i = p + 1;
-    }
-    return values;
-}
 
 // ---------------------------------------------------------------------------
 // Writing: one function per product
@@ -822,7 +720,7 @@ void write_equity_option(record_writer& trade, const equity_option_instrument& v
 void write_equity_forward(record_writer& trade, const equity_forward_instrument& v) {
     auto data = trade.child("EquityForwardData");
     data.set_spelling("LongShort", "Long", "long short");
-    data.set_text("Maturity", to_ore_date(v.expiry_date));
+    data.set_text("Maturity", equity_instrument_projection_to_ore_date(v.expiry_date));
     data.set_text("Name", v.underlying_name);
     data.set_text("Currency", v.currency);
     data.set_decimal("Strike", v.forward_price.value_or(decimal{}));
@@ -836,7 +734,7 @@ void write_equity_swap(record_writer& trade, const equity_swap_instrument& v) {
 
     auto equity_leg = data.append("LegData");
     equity_leg.set_spelling("LegType", "Equity", "leg type");
-    equity_leg.set_text("Payer", flag_text(true));
+    equity_leg.set_text("Payer", equity_instrument_projection_flag_text(true));
     auto equity = equity_leg.child("EquityLegData");
     equity.set_text("Name", v.underlying_name);
     equity.set_text("ReturnType", v.return_type);
@@ -845,7 +743,7 @@ void write_equity_swap(record_writer& trade, const equity_swap_instrument& v) {
 
     auto funding_leg = data.append("LegData");
     funding_leg.set_spelling("LegType", "Floating", "leg type");
-    funding_leg.set_text("Payer", flag_text(false));
+    funding_leg.set_text("Payer", equity_instrument_projection_flag_text(false));
     if (!v.currency.empty())
         funding_leg.set_text("Currency", v.currency);
     if (!v.notional.is_zero())
@@ -854,8 +752,8 @@ void write_equity_swap(record_writer& trade, const equity_swap_instrument& v) {
 
 void write_equity_variance_swap(record_writer& trade, const equity_variance_swap_instrument& v) {
     auto data = trade.child("EquityVarianceSwapData");
-    data.set_text("StartDate", to_ore_date(v.start_date));
-    data.set_text("EndDate", to_ore_date(v.maturity_date));
+    data.set_text("StartDate", equity_instrument_projection_to_ore_date(v.start_date));
+    data.set_text("EndDate", equity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_spelling("Currency", v.currency, "currency");
     data.set_text("Name", v.underlying_name);
     data.set_text("LongShort", "Long");
@@ -956,7 +854,9 @@ void write_equity_outperformance_option(record_writer& trade, const equity_optio
     data.set_decimal("InitialPrice2", decimal{});
 }
 
-void write_equity_accumulator(record_writer& trade, const equity_accumulator_instrument& v) {
+void write_equity_accumulator(record_writer& trade,
+                              const equity_accumulator_instrument& v,
+                              const std::vector<range_bound>& rows) {
     auto data = trade.child("EquityAccumulatorData");
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("FixingAmount", v.fixing_amount);
@@ -967,14 +867,33 @@ void write_equity_accumulator(record_writer& trade, const equity_accumulator_ins
     underlying.set_text("Type", "Equity");
     data.child("OptionData").set_text("LongShort", "Long");
     if (v.start_date.ok())
-        data.set_text("StartDate", to_ore_date(v.start_date));
+        data.set_text("StartDate", equity_instrument_projection_to_ore_date(v.start_date));
 
-    write_schedule_rule(data.child("ObservationDates"), to_ore_date(v.start_date), "1D");
+    write_schedule_rule(data.child("ObservationDates"),
+                        equity_instrument_projection_to_ore_date(v.start_date),
+                        "1D");
 
-    // The mapper restores no barrier for an accumulator, so the knock-out level
-    // the row keeps has no element to go back into. Barriers is optional, so
-    // the document stays readable.
-    write_range_bounds(data, v.range_bounds_json);
+    /*
+     * The document requires at least one range bound, so a row set that holds
+     * none is written as none and the schema refuses it: the bounds are the
+     * economics of the product, not a decoration.
+     */
+    if (!rows.empty()) {
+        auto ordered = rows;
+        std::sort(ordered.begin(), ordered.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.sequence_number < rhs.sequence_number;
+        });
+        auto bounds = data.child("RangeBounds");
+        for (const auto& row : ordered) {
+            auto bound = bounds.append("RangeBound");
+            if (row.range_from.has_value())
+                bound.set_decimal("RangeFrom", *row.range_from);
+            if (row.range_to.has_value())
+                bound.set_decimal("RangeTo", *row.range_to);
+            if (row.leverage.has_value())
+                set_decimal_from_double(bound, "Leverage", *row.leverage);
+        }
+    }
 }
 
 void write_equity_tarf(record_writer& trade, const equity_accumulator_instrument& v) {
@@ -1018,7 +937,11 @@ void write_equity_cliquet_option(record_writer& trade, const equity_option_instr
         write_schedule_rule(schedule, "", v.cliquet_frequency);
 }
 
-void write_equity_worst_of_basket_swap(record_writer& trade, const equity_swap_instrument& v) {
+void write_equity_worst_of_basket_swap(
+    record_writer& trade,
+    const equity_swap_instrument& v,
+    const std::vector<equity_basket_constituent>& rows,
+    const std::vector<equity_swap_period>& periods) {
     auto data = trade.child("EquityWorstOfBasketSwapData");
     data.set_spelling("LongShort", "Long", "long short");
     data.set_spelling("Currency", v.currency, "currency");
@@ -1030,7 +953,24 @@ void write_equity_worst_of_basket_swap(record_writer& trade, const equity_swap_i
     data.set_text("FloatingIndex", "PLACEHOLDER");
     data.set_spelling("FloatingDayCountFraction", "Actual/360", "day counter");
 
-    auto names = names_of(v.basket_json);
+    /*
+     * The lists come back from the rows in ordinal order: a price per
+     * constituent, and a level per period. A row written before the rows
+     * existed states no constituent, so the fact carries the single name.
+     */
+    auto ordered_rows = rows;
+    std::sort(ordered_rows.begin(), ordered_rows.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.sequence_number < rhs.sequence_number;
+    });
+    std::vector<std::string> names;
+    std::vector<decimal> prices;
+    for (const auto& row : ordered_rows) {
+        if (row.underlying_name.empty())
+            continue;
+        names.push_back(row.underlying_name);
+        if (row.initial_price.has_value())
+            prices.push_back(decimal::from_double(*row.initial_price).value());
+    }
     if (names.empty() && !v.underlying_name.empty())
         names.push_back(v.underlying_name);
     if (!names.empty()) {
@@ -1046,12 +986,22 @@ void write_equity_worst_of_basket_swap(record_writer& trade, const equity_swap_i
     write_schedule_rule(data.child("FloatingPeriodSchedule"), "", "6M");
     write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
 
-    // Each list spells its leaf its own way, and the schema names none of them
-    // Level.
-    write_levels(data, "InitialPrices", "InitialPrice", numbers_of(v.initial_prices_json));
-    write_levels(data, "KnockOutLevels", "KnockOutLevel", numbers_of(v.knock_out_levels_json));
-    write_levels(
-        data, "FixedTriggerLevels", "FixedTriggerLevel", numbers_of(v.fixed_trigger_levels_json));
+    write_levels(data, "InitialPrices", "InitialPrice", prices);
+
+    auto ordered_periods = periods;
+    std::sort(ordered_periods.begin(), ordered_periods.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.sequence_number < rhs.sequence_number;
+    });
+    std::vector<decimal> knock_outs;
+    std::vector<decimal> triggers;
+    for (const auto& period : ordered_periods) {
+        if (period.knock_out_level.has_value())
+            knock_outs.push_back(decimal::from_double(*period.knock_out_level).value());
+        if (period.fixed_trigger_level.has_value())
+            triggers.push_back(decimal::from_double(*period.fixed_trigger_level).value());
+    }
+    write_levels(data, "KnockOutLevels", "KnockOutLevel", knock_outs);
+    write_levels(data, "FixedTriggerLevels", "FixedTriggerLevel", triggers);
 }
 
 void write_equity_position(record_writer& trade, const equity_position_instrument& v) {
@@ -1134,12 +1084,12 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
     if (trade_type == "EquityOutperformanceOption")
         return wrap(read_equity_outperformance_option(trade));
     if (trade_type == "EquityAccumulator")
-        return wrap(read_equity_accumulator(trade));
+        return read_equity_accumulator(trade);
     if (trade_type == "EquityTaRF")
         return wrap(read_equity_tarf(trade));
     if (trade_type == "EquityCliquetOption")
         return wrap(read_equity_cliquet_option(trade));
-    return wrap(read_equity_worst_of_basket_swap(trade));
+    return read_equity_worst_of_basket_swap(trade);
 }
 
 auto write_equity_instrument(xml::record_writer& trade,
@@ -1184,7 +1134,8 @@ auto write_equity_instrument(xml::record_writer& trade,
                     write_equity_swap(trade, row);
                     matched = true;
                 } else if (trade_type == "EquityWorstOfBasketSwap") {
-                    write_equity_worst_of_basket_swap(trade, row);
+                    write_equity_worst_of_basket_swap(
+                        trade, row, v->basket_constituents, v->periods);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_variance_swap_instrument>) {
@@ -1215,7 +1166,7 @@ auto write_equity_instrument(xml::record_writer& trade,
                 }
             } else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>) {
                 if (trade_type == "EquityAccumulator") {
-                    write_equity_accumulator(trade, row);
+                    write_equity_accumulator(trade, row, v->range_bounds);
                     matched = true;
                 } else if (trade_type == "EquityTaRF") {
                     write_equity_tarf(trade, row);

@@ -29,7 +29,6 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
-#include "ores.synthetic.api/feeds/feed_seed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -46,7 +45,7 @@ using namespace ores::logging;
 
 namespace {
 
-auto& lg() {
+auto& ir_curve_feed_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.api.ir_curve_feed");
     return instance;
 }
@@ -63,8 +62,8 @@ ir_curve_feed::ir_curve_feed(
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
-    ores::analytics::quant::domain::market_link link,
-    ores::analytics::quant::service::tick_scheduler* scheduler,
+    ores::analytics::quant::service::tick_scheduler& scheduler,
+    double sensitivity,
     std::vector<ir_pillar_quote_target> adapter_targets)
     : nats_(nats)
     , source_name_(std::move(source_name))
@@ -72,22 +71,23 @@ ir_curve_feed::ir_curve_feed(
     , currency_code_(std::move(currency_code))
     , role_(std::move(role))
     , process_(std::move(process))
-    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
-          arrival, ores::synthetic::feed::arrival_seed_for(source_name_)))
-    , clock_(*arrivals_, link)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
-    , intensity_(link.intensity)
-    , enrolment_(ores::analytics::quant::domain::enrol_hourly(link, arrival.ticks_per_hour))
     , arrival_(arrival)
-    , link_(link)
     , scheduler_(scheduler)
+    , sensitivity_(sensitivity)
     , entries_(std::move(entries)) {
 
-    if (!std::isfinite(link.sensitivity) || link.sensitivity <= 0.0)
+    if (!std::isfinite(sensitivity_) || sensitivity_ <= 0.0)
         throw std::invalid_argument(
             "ir_curve_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("ir_curve_feed: process must not be null");
+    // The scheduler builds the law when the feed starts, so a spec it would refuse is refused
+    // here, when the feed is built.
+    const auto arrival_check = ores::analytics::quant::domain::validate_arrival_process_parameters(
+        arrival_.mode, arrival_.ticks_per_hour, arrival_.branching_ratio, arrival_.decay);
+    if (!arrival_check.valid)
+        throw std::invalid_argument("ir_curve_feed: " + arrival_check.message);
     if (arrival.ticks_per_hour <= 0.0)
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
@@ -124,35 +124,18 @@ ir_curve_feed::ir_curve_feed(
 }
 
 void ir_curve_feed::start() {
-    const auto body = [this](double elapsed_seconds) {
-        return tick(elapsed_seconds);
-    };
-
-    // A scheduler, when the run has one, decides when this feed ticks: it holds
-    // every series' next gap, so registering is all start() does.
-    if (scheduler_ != nullptr) {
-        handle_ = scheduler_->add(*arrivals_, link_, body);
-        return;
-    }
-
-    clock_.run(
-        body,
-        [this](std::uint64_t n, const std::string& points) {
-            if (n == 1 || n % 100 == 0) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='"
-                    << source_name_ << "' batch=" << n << " points=" << points;
-            }
-        },
-        [this](const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error)
-                << "SYNTHETIC CURVE PUBLISH FAILED: subject='" << nats_subject_ << "' source='"
-                << source_name_ << "': " << ex.what();
-        });
+    handle_ = scheduler_.add({.series = ores::analytics::quant::math::series_key(source_name_),
+                              .arrival = arrival_,
+                              .sensitivity = sensitivity_,
+                              .name = source_name_},
+                             [this](const ores::analytics::quant::service::tick_context& context) {
+                                 return tick(context);
+                             });
 }
 
-std::string ir_curve_feed::tick(double elapsed_seconds) {
-    published_.fetch_add(1, std::memory_order_relaxed);
+std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_context& context) {
+    const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
+    const double elapsed_seconds = context.elapsed_seconds;
 
     // The clock decides when a curve publishes, and the model steps one tick of its own time,
     // which the template resolver defines as one calendar day. A process whose law is written for
@@ -162,9 +145,7 @@ std::string ir_curve_feed::tick(double elapsed_seconds) {
         process_->next(elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0);
     else
         process_->next();
-    if (intensity_ != nullptr)
-        intensity_->record_event();
-    const auto now = std::chrono::system_clock::now();
+    const auto now = context.observed_at;
 
     for (std::size_t i = 0; i < entries_.size(); ++i) {
         const auto& e = entries_[i];
@@ -218,15 +199,19 @@ std::string ir_curve_feed::tick(double elapsed_seconds) {
 
         nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
     }
+    if (n == 1 || n % 100 == 0) {
+        BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+            << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='" << source_name_
+            << "' batch=" << n << " points=" << entries_.size();
+    }
     return std::to_string(entries_.size());
 }
 
 void ir_curve_feed::stop() {
-    if (scheduler_ != nullptr && handle_) {
-        scheduler_->remove(*handle_);
+    if (handle_) {
+        scheduler_.remove(*handle_);
         handle_.reset();
     }
-    clock_.stop();
 }
 
 ORES_SYNTHETIC_API_EXPORT const ir_curve_resolved_entry*
@@ -314,9 +299,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
+    ores::analytics::quant::service::tick_scheduler& scheduler,
     const ores::marketdata::domain::market_clock* clock,
-    ores::analytics::quant::domain::market_link link,
-    ores::analytics::quant::service::tick_scheduler* scheduler,
     std::vector<ir_pillar_quote_target> adapter_targets) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
@@ -367,8 +351,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            std::move(process),
                                            arrival,
                                            std::move(resolved),
-                                           link,
                                            scheduler,
+                                           cfg.sensitivity,
                                            std::move(adapter_targets));
 }
 

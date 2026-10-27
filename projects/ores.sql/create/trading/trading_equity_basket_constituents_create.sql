@@ -50,6 +50,7 @@ create table if not exists "ores_trading_equity_basket_constituents_tbl" (
     "trade_activity_id" uuid not null,
     "underlying_name" text not null,
     "weight" double precision null,
+    "initial_price" double precision null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -34,7 +34,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-constexpr std::string_view queue_group = "ores.refdata.service";
+constexpr std::string_view configuration_document_registrar_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_configuration_document_handlers(
@@ -46,15 +46,15 @@ std::vector<ores::nats::service::subscription> register_configuration_document_h
         std::make_shared<configuration_document_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         save_curve_configuration_document_request::nats_subject,
-        queue_group,
+        configuration_document_registrar_queue_group,
         [h](ores::nats::message msg) { h->save_curve_configuration_document(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_curve_configuration_document_request::nats_subject,
-        queue_group,
+        configuration_document_registrar_queue_group,
         [h](ores::nats::message msg) { h->get_curve_configuration_document(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_curve_configuration_document_request::nats_subject,
-        queue_group,
+        configuration_document_registrar_queue_group,
         [h](ores::nats::message msg) { h->delete_curve_configuration_document(std::move(msg)); }));
     return subs;
 }

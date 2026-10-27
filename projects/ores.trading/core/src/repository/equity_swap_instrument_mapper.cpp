@@ -55,10 +55,6 @@ equity_swap_instrument_mapper::map(const equity_swap_instrument_entity& v) {
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.underlying_name = v.underlying_name.value_or("");
-    r.basket_json = v.basket_json.value_or("");
-    r.initial_prices_json = v.initial_prices_json.value_or("");
-    r.knock_out_levels_json = v.knock_out_levels_json.value_or("");
-    r.fixed_trigger_levels_json = v.fixed_trigger_levels_json.value_or("");
     r.currency = v.currency;
     r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.return_type = v.return_type;
@@ -89,14 +85,6 @@ equity_swap_instrument_mapper::map(const domain::equity_swap_instrument& v) {
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.underlying_name = v.underlying_name.empty() ? std::nullopt : std::optional(v.underlying_name);
-    r.basket_json = v.basket_json.empty() ? std::nullopt : std::optional(v.basket_json);
-    r.initial_prices_json =
-        v.initial_prices_json.empty() ? std::nullopt : std::optional(v.initial_prices_json);
-    r.knock_out_levels_json =
-        v.knock_out_levels_json.empty() ? std::nullopt : std::optional(v.knock_out_levels_json);
-    r.fixed_trigger_levels_json = v.fixed_trigger_levels_json.empty() ?
-                                      std::nullopt :
-                                      std::optional(v.fixed_trigger_levels_json);
     r.currency = v.currency;
     r.notional = v.notional.to_string();
     r.return_type = v.return_type;

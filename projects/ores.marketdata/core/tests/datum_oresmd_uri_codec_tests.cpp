@@ -53,7 +53,7 @@ using ores::marketdata::test::catalogue_forms;
 using ores::marketdata::test::catalogue_line;
 using ores::marketdata::test::catalogue_quote_matrix;
 
-struct tally {
+struct datum_oresmd_uri_codec_tally {
     std::size_t datums = 0;
     std::set<std::string> keys;
     std::set<std::string> uris;
@@ -82,8 +82,9 @@ std::optional<std::string> round_trip_fails(const market_datum& d) {
     return std::nullopt;
 }
 
-tally check(const std::vector<catalogue_line>& lines) {
-    tally t;
+datum_oresmd_uri_codec_tally
+datum_oresmd_uri_codec_check(const std::vector<catalogue_line>& lines) {
+    datum_oresmd_uri_codec_tally t;
     for (const auto& line : lines) {
         if (!accepted_by_ore(line))
             continue;
@@ -110,7 +111,7 @@ tally check(const std::vector<catalogue_line>& lines) {
     return t;
 }
 
-void report(const tally& t) {
+void datum_oresmd_uri_codec_report(const datum_oresmd_uri_codec_tally& t) {
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
     CHECK(t.failures.empty());
@@ -157,23 +158,23 @@ std::vector<market_datum> form_datums() {
 
 TEST_CASE("every_documented_form_round_trips_through_its_uri",
           "[marketdata][datum][oresmd_uri_codec]") {
-    const auto t = check(catalogue_forms());
+    const auto t = datum_oresmd_uri_codec_check(catalogue_forms());
     CHECK(t.datums >= 120);
-    report(t);
+    datum_oresmd_uri_codec_report(t);
 }
 
 TEST_CASE("every_corpus_key_round_trips_through_its_uri", "[marketdata][datum][oresmd_uri_codec]") {
-    const auto t = check(catalogue_corpus());
+    const auto t = datum_oresmd_uri_codec_check(catalogue_corpus());
     const auto accepted = std::ranges::count_if(catalogue_corpus(), accepted_by_ore);
     CHECK(t.datums == static_cast<std::size_t>(accepted));
-    report(t);
+    datum_oresmd_uri_codec_report(t);
 }
 
 TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri",
           "[marketdata][datum][oresmd_uri_codec]") {
-    const auto t = check(catalogue_quote_matrix());
+    const auto t = datum_oresmd_uri_codec_check(catalogue_quote_matrix());
     CHECK(t.datums > 0);
-    report(t);
+    datum_oresmd_uri_codec_report(t);
 
     const auto none = ore_key_codec::read("FX/NULL/EUR/USD");
     REQUIRE(none);

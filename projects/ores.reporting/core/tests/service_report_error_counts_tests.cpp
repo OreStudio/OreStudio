@@ -56,9 +56,8 @@ namespace {
  * A run and the errors against it are party-scoped, so the session-level
  * app.current_party_id has to be set before either is written.
  */
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& gen) {
+ores::database::context service_report_error_counts_write_test_party_and_scope_context(
+    ores::testing::scoped_database_helper& h, ores::utility::generation::generation_context& gen) {
     using ores::refdata::repository::party_repository;
     party_repository parties;
     auto party = ores::refdata::generators::generate_synthetic_party(gen);
@@ -79,9 +78,10 @@ write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
  * The errors name the run with a real foreign key, so the run is written
  * before the recorder is given anything to store.
  */
-std::string write_instance(const ores::database::context& party_ctx,
-                           const std::string& db_user,
-                           ores::utility::generation::generation_context& gen) {
+std::string
+service_report_error_counts_write_instance(const ores::database::context& party_ctx,
+                                           const std::string& db_user,
+                                           ores::utility::generation::generation_context& gen) {
     auto instance = ores::reporting::generators::generate_synthetic_report_instance(gen);
     instance.party_id = *party_ctx.party_id();
 
@@ -109,12 +109,12 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
 
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_counts_write_test_party_and_scope_context(h, gen);
 
     // Two runs of the party: one that recorded problems and one that did not,
     // so the reply shows both what a count is and what its absence means.
-    const auto with_problems = write_instance(ctx, h.db_user(), gen);
-    const auto clean = write_instance(ctx, h.db_user(), gen);
+    const auto with_problems = service_report_error_counts_write_instance(ctx, h.db_user(), gen);
+    const auto clean = service_report_error_counts_write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
     std::vector<ores::reporting::service::engine_log_error> problems;

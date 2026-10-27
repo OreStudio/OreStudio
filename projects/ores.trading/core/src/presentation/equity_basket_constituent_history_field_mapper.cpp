@@ -44,6 +44,8 @@ render_equity_basket_constituent_fields(const domain::equity_basket_constituent&
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back(
         {.name = "Weight", .value = v.weight ? std::to_string(*v.weight) : std::string{}});
+    fields.push_back({.name = "Initial Price",
+                      .value = v.initial_price ? std::to_string(*v.initial_price) : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

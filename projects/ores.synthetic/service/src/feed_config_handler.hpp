@@ -23,8 +23,6 @@
 #include "client_message.hpp"
 #include "feed_kind_registry.hpp"
 #include "generator_fleet.hpp"
-#include "ores.analytics.quant/domain/market_regime.hpp"
-#include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -75,17 +73,13 @@ public:
                         ores::database::context ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier,
                         const feed_kind_registry& registry,
-                        ores::analytics::quant::domain::market_regime* market = nullptr,
-                        ores::analytics::quant::domain::shared_intensity* intensity = nullptr,
-                        ores::analytics::quant::service::tick_scheduler* scheduler = nullptr)
+                        ores::analytics::quant::service::tick_scheduler& scheduler)
         : nats_(nats)
         , auth_nats_(auth_nats)
         , generators_(generators)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
         , registry_(registry)
-        , market_(market)
-        , intensity_(intensity)
         , scheduler_(scheduler) {}
 
     void start(ores::nats::message msg) {
@@ -136,11 +130,8 @@ public:
 
         start_feed_response resp;
         try {
-            const ores::synthetic::feed::feed_build_context bctx{.nats = nats_,
-                                                                 .auth_nats = auth_nats_,
-                                                                 .market = market_,
-                                                                 .intensity = intensity_,
-                                                                 .scheduler = scheduler_};
+            const ores::synthetic::feed::feed_build_context bctx{
+                .nats = nats_, .auth_nats = auth_nats_, .scheduler = scheduler_};
             auto attempt = registry_.make_feed(*target, bctx);
             if (!attempt.feed) {
                 resp.success = false;
@@ -326,9 +317,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;
-    ores::analytics::quant::domain::market_regime* market_;
-    ores::analytics::quant::domain::shared_intensity* intensity_;
-    ores::analytics::quant::service::tick_scheduler* scheduler_;
+    ores::analytics::quant::service::tick_scheduler& scheduler_;
 };
 
 }

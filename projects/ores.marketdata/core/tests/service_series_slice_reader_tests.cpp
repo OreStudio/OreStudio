@@ -24,6 +24,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -43,7 +44,7 @@ using ores::marketdata::service::series_slice_reader;
 using ores::testing::database_helper;
 
 /// Writes @p content through the import, so the reader reads stored data.
-void import(database_helper& h, const std::string& content) {
+void service_series_slice_reader_import(database_helper& h, const std::string& content) {
     ores::nats::service::nats_client auth_nats;
     ores::marketdata::service::import_service svc(h.context(), auth_nats);
     ores::marketdata::messaging::import_market_data_request req;
@@ -51,37 +52,6 @@ void import(database_helper& h, const std::string& content) {
     req.source = "test.series_slice_reader";
     const auto resp = svc.import(req);
     REQUIRE(resp.success);
-}
-
-/// The FX option surface on a pair, as the resolver names one.
-resolve_series_identity_request fx_option_identity(const std::string& unit_ccy,
-                                                   const std::string& ccy) {
-    resolve_series_identity_request id;
-    id.asset = "fx";
-    id.scope = unit_ccy;
-    id.instrument_type = "fx_option";
-    id.quote_type = "rate_lnvol";
-    id.fields.push_back({"ccy", ccy});
-    return id;
-}
-
-/// A curve id no earlier run used, so the series is this test's alone.
-std::string fresh_curve_id() {
-    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
-    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
-    return tag;
-}
-
-/// A zero coupon curve, as the resolver names one.
-resolve_series_identity_request zero_identity(const std::string& curve_id) {
-    resolve_series_identity_request id;
-    id.asset = "ir";
-    id.scope = "EUR";
-    id.instrument_type = "zero";
-    id.quote_type = "rate";
-    id.fields.push_back({"curve_id", curve_id});
-    id.fields.push_back({"day_counter", "A365"});
-    return id;
 }
 
 get_series_slice_request slice_request(resolve_series_identity_request identity,
@@ -105,12 +75,12 @@ TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/ATM 0.080\n"
-           "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/2Y/ATM 0.085\n"
-           "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/25RR 0.011\n");
-    import(h, "20160211 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/ATM 0.090\n");
-    import(h, "20160212 FX_OPTION/RATE_LNVOL/NZD/USD/2Y/25RR 0.012\n");
+    service_series_slice_reader_import(h,
+                                       "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/ATM 0.080\n"
+                                       "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/2Y/ATM 0.085\n"
+                                       "20160210 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/25RR 0.011\n");
+    service_series_slice_reader_import(h, "20160211 FX_OPTION/RATE_LNVOL/NZD/USD/1Y/ATM 0.090\n");
+    service_series_slice_reader_import(h, "20160212 FX_OPTION/RATE_LNVOL/NZD/USD/2Y/25RR 0.012\n");
 
     const auto resp = series_slice_reader::read(h.context(),
                                                 slice_request(fx_option_identity("NZD", "USD"),
@@ -142,9 +112,9 @@ TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole"
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20160310 FX_OPTION/RATE_LNVOL/NZD/JPY/1Y/25RR 0.011\n"
-           "20160310 FX_OPTION/RATE_LNVOL/NZD/JPY/2Y/ATM 0.085\n");
+    service_series_slice_reader_import(h,
+                                       "20160310 FX_OPTION/RATE_LNVOL/NZD/JPY/1Y/25RR 0.011\n"
+                                       "20160310 FX_OPTION/RATE_LNVOL/NZD/JPY/2Y/ATM 0.085\n");
 
     const auto resp = series_slice_reader::read(h.context(),
                                                 slice_request(fx_option_identity("NZD", "JPY"),
@@ -166,11 +136,11 @@ TEST_CASE("a_slice_of_a_one_axis_object_is_the_whole_object", "[service][series_
 
     database_helper h;
     const auto curve = fresh_curve_id();
-    import(h,
-           "20160410 ZERO/RATE/EUR/" + curve +
-               "/A365/1Y 0.010\n"
-               "20160410 ZERO/RATE/EUR/" +
-               curve + "/A365/2Y 0.020\n");
+    service_series_slice_reader_import(h,
+                                       "20160410 ZERO/RATE/EUR/" + curve +
+                                           "/A365/1Y 0.010\n"
+                                           "20160410 ZERO/RATE/EUR/" +
+                                           curve + "/A365/2Y 0.020\n");
 
     const auto resp = series_slice_reader::read(
         h.context(),
@@ -189,7 +159,7 @@ TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h, "20160510 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/ATM 0.080\n");
+    service_series_slice_reader_import(h, "20160510 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/ATM 0.080\n");
     const auto identity = fx_option_identity("NZD", "SEK");
     const auto read = [&](const std::string& field, const std::string& value) {
         return series_slice_reader::read(

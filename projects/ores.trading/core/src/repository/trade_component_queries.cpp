@@ -43,7 +43,7 @@ using namespace ores::database::repository;
 
 namespace {
 
-auto& lg() {
+auto& trade_component_queries_lg() {
     static auto instance =
         ores::logging::make_logger("ores.trading.repository.trade_component_queries");
     return instance;
@@ -55,7 +55,7 @@ std::vector<domain::trade_additional_field>
 read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<trade_additional_field_entity>> |
@@ -66,7 +66,7 @@ read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>&
         ctx,
         query,
         [](const auto& entities) { return trade_additional_field_mapper::map(entities); },
-        lg(),
+        trade_component_queries_lg(),
         "Reading trade additional fields by trade ids.");
 }
 
@@ -74,7 +74,7 @@ std::vector<domain::trade_identifier>
 read_identifiers_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<trade_identifier_entity>> |
@@ -85,7 +85,7 @@ read_identifiers_by_trade_ids(context ctx, const std::vector<std::string>& trade
         ctx,
         query,
         [](const auto& entities) { return trade_identifier_mapper::map(entities); },
-        lg(),
+        trade_component_queries_lg(),
         "Reading trade identifiers by trade ids.");
 }
 
@@ -93,7 +93,7 @@ std::vector<domain::trade_portfolio>
 read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<trade_portfolio_entity>> |
@@ -104,7 +104,7 @@ read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_
         ctx,
         query,
         [](const auto& entities) { return trade_portfolio_mapper::map(entities); },
-        lg(),
+        trade_component_queries_lg(),
         "Reading trade portfolios by trade ids.");
 }
 
@@ -112,7 +112,7 @@ std::vector<domain::trade_party_role>
 read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, trade_component_queries_lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<trade_party_role_entity>> |
@@ -123,7 +123,7 @@ read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade
         ctx,
         query,
         [](const auto& entities) { return trade_party_role_mapper::map(entities); },
-        lg(),
+        trade_component_queries_lg(),
         "Reading trade party roles by trade ids.");
 }
 

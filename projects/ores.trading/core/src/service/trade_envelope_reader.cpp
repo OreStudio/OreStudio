@@ -19,6 +19,7 @@
  */
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "shared_helpers.hpp"
 #include <algorithm>
 #include <optional>
 #include <string>
@@ -30,19 +31,6 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-namespace {
-
-std::string to_uuid_array(const std::vector<std::string>& ids) {
-    std::string r = "{";
-    for (std::size_t i = 0; i < ids.size(); ++i) {
-        if (i != 0)
-            r += ',';
-        r += ids[i];
-    }
-    return r + "}";
-}
-
-}
 
 trade_envelope_reader::trade_envelope_reader(context ctx)
     : ctx_(std::move(ctx)) {}

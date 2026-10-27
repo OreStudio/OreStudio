@@ -32,16 +32,16 @@ namespace {
 constexpr std::size_t max_emit_depth = binder::max_depth;
 
 constexpr std::string_view declaration = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-constexpr std::string_view indent_unit = "  ";
+constexpr std::string_view emitter_indent_unit = "  ";
 
-auto present(const void* record, const field& f) -> bool {
+auto emitter_present(const void* record, const field& f) -> bool {
     return bit_is_set(record, f);
 }
 
 auto write_indent(std::string& out, std::size_t depth) -> void {
     out.push_back('\n');
     for (std::size_t i = 0; i < depth; ++i)
-        out.append(indent_unit);
+        out.append(emitter_indent_unit);
 }
 
 /**
@@ -116,9 +116,8 @@ auto append_real(std::string& out, double value) -> void {
 /**
  * @brief Appends one spelling of an enumeration, which the row carries.
  */
-auto append_spelling(std::string& out,
-                     const field& f,
-                     std::int16_t index) -> std::expected<void, emit_error> {
+auto append_spelling(std::string& out, const field& f, std::int16_t index)
+    -> std::expected<void, emit_error> {
     if (index < 0 || f.tokens == nullptr)
         return std::unexpected(emit_error{"an enumeration holds no spelling"});
     for (std::int16_t i = 0; i <= index; ++i)
@@ -132,9 +131,8 @@ auto append_spelling(std::string& out,
 /**
  * @brief Appends one value of a repeated leaf, which its row names the type of.
  */
-auto append_scalar(std::string& out,
-                   const field& f,
-                   const void* slot) -> std::expected<void, emit_error> {
+auto append_scalar(std::string& out, const field& f, const void* slot)
+    -> std::expected<void, emit_error> {
     switch (f.scalar) {
         case scalar_kind::text:
             append_escaped(out, *static_cast<const std::string*>(slot), false);
@@ -171,9 +169,8 @@ auto slot_of(const void* record, const field& f) -> const void* {
  * @param f The row the value belongs to, which names the type it holds.
  * @param slot The member's address.
  */
-auto append_value(std::string& out,
-                  const field& f,
-                  const void* slot) -> std::expected<void, emit_error> {
+auto append_value(std::string& out, const field& f, const void* slot)
+    -> std::expected<void, emit_error> {
     switch (f.kind) {
         case field_kind::text:
             append_escaped(out, *static_cast<const std::string*>(slot), false);
@@ -208,10 +205,8 @@ auto write_element(std::string& out,
                    std::string_view name,
                    const void* columns) -> std::expected<void, emit_error>;
 
-auto write_indexed(std::string& out,
-                   const field& f,
-                   const void* record,
-                   std::size_t depth) -> std::expected<void, emit_error> {
+auto write_indexed(std::string& out, const field& f, const void* record, std::size_t depth)
+    -> std::expected<void, emit_error> {
     if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
         return std::unexpected(emit_error{"an indexed member names no arena"});
     const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record, f));
@@ -250,10 +245,8 @@ auto write_element(std::string& out,
 /**
  * @brief Appends one repeated member's rows, each under its own element.
  */
-auto write_repeated(std::string& out,
-                    const field& f,
-                    const void* record,
-                    std::size_t depth) -> std::expected<void, emit_error> {
+auto write_repeated(std::string& out, const field& f, const void* record, std::size_t depth)
+    -> std::expected<void, emit_error> {
     const auto* slot = slot_of(record, f);
     const auto count = f.repeated->count(slot);
     for (std::size_t i = 0; i < count; ++i) {
@@ -297,7 +290,7 @@ auto write_element(std::string& out,
         const auto& f = type.fields[i];
         if (!f.is_attribute)
             continue;
-        if (!present(record, f)) {
+        if (!emitter_present(record, f)) {
             if (f.required)
                 return std::unexpected(emit_error{"required attribute '" + std::string(f.name) +
                                                   "' is absent from '" + std::string(type.name) +
@@ -316,10 +309,10 @@ auto write_element(std::string& out,
         const auto& f = type.fields[i];
         if (f.is_attribute || i == type.text_field)
             continue;
-        if (f.required && !present(record, f))
+        if (f.required && !emitter_present(record, f))
             return std::unexpected(emit_error{"required element '" + std::string(f.name) +
                                               "' is absent from '" + std::string(type.name) + "'"});
-        if (!present(record, f))
+        if (!emitter_present(record, f))
             continue;
         switch (f.kind) {
             case field_kind::residual:
@@ -347,7 +340,7 @@ auto write_element(std::string& out,
         const auto& tf = type.fields[type.text_field];
         // A number the reading left absent states no value, and writing the
         // member's zero would invent one.
-        if (present(record, tf)) {
+        if (emitter_present(record, tf)) {
             const auto written = append_value(own_text, tf, slot_of(record, tf));
             if (!written)
                 return written;
@@ -369,7 +362,7 @@ auto write_element(std::string& out,
 
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
-        if (f.is_attribute || i == type.text_field || !present(record, f))
+        if (f.is_attribute || i == type.text_field || !emitter_present(record, f))
             continue;
         switch (f.kind) {
             case field_kind::nested: {
@@ -447,9 +440,8 @@ auto write_element(std::string& out,
 
 }
 
-auto emitter::emit(const document_type& doc,
-                   const void* root,
-                   std::string& out) -> std::expected<void, emit_error> {
+auto emitter::emit(const document_type& doc, const void* root, std::string& out)
+    -> std::expected<void, emit_error> {
     out.clear();
     out.append(declaration);
     const auto written = write_element(out, *doc.root, root, 0, doc.root_name, nullptr);

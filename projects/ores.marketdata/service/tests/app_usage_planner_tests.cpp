@@ -34,7 +34,7 @@ using ores::marketdata::service::app::plan_demand_intervals;
 using ores::marketdata::service::app::plan_subscription_intervals;
 using ores::marketdata::service::app::subscription_state;
 
-struct fixture {
+struct app_usage_planner_fixture {
     boost::uuids::random_generator gen;
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     boost::uuids::uuid party = gen();
@@ -92,7 +92,7 @@ struct fixture {
 }
 
 TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
 
     const auto plan = plan_subscription_intervals({f.state(f.sim)}, {}, f.now, f.actor);
 
@@ -105,7 +105,7 @@ TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", "[app][usage_plan
 }
 
 TEST_CASE("an_interval_that_still_holds_is_left_alone", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto s = f.state(f.sim);
 
     const auto plan = plan_subscription_intervals({s}, {f.open_interval(s)}, f.now, f.actor);
@@ -115,7 +115,7 @@ TEST_CASE("an_interval_that_still_holds_is_left_alone", "[app][usage_planner]") 
 }
 
 TEST_CASE("a_route_that_ended_closes_its_interval", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
     const auto plan = plan_subscription_intervals({}, {open}, f.now, f.actor);
@@ -128,7 +128,7 @@ TEST_CASE("a_route_that_ended_closes_its_interval", "[app][usage_planner]") {
 }
 
 TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
     const auto plan = plan_subscription_intervals({f.state(f.live)}, {open}, f.now, f.actor);
@@ -141,7 +141,7 @@ TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", "[app][us
 }
 
 TEST_CASE("a_change_of_rights_closes_one_interval_and_opens_the_next", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
     const auto plan = plan_subscription_intervals({f.state(f.sim, true)}, {open}, f.now, f.actor);
@@ -153,7 +153,7 @@ TEST_CASE("a_change_of_rights_closes_one_interval_and_opens_the_next", "[app][us
 }
 
 TEST_CASE("an_interval_that_is_already_closed_is_not_closed_again", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     auto closed = f.open_interval(f.state(f.sim));
     closed.interval_to = f.now - 30min;
 
@@ -164,7 +164,7 @@ TEST_CASE("an_interval_that_is_already_closed_is_not_closed_again", "[app][usage
 }
 
 TEST_CASE("every_interval_carries_the_actor_and_a_reason", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
     const auto plan = plan_subscription_intervals({f.state(f.live)}, {open}, f.now, f.actor);
@@ -184,7 +184,7 @@ TEST_CASE("every_interval_carries_the_actor_and_a_reason", "[app][usage_planner]
 
 TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_closes_it",
           "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     const auto gbp = f.item("oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
@@ -198,7 +198,7 @@ TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_
 }
 
 TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
     const auto plan = plan_demand_intervals({eur}, {f.open_demand(eur)}, f.now, f.actor);
@@ -209,7 +209,7 @@ TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", "[app][usage_pl
 
 TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right",
           "[app][usage_planner]") {
-    fixture f;
+    app_usage_planner_fixture f;
     demand_catalogue c;
     ores::marketdata::domain::route routed;
     routed.party_id = f.party;

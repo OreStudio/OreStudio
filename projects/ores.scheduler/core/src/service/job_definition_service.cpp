@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -185,8 +184,7 @@ job_definition_service::put_job_definition(const messaging::put_job_definition_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(job_definition_read_one(repo_, ctx_, job_definition_key_from(value)), ctx_);
+    auto written = job_definition_read_one(repo_, ctx_, job_definition_key_from(value));
     if (!written.empty())
         response.job_definition = std::move(written.front());
     return response;
@@ -218,8 +216,7 @@ messaging::put_many_job_definitions_response job_definition_service::put_many_jo
     repo_.write(ctx_, batch, claims);
     response.definitions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            job_definition_read_one(repo_, ctx_, job_definition_key_from(value)), ctx_);
+        auto written = job_definition_read_one(repo_, ctx_, job_definition_key_from(value));
         response.definitions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -339,10 +336,7 @@ job_definition_service::prepare_change(const messaging::job_definition_change& c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = job_definition_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(job_definition_read_one(repo_, ctx_, job_definition_key_from(out)), ctx_);
+    const auto current = job_definition_read_one(repo_, ctx_, job_definition_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

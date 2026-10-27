@@ -41,7 +41,7 @@ void stamp(Interval& i,
     i.change_commentary = commentary;
 }
 
-auto key_of(const subscription_state& s) {
+auto usage_planner_key_of(const subscription_state& s) {
     return std::make_tuple(s.tenant_id.to_string(),
                            s.party_id,
                            s.provider_code,
@@ -51,7 +51,7 @@ auto key_of(const subscription_state& s) {
                            s.derived);
 }
 
-auto key_of(const domain::subscription_interval& i) {
+auto usage_planner_key_of(const domain::subscription_interval& i) {
     return std::make_tuple(i.tenant_id.to_string(),
                            i.party_id,
                            i.provider_code,
@@ -61,12 +61,12 @@ auto key_of(const domain::subscription_interval& i) {
                            i.derived);
 }
 
-auto key_of(const demand_state& s) {
+auto usage_planner_key_of(const demand_state& s) {
     return std::make_tuple(
         s.tenant_id.to_uuid(), s.party_id, s.provider_code, s.source_id, s.oresmd_uri);
 }
 
-auto key_of(const domain::demand_interval& i) {
+auto usage_planner_key_of(const domain::demand_interval& i) {
     return std::make_tuple(
         i.tenant_id.to_uuid(), i.party_id, i.provider_code, i.source_id, i.oresmd_uri);
 }
@@ -114,14 +114,14 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
     interval_plan<domain::subscription_interval> plan;
     boost::uuids::random_generator gen;
 
-    std::set<decltype(key_of(subscription_state{}))> wanted;
+    std::set<decltype(usage_planner_key_of(subscription_state{}))> wanted;
     for (const auto& s : now_state)
-        wanted.insert(key_of(s));
-    std::set<decltype(key_of(domain::subscription_interval{}))> held;
+        wanted.insert(usage_planner_key_of(s));
+    std::set<decltype(usage_planner_key_of(domain::subscription_interval{}))> held;
     for (const auto& i : open) {
         if (i.interval_to)
             continue;
-        const auto key = key_of(i);
+        const auto key = usage_planner_key_of(i);
         if (wanted.contains(key)) {
             held.insert(key);
         } else {
@@ -132,7 +132,7 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
         }
     }
     for (const auto& s : now_state) {
-        if (held.contains(key_of(s)))
+        if (held.contains(usage_planner_key_of(s)))
             continue;
         domain::subscription_interval i;
         i.id = gen();
@@ -149,7 +149,7 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
               opened_reason,
               "The party holds a route and a subscription with these rights.");
         plan.to_open.push_back(std::move(i));
-        held.insert(key_of(s));
+        held.insert(usage_planner_key_of(s));
     }
     return plan;
 }
@@ -162,14 +162,14 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
     interval_plan<domain::demand_interval> plan;
     boost::uuids::random_generator gen;
 
-    std::set<decltype(key_of(demand_state{}))> wanted;
+    std::set<decltype(usage_planner_key_of(demand_state{}))> wanted;
     for (const auto& s : now_state)
-        wanted.insert(key_of(s));
-    std::set<decltype(key_of(domain::demand_interval{}))> held;
+        wanted.insert(usage_planner_key_of(s));
+    std::set<decltype(usage_planner_key_of(domain::demand_interval{}))> held;
     for (const auto& i : open) {
         if (i.interval_to)
             continue;
-        const auto key = key_of(i);
+        const auto key = usage_planner_key_of(i);
         if (wanted.contains(key)) {
             held.insert(key);
         } else {
@@ -180,7 +180,7 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         }
     }
     for (const auto& s : now_state) {
-        if (held.contains(key_of(s)))
+        if (held.contains(usage_planner_key_of(s)))
             continue;
         domain::demand_interval i;
         i.id = gen();
@@ -192,7 +192,7 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         i.interval_from = now;
         stamp(i, actor, opened_reason, "The item entered the demand of the party.");
         plan.to_open.push_back(std::move(i));
-        held.insert(key_of(s));
+        held.insert(usage_planner_key_of(s));
     }
     return plan;
 }

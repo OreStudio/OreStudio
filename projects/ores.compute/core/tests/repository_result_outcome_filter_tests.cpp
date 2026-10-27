@@ -33,6 +33,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -54,54 +55,10 @@ using ores::compute::messaging::results_filter;
 using ores::compute::repository::result_repository;
 using ores::testing::scoped_database_helper;
 
-std::string unique_marker() {
+std::string repository_result_outcome_filter_unique_marker() {
     auto text = boost::uuids::to_string(boost::uuids::random_generator()());
     text.erase(std::remove(text.begin(), text.end(), '-'), text.end());
     return "out" + text.substr(0, 10);
-}
-
-/// A party in the test tenant, because a result write is scoped to a party.
-ores::database::context party_context(scoped_database_helper& h) {
-    using ores::refdata::repository::party_repository;
-    auto gen_ctx = ores::testing::make_generation_context(h);
-    party_repository repo;
-    auto party = ores::refdata::generators::generate_synthetic_party(gen_ctx);
-    party.change_reason_code = "system.test";
-    for (const auto& e : repo.read_latest(h.context())) {
-        if (e.tenant_id == party.tenant_id) {
-            party.parent_party_id = e.id;
-            break;
-        }
-    }
-    repo.write(h.context(), party);
-    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-}
-
-/// The workunit a result belongs to, with the batch, app and app version above it.
-/// The insert trigger of a row refuses a key that names no active parent.
-boost::uuids::uuid seed_workunit(scoped_database_helper& h, const ores::database::context& ctx) {
-    namespace gen = ores::compute::generators;
-    namespace repo = ores::compute::repository;
-    auto gen_ctx = ores::testing::make_generation_context(h);
-    auto app = gen::generate_synthetic_app(gen_ctx);
-    auto version = gen::generate_synthetic_app_version(gen_ctx);
-    auto batch = gen::generate_synthetic_batch(gen_ctx);
-    auto workunit = gen::generate_synthetic_workunit(gen_ctx);
-    for (auto* row : {&app.change_reason_code,
-                      &version.change_reason_code,
-                      &batch.change_reason_code,
-                      &workunit.change_reason_code})
-        *row = "system.test";
-    batch.party_id = *ctx.party_id();
-    workunit.party_id = *ctx.party_id();
-    repo::app_repository{}.write(ctx, app);
-    version.app_id = app.id;
-    repo::app_version_repository{}.write(ctx, version);
-    repo::batch_repository{}.write(ctx, batch);
-    workunit.batch_id = batch.id;
-    workunit.app_version_id = version.id;
-    repo::workunit_repository{}.write(ctx, workunit);
-    return workunit.id;
 }
 
 void write_result(scoped_database_helper& h,
@@ -135,7 +92,7 @@ TEST_CASE("a result list narrows by outcome and finds the runs that failed",
           "[repository][filter]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto m = unique_marker();
+    const auto m = repository_result_outcome_filter_unique_marker();
     const auto workunit = seed_workunit(h, ctx);
     write_result(h, ctx, workunit, m, 1);
     write_result(h, ctx, workunit, m, 3);

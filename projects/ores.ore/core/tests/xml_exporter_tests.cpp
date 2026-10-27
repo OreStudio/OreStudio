@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -51,15 +52,6 @@
 #include <vector>
 
 namespace {
-
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
-                                                filename);
-}
 
 /**
  * @brief Turns imported trades into the payload the exporter consumes.

@@ -50,8 +50,8 @@ ores::database::context party_context(ores::testing::scoped_database_helper& h) 
     return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 }
 
-boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
-                                   const ores::database::context& ctx) {
+boost::uuids::uuid run_document_service_make_definition(ores::testing::scoped_database_helper& h,
+                                                        const ores::database::context& ctx) {
     auto gen = ores::testing::make_generation_context(h);
     auto d = ores::reporting::generators::generate_synthetic_report_definition(gen);
     d.change_reason_code = "system.test";
@@ -62,7 +62,7 @@ boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
 }
 
 // An npv analytic with one parameter, both of which the test seeds.
-ores::reporting::messaging::run_document npv_run() {
+ores::reporting::messaging::run_document run_document_service_npv_run() {
     ores::reporting::messaging::run_document doc;
     doc.settings.market_data_type = "date";
     doc.settings.market_data_date = "2016-02-05";
@@ -88,9 +88,9 @@ using ores::reporting::service::run_document_service;
 TEST_CASE("a run document reads back as it was saved", "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto definition = make_definition(h, ctx);
+    const auto definition = run_document_service_make_definition(h, ctx);
     run_document_service runs(ctx);
-    runs.save(definition, npv_run());
+    runs.save(definition, run_document_service_npv_run());
 
     const auto back = runs.get(definition);
     REQUIRE(back.has_value());
@@ -122,18 +122,18 @@ TEST_CASE("a definition binds one risk report configuration",
           "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto definition = make_definition(h, ctx);
+    const auto definition = run_document_service_make_definition(h, ctx);
     run_document_service runs(ctx);
-    runs.save(definition, npv_run());
-    CHECK_THROWS_AS(runs.save(definition, npv_run()), std::invalid_argument);
+    runs.save(definition, run_document_service_npv_run());
+    CHECK_THROWS_AS(runs.save(definition, run_document_service_npv_run()), std::invalid_argument);
 }
 
 TEST_CASE("a parameter no definition describes is refused before anything is written",
           "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto definition = make_definition(h, ctx);
-    auto doc = npv_run();
+    const auto definition = run_document_service_make_definition(h, ctx);
+    auto doc = run_document_service_npv_run();
     doc.analytics[0].parameters.push_back({"noSuchParameter", "x", 2});
     run_document_service runs(ctx);
     CHECK_THROWS_AS(runs.save(definition, doc), std::invalid_argument);
@@ -144,7 +144,7 @@ TEST_CASE("a binding takes its owning component from the configuration type",
           "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto definition = make_definition(h, ctx);
+    const auto definition = run_document_service_make_definition(h, ctx);
     run_document_service runs(ctx);
     const auto c = runs.bind(definition, "curve_configuration", "test/curveconfig.xml");
     CHECK(c.owning_component == "ores.refdata");

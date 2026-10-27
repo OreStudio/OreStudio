@@ -36,7 +36,7 @@ using ores::database::repository::execute_parameterized_string_query;
 
 namespace {
 
-constexpr int max_page = 200;
+constexpr int notification_center_max_page = 200;
 
 /**
  * @brief A PostgreSQL array literal, each element quoted, so a value holding
@@ -179,7 +179,9 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
     const auto rows = execute_parameterized_multi_column_query(
         ctx_,
         select + unread_clause + " order by n.raised_at desc offset $2::integer limit $3::integer",
-        {me, std::to_string(std::max(offset, 0)), std::to_string(std::clamp(limit, 1, max_page))},
+        {me,
+         std::to_string(std::max(offset, 0)),
+         std::to_string(std::clamp(limit, 1, notification_center_max_page))},
         lg(),
         "Reading a person's notifications");
 

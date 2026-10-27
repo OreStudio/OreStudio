@@ -38,6 +38,7 @@
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -56,12 +57,6 @@ using ores::analytics::quant::service::interpolation_method_code;
 using namespace std::chrono;
 
 namespace {
-
-constexpr auto A365 = day_count_convention_code::A365;
-constexpr auto FLAT_FORWARD_THEN_LOG_LINEAR =
-    interpolation_method_code::FLAT_FORWARD_THEN_LOG_LINEAR;
-constexpr auto DEPOSIT = bootstrap_curve_role_code::DEPOSIT;
-constexpr auto SWAP = bootstrap_curve_role_code::SWAP;
 
 constexpr auto meeting_count = 8;
 const std::string split_code = "1Y";

@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -183,8 +182,7 @@ fsm_transition_service::put_fsm_transition(const messaging::put_fsm_transition_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(value)), ctx_);
+    auto written = fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(value));
     if (!written.empty())
         response.fsm_transition = std::move(written.front());
     return response;
@@ -216,8 +214,7 @@ messaging::put_many_fsm_transitions_response fsm_transition_service::put_many_fs
     repo_.write(ctx_, batch, claims);
     response.transitions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(value)), ctx_);
+        auto written = fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(value));
         response.transitions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -370,10 +367,7 @@ fsm_transition_service::prepare_change(const messaging::fsm_transition_change& c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = fsm_transition_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(out)), ctx_);
+    const auto current = fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

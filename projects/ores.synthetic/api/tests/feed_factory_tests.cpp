@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/config/nats_options.hpp"
@@ -69,8 +70,17 @@ ores::nats::service::nats_client& auth_nats() {
     return instance;
 }
 
+// A scheduler that is never run: a test steps it, or only builds feeds against it.
+ores::analytics::quant::service::tick_scheduler& idle_scheduler() {
+    static ores::analytics::quant::service::manual_run_clock clock(
+        std::chrono::system_clock::time_point{});
+    static ores::analytics::quant::service::tick_scheduler instance(clock, {}, 42);
+    return instance;
+}
+
 feed_build_context make_build_context() {
-    return feed_build_context{nats(), auth_nats()};
+    return feed_build_context{
+        .nats = nats(), .auth_nats = auth_nats(), .scheduler = idle_scheduler()};
 }
 
 gmm_component make_component(double mean, double stdev, double weight) {
@@ -421,9 +431,11 @@ TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic 
 TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_factory]") {
     // The run has one clock: starting a feed registers its tick body, and
     // stopping it takes the body out again.
-    ores::analytics::quant::service::tick_scheduler scheduler;
+    ores::analytics::quant::service::manual_run_clock clock(
+        std::chrono::system_clock::time_point{});
+    ores::analytics::quant::service::tick_scheduler scheduler(clock, {}, 42);
     const auto context =
-        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = &scheduler};
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = scheduler};
 
     const auto factory = make_default_feed_factory();
     auto fx = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
@@ -455,9 +467,11 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_f
 TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_factory]") {
     // The defect this pins: a feed's publish count used to come from a clock it
     // no longer runs, so it read zero however many ticks the scheduler made.
-    ores::analytics::quant::service::tick_scheduler scheduler;
+    ores::analytics::quant::service::manual_run_clock clock(
+        std::chrono::system_clock::time_point{});
+    ores::analytics::quant::service::tick_scheduler scheduler(clock, {}, 42);
     const auto context =
-        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = &scheduler};
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = scheduler};
 
     const auto factory = make_default_feed_factory();
     auto eur = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};

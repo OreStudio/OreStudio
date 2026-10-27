@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -230,8 +229,8 @@ netting_set_identifier_service::put_netting_set_identifier(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        netting_set_identifier_read_one(repo_, ctx_, netting_set_identifier_key_from(value)), ctx_);
+    auto written =
+        netting_set_identifier_read_one(repo_, ctx_, netting_set_identifier_key_from(value));
     if (!written.empty())
         response.netting_set_identifier = std::move(written.front());
     return response;
@@ -264,9 +263,8 @@ netting_set_identifier_service::put_many_netting_set_identifiers(
     repo_.write(ctx_, batch, claims);
     response.netting_set_identifiers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            netting_set_identifier_read_one(repo_, ctx_, netting_set_identifier_key_from(value)),
-            ctx_);
+        auto written =
+            netting_set_identifier_read_one(repo_, ctx_, netting_set_identifier_key_from(value));
         response.netting_set_identifiers.push_back(written.empty() ? value :
                                                                      std::move(written.front()));
     }
@@ -426,10 +424,8 @@ ores::utility::domain::result netting_set_identifier_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = netting_set_identifier_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        netting_set_identifier_read_one(repo_, ctx_, netting_set_identifier_key_from(out)), ctx_);
+    const auto current =
+        netting_set_identifier_read_one(repo_, ctx_, netting_set_identifier_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

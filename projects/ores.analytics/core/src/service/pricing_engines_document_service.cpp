@@ -40,6 +40,22 @@ pricing_engines_document_service::pricing_engines_document_service(context ctx)
 void pricing_engines_document_service::save(messaging::pricing_engines_document v) {
     ores::service::messaging::stamp_document(v, ctx_);
 
+    // A save must not move a configuration between parties. The stamp derives
+    // the party from the session, so saving a configuration the session does
+    // not act for would rewrite its party and, if the acting party already
+    // holds a configuration of the same name, collide with it. The person has
+    // to switch to the configuration's own party instead.
+    const auto held = pricing_model_config_repository().read_latest(
+        ctx_, boost::uuids::to_string(v.config.id));
+    if (!held.empty()) {
+        if (const auto acting = ctx_.party_id();
+            acting.has_value() && held.front().party_id != *acting) {
+            throw std::invalid_argument(
+                "This configuration belongs to a different party. Switch to its own party "
+                "before saving it.");
+        }
+    }
+
     // A saved document is the whole document, so a product or parameter the
     // earlier version held and this one omits is removed.
     const auto of_config = [&](const auto& row) {

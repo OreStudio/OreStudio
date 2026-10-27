@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
+#include "shared_helpers.hpp"
 #include <algorithm>
 #include <format>
 #include <iterator>
@@ -44,14 +45,6 @@ bool holds_kind(value_kind kind, const value& v) {
             return std::holds_alternative<strike_label>(v);
     }
     return false;
-}
-
-// ASCII only, so the result does not depend on the program's locale.
-std::string upper(std::string_view s) {
-    std::string out(s);
-    std::ranges::transform(
-        out, out.begin(), [](char c) { return c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c; });
-    return out;
 }
 
 // ORE reads a time unit in any case; every other code it compares exactly.

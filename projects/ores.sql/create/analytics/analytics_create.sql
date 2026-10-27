@@ -38,6 +38,14 @@
 \ir ./analytics_pricing_pair_settings_create.sql
 \ir ./analytics_pricing_models_create.sql
 \ir ./analytics_pricing_methods_create.sql
+
+-- Sensitivity templates (the keys a configuration puts on a product, with the
+-- class and the method each key names)
+\ir ./analytics_sensitivity_methods_create.sql
+\ir ./analytics_sensitivity_methods_notify_trigger_create.sql
+\ir ./analytics_sensitivity_asset_classes_create.sql
+\ir ./analytics_sensitivity_asset_classes_notify_trigger_create.sql
+\ir ./analytics_sensitivity_templates_functions_create.sql
 \ir ./analytics_sensitivity_templates_create.sql
 \ir ./analytics_pricing_pair_settings_notify_trigger_create.sql
 \ir ./analytics_pricing_models_notify_trigger_create.sql

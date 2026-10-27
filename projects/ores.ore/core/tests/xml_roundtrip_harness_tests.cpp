@@ -42,7 +42,7 @@ using ores::ore::domain::conventions;
 using ores::ore::domain::conventions_mapper;
 using ores::ore::domain::conventions_package;
 
-std::filesystem::path corpus_root() {
+std::filesystem::path xml_roundtrip_harness_corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", "[ore][xml][round
         &ores::ore::domain::join_conventions,
         ores::ore::domain::conventions_difference);
 
-    const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
+    const auto walk = ores::ore::xml::walk_kind(kind, xml_roundtrip_harness_corpus_root());
 
     CHECK(walk.kind == "conventions");
     CHECK(walk.files == 72);
@@ -111,7 +111,7 @@ TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document",
         rebuild_nothing,
         ores::ore::domain::conventions_difference);
 
-    const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
+    const auto walk = ores::ore::xml::walk_kind(kind, xml_roundtrip_harness_corpus_root());
 
     CHECK(walk.files == 72);
     CHECK(walk.passed == 0);
@@ -129,7 +129,7 @@ TEST_CASE("roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold"
         &ores::ore::domain::join_conventions,
         ores::ore::domain::conventions_difference);
 
-    const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
+    const auto walk = ores::ore::xml::walk_kind(kind, xml_roundtrip_harness_corpus_root());
 
     CHECK(walk.files == 0);
     CHECK(walk.passed == 0);

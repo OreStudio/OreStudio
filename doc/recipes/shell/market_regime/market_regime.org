@@ -52,9 +52,9 @@ Forces the state, or hands it back to the chain.
 
 =auto= lets the chain choose again, =calm= and =active= pin that state. A pin
 holds however much time passes, which is what a demonstration or a stress run
-needs: a test that must wait for a random turn is not a test. A pin takes effect
-on the next tick of each feed rather than waiting for a gap already being slept,
-so a feed on a slow arrival can take one long gap to show it.
+needs: a test that must wait for a random turn is not a test. A pin is in force
+when the command returns: every feed's pace changes at that instant, including a
+feed part way through a long gap.
 
 The command is shaped like this:
 
@@ -67,4 +67,32 @@ It is addressed at =synthetic.v1.ops.pin_market_regime=.
 #+name: market_regime-pin
 #+begin_src ores-shell :tangle market_regime-pin.ores :exports none
 synthetic regime pin __none__
+#+end_src
+
+** =trace=
+:PROPERTIES:
+:ID: D287DF02-EFDB-427B-9F23-B866944C56C7
+:END:
+
+Shows what the scheduler decided and how the loop is doing. The loop records
+every tick, regime turn, pin and change of the feeds, each with its clock time
+and its market time, tau. A tick also carries the gap its feed's law drew, in
+the feed's own operational time, and the wall gap it took.
+
+The first argument names one feed, whose events come with the market's, or
+=all=. The second is the window in seconds, two minutes when it is left out.
+The reply leads with the run seed, the ticks a second, the heap size and how
+late the loop fires, then counts the events by kind and lists the last ten.
+
+The command is shaped like this:
+
+#+begin_example
+synthetic regime trace [source|all] [seconds]
+#+end_example
+
+It is addressed at =synthetic.v1.ops.get_market_trace=.
+
+#+name: market_regime-trace
+#+begin_src ores-shell :tangle market_regime-trace.ores :exports none
+synthetic regime trace all 60
 #+end_src

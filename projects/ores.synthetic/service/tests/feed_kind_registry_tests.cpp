@@ -25,6 +25,7 @@
 #include "../src/simulate_handler.hpp"
 #include "../src/vintage_validity_handler.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -41,6 +42,7 @@
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -65,10 +67,7 @@
 
 namespace {
 
-const std::string test_secret("feed-kind-registry-test-secret");
-const std::string test_issuer("ores.iam.test");
-const std::string test_audience("ores.synthetic.service");
-
+const std::string feed_kind_registry_test_secret("feed-kind-registry-test-secret");
 const std::string stub_kind_name("stub");
 const std::string stub_permission("synthetic::stub_generation_configs:read");
 const std::string stub_container("11111111-1111-1111-1111-111111111111");
@@ -265,9 +264,9 @@ make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
     return registry;
 }
 
-std::string mint_token(const std::vector<std::string>& roles) {
+std::string feed_kind_registry_mint_token(const std::vector<std::string>& roles) {
     auto signer = ores::security::jwt::jwt_authenticator::create_hs256(
-        test_secret, test_issuer, test_audience);
+        feed_kind_registry_test_secret, test_issuer, test_audience);
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.subject = "feed-kind-registry-test";
     claims.issuer = test_issuer;
@@ -314,17 +313,18 @@ struct stub_fixture {
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
     ores::database::context ctx;
+    ores::analytics::quant::service::running_scheduler run;
     ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
-    std::string token =
-        mint_token({stub_permission, std::string(ores::synthetic::service::run_permission)});
+    std::string token = feed_kind_registry_mint_token(
+        {stub_permission, std::string(ores::synthetic::service::run_permission)});
 
     stub_fixture()
         : nats(ores::testing::make_nats_options())
         , auth_nats(nats, [](bool) { return std::string(); })
         , ctx(make_test_context()) {
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
-            test_secret, test_issuer, test_audience);
+            feed_kind_registry_test_secret, test_issuer, test_audience);
     }
 };
 
@@ -384,12 +384,15 @@ TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations",
     registry.register_kind(stub_kind(stub_permission));
 
     const auto verifier = ores::security::jwt::jwt_authenticator::create_hs256(
-        test_secret, test_issuer, test_audience);
+        feed_kind_registry_test_secret, test_issuer, test_audience);
     const auto ctx_with = ores::service::service::make_request_context(
-        f.ctx, request_message(list_feeds_request{}, mint_token({stub_permission})), verifier);
+        f.ctx,
+        request_message(list_feeds_request{}, feed_kind_registry_mint_token({stub_permission})),
+        verifier);
     const auto ctx_without = ores::service::service::make_request_context(
         f.ctx,
-        request_message(list_feeds_request{}, mint_token({"synthetic::other:read"})),
+        request_message(list_feeds_request{},
+                        feed_kind_registry_mint_token({"synthetic::other:read"})),
         verifier);
     REQUIRE(ctx_with.has_value());
     REQUIRE(ctx_without.has_value());
@@ -406,7 +409,8 @@ TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory",
           "[feed_kind_registry]") {
     stub_fixture f;
     const auto registry = f.registry;
-    const ores::synthetic::feed::feed_build_context bctx{f.nats, f.auth_nats};
+    const ores::synthetic::feed::feed_build_context bctx{
+        .nats = f.nats, .auth_nats = f.auth_nats, .scheduler = f.run.scheduler};
 
     const auto targets = registry->targets(f.ctx);
     REQUIRE(targets.size() == 2);
@@ -504,7 +508,8 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     // its producer goes through factory().make("stub", ...) into the fleet.
     stub_builds = 0;
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(stub_builds == 1);
@@ -513,14 +518,16 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
 
     // A config id the stub kind does not claim starts nothing.
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.start(request_message(start_feed_request{.config_id = "not-a-config-id"}, f.token));
     }
     CHECK(f.fleet.running_count() == 1);
 
     // stop: the verb resolves the config id through the same registry.
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(f.fleet.running_count() == 0);
@@ -528,7 +535,8 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     // folder start: the cascade loops the registered kinds, filters by the
     // subtree the registry supplies, and tallies under the registered kind.
     {
-        folder_feed_control_handler h(f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry);
+        folder_feed_control_handler h(
+            f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.start(
             request_message(start_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
@@ -537,7 +545,8 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
 
     // folder stop: the same walk, over rows rather than targets.
     {
-        folder_feed_control_handler h(f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry);
+        folder_feed_control_handler h(
+            f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.stop(request_message(stop_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
     CHECK(f.fleet.running_count() == 0);
@@ -590,11 +599,13 @@ TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else",
 TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", "[feed_kind_registry]") {
     stub_fixture f;
     const auto start = [&] {
-        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     };
     const auto stop = [&] {
-        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     };
 
@@ -618,7 +629,8 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", "[feed_kin
     start();
     REQUIRE(f.fleet.running_count() == 1);
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
         h.stop(request_message(stop_feed_request{}, f.token));
     }
     CHECK(f.fleet.running_count() == 1);

@@ -24,6 +24,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -43,7 +44,7 @@ using ores::marketdata::service::series_evolution_reader;
 using ores::testing::database_helper;
 
 /// Writes @p content through the import, so the reader reads stored data.
-void import(database_helper& h, const std::string& content) {
+void service_series_evolution_reader_import(database_helper& h, const std::string& content) {
     ores::nats::service::nats_client auth_nats;
     ores::marketdata::service::import_service svc(h.context(), auth_nats);
     ores::marketdata::messaging::import_market_data_request req;
@@ -51,50 +52,6 @@ void import(database_helper& h, const std::string& content) {
     req.source = "test.series_evolution_reader";
     const auto resp = svc.import(req);
     REQUIRE(resp.success);
-}
-
-/// The FX option surface on a pair, as the resolver names one.
-resolve_series_identity_request fx_option_identity(const std::string& unit_ccy,
-                                                   const std::string& ccy) {
-    resolve_series_identity_request id;
-    id.asset = "fx";
-    id.scope = unit_ccy;
-    id.instrument_type = "fx_option";
-    id.quote_type = "rate_lnvol";
-    id.fields.push_back({"ccy", ccy});
-    return id;
-}
-
-/// A spot rate on a pair, as the resolver names one. It carries no coordinate,
-/// so it has no grid.
-resolve_series_identity_request fx_spot_identity(const std::string& unit_ccy,
-                                                 const std::string& ccy) {
-    resolve_series_identity_request id;
-    id.asset = "fx";
-    id.scope = unit_ccy;
-    id.instrument_type = "fx_spot";
-    id.quote_type = "rate";
-    id.fields.push_back({"ccy", ccy});
-    return id;
-}
-
-/// A curve id no earlier run used, so the series is this test's alone.
-std::string fresh_curve_id() {
-    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
-    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
-    return tag;
-}
-
-/// A zero coupon curve, as the resolver names one.
-resolve_series_identity_request zero_identity(const std::string& curve_id) {
-    resolve_series_identity_request id;
-    id.asset = "ir";
-    id.scope = "EUR";
-    id.instrument_type = "zero";
-    id.quote_type = "rate";
-    id.fields.push_back({"curve_id", curve_id});
-    id.fields.push_back({"day_counter", "A365"});
-    return id;
 }
 
 get_series_evolution_request evolution_request(resolve_series_identity_request identity,
@@ -136,14 +93,14 @@ TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid",
     database_helper h;
     // 2Y/10RR is never stated, and the shape declares it all the same, because
     // the axes are declared value by value and not cell by cell.
-    import(h,
-           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/ATM 0.080\n"
-           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/2Y/ATM 0.085\n"
-           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/25RR 0.011\n"
-           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/10RR 0.013\n");
-    import(h,
-           "20160411 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/ATM 0.090\n"
-           "20160411 FX_OPTION/RATE_LNVOL/NZD/CHF/2Y/25RR 0.012\n");
+    service_series_evolution_reader_import(h,
+                                           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/ATM 0.080\n"
+                                           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/2Y/ATM 0.085\n"
+                                           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/25RR 0.011\n"
+                                           "20160410 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/10RR 0.013\n");
+    service_series_evolution_reader_import(h,
+                                           "20160411 FX_OPTION/RATE_LNVOL/NZD/CHF/1Y/ATM 0.090\n"
+                                           "20160411 FX_OPTION/RATE_LNVOL/NZD/CHF/2Y/25RR 0.012\n");
 
     const auto resp = series_evolution_reader::read(
         h.context(),
@@ -175,9 +132,12 @@ TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h, "20160510 FX_OPTION/RATE_LNVOL/NZD/CAD/1Y/ATM 0.080\n");
-    import(h, "20160511 FX_OPTION/RATE_LNVOL/NZD/CAD/2Y/ATM 0.085\n");
-    import(h, "20160512 FX_OPTION/RATE_LNVOL/NZD/CAD/1Y/ATM 0.090\n");
+    service_series_evolution_reader_import(h,
+                                           "20160510 FX_OPTION/RATE_LNVOL/NZD/CAD/1Y/ATM 0.080\n");
+    service_series_evolution_reader_import(h,
+                                           "20160511 FX_OPTION/RATE_LNVOL/NZD/CAD/2Y/ATM 0.085\n");
+    service_series_evolution_reader_import(h,
+                                           "20160512 FX_OPTION/RATE_LNVOL/NZD/CAD/1Y/ATM 0.090\n");
 
     const auto resp = series_evolution_reader::read(
         h.context(),
@@ -199,12 +159,13 @@ TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder",
 
     database_helper h;
     const auto curve = fresh_curve_id();
-    import(h,
-           "20160610 ZERO/RATE/EUR/" + curve +
-               "/A365/1Y 0.010\n"
-               "20160610 ZERO/RATE/EUR/" +
-               curve + "/A365/2Y 0.020\n");
-    import(h, "20160611 ZERO/RATE/EUR/" + curve + "/A365/2Y 0.025\n");
+    service_series_evolution_reader_import(h,
+                                           "20160610 ZERO/RATE/EUR/" + curve +
+                                               "/A365/1Y 0.010\n"
+                                               "20160610 ZERO/RATE/EUR/" +
+                                               curve + "/A365/2Y 0.020\n");
+    service_series_evolution_reader_import(h,
+                                           "20160611 ZERO/RATE/EUR/" + curve + "/A365/2Y 0.025\n");
 
     const auto resp = series_evolution_reader::read(
         h.context(),
@@ -224,9 +185,12 @@ TEST_CASE("a_set_of_instants_the_caller_states_replaces_the_range",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h, "20160710 FX_OPTION/RATE_LNVOL/NZD/EUR/1Y/ATM 0.080\n");
-    import(h, "20160711 FX_OPTION/RATE_LNVOL/NZD/EUR/1Y/ATM 0.085\n");
-    import(h, "20160712 FX_OPTION/RATE_LNVOL/NZD/EUR/1Y/ATM 0.090\n");
+    service_series_evolution_reader_import(h,
+                                           "20160710 FX_OPTION/RATE_LNVOL/NZD/EUR/1Y/ATM 0.080\n");
+    service_series_evolution_reader_import(h,
+                                           "20160711 FX_OPTION/RATE_LNVOL/NZD/EUR/1Y/ATM 0.085\n");
+    service_series_evolution_reader_import(h,
+                                           "20160712 FX_OPTION/RATE_LNVOL/NZD/EUR/1Y/ATM 0.090\n");
 
     // The range is not stated, so only the set decides what is read.
     get_series_evolution_request req;
@@ -252,7 +216,7 @@ TEST_CASE("an_evolution_is_refused_when_it_cannot_be_read", "[service][series_ev
 
     database_helper h;
     // A spot rate has no coordinate, so it has no grid to read.
-    import(h, "20160810 FX/RATE/NZD/AUD 1.07\n");
+    service_series_evolution_reader_import(h, "20160810 FX/RATE/NZD/AUD 1.07\n");
 
     const auto no_axis = series_evolution_reader::read(
         h.context(),
@@ -261,7 +225,8 @@ TEST_CASE("an_evolution_is_refused_when_it_cannot_be_read", "[service][series_ev
     CHECK_FALSE(no_axis.success);
     CHECK(no_axis.message.find("no axis") != std::string::npos);
 
-    import(h, "20160810 FX_OPTION/RATE_LNVOL/NZD/GBP/1Y/ATM 0.080\n");
+    service_series_evolution_reader_import(h,
+                                           "20160810 FX_OPTION/RATE_LNVOL/NZD/GBP/1Y/ATM 0.080\n");
     const auto reversed = series_evolution_reader::read(
         h.context(),
         evolution_request(

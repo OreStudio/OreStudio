@@ -157,9 +157,9 @@ bond_issue make_issue(const stamps& s, const std::string& security_id) {
     return r;
 }
 
-bond_instrument make_instrument(const stamps& s,
-                                const boost::uuids::uuid& issue_id,
-                                const std::string& trade_type_code) {
+bond_instrument service_bond_instrument_reader_make_instrument(const stamps& s,
+                                                               const boost::uuids::uuid& issue_id,
+                                                               const std::string& trade_type_code) {
     bond_instrument r;
     r.identity.trade_id = mint_trade(s);
     r.identity.trade_activity_id = s.activity_id;
@@ -287,10 +287,10 @@ bond_trs make_trs(const stamps& s, const boost::uuids::uuid& trade_id) {
     return r;
 }
 
-bond_leg make_leg(const stamps& s,
-                  const boost::uuids::uuid& trade_id,
-                  const std::string& leg_role,
-                  int leg_number) {
+bond_leg service_bond_instrument_reader_make_leg(const stamps& s,
+                                                 const boost::uuids::uuid& trade_id,
+                                                 const std::string& leg_role,
+                                                 int leg_number) {
     bond_leg r;
     stamp(r, s);
     r.trade_id = trade_id;
@@ -445,7 +445,7 @@ TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", "[repository]")
 
     const auto issue = make_issue(s, "XS0000000001");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "Bond");
+    const auto instr = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, instr);
 
     // Written out of ordinal order, so the order read back is the query's
@@ -489,8 +489,9 @@ TEST_CASE("read_instruments_gives_two_instruments_the_one_issue", "[repository]"
     // reads the same row rather than one per instrument.
     const auto issue = make_issue(s, "XS0000000002");
     bond_issue_repository().write(ctx, issue);
-    const auto first = make_instrument(s, issue.issue_id, "Bond");
-    const auto second = make_instrument(s, issue.issue_id, "BondOption");
+    const auto first = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Bond");
+    const auto second =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondOption");
     bond_instrument_repository().write(ctx, first);
     bond_instrument_repository().write(ctx, second);
     bond_issue_call_date_repository().write(ctx,
@@ -515,7 +516,7 @@ TEST_CASE("read_instruments_omits_an_instrument_with_no_header_row", "[repositor
 
     const auto issue = make_issue(s, "XS0000000003");
     bond_issue_repository().write(ctx, issue);
-    const auto written = make_instrument(s, issue.issue_id, "Bond");
+    const auto written = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, written);
 
     const auto written_id = boost::uuids::to_string(written.identity.trade_id);
@@ -536,7 +537,7 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", "[repository]")
 
     const auto issue = make_issue(s, "XS0000000005");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "Bond");
+    const auto instr = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
@@ -628,7 +629,7 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", "[reposi
 
     const auto issue = make_issue(s, "XS0000000006");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "Bond");
+    const auto instr = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
@@ -718,8 +719,10 @@ TEST_CASE("read_instruments_keeps_two_trades_of_one_security_apart", "[repositor
 
     const auto issue = make_issue(s, "XS0000000007");
     bond_issue_repository().write(ctx, issue);
-    const auto first_instrument = make_instrument(s, issue.issue_id, "BondTRS");
-    const auto second_instrument = make_instrument(s, issue.issue_id, "BondTRS");
+    const auto first_instrument =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondTRS");
+    const auto second_instrument =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondTRS");
     bond_instrument_repository().write(ctx, first_instrument);
     bond_instrument_repository().write(ctx, second_instrument);
 
@@ -737,8 +740,10 @@ TEST_CASE("read_instruments_keeps_two_trades_of_one_security_apart", "[repositor
     // Each trade states its own funding leg. Keying it on the trade is
     // what stops the two trades of one ISIN from sharing it, which is the
     // collision that splitting the leg family by parent prevents.
-    bond_leg_repository().write(ctx, make_leg(s, first_id_uuid, "trs_funding", 1));
-    auto second_funding = make_leg(s, second_id_uuid, "trs_funding", 1);
+    bond_leg_repository().write(
+        ctx, service_bond_instrument_reader_make_leg(s, first_id_uuid, "trs_funding", 1));
+    auto second_funding =
+        service_bond_instrument_reader_make_leg(s, second_id_uuid, "trs_funding", 1);
     second_funding.leg_type = "Floating";
     bond_leg_repository().write(ctx, second_funding);
 
@@ -774,8 +779,9 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", "[reposito
 
     const auto issue = make_issue(s, "XS0000000004");
     bond_issue_repository().write(ctx, issue);
-    const auto option = make_instrument(s, issue.issue_id, "BondOption");
-    const auto plain = make_instrument(s, issue.issue_id, "Bond");
+    const auto option =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondOption");
+    const auto plain = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, option);
     bond_instrument_repository().write(ctx, plain);
     auto fact = make_option(s, option.identity.trade_id);
@@ -812,7 +818,8 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", "[repos
 
     const auto issue = make_issue(s, "XS0000000010");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "BondOption");
+    const auto instr =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondOption");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
@@ -923,7 +930,8 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", "[repository]") {
 
     const auto issue = make_issue(s, "XS0000000011");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "BondFuture");
+    const auto instr =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondFuture");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
@@ -976,7 +984,7 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", "[repository]") {
 
     const auto issue = make_issue(s, "XS0000000014");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "BondTRS");
+    const auto instr = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondTRS");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
@@ -1022,7 +1030,7 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_r
 
     const auto issue = make_issue(s, "XS0000000015");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "Ascot");
+    const auto instr = service_bond_instrument_reader_make_instrument(s, issue.issue_id, "Ascot");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
@@ -1082,12 +1090,14 @@ TEST_CASE("the_delete_closes_the_family_and_the_issue_it_owns", "[repository]") 
 
     const auto issue = make_issue(s, "XS0000000021");
     bond_issue_repository().write(ctx, issue);
-    const auto instr = make_instrument(s, issue.issue_id, "BondFuture");
+    const auto instr =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondFuture");
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
     const auto text = boost::uuids::to_string(trade_id);
 
-    bond_leg_repository().write(ctx, make_leg(s, trade_id, "trs_funding", 1));
+    bond_leg_repository().write(
+        ctx, service_bond_instrument_reader_make_leg(s, trade_id, "trs_funding", 1));
     instrument_schedule_repository().write(
         ctx, make_schedule(s, trade_id, "option", 1, "exercise_schedule", 1, "rules"));
     bond_forward_repository().write(ctx, make_forward(s, trade_id));
@@ -1118,9 +1128,11 @@ TEST_CASE("the_issue_outlives_the_instrument_that_still_shares_it", "[repository
 
     const auto issue = make_issue(s, "XS0000000023");
     bond_issue_repository().write(ctx, issue);
-    const auto first = make_instrument(s, issue.issue_id, "BondFuture");
+    const auto first =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondFuture");
     bond_instrument_repository().write(ctx, first);
-    const auto second = make_instrument(s, issue.issue_id, "BondFuture");
+    const auto second =
+        service_bond_instrument_reader_make_instrument(s, issue.issue_id, "BondFuture");
     bond_instrument_repository().write(ctx, second);
     bond_issue_leg_repository().write(ctx, make_issue_leg(s, issue.issue_id, 1));
 

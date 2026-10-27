@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Published curves — prototype</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--line-strong:#4a5568;
+  --ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;
+  --accent:#58a6ff;--accent-bright:#8ab4f8;--accent-dim:#21262d;
+  --ok:#22c55e;--warn:#eab308;--stale:#e3b341;--bad:#ef4444;--info:#3b82f6;--violet:#a855f7;--inactive:#6b7280;
+  --radius:8px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
+button{font:inherit;color:inherit}
+a{color:var(--accent-bright);text-decoration:none}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-dim)}
+.faint{color:var(--ink-faint)}
+.dash{color:var(--ink-faint)}
+.nowrap{white-space:nowrap}
+
+/* Prototype chrome, deliberately unlike the design on trial. */
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:4px 16px;background:#2a2113;border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px;max-width:96vw;padding:4px 8px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;font-size:12px}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:4px 8px;border-radius:999px;cursor:pointer}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}
+.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px;color:var(--ink-faint);white-space:nowrap}
+.proto-bar .sep{color:var(--line)}
+
+/* A gap the screen draws because the server does not answer yet. */
+.gap{margin-top:16px;border-left:2px solid var(--warn);padding:4px 0 4px 12px;font-size:12px;color:var(--ink-dim)}
+.gap b{color:var(--warn)}
+body.nogaps .gap{display:none}
+
+/* The application shell, as the product draws it. */
+.shell-head{position:fixed;top:26px;left:0;right:0;z-index:50;height:44px;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line);font-size:13px}
+.shell-head .brand{font-weight:600;letter-spacing:-.01em}
+.shell-head nav{display:flex;gap:4px;flex-wrap:wrap}
+.shell-head nav span{color:var(--ink-dim);padding:4px 8px;border-radius:6px}
+.shell-head nav span.on{color:var(--ink);background:var(--panel-2)}
+.shell-head .who{margin-left:auto;color:var(--ink-dim);white-space:nowrap}
+.shell-head .who b{color:var(--ink);font-weight:500}
+
+.page{padding:86px 24px 96px;max-width:1180px;margin:0 auto}
+.crumbs{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.crumbs .sep{padding:0 4px}
+.crumbs a{color:var(--ink-dim)}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.pagehead{display:flex;align-items:flex-start;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.pagehead h1{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.pagehead .lead{margin:4px 0 0;color:var(--ink-dim);font-size:13px}
+.pagehead .actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Buttons, marks, badges, notices. */
+.btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid var(--line);background:var(--panel-2);border-radius:var(--radius);padding:8px 16px;font-size:13px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--line-strong)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim)}
+.btn.ghost:hover:not(:disabled){color:var(--ink);background:var(--panel-2)}
+.btn.small{padding:4px 12px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.on{border-color:var(--accent);color:var(--accent-bright)}
+.badge{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap}
+.badge.ok{color:var(--ok)}
+.badge.pending{color:var(--info)}
+.badge.caution{color:var(--warn)}
+.badge.bad{color:var(--bad)}
+.badge.inactive{color:var(--inactive)}
+.badge.class{color:var(--violet)}
+.badge.mono{font-family:var(--mono);font-size:11px}
+.access{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink-dim)}
+.notice{border-radius:var(--radius);padding:12px 16px;font-size:13px;margin:0 0 16px;border:1px solid}
+.notice.info{background:#12161f;border-color:#24344d}
+.notice.success{background:#12281d;border-color:#23543a;color:#a8e6c4}
+.notice.warn{background:#2a2113;border-color:#4a3a17;color:#efd39a}
+.notice.error{background:#2b1614;border-color:#5c2a24;color:#f0b7ae}
+.notice b{font-weight:600}
+
+/* Cards and panels. */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.card h2{font-size:18px;font-weight:600;margin:0 0 4px}
+.card .lede{margin:0 0 24px;color:var(--ink-dim);font-size:13px}
+.card h3{font-size:13px;font-weight:600;margin:24px 0 8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.panel h2{font-size:13px;font-weight:600;margin:0 0 12px}
+.panel h2 .sub{font-weight:400;color:var(--ink-faint)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* Lists: tools, tables, pager. */
+.listtools{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.searchbox{position:relative;flex:1 1 240px;max-width:360px}
+.searchbox input{width:100%;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+.listnote{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.rows{width:100%;border-collapse:collapse;font-size:13px}
+.rows th{text-align:left;color:var(--ink-faint);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.rows th.sortable{cursor:pointer}
+.rows th.sortable:hover{color:var(--ink)}
+.rows th .caret{color:var(--accent-bright);padding-left:4px}
+.rows td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.rows tr.pick{cursor:pointer}
+.rows tr.pick:hover td{background:#1e1e23}
+.rows tr.candidate td{background:#17171b}
+.rows tr.ended td{background:#161619}
+.rows .key{font-family:var(--mono);color:var(--ink)}
+.rows .num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.rows .sub{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
+.rows .same{color:var(--ink-faint)}
+.rows td.subject{white-space:normal;min-width:300px;width:36%}
+.rows td.subject .key{font-weight:500}
+.tblstate{padding:40px 24px;text-align:center;color:var(--ink-dim);font-size:13px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.tblstate b{color:var(--ink);display:block;margin-bottom:8px;font-size:14px}
+.tblstate .btn{margin-top:16px}
+.pager{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--ink-dim);flex-wrap:wrap}
+.pager .count{margin-right:auto}
+
+/* A custom select: native selects cannot be styled, so none is used. */
+.sel{position:relative;display:inline-block}
+.sel-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;white-space:nowrap;cursor:pointer;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);padding:8px 12px;font-size:13px;min-width:180px;text-align:left}
+.sel-trigger .chev{color:var(--ink-faint)}
+.sel-menu{position:absolute;left:0;top:calc(100% + 4px);z-index:30;min-width:100%;max-height:260px;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);padding:4px}
+.sel-menu button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer;white-space:nowrap}
+.sel-menu button:hover,.sel-menu button.on{background:var(--panel-2)}
+
+/* Tabs. */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px;flex-wrap:wrap}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;color:var(--ink-dim);padding:8px 12px;cursor:pointer;font-size:13px}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Fields and the details grid. */
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 24px;margin:0}
+@media(max-width:760px){.fields{grid-template-columns:1fr 1fr}}
+.fields dt{font-size:12px;color:var(--ink-dim);margin:0 0 4px}
+.fields dd{margin:0;font-size:13px}
+.fields dd.mono{font-family:var(--mono);font-size:12px;word-break:break-all}
+.lastchanged{margin-top:24px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--ink-dim)}
+.field{display:block;margin:0 0 16px}
+.field>.lbl{display:block;font-size:12px;color:var(--ink-dim);margin:0 0 4px}
+.field>.lbl .req{color:var(--ink-faint)}
+.field textarea{width:100%;min-height:80px;resize:vertical;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+.field.bad textarea{border-color:var(--bad)}
+.field .msg{font-size:12px;color:var(--bad);margin:4px 0 0}
+.hint{font-size:12px;color:var(--ink-faint);margin:4px 0 0}
+.choice{display:flex;align-items:flex-start;gap:12px;padding:8px 0;cursor:pointer}
+.choice .dot{width:16px;height:16px;margin-top:2px;flex:0 0 16px;border-radius:999px;border:1px solid var(--line-strong)}
+.choice.on .dot{border-color:var(--accent);background:radial-gradient(var(--accent) 40%,transparent 45%)}
+.choice .nm{font-weight:500}
+.choice .sub{font-size:12px;color:var(--ink-faint)}
+.stepfoot{margin-top:24px;border-top:1px solid var(--line);padding-top:16px;display:flex;align-items:center;gap:8px}
+.stepfoot .ml-auto{margin-left:auto}
+a.btn{color:var(--ink)}
+a.btn.primary{color:#06121f}
+
+/* The point-by-point difference. */
+.diff{width:100%;border-collapse:collapse;font-size:13px}
+.diff th{text-align:left;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.diff td{padding:8px 12px 8px 0;border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:12px;vertical-align:middle}
+.diff td:first-child{font-family:inherit;font-size:13px;color:var(--ink);width:200px}
+.diff th.num,.diff td.num{text-align:right;font-variant-numeric:tabular-nums}
+.diff tr.changed td{background:#14171b}
+.diff tr.added td{background:#141b17}
+.diff tr.dropped td{background:#1b1414}
+.diff tr.unchanged td{color:var(--ink-faint)}
+.diff .was{color:var(--bad);text-decoration:line-through}
+.diff .now{color:var(--ok)}
+.diff .mark{font-family:inherit}
+.diff .sub{display:block;font-family:inherit;font-size:11px;color:var(--ink-faint);margin-top:2px}
+.summary{display:flex;gap:16px;flex-wrap:wrap;align-items:baseline;font-size:13px;margin:0 0 12px}
+.summary .stat{color:var(--ink-dim)}
+.summary .stat b{color:var(--ink);font-family:var(--mono);font-weight:500}
+
+/* A chart, as the application draws one: plain SVG, axes in mono. */
+.chartpanel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px;margin:0 0 16px}
+.chartpanel h3{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);margin:0 0 8px}
+.chartlegend{margin:0 0 8px}
+.chartlegend .legendline{font-size:12px;color:var(--ink-faint);font-style:italic}
+.chart{width:100%;max-width:760px;height:auto;display:block;overflow:visible}
+.histchart svg.chart{width:auto;max-width:none;height:130px;display:block}
+.chart text{font-family:var(--mono);font-size:11px;fill:var(--ink-faint)}
+.chart .grid{stroke:var(--line-soft);stroke-width:1}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chartempty{border:1px dashed var(--line);border-radius:var(--radius);padding:24px;text-align:center;color:var(--ink-dim);font-size:13px}
+.chartempty b{display:block;color:var(--ink);margin-bottom:4px}
+.chartbeside{display:grid;grid-template-columns:minmax(380px,5fr) minmax(420px,6fr);gap:16px;align-items:start}
+@media(max-width:1020px){.chartbeside{grid-template-columns:1fr}}
+.pointsbeside{display:grid;grid-template-columns:minmax(520px,7fr) minmax(360px,5fr);gap:16px;align-items:start}
+@media(max-width:1020px){.pointsbeside{grid-template-columns:1fr}}
+.statstrip{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:12px 16px;margin:0 0 16px}
+.statstrip .stat{display:block;min-width:110px}
+.statstrip .lbl{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 2px}
+.statstrip .val{font-size:13px;color:var(--ink)}
+.countfield{display:block}
+.countfield input{width:80px;background:#0e1218;border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:6px 8px;font:inherit;font-size:13px}
+
+/* History: the event chart, then the rail. */
+.histwrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px;margin:0 0 16px}
+.histwrap h3{font-family:var(--mono);font-size:12px;font-weight:600;margin:0 0 12px}
+.histchart{overflow-x:auto}
+.histlegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-dim);margin:12px 0 0}
+.histlegend .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.histtools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.histrail{list-style:none;margin:0;padding:0}
+.histrail li{display:grid;grid-template-columns:104px 40px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.histrail li.marked{background:#141b23}
+.histrail .gutter{font-size:12px;color:var(--ink-faint);text-align:right}
+.histrail .gutter .cur{display:block;font-size:10px;color:var(--accent-bright);letter-spacing:.04em;margin-top:2px}
+.histrail .face{display:flex;align-items:flex-start;justify-content:center}
+.avatar{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:10px;color:var(--ink-dim)}
+.histrail .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px}
+.histrail .head .rec{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.histrail .head .why{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.histrail .note{margin:4px 0 0;font-size:13px;color:var(--ink-dim)}
+.histrail details{margin-top:6px}
+.histrail summary{cursor:pointer;font-size:12px;color:var(--accent-bright)}
+.histrail .detailline{font-size:12px;color:var(--ink-faint);margin:2px 0 0}
+.daydiv{font-size:12px;font-weight:600;color:var(--ink-dim);padding:16px 0 8px;border-bottom:1px solid var(--line);margin-top:8px}
+.daydiv:first-child{margin-top:0;padding-top:0}
+.person{display:inline-flex;align-items:center;gap:8px}
+.rows.queue .askedfor{white-space:normal}
+.rows.queue .askedfor .subjectline{display:block;margin-top:6px}
+.rows.queue .askedfor .subjectline .key{font-weight:500}
+.rows.queue .why{max-width:26rem}
+.kindcode{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-left:6px}
+a.bare{color:var(--ink-dim);text-decoration:underline;text-decoration-color:var(--line-strong)}
+a.bare:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The published-curve screens, as two surfaces on one page:
+
+    ?surface=list    the tenant's published sets: the list, its states, and the
+                     record page a row opens, with four tabs
+    ?surface=queue   the Requests queue with the subject in the row, and the
+                     request page a decider opens
+
+  The record page's tabs are Details, Published points, Compare as of and
+  History, and the tab is in the address with the comparison's as-of:
+
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=details
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=points
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=compare&asof=<instant>
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=history
+
+  The other parameters:
+
+    ?state=none|nomatch|loading|error     the list's states
+    ?show=candidates&ended=1              what the list draws beside the sets in use
+    ?points=changed|same|added            the comparison's state
+    ?unchanged=1                          whether the comparison draws unchanged points
+    ?chart=one|none                       a chart that cannot be drawn, and why
+    ?fparty=<party>&q=<text>&page=<n>&size=<n>&sort=<col>&dir=1|-1   the list's tools
+    ?open=r1&decision=approve|refuse|hold&actor=<username>           the queue and its answer
+    ?gaps=0                                hide the server-gap notes
+
+  A change is written to the query string, so any surface, tab and state can be
+  linked directly. Every control is prototype chrome.
+-->
+<div class="proto-note" id="note">Prototype · mock data · reads no server</div>
+<header class="shell-head" id="shell"></header>
+<main class="page" id="app"></main>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ---------------------------------------------------------------- */
+    /* The query string is the state, as every prototype here does.       */
+    /* ---------------------------------------------------------------- */
+
+    var Q = new URLSearchParams(location.search);
+
+    var S = {
+        surface: Q.get('surface') || 'list',
+        curve: Q.get('curve') || '',
+        party: Q.get('party') || '',
+        tab: Q.get('tab') || 'details',
+        asof: Q.get('asof') || '',
+        points: Q.get('points') || '',
+        show: Q.get('show') || 'published',
+        ended: Q.get('ended') === '1',
+        unchanged: Q.get('unchanged') === '1',
+        chart: Q.get('chart') || '',
+        history: Number(Q.get('history') || 5),
+        state: Q.get('state') || '',
+        open: Q.get('open') || '',
+        q: Q.get('q') || '',
+        partyFilter: Q.get('fparty') || 'all',
+        page: Number(Q.get('page') || 0),
+        size: Number(Q.get('size') || 15),
+        sort: Q.get('sort') || 'published_at',
+        dir: Q.get('dir') === '1' ? 1 : -1,
+        kind: Q.get('kind') || 'all',
+        actor: Q.get('actor') || 'n.haugen',
+        chosen: Q.get('chosen') || '',
+        comment: Q.get('comment') || '',
+        decision: Q.get('decision') || null,
+        tried: false,
+        menu: ''
+    };
+    if (Q.get('gaps') === '0') { document.body.classList.add('nogaps'); }
+
+    /* ---------------------------------------------------------------- */
+    /* The mock tenant, read as literals.                                */
+    /* ---------------------------------------------------------------- */
+
+    var NOW = Date.parse('2026-10-07T09:00:00Z');
+    var TABS = ['details', 'points', 'compare', 'history'];
+
+    var PEOPLE = {
+        'a.reyes': { name: 'A. Reyes', role: 'Market data maker', decides: [] },
+        'j.silva': { name: 'J. Silva', role: 'Market data analyst', decides: [] },
+        'm.oduya': { name: 'M. Oduya', role: 'Head of market risk', decides: ['marketdata'] },
+        'k.mori': { name: 'K. Mori', role: 'Middleware operations', decides: ['refdata'] },
+        'n.haugen': { name: 'N. Haugen', role: 'Tenant administrator', decides: ['marketdata', 'iam', 'refdata'] }
+    };
+    var KIND_AREA = { marketdata: 'Market data', iam: 'Access', refdata: 'Reference data' };
+    var PARTIES = ['ACME London', 'ACME New York', 'ACME Hong Kong'];
+    var MARKET_RISK = 'Market Risk';
+    var SERIES = 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME';
+
+    /* A published set: the detail row of the request that authorises it. Every
+       fact a history reads is here, because the row is the whole record. */
+    var SETS = [
+        { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-06T16:00:00Z',
+          raised_at: '2026-10-06T15:05:00Z', raised_by: 'a.reyes',
+          approved_at: '2026-10-06T16:12:00Z', approved_by: 'm.oduya',
+          approved_comment: 'Checked against the 16:00 quotes.',
+          published_at: '2026-10-06T16:41:00Z', published_by: 'a.reyes',
+          request: '8f1c…a41', points: 12, series: SERIES, state: 'published' },
+        { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-05T16:00:00Z',
+          raised_at: '2026-10-05T15:30:00Z', raised_by: 'a.reyes',
+          approved_at: '2026-10-05T16:05:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The 16:00 quotes are in.',
+          published_at: '2026-10-05T16:40:00Z', published_by: 'a.reyes',
+          request: 'c112…e8f', points: 12, shiftBp: 2.2, series: SERIES,
+          state: 'superseded', ended_at: '2026-10-06T16:41:00Z', ended_by: 'a.reyes',
+          ended_request: '8f1c…a41', ended_approved_by: 'm.oduya',
+          successor_asof: '2026-10-06T16:00:00Z',
+          reason_text: 'The 06 Oct set replaced it as the set the desk reads.' },
+        { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-03T16:00:00Z',
+          raised_at: '2026-10-03T15:20:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-03T15:55:00Z', approved_by: 'm.oduya',
+          approved_comment: "Friday's quotes agree with the rebuild.",
+          published_at: '2026-10-03T16:29:00Z', published_by: 'j.silva',
+          request: 'a7c3…19b', points: 12, shiftBp: 4.5, series: SERIES,
+          state: 'superseded', ended_at: '2026-10-05T16:40:00Z', ended_by: 'a.reyes',
+          ended_request: 'c112…e8f', ended_approved_by: 'm.oduya',
+          successor_asof: '2026-10-05T16:00:00Z',
+          reason_text: 'The 05 Oct set replaced it as the set the desk reads.' },
+        { curve: 'EUR-ESTR-6M', party: 'ACME London', asof: '2026-10-06T16:00:00Z',
+          raised_at: '2026-10-06T14:10:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-06T15:58:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The rebuild agrees with the quotes.',
+          published_at: '2026-10-06T16:44:00Z', published_by: 'j.silva',
+          request: '7b02…c19', points: 12,
+          series: 'oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR-ACME',
+          state: 'published' },
+        { curve: 'USD-SOFR-3M', party: 'ACME New York', asof: '2026-10-06T21:00:00Z',
+          raised_at: '2026-10-06T20:50:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-06T21:00:00Z', approved_by: 'm.oduya',
+          approved_comment: 'New York closed on the 21:00 snapshot.',
+          published_at: '2026-10-06T21:02:00Z', published_by: 'a.reyes',
+          request: '9a31…4de', points: 12,
+          series: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-NY',
+          state: 'published' },
+        { curve: 'EUR-ESTR-6M', party: 'ACME Hong Kong', asof: '2026-10-05T06:00:00Z',
+          raised_at: '2026-10-05T05:30:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-05T06:02:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The Hong Kong snapshot agrees.',
+          published_at: '2026-10-05T06:19:00Z', published_by: 'j.silva',
+          request: '0c77…1b8', points: 12,
+          series: 'oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR-HK',
+          state: 'superseded', ended_at: '2026-10-06T07:05:00Z', ended_by: 'j.silva',
+          ended_request: '9f0a…2c4', ended_approved_by: 'm.oduya',
+          successor_asof: '2026-10-06T06:00:00Z',
+          reason_text: 'The 06:00 snapshot replaced it as the set the desk reads.' },
+        { curve: 'GBP-SONIA-3M', party: 'ACME London', asof: '2026-10-03T16:00:00Z',
+          raised_at: '2026-10-03T15:40:00Z', raised_by: 'a.reyes',
+          approved_at: '2026-10-03T16:10:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The 16:00 quotes are in.',
+          published_at: '2026-10-03T16:38:00Z', published_by: 'a.reyes',
+          request: '4d10…7b2', points: 12,
+          series: 'oresmd://ir/GBP?type=series&instrument=discount&quote=rate&curve_id=GBP-SONIA-ACME',
+          state: 'withdrawn', ended_at: '2026-10-06T09:12:00Z', ended_by: 'a.reyes',
+          ended_request: '5b3e…7c1', ended_approved_by: 'm.oduya',
+          reason_code: 'stale_fixing',
+          reason_text: 'The 6M pillar was built on a stale fixing.' }
+    ];
+
+    /* A candidate set: built, reviewed, and nobody has approved it. It has no
+       publish record and so no publisher and no published instant. */
+    var CANDIDATES = [
+        { curve: 'GBP-SONIA-3M', party: 'ACME London', asof: '2026-10-06T16:00:00Z',
+          built_at: '2026-10-06T16:52:00Z', built_by: 'a.reyes', points: 12 },
+        { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-07T08:00:00Z',
+          built_at: '2026-10-07T08:15:00Z', built_by: 'a.reyes', points: 12 },
+        { curve: 'JPY-TONA-6M', party: 'ACME Hong Kong', asof: '2026-10-06T16:00:00Z',
+          built_at: '2026-10-06T17:05:00Z', built_by: 'j.silva', points: 10 }
+    ];
+
+    /* A curve's pillars. The published value is a rate in percent; a change is
+       stated in basis points, because that is how a desk reads it. */
+    var PILLARS = [
+        { tenor: '1W', role: 'Deposit', value: 4.3100 },
+        { tenor: '2W', role: 'Deposit', value: 4.3250 },
+        { tenor: '1M', role: 'Swap', value: 4.3400 },
+        { tenor: '2M', role: 'Swap', value: 4.3550 },
+        { tenor: '3M', role: 'Swap', value: 4.3700 },
+        { tenor: '6M', role: 'Swap', value: 4.3300 },
+        { tenor: '9M', role: 'Swap', value: 4.2900 },
+        { tenor: '1Y', role: 'Swap', value: 4.2450 },
+        { tenor: '2Y', role: 'Swap', value: 4.1200 },
+        { tenor: '3Y', role: 'Swap', value: 4.0500 },
+        { tenor: '5Y', role: 'Swap', value: 3.9800 },
+        { tenor: '10Y', role: 'Swap', value: 3.9000 }
+    ];
+
+    var POINT_STATES = {
+        changed: { moves: { '2W': 0.7, '1M': 0.8, '6M': -0.9, '2Y': -1.2 }, added: ['30Y'], dropped: ['9M'] },
+        same:    { moves: {}, added: [], dropped: [] },
+        added:   { moves: {}, added: ['30Y'], dropped: [] }
+    };
+
+    var AS_OFS = [
+        { iso: '2026-10-06T16:00:00Z', label: '06 Oct 2026, 16:00 UTC — the published as-of', shiftBp: 0 },
+        { iso: '2026-10-05T16:00:00Z', label: '05 Oct 2026, 16:00 UTC — published then', shiftBp: 2.2 },
+        { iso: '2026-10-03T16:00:00Z', label: '03 Oct 2026, 16:00 UTC — published then', shiftBp: -0.3 }
+    ];
+
+    var REQUESTS = [
+        { id: 'r1', ref: '8f1c…a41', kind: 'marketdata.curve_publish', label: 'Curve publish',
+          subject: { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-06T16:00:00Z', points: 12,
+                     config: 'USD-SOFR-3M', series: SERIES, built_at: '2026-10-07T08:15:00Z', built_by: 'a.reyes' },
+          by: 'a.reyes', at: '2026-10-06T15:05:00Z', state: 'waiting', group: MARKET_RISK,
+          reason: 'The 16:00 quotes moved the 2Y point by more than a basis point, and the desk needs the fixed set.',
+          permission: 'inbox::approvals:decide_market_risk', expires: '2026-10-20T15:05:00Z' },
+        { id: 'r2', ref: '7b02…c19', kind: 'marketdata.curve_publish', label: 'Curve publish',
+          subject: { curve: 'EUR-ESTR-6M', party: 'ACME London', asof: '2026-10-06T16:00:00Z', points: 12,
+                     config: 'EUR-ESTR-6M', series: '', built_at: '2026-10-06T12:30:00Z', built_by: 'j.silva' },
+          by: 'j.silva', at: '2026-10-06T13:40:00Z', state: 'waiting', group: MARKET_RISK,
+          reason: 'The daily rebuild.', permission: 'inbox::approvals:decide_market_risk', expires: '2026-10-20T13:40:00Z' },
+        { id: 'r3', ref: '51ad…9e7', kind: 'marketdata.curve_publish', label: 'Curve publish',
+          subject: { curve: 'GBP-SONIA-3M', party: 'ACME London', asof: '2026-10-06T16:00:00Z', points: 12,
+                     config: 'GBP-SONIA-3M', series: '', built_at: '2026-10-06T16:52:00Z', built_by: 'a.reyes' },
+          by: 'a.reyes', at: '2026-10-05T09:20:00Z', state: 'held', group: MARKET_RISK,
+          reason: 'The SONIA fixing was late yesterday, so the 6M point may move again.',
+          permission: 'inbox::approvals:decide_market_risk', expires: '2026-10-19T09:20:00Z' },
+        { id: 'r4', ref: '2c88…40b', kind: 'iam.role_grant', label: 'Role grant',
+          subjectText: 'J. Silva · Trader, Equity Trader',
+          by: 'j.silva', at: '2026-10-03T10:00:00Z', state: 'waiting', group: 'Tenant administration',
+          reason: 'I have joined the equity desk and need the role to book there.',
+          permission: 'iam::roles:assign', expires: '2026-10-17T10:00:00Z' },
+        { id: 'r5', ref: '6e13…2af', kind: 'refdata.counterparty_change', label: 'Counterparty change',
+          subjectText: 'CPTY-0142 · Legal name', by: 'k.mori', at: '2026-10-04T14:15:00Z', state: 'waiting',
+          group: 'Operations', reason: 'The counterparty renamed after the merger.',
+          permission: 'inbox::approvals:decide_operations', expires: '2026-10-18T14:15:00Z' }
+    ];
+
+    var DECISIONS = {
+        r3: [{ at: '2026-10-05T15:10:00Z', by: 'm.oduya', what: 'hold',
+               comment: 'Waiting on the 4pm fixing.', reason: 'awaiting_fixing' }]
+    };
+
+    /* ---------------------------------------------------------------- */
+    /* Small helpers.                                                    */
+    /* ---------------------------------------------------------------- */
+
+    function esc(v) {
+        return String(v === null || v === undefined ? '' : v)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+    function person(id) { return PEOPLE[id] || { name: id, role: '', decides: [] }; }
+    function badge(kind, text) { return '<span class="badge ' + kind + '">' + esc(text) + '</span>'; }
+    function dash(v) { return v === '' || v === null || v === undefined ? '<span class="dash">—</span>' : esc(v); }
+    function mono(v) { return '<span class="mono">' + esc(v) + '</span>'; }
+
+    function exact(iso) {
+        var d = new Date(iso);
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        function two(n) { return n < 10 ? '0' + n : String(n); }
+        return two(d.getUTCDate()) + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear() +
+            ', ' + two(d.getUTCHours()) + ':' + two(d.getUTCMinutes()) + ' UTC';
+    }
+    function clock(iso) {
+        var d = new Date(iso);
+        function two(n) { return n < 10 ? '0' + n : String(n); }
+        return two(d.getUTCHours()) + ':' + two(d.getUTCMinutes()) + ':' + two(d.getUTCSeconds());
+    }
+    function dayName(iso) {
+        var d = new Date(iso);
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+            'August', 'September', 'October', 'November', 'December'];
+        return days[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+    }
+    function dayKey(iso) { return iso.slice(0, 10); }
+    function shortInstant(iso) {
+        var d = new Date(iso);
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        function two(n) { return n < 10 ? '0' + n : String(n); }
+        return two(d.getUTCDate()) + ' ' + months[d.getUTCMonth()] + ', ' +
+            two(d.getUTCHours()) + ':' + two(d.getUTCMinutes());
+    }
+    function rel(iso) {
+        var d = Date.parse(iso) - NOW;
+        var future = d > 0;
+        var mins = Math.round(Math.abs(d) / 60000);
+        var text;
+        if (mins < 1) { return 'just now'; }
+        if (mins < 60) { text = mins + (mins === 1 ? ' minute' : ' minutes'); }
+        else {
+            var hours = Math.round(mins / 60);
+            if (hours < 48) { text = hours + (hours === 1 ? ' hour' : ' hours'); }
+            else {
+                var days = Math.round(hours / 24);
+                text = days + (days === 1 ? ' day' : ' days');
+            }
+        }
+        return future ? 'in ' + text : text + ' ago';
+    }
+    function when(iso) { return '<span title="' + esc(exact(iso)) + '">' + esc(rel(iso)) + '</span>'; }
+    function rate(v) { return v.toFixed(4); }
+    /* The years the pillar spans, so the table can hold the discount factor it
+       implies at the published rate. */
+    function tenorYears(tenor) {
+        var n = Number(tenor.replace(/[A-Z]/g, ''));
+        var unit = tenor.slice(-1);
+        if (unit === 'W') { return n / 52; }
+        if (unit === 'M') { return n / 12; }
+        if (unit === 'Y') { return n; }
+        return n;
+    }
+    function discountFactor(tenor, ratePct) {
+        return (1 / Math.pow(1 + ratePct / 100, tenorYears(tenor))).toFixed(6);
+    }
+    function bp(v) { return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1); }
+    function initials(name) {
+        return name.split(/[\s.]+/).filter(function (p) { return p.length > 0; })
+            .map(function (p) { return p[0]; }).join('').slice(0, 2).toUpperCase();
+    }
+
+    function setStateBadge(code) {
+        var cls = code === 'published' ? 'ok' : code === 'withdrawn' ? 'bad' : 'inactive';
+        var text = code === 'published' ? 'Published' : code === 'withdrawn' ? 'Withdrawn' : 'Superseded';
+        return badge(cls, text);
+    }
+    function stateName(code) {
+        return { waiting: 'Waiting', held: 'Held', approved: 'Approved', refused: 'Refused' }[code] || code;
+    }
+    function stateBadge(code) {
+        var cls = code === 'approved' ? 'ok' : code === 'refused' ? 'bad' : code === 'held' ? 'caution' : 'pending';
+        return badge(cls, stateName(code));
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The URL is the state, so a link reopens what the person saw.       */
+    /* ---------------------------------------------------------------- */
+
+    function sync() {
+        var p = new URLSearchParams();
+        p.set('surface', S.surface);
+        if (S.curve) { p.set('curve', S.curve); }
+        if (S.party) { p.set('party', S.party); }
+        if (S.curve && S.tab !== 'details') { p.set('tab', S.tab); }
+        if (S.asof) { p.set('asof', S.asof); }
+        if (S.points) { p.set('points', S.points); }
+        if (S.show !== 'published') { p.set('show', S.show); }
+        if (S.ended) { p.set('ended', '1'); }
+        if (S.unchanged) { p.set('unchanged', '1'); }
+        if (S.chart) { p.set('chart', S.chart); }
+        if (S.history !== 5) { p.set('history', String(S.history)); }
+        if (S.state) { p.set('state', S.state); }
+        if (S.open) { p.set('open', S.open); }
+        if (S.q) { p.set('q', S.q); }
+        if (S.kind !== 'all') { p.set('kind', S.kind); }
+        if (S.partyFilter !== 'all') { p.set('fparty', S.partyFilter); }
+        if (S.page) { p.set('page', String(S.page)); }
+        if (S.size !== 15) { p.set('size', String(S.size)); }
+        if (S.sort !== 'published_at') { p.set('sort', S.sort); }
+        if (S.dir !== -1) { p.set('dir', String(S.dir)); }
+        if (S.actor !== 'n.haugen') { p.set('actor', S.actor); }
+        if (S.decision) { p.set('decision', S.decision); }
+        if (S.chosen) { p.set('chosen', S.chosen); }
+        if (S.comment) { p.set('comment', S.comment); }
+        if (document.body.classList.contains('nogaps')) { p.set('gaps', '0'); }
+        history.replaceState(null, '', '?' + p.toString());
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The shell and the chrome.                                         */
+    /* ---------------------------------------------------------------- */
+
+    function shell() {
+        return '<div class="brand">ORE Studio</div><nav>' +
+            ['Market data', 'Requests', 'Reference data', 'Operations'].map(function (n) {
+                return '<span class="' + (n === 'Requests' && S.surface === 'queue' ? 'on' : '') + '">' + n + '</span>';
+            }).join('') + '</nav><div class="who">Signed in as <b>' + esc(person(S.actor).name) + '</b></div>';
+    }
+
+    function crumbs(items) {
+        return '<div class="crumbs">' + items.map(function (it, i) {
+            var label = it.act ? '<a href="#" data-act="' + it.act + '">' + esc(it.t) + '</a>' : esc(it.t);
+            return (i ? '<span class="sep">›</span>' : '') + label;
+        }).join('') + '</div>';
+    }
+
+    function pagehead(title, lead, actions, extra) {
+        return '<div class="pagehead"><div><h1>' + esc(title) + '</h1>' +
+            (lead ? '<p class="lead">' + lead + '</p>' : '') + (extra || '') + '</div>' +
+            (actions ? '<div class="actions">' + actions + '</div>' : '') + '</div>';
+    }
+
+    function gap(text) { return '<p class="gap"><b>Server gap.</b> ' + text + '</p>'; }
+
+    function select(id, options, value) {
+        var label = (options.filter(function (o) { return o.v === value; })[0] || options[0]).t;
+        var menu = S.menu === id
+            ? '<div class="sel-menu">' + options.map(function (o) {
+                return '<button data-act="pick" data-arg="' + id + ':' + esc(o.v) + '" class="' +
+                    (o.v === value ? 'on' : '') + '">' + esc(o.t) + '</button>';
+            }).join('') + '</div>'
+            : '';
+        return '<span class="sel">' +
+            '<button class="sel-trigger" data-act="menu" data-arg="' + id + '" aria-haspopup="listbox" aria-expanded="' +
+            (S.menu === id) + '"><span>' + esc(label) + '</span><span class="chev" aria-hidden="true">▾</span></button>' +
+            menu + '</span>';
+    }
+
+    function toggle(id, text, on) {
+        return '<button class="btn small' + (on ? ' on' : '') + '" data-act="toggle" data-arg="' + id +
+            '" aria-pressed="' + on + '">' + esc(text) + '</button>';
+    }
+
+    function pager(total) {
+        var start = total === 0 ? 0 : S.page * S.size + 1;
+        var end = Math.min(total, (S.page + 1) * S.size);
+        var pages = Math.max(1, Math.ceil(total / S.size));
+        return '<div class="pager"><span class="count">' + start + '–' + end + ' of ' + total + '</span>' +
+            '<button class="btn small" data-act="page" data-arg="first"' + (S.page === 0 ? ' disabled' : '') + '>First</button>' +
+            '<button class="btn small" data-act="page" data-arg="prev"' + (S.page === 0 ? ' disabled' : '') + '>Previous</button>' +
+            '<button class="btn small" data-act="page" data-arg="next"' + (S.page >= pages - 1 ? ' disabled' : '') + '>Next</button>' +
+            '<button class="btn small" data-act="page" data-arg="last"' + (S.page >= pages - 1 ? ' disabled' : '') + '>Last</button>' +
+            '<span class="dim">Page size</span>' +
+            select('size', [{ v: '15', t: '15' }, { v: '25', t: '25' }, { v: '50', t: '50' }], String(S.size)) +
+            '</div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The list of published sets.                                       */
+    /* ---------------------------------------------------------------- */
+
+    function liveSets() {
+        return SETS.filter(function (s) { return s.state === 'published'; });
+    }
+
+    function listRows() {
+        var rows = SETS.slice();
+        if (!S.ended) {
+            rows = rows.filter(function (r) { return r.state === 'published'; });
+        }
+        if (S.show === 'candidates') {
+            rows = rows.concat(CANDIDATES.map(function (c) { return Object.assign({ kind: 'candidate' }, c); }));
+        }
+        return rows;
+    }
+
+    function compareRows(a, b) {
+        var key = S.sort;
+        function val(r) {
+            if (key === 'published_at') { return r.published_at || r.built_at || ''; }
+            if (key === 'asof') { return r.asof; }
+            if (key === 'points') { return r.points; }
+            if (key === 'state') { return r.state || r.kind; }
+            return String(r[key] || '').toLowerCase();
+        }
+        var x = val(a), y = val(b);
+        return (x < y ? -1 : x > y ? 1 : 0) * S.dir;
+    }
+
+    function filteredRows() {
+        return listRows().filter(function (r) {
+            if (S.partyFilter !== 'all' && r.party !== S.partyFilter) { return false; }
+            if (!S.q) { return true; }
+            var hay = (r.curve + ' ' + r.party + ' ' + (r.published_by || '') + ' ' + (r.built_by || '')).toLowerCase();
+            return hay.indexOf(S.q.toLowerCase()) >= 0;
+        }).sort(compareRows);
+    }
+
+    function sortHead(id, text, cls) {
+        var on = S.sort === id;
+        return '<th class="sortable ' + (cls || '') + '" data-act="sort" data-arg="' + id + '" scope="col">' +
+            esc(text) + (on ? '<span class="caret">' + (S.dir === 1 ? '▲' : '▼') + '</span>' : '') + '</th>';
+    }
+
+    function listTable(rows) {
+        var head = '<tr>' +
+            sortHead('curve', 'Curve') +
+            sortHead('party', 'Party') +
+            sortHead('asof', 'Published as-of') +
+            sortHead('published_by', 'Publisher') +
+            sortHead('published_at', 'Published') +
+            sortHead('points', 'Points', 'num') +
+            sortHead('state', 'State') + '</tr>';
+        var body = rows.map(function (r) {
+            var isCandidate = r.kind === 'candidate';
+            var ended = r.state === 'withdrawn' || r.state === 'superseded';
+            var open = 'data-open="' + esc(r.curve) + '|' + esc(r.party) + '"';
+            var state = isCandidate ? badge('pending', 'Candidate') : setStateBadge(r.state);
+            return '<tr class="pick ' + (isCandidate ? 'candidate' : '') + ' ' + (ended ? 'ended' : '') +
+                '" ' + open + ' tabindex="0" role="link">' +
+                '<td><span class="key">' + esc(r.curve) + '</span>' +
+                (ended ? '<span class="sub">in use until ' + esc(rel(r.ended_at)) + '</span>' : '') + '</td>' +
+                '<td>' + esc(r.party) + '</td>' +
+                '<td class="nowrap">' + (r.asof ? esc(exact(r.asof)) : '<span class="dash">—</span>') + '</td>' +
+                '<td>' + (r.published_by ? esc(person(r.published_by).name) : '<span class="dash">—</span>') + '</td>' +
+                '<td class="nowrap">' + (r.published_at ? when(r.published_at)
+                    : '<span class="sub">built ' + when(r.built_at) + '</span>') + '</td>' +
+                '<td class="num">' + r.points + '</td>' +
+                '<td>' + state + '</td></tr>';
+        }).join('');
+        return '<table class="rows"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
+    }
+
+    function listStateView() {
+        var st = S.state;
+        if (st === 'loading') {
+            return '<div class="tblstate"><b>Loading…</b>The published sets of the tenant are being read.</div>';
+        }
+        if (st === 'error') {
+            return '<div class="tblstate"><b>The published sets could not be read.</b>' +
+                'The market data service did not answer. ' +
+                '<button class="btn small" data-act="retry">Retry</button></div>';
+        }
+        if (st === 'none') {
+            return '<div class="tblstate"><b>There are no published curves yet.</b>' +
+                'A curve becomes a published set when a person publishes an approved candidate. ' +
+                'Build a candidate in Bootstrap or refresh a curve, then raise a publish request.' +
+                '<div style="margin-top:16px"><button class="btn small" data-act="tabfirst">' +
+                'See what a comparison looks like</button></div></div>';
+        }
+        var rows = filteredRows();
+        if (st === 'nomatch' || rows.length === 0) {
+            return '<div class="tblstate"><b>No published curves match the search.</b>' +
+                'Clear the search or the party filter to see the tenant\'s curves. ' +
+                '<button class="btn small" data-act="clear">Clear</button></div>';
+        }
+        var shown = rows.slice(S.page * S.size, (S.page + 1) * S.size);
+        return listTable(shown) + pager(rows.length);
+    }
+
+    function listSurface() {
+        if (S.curve) { return recordPage(); }
+        var actions = '<button class="btn" data-act="reload">Refresh</button>';
+        return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves' }]) +
+            pagehead('Published curves',
+                'The sets the tenant prices from: one row for each set, with the act that published it.',
+                actions,
+                '<p class="lead"><span class="access">Read only</span></p>') +
+            '<div class="listtools">' +
+            '<span class="searchbox"><input type="text" data-input="search" placeholder="Search curves, parties or people" value="' + esc(S.q) + '" aria-label="Search published curves"></span>' +
+            select('fparty', [{ v: 'all', t: 'All parties' }].concat(PARTIES.map(function (p) { return { v: p, t: p }; })), S.partyFilter) +
+            toggle('candidates', 'Show candidates', S.show === 'candidates') +
+            toggle('ended', 'Show ended sets', S.ended) +
+            '</div>' +
+            '<p class="listnote">' + liveSets().length + ' sets in use. ' +
+            (S.ended ? 'The ended sets are drawn under them: a withdrawn set and a superseded one. ' : '') +
+            (S.show === 'candidates'
+                ? 'Candidates are drawn with no publisher and no published instant: nobody has approved them.'
+                : 'A candidate is a set nobody has approved; Show candidates draws them.') + '</p>' +
+            listStateView() +
+            gap('No read lists the tenant\'s published sets yet. The candidate is a list over the publish records, ' +
+                'the latest instant for each series, which the index curve_publishes_series_published already orders. ' +
+                'The ended sets need the same read to include the ended record, which the marker of the withdrawal decision provides. ' +
+                'Until it exists the screen reads one curve\'s snapshot at a time. The search, the filter, the order and the pager are client-side here; ' +
+                'the target is the list contract\'s own filter and order.');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The record page and its four tabs.                                */
+    /* ---------------------------------------------------------------- */
+
+    function findSet(curve, party) {
+        return SETS.filter(function (s) { return s.curve === curve && (!party || s.party === party); })[0];
+    }
+
+    function recordPage() {
+        var set = findSet(S.curve, S.party);
+        if (!set) { return noSetPage(); }
+        var tab = TABS.indexOf(S.tab) >= 0 ? S.tab : 'details';
+        var lead = esc(set.party) + ' · as-of ' + esc(exact(set.asof)) + ' · ' + setStateBadge(set.state) +
+            (set.state === 'published'
+                ? ' · published ' + when(set.published_at)
+                : ' · ' + (set.state === 'withdrawn' ? 'withdrawn' : 'superseded') + ' ' + when(set.ended_at));
+        var actions = '<button class="btn" data-act="reload">Refresh</button>';
+        return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: set.curve }]) +
+            pagehead(set.curve, lead, actions) +
+            '<div class="tabs" role="tablist">' +
+            tabButton('details', 'Details', tab) + tabButton('points', 'Published points', tab) +
+            tabButton('compare', 'Compare as of', tab) + tabButton('history', 'History', tab) + '</div>' +
+            '<div class="card">' +
+            (tab === 'points' ? pointsTab(set)
+                : tab === 'compare' ? compareTab(set)
+                : tab === 'history' ? historyTab(set)
+                : detailsTab(set)) + '</div>';
+    }
+
+    function noSetPage() {
+        var cand = CANDIDATES.filter(function (c) { return c.curve === S.curve && (!S.party || c.party === S.party); })[0];
+        return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: S.curve }]) +
+            pagehead(S.curve, (cand ? esc(cand.party) : '') + ' · no published set',
+                '<button class="btn" data-act="surface:list">Back to the list</button>') +
+            '<div class="card"><h2>No published set</h2>' +
+            '<p class="lede">A candidate exists and nobody has published it, so there is no record page and no baseline.</p>' +
+            (cand ? '<dl class="fields">' +
+                '<div><dt>Candidate built at</dt><dd>' + esc(exact(cand.built_at)) + '</dd></div>' +
+                '<div><dt>Candidate built by</dt><dd>' + esc(person(cand.built_by).name) + '</dd></div>' +
+                '<div><dt>As-of</dt><dd>' + esc(exact(cand.asof)) + '</dd></div>' +
+                '<div><dt>Points</dt><dd class="mono">' + cand.points + '</dd></div></dl>' : '') +
+            '<div style="margin-top:16px">' +
+            chartPanel('Curve shape', emptyChart('No published set, so there is no curve to draw.')) + '</div>' +
+            '<p class="hint">A comparison needs a published as-of to read. Until a publish record exists for the series, the tab cannot draw the baseline either.</p>' +
+            gap('The comparison needs a published set to read. Until a publish record exists for the series, the screen has no baseline and states that.') +
+            '</div>';
+    }
+
+    function tabButton(id, text, current) {
+        return '<button role="tab" aria-selected="' + (current === id) + '" class="' + (current === id ? 'on' : '') +
+            '" data-act="tab" data-arg="' + id + '">' + esc(text) + '</button>';
+    }
+
+    function detailsTab(set) {
+        var ended = set.state !== 'published';
+        return '<h2>Details</h2><p class="lede">The subject the request authorised, and the act that published it.</p>' +
+            '<dl class="fields">' +
+            '<div><dt>Curve configuration</dt><dd class="mono">' + esc(set.curve) + '</dd></div>' +
+            '<div><dt>Party</dt><dd>' + esc(set.party) + '</dd></div>' +
+            '<div><dt>Published as-of</dt><dd>' + esc(exact(set.asof)) + '</dd></div>' +
+            '<div><dt>Publisher</dt><dd>' + esc(person(set.published_by).name) + '</dd></div>' +
+            '<div><dt>Published at</dt><dd>' + esc(exact(set.published_at)) + '</dd></div>' +
+            '<div><dt>Points published</dt><dd class="mono">' + set.points + '</dd></div>' +
+            '<div><dt>Authorising request</dt><dd>' + mono(set.request) + '</dd></div>' +
+            '<div><dt>Output series</dt><dd class="mono">' + esc(set.series) + '</dd></div>' +
+            '<div><dt>State</dt><dd>' + setStateBadge(set.state) + '</dd></div>' +
+            (ended ? '<div><dt>' + (set.state === 'withdrawn' ? 'Withdrawn at' : 'Superseded at') + '</dt><dd>' + esc(exact(set.ended_at)) + '</dd></div>' +
+                '<div><dt>' + (set.state === 'withdrawn' ? 'Withdrawn by' : 'Superseded by') + '</dt><dd>' + esc(person(set.ended_by).name) + '</dd></div>' +
+                '<div><dt>Authorising request</dt><dd>' + mono(set.ended_request) + '</dd></div>' +
+                (set.reason_code ? '<div><dt>Reason</dt><dd>' + mono(set.reason_code) + ' — ' + esc(set.reason_text) + '</dd></div>' : '') : '') +
+            '</dl>' +
+            '<p class="lastchanged">Read only: a publish record is written by the gate that applies an approved request, and never by a screen. ' +
+            'Last changed: published by ' + esc(person(set.published_by).name) + ' ' + when(set.published_at) + '.</p>' +
+            gap('There is no withdrawal and no superseded marker on the publish record today, so this page would read the set in use but not what replaced it. ' +
+                'The prototype draws the state and the fields the withdrawal decision adds.') +
+            gap('The read that serves a curve returns the latest snapshot of one series. ' +
+                'A list over the publish records is the missing read the list surface names.');
+    }
+
+    function chartPoints(set) {
+        if (S.chart === 'none') { return []; }
+        if (S.chart === 'one') { return PILLARS.slice(0, 1); }
+        return PILLARS;
+    }
+
+    /* The published sets of one curve and party, newest first. */
+    function setsFor(curve, party) {
+        return SETS.filter(function (s) { return s.curve === curve && s.party === party; })
+            .sort(function (a, b) { return Date.parse(b.asof) - Date.parse(a.asof); });
+    }
+
+    /* The colour and weight of one curve of the history, as the Qt market
+       simulator and the IR ticks panel draw it: the newest is bold and green,
+       the older ones are grey-blue, thinner, and fade with age. */
+    function curveStyle(index, count) {
+        var newest = index === count - 1;
+        return {
+            colour: newest ? '#22C55E' : '#8A9BAE',
+            width: newest ? 2.5 : 1,
+            opacity: newest ? 1 : Math.max(40, (255 * (index + 1)) / count - 60) / 255,
+            dots: true
+        };
+    }
+
+    function overlayHistoryCount() {
+        var n = Math.round(Number(S.history));
+        if (!isFinite(n) || isNaN(n)) { n = 5; }
+        return Math.min(20, Math.max(1, n));
+    }
+
+    function pointsTab(set) {
+        var all = setsFor(set.curve, set.party);
+        var asked = overlayHistoryCount();
+        var drawn = all.slice(0, asked).reverse(); /* oldest first, newest last */
+        var newest = all[0];
+        var points = S.chart === 'none' ? [] : (S.chart === 'one' ? PILLARS.slice(0, 1) : PILLARS);
+        var categories = points.map(function (p) { return p.tenor; });
+        var series = drawn.map(function (s, i) {
+            var style = curveStyle(i, drawn.length);
+            return {
+                values: points.map(function (p) { return p.value + (s.shiftBp || 0) / 100; }),
+                colour: style.colour, width: style.width,
+                opacity: style.opacity, dots: style.dots
+            };
+        });
+        var caption;
+        if (all.length === 1) {
+            caption = 'One published set. A single curve is drawn.';
+        } else if (drawn.length < asked) {
+            caption = asked + ' asked, ' + all.length + ' published. The chart draws all ' + all.length + ' sets that exist.';
+        } else if (drawn.length < all.length) {
+            caption = 'The newest ' + drawn.length + ' of ' + all.length + ' published sets.';
+        } else {
+            caption = 'The last ' + drawn.length + ' published sets. Newest bold green; older curves grey-blue, fading with age.';
+        }
+        var chart = curveChart({
+            categories: categories,
+            series: series,
+            caption: caption
+        });
+        var strip = '<div class="statstrip">' +
+            '<label class="countfield"><span class="lbl">Curves shown</span>' +
+            '<input type="number" min="1" max="20" step="1" value="' + asked +
+            '" data-input="history" title="The last N published sets of this curve and party, up to 20"></label>' +
+            '<div class="stat"><span class="lbl">Newest as-of</span><span class="val">' + esc(exact(newest.asof)) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Published</span><span class="val">' + when(newest.published_at) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Publisher</span><span class="val">' + esc(person(newest.published_by).name) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Authorising request</span><span class="val mono">' + esc(newest.request) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Points</span><span class="val mono">' + newest.points + '</span></div>' +
+            '</div>';
+        var body = PILLARS.map(function (p) {
+            return '<tr><td>' + esc(p.tenor) + '<span class="sub dim">' + esc(p.role) + '</span></td>' +
+                '<td class="num">' + rate(p.value + (newest.shiftBp || 0) / 100) + '</td>' +
+                '<td class="num">' + discountFactor(p.tenor, p.value + (newest.shiftBp || 0) / 100) + '</td>' +
+                '<td class="dim nowrap">' + esc(shortInstant(newest.asof)) + '</td></tr>';
+        }).join('');
+        return '<h2>Published points</h2>' +
+            '<p class="lede">The pillars the recipe asks for, and the shape the published sets hold. ' +
+            'The last sets of this curve are drawn together, newest first, so a move between publishes is visible.</p>' +
+            strip +
+            '<div class="pointsbeside">' +
+            chartPanel('Curve shape', chart) +
+            '<div class="panel"><h2>The newest published points <span class="sub">' + esc(exact(newest.asof)) + '</span></h2>' +
+            '<table class="diff"><thead><tr><th>Pillar</th><th class="num">Rate (%)</th><th class="num">DF</th><th>Observed</th></tr></thead>' +
+            '<tbody>' + body + '</tbody></table>' +
+            '<p class="hint">Every point is bootstrapped from the recipe at the set\'s as-of.</p></div>' +
+            '</div>' +
+            '<p class="lastchanged">Each point is identified by its oresmd_uri, not by a tenor column. ' +
+            'The pillar list comes from the curve configuration, so a point the recipe drops is not shown here either.</p>' +
+            gap('The read returns observations for a series and an instant. It does not return the pillar list beside them, ' +
+                'so the screen joins them by the recipe as it stands today and not as it stood at the as-of.') +
+            gap('The overlay needs the last N published sets of one series and party, which no read returns as one answer. ' +
+                'The candidate is the published-curves read the list names, filtered to the series and page-limited to N.') +
+            gap('The prior art exports the drawn curves as a CSV. This tab does not, because the record standard draws Export ' +
+                'on the header for an ORE document only, and a published set is not one. The note records the question.');
+    }
+
+    function compareTab(set) {
+        var cand = CANDIDATES.filter(function (c) { return c.curve === set.curve && c.party === set.party; })[0];
+        var asof = S.asof || set.asof;
+        var entry = AS_OFS.filter(function (a) { return a.iso === asof; })[0] || AS_OFS[0];
+        var state = S.points || 'changed';
+        if (state !== 'changed' && state !== 'same' && state !== 'added') { state = 'changed'; }
+
+        var model = POINT_STATES[state];
+        var rows = PILLARS.map(function (p) {
+            var pubV = p.value + entry.shiftBp / 100;
+            var move = model.moves[p.tenor];
+            var dropped = model.dropped.indexOf(p.tenor) >= 0;
+            var candV = dropped ? null : (move === undefined ? pubV : pubV + move / 100);
+            return { tenor: p.tenor, role: p.role, pub: pubV, cand: candV, move: move, dropped: dropped, added: false };
+        });
+        model.added.forEach(function (tenor) {
+            rows.push({ tenor: tenor, role: 'Swap', pub: null, cand: 3.8600, move: null, dropped: false, added: true });
+        });
+        rows.forEach(function (r) {
+            r.mark = r.added ? 'added' : r.dropped ? 'dropped' : r.move === undefined ? 'unchanged' : 'changed';
+        });
+
+        var changed = rows.filter(function (r) { return r.mark === 'changed'; }).length;
+        var added = rows.filter(function (r) { return r.mark === 'added'; }).length;
+        var dropped = rows.filter(function (r) { return r.mark === 'dropped'; }).length;
+        var unchanged = rows.filter(function (r) { return r.mark === 'unchanged'; }).length;
+        var nothingChanged = changed === 0 && added === 0 && dropped === 0;
+
+        var chartRows = rows.filter(function (r) { return S.chart === 'one' ? r.tenor === '1W' : true; });
+        var chart = curveChart({
+            categories: chartRows.map(function (r) { return r.tenor; }),
+            published: chartRows.map(function (r) { return r.pub; }),
+            candidate: chartRows.map(function (r) { return r.cand; }),
+            caption: nothingChanged
+                ? 'The two sets coincide at every point; the candidate line covers the published one.'
+                : 'Published dashed, candidate solid. A gap is a pillar the set does not hold, and never a zero.'
+        });
+
+        var shown = S.unchanged ? rows : rows.filter(function (r) { return r.mark !== 'unchanged'; });
+        var asofOptions = AS_OFS.map(function (a) { return { v: a.iso, t: a.label }; });
+
+        var banner = nothingChanged
+            ? '<div class="notice info"><b>No point changed.</b> The candidate matches the published set at ' +
+              esc(exact(asof)) + ' point for point. There is nothing to raise, and the published set stays the one in use.</div>'
+            : '';
+        var endedNotice = set.state !== 'published'
+            ? '<div class="notice warn"><b>The baseline set was ' + (set.state === 'withdrawn' ? 'withdrawn' : 'superseded') + '.</b> ' +
+              'The comparison still answers what the candidate changes against the last published set, and the desk prices from ' +
+              (set.state === 'withdrawn' ? 'no set of this curve.' : 'its successor.') + '</div>'
+            : '';
+
+        var table = '<table class="diff"><thead><tr><th>Pillar</th><th class="num">Published</th><th class="num">Candidate</th>' +
+            '<th class="num">Change (bp)</th><th>Mark</th></tr></thead><tbody>' +
+            (shown.length === 0 && !S.unchanged
+                ? '<tr><td colspan="5" class="dim">Every point here is unchanged. ' + unchanged + ' points match the published set.</td></tr>'
+                : shown.map(function (r) {
+                    var pubCell = r.pub === null ? '<span class="dash">—</span>'
+                        : (r.mark === 'changed' ? '<span class="was">' + rate(r.pub) + '</span>' : rate(r.pub));
+                    var candCell = r.cand === null ? '<span class="dash">—</span>'
+                        : (r.mark === 'changed' || r.mark === 'added' ? '<span class="now">' + rate(r.cand) + '</span>' : rate(r.cand));
+                    var change = r.mark === 'changed' ? bp(r.move)
+                        : r.mark === 'added' ? badge('pending', 'new pillar')
+                        : r.mark === 'dropped' ? badge('bad', 'not in candidate')
+                        : '<span class="dash">—</span>';
+                    var mark = r.mark === 'changed' ? badge('caution', 'Changed')
+                        : r.mark === 'added' ? badge('pending', 'Added')
+                        : r.mark === 'dropped' ? badge('bad', 'Dropped')
+                        : '<span class="dim">Unchanged</span>';
+                    return '<tr class="' + r.mark + '"><td>' + esc(r.tenor) + ' · ' + esc(r.role) + '</td>' +
+                        '<td class="num">' + pubCell + '</td>' +
+                        '<td class="num">' + candCell + '</td>' +
+                        '<td class="num">' + change + '</td>' +
+                        '<td class="mark">' + mark + '</td></tr>';
+                }).join('')) +
+            '</tbody></table>';
+
+        return '<h2>Compare as of</h2><p class="lede">The candidate set against the published set at a chosen as-of.</p>' +
+            '<div class="listtools">' +
+            '<span class="dim">Compare against</span>' +
+            select('asof', asofOptions, asof) +
+            toggle('unchanged', 'Show unchanged points', S.unchanged) +
+            '</div>' +
+            endedNotice +
+            '<div class="grid2" style="margin-bottom:16px">' +
+            '<div class="panel"><h2>Published set <span class="sub">the baseline</span></h2>' +
+            '<dl class="fields" style="grid-template-columns:1fr 1fr">' +
+            '<div><dt>As-of</dt><dd>' + esc(exact(set.asof)) + '</dd></div>' +
+            '<div><dt>Published by</dt><dd>' + esc(person(set.published_by).name) + ' ' + when(set.published_at) + '</dd></div>' +
+            '<div><dt>Authorising request</dt><dd>' + mono(set.request) + '</dd></div>' +
+            '<div><dt>State</dt><dd>' + setStateBadge(set.state) + '</dd></div>' +
+            '</dl></div>' +
+            '<div class="panel"><h2>Candidate set <span class="sub">what would replace it</span></h2>' +
+            '<dl class="fields" style="grid-template-columns:1fr 1fr">' +
+            '<div><dt>Built at</dt><dd>' + esc(exact(cand ? cand.built_at : '2026-10-07T08:15:00Z')) + '</dd></div>' +
+            '<div><dt>Built by</dt><dd>' + esc(person(cand ? cand.built_by : 'a.reyes').name) + '</dd></div>' +
+            '<div><dt>State</dt><dd>' + (state === 'same' ? 'A rebuild at the published as-of' : 'Not published · no approved request') + '</dd></div>' +
+            '<div><dt>Points</dt><dd class="mono">' + (cand ? cand.points : 12) + '</dd></div>' +
+            '</dl></div></div>' +
+            banner +
+            chartPanel('The two curves', chart) +
+            '<p class="summary"><span class="stat"><b>' + changed + '</b> changed</span>' +
+            '<span class="stat"><b>' + added + '</b> added</span>' +
+            '<span class="stat"><b>' + dropped + '</b> dropped</span>' +
+            '<span class="stat"><b>' + unchanged + '</b> unchanged</span></p>' +
+            (unchanged > 0 && !S.unchanged && state !== 'same'
+                ? '<p class="listnote">' + unchanged + ' unchanged points are hidden. Show unchanged points draws them.</p>'
+                : '') + table +
+            gap('No read returns a point-by-point difference. The candidate is ' +
+                'marketdata.v1.curve_candidates.diff, taking the published as-of from the publish record. ' +
+                'Until it exists this tab joins two observation sets by the point\'s oresmd_uri and marks an unmatched point as added or dropped.') +
+            gap('A dropped point has no place in the model yet: an observation carries no valid_to, so the screen cannot say when the published point stopped applying. ' +
+                'The withdrawal and supersession decision in the journey states the answer the record gains.');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The curve chart, plain SVG, as the application's LineChart draws.  */
+    /* ---------------------------------------------------------------- */
+
+    function chartPanel(title, body) {
+        return '<div class="chartpanel"><h3>' + esc(title) + '</h3>' + body + '</div>';
+    }
+
+    function emptyChart(reason) {
+        return '<div class="chartempty"><b>The chart cannot be drawn.</b>' + esc(reason) + '</div>';
+    }
+
+    var CHART_W = 720;
+    var CHART_H = 250;
+    var CHART_LEFT = 56;
+    var CHART_RIGHT = 16;
+    var CHART_TOP = 16;
+    var CHART_BOTTOM = 40;
+
+    function curveChart(opts) {
+        var categories = opts.categories;
+        var pub = opts.published || null;
+        var cand = opts.candidate || null;
+        var seriesList = opts.series || null;
+        if (seriesList === null) {
+            seriesList = cand
+                ? [{ values: pub, colour: 'var(--ink-faint)', width: 1.4, opacity: 1, dots: false, dashed: true },
+                   { values: cand, colour: 'var(--accent)', width: 2.2, opacity: 1, dots: true }]
+                : [{ values: pub, colour: 'var(--accent)', width: 2.2, opacity: 1, dots: true }];
+        }
+        var drawable = categories.length;
+        if (drawable === 0) {
+            return emptyChart('The set holds no points.');
+        }
+        if (drawable < 2) {
+            return emptyChart('A curve needs at least two pillars. One point has no shape; the table below holds it.');
+        }
+        var values = [];
+        seriesList.forEach(function (one) {
+            one.values.forEach(function (v) { if (v !== null && v !== undefined) { values.push(v); } });
+        });
+        var low = Math.min.apply(null, values);
+        var high = Math.max.apply(null, values);
+        var room = high === low ? Math.max(Math.abs(high) * 0.0005, 1e-6) : (high - low) * 0.12;
+        var yLow = low - room;
+        var yHigh = high + room;
+        var plotW = CHART_W - CHART_LEFT - CHART_RIGHT;
+        var plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
+
+        function xOf(i) { return CHART_LEFT + ((i + 0.5) * plotW) / drawable; }
+        function yOf(v) { return CHART_TOP + plotH - ((v - yLow) / (yHigh - yLow)) * plotH; }
+
+        var svg = [];
+        svg.push('<svg class="chart" role="img" viewBox="0 0 ' + CHART_W + ' ' + CHART_H + '" ' +
+            'preserveAspectRatio="xMidYMid meet" aria-label="' + esc(opts.caption) + '">');
+        for (var g = 0; g < 5; g += 1) {
+            var level = yLow + ((yHigh - yLow) * g) / 4;
+            var y = yOf(level);
+            svg.push('<line class="grid" x1="' + CHART_LEFT + '" x2="' + (CHART_W - CHART_RIGHT) +
+                '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"></line>');
+            svg.push('<text x="' + (CHART_LEFT - 8) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end">' +
+                rate(level) + '</text>');
+        }
+        svg.push('<line class="axis" x1="' + CHART_LEFT + '" x2="' + CHART_LEFT + '" y1="' + CHART_TOP +
+            '" y2="' + (CHART_H - CHART_BOTTOM) + '"></line>');
+        svg.push('<line class="axis" x1="' + CHART_LEFT + '" x2="' + (CHART_W - CHART_RIGHT) + '" y1="' +
+            (CHART_H - CHART_BOTTOM) + '" y2="' + (CHART_H - CHART_BOTTOM) + '"></line>');
+        categories.forEach(function (name, i) {
+            svg.push('<text x="' + xOf(i).toFixed(1) + '" y="' + (CHART_H - 24) + '" text-anchor="middle">' +
+                esc(name) + '</text>');
+        });
+
+        function runs(series) {
+            var out = [];
+            var current = [];
+            series.forEach(function (v, i) {
+                if (v === null || v === undefined) {
+                    if (current.length) { out.push(current); current = []; }
+                } else {
+                    current.push([i, v]);
+                }
+            });
+            if (current.length) { out.push(current); }
+            return out;
+        }
+        function pathOf(run) {
+            return run.map(function (p, k) {
+                return (k === 0 ? 'M ' : 'L ') + xOf(p[0]).toFixed(1) + ' ' + yOf(p[1]).toFixed(1);
+            }).join(' ');
+        }
+
+        seriesList.forEach(function (one) {
+            runs(one.values).forEach(function (run) {
+                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="' + one.colour + '" ' +
+                    'stroke-width="' + one.width + '"' +
+                    (one.opacity === undefined ? '' : ' stroke-opacity="' + one.opacity + '"') +
+                    (one.dashed === true ? ' stroke-dasharray="4 3"' : '') +
+                    ' vector-effect="non-scaling-stroke"></path>');
+            });
+            if (one.dots === true) {
+                one.values.forEach(function (v, i) {
+                    if (v !== null && v !== undefined) {
+                        svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
+                            '" r="' + (one.width > 2 ? 2.8 : 2) + '" fill="' + one.colour + '"' +
+                            (one.opacity === undefined ? '' : ' fill-opacity="' + one.opacity + '"') + '></circle>');
+                    }
+                });
+            }
+        });
+        if (cand) {
+            cand.forEach(function (v, i) {
+                if (v === null || v === undefined) {
+                    if (pub[i] !== null && pub[i] !== undefined) {
+                        svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(pub[i]).toFixed(1) +
+                            '" r="3.5" fill="none" stroke="var(--bad)" stroke-width="1.5"></circle>');
+                    }
+                }
+            });
+            pub.forEach(function (v, i) {
+                if ((v === null || v === undefined) && cand[i] !== null && cand[i] !== undefined) {
+                    svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(cand[i]).toFixed(1) +
+                        '" r="3.5" fill="none" stroke="var(--accent)" stroke-width="1.5"></circle>');
+                }
+            });
+        }
+        svg.push('<text x="' + CHART_LEFT + '" y="' + (CHART_H - 6) + '">' + esc('Rate (%)') + '</text>');
+        svg.push('<text x="' + (CHART_W - CHART_RIGHT) + '" y="' + (CHART_H - 6) + '" text-anchor="end">' +
+            esc(cand ? 'published · candidate' : (seriesList.length > 1 ? 'published sets, newest bold' : 'published')) + '</text>');
+        svg.push('</svg>');
+        return '<div class="chartlegend"><span class="legendline">' + esc(opts.caption) + '</span></div>' + svg.join('');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The History tab, as the record screen standard and the entity      */
+    /* screen specification's timeline draw it.                          */
+    /* ---------------------------------------------------------------- */
+
+    function historyOf(set) {
+        var out = [];
+        out.push({
+            id: 'raised', version: 1, kind: 'raised', at: set.raised_at, by: set.raised_by,
+            reason: 'system.new_record',
+            note: 'The raise wrote the subject: the curve, the party, the output series and the as-of.',
+            detail: { type: 'whole', set: set }
+        });
+        out.push({
+            id: 'decision', version: null, kind: 'approved', at: set.approved_at, by: set.approved_by,
+            reason: 'inbox.approval.approved',
+            note: 'Approved the request. The decision belongs to the request, not to this record.',
+            detail: { type: 'decision', comment: set.approved_comment, request: set.request }
+        });
+        out.push({
+            id: 'published', version: 2, kind: 'published', at: set.published_at, by: set.published_by,
+            reason: 'marketdata.publish.applied',
+            note: 'Applied the approved request: the set became the curve the desk prices from.',
+            detail: {
+                type: 'diff',
+                fields: [['published_by', '', set.published_by], ['published_at', '', exact(set.published_at)]]
+            }
+        });
+        if (set.state === 'withdrawn') {
+            out.push({
+                id: 'withdrawn', version: 3, kind: 'withdrawn', at: set.ended_at, by: set.ended_by,
+                reason: 'marketdata.publish.withdrawn',
+                note: set.reason_text,
+                detail: {
+                    type: 'diff',
+                    fields: [
+                        ['withdrawn_at', '', exact(set.ended_at)],
+                        ['withdrawn_by', '', set.ended_by],
+                        ['withdrawn_reason_code', '', set.reason_code]
+                    ]
+                }
+            });
+        }
+        if (set.state === 'superseded') {
+            out.push({
+                id: 'superseded', version: 3, kind: 'superseded', at: set.ended_at, by: set.ended_by,
+                reason: 'marketdata.publish.superseded',
+                note: set.reason_text,
+                detail: {
+                    type: 'diff',
+                    fields: [
+                        ['superseded_at', '', exact(set.ended_at)],
+                        ['superseded_by_request_id', '', set.ended_request],
+                        ['successor_as_of', '', exact(set.successor_asof)]
+                    ]
+                }
+            });
+        }
+        return out.sort(function (a, b) { return Date.parse(b.at) - Date.parse(a.at); });
+    }
+
+    var KIND_STYLE = {
+        raised: { label: 'Raised', cls: 'inactive', colour: 'var(--inactive)' },
+        approved: { label: 'Approved', cls: 'pending', colour: 'var(--info)' },
+        published: { label: 'Published', cls: 'ok', colour: 'var(--ok)' },
+        withdrawn: { label: 'Withdrawn', cls: 'bad', colour: 'var(--bad)' },
+        superseded: { label: 'Superseded', cls: 'caution', colour: 'var(--stale)' }
+    };
+    var HISTORY_ORDER = ['raised', 'approved', 'published', 'withdrawn', 'superseded'];
+
+    function eventChart(entries) {
+        var counts = {};
+        HISTORY_ORDER.forEach(function (k) { counts[k] = 0; });
+        var days = {};
+        entries.forEach(function (e) {
+            var k = dayKey(e.at);
+            if (!days[k]) { days[k] = { total: 0, kinds: {} }; }
+            days[k].total += 1;
+            days[k].kinds[e.kind] = (days[k].kinds[e.kind] || 0) + 1;
+            counts[e.kind] = (counts[e.kind] || 0) + 1;
+        });
+        var keys = Object.keys(days).sort();
+        var top = Math.max.apply(null, keys.map(function (k) { return days[k].total; }));
+        var barW = 26;
+        var gap = 12;
+        var left = 8;
+        var height = 96;
+        var width = Math.max(320, left * 2 + keys.length * (barW + gap));
+        var svg = ['<svg class="chart" role="img" width="' + width + '" height="' + (height + 34) +
+            '" viewBox="0 0 ' + width + ' ' + (height + 34) +
+            '" aria-label="History entries by day" preserveAspectRatio="xMinYMin meet">'];
+        keys.forEach(function (key, i) {
+            var x = left + i * (barW + gap);
+            var d = days[key];
+            var y = height;
+            HISTORY_ORDER.forEach(function (kind) {
+                var n = d.kinds[kind] || 0;
+                if (n === 0) { return; }
+                var h = (n / top) * (height - 8);
+                y -= h;
+                svg.push('<rect x="' + x + '" y="' + y.toFixed(1) + '" width="' + barW + '" height="' +
+                    h.toFixed(1) + '" fill="' + KIND_STYLE[kind].colour + '" fill-opacity="0.85" ' +
+                    'data-act="jump" data-arg="' + esc(key) + '"><title>' + esc(dayName(key + 'T00:00:00Z')) +
+                    ' · ' + d.total + (d.total === 1 ? ' entry' : ' entries') + '</title></rect>');
+            });
+            svg.push('<text x="' + (x + barW / 2) + '" y="' + (height + 16) + '" text-anchor="middle">' +
+                esc(key.slice(5)) + '</text>');
+        });
+        svg.push('<line class="axis" x1="0" x2="' + width + '" y1="' + height + '" y2="' + height + '"></line>');
+        svg.push('</svg>');
+        var legend = HISTORY_ORDER.filter(function (k) { return counts[k] > 0; }).map(function (k) {
+            return '<span><span class="sw" style="background:' + KIND_STYLE[k].colour + '"></span>' +
+                esc(KIND_STYLE[k].label) + ' <span class="mono">' + counts[k] + '</span></span>';
+        }).join('');
+        return '<div class="histchart">' + svg.join('') + '</div><p class="histlegend">' + legend +
+            '<span class="faint">One bar a day, split by the kind of entry. Click a bar to reach its entries.</span></p>';
+    }
+
+    function wholeRecord(set) {
+        var rows = [
+            ['curve configuration', set.curve],
+            ['party', set.party],
+            ['output series', set.series],
+            ['as-of', exact(set.asof)],
+            ['published_by', '—'],
+            ['published_at', '—']
+        ];
+        return '<dl class="fields" style="grid-template-columns:1fr 1fr">' + rows.map(function (r) {
+            return '<div><dt>' + esc(r[0]) + '</dt><dd class="mono">' + esc(r[1]) + '</dd></div>';
+        }).join('') + '</dl>';
+    }
+
+    function diffDetail(fields) {
+        return '<table class="diff"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>' +
+            fields.map(function (f) {
+                return '<tr><td>' + esc(f[0]) + '</td><td class="was">' + (f[1] === '' ? '' : esc(f[1])) +
+                    '</td><td class="now">' + esc(f[2]) + '</td></tr>';
+            }).join('') + '</tbody></table>';
+    }
+
+    function historyRail(entries) {
+        var html = [];
+        var lastDay = '';
+        var versioned = entries.filter(function (e) { return e.version !== null; });
+        var newestId = versioned.length ? versioned[0].id : '';
+        entries.forEach(function (e) {
+            var day = dayKey(e.at);
+            if (day !== lastDay) {
+                if (lastDay !== '') { html.push('</ul>'); }
+                html.push('<div class="daydiv">' + esc(dayName(e.at)) + '</div><ul class="histrail">');
+                lastDay = day;
+            }
+            var style = KIND_STYLE[e.kind];
+            var detail;
+            if (e.detail.type === 'whole') {
+                detail = wholeRecord(e.detail.set);
+            } else if (e.detail.type === 'decision') {
+                detail = '<p class="detailline">Comment: ' + esc(e.detail.comment) + '</p>' +
+                    '<p class="detailline">Read on the request ' + esc(e.detail.request) + ', version 2. ' +
+                    'The decision is the request\'s record, and it is drawn here because the publish stands on it.</p>';
+            } else {
+                detail = diffDetail(e.detail.fields);
+            }
+            html.push('<li id="e-' + esc(e.id) + '">' +
+                '<div class="gutter"><span title="' + esc(exact(e.at)) + '">' + esc(rel(e.at)) + '</span>' +
+                (e.id === newestId ? '<span class="cur">Current version</span>' : '') + '</div>' +
+                '<div class="face"><span class="avatar" aria-hidden="true">' + esc(initials(person(e.by).name)) + '</span></div>' +
+                '<div><div class="head">' + badge(style.cls, style.label) +
+                '<span class="rec">' + esc(e.kind === 'approved' ? 'approval_request ' + e.detail.request : 'curve_publish v' + e.version) + '</span>' +
+                '<span class="why">' + esc(e.reason) + '</span>' +
+                '<span>' + esc(person(e.by).name) + '</span></div>' +
+                '<p class="note">' + esc(e.note) + '</p>' +
+                '<details><summary>Details</summary>' + detail + '</details>' +
+                '</div></li>');
+        });
+        if (lastDay !== '') { html.push('</ul>'); }
+        return html.join('');
+    }
+
+    function historyTab(set) {
+        var entries = historyOf(set);
+        return '<h2>History</h2>' +
+            '<p class="lede">The story of this set: the raise, the decision it stands on, the apply, and its end. ' +
+            'Newest first. <span class="access">Read only</span></p>' +
+            '<div class="histtools">' +
+            toggle('service', 'Hide system activity', false) +
+            '<span class="hint">Drawn even here: no service account wrote this record. The toggle is the timeline\'s own.</span>' +
+            '</div>' +
+            '<div class="histwrap"><h3>Entries over time</h3>' + eventChart(entries) + '</div>' +
+            historyRail(entries) +
+            '<p class="lastchanged">No version offers Revert. A publish record is read only: the gate writes it, and no person may write it back. ' +
+            'A correction is a new publish or a withdrawal, and each is an act of its own with a request behind it.</p>' +
+            gap('The publish record is bitemporal, so its versions hold the raised subject beside the applied one. ' +
+                'The history read returns a record\'s versions; the approval decision is not one of them, and no read merges the request\'s decisions into the record\'s stream. ' +
+                'The screen reads the decision by request_id and merges it by time, which the note states as the open question it is.') +
+            gap('The record carries no change_reason_code and no change_commentary, because the gate writes it and not a person. ' +
+                'The entry names the act and its fields instead, and a reason code exists only on the withdrawal the decision adds.');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The approvals queue, and the request page.                        */
+    /* ---------------------------------------------------------------- */
+
+    function queueRows() {
+        var areas = person(S.actor).decides || [];
+        return REQUESTS.filter(function (r) {
+            if (r.by === S.actor) { return false; }
+            var area = r.kind.split('.')[0];
+            if (areas.indexOf(area) < 0) { return false; }
+            if (S.kind !== 'all' && area !== S.kind) { return false; }
+            if (!S.q) { return true; }
+            var hay = ([r.ref, r.kind, r.label, r.subjectText, r.by, r.reason,
+                r.subject ? r.subject.curve + ' ' + r.subject.party : ''].join(' ')).toLowerCase();
+            return hay.indexOf(S.q.toLowerCase()) >= 0;
+        }).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
+    }
+
+    function requestSubject(r) {
+        if (r.subject) {
+            return '<span class="key">' + esc(r.subject.curve) + '</span> <span class="dim">· ' + esc(r.subject.party) + '</span>' +
+                '<span class="sub">as-of ' + esc(exact(r.subject.asof)) + ' · ' + r.subject.points + ' points</span>';
+        }
+        return esc(r.subjectText || '') + '<span class="sub">Request ' + esc(r.ref) + '</span>';
+    }
+
+    function queueSurface() {
+        if (S.open) { return requestPage(); }
+        if (S.state === 'none') { return queueEmpty(); }
+
+        var rows = queueRows();
+        var table = '<table class="rows queue"><thead><tr>' +
+            '<th scope="col" style="width:180px">Who</th>' +
+            '<th scope="col" style="width:42%">Asked for</th>' +
+            '<th scope="col">Why</th>' +
+            '<th scope="col" style="width:150px">Waiting</th></tr></thead><tbody>' +
+            rows.map(function (r) {
+                return '<tr class="pick" data-openreq="' + esc(r.id) + '" tabindex="0" role="link">' +
+                    '<td><span class="person"><span class="avatar" aria-hidden="true">' +
+                    esc(initials(person(r.by).name)) + '</span>' + esc(person(r.by).name) + '</span></td>' +
+                    '<td class="askedfor">' + badge('class', r.label) +
+                    '<span class="kindcode">' + esc(r.kind) + '</span>' +
+                    '<span class="subjectline">' + requestSubject(r) + '</span></td>' +
+                    '<td class="why dim">' + esc(r.reason) + '</td>' +
+                    '<td class="nowrap">' + when(r.at) + '<span class="sub">' + stateBadge(r.state) + '</span></td></tr>';
+            }).join('') + '</tbody></table>';
+
+        var empty = rows.length === 0
+            ? '<div class="tblstate"><b>No request matches.</b>Clear the search or the kind filter to see the queue. ' +
+              '<button class="btn small" data-act="clear">Clear</button></div>'
+            : table;
+
+        return crumbs([{ t: 'Home' }, { t: 'Requests' }]) +
+            pagehead('Requests',
+                'Every request in the tenant, your own, and the queue of those you may decide.',
+                '<button class="btn" data-act="reload">Refresh</button>') +
+            myRequests() +
+            '<div class="listtools">' +
+            '<span class="searchbox"><input type="text" data-input="qsearch" placeholder="Search requests" value="' + esc(S.q) + '" aria-label="Search requests"></span>' +
+            select('kind', [{ v: 'all', t: 'All kinds' }, { v: 'marketdata', t: 'Market data' },
+                { v: 'iam', t: 'Access' }, { v: 'refdata', t: 'Reference data' }], S.kind) +
+            '</div>' +
+            '<p class="listnote">' + rows.length + ' requests you may decide. A request appears when you hold the permission its kind names; ' +
+            esc(person(S.actor).name) + ' holds ' + esc((person(S.actor).decides || []).map(function (a) {
+                return KIND_AREA[a];
+            }).join(', ') || 'no decide permission') + '. ' +
+            'The asked-for line is the request\'s own subject, read beside its header. ' +
+            '<span class="dim">Oldest first.</span></p>' +
+            empty +
+            gap('The queue read returns a generic view. It carries the account and the roles a role request names, and a trade subject for a trading authorisation, ' +
+                'but nothing that names a curve, a party or an as-of. The candidate is a subject line each kind declares, drawn from its own detail table, ' +
+                'so the asked-for column can carry the curve publish\'s subject and the role request\'s roles. Until it exists the market-data row shows the kind alone.') +
+            gap('The asked-for column is the change this screen needs: it holds one line of text today, and a curve publish needs a badge, a curve, a party and an as-of. ' +
+                'The role and counterparty rows keep one line, so the column grows only where a kind asks for it.') +
+            gap('The queue is scoped by the decide permission and never by party, so a curve published for one party is decided by the tenant\'s Market Risk. ' +
+                'The subject names its party, so the decider knows whose curve it is.');
+    }
+
+    function myRequests() {
+        var mine = REQUESTS.filter(function (r) { return r.by === S.actor; });
+        var body = mine.length === 0
+            ? '<p class="dim">You have no requests.</p>'
+            : '<table class="rows"><thead><tr><th>Asked for</th><th>Kind</th><th>Waiting</th><th>State</th></tr></thead><tbody>' +
+              mine.map(function (r) {
+                  return '<tr><td>' + requestSubject(r) + '</td><td class="mono">' + esc(r.kind) + '</td>' +
+                      '<td>' + when(r.at) + '</td><td>' + stateBadge(r.state) + '</td></tr>';
+              }).join('') + '</tbody></table>';
+        return '<div class="card" style="padding:16px;margin:0 0 16px"><h3 style="margin:0 0 8px">My requests</h3>' + body + '</div>';
+    }
+
+    function queueEmpty() {
+        return crumbs([{ t: 'Home' }, { t: 'Requests' }]) +
+            pagehead('Requests', 'Every request in the tenant, your own, and the queue of those you may decide.') +
+            '<div class="tblstate"><b>Nothing waits for you to decide.</b>' +
+            'A request appears here when it names a kind whose decide permission you hold, and when somebody else raised it. ' +
+            'Your own requests are never listed.</div>' +
+            gap('The queue total is the count the page walks, because the same statement that filters by kind and permission also leaves out your own requests.');
+    }
+
+    function subjectPanel(r) {
+        if (!r.subject) {
+            return '<div class="panel"><h2>Subject <span class="sub">' + esc(r.kind) + '</span></h2>' +
+                '<dl class="fields" style="grid-template-columns:1fr 1fr">' +
+                '<div><dt>The request is about</dt><dd>' + esc(r.subjectText || '') + '</dd></div>' +
+                '<div><dt>Kind</dt><dd class="mono">' + esc(r.kind) + '</dd></div></dl>' +
+                '<p class="hint">This kind keeps its subject in its own table, which the market-data screens do not read.</p></div>';
+        }
+        var s = r.subject;
+        return '<div class="panel"><h2>Subject <span class="sub">' + esc(r.kind) + '</span></h2>' +
+            '<dl class="fields" style="grid-template-columns:repeat(3,1fr)">' +
+            '<div><dt>Curve configuration</dt><dd class="mono">' + esc(s.config) + '</dd></div>' +
+            '<div><dt>Party</dt><dd>' + esc(s.party) + '</dd></div>' +
+            '<div><dt>Published as-of</dt><dd>' + esc(exact(s.asof)) + '</dd></div>' +
+            '<div><dt>Points</dt><dd class="mono">' + s.points + '</dd></div>' +
+            '<div><dt>Candidate built</dt><dd>' + when(s.built_at) + ' by ' + esc(person(s.built_by).name) + '</dd></div>' +
+            '<div><dt>Output series</dt><dd class="mono">' + (s.series ? esc(s.series) : '<span class="dash">—</span>') + '</dd></div>' +
+            '</dl>' +
+            '<p class="hint">A request authorises this curve at this as-of for this party, and nothing else. ' +
+            'A publish of another curve, another as-of or another party is refused with both subjects named.</p></div>';
+    }
+
+    function deltaSummaryPanel(r) {
+        if (!r.subject) { return ''; }
+        return '<div class="panel"><h2>The delta the decision rests on</h2>' +
+            '<p class="summary"><span class="stat"><b>4</b> changed</span><span class="stat"><b>1</b> added</span>' +
+            '<span class="stat"><b>1</b> dropped</span><span class="stat"><b>7</b> unchanged</span></p>' +
+            '<p class="hint">The candidate against the published set at ' + esc(exact(r.subject.asof)) + '. ' +
+            '<button class="btn small" data-act="compare" data-arg="' + esc(r.subject.curve) + '|' + esc(r.subject.party) + '">' +
+            'Open the comparison</button></p>' +
+            gap('The comparison is the missing read of the same name. It is drawn here as the summary the decider needs, ' +
+                'not as a value the queue read returns.') + '</div>';
+    }
+
+    function checksPanel(r) {
+        if (!r.subject) { return ''; }
+        var names = ['Every pillar priced', 'Discount factors monotonic', 'No arbitrage'];
+        return '<div class="panel"><h2>Checks over the candidate</h2>' +
+            '<table class="rows"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>' +
+            names.map(function (n) {
+                return '<tr><td>' + esc(n) + '</td><td>' + badge('inactive', 'Unknown') + '</td></tr>';
+            }).join('') + '</tbody></table>' +
+            gap('No operation runs these checks over a candidate set and returns the result. ' +
+                'The candidate is marketdata.v1.curve_bootstrap.validate, returning one row per check. ' +
+                'Until it exists each row reads unknown: not checked, not passed.') + '</div>';
+    }
+
+    function requestPage() {
+        var r = REQUESTS.filter(function (x) { return x.id === S.open; })[0];
+        if (!r) { S.open = ''; return queueSurface(); }
+        var decisions = (DECISIONS[r.id] || []).slice();
+        var rstate = r.state;
+        if (S.state === 'held' && !S.decision) {
+            rstate = 'held';
+            if (decisions.length === 0) {
+                decisions.push({ at: '2026-10-06T16:20:00Z', by: S.actor, what: 'hold',
+                    comment: 'Waiting on the 4pm fixing.', reason: 'awaiting_fixing' });
+            }
+        }
+        if (S.state === 'decided' && !S.decision) {
+            rstate = 'approved';
+            if (decisions.length === 0) {
+                decisions.push({ at: '2026-10-06T16:12:00Z', by: S.actor, what: 'approve',
+                    comment: 'Checked against the 16:00 quotes.' });
+            }
+        }
+        if (S.decision) {
+            rstate = S.decision === 'approve' ? 'approved' : S.decision === 'refuse' ? 'refused' : 'held';
+            var taken = decisions.some(function (d) { return d.by === S.actor && d.what === S.decision; });
+            if (!taken) {
+                decisions.push({ at: '2026-10-07T09:00:00Z', by: S.actor, what: S.decision,
+                    comment: S.comment || (S.decision === 'approve' ? 'Checked against the 16:00 quotes.' : ''),
+                    reason: S.decision === 'hold' ? 'awaiting_fixing' : '' });
+            }
+        }
+        var final = rstate === 'approved' || rstate === 'refused';
+        var outcome = S.decision
+            ? '<div class="notice ' + (S.decision === 'approve' ? 'success' : S.decision === 'refuse' ? 'error' : 'warn') + '"><b>' +
+              (S.decision === 'approve' ? 'Approved.' : S.decision === 'refuse' ? 'Refused.' : 'Held.') + '</b> ' +
+              (S.decision === 'approve'
+                  ? 'The request is approved. Nothing publishes yet: the trader applies the approved subject in Publish the approved set.'
+                  : S.decision === 'refuse'
+                      ? 'The request is refused and the reason is kept. ' + esc(person(r.by).name) + ' reads your comment.'
+                      : 'The request is parked in the queue until somebody resumes it. ' + esc(person(r.by).name) + ' is told.') +
+              '</div>'
+            : '';
+
+        var decisionsBlock = decisions.length === 0
+            ? '<p class="dim">No decision yet.</p>'
+            : '<ul class="histrail">' + decisions.map(function (d) {
+                return '<li><span class="gutter">' + when(d.at) + '</span><div class="face"><span class="avatar" aria-hidden="true">' +
+                    esc(initials(person(d.by).name)) + '</span></div><div><div class="head">' +
+                    badge(d.what === 'approve' ? 'ok' : d.what === 'refuse' ? 'bad' : 'caution',
+                        d.what === 'approve' ? 'Approved' : d.what === 'refuse' ? 'Refused' : 'Held') +
+                    '<span>' + esc(person(d.by).name) + '</span></div>' +
+                    '<p class="note">' + esc(d.comment) + (d.reason ? ' <span class="dim">Reason: ' + esc(d.reason) + '</span>' : '') + '</p></div></li>';
+            }).join('') + '</ul>';
+
+        var commentNeeds = S.chosen === 'refuse';
+        var bad = S.tried && commentNeeds && !S.comment.trim();
+        var panel = final
+            ? '<p class="dim">This request is ' + stateName(rstate).toLowerCase() + ' and can no longer be decided. ' +
+              'A refusal is final; an approval is reversed rather than edited.</p>'
+            : '<div role="radiogroup" aria-label="Decision">' +
+              choice('approve', 'Approve', 'The request closes approved; the trader still applies the approved subject.') +
+              choice('refuse', 'Refuse', 'The request ends. A comment is required, because the asker reads it.') +
+              choice('hold', 'Hold', 'The request stays in the queue and the asker is told.') +
+              '</div>' +
+              '<div class="field' + (bad ? ' bad' : '') + '" style="margin-top:16px"><span class="lbl">Comment' +
+              (commentNeeds ? ' <span class="req">(required)</span>' : '') + '</span>' +
+              '<textarea data-input="comment" aria-label="Comment">' + esc(S.comment) + '</textarea>' +
+              (bad ? '<p class="msg">Say why you refuse, so the person who asked can act.</p>' : '') + '</div>' +
+              '<div class="stepfoot"><span class="dim">Your decision is recorded under your name.</span>' +
+              '<span class="ml-auto"></span><button class="btn primary" data-act="send"' + (S.chosen ? '' : ' disabled') +
+              '>Send the decision</button></div>';
+
+        var title = r.subject ? 'Publish ' + r.subject.curve : r.label + ' · ' + r.ref;
+        var mayDecide = (person(S.actor).decides || []).indexOf(r.kind.split('.')[0]) >= 0;
+
+        return crumbs([{ t: 'Home' }, { t: 'Requests', act: 'queue' }, { t: r.ref }]) +
+            pagehead(title,
+                stateBadge(rstate) + ' · ' + badge('class', r.label) + ' · asked ' + when(r.at) + ' by ' + esc(person(r.by).name) +
+                ' · expires ' + when(r.expires),
+                '<button class="btn" data-act="queue">Back to the queue</button>') +
+            outcome +
+            '<div style="display:grid;gap:16px">' +
+            subjectPanel(r) +
+            '<div class="panel"><h2>Reason given</h2><p>' + esc(r.reason) + '</p></div>' +
+            deltaSummaryPanel(r) +
+            checksPanel(r) +
+            '<div class="panel"><h2>The rule</h2>' +
+            '<dl class="fields" style="grid-template-columns:repeat(4,1fr)">' +
+            '<div><dt>Deciding group</dt><dd>' + esc(r.group) + '</dd></div>' +
+            '<div><dt>Approvals needed</dt><dd class="mono">1</dd></div>' +
+            '<div><dt>Comment on approve</dt><dd>Not required</dd></div>' +
+            '<div><dt>Hold</dt><dd>Allowed, with a reason code</dd></div>' +
+            '<div><dt>You may decide</dt><dd>' + (mayDecide ? 'Yes, and you did not raise it' : 'No: your roles do not hold the kind\'s decide permission') + '</dd></div>' +
+            '<div><dt>Expiry</dt><dd>' + esc(exact(r.expires)) + '</dd></div>' +
+            '</dl>' +
+            '<p class="hint">The group is drawn from the permission the kind names. The model names a permission and not a group, ' +
+            'so the name is a candidate the screen shows beside the code.</p></div>' +
+            '<div class="panel"><h2>Decisions so far</h2>' + decisionsBlock + '</div>' +
+            '<div class="panel"><h2>Your decision</h2>' + panel + '</div>' +
+            '</div>' +
+            gap('Nothing applies a publish when the last decider approves. The trader calls publish_curve again with the approved request, ' +
+                'as Publish the approved set draws it.') +
+            gap('No notification tells the approver that a request waits, and none tells the asker what was decided. ' +
+                'The queue is the only signal today.');
+    }
+
+    function choice(value, name, sub) {
+        return '<div class="choice' + (S.chosen === value ? ' on' : '') + '" role="radio" aria-checked="' +
+            (S.chosen === value) + '" tabindex="0" data-act="decide" data-arg="' + value + '">' +
+            '<span class="dot"></span><span><span class="nm">' + esc(name) + '</span><br>' +
+            '<span class="sub">' + esc(sub) + '</span></span></div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The bottom bar: the surface, the tab, the state and the gaps.      */
+    /* ---------------------------------------------------------------- */
+
+    function bar() {
+        var surfaces = [['list', 'List'], ['queue', 'Queue']];
+        var listStates = [['rows', 'Rows'], ['none', 'No published'], ['nomatch', 'No match'], ['loading', 'Loading'], ['error', 'Error']];
+        var compareStates = [['changed', 'Changed'], ['same', 'Nothing changed'], ['added', 'One added'], ['nopublished', 'No published set']];
+        var queueStates = [['queue', 'Queue'], ['request', 'Open request'], ['held', 'Held'], ['decided', 'Decided'], ['none', 'Nothing waits']];
+        var record = S.surface === 'list' && S.curve;
+        var out = '<span class="label">Surface</span>' +
+            surfaces.map(function (s) {
+                return '<button data-act="surface" data-arg="' + s[0] + '" class="' + (S.surface === s[0] ? 'on' : '') + '">' + s[1] + '</button>';
+            }).join('');
+        if (record) {
+            var words = { details: 'Details', points: 'Published points', compare: 'Compare as of', history: 'History' };
+            out += '<span class="sep">|</span><span class="label">Tab</span>' +
+                TABS.map(function (t) {
+                    return '<button data-act="tab" data-arg="' + t + '" class="' + (S.tab === t ? 'on' : '') + '">' + words[t] + '</button>';
+                }).join('');
+        }
+        if (S.surface === 'list') {
+            if (record && S.tab === 'compare') {
+                out += '<span class="sep">|</span><span class="label">Compare</span>' +
+                    compareStates.map(function (s) {
+                        var on = s[0] === (S.points || 'changed');
+                        return '<button data-act="cstate" data-arg="' + s[0] + '" class="' + (on ? 'on' : '') + '">' + s[1] + '</button>';
+                    }).join('');
+            } else if (!record) {
+                out += '<span class="sep">|</span><span class="label">List</span>' +
+                    listStates.map(function (s) {
+                        var on = s[0] === (S.state || 'rows');
+                        return '<button data-act="lstate" data-arg="' + s[0] + '" class="' + (on ? 'on' : '') + '">' + s[1] + '</button>';
+                    }).join('');
+            }
+        }
+        if (S.surface === 'queue') {
+            var current = S.open ? (S.state || 'request') : (S.state || 'queue');
+            out += '<span class="sep">|</span><span class="label">State</span>' +
+                queueStates.map(function (s) {
+                    return '<button data-act="qstate" data-arg="' + s[0] + '" class="' + (s[0] === current ? 'on' : '') + '">' + s[1] + '</button>';
+                }).join('') +
+                '<span class="sep">|</span><span class="label">Looking as</span>' +
+                ['n.haugen', 'm.oduya', 'k.mori'].map(function (id) {
+                    return '<button data-act="actor" data-arg="' + id + '" class="' + (S.actor === id ? 'on' : '') + '">' +
+                        esc(person(id).name) + '</button>';
+                }).join('');
+        }
+        out += '<span class="sep">|</span><button data-act="gaps">' +
+            (document.body.classList.contains('nogaps') ? 'Show gaps' : 'Hide gaps') + '</button>';
+        return out;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Render and act.                                                   */
+    /* ---------------------------------------------------------------- */
+
+    function render() {
+        if (['list', 'queue'].indexOf(S.surface) < 0) { S.surface = 'list'; }
+        if (TABS.indexOf(S.tab) < 0) { S.tab = 'details'; }
+        document.getElementById('shell').innerHTML = shell();
+        var body = S.surface === 'list' ? listSurface() : queueSurface();
+        document.getElementById('app').innerHTML = body;
+        document.getElementById('bar').innerHTML = bar();
+        document.getElementById('note').textContent = 'Prototype · mock data · reads no server · ' +
+            S.surface + (S.surface === 'list' && S.curve ? ' · ' + S.tab : ' · ' + (S.state || 'rows'));
+        sync();
+        wire();
+    }
+
+    function wire() {
+        var si = document.querySelector('[data-input=search]');
+        if (si) {
+            si.addEventListener('input', function () {
+                S.q = si.value; S.page = 0;
+                var pos = si.selectionStart;
+                render();
+                var n = document.querySelector('[data-input=search]');
+                n.focus(); n.setSelectionRange(pos, pos);
+            });
+        }
+        var qi = document.querySelector('[data-input=qsearch]');
+        if (qi) {
+            qi.addEventListener('input', function () {
+                S.q = qi.value;
+                var pos = qi.selectionStart;
+                render();
+                var n = document.querySelector('[data-input=qsearch]');
+                n.focus(); n.setSelectionRange(pos, pos);
+            });
+        }
+        var hi = document.querySelector('[data-input=history]');
+        if (hi) {
+            hi.addEventListener('input', function () {
+                var v = Number(hi.value);
+                if (!isFinite(v) || v < 1) { return; }
+                S.history = Math.min(20, Math.round(v));
+                var pos = hi.selectionStart;
+                render();
+                var n = document.querySelector('[data-input=history]');
+                if (n) { n.focus(); n.setSelectionRange(pos, pos); }
+            });
+        }
+        var ci = document.querySelector('[data-input=comment]');
+        if (ci) {
+            ci.addEventListener('input', function () { S.comment = ci.value; });
+        }
+    }
+
+    function goSurface(s) {
+        S.surface = s;
+        S.state = '';
+        S.menu = '';
+        S.page = 0;
+        S.q = '';
+        S.kind = 'all';
+        S.decision = null;
+        S.chosen = '';
+        S.comment = '';
+        S.tried = false;
+        S.curve = '';
+        S.party = '';
+        S.tab = 'details';
+        S.asof = '';
+        S.points = '';
+        if (s !== 'queue') { S.open = ''; }
+        render();
+    }
+
+    function openRecord(curve, party, tab) {
+        S.surface = 'list';
+        S.curve = curve;
+        S.party = party;
+        S.tab = tab || 'details';
+        S.state = '';
+        S.menu = '';
+        S.points = '';
+        S.asof = '';
+        render();
+    }
+
+    document.addEventListener('click', function (e) {
+        var anchor = e.target.closest && e.target.closest('a[href="#"]');
+        if (anchor) { e.preventDefault(); }
+        var jump = e.target.closest('[data-act=jump]');
+        if (jump) {
+            var key = jump.getAttribute('data-arg');
+            var target = null;
+            var all = document.querySelectorAll('[id^="e-"]');
+            for (var j = 0; j < all.length; j += 1) {
+                var at = all[j].querySelector('.gutter span');
+                if (at && at.getAttribute('title') && at.getAttribute('title').indexOf(key) >= 0) {
+                    target = all[j];
+                    break;
+                }
+            }
+            if (target) {
+                target.scrollIntoView({ block: 'center' });
+                target.classList.add('marked');
+            } else {
+                var first = document.querySelector('[id^="e-"]');
+                if (first) { first.scrollIntoView({ block: 'center' }); first.classList.add('marked'); }
+            }
+            return;
+        }
+        var menuBtn = e.target.closest('[data-act=menu]');
+        if (menuBtn) {
+            var id = menuBtn.getAttribute('data-arg');
+            S.menu = S.menu === id ? '' : id;
+            render();
+            return;
+        }
+        var pick = e.target.closest('[data-act=pick]');
+        if (pick) {
+            var parts = pick.getAttribute('data-arg').split(':');
+            var which = parts[0], value = parts.slice(1).join(':');
+            S.menu = '';
+            if (which === 'size') { S.size = Number(value); S.page = 0; }
+            if (which === 'fparty') { S.partyFilter = value; S.page = 0; }
+            if (which === 'kind') { S.kind = value; }
+            if (which === 'asof') { S.asof = value; }
+            render();
+            return;
+        }
+        if (S.menu) { S.menu = ''; render(); return; }
+
+        var row = e.target.closest('[data-open]');
+        if (row && S.surface === 'list') {
+            var v = row.getAttribute('data-open').split('|');
+            S.curve = v[0]; S.party = v[1]; S.tab = 'details'; S.asof = '';
+            S.state = '';
+            render();
+            return;
+        }
+        var qrow = e.target.closest('[data-openreq]');
+        if (qrow && S.surface === 'queue') {
+            S.open = qrow.getAttribute('data-openreq'); S.state = '';
+            S.decision = null; S.chosen = ''; S.comment = ''; S.tried = false;
+            render();
+            return;
+        }
+
+        var b = e.target.closest('[data-act]');
+        if (!b) { return; }
+        var act = b.getAttribute('data-act');
+        var arg = b.getAttribute('data-arg');
+        if (act === 'surface') {
+            goSurface(arg === 'queue' ? 'queue' : 'list');
+        }
+        else if (act === 'tab') {
+            S.tab = arg; S.state = ''; S.menu = '';
+            if (arg !== 'compare') { S.points = ''; S.unchanged = false; S.asof = ''; }
+            render();
+        }
+        else if (act === 'lstate') {
+            S.curve = ''; S.party = ''; S.state = arg === 'rows' ? '' : arg; S.page = 0;
+            render();
+        }
+        else if (act === 'cstate') {
+            S.state = '';
+            if (arg === 'nopublished') {
+                S.curve = 'JPY-TONA-6M'; S.party = 'ACME Hong Kong'; S.tab = 'compare';
+            } else {
+                S.tab = 'compare';
+                S.points = arg === 'changed' ? '' : arg;
+                if (!S.curve || S.curve === 'JPY-TONA-6M') { S.curve = 'USD-SOFR-3M'; S.party = 'ACME London'; }
+            }
+            render();
+        }
+        else if (act === 'qstate') {
+            S.state = '';
+            S.decision = null; S.chosen = ''; S.comment = ''; S.tried = false;
+            if (arg === 'queue') { S.open = ''; S.state = ''; }
+            else if (arg === 'none') { S.open = ''; S.state = 'none'; }
+            else { S.open = 'r1'; S.state = arg === 'request' ? '' : arg; }
+            render();
+        }
+        else if (act === 'actor') {
+            S.actor = arg; S.open = ''; S.state = '';
+            S.decision = null; S.chosen = ''; S.comment = '';
+            render();
+        }
+        else if (act === 'toggle') {
+            if (arg === 'candidates') { S.show = S.show === 'candidates' ? 'published' : 'candidates'; S.page = 0; }
+            if (arg === 'ended') { S.ended = !S.ended; S.page = 0; }
+            if (arg === 'unchanged') { S.unchanged = !S.unchanged; }
+            render();
+        }
+        else if (act === 'sort') {
+            if (S.sort === arg) { S.dir = -S.dir; } else { S.sort = arg; S.dir = 1; }
+            render();
+        }
+        else if (act === 'page') {
+            var count = filteredRows().length;
+            var pages = Math.max(1, Math.ceil(count / S.size));
+            if (arg === 'first') { S.page = 0; }
+            if (arg === 'prev') { S.page = Math.max(0, S.page - 1); }
+            if (arg === 'next') { S.page = Math.min(pages - 1, S.page + 1); }
+            if (arg === 'last') { S.page = pages - 1; }
+            render();
+        }
+        else if (act === 'clear') { S.q = ''; S.partyFilter = 'all'; S.page = 0; S.state = ''; render(); }
+        else if (act === 'reload') { render(); }
+        else if (act === 'retry') { S.state = ''; render(); }
+        else if (act === 'tabfirst') { openRecord('USD-SOFR-3M', 'ACME London', 'compare'); }
+        else if (act === 'compare') {
+            var curve = S.curve, party = S.party;
+            if (arg) { var c = arg.split('|'); curve = c[0]; party = c[1]; }
+            openRecord(curve || 'USD-SOFR-3M', party || 'ACME London', 'compare');
+        }
+        else if (act === 'queue') { goSurface('queue'); }
+        else if (act === 'surface:list') { goSurface('list'); }
+        else if (act === 'decide') { S.chosen = arg; render(); }
+        else if (act === 'send') {
+            S.tried = true;
+            if (S.chosen === 'refuse' && !S.comment.trim()) { render(); return; }
+            S.decision = S.chosen;
+            render();
+        }
+        else if (act === 'gaps') {
+            document.body.classList.toggle('nogaps');
+            render();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') { return; }
+        var t = e.target;
+        if (t.matches && (t.matches('[data-open]') || t.matches('[data-openreq]'))) {
+            e.preventDefault(); t.click();
+        } else if (t.getAttribute && t.getAttribute('role') === 'radio') {
+            e.preventDefault(); t.click();
+        }
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>

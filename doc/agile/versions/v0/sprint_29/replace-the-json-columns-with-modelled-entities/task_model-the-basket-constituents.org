@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 67FD016B-EFFD-4DCC-AEDD-0061435AA735
+:END:
+#+title: Task: Model the basket constituents
+#+description: Four trading entities hold their baskets, prices, barriers and levels as JSON blobs. This replaces the basket blob with constituent rows that say what kind each constituent is and which vocabulary it belongs to, so a mixed basket is representable and a constituent can be checked against the catalogue it names.
+#+type: task
+#+level: s1
+#+filetags: :replace-the-json-columns-with-modelled-entities:sprint_29:v0:
+#+owner: marco
+#+branch: feature/model-the-basket-constituents
+#+pr: 3917
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A basket is a row per constituent, each stating its kind, its position and the code it names, so a worst-of basket of FX underlyings and a basket of equities are the same shape and each constituent resolves against the vocabulary its kind belongs to.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- A basket constituent table holds one row per constituent, with the kind, the position and the code it names.
+- The equity swap and the equity accumulator draw their constituents from it, and no JSON blob holds a list the domain can state as rows.
+- A constituent of a kind whose catalogue does not hold the code is refused when it is written, not when a report reads it.
+- An export writes the basket back as the constituents the document states, and a roundtrip test proves it.
+
+* Plan
+
+** What already exists, and what is missing
+
+The table this task was going to create **already exists**. =equity_basket_constituent=
+is modelled, generated and documented: =trade_id=, =trade_activity_id=,
+=sequence_number=, =underlying_name= and =weight=, with a docstring that says the
+=basket_json= column "is retired with this table".
+
+It is not retired, and the table is connected to nothing:
+
+- =instrument_batch= carries =commodity_basket_constituents= and
+  =credit_basket_constituents= and **no equity array**.
+- =write_instrument_batch= writes those two and no equity one.
+- =equity_instrument_projection= still writes =r.basket_json = names_json(names)=
+  on import and reads =names_of(v.basket_json)= on export.
+- =equity_swap_instrument= still declares =basket_json=.
+
+So the columns were modelled and the wiring was not done, which is why the blob
+survived. The task is to finish it rather than to design it.
+
+** Steps
+
+1. *The batch.* An =equity_basket_constituents= array on =instrument_batch=, and
+   the write for it in =write_instrument_batch=, so a booking can carry the rows.
+2. *The variant.* *Not needed, and the plan was wrong to say so.*
+   =equity_instrument= is a flat header, not a variant: the equity family keeps
+   the header in one array and each product's facts in another, and the batch is
+   what carries the children. So the constituents are carried by
+   =equity_basket_constituents= on the batch, which step 1 added, exactly as the
+   commodity family carries its own.
+3. *The projection.* Import writes one constituent per =Underlying= element with
+   its ordinal; export reads the rows back in ordinal order. The commodity family
+   is the template and already does both: its read builds a
+   =std::vector<commodity_basket_constituent>=, and its write takes the same
+   vector as a parameter rather than reading a column off the instrument. The
+   equity side has to thread that parameter through the same way, which is what
+   makes this more than a column swap.
+4. *The column.* =basket_json= leaves =equity_swap_instrument= once nothing reads
+   it, which is what the existing docstring promises.
+5. *The tests.* =xml_portfolio_projection_tests= asserts =basket_json= today and
+   has to assert the rows instead, with a roundtrip case for a two constituent
+   worst-of basket.
+6. *The kind.* A constituent states its kind and the vocabulary its code belongs
+   to, which is the modelling the corpus demanded: an =EquityWorstOfBasketSwap=
+   in the examples carries =Type=FX= constituents. The existing table has no kind
+   column, so it cannot hold that trade as it stands.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Columns replaced by rows | 5 | =grep -c "_json" projects/ores.trading/modeling/ores.trading.equity_*_instrument.org= | 124692ba7d |
+| Corpus documents that round trip | 132 of 132, failed=0 | =ores.ore.core.tests= | 124692ba7d |
+| ORE suite | 475,515 assertions, 394 cases | =ores.ore.core.tests= | 124692ba7d |
+| Trading suite | 1,416 assertions, 221 cases | =ores.trading.core.tests= | 124692ba7d |
+| Synthetic suite | 1,640 assertions, 74 cases | =ores.synthetic.core.tests= | 124692ba7d |
+| Build targets | 8,010 of 8,010 | =compass build= | 124692ba7d |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3917][#3917]] | [trading] Model the basket, the prices and the levels as rows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Five columns that held JSON became rows, and each one is now something the
+store can answer a question about.
+
+| Column | Became | Why there |
+|--------+--------+-----------|
+| =basket_json= | =equity_basket_constituent= rows | one row per underlying, in the document's order |
+| =initial_prices_json= | =equity_basket_constituent.initial_price= | the document states one price per underlying |
+| =knock_out_levels_json= | =equity_swap_period.knock_out_level= | the document states one level per determination date |
+| =fixed_trigger_levels_json= | =equity_swap_period.fixed_trigger_level= | the same list, observed on the same dates |
+| =range_bounds_json= | =range_bound= rows | the shared table the FX accumulator already writes |
+
+The corpus decided the shape. =InitialPrices= carries one entry per underlying
+and the two level lists carry one per date, so a basket of two names over four
+dates states two prices and four levels. Folding all four into the constituent
+would have been wrong and would have failed on the first real basket.
+
+Three things the work cost that a reader should know:
+
+- The instrument batch is generated from =ores.trading.trade_type_catalogue.org=.
+  Editing the header directly is reverted by the next regeneration, and the
+  array only exists once the catalogue names the type.
+- =as_equity= built the wrapper without its children twice: first without the
+  basket, then without the period rows, and each time a round trip kept the
+  first row and lost the rest.
+- A leaf must be read with the accessor its schema type deserves. Reading
+  =Leverage= as text threw, the whole mapping was caught, and the accumulator
+  imported with no instrument at all rather than with a wrong one.

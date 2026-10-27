@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/libor_market_model_params.hpp"
 #include "ores.analytics.quant/service/processes/libor_market_model_process.hpp"
+#include "test_helpers.hpp"
 #include <Eigen/Dense>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -36,15 +37,8 @@ using ores::analytics::quant::service::lmm_spot_measure_drift;
 
 namespace {
 
-Eigen::VectorXd vector(std::initializer_list<double> values) {
-    Eigen::VectorXd result(values.size());
-    std::size_t i = 0;
-    for (const double v : values)
-        result[i++] = v;
-    return result;
-}
-
-Eigen::MatrixXd matrix(std::initializer_list<std::initializer_list<double>> rows) {
+Eigen::MatrixXd
+libor_market_model_process_matrix(std::initializer_list<std::initializer_list<double>> rows) {
     const std::size_t n = rows.size();
     Eigen::MatrixXd result(n, n);
     std::size_t i = 0;
@@ -60,7 +54,7 @@ Eigen::MatrixXd matrix(std::initializer_list<std::initializer_list<double>> rows
 /**
  * @brief Welford running mean and variance.
  */
-struct running_mean_variance {
+struct libor_market_model_process_running_mean_variance {
     double mean = 0.0;
     double m2 = 0.0;
     std::size_t count = 0;
@@ -105,7 +99,8 @@ TEST_CASE("lmm spot-measure drift matches the LMMDriftCalculator semantics",
     const Eigen::VectorXd displacements = vector({0.01, 0.0, 0.02});
     const Eigen::VectorXd spacings = vector({0.5, 1.0, 0.25});
     const Eigen::VectorXd volatilities = vector({0.2, 0.15, 0.25});
-    const Eigen::MatrixXd correlation = matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}});
+    const Eigen::MatrixXd correlation =
+        libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}});
     const Eigen::MatrixXd covariance =
         volatilities.asDiagonal() * correlation * volatilities.asDiagonal();
     const Eigen::VectorXd drift =
@@ -121,7 +116,7 @@ TEST_CASE("lmm spot-measure drift matches the LMMDriftCalculator semantics",
     const Eigen::VectorXd displacements_2 = vector({0.005, 0.01, 0.0, 0.015});
     const Eigen::VectorXd spacings_2 = vector({0.25, 0.5, 1.0, 0.5});
     const Eigen::VectorXd volatilities_2 = vector({0.1, 0.2, 0.15, 0.3});
-    const Eigen::MatrixXd correlation_2 = matrix(
+    const Eigen::MatrixXd correlation_2 = libor_market_model_process_matrix(
         {{1.0, 0.5, 0.2, 0.1}, {0.5, 1.0, 0.4, 0.3}, {0.2, 0.4, 1.0, 0.6}, {0.1, 0.3, 0.6, 1.0}});
     const Eigen::MatrixXd covariance_2 =
         volatilities_2.asDiagonal() * correlation_2 * volatilities_2.asDiagonal();
@@ -147,8 +142,10 @@ TEST_CASE("lmm drift is positive for positive correlations and grows with them",
     const Eigen::VectorXd spacings = vector({0.5, 1.0, 0.25});
     const Eigen::VectorXd volatilities = vector({0.2, 0.15, 0.25});
 
-    const Eigen::MatrixXd rho_lo = matrix({{1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}});
-    const Eigen::MatrixXd rho_hi = matrix({{1.0, 0.9, 0.9}, {0.9, 1.0, 0.9}, {0.9, 0.9, 1.0}});
+    const Eigen::MatrixXd rho_lo =
+        libor_market_model_process_matrix({{1.0, 0.5, 0.5}, {0.5, 1.0, 0.5}, {0.5, 0.5, 1.0}});
+    const Eigen::MatrixXd rho_hi =
+        libor_market_model_process_matrix({{1.0, 0.9, 0.9}, {0.9, 1.0, 0.9}, {0.9, 0.9, 1.0}});
     const Eigen::VectorXd drift_lo =
         lmm_spot_measure_drift(rates,
                                displacements,
@@ -175,7 +172,8 @@ TEST_CASE("lmm drift can be negative with negative correlation", "[libor_market_
     const Eigen::VectorXd displacements = vector({0.0, 0.0});
     const Eigen::VectorXd spacings = vector({0.5, 0.5});
     const Eigen::VectorXd volatilities = vector({0.5, 0.2});
-    const Eigen::MatrixXd correlation = matrix({{1.0, -0.9}, {-0.9, 1.0}});
+    const Eigen::MatrixXd correlation =
+        libor_market_model_process_matrix({{1.0, -0.9}, {-0.9, 1.0}});
     const Eigen::VectorXd drift =
         lmm_spot_measure_drift(rates,
                                displacements,
@@ -266,7 +264,7 @@ TEST_CASE("lmm one-tick increments follow the drift", "[libor_market_model_proce
     const double dt = 0.25;
     const Eigen::VectorXd rates = vector({0.03, 0.035, 0.04, 0.045});
     const Eigen::VectorXd volatilities = vector({0.2, 0.15, 0.25, 0.3});
-    const Eigen::MatrixXd correlation = matrix(
+    const Eigen::MatrixXd correlation = libor_market_model_process_matrix(
         {{1.0, 0.6, 0.4, 0.2}, {0.6, 1.0, 0.5, 0.3}, {0.4, 0.5, 1.0, 0.7}, {0.2, 0.3, 0.7, 1.0}});
     const Eigen::VectorXd displacements = vector({0.01, 0.02, 0.0, 0.015});
     const Eigen::VectorXd spacings = vector({0.25, 0.5, 1.0, 0.5});
@@ -303,11 +301,11 @@ TEST_CASE("lmm increments are correlated per the correlation matrix",
     const double rho = 0.6;
     const Eigen::VectorXd rates = vector({0.03, 0.035});
     const Eigen::VectorXd volatilities = vector({0.2, 0.2});
-    const Eigen::MatrixXd correlation = matrix({{1.0, rho}, {rho, 1.0}});
+    const Eigen::MatrixXd correlation = libor_market_model_process_matrix({{1.0, rho}, {rho, 1.0}});
     const Eigen::VectorXd displacements = vector({0.01, 0.02});
     const Eigen::VectorXd spacings = vector({0.5, 0.5});
 
-    running_mean_variance x, y, xy;
+    libor_market_model_process_running_mean_variance x, y, xy;
     for (std::size_t i = 0; i < paths; ++i) {
         libor_market_model_process p(rates,
                                      volatilities,
@@ -340,7 +338,7 @@ TEST_CASE("lmm increment variance scales with dt", "[libor_market_model_process]
     const double expected = 0.2 * 0.2 * 0.04 * 0.04; // sigma_0^2 (L_0+s_0)^2
 
     for (const double dt : {0.25, 1.0}) {
-        running_mean_variance increments;
+        libor_market_model_process_running_mean_variance increments;
         for (std::size_t i = 0; i < paths; ++i) {
             libor_market_model_process p(rates,
                                          volatilities,
@@ -373,12 +371,12 @@ TEST_CASE("lmm discounted rates are martingales up to fixing", "[libor_market_mo
     const double dt = 0.25;
     const Eigen::VectorXd rates = vector({0.03, 0.035, 0.04, 0.045});
     const Eigen::VectorXd volatilities = vector({0.2, 0.15, 0.25, 0.3});
-    const Eigen::MatrixXd correlation = matrix(
+    const Eigen::MatrixXd correlation = libor_market_model_process_matrix(
         {{1.0, 0.6, 0.4, 0.2}, {0.6, 1.0, 0.5, 0.3}, {0.4, 0.5, 1.0, 0.7}, {0.2, 0.3, 0.7, 1.0}});
     const Eigen::VectorXd displacements = vector({0.01, 0.02, 0.0, 0.015});
     const Eigen::VectorXd spacings = vector({0.25, 0.5, 1.0, 0.5});
 
-    std::vector<running_mean_variance> rebased(4);
+    std::vector<libor_market_model_process_running_mean_variance> rebased(4);
     for (std::size_t i = 0; i < paths; ++i) {
         libor_market_model_process p(rates,
                                      volatilities,
@@ -441,7 +439,8 @@ TEST_CASE("lmm params struct equals scalar construction", "[libor_market_model_p
     libor_market_model_params params;
     params.initial_forward_rates = vector({0.03, 0.035, 0.04});
     params.volatilities = vector({0.2, 0.15, 0.25});
-    params.correlation = matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}});
+    params.correlation =
+        libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}});
     params.displacements = vector({0.01, 0.0, 0.02});
     params.tenor_spacings = vector({0.5, 1.0, 0.25});
 
@@ -449,7 +448,7 @@ TEST_CASE("lmm params struct equals scalar construction", "[libor_market_model_p
     libor_market_model_process from_scalars(
         vector({0.03, 0.035, 0.04}),
         vector({0.2, 0.15, 0.25}),
-        matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}}),
+        libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}}),
         vector({0.01, 0.0, 0.02}),
         vector({0.5, 1.0, 0.25}),
         99,
@@ -505,25 +504,28 @@ TEST_CASE("lmm process validates its inputs", "[libor_market_model_process]") {
                           rates, vector({0.2, -0.15, 0.25}), identity, displacements, spacings),
                       std::invalid_argument);
     REQUIRE_THROWS_AS(
-        libor_market_model_process(rates,
-                                   volatilities,
-                                   matrix({{1.0, 0.6, 0.3}, {0.6, 0.5, 0.4}, {0.3, 0.4, 1.0}}),
-                                   displacements,
-                                   spacings),
+        libor_market_model_process(
+            rates,
+            volatilities,
+            libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 0.5, 0.4}, {0.3, 0.4, 1.0}}),
+            displacements,
+            spacings),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
-        libor_market_model_process(rates,
-                                   volatilities,
-                                   matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 1.4}, {0.3, 1.4, 1.0}}),
-                                   displacements,
-                                   spacings),
+        libor_market_model_process(
+            rates,
+            volatilities,
+            libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 1.4}, {0.3, 1.4, 1.0}}),
+            displacements,
+            spacings),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
-        libor_market_model_process(rates,
-                                   volatilities,
-                                   matrix({{1.0, 0.9, 0.5}, {0.9, 1.0, 0.9}, {0.5, 0.9, 1.0}}),
-                                   displacements,
-                                   spacings),
+        libor_market_model_process(
+            rates,
+            volatilities,
+            libor_market_model_process_matrix({{1.0, 0.9, 0.5}, {0.9, 1.0, 0.9}, {0.5, 0.9, 1.0}}),
+            displacements,
+            spacings),
         std::invalid_argument);
     REQUIRE_THROWS_AS(libor_market_model_process(
                           rates, volatilities, identity, vector({-0.01, 0.0, 0.02}), spacings),
@@ -541,12 +543,12 @@ TEST_CASE("lmm process validates its inputs", "[libor_market_model_process]") {
 
     // The singular limit rho = 1 (the one-factor model) is a
     // legitimate positive-semidefinite correlation, not a limitation.
-    REQUIRE_NOTHROW(
-        libor_market_model_process(rates,
-                                   volatilities,
-                                   matrix({{1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}}),
-                                   displacements,
-                                   spacings));
+    REQUIRE_NOTHROW(libor_market_model_process(
+        rates,
+        volatilities,
+        libor_market_model_process_matrix({{1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}}),
+        displacements,
+        spacings));
 
     // Error messages carry the process name.
     try {
@@ -574,7 +576,8 @@ TEST_CASE("lmm spot-measure drift validates its inputs", "[libor_market_model_pr
     REQUIRE_THROWS_AS(
         lmm_spot_measure_drift(rates, displacements, spacings, Eigen::MatrixXd::Identity(2, 2)),
         std::invalid_argument);
-    const Eigen::MatrixXd asymmetric = matrix({{1.0, 0.6, 0.3}, {0.7, 1.0, 0.4}, {0.3, 0.4, 1.0}});
+    const Eigen::MatrixXd asymmetric =
+        libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.7, 1.0, 0.4}, {0.3, 0.4, 1.0}});
     REQUIRE_THROWS_AS(lmm_spot_measure_drift(rates, displacements, spacings, asymmetric),
                       std::invalid_argument);
     // The drift formula is well defined for rates with L_i + s_i <= 0
@@ -594,7 +597,7 @@ TEST_CASE("lmm spot-measure drift rejects rates at the numeraire pole",
           "[libor_market_model_process]") {
     const Eigen::VectorXd displacements = vector({0.0});
     const Eigen::VectorXd spacings = vector({1.0});
-    const Eigen::MatrixXd covariance = matrix({{0.04}});
+    const Eigen::MatrixXd covariance = libor_market_model_process_matrix({{0.04}});
 
     // The pole L_0 = -1/tau_0: the growth factor 1 + tau*L vanishes and
     // the numeraire weight would flip sign.

@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -180,9 +179,8 @@ regulatory_corporate_sector_service::put_regulatory_corporate_sector(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(regulatory_corporate_sector_read_one(
-                                       repo_, ctx_, regulatory_corporate_sector_key_from(value)),
-                                   ctx_);
+    auto written = regulatory_corporate_sector_read_one(
+        repo_, ctx_, regulatory_corporate_sector_key_from(value));
     if (!written.empty())
         response.regulatory_corporate_sector = std::move(written.front());
     return response;
@@ -215,10 +213,8 @@ regulatory_corporate_sector_service::put_many_regulatory_corporate_sectors(
     repo_.write(ctx_, batch, claims);
     response.sectors.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            of_acting_party(regulatory_corporate_sector_read_one(
-                                repo_, ctx_, regulatory_corporate_sector_key_from(value)),
-                            ctx_);
+        auto written = regulatory_corporate_sector_read_one(
+            repo_, ctx_, regulatory_corporate_sector_key_from(value));
         response.sectors.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -353,12 +349,8 @@ ores::utility::domain::result regulatory_corporate_sector_service::prepare_chang
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = regulatory_corporate_sector_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(regulatory_corporate_sector_read_one(
-                            repo_, ctx_, regulatory_corporate_sector_key_from(out)),
-                        ctx_);
+    const auto current = regulatory_corporate_sector_read_one(
+        repo_, ctx_, regulatory_corporate_sector_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

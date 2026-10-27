@@ -33,6 +33,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -55,16 +56,6 @@ using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-boost::uuids::uuid find_system_party_id(party_repository& repo,
-                                        ores::database::context ctx,
-                                        const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest(ctx);
-    for (const auto& p : parties)
-        if (p.tenant_id == tid && p.party_category == "System")
-            return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid.to_string());
-}
 
 party_counterparty make_pc(scoped_database_helper& h,
                            const boost::uuids::uuid& party_id,

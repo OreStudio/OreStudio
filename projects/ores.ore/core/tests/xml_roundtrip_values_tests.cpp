@@ -70,7 +70,7 @@ namespace st = ores::ore::xml::generated::stress_testing;
 using tm::todays_market_document;
 using tm::todaysmarket;
 
-auto read_file(const fs::path& path) -> std::string {
+auto xml_roundtrip_values_read_file(const fs::path& path) -> std::string {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
@@ -197,7 +197,7 @@ auto sweep_values(const fs::path& root,
             ++*swept;
 
         std::string reason;
-        if (!round_trip_values<Record>(doc, read_file(entry.path()), reason)) {
+        if (!round_trip_values<Record>(doc, xml_roundtrip_values_read_file(entry.path()), reason)) {
             ++failures;
             report += entry.path().string() + " (" + std::string(family) + "): " + reason + "\n";
         }

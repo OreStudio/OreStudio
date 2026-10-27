@@ -57,9 +57,8 @@ const std::string package_kind("package");
 
 // Report instance writes are party-scoped: the session-level
 // app.current_party_id GUC must be set before writing.
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& ctx) {
+ores::database::context service_report_instance_listing_write_test_party_and_scope_context(
+    ores::testing::scoped_database_helper& h, ores::utility::generation::generation_context& ctx) {
     using ores::refdata::repository::party_repository;
     party_repository party_repo;
     auto party = ores::refdata::generators::generate_synthetic_party(ctx);
@@ -100,7 +99,7 @@ TEST_CASE("a list shows production instances unless the caller asks for a kind",
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = service_report_instance_listing_write_test_party_and_scope_context(h, ctx);
 
     auto production = generate_synthetic_report_instance(ctx);
     production.change_reason_code = "system.test";
@@ -150,7 +149,7 @@ TEST_CASE("a list of runs answers only the definitions it is asked for", "[servi
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = service_report_instance_listing_write_test_party_and_scope_context(h, ctx);
 
     // Two definitions a party owns, one run of each. The definition ids are
     // stated by the test rather than generated, so the filter names them.
@@ -203,7 +202,7 @@ TEST_CASE("two definitions and three runs read as two rows, each the latest run"
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = service_report_instance_listing_write_test_party_and_scope_context(h, ctx);
 
     // A party owns two definitions and has run one of them twice, so three runs
     // in all. The third definition has never run.

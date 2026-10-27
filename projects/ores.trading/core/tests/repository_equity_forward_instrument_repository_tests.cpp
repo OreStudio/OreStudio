@@ -41,7 +41,8 @@ using namespace ores::logging;
  * trade id in XML: EqForward
  * See tests/test_data/equity_forward_instrument.json for the full mapping snapshot.
  */
-equity_forward_instrument make_instrument(database_helper& h) {
+equity_forward_instrument
+repository_equity_forward_instrument_repository_make_instrument(database_helper& h) {
     equity_forward_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
@@ -72,7 +73,7 @@ TEST_CASE("equity_forward_instrument_write_and_read_latest",
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_equity_forward_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "Writing equity forward instrument: " << instr;
 
@@ -97,7 +98,7 @@ TEST_CASE("equity_forward_instrument_read_nonexistent", "[repository][equity][eq
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     equity_forward_instrument_repository repo;
-    auto instr = make_instrument(h);
+    auto instr = repository_equity_forward_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     repo.write(ctx, instr);
 
@@ -117,7 +118,7 @@ TEST_CASE("equity_forward_instrument_remove", "[repository][equity][equity_forwa
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_equity_forward_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
 
     equity_forward_instrument_repository repo;

@@ -469,6 +469,12 @@ from ores_analytics_pricing_methods_tbl where valid_to = ores_utility_infinity_t
 union all
 select 'Analytics: Sensitivity Templates', count(*)
 from ores_analytics_sensitivity_templates_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Sensitivity Methods', count(*)
+from ores_analytics_sensitivity_methods_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Analytics: Sensitivity Asset Classes', count(*)
+from ores_analytics_sensitivity_asset_classes_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
 
 commit;

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 94C0C611-8005-4FED-9EC1-F0DFB343BB66
+:END:
+#+title: Task: Say which token expired, to whom, and what was waiting
+#+description: A provisioning run died on "Session has expired" with no way to tell which client, which token family, or what it had been waiting for. Add the four records that make the next investigation a lookup.
+#+type: capture
+#+level: cross
+#+filetags: :observability:iam:workflow:tooling:auth:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a capture in the inbox bucket of the product backlog — a
+pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Four records, each of which was missing while investigating the ACME
+provisioning timeout:
+
+1. *The refusal names the token and the holder.*
+   =ores.security.jwt.jwt_authenticator= logs "JWT verification failed: token
+   expired" with no subject, account, party, session, =exp= or wall clock, so
+   nothing joins the refusal to a client.
+2. *The client names the lifetime it was given.* The shell reports "Session has
+   expired. Please log in again." and stops. It does not state the lifetime the
+   server returned, the expiry instant, the subject or the operation. The fact
+   that mattered — a five-minute party-selected token, not the thirty-minute
+   access token — is invisible at the point of failure.
+3. *A wait says what it is waiting for.* Polling reports only
+   "Poll failed (4/5)". No tenant code, no state, no workflow step, no elapsed
+   time, so a wait that is working looks identical to one that is stuck.
+4. *An abort leaves a trace server-side.* The client gave up watching and the
+   workflow carried on; the tenant stayed =bootstrapping= with no record that
+   its watcher had gone.
+
+* Why
+
+The investigation took several wrong turns because each record was missing:
+the duplicate contract rows, the party-selection lifetime and the workflow
+progress all had to be reconstructed by hand from a bare refusal. A single
+joinable line per event turns the next one into a lookup.
+
+* Acceptance
+
+- A refusal logs the subject, account and party where known, the token's =exp=,
+  the wall clock and the overshoot in seconds, and a session id that the client
+  also knows.
+- The client's expiry message carries the lifetime the server returned, the
+  expiry instant, and the subject and operation that failed.
+- A wait logs one line per poll with tenant, state, step and elapsed time, and
+  one line when it gives up naming what it was waiting for.
+- A workflow whose watcher disappeared is visible in telemetry rather than left
+  silently =bootstrapping=.
+
+* The design question the last one exposed: one credential, two meanings
+
+The four records make the next investigation a lookup. The reason it was needed
+at all is that a party-selected login does not mint a token of its own family:
+=auth_handler.hpp:918= overwrites =access_lifetime_s= with
+=party_selection_lifetime_s=. So one field describes both a thirty-minute
+session and a five-minute picker, and the refresh threshold — a percentage of
+the wrong number — never fires before expiry.
+
+They are different credentials:
+
+| | party-selection token | what a provisioning driver needs |
+|---|---|---|
+| purpose | a picker choosing which party to act in | an automated run of a multi-step workflow |
+| holder | a human at a shell | a process, with nobody present |
+| lifetime | seconds, the picker resolves at once | as long as the run, or renewable |
+| renewal | re-login is fine, the human is there | must renew silently |
+| audience | interactive subjects | workflow and provisioning subjects |
+
+The platform already has the shape: run grants, the internal impersonation
+client with its re-mint on =token_expired=, and =internal_request_client=,
+which re-mints and retries once. What it does not have is a credential for long
+automated work that the shell's session can use, so provisioning borrows the
+interactive one and runs out of it.
+
+- A fifth record: the token states the lifetime it actually carries, or the
+  party-selection lifetime gets its own response field, and the client's
+  refresh threshold is computed from that number.
+- A design decision on the credential for automated work: run-grant derived with
+  tenant, party and actor fixed, its own lifetime, and renewal on refusal.
+
+* References
+
+- the provisioning investigation of 2026-10-27.
+- =projects/ores.nats/src/service/nats_client.cpp:153= — where the client turns
+  =X-Error: token_expired= into "Session has expired".
+- =projects/ores.security= — the JWT authenticator that logs the reason alone.
+- =projects/ores.sql/populate/variability/variability_system_settings_populate.sql:87-109=
+  — the lifetimes: access 1800s, party selection 300s, max session 28800s.

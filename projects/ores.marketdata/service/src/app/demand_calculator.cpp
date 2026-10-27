@@ -34,12 +34,14 @@ bool has_a_right(const domain::subscription& s) {
     return s.display || s.non_display || s.derived;
 }
 
-bool before(const messaging::vendor_id& a, const messaging::vendor_id& b) {
+bool before(const ores::marketdata::messaging::vendor_id& a,
+            const ores::marketdata::messaging::vendor_id& b) {
     return std::tie(a.id_scheme, a.external_id, a.field) <
            std::tie(b.id_scheme, b.external_id, b.field);
 }
 
-bool same(const messaging::vendor_id& a, const messaging::vendor_id& b) {
+bool same(const ores::marketdata::messaging::vendor_id& a,
+          const ores::marketdata::messaging::vendor_id& b) {
     return std::tie(a.id_scheme, a.external_id, a.field) ==
            std::tie(b.id_scheme, b.external_id, b.field);
 }
@@ -50,7 +52,9 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
                                                std::chrono::system_clock::time_point now,
                                                const demand_policy& policy) {
     // The vendor ids of each provider, by the item that a mapping that holds names.
-    std::map<std::string, std::map<std::string, std::vector<messaging::vendor_id>>> by_item;
+    std::map<std::string,
+             std::map<std::string, std::vector<ores::marketdata::messaging::vendor_id>>>
+        by_item;
     for (const auto& mapping : catalogue.mappings) {
         if (!holds(mapping, now))
             continue;

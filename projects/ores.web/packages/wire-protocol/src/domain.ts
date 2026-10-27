@@ -705,6 +705,50 @@ export const classificationRowSchema = z.object({
 
 export type ClassificationRow = z.infer<typeof classificationRowSchema>;
 
+/**
+ * One sensitivity template: a key a pricing engine configuration puts on a
+ * product with the SensitivityTemplate setting.
+ *
+ * The key is the code, and it is fixed once the row exists. The row states two
+ * codes, the method and the class, and the screen reads the words a person reads
+ * and the prefix a key spells from the lookups that hold them. A trade-level
+ * template states no class, so its three class fields are empty.
+ */
+export const sensitivityTemplateSchema = z.object({
+    code: z.string(),
+    methodCode: z.string(),
+    methodName: z.string(),
+    assetClassCode: z.string(),
+    assetClassName: z.string(),
+    templatePrefix: z.string(),
+    description: z.string(),
+    version: z.int().nonnegative(),
+    modifiedBy: z.string(),
+    performedBy: z.string(),
+    reasonCode: z.string(),
+    commentary: z.string(),
+    recordedAt: wireTimestampSchema,
+});
+
+export type SensitivityTemplate = z.infer<typeof sensitivityTemplateSchema>;
+
+/**
+ * The two lookups a template states, in the order the screen offers them.
+ *
+ * The class is the reference data's code with the prefix ORE spells in a key;
+ * the two are not the same word, so both are stated. A method says whether the
+ * templates that state it also state a class, which is how the form knows to
+ * clear and disable the class for a trade-level template.
+ */
+export const sensitivityTemplateChoicesSchema = z.object({
+    assetClasses: z.array(z.object({ code: z.string(), prefix: z.string(), name: z.string() })),
+    methods: z.array(
+        z.object({ code: z.string(), name: z.string(), needsAssetClass: z.boolean() }),
+    ),
+});
+
+export type SensitivityTemplateChoices = z.infer<typeof sensitivityTemplateChoicesSchema>;
+
 /** A field's value in one version of a record, as the history renders it. */
 export const historyFieldSchema = z.object({
     name: z.string(),

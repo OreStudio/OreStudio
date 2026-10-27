@@ -330,6 +330,8 @@
 \ir ./trading_equity_instruments_notify_trigger_create.sql
 \ir ./trading_equity_basket_constituents_create.sql
 \ir ./trading_equity_basket_constituents_notify_trigger_create.sql
+\ir ./trading_equity_swap_periods_create.sql
+\ir ./trading_equity_swap_periods_notify_trigger_create.sql
 
 -- Per-type equity instruments
 \ir ./trading_equity_cliquet_option_instruments_create.sql

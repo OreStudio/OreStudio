@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/schedule-every-feed-on-the-market-clock-v2
+#+pr: 3926
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 - A tick costs O(log n) in the number of feeds, with a benchmark at 100,000 feeds.
 - On the manual clock with a fixed seed, a test asserts the exact sequence of feeds and event times across a pinned regime change.
 - The per-series checks still hold: mean rate, Fano factor and time rescaling.
-- The service-test fixtures and the adapter test run on a scheduler with the manual clock, and tick_clock is deleted.
+- The service-test fixtures and the adapter test run on a scheduler, the tests that assert times use the manual clock, and tick_clock is deleted.
 - Control operations reach the loop as commands applied at the clock's now.
 - set_baseline_multiplier and i_arrival_process are gone: the market reaches a law only through the clock.
 - The Arrivals panel help says a burst fades faster in a busy market, because a Hawkes law runs in operational time.
@@ -46,9 +46,31 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This task and [[id:6207909E-FC52-4EC4-86DE-DA76CEDB8D98][Let one loop own the market]]
+land in one change. A scheduler keyed on tau has to own the operational
+clock, and owning it is the other task's change. Done apart, this task
+would need a bridge from the old market_regime to the scheduler, and the
+next change would delete it.
+
+- =tick_scheduler= is rewritten in place, so the feeds and handlers keep the
+  name. It owns the =operational_clock=, borrows an =i_run_clock=, and keeps
+  a min-heap of series keyed on the tau mark at which each fires.
+- A series with sensitivity s whose law draws a gap g fires when tau has
+  moved by g / s. The mark is fixed when the gap is drawn, so a change in
+  the market moves no heap entry. A removed series leaves its mark behind,
+  and the mark is dropped when it reaches the top.
+- The loop fires every tick due by now in order, then moves the market to
+  now and applies the queued commands, then waits for the next tick or the
+  next heat sample. A command therefore never makes a due tick late.
+- =remove= and =pin= wait until the loop has applied them; before the loop
+  runs, and on its own thread, a command applies at once.
+- =step()= takes the next tick without waiting, for tests on the manual
+  clock.
+- A feed takes the scheduler by reference, registers its body at start, and
+  is told the wall seconds since its last tick and the wall time of the
+  tick. The tick stamp comes from the run clock.
+- =running_scheduler= runs a scheduler on the steady clock for as long as it
+  lives, for the service tests that wait for ticks over NATS.
 
 * Measurements
 
@@ -62,7 +84,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scheduler tests | 13 cases; 10 of 10 runs clean, and the self-removal case 30 of 30 | =ores.analytics.quant.tests [tick_scheduler]= | c0d27c3988 |
+| Step cost | 3.1e-7 s at 1,000 series, 1.7e-6 s at 100,000; O(n) would be a hundred times | =ores.analytics.quant.tests "a tick costs O(log n)..."= | c0d27c3988 |
+| Synthetic suites | ores.synthetic.api.tests and ores.synthetic.service.tests passed | =compass test run -- -R ...= on a recreated database | 34de2401dc |
+| Live ticks | 56,308 ticks in three minutes; every adapter accepted every row | =compass smoke ticks --skip-provision --leave-running= | c0d27c3988 |
+| Pace against the model | calm 0.50 to 0.54, active 2.04 to 2.10; tau moved 62.6 in 30.5 s at pace 2.06 | shell =synthetic regime get= every 30 s, with the debug log of the snapshot | c0d27c3988 |
 
 * Notes
 
@@ -81,12 +107,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3926][#3926]] | [analytics] Schedule every feed on the market clock, and let one loop own it |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: a non-std throw from a body ends the loop. | tick_scheduler.cpp | Accept | catch (...) reports it through the failure hook. |
+| 2 | Bot: remove can deadlock if its caller holds a lock a body takes. | tick_scheduler.hpp | Accept | The runner halts feeds outside its lock and a body takes only the fault plan's own lock, so no caller does today; the doc says not to. |
+| 3 | Bot: marks of removed series grow the heap under churn. | tick_scheduler.cpp | Accept | The heap is rebuilt once stale marks outnumber live ones; tested with a thousand removals. |
+| 4 | Bot: a snapshot can be a sample period old. | tick_scheduler.hpp | Accept | Documented. |
+| 5 | Bot: std::min without algorithm. | tick_scheduler.cpp | Accept | Included. |
+| 6 | Bot: a per-command flag would read more simply than the ticket count. | tick_scheduler.cpp | Decline | The ticket is two counters under the lock it already holds. |
+| 7 | Bot: test stop while a remove waits, and a body that removes itself. | tick_scheduler_tests.cpp | Accept | Both tested. |
 
 * Result
+
+Every feed now ticks from one scheduler that owns the market's operational
+clock. A feed's mark in tau is fixed when its gap is drawn, so a tick costs
+O(log n): a step at 100,000 series costs about five times one at 1,000, where
+O(n) would cost a hundred times. A test on the manual clock asserts the exact
+series and time of thirty ticks across a pin from calm to active, and each
+series' gaps in its own operational time are its law's gaps, with compensated
+Hawkes gaps passing a KS test. tick_clock, the old arrival processes and the
+per-series refresh are gone, and a feed cannot be built without a scheduler.
+Live on Acme, 56,308 ticks reached the store in three minutes. The rates
+follow the market: a one-a-second feed ran at 0.5 a second while calm and at
+2.04 while active, which is the pace the scheduler reports.

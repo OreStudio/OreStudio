@@ -25,6 +25,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -48,27 +49,10 @@ using ores::compute::repository::batch_repository;
 using ores::testing::scoped_database_helper;
 using ores::utility::domain::order;
 
-std::string unique_marker() {
+std::string repository_batch_stated_order_unique_marker() {
     auto text = boost::uuids::to_string(boost::uuids::random_generator()());
     text.erase(std::remove(text.begin(), text.end(), '-'), text.end());
     return "ord" + text.substr(0, 10);
-}
-
-/// A party in the test tenant, because a batch write is scoped to a party.
-ores::database::context party_context(scoped_database_helper& h) {
-    using ores::refdata::repository::party_repository;
-    auto gen_ctx = ores::testing::make_generation_context(h);
-    party_repository repo;
-    auto party = ores::refdata::generators::generate_synthetic_party(gen_ctx);
-    party.change_reason_code = "system.test";
-    for (const auto& e : repo.read_latest(h.context())) {
-        if (e.tenant_id == party.tenant_id) {
-            party.parent_party_id = e.id;
-            break;
-        }
-    }
-    repo.write(h.context(), party);
-    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 }
 
 /// Writes one batch per suffix, in turn, and returns the references in write order.
@@ -105,7 +89,7 @@ refs_in_order(const ores::database::context& ctx, const std::string& marker, con
 TEST_CASE("batches read newest first when no order is stated", "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto m = unique_marker();
+    const auto m = repository_batch_stated_order_unique_marker();
     auto written = write_in_turn(h, ctx, m, 3);
     std::ranges::reverse(written);
 
@@ -116,7 +100,7 @@ TEST_CASE("a descending order reverses the default and reads oldest first",
           "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto m = unique_marker();
+    const auto m = repository_batch_stated_order_unique_marker();
     const auto written = write_in_turn(h, ctx, m, 3);
 
     CHECK(refs_in_order(ctx, m, {.descending = true}) == written);
@@ -126,7 +110,7 @@ TEST_CASE("the recording time is honoured in both directions when it is stated",
           "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
-    const auto m = unique_marker();
+    const auto m = repository_batch_stated_order_unique_marker();
     const auto written = write_in_turn(h, ctx, m, 3);
     auto newest_first = written;
     std::ranges::reverse(newest_first);

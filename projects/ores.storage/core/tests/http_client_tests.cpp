@@ -22,6 +22,7 @@
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/net/http_client.hpp"
 #include "support/loopback_http_server.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -39,18 +40,11 @@ using namespace ores::logging;
 
 namespace {
 
-/// The caller token every request must carry, and the header it becomes.
-const std::string test_token("ores-storage-test-token");
 const std::string test_authorization("Bearer " + test_token);
 
-void write_file(const std::filesystem::path& path, const std::string& content) {
+void http_client_write_file(const std::filesystem::path& path, const std::string& content) {
     std::ofstream out(path, std::ios::binary);
     out.write(content.data(), static_cast<std::streamsize>(content.size()));
-}
-
-std::string read_file(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 }
 
 }
@@ -76,7 +70,7 @@ TEST_CASE("every_request_carries_the_callers_bearer_token", "[net]") {
 
     loopback_http_server server;
     scoped_temp_file source;
-    write_file(source.path(), "payload");
+    http_client_write_file(source.path(), "payload");
 
     http_client::put(server.base_url() + "/objects/upload.bin", source.path(), test_token);
 
@@ -91,7 +85,7 @@ TEST_CASE("put_delivers_the_exact_source_file_bytes", "[net]") {
     const std::string content = "uploaded payload\nwith two lines\n";
 
     scoped_temp_file source;
-    write_file(source.path(), content);
+    http_client_write_file(source.path(), content);
 
     http_client::put(server.base_url() + "/objects/upload.bin", source.path(), test_token);
 
@@ -110,7 +104,7 @@ TEST_CASE("put_returning_body_returns_the_exact_configured_response", "[net]") {
     server.set_put_response_body(response);
 
     scoped_temp_file source;
-    write_file(source.path(), "payload");
+    http_client_write_file(source.path(), "payload");
 
     const auto actual = http_client::put_returning_body(
         server.base_url() + "/objects/upload.bin", source.path(), test_token);
@@ -144,7 +138,7 @@ TEST_CASE("get_of_a_not_found_resource_leaves_an_existing_file_untouched", "[net
 
     const std::string original_content = "existing destination content";
     scoped_temp_file destination;
-    write_file(destination.path(), original_content);
+    http_client_write_file(destination.path(), original_content);
 
     BOOST_LOG_SEV(lg, info) << "Expecting 404 to leave " << destination.path() << " untouched";
     CHECK_THROWS_AS(

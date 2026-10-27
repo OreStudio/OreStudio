@@ -26,7 +26,6 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
-#include "ores.synthetic.api/feeds/feed_seed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
@@ -91,10 +90,9 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
+                  ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter,
-                  const ores::marketdata::domain::market_clock* clock,
-                  ores::analytics::quant::domain::market_link link,
-                  ores::analytics::quant::service::tick_scheduler* scheduler) {
+                  const ores::marketdata::domain::market_clock* clock) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
         "oresmd://fx/" + cfg.base_currency_code +
@@ -155,9 +153,9 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                           producer_subject(cfg.source_name),
                                           std::move(process),
                                           arrival,
-                                          std::move(adapter),
-                                          link,
-                                          scheduler);
+                                          scheduler,
+                                          cfg.sensitivity,
+                                          std::move(adapter));
 }
 
 fx_spot_feed::fx_spot_feed(
@@ -167,31 +165,32 @@ fx_spot_feed::fx_spot_feed(
     std::string nats_subject,
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
-    std::optional<adapter_target> adapter,
-    ores::analytics::quant::domain::market_link link,
-    ores::analytics::quant::service::tick_scheduler* scheduler)
+    ores::analytics::quant::service::tick_scheduler& scheduler,
+    double sensitivity,
+    std::optional<adapter_target> adapter)
     : nats_(nats)
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
-    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
-          arrival, ores::synthetic::feed::arrival_seed_for(source_name_)))
     , arrival_(arrival)
-    , link_(link)
     , scheduler_(scheduler)
-    , clock_(*arrivals_, link)
+    , sensitivity_(sensitivity)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
-    , intensity_(link.intensity)
-    , enrolment_(ores::analytics::quant::domain::enrol_hourly(link, arrival.ticks_per_hour))
     , nats_subject_(std::move(nats_subject))
     , display_subject_(ores::marketdata::domain::feed_display_subject_for(source_name_))
     , adapter_(std::move(adapter)) {
 
-    if (!std::isfinite(link.sensitivity) || link.sensitivity <= 0.0)
+    if (!std::isfinite(sensitivity_) || sensitivity_ <= 0.0)
         throw std::invalid_argument(
             "fx_spot_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
+    // The scheduler builds the law when the feed starts, so a spec it would refuse is refused
+    // here, when the feed is built.
+    const auto arrival_check = ores::analytics::quant::domain::validate_arrival_process_parameters(
+        arrival_.mode, arrival_.ticks_per_hour, arrival_.branching_ratio, arrival_.decay);
+    if (!arrival_check.valid)
+        throw std::invalid_argument("fx_spot_feed: " + arrival_check.message);
     namespace datum = ores::marketdata::datum;
     const auto read = datum::oresmd_uri_codec::read(quote_uri_);
     if (!read)
@@ -217,47 +216,29 @@ const std::string& fx_spot_feed::role() const {
 }
 
 void fx_spot_feed::start() {
-    const auto body = [this](double elapsed_seconds) {
-        return tick(elapsed_seconds);
-    };
-
-    // A scheduler, when the run has one, decides when this feed ticks: it holds
-    // every series' next gap, so registering is all start() does. Without one the
-    // feed runs its own clock, which keeps a single-feed run and every test that
-    // predates the scheduler working unchanged.
-    if (scheduler_ != nullptr) {
-        handle_ = scheduler_->add(*arrivals_, link_, body);
-        return;
-    }
-
-    clock_.run(
-        body,
-        [this](std::uint64_t n, const std::string& value) {
-            if (n == 1 || n % 100 == 0) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "SYNTHETIC PUBLISH: subject='" << published_subject() << "' oresmd_uri='"
-                    << quote_uri_ << "' count=" << n << " value=" << value;
-            }
-        },
-        [this](const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error)
-                << "SYNTHETIC PUBLISH FAILED: subject='" << published_subject() << "' oresmd_uri='"
-                << quote_uri_ << "': " << ex.what();
-        });
+    handle_ = scheduler_.add({.series = ores::analytics::quant::math::series_key(source_name_),
+                              .arrival = arrival_,
+                              .sensitivity = sensitivity_,
+                              .name = source_name_},
+                             [this](const ores::analytics::quant::service::tick_context& context) {
+                                 return tick(context);
+                             });
 }
 
-std::string fx_spot_feed::tick(double elapsed_seconds) {
-    published_.fetch_add(1, std::memory_order_relaxed);
+std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_context& context) {
+    const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
 
-    // The same rate the arrival process divides by, so a periodic feed
-    // turns its own gap back into one tick rather than one-ulp-off one.
-    // An unusable gap (the clock's zero) still publishes a tick, so it
-    // advances the process by one nominal tick, as it always did.
-    const auto elapsed_ticks = elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
+    // An unusable gap still publishes a tick, so it advances the process by one
+    // nominal tick, as it always did.
+    const auto elapsed_ticks =
+        context.elapsed_seconds > 0.0 ? context.elapsed_seconds * ticks_per_second_ : 1.0;
     const auto value = std::format("{}", process_->next(elapsed_ticks));
-    if (intensity_ != nullptr)
-        intensity_->record_event();
-    const auto now = std::chrono::system_clock::now();
+    if (n == 1 || n % 100 == 0) {
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "SYNTHETIC PUBLISH: subject='" << published_subject() << "' oresmd_uri='"
+            << quote_uri_ << "' count=" << n << " value=" << value;
+    }
+    const auto now = context.observed_at;
     const auto& codec = ores::nats::default_wire_codec();
     ores::marketdata::messaging::market_tick shown;
     shown.oresmd_uri = quote_uri_;
@@ -286,11 +267,10 @@ std::string fx_spot_feed::tick(double elapsed_seconds) {
 }
 
 void fx_spot_feed::stop() {
-    if (scheduler_ != nullptr && handle_) {
-        scheduler_->remove(*handle_);
+    if (handle_) {
+        scheduler_.remove(*handle_);
         handle_.reset();
     }
-    clock_.stop();
 }
 
 }

@@ -30,6 +30,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -50,7 +51,7 @@ using ores::marketdata::service::series_snapshot_reader;
 using ores::testing::database_helper;
 
 /// Writes @p content through the import, so the reader reads stored data.
-void import(database_helper& h, const std::string& content) {
+void service_series_snapshot_reader_import(database_helper& h, const std::string& content) {
     ores::nats::service::nats_client auth_nats;
     ores::marketdata::service::import_service svc(h.context(), auth_nats);
     ores::marketdata::messaging::import_market_data_request req;
@@ -58,54 +59,6 @@ void import(database_helper& h, const std::string& content) {
     req.source = "test.series_snapshot_reader";
     const auto resp = svc.import(req);
     REQUIRE(resp.success);
-}
-
-/// The FX option surface on a pair, as the resolver names one.
-resolve_series_identity_request fx_option_identity(const std::string& unit_ccy,
-                                                   const std::string& ccy) {
-    resolve_series_identity_request id;
-    id.asset = "fx";
-    id.scope = unit_ccy;
-    id.instrument_type = "fx_option";
-    id.quote_type = "rate_lnvol";
-    id.fields.push_back({"ccy", ccy});
-    return id;
-}
-
-/// A spot rate on a pair, as the resolver names one. It carries no coordinate,
-/// so it has no grid.
-resolve_series_identity_request fx_spot_identity(const std::string& unit_ccy,
-                                                 const std::string& ccy) {
-    resolve_series_identity_request id;
-    id.asset = "fx";
-    id.scope = unit_ccy;
-    id.instrument_type = "fx_spot";
-    id.quote_type = "rate";
-    id.fields.push_back({"ccy", ccy});
-    return id;
-}
-
-/// A curve id no earlier run used, so the series is this test's alone.
-std::string fresh_curve_id() {
-    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
-    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
-    return tag;
-}
-
-/// A zero coupon curve, as the resolver names one.
-resolve_series_identity_request zero_identity(const std::string& curve_id) {
-    resolve_series_identity_request id;
-    id.asset = "ir";
-    id.scope = "EUR";
-    id.instrument_type = "zero";
-    id.quote_type = "rate";
-    id.fields.push_back({"curve_id", curve_id});
-    id.fields.push_back({"day_counter", "A365"});
-    return id;
-}
-
-std::chrono::system_clock::time_point instant(const std::string& iso) {
-    return ores::platform::time::datetime::from_iso8601_utc(iso);
 }
 
 get_curve_snapshot_request snapshot_request(resolve_series_identity_request identity) {
@@ -121,11 +74,12 @@ TEST_CASE("a_snapshot_states_the_declared_grid_and_the_value_at_each_node",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20170410 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/ATM 0.080\n"
-           "20170410 FX_OPTION/RATE_LNVOL/NZD/SEK/2Y/ATM 0.085\n"
-           "20170410 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/25RR 0.011\n");
-    import(h, "20170411 FX_OPTION/RATE_LNVOL/NZD/SEK/2Y/25RR 0.012\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170410 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/ATM 0.080\n"
+                                          "20170410 FX_OPTION/RATE_LNVOL/NZD/SEK/2Y/ATM 0.085\n"
+                                          "20170410 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/25RR 0.011\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170411 FX_OPTION/RATE_LNVOL/NZD/SEK/2Y/25RR 0.012\n");
 
     const auto resp =
         series_snapshot_reader::read(h.context(),
@@ -150,10 +104,11 @@ TEST_CASE("a_node_no_point_states_is_a_hole_with_no_record_time",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20170510 FX_OPTION/RATE_LNVOL/NZD/NOK/1Y/ATM 0.080\n"
-           "20170510 FX_OPTION/RATE_LNVOL/NZD/NOK/2Y/ATM 0.085\n");
-    import(h, "20170511 FX_OPTION/RATE_LNVOL/NZD/NOK/1Y/25RR 0.011\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170510 FX_OPTION/RATE_LNVOL/NZD/NOK/1Y/ATM 0.080\n"
+                                          "20170510 FX_OPTION/RATE_LNVOL/NZD/NOK/2Y/ATM 0.085\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170511 FX_OPTION/RATE_LNVOL/NZD/NOK/1Y/25RR 0.011\n");
 
     const auto resp =
         series_snapshot_reader::read(h.context(),
@@ -174,11 +129,12 @@ TEST_CASE("a_snapshot_and_an_evolution_agree_on_the_nodes_and_on_a_stated_value"
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20170610 FX_OPTION/RATE_LNVOL/NZD/DKK/1Y/ATM 0.080\n"
-           "20170610 FX_OPTION/RATE_LNVOL/NZD/DKK/2Y/ATM 0.085\n"
-           "20170610 FX_OPTION/RATE_LNVOL/NZD/DKK/1Y/10RR 0.013\n");
-    import(h, "20170611 FX_OPTION/RATE_LNVOL/NZD/DKK/2Y/25RR 0.012\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170610 FX_OPTION/RATE_LNVOL/NZD/DKK/1Y/ATM 0.080\n"
+                                          "20170610 FX_OPTION/RATE_LNVOL/NZD/DKK/2Y/ATM 0.085\n"
+                                          "20170610 FX_OPTION/RATE_LNVOL/NZD/DKK/1Y/10RR 0.013\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170611 FX_OPTION/RATE_LNVOL/NZD/DKK/2Y/25RR 0.012\n");
 
     const auto at = instant("2017-06-11T00:00:00Z");
     const auto snapshot = series_snapshot_reader::read(
@@ -211,7 +167,7 @@ TEST_CASE("a_snapshot_of_an_object_with_no_axis_is_refused", "[service][series_s
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h, "20170710 FX/RATE/NZD/DKK 4.5\n");
+    service_series_snapshot_reader_import(h, "20170710 FX/RATE/NZD/DKK 4.5\n");
 
     const auto resp = series_snapshot_reader::read(h.context(),
                                                    snapshot_request(fx_spot_identity("NZD", "DKK")),
@@ -241,10 +197,10 @@ TEST_CASE("a_snapshot_asked_for_provenance_names_the_source_of_each_value",
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/ATM 0.080\n"
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/2Y/ATM 0.085\n"
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/25RR 0.011\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/ATM 0.080\n"
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/2Y/ATM 0.085\n"
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/PLN/1Y/25RR 0.011\n");
 
     const auto identity = fx_option_identity("NZD", "PLN");
     const auto series =
@@ -301,9 +257,9 @@ TEST_CASE("a_derived_point_names_the_recipe_that_built_it", "[service][series_sn
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/ZAR/1Y/ATM 0.080\n"
-           "20170910 FX_OPTION/RATE_LNVOL/NZD/ZAR/2Y/ATM 0.085\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/ZAR/1Y/ATM 0.080\n"
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/ZAR/2Y/ATM 0.085\n");
 
     const auto identity = fx_option_identity("NZD", "ZAR");
     const auto series =
@@ -367,7 +323,8 @@ TEST_CASE("a_snapshot_not_asked_for_provenance_carries_none", "[service][series_
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h, "20170911 FX_OPTION/RATE_LNVOL/NZD/CZK/1Y/ATM 0.080\n");
+    service_series_snapshot_reader_import(h,
+                                          "20170911 FX_OPTION/RATE_LNVOL/NZD/CZK/1Y/ATM 0.080\n");
 
     const auto resp =
         series_snapshot_reader::read(h.context(),
@@ -383,9 +340,9 @@ TEST_CASE("a_later_import_does_not_undo_a_manual_point", "[service][series_snaps
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.080\n"
-           "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/2Y/ATM 0.085\n");
+    service_series_snapshot_reader_import(h,
+                                          "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.080\n"
+                                          "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/2Y/ATM 0.085\n");
 
     const auto identity = fx_option_identity("NZD", "HUF");
     const auto series =
@@ -413,8 +370,10 @@ TEST_CASE("a_later_import_does_not_undo_a_manual_point", "[service][series_snaps
         "operator over-key");
 
     // The same coordinate at the same instant, then a later instant.
-    import(h, "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.081\n");
-    import(h, "20171002 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.082\n");
+    service_series_snapshot_reader_import(h,
+                                          "20171001 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.081\n");
+    service_series_snapshot_reader_import(h,
+                                          "20171002 FX_OPTION/RATE_LNVOL/NZD/HUF/1Y/ATM 0.082\n");
 
     auto req = snapshot_request(identity);
     req.include_provenance = true;
@@ -433,7 +392,8 @@ TEST_CASE("a_manual_point_can_be_rekeyed_and_an_import_lands_once_it_is_cleared"
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h, "20171101 FX_OPTION/RATE_LNVOL/NZD/RON/1Y/ATM 0.080\n");
+    service_series_snapshot_reader_import(h,
+                                          "20171101 FX_OPTION/RATE_LNVOL/NZD/RON/1Y/ATM 0.080\n");
 
     const auto identity = fx_option_identity("NZD", "RON");
     const auto series =
@@ -458,7 +418,8 @@ TEST_CASE("a_manual_point_can_be_rekeyed_and_an_import_lands_once_it_is_cleared"
     CHECK(read_now().values == std::vector<std::string>{"0.095"});
 
     obs_repo.clear_manual_point(operator_ctx, series.front().id, uri, at);
-    import(h, "20171101 FX_OPTION/RATE_LNVOL/NZD/RON/1Y/ATM 0.081\n");
+    service_series_snapshot_reader_import(h,
+                                          "20171101 FX_OPTION/RATE_LNVOL/NZD/RON/1Y/ATM 0.081\n");
     CHECK(read_now().values == std::vector<std::string>{"0.081"});
 }
 
@@ -467,10 +428,10 @@ TEST_CASE("a_batch_insert_drops_only_the_shadowed_points_and_the_single_insert_d
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    import(h,
-           "20171201 FX_OPTION/RATE_LNVOL/NZD/BGN/1Y/ATM 0.080\n"
-           "20171201 FX_OPTION/RATE_LNVOL/NZD/BGN/2Y/ATM 0.085\n"
-           "20171201 FX_OPTION/RATE_LNVOL/NZD/HRK/1Y/ATM 0.070\n");
+    service_series_snapshot_reader_import(h,
+                                          "20171201 FX_OPTION/RATE_LNVOL/NZD/BGN/1Y/ATM 0.080\n"
+                                          "20171201 FX_OPTION/RATE_LNVOL/NZD/BGN/2Y/ATM 0.085\n"
+                                          "20171201 FX_OPTION/RATE_LNVOL/NZD/HRK/1Y/ATM 0.070\n");
 
     ores::marketdata::repository::market_observation_repository obs_repo;
     const auto bgn = fx_option_identity("NZD", "BGN");

@@ -45,7 +45,6 @@ export interface EquityAccumulatorInstrumentWrite {
     fixing_frequency: string;
     long_short: string;
     knock_out_level: string | null;
-    range_bounds_json: string;
     target_amount: string | null;
     target_type: string;
     payoff_type: string;

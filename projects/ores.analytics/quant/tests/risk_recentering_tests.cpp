@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/service/rate_engine.hpp"
 #include "ores.analytics.quant/service/risk_recentering.hpp"
 #include "ores.analytics.quant/service/topology_builder.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -35,10 +36,6 @@ using ores::analytics::quant::service::recenter;
 using ores::analytics::quant::service::topology_builder;
 
 namespace {
-
-auto epoch(int seconds) {
-    return std::chrono::system_clock::time_point{} + std::chrono::seconds(seconds);
-}
 
 rate_engine build_usd_pivot_engine() {
     const std::vector<ccy_pair_input> pairs = {

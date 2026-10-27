@@ -22,6 +22,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -33,10 +34,6 @@
 #include <variant>
 
 namespace {
-
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
 
 // Build a minimal scan_result pointing at a legacy ORE example directory
 ores::ore::scanner::scan_result make_scan_result(const std::filesystem::path& root) {

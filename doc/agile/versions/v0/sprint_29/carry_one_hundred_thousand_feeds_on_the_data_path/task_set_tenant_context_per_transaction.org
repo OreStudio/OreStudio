@@ -29,7 +29,7 @@ A connection carries no tenant or party between transactions: each transaction s
 | State        | BACKLOG                              |
 | Parent story | [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The libpq layer, then each component's move. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-26                               |
 
@@ -37,7 +37,7 @@ A connection carries no tenant or party between transactions: each transaction s
 
 - Tenant, party, visible parties, actor and service are set with =set_config(..., true)= at the start of each transaction, in the round trip of its first statement.
 - A test reuses one connection for two tenants and shows the second transaction sees none of the first tenant's context or rows.
-- Only the time zone is set when a connection opens.
+- Nothing is set when a connection opens; UTC is a default of the role.
 
 * Plan
 

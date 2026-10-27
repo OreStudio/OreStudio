@@ -101,18 +101,6 @@ struct equity_accumulator_instrument final {
     std::optional<ores::utility::decimal::decimal> knock_out_level;
 
     /**
-     * @brief JSON array of the ORE RangeBounds entries for an EquityAccumulator; empty when the
-     * document states none.
-     *
-     * A range bound is a rangeBound: an optional startDate plus the optional levels RangeFrom,
-     * RangeTo, Leverage, Strike and StrikeAdjustment. Each entry is a JSON object holding only the
-     * fields the document states. The list has no child table, so it lives in JSON text. The ORE
-     * schema requires at least one RangeBound, so an export that drops the list cannot be read
-     * back.
-     */
-    std::string range_bounds_json;
-
-    /**
      * @brief TaRF only: target profit level.
      */
     std::optional<ores::utility::decimal::decimal> target_amount;
@@ -172,7 +160,6 @@ inline constexpr std::string_view equity_accumulator_instrument_economic_fields[
     "fixing_frequency",
     "long_short",
     "knock_out_level",
-    "range_bounds_json",
     "target_amount",
     "target_type",
     "payoff_type",

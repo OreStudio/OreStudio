@@ -444,6 +444,17 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Name the new helper for what it does, or share one definition; when a "
             "recorded file no longer collides, remove it from cmake/unity_exclusions.cmake.",
     ),
+    # Two types of one qualified name share their template instantiations at
+    # link time, so a message can be encoded with the other type's layout.
+    Check(
+        id="unique-type-names",
+        title="No two headers define a type of the same name in one namespace",
+        argv=("python3", "build/scripts/check_unique_type_names.py"),
+        classes=("cpp",),
+        paths=("projects/*",
+               "build/scripts/check_unique_type_names.py"),
+        fix="Rename one of the two types; for a generated message, rename it in its model.",
+    ),
     # A family is either supported by a table, migrating from a mapper, or
     # unused. The census is a decision; this check is whether the tree still
     # agrees with it.

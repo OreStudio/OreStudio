@@ -84,7 +84,7 @@ MEMBER = re.compile(r"^\s+([A-Za-z_][\w:<>]*)\s+(\w+)_\s*;", re.M)
 # The parser that turns a leaf's text into a value. A read may wrap it
 # (`parseDayCounter(getChildValue(...))`) or the `build` function may apply it to
 # the member the read stored, which is why both are read.
-PARSE = re.compile(r"\b(parse\w+)\(")
+PARSE = re.compile(r"\b(parse\w+)\(\s*(\w+)")
 ASSIGN = re.compile(r"(\w+)\s*=\s*$")
 PARSERS = "OREData/ored/utilities/parsers.cpp"
 PARSER_DEF = re.compile(r"^[\w:<>]+ (parse\w+)\(const (?:std::)?string& \w+\)")
@@ -626,7 +626,8 @@ def all_parsers(ore):
     """
     root = os.path.join(ore, "OREData")
     out = {}
-    for directory, _, names in os.walk(root):
+    for directory, dirs, names in os.walk(root):
+        dirs.sort()  # the walk order decides which map wins, so make it fixed
         for name in sorted(names):
             if not name.endswith((".cpp", ".hpp")):
                 continue

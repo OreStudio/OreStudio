@@ -61,9 +61,9 @@ task and name that file in the Command column.
 | Leaves with a parse function in the config parser | 27 of 434 | =python3 projects/ores.sql/utility/extract_curve_terms.py= | =3d75a6908= (ORE) |
 | Parser maps the ORE source states | 75 | the same run | =3d75a6908= (ORE) |
 | Leaves linked to a set | 213 | =python3 projects/ores.sql/utility/generate_value_sets.py= | this branch |
-| Leaves linked to something other than text | 63 (29 catalogue, 8 parser, 26 type) | the same run | this branch |
-| Leaves that take text, reported by the generator | 150 | the same run | this branch |
-| Curated parser links | 6 | =python3 projects/ores.sql/utility/curve_value_sets.py= | this branch |
+| Leaves linked to something other than text | 62 (29 catalogue, 7 parser, 26 type) | the same run | this branch |
+| Leaves that take text, reported by the generator | 151 | the same run | this branch |
+| Curated parser links | 5 | =python3 projects/ores.sql/utility/curve_value_sets.py= | this branch |
 | Value-set rows in the contract after the change | 218 sets, 707 links | the same run | this branch |
 |      |       |         |        |
 
@@ -88,9 +88,11 @@ task and name that file in the Command column.
   chose the curated map on 2026-10-27. A leaf whose name is one of ORE's
   vocabularies takes that catalogue (currency, day counter, business day
   convention, 29 leaves); a leaf the curation links to a parser takes that
-  parser's list, which is still derived from the ORE source (6 curated links,
-  8 leaves); a leaf whose type the extractor read takes its type's set (26
-  leaves); the rest are text (150). The generator prints the text ones, so the
+  parser's list, which is still derived from the ORE source (5 curated links,
+  7 leaves); a leaf whose type the extractor read takes its type's set (26
+  leaves); the rest are text (151). A link is keyed by the section it applies
+  to, or by =*|= when the name means the same thing in every section, so a link
+  never silently widens to a family its reason does not name. The generator prints the text ones, so the
   coverage is read, not assumed.
 - *A rule from the conventions task cannot be reused as written.* That task
   stops the generator when a parser states no list, so a list the extractor
@@ -123,9 +125,9 @@ via its "Verifies task" field.
 
 * Result
 
-213 documented leaves are linked to a set. 63 carry something narrower than
-text: 29 draw on a refdata catalogue, 8 on a list an ORE parser states, and 26
-take their type's set. The other 150 are text, which is what the
+213 documented leaves are linked to a set. 62 carry something narrower than
+text: 29 draw on a refdata catalogue, 7 on a list an ORE parser states, and 26
+take their type's set. The other 151 are text, which is what the
 curve configuration holds for them, and the generator names every one.
 
 The set a leaf takes is a catalogue by name, a curated parser link, or its type.

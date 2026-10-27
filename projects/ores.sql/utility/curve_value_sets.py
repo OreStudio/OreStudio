@@ -72,12 +72,9 @@ CATALOGUES = {
 # The leaves whose name is one of ORE's vocabularies, and the catalogue each takes.
 CATALOGUE_OF = {
     "Currency": "refdata.currency",
-    "QuoteCurrency": "refdata.currency",
-    "BaseCurrency": "refdata.currency",
     "DayCounter": "refdata.day_counter",
     "YieldCurveDayCounter": "refdata.day_counter",
     "BusinessDayConvention": "refdata.business_day_convention",
-    "PaymentConvention": "refdata.business_day_convention",
 }
 
 TYPE_SETS = {
@@ -190,11 +187,22 @@ def terms():
             yield section, term
 
 
-def set_of(term, curated, parsers):
+def curated_for(curated, section, name):
+    """The curation of a leaf: its own section's entry, or a wildcard entry.
+
+    A link names one parser, and a name may mean the same thing in every section
+    that carries it, so a wildcard is allowed. It is never assumed: the entry
+    says which sections it covers by the key it uses.
+    """
+    return curated.get(f"{section}|{name}") or curated.get(f"*|{name}")
+
+
+def set_of(term, curated, parsers, section):
     """The set code of one leaf, and the parser whose list it is, if any."""
     name = term["name"]
-    if name in curated:
-        link = curated[name]["link"]
+    entry = curated_for(curated, section, name)
+    if entry:
+        link = entry["link"]
         if link.startswith("refdata."):
             return "curve." + link.split(".", 1)[1], None
         if link not in parsers:
@@ -230,7 +238,7 @@ def data():
     for section, term in terms():
         if (section, term["name"]) not in documented:
             continue
-        code, parser = set_of(term, curated, parsers)
+        code, parser = set_of(term, curated, parsers, section)
         if parser and code not in sets:
             sets[code] = parser_set(parser, parsers[parser])
         key = f"{section}|{term['name']}"
@@ -244,6 +252,19 @@ def data():
     return {"catalogues": catalogues, "sets": sets, "links": links}
 
 
+def catalogue_scopes():
+    """The sections each catalogue name is matched in, so a name that comes to
+    mean something else in a new family is seen rather than assumed."""
+    with open(TERMS) as f:
+        extracted = json.load(f)
+    scopes = {}
+    for section, body in extracted["sections"].items():
+        for term in body["terms"]:
+            if term["name"] in CATALOGUE_OF:
+                scopes.setdefault(term["name"], set()).add(section)
+    return {name: sorted(found) for name, found in sorted(scopes.items())}
+
+
 def text_of():
     """The documented leaves that fall to text, so the coverage can be read."""
     with open(TERMS) as f:
@@ -254,4 +275,4 @@ def text_of():
     documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     return sorted({f"{section}|{term['name']}" for section, term in terms()
                    if (section, term["name"]) in documented
-                   and set_of(term, curated, parsers)[0] == "curve.text"})
+                   and set_of(term, curated, parsers, section)[0] == "curve.text"})

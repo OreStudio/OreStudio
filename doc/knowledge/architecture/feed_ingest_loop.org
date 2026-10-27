@@ -42,8 +42,8 @@ The stages, in order:
    counts the delivery for each party. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
 6. *Compose.* A composite item that uses this series is recomputed. See
    [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
-7. *Store.* The tick's lane writes one point in the source's stream in its next
-   batch, however many parties the source serves. A party's series points at the
+7. *Store.* Asynchronously, in its next batch, the tick's lane writes one point in
+   the source's stream, however many parties the source serves. A party's series points at the
    stream. The loop writes no observation row for a tick. A client reads the
    ticks with the history call, which checks the party's entitlement. See
    [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]],

@@ -280,7 +280,7 @@ so a lag of seconds shows within seconds.
   trigger and no =valid_to=. It has one index on the series and the time, and it
   stores the series and the coordinate as identifiers, not the URI text in each row. A
   view joins it with the observation table for a reader that wants both.
-- *The volume.* An append-only row takes 162 bytes uncompressed, as the design record measured.
+- *The volume.* An append-only row takes 162 bytes uncompressed ([[id:4E423566-F61B-4D0F-8787-25E4EEB4887C][The tick ingest pipeline design record]]).
   Thirty thousand source ticks each second, stored once, are about 2.6 billion rows
   each day. Raw ticks stay for a short window, such as a week, and a retention policy
   then drops the chunk. Bars of one second and one minute are kept longer. The class

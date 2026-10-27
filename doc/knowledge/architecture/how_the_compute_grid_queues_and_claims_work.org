@@ -89,11 +89,11 @@ The lease is five minutes at first. The heartbeat that a node already sends whil
 
 *** The outcome
 
-A submit changes a result only when the result is InProgress and the host is the host that holds the claim in the ledger. A result that has no entry in the ledger was handed out by the push queue, and its submit is accepted as before until that queue is removed. A submit for a result that is retired, already done, or claimed by another host changes nothing, and the reply says it succeeded, so the node never reports an error for work that no longer matters. This is the Idempotent Receiver pattern. It also stops a late node from overwriting the result of the node that took over after its lease ended.
+A submit changes a result only when the result is InProgress and the host is the host that holds the claim in the ledger. A submit for a result that has no entry in the ledger changes nothing. A submit for a result that is retired, already done, or claimed by another host changes nothing, and the reply says it succeeded, so the node never reports an error for work that no longer matters. This is the Idempotent Receiver pattern. It also stops a late node from overwriting the result of the node that took over after its lease ended.
 
 *** The wake-up
 
-The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node that gets "no work" waits for the notice, or for a long timeout measured in minutes that covers a lost notice, and sends nothing until one of them comes. A node that finishes a job claims again at once. An idle grid therefore sends no claims and runs no queries. See [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]].
+The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node that gets "no work" waits for the notice, or for a long timeout measured in minutes that covers a lost notice, and sends nothing until one of them comes. A node that finishes a job claims again at once. An idle grid therefore runs one claim per wrapper per timeout and nothing else. See [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]].
 
 *** The bound
 
@@ -105,7 +105,7 @@ A tenant reads the depth of its queue and the age of its oldest waiting job from
 
 ** What stays on JetStream
 
-JetStream carries facts that must not be lost: the commands of the workflow engine, the events that a batch is complete, and a record of each result that ended with no attempts left. It carries no job and no credential. The assignments stream and its durable consumer are removed when the claim is in use.
+JetStream carries facts that must not be lost: the commands of the workflow engine, the events that a batch is complete, and a record of each result that ended with no attempts left. It carries no job and no credential. No stream carries assignments.
 
 ** What does not change
 

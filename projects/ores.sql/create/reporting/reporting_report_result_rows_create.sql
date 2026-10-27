@@ -42,7 +42,7 @@ create table if not exists "ores_reporting_report_result_rows_tbl" (
     "measure" text not null,
     "currency" text not null,
     "report_definition_id" uuid not null,
-    "value" double precision not null,
+    "figure" double precision not null,
     "source" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,

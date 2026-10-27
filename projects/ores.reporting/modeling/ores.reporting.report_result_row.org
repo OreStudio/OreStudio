@@ -111,7 +111,7 @@ The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
 
 The currency the figure is stated in, empty when the measure has none.
 
-** value
+** figure
 :PROPERTIES:
 :type:         double precision
 :cpp_type:     double
@@ -140,3 +140,21 @@ The file and the row the marshal read, for provenance.
 :no_audit_columns:             true
 :rls_tenant_isolation:         true
 :END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| subject_type | Subject Type |
+| subject_id   | Subject Id   |
+| measure      | Measure      |
+| currency     | Currency     |
+| figure       | Figure       |
+| as_of        | As Of        |

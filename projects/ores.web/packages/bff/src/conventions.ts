@@ -354,6 +354,10 @@ function columnValue(sourceKind: string, value: string | null): unknown {
  * The database refuses a term's value with the term's scope and name, as in
  * "Invalid value X for Swap.FixedFrequency: ...". A refusal that names no field
  * is given the column of the term it names, so the screen puts it on that term.
+ *
+ * The sentence is the one ores_refdata_validate_convention_terms_fn raises, which
+ * generate_convention_kind_terms.py writes; a change to its wording must change
+ * this match too, or the refusal falls back to the card instead of its term.
  */
 export function onTerm(
     result: z.infer<typeof resultSchema>,
@@ -669,6 +673,19 @@ export function registerConventionRoutes(
             throw invalidRequest(
                 `The ${family.key} convention ${id} belongs to another party. Switch to it to change it.`,
             );
+        }
+        // The write lays the changes over the row read here, so a row that moved
+        // on since the page read it would carry columns the person never saw.
+        if (row['version'] !== body.version) {
+            return {
+                result: {
+                    outcome: 'conflict',
+                    code: 'version_conflict',
+                    message: `The ${family.key} convention ${id} changed since it was read.`,
+                    fields: [],
+                },
+                convention: null,
+            };
         }
         const terms = await termsOf(session, kindCodeOf(family.key), row);
         const kindOf = new Map(

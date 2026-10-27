@@ -857,6 +857,22 @@ describe('convention routes', () => {
             expect(calls.some((call) => call.subject.endsWith('.put'))).toBe(false);
         });
 
+        it('answers a conflict, and writes nothing, when the row moved on since the page read it', async () => {
+            const { server, sessionId, calls } = buildTestServer(termReplies({ result: ok }));
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/swap/documents/EUR-6M-SWAP/terms',
+                { intent: INTENT, version: 2, changes: { fixed_frequency: 'Q' } },
+            );
+            expect(response.json().result).toMatchObject({
+                outcome: 'conflict',
+                code: 'version_conflict',
+            });
+            expect(calls.some((call) => call.subject.endsWith('.put'))).toBe(false);
+        });
+
         it('refuses the terms of a composite, which are changed on its parts', async () => {
             const { server, sessionId, calls } = buildTestServer({});
             const response = await send(

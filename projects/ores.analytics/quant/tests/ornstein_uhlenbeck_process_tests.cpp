@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
+#include "price_stream.hpp"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -30,21 +31,21 @@ using ores::analytics::quant::service::ornstein_uhlenbeck_process;
 
 TEST_CASE("ornstein_uhlenbeck_process reports the initial price before any next() call",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process p(0.1, 100.0, 1.0, 100.0);
+    ornstein_uhlenbeck_process p(0.1, 100.0, 1.0, 100.0, price_stream(42));
     CHECK(p.current() == 100.0);
 }
 
 TEST_CASE("ornstein_uhlenbeck_process next() updates and returns the same value as current()",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process p(0.1, 100.0, 1.0, 100.0);
+    ornstein_uhlenbeck_process p(0.1, 100.0, 1.0, 100.0, price_stream(42));
     const double n = p.next();
     CHECK(n == p.current());
 }
 
 TEST_CASE("ornstein_uhlenbeck_process is deterministic for a fixed seed",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process a(0.3, 105.0, 2.0, 100.0, 7);
-    ornstein_uhlenbeck_process b(0.3, 105.0, 2.0, 100.0, 7);
+    ornstein_uhlenbeck_process a(0.3, 105.0, 2.0, 100.0, price_stream(7));
+    ornstein_uhlenbeck_process b(0.3, 105.0, 2.0, 100.0, price_stream(7));
 
     for (int i = 0; i < 20; ++i)
         CHECK(a.next() == b.next());
@@ -52,7 +53,7 @@ TEST_CASE("ornstein_uhlenbeck_process is deterministic for a fixed seed",
 
 TEST_CASE("ornstein_uhlenbeck_process with zero volatility decays deterministically toward theta",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process p(0.5, 100.0, 0.0, 200.0);
+    ornstein_uhlenbeck_process p(0.5, 100.0, 0.0, 200.0, price_stream(42));
     double prev = 200.0;
     for (int i = 0; i < 50; ++i) {
         const double next = p.next();
@@ -66,7 +67,7 @@ TEST_CASE("ornstein_uhlenbeck_process with zero volatility decays deterministica
 
 TEST_CASE("ornstein_uhlenbeck_process mean-reverts toward theta over a long run (statistical)",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process p(0.2, 100.0, 1.0, 100.0, 123);
+    ornstein_uhlenbeck_process p(0.2, 100.0, 1.0, 100.0, price_stream(123));
     std::vector<double> tail;
     for (int i = 0; i < 5000; ++i) {
         const double v = p.next();
@@ -80,28 +81,31 @@ TEST_CASE("ornstein_uhlenbeck_process mean-reverts toward theta over a long run 
 TEST_CASE("ornstein_uhlenbeck_process with kappa <= 0 degenerates to a driftless random walk",
           "[ornstein_uhlenbeck_process]") {
     // kappa == 0 must not divide by zero and must not mean-revert.
-    ornstein_uhlenbeck_process p(0.0, 100.0, 0.0, 100.0);
+    ornstein_uhlenbeck_process p(0.0, 100.0, 0.0, 100.0, price_stream(42));
     // sigma == 0 makes the walk deterministic: price never changes.
     for (int i = 0; i < 10; ++i)
         CHECK(p.next() == Catch::Approx(100.0));
 }
 
 TEST_CASE("ornstein_uhlenbeck_process rejects negative sigma", "[ornstein_uhlenbeck_process]") {
-    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, -1.0, 100.0), std::invalid_argument);
+    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, -1.0, 100.0, price_stream(42)),
+                    std::invalid_argument);
 }
 
 TEST_CASE("ornstein_uhlenbeck_process rejects a non-positive initial price",
           "[ornstein_uhlenbeck_process]") {
-    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 0.0), std::invalid_argument);
-    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, -5.0), std::invalid_argument);
+    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 0.0, price_stream(42)),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, -5.0, price_stream(42)),
+                    std::invalid_argument);
 }
 
 // -- dt (year-fraction per tick) coverage --------------------------------
 
 TEST_CASE("ornstein_uhlenbeck_process default dt is exactly today's un-scaled behaviour",
           "[ornstein_uhlenbeck_process][dt]") {
-    ornstein_uhlenbeck_process implicit(0.3, 105.0, 2.0, 100.0, 7);
-    ornstein_uhlenbeck_process explicit_default(0.3, 105.0, 2.0, 100.0, 7, 1.0);
+    ornstein_uhlenbeck_process implicit(0.3, 105.0, 2.0, 100.0, price_stream(7));
+    ornstein_uhlenbeck_process explicit_default(0.3, 105.0, 2.0, 100.0, price_stream(7), 1.0);
 
     for (int i = 0; i < 20; ++i)
         CHECK(implicit.next() == explicit_default.next());
@@ -116,7 +120,7 @@ TEST_CASE("ornstein_uhlenbeck_process per-tick variance scales with dt (statisti
     const double kappa = 0.05, theta = 100.0, sigma = 2.0, x0 = 100.0;
 
     auto sample_stdev = [&](double dt) {
-        ornstein_uhlenbeck_process p(kappa, theta, sigma, x0, seed, dt);
+        ornstein_uhlenbeck_process p(kappa, theta, sigma, x0, price_stream(seed), dt);
         double prev = x0;
         double sum_sq = 0.0;
         const int n = 2000;
@@ -138,8 +142,8 @@ TEST_CASE("ornstein_uhlenbeck_process per-tick variance scales with dt (statisti
 
 TEST_CASE("ornstein_uhlenbeck_process degenerate kappa<=0 branch is dt-aware",
           "[ornstein_uhlenbeck_process][dt]") {
-    ornstein_uhlenbeck_process daily(0.0, 100.0, 2.0, 100.0, 5, 1.0 / 365.0);
-    ornstein_uhlenbeck_process annual(0.0, 100.0, 2.0, 100.0, 5, 1.0);
+    ornstein_uhlenbeck_process daily(0.0, 100.0, 2.0, 100.0, price_stream(5), 1.0 / 365.0);
+    ornstein_uhlenbeck_process annual(0.0, 100.0, 2.0, 100.0, price_stream(5), 1.0);
 
     double max_abs_diff_daily = 0.0, max_abs_diff_annual = 0.0;
     double prev_daily = 100.0, prev_annual = 100.0;
@@ -156,16 +160,16 @@ TEST_CASE("ornstein_uhlenbeck_process degenerate kappa<=0 branch is dt-aware",
 
 TEST_CASE("ornstein_uhlenbeck_process rejects non-positive dt",
           "[ornstein_uhlenbeck_process][dt]") {
-    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 100.0, 42, 0.0),
+    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 100.0, price_stream(42), 0.0),
                     std::invalid_argument);
-    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 100.0, 42, -1.0),
+    CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 100.0, price_stream(42), -1.0),
                     std::invalid_argument);
 }
 
 TEST_CASE("ornstein_uhlenbeck_process: a step of one tick is the old step",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process one_tick(0.3, 100.0, 0.01, 100.0, 7);
-    ornstein_uhlenbeck_process explicit_tick(0.3, 100.0, 0.01, 100.0, 7);
+    ornstein_uhlenbeck_process one_tick(0.3, 100.0, 0.01, 100.0, price_stream(7));
+    ornstein_uhlenbeck_process explicit_tick(0.3, 100.0, 0.01, 100.0, price_stream(7));
     for (int i = 0; i < 20; ++i)
         CHECK(one_tick.next() == explicit_tick.next(1.0));
 }
@@ -180,7 +184,7 @@ TEST_CASE("ornstein_uhlenbeck_process: a long step is the same as many short one
         std::vector<double> levels;
         levels.reserve(paths);
         for (int seed = 0; seed < paths; ++seed) {
-            ornstein_uhlenbeck_process p(0.3, 100.0, 0.01, 100.0, seed);
+            ornstein_uhlenbeck_process p(0.3, 100.0, 0.01, 100.0, price_stream(seed));
             for (int i = 0; i < steps; ++i)
                 p.next(each);
             levels.push_back(p.current());
@@ -198,7 +202,7 @@ TEST_CASE("ornstein_uhlenbeck_process: a long step is the same as many short one
 
 TEST_CASE("ornstein_uhlenbeck_process: a non-positive elapsed is refused",
           "[ornstein_uhlenbeck_process]") {
-    ornstein_uhlenbeck_process p(0.3, 100.0, 0.01, 100.0);
+    ornstein_uhlenbeck_process p(0.3, 100.0, 0.01, 100.0, price_stream(42));
     CHECK_THROWS_AS(p.next(0.0), std::invalid_argument);
     CHECK(p.supports_variable_step());
 }

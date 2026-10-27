@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/two_factor_gaussian_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
+#include "price_stream.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
@@ -65,57 +66,58 @@ TEST_CASE("two_factor_gaussian_process constructs with valid parameters",
         independent_params::sigma_y,
         independent_params::rho,
         independent_params::initial_rate,
-        independent_params::seed,
+        price_stream(independent_params::seed),
         independent_params::dt));
 }
 
 TEST_CASE("two_factor_gaussian_process rejects negative kappa", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        -0.1, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
+                        -0.1, 0.3, 0.01, 0.005, 0.0, 0.03, price_stream(42), 1.0),
                     std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, -0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
+                        0.5, -0.3, 0.01, 0.005, 0.0, 0.03, price_stream(42), 1.0),
                     std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process rejects negative sigma", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, 0.3, -0.01, 0.005, 0.0, 0.03, 42, 1.0),
+                        0.5, 0.3, -0.01, 0.005, 0.0, 0.03, price_stream(42), 1.0),
                     std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, 0.3, 0.01, -0.005, 0.0, 0.03, 42, 1.0),
+                        0.5, 0.3, 0.01, -0.005, 0.0, 0.03, price_stream(42), 1.0),
                     std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process rejects rho outside [-1, 1]",
           "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, 0.3, 0.01, 0.005, 1.5, 0.03, 42, 1.0),
+                        0.5, 0.3, 0.01, 0.005, 1.5, 0.03, price_stream(42), 1.0),
                     std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, 0.3, 0.01, 0.005, -1.5, 0.03, 42, 1.0),
+                        0.5, 0.3, 0.01, 0.005, -1.5, 0.03, price_stream(42), 1.0),
                     std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process rejects non-positive dt", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 0.0),
+                        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, price_stream(42), 0.0),
                     std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-                        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, -0.5),
+                        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, price_stream(42), -0.5),
                     std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process current returns initial_rate at construction",
           "[two_factor_gaussian_process]") {
-    ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
-                                                                   independent_params::kappa_y,
-                                                                   independent_params::sigma_x,
-                                                                   independent_params::sigma_y,
-                                                                   independent_params::rho,
-                                                                   independent_params::initial_rate,
-                                                                   independent_params::seed,
-                                                                   independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        price_stream(independent_params::seed),
+        independent_params::dt);
 
     // At construction, factor_x = initial_rate, factor_y = 0, so r = initial_rate.
     CHECK(p.current() == independent_params::initial_rate);
@@ -123,14 +125,15 @@ TEST_CASE("two_factor_gaussian_process current returns initial_rate at construct
 
 TEST_CASE("two_factor_gaussian_process next advances and current changes",
           "[two_factor_gaussian_process]") {
-    ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
-                                                                   independent_params::kappa_y,
-                                                                   independent_params::sigma_x,
-                                                                   independent_params::sigma_y,
-                                                                   independent_params::rho,
-                                                                   independent_params::initial_rate,
-                                                                   independent_params::seed,
-                                                                   independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        price_stream(independent_params::seed),
+        independent_params::dt);
 
     const double r1 = p.next();
 
@@ -141,14 +144,15 @@ TEST_CASE("two_factor_gaussian_process next advances and current changes",
 
 TEST_CASE("two_factor_gaussian_process discount_factor zero ticks ahead returns 1",
           "[two_factor_gaussian_process]") {
-    ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
-                                                                   independent_params::kappa_y,
-                                                                   independent_params::sigma_x,
-                                                                   independent_params::sigma_y,
-                                                                   independent_params::rho,
-                                                                   independent_params::initial_rate,
-                                                                   independent_params::seed,
-                                                                   independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        price_stream(independent_params::seed),
+        independent_params::dt);
 
     // A bond maturing now is worth exactly 1.0.
     CHECK(p.discount_factor(0) == 1.0);
@@ -159,7 +163,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor decreases with maturity f
     // Use zero vol to keep the short rate deterministically positive
     // (it decays from initial_rate toward zero, never going negative).
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        0.5, 0.3, 0.0, 0.0, 0.0, 0.05, 42, 1.0);
+        0.5, 0.3, 0.0, 0.0, 0.0, 0.05, price_stream(42), 1.0);
 
     // With positive short rates, longer-maturity bonds should be cheaper.
     const double df_short = p.discount_factor(2); // 2 ticks ahead
@@ -174,7 +178,7 @@ TEST_CASE("two_factor_gaussian_process zero sigma means deterministic evolution"
     // factor_y stays at zero (starts at 0, zero vol)
     // No randomness at all.
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        0.5, 0.3, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
+        0.5, 0.3, 0.0, 0.0, 0.0, 0.04, price_stream(42), 0.25);
 
     const double r0 = p.current();
     CHECK(r0 == 0.04);
@@ -208,7 +212,7 @@ TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches dis
     const std::size_t ticks = 4; // 1 year quarterly
 
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        kx, ky, 0.0, 0.0, 0.0, initial_rate, 42, dt);
+        kx, ky, 0.0, 0.0, 0.0, initial_rate, price_stream(42), dt);
 
     // Construction puts initial_rate into factor_x_, factor_y_ at 0.
     const double x0 = initial_rate;
@@ -241,7 +245,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor approaches continuous lim
     const double dt_fine = 1.0 / 365.0;
     const std::size_t ticks = 365;
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        kx, ky, 0.0, 0.0, 0.0, rate, 42, dt_fine);
+        kx, ky, 0.0, 0.0, 0.0, rate, price_stream(42), dt_fine);
 
     const double df_discrete = p.discount_factor(ticks);
     CHECK_THAT(df_discrete, Catch::Matchers::WithinRel(df_continuous, 1e-4));
@@ -257,7 +261,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for
 
     const double kx = 0.5, ky = 0.3;
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        kx, ky, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
+        kx, ky, 0.0, 0.0, 0.0, 0.04, price_stream(42), 0.25);
 
     // Advance 2 ticks
     p.next();
@@ -298,7 +302,7 @@ TEST_CASE("two_factor_gaussian_process produces plausible short rate paths",
             correlated_params::sigma_y,
             correlated_params::rho,
             correlated_params::initial_rate,
-            correlated_params::seed + path,
+            price_stream(correlated_params::seed + path),
             correlated_params::dt);
 
         for (int i = 0; i < steps_per_path; ++i)
@@ -325,7 +329,7 @@ TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factor
     // We verify this deterministically: same seed, same innovations.
 
     ores::analytics::quant::service::two_factor_gaussian_process p1(
-        0.5, 0.3, 0.01, 0.01, 1.0, 0.03, 42, 1.0);
+        0.5, 0.3, 0.01, 0.01, 1.0, 0.03, price_stream(42), 1.0);
 
     // With rho=1, the two factors share the same normal draw each step.
     // The short rate is x + y. Both should move together.
@@ -350,7 +354,7 @@ TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path",
         independent_params::sigma_y,
         independent_params::rho,
         independent_params::initial_rate,
-        42,
+        price_stream(42),
         independent_params::dt);
 
     ores::analytics::quant::service::two_factor_gaussian_process p2(
@@ -360,7 +364,7 @@ TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path",
         independent_params::sigma_y,
         independent_params::rho,
         independent_params::initial_rate,
-        42,
+        price_stream(42),
         independent_params::dt);
 
     for (int i = 0; i < 50; ++i) {
@@ -377,7 +381,7 @@ TEST_CASE("two_factor_gaussian_process different seeds give different paths",
         independent_params::sigma_y,
         independent_params::rho,
         independent_params::initial_rate,
-        42,
+        price_stream(42),
         independent_params::dt);
 
     ores::analytics::quant::service::two_factor_gaussian_process p2(
@@ -387,7 +391,7 @@ TEST_CASE("two_factor_gaussian_process different seeds give different paths",
         independent_params::sigma_y,
         independent_params::rho,
         independent_params::initial_rate,
-        99,
+        price_stream(99),
         independent_params::dt);
 
     bool diverged = false;
@@ -469,7 +473,7 @@ TEST_CASE(
     const std::size_t ticks = 52;
 
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        a, b, 0.0, 0.0, 0.0, rate, 42, dt);
+        a, b, 0.0, 0.0, 0.0, rate, price_stream(42), dt);
 
     const double df_discrete = p.discount_factor(ticks);
 
@@ -510,7 +514,7 @@ TEST_CASE("two_factor_gaussian_process zero-correlation bond price factorizes",
     const std::size_t ticks = 24;
 
     ores::analytics::quant::service::two_factor_gaussian_process p(
-        a, b, 0.01, 0.01, 0.0, rate, 123, dt);
+        a, b, 0.01, 0.01, 0.0, rate, price_stream(123), dt);
 
     // Simulate forward to get non-zero x and y
     for (int i = 0; i < 10; ++i)
@@ -552,10 +556,15 @@ TEST_CASE("two_factor_gaussian_process one-factor reduction: large kappa_y, zero
     // for G2's factor_x, theta for HW's theta=0) and produce
     // stationary short-rate distributions.
     ores::analytics::quant::service::two_factor_gaussian_process g2(
-        kappa, 1e9, sigma, 0.0, 0.0, initial_rate, 42, 1.0);
+        kappa, 1e9, sigma, 0.0, 0.0, initial_rate, price_stream(42), 1.0);
 
     ores::analytics::quant::service::vasicek_process hw(
-        kappa, 0.0, sigma, initial_rate, 43, 1.0); // different seed — statistical comparison only
+        kappa,
+        0.0,
+        sigma,
+        initial_rate,
+        price_stream(43),
+        1.0); // different seed — statistical comparison only
 
     // Simulate many steps to allow mean-reversion toward zero.
     double g2_sum = 0.0, hw_sum = 0.0;
@@ -589,14 +598,14 @@ TEST_CASE("two_factor_gaussian_process struct constructor matches flat construct
     const std::uint32_t seed = 99;
     const double dt = 0.25;
 
-    two_factor_gaussian_process from_struct(params, seed, dt);
+    two_factor_gaussian_process from_struct(params, price_stream(seed), dt);
     two_factor_gaussian_process from_flat(params.kappa_x,
                                           params.kappa_y,
                                           params.sigma_x,
                                           params.sigma_y,
                                           params.rho,
                                           params.initial_rate,
-                                          seed,
+                                          price_stream(seed),
                                           dt);
 
     for (int i = 0; i < 20; ++i) {

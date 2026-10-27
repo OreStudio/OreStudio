@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/math/rate_tree.hpp"
 #include "ores.analytics.quant/service/processes/black_derman_toy_params.hpp"
 #include "ores.analytics.quant/service/processes/black_derman_toy_process.hpp"
+#include "price_stream.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -50,14 +51,14 @@ TEST_CASE("black_derman_toy_process: zero sigma reproduces the input curve exact
                                        0.7866278610665535,
                                        0.7557837414687275,
                                        0.7261490370736908};
-    black_derman_toy_process p(curve, {0.0}, 42, 1.0);
+    black_derman_toy_process p(curve, {0.0}, price_stream(42), 1.0);
     for (std::size_t n = 1; n <= curve.size(); ++n)
         REQUIRE(p.discount_factor(n) == Catch::Approx(curve[n - 1]).epsilon(1e-9));
 }
 
 TEST_CASE("black_derman_toy_process: zero sigma deterministic path", "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.96, 0.92, 0.88, 0.84, 0.80};
-    black_derman_toy_process p(curve, {0.0}, 42, 1.0);
+    black_derman_toy_process p(curve, {0.0}, price_stream(42), 1.0);
     const auto tree = build_black_derman_toy_tree(curve, {0.0}, 1.0);
 
     // With sigma = 0 every node of a level carries the same rate: the
@@ -88,7 +89,7 @@ TEST_CASE("black_derman_toy_process: positive sigma reproduces the input curve e
                                        0.8693582354,
                                        0.8521437890};
     const std::vector<double> sigma_path = {0.1, 0.2, 0.3, 0.15, 0.25, 0.2, 0.1, 0.3};
-    black_derman_toy_process p(curve, sigma_path, 42, 0.5);
+    black_derman_toy_process p(curve, sigma_path, price_stream(42), 0.5);
     for (std::size_t n = 1; n <= curve.size(); ++n)
         REQUIRE(p.discount_factor(n) == Catch::Approx(curve[n - 1]).epsilon(1e-9));
 }
@@ -96,7 +97,7 @@ TEST_CASE("black_derman_toy_process: positive sigma reproduces the input curve e
 TEST_CASE("black_derman_toy_process: one-tick discount from a walked state",
           "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.98, 0.95, 0.91, 0.86, 0.80, 0.74};
-    black_derman_toy_process p(curve, {0.2, 0.3, 0.1, 0.25, 0.15, 0.2}, 7, 1.0);
+    black_derman_toy_process p(curve, {0.2, 0.3, 0.1, 0.25, 0.15, 0.2}, price_stream(7), 1.0);
     for (std::size_t i = 0; i < 3; ++i)
         p.next();
     // A one-tick bond prices exactly through the current node's rate:
@@ -116,7 +117,7 @@ TEST_CASE("black_derman_toy_process: discounts are monotone across the fitted an
     // Six fitted levels, then the flat ladder; every rate is positive so
     // every per-tick discount is below one and the product decreases.
     const std::vector<double> curve = {0.98, 0.95, 0.91, 0.86, 0.80, 0.74};
-    black_derman_toy_process p(curve, {0.2}, 42, 1.0);
+    black_derman_toy_process p(curve, {0.2}, price_stream(42), 1.0);
     double previous = 1.0;
     for (std::size_t n = 1; n <= 12; ++n) {
         const double d = p.discount_factor(n);
@@ -145,7 +146,7 @@ TEST_CASE("black_derman_toy_process: flat extension reproduces the extended curv
     // curve[2] / curve[1] = 0.9, so the last fitted ladder discounts
     // exactly 0.9 per tick when extended flat (sigma = 0).
     const std::vector<double> curve = {0.99, 0.95, 0.855};
-    black_derman_toy_process p(curve, {0.0}, 42, 1.0);
+    black_derman_toy_process p(curve, {0.0}, price_stream(42), 1.0);
     REQUIRE(p.discount_factor(3) == Catch::Approx(0.855).epsilon(1e-9));
     REQUIRE(p.discount_factor(4) == Catch::Approx(0.855 * 0.9).epsilon(1e-9));
     // Walk to the last fitted level and extend flat from there.
@@ -158,7 +159,7 @@ TEST_CASE("black_derman_toy_process: local extended tree matches a hand-built ex
           "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.97, 0.93, 0.88, 0.82, 0.75, 0.67};
     const double dt = 1.0;
-    black_derman_toy_process p(curve, {0.2}, 42, dt);
+    black_derman_toy_process p(curve, {0.2}, price_stream(42), dt);
     const auto tree = build_black_derman_toy_tree(curve, {0.2}, dt);
 
     // Rebuild the extension by hand: the flat ladder (a_last, b_last)
@@ -198,12 +199,12 @@ TEST_CASE("black_derman_toy_process: extended tree honours the walked node",
     const double a_last = last[0].log_rate;
     const double b_last = last[1].log_rate - last[0].log_rate;
 
-    black_derman_toy_process p(curve, sigma_path, 42, dt);
+    black_derman_toy_process p(curve, sigma_path, price_stream(42), dt);
     // Replicate the process's own walk with an independently seeded
     // engine: same seed and same draws, so the walked node's index is
     // known to the test. A wrong extension that ignored the index would
     // price a different node and fail the comparison below.
-    std::mt19937 rng(42);
+    auto rng = price_stream(42);
     tree_node node{0, 0};
     for (std::size_t i = 0; i < 4; ++i) {
         p.next();
@@ -241,7 +242,7 @@ TEST_CASE("black_derman_toy_process: deep flat extension stays finite and monoto
     // A gentle curve and small sigma keep the flat-ladder rates small,
     // so five hundred flat ticks still leave a representable price.
     const std::vector<double> curve = {0.99501, 0.99005, 0.98511, 0.98020, 0.97531, 0.97045};
-    black_derman_toy_process p(curve, {0.01}, 42, 1.0);
+    black_derman_toy_process p(curve, {0.01}, price_stream(42), 1.0);
     const double d100 = p.discount_factor(100);
     const double d300 = p.discount_factor(300);
     const double d500 = p.discount_factor(500);
@@ -256,13 +257,13 @@ TEST_CASE("black_derman_toy_process: seed determinism and distinct seeds differ"
           "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.98, 0.95, 0.91, 0.86, 0.80, 0.74};
     const std::vector<double> sigma_path = {0.2, 0.3, 0.1, 0.25, 0.15, 0.2};
-    black_derman_toy_process a(curve, sigma_path, 42, 1.0);
-    black_derman_toy_process b(curve, sigma_path, 42, 1.0);
+    black_derman_toy_process a(curve, sigma_path, price_stream(42), 1.0);
+    black_derman_toy_process b(curve, sigma_path, price_stream(42), 1.0);
     for (std::size_t i = 0; i < 4; ++i) {
         REQUIRE(a.next() == b.next());
         REQUIRE(a.discount_factor(3) == b.discount_factor(3));
     }
-    black_derman_toy_process c(curve, sigma_path, 43, 1.0);
+    black_derman_toy_process c(curve, sigma_path, price_stream(43), 1.0);
     bool differs = false;
     for (std::size_t i = 0; i < 4; ++i)
         differs = differs || (a.next() != c.next());
@@ -272,8 +273,8 @@ TEST_CASE("black_derman_toy_process: seed determinism and distinct seeds differ"
 TEST_CASE("black_derman_toy_process: params struct equivalence", "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.98, 0.95, 0.91, 0.86, 0.80, 0.74};
     const std::vector<double> sigma_path = {0.2, 0.3, 0.1, 0.25, 0.15, 0.2};
-    black_derman_toy_process a(curve, sigma_path, 42, 0.5);
-    black_derman_toy_process b(black_derman_toy_params{curve, sigma_path}, 42, 0.5);
+    black_derman_toy_process a(curve, sigma_path, price_stream(42), 0.5);
+    black_derman_toy_process b(black_derman_toy_params{curve, sigma_path}, price_stream(42), 0.5);
     for (std::size_t i = 0; i < 4; ++i) {
         REQUIRE(a.next() == b.next());
         REQUIRE(a.discount_factor(4) == b.discount_factor(4));
@@ -282,7 +283,7 @@ TEST_CASE("black_derman_toy_process: params struct equivalence", "[black_derman_
 
 TEST_CASE("black_derman_toy_process: zero-tick discount is one", "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.98, 0.95, 0.91};
-    black_derman_toy_process p(curve, {0.2}, 42, 1.0);
+    black_derman_toy_process p(curve, {0.2}, price_stream(42), 1.0);
     REQUIRE(p.discount_factor(0) == 1.0);
     p.next();
     REQUIRE(p.discount_factor(0) == 1.0);
@@ -316,13 +317,14 @@ TEST_CASE("black_derman_toy_process: tree prices match Monte-Carlo path discount
     const std::vector<double> curve = {0.97, 0.93, 0.88, 0.82, 0.75, 0.67};
     const std::vector<double> sigma_path = {0.25, 0.2, 0.3, 0.15, 0.25, 0.2};
     const std::size_t ticks = 8; // six fitted ticks, then two flat ones
-    black_derman_toy_process p(curve, sigma_path, 42, 1.0);
+    black_derman_toy_process p(curve, sigma_path, price_stream(42), 1.0);
     const double tree_price = p.discount_factor(ticks);
 
     const std::size_t paths = 100000;
     double sum = 0.0;
     for (std::size_t path = 0; path < paths; ++path) {
-        black_derman_toy_process q(curve, sigma_path, static_cast<std::uint32_t>(42 + path), 1.0);
+        black_derman_toy_process q(
+            curve, sigma_path, price_stream(static_cast<std::uint32_t>(42 + path)), 1.0);
         // The tree's propagation discounts the start level first, so the
         // path must too: current() at the walk node, then advance and
         // discount -- levels 0..ticks-1 on both sides.
@@ -382,23 +384,26 @@ TEST_CASE("black_derman_toy_process: constructor validation rejections",
           "[black_derman_toy_process]") {
     const std::vector<double> good_curve = {0.98, 0.95, 0.91};
     const std::vector<double> good_sigma = {0.2};
-    REQUIRE_NOTHROW(black_derman_toy_process(good_curve, good_sigma, 42, 1.0));
+    REQUIRE_NOTHROW(black_derman_toy_process(good_curve, good_sigma, price_stream(42), 1.0));
 
-    REQUIRE_THROWS_AS(black_derman_toy_process({}, good_sigma, 42, 1.0), std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process({0.5, 0.5}, good_sigma, 42, 1.0),
+    REQUIRE_THROWS_AS(black_derman_toy_process({}, good_sigma, price_stream(42), 1.0),
                       std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process({0.95, 0.98}, good_sigma, 42, 1.0),
+    REQUIRE_THROWS_AS(black_derman_toy_process({0.5, 0.5}, good_sigma, price_stream(42), 1.0),
                       std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {}, 42, 1.0), std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {-0.1}, 42, 1.0), std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, good_sigma, 42, 0.0),
+    REQUIRE_THROWS_AS(black_derman_toy_process({0.95, 0.98}, good_sigma, price_stream(42), 1.0),
                       std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, good_sigma, 42, -1.0),
+    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {}, price_stream(42), 1.0),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {-0.1}, price_stream(42), 1.0),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, good_sigma, price_stream(42), 0.0),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, good_sigma, price_stream(42), -1.0),
                       std::invalid_argument);
 
     // The constructor rejects with its own prefix before the builder runs.
     try {
-        black_derman_toy_process({}, good_sigma, 42, 1.0);
+        black_derman_toy_process({}, good_sigma, price_stream(42), 1.0);
         FAIL("expected an exception");
     } catch (const std::invalid_argument& e) {
         REQUIRE(std::string(e.what()).find("black_derman_toy_process") != std::string::npos);

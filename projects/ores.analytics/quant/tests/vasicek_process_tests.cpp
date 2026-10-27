@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
+#include "price_stream.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -29,20 +30,20 @@ using ores::analytics::quant::service::hull_white_process;
 using ores::analytics::quant::service::vasicek_process;
 
 TEST_CASE("vasicek_process reports the initial rate before any next() call", "[vasicek_process]") {
-    vasicek_process p(0.3, 0.03, 0.01, 0.03);
+    vasicek_process p(0.3, 0.03, 0.01, 0.03, price_stream(42));
     CHECK(p.current() == 0.03);
 }
 
 TEST_CASE("vasicek_process next() updates and returns the same value as current()",
           "[vasicek_process]") {
-    vasicek_process p(0.3, 0.03, 0.01, 0.03);
+    vasicek_process p(0.3, 0.03, 0.01, 0.03, price_stream(42));
     const double n = p.next();
     CHECK(n == p.current());
 }
 
 TEST_CASE("vasicek_process is deterministic for a fixed seed", "[vasicek_process]") {
-    vasicek_process a(0.3, 0.04, 0.02, 0.05, 7);
-    vasicek_process b(0.3, 0.04, 0.02, 0.05, 7);
+    vasicek_process a(0.3, 0.04, 0.02, 0.05, price_stream(7));
+    vasicek_process b(0.3, 0.04, 0.02, 0.05, price_stream(7));
 
     for (int i = 0; i < 20; ++i)
         CHECK(a.next() == b.next());
@@ -50,7 +51,7 @@ TEST_CASE("vasicek_process is deterministic for a fixed seed", "[vasicek_process
 
 TEST_CASE("vasicek_process mean-reverts toward theta over a long run (statistical)",
           "[vasicek_process]") {
-    vasicek_process p(0.2, 0.03, 0.01, 0.06, 123);
+    vasicek_process p(0.2, 0.03, 0.01, 0.06, price_stream(123));
     std::vector<double> tail;
     for (int i = 0; i < 5000; ++i) {
         const double v = p.next();
@@ -67,8 +68,8 @@ TEST_CASE("vasicek_process is exactly hull_white_process composed with a constan
     // Vasicek is not a separately-derived model here; it must produce
     // bit-identical simulated paths to the single-element-theta_path case
     // of hull_white_process, since that is literally what it delegates to.
-    vasicek_process v(0.3, 0.04, 0.015, 0.05, 99);
-    hull_white_process h(0.3, {0.04}, 0.015, 0.05, 99);
+    vasicek_process v(0.3, 0.04, 0.015, 0.05, price_stream(99));
+    hull_white_process h(0.3, {0.04}, 0.015, 0.05, price_stream(99));
 
     for (int i = 0; i < 30; ++i)
         CHECK(v.next() == h.next());
@@ -77,20 +78,20 @@ TEST_CASE("vasicek_process is exactly hull_white_process composed with a constan
 TEST_CASE("vasicek_process is exactly hull_white_process composed with a constant theta_path "
           "(discount_factor())",
           "[vasicek_process]") {
-    vasicek_process v(0.3, 0.04, 0.015, 0.05);
-    hull_white_process h(0.3, {0.04}, 0.015, 0.05);
+    vasicek_process v(0.3, 0.04, 0.015, 0.05, price_stream(42));
+    hull_white_process h(0.3, {0.04}, 0.015, 0.05, price_stream(42));
 
     for (std::size_t t = 0; t <= 15; ++t)
         CHECK(v.discount_factor(t) == h.discount_factor(t));
 }
 
 TEST_CASE("vasicek_process discount_factor(0) is exactly 1", "[vasicek_process]") {
-    vasicek_process p(0.3, 0.04, 0.01, 0.04);
+    vasicek_process p(0.3, 0.04, 0.01, 0.04, price_stream(42));
     CHECK(p.discount_factor(0) == 1.0);
 }
 
 TEST_CASE("vasicek_process one-tick discount_factor is exp(-r_t)", "[vasicek_process]") {
-    vasicek_process p(0.3, 0.04, 0.02, 0.05);
+    vasicek_process p(0.3, 0.04, 0.02, 0.05, price_stream(42));
     CHECK(p.discount_factor(1) == Catch::Approx(std::exp(-0.05)));
 }
 
@@ -98,8 +99,8 @@ TEST_CASE("vasicek_process one-tick discount_factor is exp(-r_t)", "[vasicek_pro
 
 TEST_CASE("vasicek_process forwards dt to hull_white_process exactly (composition consistency)",
           "[vasicek_process][dt]") {
-    vasicek_process v(0.3, 0.04, 0.015, 0.05, 99, 1.0 / 365.0);
-    hull_white_process h(0.3, {0.04}, 0.015, 0.05, 99, 1.0 / 365.0);
+    vasicek_process v(0.3, 0.04, 0.015, 0.05, price_stream(99), 1.0 / 365.0);
+    hull_white_process h(0.3, {0.04}, 0.015, 0.05, price_stream(99), 1.0 / 365.0);
 
     for (int i = 0; i < 30; ++i)
         CHECK(v.next() == h.next());
@@ -112,7 +113,7 @@ TEST_CASE("vasicek_process discount_factor with zero volatility reproduces a fla
           "[vasicek_process][dt]") {
     const double r = 0.04;
     for (const double dt : {1.0, 1.0 / 365.0, 1.0 / (365.0 * 24.0)}) {
-        vasicek_process p(0.3, r, 0.0, r, 42, dt);
+        vasicek_process p(0.3, r, 0.0, r, price_stream(42), dt);
         for (const std::size_t ticks : {std::size_t{1}, std::size_t{10}, std::size_t{365}}) {
             const double expected = std::exp(-r * static_cast<double>(ticks) * dt);
             CHECK(p.discount_factor(ticks) == Catch::Approx(expected).epsilon(1e-9));
@@ -122,8 +123,8 @@ TEST_CASE("vasicek_process discount_factor with zero volatility reproduces a fla
 
 TEST_CASE("vasicek_process default dt is exactly today's un-scaled behaviour",
           "[vasicek_process][dt]") {
-    vasicek_process implicit(0.3, 0.04, 0.02, 0.05, 7);
-    vasicek_process explicit_default(0.3, 0.04, 0.02, 0.05, 7, 1.0);
+    vasicek_process implicit(0.3, 0.04, 0.02, 0.05, price_stream(7));
+    vasicek_process explicit_default(0.3, 0.04, 0.02, 0.05, price_stream(7), 1.0);
 
     for (int i = 0; i < 20; ++i)
         CHECK(implicit.next() == explicit_default.next());
@@ -138,9 +139,9 @@ TEST_CASE("vasicek_process struct constructor matches flat constructor",
     const std::uint32_t seed = 7;
     const double dt = 0.5;
 
-    vasicek_process from_struct(params, seed, dt);
+    vasicek_process from_struct(params, price_stream(seed), dt);
     vasicek_process from_flat(
-        params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt);
+        params.kappa, params.theta, params.sigma, params.initial_rate, price_stream(seed), dt);
 
     for (int i = 0; i < 20; ++i) {
         CHECK(from_struct.next() == from_flat.next());

@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/math/rate_tree.hpp"
 #include "ores.analytics.quant/service/processes/black_karasinski_params.hpp"
 #include "ores.analytics.quant/service/processes/black_karasinski_process.hpp"
+#include "price_stream.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -65,13 +66,13 @@ TEST_CASE("black_karasinski_process reports the initial rate before any next() c
           "[black_karasinski_process]") {
     // The state is ln r, so current() = exp(ln 0.05) is 0.05 to within one
     // ulp of the exp/log round trip, not bitwise.
-    black_karasinski_process p(0.3, std::log(0.04), 0.2, 0.05);
+    black_karasinski_process p(0.3, std::log(0.04), 0.2, 0.05, price_stream(42));
     CHECK(p.current() == Catch::Approx(0.05).epsilon(1e-12));
 }
 
 TEST_CASE("black_karasinski_process next() updates and returns the same value as current()",
           "[black_karasinski_process]") {
-    black_karasinski_process p(0.3, std::log(0.04), 0.2, 0.05);
+    black_karasinski_process p(0.3, std::log(0.04), 0.2, 0.05, price_stream(42));
     const double n = p.next();
     CHECK(n == p.current());
     CHECK(n > 0.0);
@@ -79,8 +80,8 @@ TEST_CASE("black_karasinski_process next() updates and returns the same value as
 
 TEST_CASE("black_karasinski_process is deterministic for a fixed seed",
           "[black_karasinski_process]") {
-    black_karasinski_process a(0.3, std::log(0.04), 0.2, 0.05, 7);
-    black_karasinski_process b(0.3, std::log(0.04), 0.2, 0.05, 7);
+    black_karasinski_process a(0.3, std::log(0.04), 0.2, 0.05, price_stream(7));
+    black_karasinski_process b(0.3, std::log(0.04), 0.2, 0.05, price_stream(7));
 
     for (int i = 0; i < 20; ++i)
         CHECK(a.next() == b.next());
@@ -89,14 +90,14 @@ TEST_CASE("black_karasinski_process is deterministic for a fixed seed",
 
 TEST_CASE("black_karasinski_process different seeds produce different paths",
           "[black_karasinski_process]") {
-    black_karasinski_process a(0.3, std::log(0.04), 0.2, 0.05, 42);
-    black_karasinski_process b(0.3, std::log(0.04), 0.2, 0.05, 43);
+    black_karasinski_process a(0.3, std::log(0.04), 0.2, 0.05, price_stream(42));
+    black_karasinski_process b(0.3, std::log(0.04), 0.2, 0.05, price_stream(43));
     CHECK(a.next() != b.next());
 }
 
 TEST_CASE("black_karasinski_process discount_factor(0) is exactly 1",
           "[black_karasinski_process]") {
-    black_karasinski_process p(0.3, std::log(0.04), 0.2, 0.05);
+    black_karasinski_process p(0.3, std::log(0.04), 0.2, 0.05, price_stream(42));
     CHECK(p.discount_factor(0) == 1.0);
 }
 
@@ -104,13 +105,13 @@ TEST_CASE("black_karasinski_process one-tick discount_factor is exp(-r*dt)",
           "[black_karasinski_process]") {
     // The lattice's one-tick bond price from the root depends only on the
     // root's own rate, regardless of branching or probabilities.
-    black_karasinski_process p(0.3, std::log(0.04), 0.25, 0.04, 42, 0.5);
+    black_karasinski_process p(0.3, std::log(0.04), 0.25, 0.04, price_stream(42), 0.5);
     CHECK(p.discount_factor(1) == Catch::Approx(std::exp(-0.04 * 0.5)).epsilon(1e-12));
 }
 
 TEST_CASE("black_karasinski_process one-tick discount_factor is exact in the driftless branch",
           "[black_karasinski_process]") {
-    black_karasinski_process p(0.0, std::log(0.04), 0.25, 0.04, 42, 0.5);
+    black_karasinski_process p(0.0, std::log(0.04), 0.25, 0.04, price_stream(42), 0.5);
     CHECK(p.discount_factor(1) == Catch::Approx(std::exp(-0.04 * 0.5)).epsilon(1e-12));
 }
 
@@ -118,7 +119,7 @@ TEST_CASE("black_karasinski_process with zero volatility follows the determinist
           "[black_karasinski_process]") {
     const double kappa = 0.4, theta = std::log(0.04), r0 = 0.06, dt = 0.5;
     const double decay = std::exp(-kappa * dt);
-    black_karasinski_process p(kappa, theta, 0.0, r0, 42, dt);
+    black_karasinski_process p(kappa, theta, 0.0, r0, price_stream(42), dt);
 
     // The bond price from the initial state is exp(-sum_i exp(m_i) * dt)
     // along the mean-reversion path.
@@ -157,7 +158,7 @@ TEST_CASE("black_karasinski_process zero-volatility closed form equals the zero-
     for (const double p : prices)
         lattice_price += p;
 
-    black_karasinski_process p(kappa, theta, 0.0, r0, 42, dt);
+    black_karasinski_process p(kappa, theta, 0.0, r0, price_stream(42), dt);
     CHECK(p.discount_factor(5) == Catch::Approx(lattice_price).epsilon(1e-12));
 }
 
@@ -173,7 +174,7 @@ TEST_CASE("black_karasinski_process ln r is a Gaussian OU with the exact moments
     black_karasinski_process_running_moments one_tick, two_ticks;
     for (std::size_t path = 0; path < paths; ++path) {
         black_karasinski_process p(
-            kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+            kappa, theta, sigma, r0, price_stream(42 + static_cast<std::uint32_t>(path)), dt);
         const double x1 = std::log(p.next());
         const double x2 = std::log(p.next());
         one_tick.add(x1);
@@ -203,14 +204,14 @@ TEST_CASE("black_karasinski_process tree price agrees with Monte Carlo",
     // statistical noise here.
     const double kappa = 0.3, theta = std::log(0.04), sigma = 0.35, r0 = 0.05, dt = 0.1;
     const std::size_t ticks = 20;
-    black_karasinski_process p(kappa, theta, sigma, r0, 42, dt);
+    black_karasinski_process p(kappa, theta, sigma, r0, price_stream(42), dt);
     const double tree_price = p.discount_factor(ticks);
 
     const std::size_t paths = 100000;
     double sum = 0.0;
     for (std::size_t path = 0; path < paths; ++path) {
         black_karasinski_process m(
-            kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+            kappa, theta, sigma, r0, price_stream(42 + static_cast<std::uint32_t>(path)), dt);
         double product = 1.0;
         for (std::size_t i = 0; i < ticks; ++i)
             product *= std::exp(-m.next() * dt);
@@ -226,9 +227,9 @@ TEST_CASE("black_karasinski_process tree price converges as dt shrinks",
     // the continuous-time model; the gap between successive refinements
     // shrinks as dt -> 0.
     const double kappa = 0.3, theta = std::log(0.04), sigma = 0.35, r0 = 0.05;
-    black_karasinski_process p20(kappa, theta, sigma, r0, 42, 0.1);
-    black_karasinski_process p40(kappa, theta, sigma, r0, 42, 0.05);
-    black_karasinski_process p80(kappa, theta, sigma, r0, 42, 0.025);
+    black_karasinski_process p20(kappa, theta, sigma, r0, price_stream(42), 0.1);
+    black_karasinski_process p40(kappa, theta, sigma, r0, price_stream(42), 0.05);
+    black_karasinski_process p80(kappa, theta, sigma, r0, price_stream(42), 0.025);
     const double price20 = p20.discount_factor(20);
     const double price40 = p40.discount_factor(40);
     const double price80 = p80.discount_factor(80);
@@ -245,10 +246,18 @@ TEST_CASE("black_karasinski_process with kappa <= 0 degenerates to a driftless r
     const std::size_t paths = 200000;
     black_karasinski_process_running_moments zero_kappa, negative_kappa;
     for (std::size_t path = 0; path < paths; ++path) {
-        black_karasinski_process a(
-            0.0, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
-        black_karasinski_process b(
-            -0.2, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+        black_karasinski_process a(0.0,
+                                   std::log(0.04),
+                                   sigma,
+                                   r0,
+                                   price_stream(42 + static_cast<std::uint32_t>(path)),
+                                   dt);
+        black_karasinski_process b(-0.2,
+                                   std::log(0.04),
+                                   sigma,
+                                   r0,
+                                   price_stream(42 + static_cast<std::uint32_t>(path)),
+                                   dt);
         zero_kappa.add(std::log(a.next()));
         negative_kappa.add(std::log(b.next()));
     }
@@ -259,7 +268,7 @@ TEST_CASE("black_karasinski_process with kappa <= 0 degenerates to a driftless r
     CHECK(zero_kappa.sample_variance() == Catch::Approx(sigma * sigma * dt).epsilon(1.5e-2));
     CHECK(negative_kappa.sample_variance() == Catch::Approx(sigma * sigma * dt).epsilon(1.5e-2));
 
-    black_karasinski_process p(-0.2, std::log(0.04), 0.3, 0.05, 42, dt);
+    black_karasinski_process p(-0.2, std::log(0.04), 0.3, 0.05, price_stream(42), dt);
     for (int i = 0; i < 100; ++i) {
         const double r = p.next();
         CHECK(r > 0.0);
@@ -279,13 +288,13 @@ TEST_CASE("black_karasinski_process is dt-aware: variance scales with dt",
     black_karasinski_process_running_moments fine, coarse;
     for (std::size_t path = 0; path < paths; ++path) {
         const std::uint32_t seed = 42 + static_cast<std::uint32_t>(path);
-        black_karasinski_process a(0.0, std::log(0.04), sigma, r0, seed, 0.25);
+        black_karasinski_process a(0.0, std::log(0.04), sigma, r0, price_stream(seed), 0.25);
         double x = std::log(r0);
         for (int i = 0; i < 4; ++i)
             x = std::log(a.next());
         fine.add(x);
 
-        black_karasinski_process b(0.0, std::log(0.04), sigma, r0, seed, 1.0);
+        black_karasinski_process b(0.0, std::log(0.04), sigma, r0, price_stream(seed), 1.0);
         coarse.add(std::log(b.next()));
     }
     CHECK(fine.sample_variance() == Catch::Approx(sigma * sigma).epsilon(1e-2));
@@ -294,7 +303,7 @@ TEST_CASE("black_karasinski_process is dt-aware: variance scales with dt",
 
 TEST_CASE("black_karasinski_process keeps the rate positive over long runs",
           "[black_karasinski_process]") {
-    black_karasinski_process p(0.3, std::log(0.05), 0.35, 0.04, 42, 0.1);
+    black_karasinski_process p(0.3, std::log(0.05), 0.35, 0.04, price_stream(42), 0.1);
     for (int i = 0; i < 50000; ++i) {
         const double r = p.next();
         CHECK(r > 0.0);
@@ -306,7 +315,7 @@ TEST_CASE("black_karasinski_process discount_factor decreases monotonically with
           "[black_karasinski_process]") {
     // With positive rates every extra tick multiplies every state price
     // by a deposit factor strictly below 1, so the price must fall.
-    black_karasinski_process p(0.4, std::log(0.04), 0.2, 0.05, 42, 0.25);
+    black_karasinski_process p(0.4, std::log(0.04), 0.2, 0.05, price_stream(42), 0.25);
     double prev = 1.0;
     for (std::size_t t = 1; t <= 15; ++t) {
         const double df = p.discount_factor(t);
@@ -317,18 +326,23 @@ TEST_CASE("black_karasinski_process discount_factor decreases monotonically with
 }
 
 TEST_CASE("black_karasinski_process rejects invalid parameters", "[black_karasinski_process]") {
-    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, -0.1, 0.05), std::invalid_argument);
-    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.0), std::invalid_argument);
-    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, -0.02), std::invalid_argument);
-    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.05, 42, 0.0), std::invalid_argument);
-    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.05, 42, -0.5), std::invalid_argument);
+    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, -0.1, 0.05, price_stream(42)),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.0, price_stream(42)),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, -0.02, price_stream(42)),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.05, price_stream(42), 0.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.05, price_stream(42), -0.5),
+                    std::invalid_argument);
 }
 
 TEST_CASE("black_karasinski_process params-struct constructor is equivalent to the scalar one",
           "[black_karasinski_process]") {
     black_karasinski_params params{0.3, std::log(0.04), 0.2, 0.05};
-    black_karasinski_process a(params, 9, 0.5);
-    black_karasinski_process b(0.3, std::log(0.04), 0.2, 0.05, 9, 0.5);
+    black_karasinski_process a(params, price_stream(9), 0.5);
+    black_karasinski_process b(0.3, std::log(0.04), 0.2, 0.05, price_stream(9), 0.5);
     for (int i = 0; i < 5; ++i)
         CHECK(a.next() == b.next());
     CHECK(a.discount_factor(4) == b.discount_factor(4));
@@ -440,7 +454,7 @@ TEST_CASE("build_black_karasinski_tree is valid for any horizon", "[black_karasi
 TEST_CASE("black_karasinski_tree walk stays on stored nodes", "[black_karasinski_process]") {
     const auto tree =
         build_black_karasinski_tree(std::log(0.05), 0.6, std::log(0.04), 0.3, 0.25, 20);
-    std::mt19937 rng(3);
+    auto rng = price_stream(3);
     tree_node node{0, 0};
     for (int i = 0; i < 2000; ++i) {
         if (node.level + 1 >= tree.step_count()) {

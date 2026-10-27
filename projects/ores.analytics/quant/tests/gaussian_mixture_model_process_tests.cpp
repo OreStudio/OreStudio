@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/service/processes/gaussian_mixture_model_process.hpp"
+#include "price_stream.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -30,21 +31,23 @@ using ores::analytics::quant::service::gaussian_mixture_model_process;
 
 TEST_CASE("gaussian_mixture_model_process reports the initial price before any next() call",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0);
+    gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0, price_stream(42));
     CHECK(p.current() == 100.0);
 }
 
 TEST_CASE("gaussian_mixture_model_process next() updates and returns the same value as current()",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0);
+    gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0, price_stream(42));
     const double n = p.next();
     CHECK(n == p.current());
 }
 
 TEST_CASE("gaussian_mixture_model_process is deterministic for a fixed seed",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process a({0.001, -0.002}, {0.01, 0.02}, {0.5, 0.5}, 100.0, 7);
-    gaussian_mixture_model_process b({0.001, -0.002}, {0.01, 0.02}, {0.5, 0.5}, 100.0, 7);
+    gaussian_mixture_model_process a(
+        {0.001, -0.002}, {0.01, 0.02}, {0.5, 0.5}, 100.0, price_stream(7));
+    gaussian_mixture_model_process b(
+        {0.001, -0.002}, {0.01, 0.02}, {0.5, 0.5}, 100.0, price_stream(7));
 
     for (int i = 0; i < 20; ++i)
         CHECK(a.next() == b.next());
@@ -52,8 +55,8 @@ TEST_CASE("gaussian_mixture_model_process is deterministic for a fixed seed",
 
 TEST_CASE("gaussian_mixture_model_process with different seeds diverges",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process a({0.001}, {0.05}, {1.0}, 100.0, 1);
-    gaussian_mixture_model_process b({0.001}, {0.05}, {1.0}, 100.0, 2);
+    gaussian_mixture_model_process a({0.001}, {0.05}, {1.0}, 100.0, price_stream(1));
+    gaussian_mixture_model_process b({0.001}, {0.05}, {1.0}, 100.0, price_stream(2));
 
     bool any_different = false;
     for (int i = 0; i < 20; ++i) {
@@ -65,7 +68,7 @@ TEST_CASE("gaussian_mixture_model_process with different seeds diverges",
 
 TEST_CASE("gaussian_mixture_model_process price stays strictly positive (geometric engine)",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process p({-1.0, 1.0}, {0.5, 0.5}, {0.5, 0.5}, 100.0, 99);
+    gaussian_mixture_model_process p({-1.0, 1.0}, {0.5, 0.5}, {0.5, 0.5}, 100.0, price_stream(99));
     for (int i = 0; i < 500; ++i)
         REQUIRE(p.next() > 0.0);
 }
@@ -73,38 +76,44 @@ TEST_CASE("gaussian_mixture_model_process price stays strictly positive (geometr
 TEST_CASE("gaussian_mixture_model_process with a zero-variance component draws exactly the mean",
           "[gaussian_mixture_model_process]") {
     // sd == 0 hits the degenerate branch (avoids libstdc++ aborting on sigma <= 0).
-    gaussian_mixture_model_process p({0.1}, {0.0}, {1.0}, 100.0);
+    gaussian_mixture_model_process p({0.1}, {0.0}, {1.0}, 100.0, price_stream(42));
     const double expected = 100.0 * std::exp(0.1);
     CHECK(p.next() == Catch::Approx(expected));
 }
 
 TEST_CASE("gaussian_mixture_model_process rejects mismatched parameter vector sizes",
           "[gaussian_mixture_model_process]") {
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0, 0.0}, {0.01}, {1.0}, 100.0),
-                    std::invalid_argument);
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01, 0.01}, {1.0}, 100.0),
-                    std::invalid_argument);
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0, 0.0}, 100.0),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        gaussian_mixture_model_process({0.0, 0.0}, {0.01}, {1.0}, 100.0, price_stream(42)),
+        std::invalid_argument);
+    CHECK_THROWS_AS(
+        gaussian_mixture_model_process({0.0}, {0.01, 0.01}, {1.0}, 100.0, price_stream(42)),
+        std::invalid_argument);
+    CHECK_THROWS_AS(
+        gaussian_mixture_model_process({0.0}, {0.01}, {1.0, 0.0}, 100.0, price_stream(42)),
+        std::invalid_argument);
 }
 
 TEST_CASE("gaussian_mixture_model_process rejects an empty component set",
           "[gaussian_mixture_model_process]") {
-    CHECK_THROWS_AS(gaussian_mixture_model_process({}, {}, {}, 100.0), std::invalid_argument);
+    CHECK_THROWS_AS(gaussian_mixture_model_process({}, {}, {}, 100.0, price_stream(42)),
+                    std::invalid_argument);
 }
 
 TEST_CASE("gaussian_mixture_model_process rejects a non-positive initial price",
           "[gaussian_mixture_model_process]") {
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, 0.0),
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, 0.0, price_stream(42)),
                     std::invalid_argument);
-    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, -1.0),
+    CHECK_THROWS_AS(gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, -1.0, price_stream(42)),
                     std::invalid_argument);
 }
 
 TEST_CASE("gaussian_mixture_model_process: next() is next(1.0)",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process one_tick({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
-    gaussian_mixture_model_process explicit_tick({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
+    gaussian_mixture_model_process one_tick(
+        {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, price_stream(7));
+    gaussian_mixture_model_process explicit_tick(
+        {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, price_stream(7));
     for (int i = 0; i < 20; ++i)
         CHECK(one_tick.next() == explicit_tick.next(1.0));
 }
@@ -118,7 +127,8 @@ TEST_CASE("gaussian_mixture_model_process: the spread over a span does not depen
         std::vector<double> returns;
         returns.reserve(paths);
         for (int seed = 0; seed < paths; ++seed) {
-            gaussian_mixture_model_process p({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, seed);
+            gaussian_mixture_model_process p(
+                {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, price_stream(seed));
             for (int i = 0; i < steps; ++i)
                 p.next(each);
             returns.push_back(std::log(p.current() / 100.0));
@@ -138,7 +148,7 @@ TEST_CASE("gaussian_mixture_model_process: the spread over a span does not depen
 
 TEST_CASE("gaussian_mixture_model_process: a non-positive elapsed is refused",
           "[gaussian_mixture_model_process]") {
-    gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0);
+    gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0, price_stream(42));
     CHECK_THROWS_AS(p.next(0.0), std::invalid_argument);
     CHECK_THROWS_AS(p.next(-1.0), std::invalid_argument);
     CHECK(p.supports_variable_step());

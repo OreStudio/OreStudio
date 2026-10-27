@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/libor_market_model_params.hpp"
 #include "ores.analytics.quant/service/processes/libor_market_model_process.hpp"
+#include "price_stream.hpp"
 #include "test_helpers.hpp"
 #include <Eigen/Dense>
 #include <catch2/catch_approx.hpp>
@@ -193,7 +194,7 @@ TEST_CASE("lmm zero-volatility curve is frozen", "[libor_market_model_process]")
                                  Eigen::MatrixXd::Identity(4, 4),
                                  vector({0.0, 0.0, 0.0, 0.0}),
                                  spacings,
-                                 42,
+                                 price_stream(42),
                                  0.25);
     REQUIRE(p.current() == Catch::Approx(0.03).epsilon(1e-15));
     REQUIRE(p.discount_factor(0) == Catch::Approx(1.0).epsilon(1e-15));
@@ -218,7 +219,7 @@ TEST_CASE("lmm discounting past the grid throws", "[libor_market_model_process]"
                                  Eigen::MatrixXd::Identity(3, 3),
                                  vector({0.0, 0.0, 0.0}),
                                  vector({0.5, 0.5, 0.5}),
-                                 42,
+                                 price_stream(42),
                                  0.25);
     REQUIRE_THROWS_AS(p.discount_factor(4), std::out_of_range);
 }
@@ -237,7 +238,7 @@ TEST_CASE("lmm one-tick forwards and optionlets are priced exactly",
                                  Eigen::MatrixXd::Identity(3, 3),
                                  vector({0.01, 0.0, 0.0}),
                                  vector({tau_0, 0.5, 0.5}),
-                                 42,
+                                 price_stream(42),
                                  0.25);
     const double discount = p.discount_factor(1);
     REQUIRE(discount == Catch::Approx(1.0 / (1.0 + tau_0 * L_0)).epsilon(1e-15));
@@ -281,7 +282,7 @@ TEST_CASE("lmm one-tick increments follow the drift", "[libor_market_model_proce
                                      correlation,
                                      displacements,
                                      spacings,
-                                     static_cast<std::uint32_t>(42 + i),
+                                     price_stream(static_cast<std::uint32_t>(42 + i)),
                                      dt);
         const Eigen::VectorXd before = p.forward_rates();
         p.next();
@@ -312,7 +313,7 @@ TEST_CASE("lmm increments are correlated per the correlation matrix",
                                      correlation,
                                      displacements,
                                      spacings,
-                                     static_cast<std::uint32_t>(42 + i),
+                                     price_stream(static_cast<std::uint32_t>(42 + i)),
                                      0.25);
         const Eigen::VectorXd before = p.forward_rates();
         p.next();
@@ -345,7 +346,7 @@ TEST_CASE("lmm increment variance scales with dt", "[libor_market_model_process]
                                          Eigen::MatrixXd::Identity(2, 2),
                                          displacements,
                                          spacings,
-                                         static_cast<std::uint32_t>(42 + i),
+                                         price_stream(static_cast<std::uint32_t>(42 + i)),
                                          dt);
             p.next();
             increments.add(p.forward_rates()[0] - rates[0]);
@@ -383,7 +384,7 @@ TEST_CASE("lmm discounted rates are martingales up to fixing", "[libor_market_mo
                                      correlation,
                                      displacements,
                                      spacings,
-                                     static_cast<std::uint32_t>(42 + i),
+                                     price_stream(static_cast<std::uint32_t>(42 + i)),
                                      dt);
         double numeraire_ratio = 1.0; // product_{k<t} 1 / (1 + tau_k L_k(t_k))
         for (std::size_t k = 0; k < 4; ++k) {
@@ -423,7 +424,7 @@ TEST_CASE("lmm displacement keeps the log domain positive", "[libor_market_model
                                      Eigen::MatrixXd::Identity(4, 4),
                                      displacements,
                                      spacings,
-                                     static_cast<std::uint32_t>(42 + i),
+                                     price_stream(static_cast<std::uint32_t>(42 + i)),
                                      0.25);
         for (std::size_t t = 0; t < 20; ++t) {
             p.next();
@@ -444,14 +445,14 @@ TEST_CASE("lmm params struct equals scalar construction", "[libor_market_model_p
     params.displacements = vector({0.01, 0.0, 0.02});
     params.tenor_spacings = vector({0.5, 1.0, 0.25});
 
-    libor_market_model_process from_params(params, 99, 0.5);
+    libor_market_model_process from_params(params, price_stream(99), 0.5);
     libor_market_model_process from_scalars(
         vector({0.03, 0.035, 0.04}),
         vector({0.2, 0.15, 0.25}),
         libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 0.4}, {0.3, 0.4, 1.0}}),
         vector({0.01, 0.0, 0.02}),
         vector({0.5, 1.0, 0.25}),
-        99,
+        price_stream(99),
         0.5);
     for (std::size_t t = 0; t < 5; ++t) {
         REQUIRE(from_params.next() == from_scalars.next());
@@ -466,7 +467,7 @@ TEST_CASE("lmm seeds determine the path", "[libor_market_model_process]") {
                                      Eigen::MatrixXd::Identity(3, 3),
                                      vector({0.01, 0.0, 0.02}),
                                      vector({0.5, 1.0, 0.25}),
-                                     seed,
+                                     price_stream(seed),
                                      0.5);
         std::vector<double> rates;
         for (std::size_t t = 0; t < 5; ++t)
@@ -485,31 +486,40 @@ TEST_CASE("lmm process validates its inputs", "[libor_market_model_process]") {
     const Eigen::VectorXd spacings = vector({0.5, 1.0, 0.25});
 
     REQUIRE_THROWS_AS(
-        libor_market_model_process(vector({}), volatilities, identity, displacements, spacings),
-        std::invalid_argument);
-    REQUIRE_THROWS_AS(
-        libor_market_model_process(rates, vector({0.2, 0.15}), identity, displacements, spacings),
+        libor_market_model_process(
+            vector({}), volatilities, identity, displacements, spacings, price_stream(42)),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
         libor_market_model_process(
-            rates, volatilities, Eigen::MatrixXd::Identity(2, 2), displacements, spacings),
+            rates, vector({0.2, 0.15}), identity, displacements, spacings, price_stream(42)),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(libor_market_model_process(rates,
+                                                 volatilities,
+                                                 Eigen::MatrixXd::Identity(2, 2),
+                                                 displacements,
+                                                 spacings,
+                                                 price_stream(42)),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        libor_market_model_process(
+            rates, volatilities, identity, vector({0.01, 0.0}), spacings, price_stream(42)),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
-        libor_market_model_process(rates, volatilities, identity, vector({0.01, 0.0}), spacings),
+        libor_market_model_process(
+            rates, volatilities, identity, displacements, vector({0.5, 1.0}), price_stream(42)),
         std::invalid_argument);
-    REQUIRE_THROWS_AS(libor_market_model_process(
-                          rates, volatilities, identity, displacements, vector({0.5, 1.0})),
-                      std::invalid_argument);
-    REQUIRE_THROWS_AS(libor_market_model_process(
-                          rates, vector({0.2, -0.15, 0.25}), identity, displacements, spacings),
-                      std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        libor_market_model_process(
+            rates, vector({0.2, -0.15, 0.25}), identity, displacements, spacings, price_stream(42)),
+        std::invalid_argument);
     REQUIRE_THROWS_AS(
         libor_market_model_process(
             rates,
             volatilities,
             libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 0.5, 0.4}, {0.3, 0.4, 1.0}}),
             displacements,
-            spacings),
+            spacings,
+            price_stream(42)),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
         libor_market_model_process(
@@ -517,7 +527,8 @@ TEST_CASE("lmm process validates its inputs", "[libor_market_model_process]") {
             volatilities,
             libor_market_model_process_matrix({{1.0, 0.6, 0.3}, {0.6, 1.0, 1.4}, {0.3, 1.4, 1.0}}),
             displacements,
-            spacings),
+            spacings,
+            price_stream(42)),
         std::invalid_argument);
     REQUIRE_THROWS_AS(
         libor_market_model_process(
@@ -525,20 +536,30 @@ TEST_CASE("lmm process validates its inputs", "[libor_market_model_process]") {
             volatilities,
             libor_market_model_process_matrix({{1.0, 0.9, 0.5}, {0.9, 1.0, 0.9}, {0.5, 0.9, 1.0}}),
             displacements,
-            spacings),
+            spacings,
+            price_stream(42)),
         std::invalid_argument);
-    REQUIRE_THROWS_AS(libor_market_model_process(
-                          rates, volatilities, identity, vector({-0.01, 0.0, 0.02}), spacings),
+    REQUIRE_THROWS_AS(
+        libor_market_model_process(
+            rates, volatilities, identity, vector({-0.01, 0.0, 0.02}), spacings, price_stream(42)),
+        std::invalid_argument);
+    REQUIRE_THROWS_AS(libor_market_model_process(vector({0.03, -0.04, 0.04}),
+                                                 volatilities,
+                                                 identity,
+                                                 vector({0.0, 0.0, 0.0}),
+                                                 spacings,
+                                                 price_stream(42)),
+                      std::invalid_argument);
+    REQUIRE_THROWS_AS(libor_market_model_process(rates,
+                                                 volatilities,
+                                                 identity,
+                                                 displacements,
+                                                 vector({0.5, 0.0, 0.25}),
+                                                 price_stream(42)),
                       std::invalid_argument);
     REQUIRE_THROWS_AS(
         libor_market_model_process(
-            vector({0.03, -0.04, 0.04}), volatilities, identity, vector({0.0, 0.0, 0.0}), spacings),
-        std::invalid_argument);
-    REQUIRE_THROWS_AS(libor_market_model_process(
-                          rates, volatilities, identity, displacements, vector({0.5, 0.0, 0.25})),
-                      std::invalid_argument);
-    REQUIRE_THROWS_AS(
-        libor_market_model_process(rates, volatilities, identity, displacements, spacings, 42, 0.0),
+            rates, volatilities, identity, displacements, spacings, price_stream(42), 0.0),
         std::invalid_argument);
 
     // The singular limit rho = 1 (the one-factor model) is a
@@ -548,11 +569,13 @@ TEST_CASE("lmm process validates its inputs", "[libor_market_model_process]") {
         volatilities,
         libor_market_model_process_matrix({{1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}}),
         displacements,
-        spacings));
+        spacings,
+        price_stream(42)));
 
     // Error messages carry the process name.
     try {
-        libor_market_model_process(vector({}), volatilities, identity, displacements, spacings);
+        libor_market_model_process(
+            vector({}), volatilities, identity, displacements, spacings, price_stream(42));
         FAIL("expected an exception");
     } catch (const std::invalid_argument& e) {
         REQUIRE(std::string(e.what()).find("libor_market_model_process") != std::string::npos);

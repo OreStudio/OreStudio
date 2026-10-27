@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/affine_term_structure_process.hpp"
 #include "ores.analytics.quant/service/processes/quadratic_gaussian_process.hpp"
+#include "price_stream.hpp"
 #include "test_helpers.hpp"
 #include <Eigen/Dense>
 #include <catch2/catch_approx.hpp>
@@ -85,9 +86,9 @@ TEST_CASE("quadratic gaussian with zero gamma reduces to affine", "[quadratic_ga
     const Eigen::MatrixXd zero_gamma = quadratic_gaussian_process_matrix({{0.0, 0.0}, {0.0, 0.0}});
     for (const double dt : {1.0, 0.25}) {
         affine_term_structure_process affine(
-            kappas, sigma, theta, 0.01, deltas, initial_factors, 42, dt);
+            kappas, sigma, theta, 0.01, deltas, initial_factors, price_stream(42), dt);
         quadratic_gaussian_process qg(
-            kappas, sigma, theta, 0.01, deltas, zero_gamma, initial_factors, 42, dt);
+            kappas, sigma, theta, 0.01, deltas, zero_gamma, initial_factors, price_stream(42), dt);
 
         const std::size_t ticks = 8;
         for (std::size_t t = 0; t < ticks; ++t) {
@@ -131,7 +132,7 @@ TEST_CASE("quadratic gaussian zero-sigma prices the deterministic path",
     }
 
     quadratic_gaussian_process qg(
-        kappas, zero_sigma, theta, delta_0, deltas, gamma, initial_factors, 42, dt);
+        kappas, zero_sigma, theta, delta_0, deltas, gamma, initial_factors, price_stream(42), dt);
     for (std::size_t t = 0; t < ticks; ++t) {
         for (std::size_t n = 1; n <= 3; ++n) {
             double direct = 1.0;
@@ -164,7 +165,7 @@ TEST_CASE("quadratic gaussian bond price matches the brute-force expectation",
     const std::size_t ticks = 5;
 
     quadratic_gaussian_process p(
-        kappas, sigma, theta, delta_0, deltas, gamma, initial_factors, 42, dt);
+        kappas, sigma, theta, delta_0, deltas, gamma, initial_factors, price_stream(42), dt);
 
     // The exact one-step transition, sampled directly: x' = theta +
     // exp(-kappas*dt) * (x - theta) + sqrt(V) * z with the exact
@@ -220,7 +221,7 @@ TEST_CASE("quadratic gaussian first-tick moments match the closed forms",
                                      deltas,
                                      gamma,
                                      initial_factors,
-                                     static_cast<std::uint32_t>(42 + i),
+                                     price_stream(static_cast<std::uint32_t>(42 + i)),
                                      dt);
         rate_moments.add(p.next());
     }
@@ -249,7 +250,7 @@ TEST_CASE("quadratic gaussian rate stays positive under positive-semidefinite ga
                                  vector({0.0, 0.0}),
                                  quadratic_gaussian_process_matrix({{1.5, 0.0}, {0.0, 0.8}}),
                                  vector({0.0, 0.0}),
-                                 42,
+                                 price_stream(42),
                                  0.25);
     for (std::size_t t = 0; t < 1000; ++t)
         REQUIRE(p.next() > 0.0);
@@ -265,7 +266,7 @@ TEST_CASE("quadratic gaussian discounts are monotone", "[quadratic_gaussian_proc
                                  vector({0.0, 0.0}),
                                  quadratic_gaussian_process_matrix({{1.5, 0.0}, {0.0, 0.8}}),
                                  vector({0.0, 0.0}),
-                                 42,
+                                 price_stream(42),
                                  0.25);
     double previous = 1.0;
     for (std::size_t n = 1; n <= 6; ++n) {
@@ -288,7 +289,7 @@ TEST_CASE("quadratic gaussian params struct equals scalar construction",
     params.gamma = quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}});
     params.initial_factors = vector({0.04, 0.02});
 
-    quadratic_gaussian_process from_params(params, 99, 0.25);
+    quadratic_gaussian_process from_params(params, price_stream(99), 0.25);
     quadratic_gaussian_process from_scalars(
         vector({0.4, 0.2}),
         quadratic_gaussian_process_matrix({{0.09, 0.03}, {0.03, 0.04}}),
@@ -297,7 +298,7 @@ TEST_CASE("quadratic gaussian params struct equals scalar construction",
         vector({1.0, 0.5}),
         quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}}),
         vector({0.04, 0.02}),
-        99,
+        price_stream(99),
         0.25);
     for (std::size_t t = 0; t < 6; ++t) {
         REQUIRE(from_params.next() == from_scalars.next());
@@ -315,7 +316,7 @@ TEST_CASE("quadratic gaussian seeds determine the path", "[quadratic_gaussian_pr
             vector({1.0, 1.0}),
             quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}}),
             vector({0.04, 0.02}),
-            seed,
+            price_stream(seed),
             1.0);
         std::vector<double> rates;
         for (std::size_t t = 0; t < 5; ++t)
@@ -338,8 +339,15 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
     // Valid constructions as the baseline for the single-invalid-input
     // cases below, including the positive-semidefinite boundaries:
     // gamma == 0 and the rank-one gamma matrix.
-    REQUIRE_NOTHROW(quadratic_gaussian_process(
-        two_kappas, valid_sigma, two_theta, 0.0, two_deltas, valid_gamma, two_factors, 42, 1.0));
+    REQUIRE_NOTHROW(quadratic_gaussian_process(two_kappas,
+                                               valid_sigma,
+                                               two_theta,
+                                               0.0,
+                                               two_deltas,
+                                               valid_gamma,
+                                               two_factors,
+                                               price_stream(42),
+                                               1.0));
     REQUIRE_NOTHROW(
         quadratic_gaussian_process(two_kappas,
                                    valid_sigma,
@@ -348,7 +356,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    quadratic_gaussian_process_matrix({{0.0, 0.0}, {0.0, 0.0}}),
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0));
     REQUIRE_NOTHROW(
         quadratic_gaussian_process(two_kappas,
@@ -358,7 +366,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    quadratic_gaussian_process_matrix({{1.0, 1.0}, {1.0, 1.0}}),
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0));
 
     REQUIRE_THROWS_AS(quadratic_gaussian_process(Eigen::VectorXd(),
@@ -368,7 +376,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  valid_gamma,
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // empty kappas
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
@@ -378,7 +386,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  valid_gamma,
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // theta size mismatch
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
@@ -388,7 +396,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  vector({1.0}),
                                                  valid_gamma,
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // deltas size mismatch
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
@@ -398,7 +406,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  valid_gamma,
                                                  vector({0.04}),
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // initial_factors size mismatch
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
@@ -409,7 +417,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  valid_gamma,
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // sigma not square
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
@@ -419,7 +427,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  valid_gamma,
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // sigma wrong size
     REQUIRE_THROWS_AS(quadratic_gaussian_process(
@@ -430,7 +438,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                           two_deltas,
                           quadratic_gaussian_process_matrix({{0.5, 0.2, 0.1}, {0.2, 0.3, 0.1}}),
                           two_factors,
-                          42,
+                          price_stream(42),
                           1.0),
                       std::invalid_argument); // gamma not square
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
@@ -440,7 +448,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  quadratic_gaussian_process_matrix({{0.5}}),
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // gamma wrong size
     REQUIRE_THROWS_AS(quadratic_gaussian_process(vector({-0.1, 0.2}),
@@ -450,7 +458,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  two_deltas,
                                                  valid_gamma,
                                                  two_factors,
-                                                 42,
+                                                 price_stream(42),
                                                  1.0),
                       std::invalid_argument); // negative kappa
     REQUIRE_THROWS_AS(
@@ -461,7 +469,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    valid_gamma,
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0),
         std::invalid_argument); // NaN kappa
     REQUIRE_THROWS_AS(
@@ -472,7 +480,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    valid_gamma,
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0),
         std::invalid_argument); // asymmetric sigma
     REQUIRE_THROWS_AS(
@@ -483,7 +491,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    valid_gamma,
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0),
         std::invalid_argument); // indefinite sigma
     REQUIRE_THROWS_AS(
@@ -494,7 +502,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    quadratic_gaussian_process_matrix({{0.5, 0.1}, {0.2, 0.3}}),
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0),
         std::invalid_argument); // asymmetric gamma
     REQUIRE_THROWS_AS(
@@ -505,7 +513,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    two_deltas,
                                    quadratic_gaussian_process_matrix({{1.0, 1.5}, {1.5, 1.0}}),
                                    two_factors,
-                                   42,
+                                   price_stream(42),
                                    1.0),
         std::invalid_argument); // indefinite gamma
     REQUIRE_THROWS_AS(quadratic_gaussian_process(
@@ -517,11 +525,17 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                           quadratic_gaussian_process_matrix(
                               {{std::numeric_limits<double>::quiet_NaN(), 0.2}, {0.2, 0.3}}),
                           two_factors,
-                          42,
+                          price_stream(42),
                           1.0),
                       std::invalid_argument); // NaN gamma
-    REQUIRE_THROWS_AS(
-        quadratic_gaussian_process(
-            two_kappas, valid_sigma, two_theta, 0.0, two_deltas, valid_gamma, two_factors, 42, 0.0),
-        std::invalid_argument); // dt not strictly positive
+    REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
+                                                 valid_sigma,
+                                                 two_theta,
+                                                 0.0,
+                                                 two_deltas,
+                                                 valid_gamma,
+                                                 two_factors,
+                                                 price_stream(42),
+                                                 0.0),
+                      std::invalid_argument); // dt not strictly positive
 }

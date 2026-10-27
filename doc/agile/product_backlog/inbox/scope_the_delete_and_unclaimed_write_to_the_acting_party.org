@@ -19,6 +19,8 @@ Scope the remaining key reads of a generated service to the acting party, as the
 
 Every party of Acme holds the same convention ids, and a parent party's session sees its subsidiaries' rows, so the same key names several rows. The repository template (=read_latest=, =remove=, =apply_claim=) reads by key under row-level security and cannot tell them apart. Found while proving the hotfix live on 2026-10-27.
 
+The hotfix filters after the read: =read_one= loads every visible row of the key, and =of_acting_party()= keeps the acting party's row. A key holds one row for each party that can see it, so the read is small. But the right fix scopes the read itself, so that the repository reads the acting party's row by key and party, and the filter goes away.
+
 * References
 
 - =projects/ores.codegen/library/templates/= the repository template's =remove= and =apply_claim=

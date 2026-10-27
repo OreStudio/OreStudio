@@ -54,6 +54,6 @@ Measured on 2026-10-26 from the Acme login party, on the record page of a conven
 
 * Out of scope
 
-- A delete by key, and a write with no precondition, read the current row by key too. A delete may close another visible party's row of the same id and version; an unclaimed write gets a false conflict. The capture /Scope a delete and an unclaimed write to the acting party/ records both.
+- A delete by key, and a write with no precondition, read the current row by key too. A delete may close another visible party's row of the same id and version; an unclaimed write gets a false conflict. The capture [[id:9605A39E-CAE9-4232-90DF-C42EBE94CB41][Scope a delete and an unclaimed write to the acting party]] records both.
 
 -

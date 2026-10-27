@@ -90,7 +90,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A nil or empty party_id counts as another party, so a write may miss a shared row | handler_helpers.hpp | Accept | The compute tables hold an id once per tenant with a nullable party, so a strict filter breaks their amends. The rule now keeps only the acting party's rows when one exists, and otherwise keeps the rows as read. Tests cover nullopt, nil and empty. |
+| 2 | Link the delete and unclaimed write capture from the story | story.org | Accept | The story links the capture by its id. |
+| 3 | The filter runs after the read, which still loads every visible row | handler_helpers.hpp | Defer | The capture records that the read itself must be scoped by party. |
+| 4 | The fx option ATM fix and the feed_seed.hpp entry are unrelated | — | Keep | Separate commits; both were needed for the gate on main. |
+| 5 | Confirm the two ctest failures also fail on main | — | Accept | Checked again after the rebase onto main; the PR reply states the result. |
 
 * Result
 

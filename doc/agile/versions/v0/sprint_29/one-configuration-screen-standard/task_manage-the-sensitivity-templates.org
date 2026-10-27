@@ -172,7 +172,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_manage-the-sensitivity-templates.org][Manage the sensitivity templates]] | PENDING | Runs on 21002 after provisioning. |
 
 * PRs
 

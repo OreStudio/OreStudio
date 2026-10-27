@@ -139,10 +139,10 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
                                                        Eigen::MatrixXd correlation,
                                                        Eigen::VectorXd displacements,
                                                        Eigen::VectorXd tenor_spacings,
-                                                       std::uint32_t seed,
+                                                       math::rng_stream stream,
                                                        double dt)
     : dt_(dt)
-    , rng_(seed) {
+    , rng_(std::move(stream)) {
 
     // The constructor validates everything (with its own prefix),
     // builds the covariance and its Cholesky root, and then delegates
@@ -218,14 +218,14 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
 }
 
 libor_market_model_process::libor_market_model_process(const libor_market_model_params& params,
-                                                       std::uint32_t seed,
+                                                       math::rng_stream stream,
                                                        double dt)
     : libor_market_model_process(params.initial_forward_rates,
                                  params.volatilities,
                                  params.correlation,
                                  params.displacements,
                                  params.tenor_spacings,
-                                 seed,
+                                 std::move(stream),
                                  dt) {}
 
 double libor_market_model_process::next() {

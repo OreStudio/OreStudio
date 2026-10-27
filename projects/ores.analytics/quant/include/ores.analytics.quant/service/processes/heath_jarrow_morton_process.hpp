@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/processes/heath_jarrow_morton_params.hpp"
 #include <cstdint>
 #include <random>
@@ -101,7 +102,7 @@ public:
     heath_jarrow_morton_process(Eigen::VectorXd initial_forward_rates,
                                 Eigen::VectorXd volatilities,
                                 Eigen::VectorXd tenor_spacings,
-                                std::uint32_t seed = 42,
+                                math::rng_stream stream,
                                 double dt = 1.0);
 
     /**
@@ -113,7 +114,7 @@ public:
      * overload.
      */
     explicit heath_jarrow_morton_process(const heath_jarrow_morton_params& params,
-                                         std::uint32_t seed = 42,
+                                         math::rng_stream stream,
                                          double dt = 1.0);
 
     double next() override;
@@ -136,7 +137,7 @@ private:
     Eigen::VectorXd vol_sqrt_dt_;
     Eigen::VectorXd tenors_;
     std::size_t tick_ = 0;
-    std::mt19937 rng_;
+    math::rng_stream rng_;
     std::normal_distribution<double> normal_;
 };
 

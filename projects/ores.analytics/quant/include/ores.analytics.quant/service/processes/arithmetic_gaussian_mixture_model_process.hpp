@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include <cstdint>
 #include <random>
 #include <vector>
@@ -47,7 +48,7 @@ public:
                                               std::vector<double> stdevs,
                                               std::vector<double> weights,
                                               double initial_price,
-                                              std::uint32_t seed = 42);
+                                              math::rng_stream stream);
 
     double next() override;
     double next(double elapsed_ticks) override;
@@ -64,7 +65,7 @@ private:
     std::vector<double> stdevs_;
     std::vector<double> weights_;
     double price_;
-    std::mt19937 rng_;
+    math::rng_stream rng_;
     std::discrete_distribution<int> component_dist_;
 };
 

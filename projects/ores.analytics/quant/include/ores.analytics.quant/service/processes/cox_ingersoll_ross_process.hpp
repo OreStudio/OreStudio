@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_params.hpp"
 #include <cstdint>
 #include <random>
@@ -81,7 +82,7 @@ public:
                                double theta,
                                double sigma,
                                double initial_rate,
-                               std::uint32_t seed = 42,
+                               math::rng_stream stream,
                                double dt = 1.0);
 
     /**
@@ -93,7 +94,7 @@ public:
      * overload.
      */
     explicit cox_ingersoll_ross_process(const cox_ingersoll_ross_params& params,
-                                        std::uint32_t seed = 42,
+                                        math::rng_stream stream,
                                         double dt = 1.0);
 
     double next() override;
@@ -106,7 +107,7 @@ private:
     double sigma_;
     double rate_;
     double dt_;
-    std::mt19937 rng_;
+    math::rng_stream rng_;
 
     /// True Feller-consistent step (sigma > 0); sigma == 0 uses the
     /// deterministic ODE path instead via next().

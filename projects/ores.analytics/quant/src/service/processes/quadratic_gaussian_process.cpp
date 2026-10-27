@@ -35,10 +35,10 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
                                                        Eigen::VectorXd deltas,
                                                        Eigen::MatrixXd gamma,
                                                        Eigen::VectorXd initial_factors,
-                                                       std::uint32_t seed,
+                                                       math::rng_stream stream,
                                                        double dt)
     : dt_(dt)
-    , rng_(seed) {
+    , rng_(std::move(stream)) {
 
     // The validation prefix is the process name: the constructor is the
     // public entry point and must say who rejected the input. The checks
@@ -142,7 +142,7 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
 }
 
 quadratic_gaussian_process::quadratic_gaussian_process(const quadratic_gaussian_params& params,
-                                                       std::uint32_t seed,
+                                                       math::rng_stream stream,
                                                        double dt)
     : quadratic_gaussian_process(params.kappas,
                                  params.sigma,
@@ -151,7 +151,7 @@ quadratic_gaussian_process::quadratic_gaussian_process(const quadratic_gaussian_
                                  params.deltas,
                                  params.gamma,
                                  params.initial_factors,
-                                 seed,
+                                 std::move(stream),
                                  dt) {}
 
 double quadratic_gaussian_process::next() {

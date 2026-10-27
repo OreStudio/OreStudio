@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/rate_tree.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/processes/black_derman_toy_params.hpp"
 #include <cstddef>
 #include <cstdint>
@@ -124,7 +125,7 @@ class ORES_ANALYTICS_QUANT_EXPORT black_derman_toy_process final
 public:
     black_derman_toy_process(std::vector<double> discount_curve,
                              std::vector<double> sigma_path,
-                             std::uint32_t seed = 42,
+                             math::rng_stream stream,
                              double dt = 1.0);
 
     /**
@@ -136,7 +137,7 @@ public:
      * overload.
      */
     explicit black_derman_toy_process(const black_derman_toy_params& params,
-                                      std::uint32_t seed = 42,
+                                      math::rng_stream stream,
                                       double dt = 1.0);
 
     double next() override;
@@ -154,7 +155,7 @@ private:
     ores::analytics::quant::math::rate_tree tree_;
     double a_last_; ///< Flat-extension ladder: shift of the last fitted level.
     double b_last_; ///< Flat-extension ladder: spacing of the last fitted level.
-    std::mt19937 rng_;
+    math::rng_stream rng_;
     std::uniform_real_distribution<double> uniform_{0.0, 1.0};
 };
 

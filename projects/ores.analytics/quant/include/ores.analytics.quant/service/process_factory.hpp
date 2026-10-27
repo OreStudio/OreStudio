@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -64,7 +65,7 @@ public:
                  std::vector<double> stdevs,
                  std::vector<double> weights,
                  double initial_price,
-                 std::uint32_t seed = 42,
+                 math::rng_stream stream,
                  double dt = 1.0);
 
     /**
@@ -93,7 +94,7 @@ public:
                              std::vector<double> theta_path,
                              double sigma,
                              double initial_rate,
-                             std::uint32_t seed = 42,
+                             math::rng_stream stream,
                              double dt = 1.0);
 };
 

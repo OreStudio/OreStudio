@@ -20,23 +20,28 @@
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
 #include <cmath>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
 cox_ingersoll_ross_process::cox_ingersoll_ross_process(const cox_ingersoll_ross_params& params,
-                                                       std::uint32_t seed,
+                                                       math::rng_stream stream,
                                                        double dt)
     : cox_ingersoll_ross_process(
-          params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
+          params.kappa, params.theta, params.sigma, params.initial_rate, std::move(stream), dt) {}
 
-cox_ingersoll_ross_process::cox_ingersoll_ross_process(
-    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
+cox_ingersoll_ross_process::cox_ingersoll_ross_process(double kappa,
+                                                       double theta,
+                                                       double sigma,
+                                                       double initial_rate,
+                                                       math::rng_stream stream,
+                                                       double dt)
     : kappa_(kappa)
     , theta_(theta)
     , sigma_(sigma)
     , rate_(initial_rate)
     , dt_(dt)
-    , rng_(seed) {
+    , rng_(std::move(stream)) {
 
     if (kappa_ <= 0.0)
         throw std::invalid_argument("cox_ingersoll_ross_process: kappa must be strictly positive");

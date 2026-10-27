@@ -22,31 +22,32 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
 hull_white_process::hull_white_process(const hull_white_params& params,
-                                       std::uint32_t seed,
+                                       math::rng_stream stream,
                                        double dt)
     : hull_white_process(params.kappa,
                          std::vector<double>{params.theta},
                          params.sigma,
                          params.initial_rate,
-                         seed,
+                         std::move(stream),
                          dt) {}
 
 hull_white_process::hull_white_process(double kappa,
                                        std::vector<double> theta_path,
                                        double sigma,
                                        double initial_rate,
-                                       std::uint32_t seed,
+                                       math::rng_stream stream,
                                        double dt)
     : kappa_(kappa)
     , theta_path_(std::move(theta_path))
     , sigma_(sigma)
     , rate_(initial_rate)
     , dt_(dt)
-    , rng_(seed)
+    , rng_(std::move(stream))
     , normal_(0.0, 1.0) {
 
     if (theta_path_.empty())

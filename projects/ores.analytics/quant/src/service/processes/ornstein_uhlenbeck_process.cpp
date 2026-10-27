@@ -22,17 +22,22 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
-ornstein_uhlenbeck_process::ornstein_uhlenbeck_process(
-    double kappa, double theta, double sigma, double initial_price, std::uint32_t seed, double dt)
+ornstein_uhlenbeck_process::ornstein_uhlenbeck_process(double kappa,
+                                                       double theta,
+                                                       double sigma,
+                                                       double initial_price,
+                                                       math::rng_stream stream,
+                                                       double dt)
     : kappa_(kappa)
     , theta_(theta)
     , sigma_(sigma)
     , price_(initial_price)
     , dt_(dt)
-    , rng_(seed)
+    , rng_(std::move(stream))
     , normal_(0.0, 1.0) {
 
     if (sigma_ < 0.0)

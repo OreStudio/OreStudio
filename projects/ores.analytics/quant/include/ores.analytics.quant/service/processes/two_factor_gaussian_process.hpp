@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/processes/two_factor_gaussian_params.hpp"
 #include <cstdint>
 #include <random>
@@ -73,7 +74,7 @@ public:
                                 double sigma_y,
                                 double rho,
                                 double initial_rate,
-                                std::uint32_t seed = 42,
+                                math::rng_stream stream,
                                 double dt = 1.0);
 
     /**
@@ -85,7 +86,7 @@ public:
      * overload.
      */
     explicit two_factor_gaussian_process(const two_factor_gaussian_params& params,
-                                         std::uint32_t seed = 42,
+                                         math::rng_stream stream,
                                          double dt = 1.0);
 
     double next() override;
@@ -102,7 +103,7 @@ private:
     double factor_y_;
     double dt_;
     std::size_t tick_ = 0;
-    std::mt19937 rng_;
+    math::rng_stream rng_;
     std::normal_distribution<double> normal_;
 };
 

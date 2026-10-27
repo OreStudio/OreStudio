@@ -22,6 +22,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 namespace math = ores::analytics::quant::math;
@@ -73,14 +74,18 @@ math::rate_tree build_black_karasinski_tree(
     return tree;
 }
 
-black_karasinski_process::black_karasinski_process(
-    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
+black_karasinski_process::black_karasinski_process(double kappa,
+                                                   double theta,
+                                                   double sigma,
+                                                   double initial_rate,
+                                                   math::rng_stream stream,
+                                                   double dt)
     : kappa_(kappa)
     , theta_(theta)
     , sigma_(sigma)
     , log_rate_(std::log(initial_rate))
     , dt_(dt)
-    , rng_(seed)
+    , rng_(std::move(stream))
     , normal_(0.0, 1.0) {
 
     if (sigma_ < 0.0)
@@ -92,10 +97,10 @@ black_karasinski_process::black_karasinski_process(
 }
 
 black_karasinski_process::black_karasinski_process(const black_karasinski_params& params,
-                                                   std::uint32_t seed,
+                                                   math::rng_stream stream,
                                                    double dt)
     : black_karasinski_process(
-          params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
+          params.kappa, params.theta, params.sigma, params.initial_rate, std::move(stream), dt) {}
 
 double black_karasinski_process::next() {
     const double z = normal_(rng_);

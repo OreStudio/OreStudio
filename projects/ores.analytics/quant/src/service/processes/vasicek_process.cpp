@@ -21,12 +21,17 @@
 
 namespace ores::analytics::quant::service {
 
-vasicek_process::vasicek_process(
-    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
-    : inner_(kappa, std::vector<double>{theta}, sigma, initial_rate, seed, dt) {}
+vasicek_process::vasicek_process(double kappa,
+                                 double theta,
+                                 double sigma,
+                                 double initial_rate,
+                                 math::rng_stream stream,
+                                 double dt)
+    : inner_(kappa, std::vector<double>{theta}, sigma, initial_rate, std::move(stream), dt) {}
 
-vasicek_process::vasicek_process(const vasicek_params& params, std::uint32_t seed, double dt)
-    : vasicek_process(params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
+vasicek_process::vasicek_process(const vasicek_params& params, math::rng_stream stream, double dt)
+    : vasicek_process(
+          params.kappa, params.theta, params.sigma, params.initial_rate, std::move(stream), dt) {}
 
 double vasicek_process::next() {
     return inner_.next();

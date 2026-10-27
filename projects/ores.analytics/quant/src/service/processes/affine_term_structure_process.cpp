@@ -34,10 +34,10 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
                                                              double delta_0,
                                                              Eigen::VectorXd deltas,
                                                              Eigen::VectorXd initial_factors,
-                                                             std::uint32_t seed,
+                                                             math::rng_stream stream,
                                                              double dt)
     : dt_(dt)
-    , rng_(seed) {
+    , rng_(std::move(stream)) {
 
     // The validation prefix is the process name: the constructor is the
     // public entry point and must say who rejected the input.
@@ -118,14 +118,14 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
 }
 
 affine_term_structure_process::affine_term_structure_process(
-    const affine_term_structure_params& params, std::uint32_t seed, double dt)
+    const affine_term_structure_params& params, math::rng_stream stream, double dt)
     : affine_term_structure_process(params.kappas,
                                     params.sigma,
                                     params.theta,
                                     params.delta_0,
                                     params.deltas,
                                     params.initial_factors,
-                                    seed,
+                                    std::move(stream),
                                     dt) {}
 
 double affine_term_structure_process::next() {

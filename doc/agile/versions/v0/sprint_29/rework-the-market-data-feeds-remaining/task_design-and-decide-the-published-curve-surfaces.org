@@ -26,11 +26,11 @@ A signed-off prototype for the three screen surfaces and journey decisions for t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -84,3 +84,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Signed off on 2026-10-27.
+
+- The prototype draws the published curve list, the record page with Details,
+  Published points, Compare as of and History, the last N published sets
+  overlaid in the IR process style, the two-curve comparison, and the queue row
+  carrying the publish subject.
+- The withdrawals, the zero-approval path, the publish notice and the
+  maker/checker pair are decided in their journeys, each with its rule, its
+  alternative and its open questions.
+- The note records the open questions: the CSV export, the aside's stats, the
+  count's cap, ended sets in the overlay, the missing last-N read, the Revert
+  absence, the decision merged into the history, and the baseline and axis
+  choices.
+
+Implementation follows the sign-off.

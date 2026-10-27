@@ -78,11 +78,14 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 - Confirm the grid's page names the run, its report and its batch; the same page
   is at =/operations/grid/report-runs/<run id>= and is reachable from
   =Operations= then =Grid=.
-- Confirm it names the run, its report and its compute batch, and that the batch
-  shows one workunit whose job is =Done=, and the errors tab states what the run
-  recorded, if anything.
-- Open the job, confirm it names the node that ran it and the outcome, then open
-  the node and confirm the host is registered and has reported recently.
+- Confirm it names the run, its report and its compute batch, and that its
+  errors tab states what the run recorded, if anything.
+- Open the batch: the grid's jobs tab opens with the batch selected and lists its
+  jobs. Confirm the job for this run is =Done=.
+- Select that job and press the action that follows it to its own page. Confirm
+  the job page names the run behind it, the node that ran it and the outcome.
+- Follow the node from the job, and confirm the node page states the host, its
+  platform and when it last reported.
 
 *** Result
 

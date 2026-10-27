@@ -5167,6 +5167,29 @@ const pt: SourceCatalogue = {
         },
     },
 
+    // sensitivityTemplates:begin
+    sensitivityTemplates: {
+        title: 'Modelos de sensibilidade',
+        lead: 'As chaves que uma configuração de motor de preços coloca num produto, com a classe de ativo e o método que cada chave nomeia.',
+        code: 'Código',
+        codeHelp: 'A chave que o ORE lê, como IR_FD. É fixada na criação e nunca muda.',
+        assetClass: 'Classe de ativo',
+        method: 'Método',
+        methodCode: 'Código do método',
+        methodCodeHelp: 'O símbolo que o ORE escreve numa chave. Decorre do método.',
+        description: 'Descrição',
+        add: 'Novo modelo',
+        addTitle: 'Adicionar um modelo de sensibilidade',
+        decides:
+            'Nomeia uma chave que uma configuração de motor de preços coloca num produto. Os tamanhos de choque que uma chave implica são definidos pela configuração de sensibilidade, não aqui.',
+        newRecordNote:
+            'Um novo modelo é registado como um novo registo, e o seu histórico começa nessa escrita.',
+        readerOnly: 'Alterar um modelo exige a permissão para alterar modelos de sensibilidade.',
+        removeWarning:
+            'A chave é removida. Os choques dos produtos que a transportam são lidos na configuração de sensibilidade, e as suas versões ficam no histórico.',
+    },
+    // sensitivityTemplates:end
+
     // engineSettings:begin
     engineSettings: {
         title: 'Configurações de execução do motor',
@@ -5632,6 +5655,9 @@ const pt: SourceCatalogue = {
                 pricingEngines: 'Preços por produto',
                 pricingEnginesBody:
                     'Que modelo e que motor avaliam cada produto, para a parte em que trabalha.',
+                sensitivityTemplates: 'Modelos de sensibilidade',
+                sensitivityTemplatesBody:
+                    'As chaves que um produto transporta para a configuração de sensibilidade definir os seus choques.',
                 reports: 'Relatórios',
                 reportsBody:
                     'As definições que as partes onde trabalha executam, e o estado da última execução de cada uma.',
@@ -5848,6 +5874,9 @@ const pt: SourceCatalogue = {
         engineSettingsRead: 'ver as configurações do motor',
         engineSettingsWrite: 'alterar as configurações do motor',
         engineSettingsDelete: 'remover as configurações do motor',
+        sensitivityTemplatesRead: 'ver os modelos de sensibilidade',
+        sensitivityTemplatesWrite: 'alterar os modelos de sensibilidade',
+        sensitivityTemplatesDelete: 'remover os modelos de sensibilidade',
     },
 
     unavailable: {

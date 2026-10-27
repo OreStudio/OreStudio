@@ -5126,6 +5126,29 @@ export const en: SourceCatalogue = {
         },
     },
 
+    // sensitivityTemplates:begin
+    sensitivityTemplates: {
+        title: 'Sensitivity templates',
+        lead: 'The keys a pricing engine configuration puts on a product, with the asset class and the method each key names.',
+        code: 'Code',
+        codeHelp: 'The key ORE reads, such as IR_FD. It is set once and never changed.',
+        assetClass: 'Asset class',
+        method: 'Method',
+        methodCode: 'Method code',
+        methodCodeHelp: 'The token ORE writes in a key. It follows from the method.',
+        description: 'Description',
+        add: 'New template',
+        addTitle: 'Add a sensitivity template',
+        decides:
+            'It names a key a pricing engine configuration puts on a product. The shift sizes a key implies are set by the sensitivity configuration, not here.',
+        newRecordNote:
+            'A new template is recorded as a new record, and its history starts with that write.',
+        readerOnly: 'Changing a template needs the permission to change sensitivity templates.',
+        removeWarning:
+            'The key is removed. The shifts of the products that carry it are read from the sensitivity configuration, and its versions stay in the history.',
+    },
+    // sensitivityTemplates:end
+
     // engineSettings:begin
     engineSettings: {
         title: 'Engine run settings',
@@ -5589,6 +5612,9 @@ export const en: SourceCatalogue = {
                 pricingEngines: 'Product pricing',
                 pricingEnginesBody:
                     'How each product type is priced: the model, the engine and their parameters.',
+                sensitivityTemplates: 'Sensitivity templates',
+                sensitivityTemplatesBody:
+                    'The keys a product carries so the sensitivity configuration can set its shifts.',
                 reports: 'Reports',
                 reportsBody:
                     'The definitions the parties you work in run, and the health of each latest run.',
@@ -5805,6 +5831,9 @@ export const en: SourceCatalogue = {
         engineSettingsRead: 'see engine settings',
         engineSettingsWrite: 'change engine settings',
         engineSettingsDelete: 'remove engine settings',
+        sensitivityTemplatesRead: 'see the sensitivity templates',
+        sensitivityTemplatesWrite: 'change the sensitivity templates',
+        sensitivityTemplatesDelete: 'remove the sensitivity templates',
     },
 
     unavailable: {

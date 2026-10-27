@@ -705,6 +705,39 @@ export const classificationRowSchema = z.object({
 
 export type ClassificationRow = z.infer<typeof classificationRowSchema>;
 
+/**
+ * One sensitivity template: a key a pricing engine configuration puts on a
+ * product with the SensitivityTemplate setting.
+ *
+ * The key is the code, and it is fixed once the row exists. The method stands
+ * in two forms: the words a person reads, and the token ORE spells in the key,
+ * such as IR_FD. The shifts a key implies are the sensitivity configuration's
+ * and are not part of this record.
+ */
+export const sensitivityTemplateSchema = z.object({
+    code: z.string(),
+    assetClass: z.string(),
+    method: z.string(),
+    methodCode: z.string(),
+    description: z.string(),
+    version: z.int().nonnegative(),
+    modifiedBy: z.string(),
+    performedBy: z.string(),
+    reasonCode: z.string(),
+    commentary: z.string(),
+    recordedAt: wireTimestampSchema,
+});
+
+export type SensitivityTemplate = z.infer<typeof sensitivityTemplateSchema>;
+
+/** The values a template states: an asset class, and a method with its token. */
+export const sensitivityTemplateChoicesSchema = z.object({
+    assetClasses: z.array(z.string()),
+    methods: z.array(z.object({ label: z.string(), code: z.string() })),
+});
+
+export type SensitivityTemplateChoices = z.infer<typeof sensitivityTemplateChoicesSchema>;
+
 /** A field's value in one version of a record, as the history renders it. */
 export const historyFieldSchema = z.object({
     name: z.string(),

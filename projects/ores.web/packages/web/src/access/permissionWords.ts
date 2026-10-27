@@ -57,6 +57,9 @@ const WORDS = {
     [PERMISSION.engineSettingsRead]: 'permissionWords.engineSettingsRead',
     [PERMISSION.engineSettingsWrite]: 'permissionWords.engineSettingsWrite',
     [PERMISSION.engineSettingsDelete]: 'permissionWords.engineSettingsDelete',
+    [PERMISSION.sensitivityTemplatesRead]: 'permissionWords.sensitivityTemplatesRead',
+    [PERMISSION.sensitivityTemplatesWrite]: 'permissionWords.sensitivityTemplatesWrite',
+    [PERMISSION.sensitivityTemplatesDelete]: 'permissionWords.sensitivityTemplatesDelete',
 } as const satisfies Record<Permission, string>;
 
 /** The translation key for what a permission allows. */

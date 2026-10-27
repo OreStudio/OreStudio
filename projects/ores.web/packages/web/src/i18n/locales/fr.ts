@@ -5208,6 +5208,31 @@ const fr: SourceCatalogue = {
         },
     },
 
+    // sensitivityTemplates:begin
+    sensitivityTemplates: {
+        title: 'Modèles de sensibilité',
+        lead: 'Les clés qu’une configuration de moteur de valorisation pose sur un produit, avec la classe d’actif et la méthode que chaque clé nomme.',
+        code: 'Code',
+        codeHelp:
+            'La clé que lit ORE, telle que IR_FD. Elle est fixée à la création et ne change plus.',
+        assetClass: 'Classe d’actif',
+        method: 'Méthode',
+        methodCode: 'Code de méthode',
+        methodCodeHelp: 'Le jeton qu’ORE écrit dans une clé. Il découle de la méthode.',
+        description: 'Description',
+        add: 'Nouveau modèle',
+        addTitle: 'Ajouter un modèle de sensibilité',
+        decides:
+            'Il nomme une clé qu’une configuration de moteur de valorisation pose sur un produit. Les tailles de décalage qu’une clé implique sont fixées par la configuration de sensibilité, pas ici.',
+        newRecordNote:
+            'Un nouveau modèle est enregistré comme un nouvel enregistrement, et son historique commence par cette écriture.',
+        readerOnly:
+            'Modifier un modèle exige la permission de modifier les modèles de sensibilité.',
+        removeWarning:
+            'La clé est supprimée. Les décalages des produits qui la portent sont lus dans la configuration de sensibilité, et ses versions restent dans l’historique.',
+    },
+    // sensitivityTemplates:end
+
     // engineSettings:begin
     engineSettings: {
         title: "Réglages d'exécution du moteur",
@@ -5674,6 +5699,9 @@ const fr: SourceCatalogue = {
                 pricingEngines: 'Tarification des produits',
                 pricingEnginesBody:
                     'Quel modèle et quel moteur valorisent chaque produit, pour la partie dans laquelle vous travaillez.',
+                sensitivityTemplates: 'Modèles de sensibilité',
+                sensitivityTemplatesBody:
+                    'Les clés qu’un produit porte pour que la configuration de sensibilité fixe ses décalages.',
                 reports: 'Rapports',
                 reportsBody:
                     "Les définitions qu'exécutent les parties où vous travaillez, et l'état de leur dernière exécution.",
@@ -5890,6 +5918,9 @@ const fr: SourceCatalogue = {
         engineSettingsRead: 'voir les paramètres du moteur',
         engineSettingsWrite: 'modifier les paramètres du moteur',
         engineSettingsDelete: 'supprimer les paramètres du moteur',
+        sensitivityTemplatesRead: 'voir les modèles de sensibilité',
+        sensitivityTemplatesWrite: 'modifier les modèles de sensibilité',
+        sensitivityTemplatesDelete: 'supprimer les modèles de sensibilité',
     },
 
     unavailable: {

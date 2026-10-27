@@ -36,11 +36,11 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief The settings of one ORE yield curve entry.
+ * @brief The parameters of one ORE yield curve entry.
  *
- * The settings of one YieldCurve entry of a curveconfig.xml, one row per
+ * The parameters of one YieldCurve entry of a curveconfig.xml, one row per
  * curve_definition in the YieldCurves section. The entry's identity is on the
- * definition, its segments in curve_segment, its bootstrap settings in
+ * definition, its segments in curve_segment, its bootstrap configuration in
  * curve_bootstrap_config; this row holds the rest, each as the column its
  * schema type calls for.
  *

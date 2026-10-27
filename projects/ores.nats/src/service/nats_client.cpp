@@ -61,6 +61,17 @@ void nats_client::set_auth(login_info info) {
 
 void nats_client::clear_auth() {
     auth_.reset();
+    // A logged-out session has nothing to renew into, and keeping the renewer
+    // would let the credential outlive the logout that was meant to end it.
+    session_renewer_ = nullptr;
+}
+
+void nats_client::set_session_renewer(session_renewer renewer) {
+    session_renewer_ = std::move(renewer);
+}
+
+void nats_client::clear_session_renewer() {
+    session_renewer_ = nullptr;
 }
 
 bool nats_client::is_logged_in() const noexcept {
@@ -130,21 +141,53 @@ message nats_client::do_authenticated_request(std::string_view subject,
         return reply;
     }
 
-    // Interactive path: reactive — throw on server-signalled expiry.
+    // Interactive path: reactive — a refused token is renewed once when the
+    // session holds a way to sign in again, and throws when it does not.
     if (!auth_)
         throw std::runtime_error("Not authenticated");
 
-    std::unordered_map<std::string, std::string> hdrs{
-        {std::string(headers::authorization), std::string(headers::bearer_prefix) + auth_->jwt}};
-    if (!delegation_token_.empty())
-        hdrs[std::string(headers::delegated_authorization)] =
-            std::string(headers::bearer_prefix) + delegation_token_;
-    if (!correlation_id_.empty())
-        hdrs[std::string(headers::nats_correlation_id)] = correlation_id_;
-    if (!session_id_.empty())
-        hdrs[std::string(headers::nats_session_id)] = session_id_;
+    const auto send = [&]() {
+        std::unordered_map<std::string, std::string> hdrs{
+            {std::string(headers::authorization),
+             std::string(headers::bearer_prefix) + auth_->jwt}};
+        if (!delegation_token_.empty())
+            hdrs[std::string(headers::delegated_authorization)] =
+                std::string(headers::bearer_prefix) + delegation_token_;
+        if (!correlation_id_.empty())
+            hdrs[std::string(headers::nats_correlation_id)] = correlation_id_;
+        if (!session_id_.empty())
+            hdrs[std::string(headers::nats_session_id)] = session_id_;
+        return active_client().request_sync(subject, body, hdrs, timeout);
+    };
 
-    const auto reply = active_client().request_sync(subject, body, hdrs, timeout);
+    auto reply = send();
+
+    const auto refused = [&reply]() {
+        const auto it = reply.headers.find(std::string(headers::x_error));
+        if (it == reply.headers.end())
+            return false;
+        return it->second == "token_expired" || it->second == "max_session_exceeded";
+    };
+
+    if (refused() && session_renewer_ && !renewing_) {
+        // The server refuses an expired token before it acts on the request, so
+        // the work was not done and sending it again is not a second attempt at
+        // something that may already have happened.
+        BOOST_LOG_SEV(lg(), info) << "Session expired on " << subject
+                                  << "; signing in again and retrying once";
+        /*
+         * Signing in is itself made of requests, and the party selection among
+         * them can be refused too. The guard keeps that refusal from calling
+         * back into this path: a renewal inside a renewal would never settle.
+         */
+        struct renewing_guard {
+            bool& flag;
+            ~renewing_guard() { flag = false; }
+        } guard{renewing_};
+        renewing_ = true;
+        if (session_renewer_() && auth_)
+            reply = send();
+    }
 
     const auto x_error_it = reply.headers.find(std::string(headers::x_error));
     if (x_error_it == reply.headers.end())
@@ -159,6 +202,10 @@ message nats_client::do_authenticated_request(std::string_view subject,
 nats_client nats_client::with_delegation(std::string token) const {
     nats_client copy = *this;
     copy.delegation_token_ = std::move(token);
+    // A delegated client speaks for another caller. Renewing it would open a
+    // session for this process instead, which is not the identity being
+    // forwarded, so the copy carries no renewer.
+    copy.session_renewer_ = nullptr;
     return copy;
 }
 

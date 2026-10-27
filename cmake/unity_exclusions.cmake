@@ -64,13 +64,6 @@ set_source_files_properties(
     DIRECTORY "${CMAKE_SOURCE_DIR}/projects/ores.inbox/core/src"
     PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 set_source_files_properties(
-    "${CMAKE_SOURCE_DIR}/projects/ores.inbox/core/tests/approval_apply_retry_tests.cpp"
-    "${CMAKE_SOURCE_DIR}/projects/ores.inbox/core/tests/approval_as_service_tests.cpp"
-    "${CMAKE_SOURCE_DIR}/projects/ores.inbox/core/tests/approval_lifecycle_tests.cpp"
-    "${CMAKE_SOURCE_DIR}/projects/ores.inbox/core/tests/notification_center_tests.cpp"
-    DIRECTORY "${CMAKE_SOURCE_DIR}/projects/ores.inbox/core/tests"
-    PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
-set_source_files_properties(
     "${CMAKE_SOURCE_DIR}/projects/ores.logging/tests/logging_options_validator_tests.cpp"
     DIRECTORY "${CMAKE_SOURCE_DIR}/projects/ores.logging/tests"
     PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)

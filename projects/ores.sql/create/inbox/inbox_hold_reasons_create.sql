@@ -212,8 +212,8 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Hold Reason
--- Every session reads the system tenant's own rows; writes stay the
--- current tenant's.
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_inbox_hold_reasons_tbl enable row level security;
 

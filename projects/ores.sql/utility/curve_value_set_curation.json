@@ -1,0 +1,42 @@
+{
+ "FXVolatilities|TimeInterpolation": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseFxVolatilityTimeInterpolation",
+  "reason": "The FX volatility config reads TimeInterpolation as one of the time-interpolation codes, and this is the parser that accepts them. The name also appears under CapFloorVolatilities, which is not linked here because its time interpolation is a different code.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:367"
+ },
+ "InflationCurves|Frequency": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseFrequency",
+  "reason": "Only the inflation curve config carries a Frequency leaf, and ORE reads it with this parser.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/utilities/parsers.cpp:361"
+ },
+ "YieldCurves|ExtrapolationMethod": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseYieldCurveExtrapolationMethod",
+  "reason": "Only the yield curve config carries ExtrapolationMethod, and ORE parses its accessor with this function.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:259"
+ },
+ "YieldCurves|InterpolationMethod": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseYieldCurveInterpolationMethod",
+  "reason": "Only the yield curve config's InterpolationMethod is parsed by this function (yieldcurve.cpp:505). Equity, inflation, commodity and cap floor volatility configs carry a leaf of the same name, but ORE states no list for them here, so they stay text rather than take a list that is not theirs.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:258"
+ },
+ "YieldCurves|InterpolationVariable": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseYieldCurveInterpolationVariable",
+  "reason": "Parsed by this function for the yield curve config only; the other families carry the name without an ORE list.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:260"
+ }
+}

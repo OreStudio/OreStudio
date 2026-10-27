@@ -18,6 +18,7 @@
  *
  */
 
+#include "approval_fixture.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/messaging/apply_step_handler.hpp"
@@ -31,18 +32,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-namespace {
-
-ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
-    auto ctx = ores::testing::make_generation_context(h);
-    auto a = ores::iam::generators::generate_synthetic_account(ctx);
-    a.change_reason_code = "system.test";
-    ores::iam::repository::account_repository repo;
-    repo.write(h.context(), a);
-    return a;
-}
-
-}
+using ores::inbox::tests::seed_account;
 
 TEST_CASE("an_approved_request_is_told_as_applied_and_any_other_state_keeps_its_name",
           "[approval][apply_step]") {

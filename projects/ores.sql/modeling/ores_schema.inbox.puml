@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: inbox
-Tables: 16
+Tables: 17
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -93,6 +93,7 @@ package "inbox" #FCE4EC {
           part_code : text <<FK>>
         * decided_by : uuid <<FK>>
         * decided_at : timestamptz
+          hold_reason_code : text <<FK>>
         * comment : text
         * modified_by : text
         * performed_by : text
@@ -342,6 +343,40 @@ package "inbox" #FCE4EC {
     trigger check. The table has no tenant: the set is the same for every tenant.
     end note
 
+    entity ores_inbox_hold_reasons_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_hold_reasons_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Hold Reason Table
+    Reference data table of the reasons a decider parks a request with. A hold is a
+    suspension and not a refusal, so the reason is chosen from a list rather than
+    typed: the operator names what is awaited, and the held-over report groups the
+    queue by it.
+    The reasons the controls note names, and the entries below, are the operational
+    authorisation queue's: a query on the margin a customer holds, a question on the
+    sales ticket, an awaited amendment, the handover markers between regional teams,
+    and the four exception flags that cause a hold. They are the system tenant's
+    rows, so every tenant reads one list.
+    The list is read where a hold is taken: the decide operation refuses a hold
+    whose reason is not one of these codes, and says which codes it accepts.
+    end note
+
     entity ores_inbox_notification_arguments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * notification_id : uuid <<PK, FK>>
@@ -566,6 +601,7 @@ package "inbox" #FCE4EC {
 ores_inbox_approval_requests_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
 ores_inbox_approval_decision_types_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
 ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
+ores_inbox_hold_reasons_tbl ||--o{ ores_inbox_approval_decisions_tbl : "has"
 ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_policies_tbl : "has"
 ores_inbox_approval_requests_tbl ||--o{ ores_inbox_approval_request_parts_tbl : "has"
 ores_inbox_approval_parts_tbl ||--o{ ores_inbox_approval_request_parts_tbl : "has"

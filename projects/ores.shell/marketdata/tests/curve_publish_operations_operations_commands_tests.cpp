@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/marketdata/curve_publish_operations_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.marketdata.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("curve_publish_operations_operations_registers_every_declared_command", tags) {
+TEST_CASE("curve_publish_operations_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -68,7 +66,8 @@ TEST_CASE("curve_publish_operations_operations_registers_every_declared_command"
     BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
 
-TEST_CASE("curve_publish_operations_operations_process_publish_curve_requires_a_session", tags) {
+TEST_CASE("curve_publish_operations_operations_process_publish_curve_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -88,7 +87,7 @@ TEST_CASE("curve_publish_operations_operations_process_publish_curve_requires_a_
 }
 
 TEST_CASE("curve_publish_operations_operations_process_publish_curve_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -106,7 +105,8 @@ TEST_CASE("curve_publish_operations_operations_process_publish_curve_reports_the
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("curve_publish_operations_operations_process_publish_curve_reaches_the_transport", tags) {
+TEST_CASE("curve_publish_operations_operations_process_publish_curve_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

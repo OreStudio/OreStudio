@@ -39,7 +39,7 @@
 namespace ores::inbox::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.inbox.service";
+static constexpr std::string_view hold_reason_queue_group = "ores.inbox.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_hold_reason_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<hold_reason_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_hold_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_hold_reasons(std::move(msg));
-        }));
+        list_hold_reasons_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->list_hold_reasons(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_hold_reason_request::nats_subject,
+                             hold_reason_queue_group,
+                             [h](ores::nats::message msg) { h->get_hold_reason(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_hold_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_hold_reason(std::move(msg));
-        }));
+        get_many_hold_reasons_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->get_many_hold_reasons(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_hold_reason_request::nats_subject,
+                             hold_reason_queue_group,
+                             [h](ores::nats::message msg) { h->put_hold_reason(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_hold_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_hold_reasons(std::move(msg));
-        }));
+        put_many_hold_reasons_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->put_many_hold_reasons(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_hold_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_hold_reason(std::move(msg));
-        }));
+        delete_hold_reason_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->delete_hold_reason(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_hold_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_hold_reasons(std::move(msg));
-        }));
+        delete_many_hold_reasons_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_hold_reasons(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_hold_reason_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_hold_reason(std::move(msg));
-        }));
+        list_hold_reason_versions_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->list_hold_reason_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_hold_reasons_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_hold_reasons(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        list_hold_reason_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_hold_reason_versions(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_hold_reason_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_hold_reason_version(std::move(msg));
-        }));
+        get_hold_reason_version_request::nats_subject,
+        hold_reason_queue_group,
+        [h](ores::nats::message msg) { h->get_hold_reason_version(std::move(msg)); }));
     return subs;
 }
 

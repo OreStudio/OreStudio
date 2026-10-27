@@ -81,6 +81,27 @@ DISPATCH = re.compile(r'childName\s*==\s*"(\w+)"')
 CLASS = re.compile(r"^(?:class|struct)\s+(\w+)", re.M)
 BASE = re.compile(r"^(?:class|struct)\s+(\w+)\s*:\s*public\s+([\w:]+)", re.M)
 MEMBER = re.compile(r"^\s+([A-Za-z_][\w:<>]*)\s+(\w+)_\s*;", re.M)
+# The parser that turns a leaf's text into a value. A read may wrap it
+# (`parseDayCounter(getChildValue(...))`) or the `build` function may apply it to
+# the member the read stored, which is why both are read.
+PARSE = re.compile(r"\b(parse\w+)\(\s*(\w+)")
+ASSIGN = re.compile(r"(\w+)\s*=\s*$")
+PARSERS = "OREData/ored/utilities/parsers.cpp"
+PARSER_DEF = re.compile(r"^[\w:<>]+ (parse\w+)\(const (?:std::)?string& \w+\)")
+MAP_KEY = re.compile(r'\{\s*"([^"]+)"\s*,\s*([\w:]+)')
+COMPARED = re.compile(r'\(\s*\w+\s*==\s*"([^"]+)"\s*\)\s*\{?\s*return\s+([\w:]+)')
+
+# The type a parse function gives a leaf, as the conventions extractor reads it.
+TYPE_OF = {
+    "parseBool": "boolean", "parseInteger": "integer", "parseReal": "double",
+    "parseCalendar": "calendar", "parseDayCounter": "day_counter",
+    "parseBusinessDayConvention": "business_day_convention",
+    "parseFrequency": "frequency", "parsePeriod": "period",
+    "parseCurrency": "currency", "parseIborIndex": "index",
+    "parseZeroInflationIndex": "index", "parseDateGenerationRule": "date_generation_rule",
+    "parseMonth": "month", "parseWeekday": "weekday", "parseCompounding": "compounding",
+    "parseRateCutoff": "integer", "parseAndValidateFrequency": "frequency",
+}
 
 TYPED = {
     "getChildValueAsBool": "boolean",
@@ -138,20 +159,47 @@ def literal(text):
     return None
 
 
-def parse_function(path, text, chunk, start, node, element):
+def parser_behind(chunk, offset, member_parsers):
+    """The parse function that gives a read its type, and the member it fills.
+
+    A read either wraps its parser or stores the text on a member that `build`
+    parses later, so both the text before the read and the class's own build map
+    are consulted.
+    """
+    before = chunk[max(0, offset - 80):offset]
+    member = None
+    assigned = list(ASSIGN.finditer(before))
+    if assigned:
+        member = assigned[-1].group(1)
+    # Only a parser that wraps the read names its type; one that merely sits
+    # nearby belongs to another statement.
+    parser = None
+    wrapped = re.search(r"(parse\w+)\(\s*$", before)
+    if wrapped:
+        parser = wrapped.group(1)
+    if not parser and member:
+        parser = member_parsers.get(member)
+    return member, parser
+
+
+def parse_function(path, text, chunk, start, node, element, member_parsers=None):
     """The leaves and blocks one `fromXML` body reads from its own node."""
     reads, nested = [], []
+    member_parsers = member_parsers or {}
 
-    def leaf(name, kind, mandatory, default, offset):
+    def leaf(name, kind, mandatory, default, offset, member=None, parser=None):
         return {"name": name, "type": kind, "mandatory": mandatory,
-                "default": default, "source_ref": ref(path, text, start + offset)}
+                "default": default, "member": member, "parser": parser,
+                "source_ref": ref(path, text, start + offset)}
 
     for m in READ.finditer(chunk):
         call, read_node, name, mandatory, rest = m.groups()
         if read_node != node:
             continue
-        reads.append(leaf(name, TYPED.get(call, "text"), mandatory == "true",
-                          literal(rest), m.start()))
+        member, parser = parser_behind(chunk, m.start(), member_parsers)
+        kind = TYPE_OF.get(parser) or TYPED.get(call, "text")
+        reads.append(leaf(name, kind, mandatory == "true", literal(rest),
+                          m.start(), member, parser))
 
     valued = {m.group(1) for m in NODEVALUE.finditer(chunk)}
     # A parser may build the class it needs on the spot (`Parameter p;`) rather
@@ -201,24 +249,44 @@ def parse_function(path, text, chunk, start, node, element):
 def classes(paths):
     """Every class that parses a document node, keyed by its name."""
     out = {}
+    built = {}
     for path in paths:
         text = read(path)
         bases = {m.group(1): m.group(2) for m in BASE.finditer(text)}
         for match in FUNCTION.finditer(text):
             name = match.group(1)
             chunk = body(text, match.start())
+            # `build` says which parser a member the read stored takes.
+            if match.group(2) == "build":
+                for parsed in PARSE.finditer(chunk):
+                    built.setdefault(name, {})[parsed.group(2)] = parsed.group(1)
+                continue
             check = CHECK.search(chunk)
-            reads, nested = parse_function(path, text, chunk, match.start(),
-                                           match.group(3), check.group(2) if check else None)
             out.setdefault(name, {
                 "element": check.group(2) if check else None,
                 "base": bases.get(name),
-                "reads": reads,
-                "nested": nested,
+                "reads": [],
+                "nested": [],
                 "dispatch": [m.group(1) for m in DISPATCH.finditer(chunk)],
                 "source": os.path.relpath(path, ARGS.ore),
                 "line": line_of(text, match.start()),
             })
+    for name, entry in out.items():
+        entry["member_parsers"] = built.get(name, {})
+    # Fill the reads now that every build map is known, whatever the file order.
+    for path in paths:
+        text = read(path)
+        for match in FUNCTION.finditer(text):
+            if match.group(2) != "fromXML":
+                continue
+            entry = out.get(match.group(1))
+            if not entry or entry.get("filled"):
+                continue
+            chunk = body(text, match.start())
+            entry["reads"], entry["nested"] = parse_function(
+                path, text, chunk, match.start(), match.group(3),
+                entry["element"], entry["member_parsers"])
+            entry["filled"] = True
     return out
 
 
@@ -523,6 +591,53 @@ def guide_terms(ore, sections):
     return found
 
 
+def parser_values(text, relative):
+    """The strings each parser accepts, in its own order, with its line.
+
+    A parser states them in a static map at its head or in a chain of
+    comparisons, so the whole body is read. Each string is recorded with the
+    value it means, the last part of the enumerator, so a person reads the word
+    and not the code. A parser that states neither, such as one that reads a
+    number, has no entry.
+    """
+    out = {}
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        match = PARSER_DEF.match(line)
+        if not match or line.rstrip().endswith("}"):
+            continue
+        end = index + 1
+        while end < len(lines) and not lines[end].startswith("}"):
+            end += 1
+        chunk = "\n".join(lines[index + 1:end])
+        found = [{"value": value, "means": target.rsplit("::", 1)[-1]}
+                 for value, target in MAP_KEY.findall(chunk) + COMPARED.findall(chunk)]
+        if found:
+            out[match.group(1)] = {"values": found,
+                                   "source_ref": f"{relative}:{index + 1}"}
+    return out
+
+
+def all_parsers(ore):
+    """Every parser map the ORE source states, whichever file defines it.
+
+    A curve field's parser is often not in the configuration parser at all, so
+    the whole data layer is read rather than the one directory.
+    """
+    root = os.path.join(ore, "OREData")
+    out = {}
+    for directory, dirs, names in os.walk(root):
+        dirs.sort()  # the walk order decides which map wins, so make it fixed
+        for name in sorted(names):
+            if not name.endswith((".cpp", ".hpp")):
+                continue
+            path = os.path.join(directory, name)
+            for parser, entry in parser_values(read(path),
+                                               os.path.relpath(path, ore)).items():
+                out.setdefault(parser, entry)
+    return out
+
+
 def commit(ore):
     try:
         return subprocess.run(["git", "-C", ore, "rev-parse", "--short", "HEAD"],
@@ -560,7 +675,8 @@ def main():
     covered = 0
 
     out = {"schema": SCHEMA_NAME, "guide": GUIDE,
-           "ore": {"path": ARGS.ore, "commit": commit(ARGS.ore)}, "sections": {}}
+           "ore": {"path": ARGS.ore, "commit": commit(ARGS.ore)},
+           "parsers": all_parsers(ARGS.ore), "sections": {}}
     total, unresolved = 0, 0
     for section in sections:
         entry = section["entry_element"]

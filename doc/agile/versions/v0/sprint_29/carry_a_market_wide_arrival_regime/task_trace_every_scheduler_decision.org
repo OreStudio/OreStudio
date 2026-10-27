@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trace-every-scheduler-decision
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,9 +26,9 @@ The loop records every tick, regime transition, heat jump and applied command in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Built; live check next.                |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-27                               |
@@ -42,9 +42,26 @@ The loop records every tick, regime transition, heat jump and applied command in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =service/scheduler_trace.hpp= holds =trace_event= and =trace_ring=. The
+  event is trivially copyable. The ring allocates its slots once and
+  overwrites the oldest, so recording is one copy and allocates nothing.
+- The loop records while it already holds its own lock: a tick with the gap
+  its law drew and the wall gap it took, each regime turn, each pin and
+  unpin, and each add and remove. No record takes a lock of its own. A
+  reader copies a filtered slice under the scheduler's lock.
+- =advance_to= steps to each transition in turn, so a turn is stamped with
+  the instant it happened, not the instant the loop noticed it.
+- =series_spec= carries the feed's source name, so the trace names its
+  series. The service filters by source name through =series_key=.
+- The loop's numbers: ticks a second over each heat sample, smoothed; the
+  heap size; and lateness, the time the loop fires a tick less the time it
+  was due, smoothed, with the maximum since the last read.
+- =synthetic.v1.ops.get_market_trace= serves a window of the trace, newest
+  kept under a cap, with the numbers. The regime read also carries the
+  pace, tau, the enrolled rate, the loop gain and the run seed, for the
+  screen in the next task.
+- The BFF serves =GET /api/synthetic/market-trace?source=&seconds=&limit==,
+  and the shell has =synthetic regime trace [source|all] [seconds]=.
 
 * Measurements
 

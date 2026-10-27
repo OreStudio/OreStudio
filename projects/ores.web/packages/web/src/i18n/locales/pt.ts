@@ -5531,6 +5531,7 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            unreadRows: '{count} linhas não puderam ser lidas e não são mostradas.',
             otherScopes: 'Outros âmbitos',
             shareTitle: 'Peso de cada livro na execução',
             shareCaption:

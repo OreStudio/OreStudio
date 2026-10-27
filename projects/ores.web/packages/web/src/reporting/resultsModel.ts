@@ -30,46 +30,64 @@ import type { AggregateRow, Money, RunResultRow } from '../api/client.js';
  * what an untyped row held.
  */
 
+/** A field the server may send as null, read as the empty string. */
+const text = z
+    .string()
+    .nullish()
+    .transform((value) => value ?? '');
+
 const moneySchema = z.object({
-    currency: z.string().default(''),
-    total: z.string().default(''),
+    currency: text,
+    total: text,
 });
 
 const tradeSchema = z.object({
-    trade_id: z.string(),
-    trade_type: z.string().default(''),
-    npv: z.string().default(''),
-    npv_currency: z.string().default(''),
-    npv_base: z.string().default(''),
-    notional: z.string().default(''),
-    notional_currency: z.string().default(''),
-    counterparty: z.string().default(''),
-    counterparty_name: z.string().default(''),
-    book_id: z.string().default(''),
-    book_name: z.string().default(''),
+    trade_id: text,
+    trade_type: text,
+    npv: text,
+    npv_currency: text,
+    npv_base: text,
+    notional: text,
+    notional_currency: text,
+    counterparty: text,
+    counterparty_name: text,
+    book_id: text,
+    book_name: text,
 });
 
 const aggregateSchema = z.object({
-    key: z.string(),
-    name: z.string().default(''),
-    trades: z.number().default(0),
+    key: text,
+    name: text,
+    trades: z
+        .number()
+        .nullish()
+        .transform((value) => value ?? 0),
     totals: z.array(moneySchema).default([]),
     notional: z.array(moneySchema).default([]),
-    group: z.string().default(''),
-    is_group: z.boolean().default(false),
+    group: text,
+    is_group: z
+        .boolean()
+        .nullish()
+        .transform((value) => value ?? false),
     previous: z.array(moneySchema).default([]),
     change: z.array(moneySchema).default([]),
     change_pct: z.array(moneySchema).default([]),
-    is_removed: z.boolean().default(false),
-    depth: z.number().default(0),
+    is_removed: z
+        .boolean()
+        .nullish()
+        .transform((value) => value ?? false),
+    depth: z
+        .number()
+        .nullish()
+        .transform((value) => Math.max(0, value ?? 0)),
 });
 
 const errorSchema = z.object({
-    scope: z.string().default(''),
-    severity: z.string().default(''),
-    message: z.string().default(''),
-    cause: z.string().default(''),
-    subject_id: z.string().default(''),
+    scope: text,
+    severity: text,
+    message: text,
+    cause: text,
+    subject_id: text,
 });
 
 /** One error the run recorded, as the screen reads it. */
@@ -81,39 +99,61 @@ export interface RunError {
     readonly subjectId: string;
 }
 
+/** What a parse of the server's rows produced, and how many it could not read. */
+export interface Parsed<Row> {
+    readonly rows: readonly Row[];
+    readonly unread: number;
+}
+
 /** The trades a run priced, as the screen reads them. */
-export function toTradeRows(rows: readonly unknown[]): readonly RunResultRow[] {
-    return rows.flatMap((row) => {
+export function toTradeRows(rows: readonly unknown[]): Parsed<RunResultRow> {
+    const read: RunResultRow[] = [];
+    let unread = 0;
+    for (const row of rows) {
         const parsed = tradeSchema.safeParse(row);
-        return parsed.success ? [parsed.data] : [];
-    });
+        if (parsed.success && parsed.data.trade_id !== '') {
+            read.push(parsed.data);
+        } else {
+            unread += 1;
+        }
+    }
+    return { rows: read, unread };
 }
 
 /** The books or counterparties a run's figures were rolled up to. */
-export function toAggregateRows(rows: readonly unknown[]): readonly AggregateRow[] {
-    return rows.flatMap((row) => {
+export function toAggregateRows(rows: readonly unknown[]): Parsed<AggregateRow> {
+    const read: AggregateRow[] = [];
+    let unread = 0;
+    for (const row of rows) {
         const parsed = aggregateSchema.safeParse(row);
-        return parsed.success ? [parsed.data as AggregateRow] : [];
-    });
+        if (parsed.success && parsed.data.key !== '') {
+            read.push(parsed.data);
+        } else {
+            unread += 1;
+        }
+    }
+    return { rows: read, unread };
 }
 
 /** The errors a run recorded, as the screen reads them. */
-export function toErrors(rows: readonly unknown[]): readonly RunError[] {
-    return rows.flatMap((row) => {
+export function toErrors(rows: readonly unknown[]): Parsed<RunError> {
+    const read: RunError[] = [];
+    let unread = 0;
+    for (const row of rows) {
         const parsed = errorSchema.safeParse(row);
         if (!parsed.success) {
-            return [];
+            unread += 1;
+            continue;
         }
-        return [
-            {
-                scope: parsed.data.scope,
-                severity: parsed.data.severity,
-                message: parsed.data.message,
-                cause: parsed.data.cause,
-                subjectId: parsed.data.subject_id,
-            },
-        ];
-    });
+        read.push({
+            scope: parsed.data.scope,
+            severity: parsed.data.severity,
+            message: parsed.data.message,
+            cause: parsed.data.cause,
+            subjectId: parsed.data.subject_id,
+        });
+    }
+    return { rows: read, unread };
 }
 
 /** A figure with its thousands grouped and two decimals, or the text as written. */
@@ -126,21 +166,4 @@ export function asFigure(text: string): string {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(figure);
-}
-
-/** The totals of one currency a set of rows states. */
-export function moneyOf(rows: readonly { readonly totals: readonly Money[] }[]): readonly Money[] {
-    const totals = new Map<string, number>();
-    for (const row of rows) {
-        for (const money of row.totals) {
-            const figure = Number.parseFloat(money.total);
-            if (Number.isFinite(figure)) {
-                totals.set(money.currency, (totals.get(money.currency) ?? 0) + figure);
-            }
-        }
-    }
-    return [...totals.entries()].map(([currency, total]) => ({
-        currency,
-        total: total.toFixed(2),
-    }));
 }

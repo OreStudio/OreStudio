@@ -88,7 +88,7 @@ export function RunResultsPanel({
     });
     const errorsOf = useMemo(() => {
         const byTrade = new Map<string, RunError[]>();
-        for (const error of toErrors(errors.data ?? [])) {
+        for (const error of toErrors(errors.data ?? []).rows) {
             if (error.scope !== 'Trade' || error.subjectId === '') {
                 continue;
             }
@@ -143,8 +143,11 @@ export function RunResultsPanel({
     };
 
     const rows = results.data?.rows ?? [];
-    const trades = level === 'trade' ? toTradeRows(rows) : [];
-    const aggregates = level === 'trade' ? [] : toAggregateRows(rows);
+    const tradeParse = level === 'trade' ? toTradeRows(rows) : { rows: [], unread: 0 };
+    const aggregateParse = level === 'trade' ? { rows: [], unread: 0 } : toAggregateRows(rows);
+    const trades = tradeParse.rows;
+    const aggregates = aggregateParse.rows;
+    const unread = tradeParse.unread + aggregateParse.unread;
     const filtered =
         level !== 'trade'
             ? []
@@ -171,7 +174,7 @@ export function RunResultsPanel({
         })),
     );
     const problems: readonly Share[] = problemsOf(
-        toErrors(errors.data ?? []),
+        toErrors(errors.data ?? []).rows,
         t(`${field}.unscoped`),
         t(`${field}.otherScopes`),
     );
@@ -257,6 +260,11 @@ export function RunResultsPanel({
                             </p>
                             {degraded && (
                                 <p className="text-sm text-down">{t(`${field}.degraded`)}</p>
+                            )}
+                            {unread > 0 && (
+                                <p className="text-sm text-down">
+                                    {t(`${field}.unreadRows`, { count: unread })}
+                                </p>
                             )}
                             <dl className="flex flex-wrap gap-8">
                                 <div>

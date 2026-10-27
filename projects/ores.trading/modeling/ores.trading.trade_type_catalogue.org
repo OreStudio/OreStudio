@@ -235,6 +235,8 @@ shape whichever family states the rows.
 | credit_basket_constituent                   |
 | credit_default_swap_instrument              |
 | credit_linked_swap_instrument               |
+| equity_basket_constituent                   |
+| equity_swap_period                          |
 | equity_position_option_underlying           |
 | flexi_swap_instrument                       |
 | flexi_swap_lower_notional                   |

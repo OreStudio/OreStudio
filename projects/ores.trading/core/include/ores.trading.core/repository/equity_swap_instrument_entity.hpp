@@ -49,10 +49,6 @@ struct equity_swap_instrument_entity {
     std::string party_id;
     std::string trade_activity_id;
     std::optional<std::string> underlying_name;
-    std::optional<std::string> basket_json;
-    std::optional<std::string> initial_prices_json;
-    std::optional<std::string> knock_out_levels_json;
-    std::optional<std::string> fixed_trigger_levels_json;
     std::string currency;
     std::string notional;
     std::string return_type;

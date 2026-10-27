@@ -52,7 +52,6 @@ struct equity_accumulator_instrument_write {
     std::string fixing_frequency;
     std::string long_short;
     std::optional<ores::utility::decimal::decimal> knock_out_level;
-    std::string range_bounds_json;
     std::optional<ores::utility::decimal::decimal> target_amount;
     std::string target_type;
     std::string payoff_type;

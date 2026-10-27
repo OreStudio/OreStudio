@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 166
+Tables: 167
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1538,6 +1538,41 @@ package "refdata" #FFF3E0 {
     categorise contact information records for parties and counterparties.
     end note
 
+    entity ores_refdata_convention_kind_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * kind_code : text
+        * entity_name : text
+        * column_name : text
+        * schema_name : text
+        * xpath : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_convention_kind_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Convention Kind Term Table
+    One term of one convention kind, as a screen draws it: the entity and the column
+    its value travels under, and the leaf of ORE's conventions document that holds it,
+    named by its schema and its XPath. The XPath is the key of the term's entry in the
+    ORE parameter contract, which gives the term its label, help, description, default,
+    format and value set, so none of them is restated here or in a screen.
+    A kind's terms are what a convention screen shows, in the order the position
+    states. The first rows come from the mapper that reads and writes the conventions
+    document, so the column a value is stored in and the element ORE reads it from are
+    the ones the import and the export already use.
+    end note
+
     entity ores_refdata_convention_kinds_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1545,6 +1580,8 @@ package "refdata" #FFF3E0 {
         * version : integer
         * name : text
         * description : text
+        * asset_class : text
+          ore_element : text
         * display_order : integer
         * modified_by : text
         * performed_by : text

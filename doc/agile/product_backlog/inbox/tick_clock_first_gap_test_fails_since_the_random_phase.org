@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: BA6B4F4D-1E19-4519-8AED-3A501397AD35
+:END:
+#+title: The tick_clock first-gap test fails since the random phase
+#+description: Main's commit 7484ed7f97 gave periodic arrival a random phase drawn from a default seed, so the first gap is 0.001 times 0.5928 (0.00059284461651668) and the tick_clock test that expects a full period fails in ores.analytics.quant.tests, in unity and non-unity builds alike.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The test case "tick_clock hands the body the gap it waited"
+(=projects/ores.analytics/quant/tests/tick_clock_tests.cpp:179=) fails on
+main. It expects the first gap to be one full period, 0.001 s. Commit
+=7484ed7f97= gave periodic arrival a random phase, drawn from a default seed,
+so the first gap is 0.001 × 0.5928 = 0.00059284461651668. The unity build and
+the non-unity build fail with the same value, so the build mode is not the
+cause.
+
+Fix the test or the design, not the tolerance. Either the test seeds the
+process and expects the phased first gap, or the phase becomes explicit state
+that the test sets to zero. The second fits the tick arrival analysis sent to
+the tick arrival work: a stationary start is state that the caller gives, and
+no default seed hides it.
+
+* Why
+
+=ores.analytics.quant.tests= is red on main, so the local check gate cannot go
+green on any branch that builds C++. Each branch must document the failure
+by hand until it is fixed.
+
+* References
+
+- Commit =7484ed7f97=, which added the random phase.
+- =build/output/local_checks/logs/ctest.log= on the branch
+  =feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp=.
+
+* See also
+
+- [[id:B0ED2679-4BAF-4797-AB4D-AC2359BEC9C2][Delete the per-feed clock now that one scheduler drives a run]], which may delete =tick_clock= and this test with it.

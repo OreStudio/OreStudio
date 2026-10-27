@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/manage-the-sensitivity-templates
-#+pr:
+#+pr: 3911
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -178,7 +178,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3911][#3911]] | [analytics] Manage the sensitivity templates on their own screen |
 
 * Review
 

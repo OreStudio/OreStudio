@@ -5305,15 +5305,28 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # supplies, say) joins the primary key, the unique indexes, the
             # exclusion constraint and the versioning triggers, so two
             # parties can each hold a row with the same id; the repository
-            # and protocol stay keyed by the primary key alone, because row
-            # level security already confines a session to its own rows. A
-            # column can be both a sql key and a natural key -- the party of
-            # a party-scoped identity is -- so scan both buckets.
+            # and protocol stay keyed by the primary key alone, and the
+            # session supplies the party. Row level security does not pick
+            # the row: a session sees the rows of every party below its own,
+            # so one id can name several rows. party_sql_key tells the
+            # repository to prefer the acting party's row of a key and to
+            # close only the row it checked. A column can be both a sql key
+            # and a natural key -- the party of a party-scoped identity is --
+            # so scan both buckets.
             sql_key_columns = pk_columns + [
                 {'column': c.get('name') or c.get('column')}
                 for c in (list(domain_entity.get('columns', []) or [])
                           + list(domain_entity.get('natural_keys', []) or []))
                 if c.get('sql_key')]
+            party_sql_keys = [
+                c for c in (list(domain_entity.get('columns', []) or [])
+                            + list(domain_entity.get('natural_keys', []) or []))
+                if c.get('sql_key') and (c.get('name') or c.get('column')) == 'party_id']
+            pk['party_sql_key'] = bool(party_sql_keys)
+            # A grouped row reaches its party through the member that carries it.
+            pk['party_member'] = (
+                (party_sql_keys[0].get('group_prefix') or '') + 'party_id'
+                if party_sql_keys else 'party_id')
             pk['column_list'] = ', '.join(c['column'] for c in sql_key_columns)
             pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
             pk['gist_column_clause'] = '\n        '.join(
@@ -5995,11 +6008,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for key in domain_entity.get('natural_keys', [])
         )
         domain_entity.update(_mapper_include_gates(domain_entity))
-        # The repository spells boost::uuids::to_string in a uuid key's text
-        # and in the hierarchy walk.
+        # The repository spells boost::uuids::to_string in a uuid key's text,
+        # in the hierarchy walk and in the party a removal closes.
         domain_entity['repository_uses_uuid_io'] = bool(
             any(c.get('is_uuid') for c in domain_entity.get('primary_key', {}).get('columns', []))
-            or domain_entity.get('has_parent_id'))
+            or domain_entity.get('has_parent_id')
+            or domain_entity.get('primary_key', {}).get('party_sql_key'))
         # cpp_service.hpp's <boost/uuid/uuid.hpp> gate: needed by both the
         # existing has_parent_id hierarchy methods and the additive
         # service_find_by_uuid overloads (find_X/remove_X/get_X_history).

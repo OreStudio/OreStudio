@@ -158,6 +158,7 @@ set(files
     "repository_business_unit_repository_tests.cpp"
     "repository_business_unit_type_repository_tests.cpp"
     "repository_contact_type_repository_tests.cpp"
+    "repository_convention_acting_party_tests.cpp"
     "repository_counterparty_contact_information_repository_tests.cpp"
     "repository_counterparty_identifier_repository_tests.cpp"
     "repository_counterparty_repository_tests.cpp"

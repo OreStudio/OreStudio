@@ -51,7 +51,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -281,7 +280,7 @@ messaging::put_book_response book_service::put_book(const messaging::put_book_re
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(book_read_one(repo_, ctx_, book_key_from(value)), ctx_);
+    auto written = book_read_one(repo_, ctx_, book_key_from(value));
     if (!written.empty())
         response.book = std::move(written.front());
     return response;
@@ -313,7 +312,7 @@ book_service::put_many_books(const messaging::put_many_books_request& request) {
     repo_.write(ctx_, batch, claims);
     response.books.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(book_read_one(repo_, ctx_, book_key_from(value)), ctx_);
+        auto written = book_read_one(repo_, ctx_, book_key_from(value));
         response.books.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -479,9 +478,7 @@ book_service::prepare_change(const messaging::book_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = book_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(book_read_one(repo_, ctx_, book_key_from(out)), ctx_);
+    const auto current = book_read_one(repo_, ctx_, book_key_from(out));
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
     if (const auto refused = gate_put(current, out, change.precondition))
@@ -533,8 +530,7 @@ void book_service::rehearse() {
 
 std::vector<std::string> book_service::changed_columns(const messaging::book_write& proposed) {
     const auto next = book_to_domain(proposed);
-    return book_columns_changed(
-        of_acting_party(book_read_one(repo_, ctx_, book_key_from(next)), ctx_), next);
+    return book_columns_changed(book_read_one(repo_, ctx_, book_key_from(next)), next);
 }
 
 bool book_service::holds_line(const std::string& operation,

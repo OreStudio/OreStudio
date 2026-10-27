@@ -50,6 +50,8 @@ render_trade_generation_config_fields(const domain::trade_generation_config& v) 
     fields.push_back({.name = "As Of Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.as_of_date)});
     fields.push_back({.name = "Trades Per Book", .value = std::to_string(v.trades_per_book)});
+    fields.push_back(
+        {.name = "Structures Per Book", .value = std::to_string(v.structures_per_book)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Reference Curve ID", .value = v.reference_curve_id});
     using ores::history::domain::provenance_fields;

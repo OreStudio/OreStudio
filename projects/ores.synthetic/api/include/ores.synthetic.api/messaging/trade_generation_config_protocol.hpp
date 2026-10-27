@@ -51,6 +51,7 @@ struct trade_generation_config_write {
     std::chrono::year_month_day as_of_date;
     std::uint64_t seed;
     int trades_per_book;
+    int structures_per_book;
     bool enabled;
     std::string reference_curve_id;
 };

@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code>
-     * <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled>
-     * <reference_curve_id> <reason> <commentary>
+     * <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <structures_per_book>
+     * <enabled> <reference_curve_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code>
-     * <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled>
-     * <reference_curve_id> <reason> <commentary> [--version <n>]
+     * <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <structures_per_book>
+     * <enabled> <reference_curve_id> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code>
      * <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book>
-     * <enabled> <reference_curve_id> <reason> <commentary>
+     * <structures_per_book> <enabled> <reference_curve_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

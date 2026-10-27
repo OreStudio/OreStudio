@@ -44,7 +44,7 @@
 
 begin;
 
-select plan(7);
+select plan(8);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.current_actor', 'super_admin', true);

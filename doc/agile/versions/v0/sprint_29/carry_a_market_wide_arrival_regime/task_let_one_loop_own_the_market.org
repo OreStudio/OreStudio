@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/schedule-every-feed-on-the-market-clock-v2
-#+pr:
+#+pr: 3926
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3926][#3926]] | [analytics] Schedule every feed on the market clock, and let one loop own it |
 
 * Review
 

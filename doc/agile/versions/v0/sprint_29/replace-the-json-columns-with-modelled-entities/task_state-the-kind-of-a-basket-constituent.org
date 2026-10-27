@@ -92,7 +92,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Resolver outcomes proved | 5 | =compass sql -f tmp/kind_test.sql= | c12abc7458 |
+| ORE suite | 475,649 assertions, 406 cases | =ores.ore.core.tests= | c12abc7458 |
+| Trading suite | 1,416 assertions, 221 cases | =ores.trading.core.tests= | c12abc7458 |
+| Database recreate | exit 0, no errors | =compass db recreate= | c12abc7458 |
 
 * Notes
 
@@ -120,3 +123,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A constituent states its kind, and a write is refused when the kind's catalogue
+does not hold the code. Five outcomes were exercised against the database:
+
+| Kind and code | Outcome |
+|---------------+---------|
+| =equity=, =.SPX= | accepted |
+| =equity=, =RIC:.SPX= | accepted, which is the alias the catalogue resolves |
+| =equity=, =BOGUS= | refused: "names 'BOGUS', and the equity catalogue does not hold it" |
+| =nonsense=, =.SPX= | refused: "holds no such vocabulary. Known kinds: equity, fx, commodity" |
+| =fx=, =.SPX= | refused: an equity code named as a currency pair |
+
+The refusals raise rather than returning false, so the operator reads the kind
+and the code that disagree.
+
+The corpus decided the mechanism. ORE states the kind as =Underlying/Type=, and
+it is *text and not an enumeration*: reading it as a spelling threw
+=not an enumeration=, the mapping catch swallowed it, and the whole worst-of
+basket imported with no instrument at all. Reading it as text fixed it, and the
+corpus round trip passes with the kind asserted.
+
+The check needed the equity catalogue, which was not on main. It is now: it
+landed as its own PR, because a refusal that dereferences a table nobody has
+merged is a refusal that cannot run.
+
+Nothing writes a basket through the C++ repository yet, so the check is proved
+against SQL and not through the service. The next task that books a basket will
+be the first to exercise it in code.

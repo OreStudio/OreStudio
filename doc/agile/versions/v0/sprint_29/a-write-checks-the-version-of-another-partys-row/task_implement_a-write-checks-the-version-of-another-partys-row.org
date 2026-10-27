@@ -94,7 +94,7 @@ via its "Verifies task" field.
 | 2 | Link the delete and unclaimed write capture from the story | story.org | Accept | The story links the capture by its id. |
 | 3 | The filter runs after the read, which still loads every visible row | handler_helpers.hpp | Defer | The capture records that the read itself must be scoped by party. |
 | 4 | The fx option ATM fix and the feed_seed.hpp entry are unrelated | — | Keep | Separate commits; both were needed for the gate on main. |
-| 5 | Confirm the two ctest failures also fail on main | — | Accept | Checked again after the rebase onto main; the PR reply states the result. |
+| 5 | Confirm the two ctest failures also fail on main | — | Accept | The gate on the rebased branch fails the same two suites: the vendor catalogue count (lseg 14, demo 71, expects 86) and the tick_clock timing test. The branch changes only the generated services in those components, and neither test reaches them. |
 
 * Result
 

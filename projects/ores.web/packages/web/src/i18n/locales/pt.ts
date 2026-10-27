@@ -5531,6 +5531,14 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            otherScopes: 'Outros âmbitos',
+            shareTitle: 'Peso de cada livro na execução',
+            shareCaption:
+                'Um todo em poucas partes lê-se em anel. Os números ficam ao lado, porque um anel diz a forma e não o valor.',
+            problemsTitle: 'Os problemas da execução por âmbito',
+            problemsCaption:
+                'Um todo em poucas partes lê-se em anel. Cada problema registado é contado aqui, seja qual for o âmbito.',
+            unscoped: 'Âmbito não indicado',
             was: 'Execução anterior',
             compareTo: 'Comparar com',
             noComparison: 'Sem comparação',

@@ -31,6 +31,7 @@ import {
     type RunResultRow,
 } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { Donut, bookSharesOf, problemsOf, type Share } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
 
 /**
@@ -233,6 +234,20 @@ export function RunResultsPanel({
     const reason = results.data?.reason ?? '';
     const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
     const tradeCount = results.data?.tradeCount ?? 0;
+    const bookShares = bookSharesOf(
+        aggregates.map((row) => ({
+            key: row.key,
+            name: row.name,
+            is_group: row.is_group,
+            is_removed: row.is_removed,
+            totals: row.totals,
+        })),
+    );
+    const problems: readonly Share[] = problemsOf(
+        (errors.data ?? []).map(toError),
+        t(`${field}.unscoped`),
+        t(`${field}.otherScopes`),
+    );
     const filterName = noBook
         ? t(`${field}.unbooked`)
         : bookFilter !== ''
@@ -287,6 +302,14 @@ export function RunResultsPanel({
             </label>
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {results.isError && <p className="text-sm text-down">{t(`${field}.failed`)}</p>}
+            {results.isSuccess && !errors.isPending && problems.length > 0 && (
+                <Donut
+                    title={t(`${field}.problemsTitle`)}
+                    caption={t(`${field}.problemsCaption`)}
+                    parts={problems}
+                    format={(value) => String(value)}
+                />
+            )}
             {results.isSuccess && (
                 <>
                     {trades.length === 0 && aggregates.length === 0 ? (
@@ -380,6 +403,14 @@ export function RunResultsPanel({
                                         {t(`${field}.clearFilter`)}
                                     </button>
                                 </p>
+                            )}
+                            {level === 'book' && bookShares !== null && (
+                                <Donut
+                                    title={t(`${field}.shareTitle`)}
+                                    caption={t(`${field}.shareCaption`)}
+                                    parts={bookShares}
+                                    format={(value) => asFigure(value.toFixed(2))}
+                                />
                             )}
                             {level === 'trade' ? (
                                 <TradeTable

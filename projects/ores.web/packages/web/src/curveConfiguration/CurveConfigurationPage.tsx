@@ -183,11 +183,6 @@ export function CurveConfigurationPage(): ReactNode {
                     <RecordTimeline entityType={CURVE_CONFIGURATION_ENTITY} entityId={curve.id} />
                 </section>,
             )}
-            {serving.isError && !(serving.error instanceof ApiFailure) && (
-                <Notice tone="warn">
-                    {t('curveConfiguration.usedBy.unread', { message: serving.error.message })}
-                </Notice>
-            )}
         </div>
     );
 }
@@ -301,13 +296,18 @@ function SectionTab({
                             })
                         }
                         onAll={(open) =>
-                            setOpened(
-                                open
-                                    ? new Set(
-                                          entry.parameters.map((leaf) => `${entry.id}|${leaf.ore}`),
-                                      )
-                                    : new Set(),
-                            )
+                            setOpened((before) => {
+                                const next = new Set(before);
+                                for (const leaf of entry.parameters) {
+                                    const key = `${entry.id}|${leaf.ore}`;
+                                    if (open) {
+                                        next.add(key);
+                                    } else {
+                                        next.delete(key);
+                                    }
+                                }
+                                return next;
+                            })
                         }
                     />
                 ))

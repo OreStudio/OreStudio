@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 769AED76-EF98-41E1-A38D-1D46E2946147
+:END:
+#+title: Seeded market data covers FX and leaves every currency curve without quotes
+#+description: On a freshly provisioned environment the acme_demo seed gives FX spot series with observations and IR swap series with none, so a run reaches the grid and the engine fails building every yield curve with 'Could not find quote for Mandatory ID IR_SWAP/RATE/<ccy>/0D/1D/1M'. The series the seed writes are type=series with no term, while the engine asks for term-shapen quotes, so an export cannot match them either way.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

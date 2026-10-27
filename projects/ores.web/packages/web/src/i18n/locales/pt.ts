@@ -5752,6 +5752,8 @@ const pt: SourceCatalogue = {
     },
     reporting: {
         run: {
+            start: 'Executar',
+            starting: 'A iniciar…',
             title: 'Execução do relatório',
             tabs: {
                 run: 'Execução',
@@ -5765,7 +5767,6 @@ const pt: SourceCatalogue = {
             pricedAt: 'Avaliado em',
             message: 'O que a execução disse',
             output: 'Arquivo de saída',
-            noOutput: 'Esta execução não produziu saída.',
             download: 'Baixar o arquivo',
             errors: 'Ler os erros desta execução',
         },
@@ -5789,6 +5790,8 @@ const pt: SourceCatalogue = {
             runTagOne: '{count} transação · avaliada em {date}',
             runTagMany: '{count} transações · avaliadas em {date}',
             oneRowPer: {
+                tradeId: 'ID da transação',
+                tradeType: 'Tipo de transação',
                 trade: 'Uma linha por transação',
                 book: 'Uma linha por livro',
                 counterparty: 'Uma linha por contraparte',
@@ -5800,7 +5803,7 @@ const pt: SourceCatalogue = {
                 counterparty: 'Contraparte',
             },
             sourceNote:
-                'Esta tabela lê npv.csv do arquivo de saída da execução. Cada linha é uma transação avaliada pelo motor; uma transação que ele não conseguiu construir não escreve linha.',
+                'Estas linhas são as que o pós-processamento da execução carregou. Cada linha é uma transação avaliada pelo motor; uma transação que não conseguiu construir não escreve linha.',
             aggregateNote:
                 'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
             degraded:
@@ -5816,6 +5819,8 @@ const pt: SourceCatalogue = {
             total: 'VAL total',
             totalIn: 'VAL total ({currency})',
             trade: 'Transação',
+            tradeId: 'ID da transação',
+            tradeType: 'Tipo de transação',
             type: 'Tipo',
             book: 'Livro',
             actions: 'Ações',
@@ -5826,9 +5831,8 @@ const pt: SourceCatalogue = {
             notional: 'Notional',
             counterparty: 'Contraparte',
             noRun: 'Este relatório não tem execução para ler.',
-            noOutput: 'Esta execução não produziu saída.',
-            noResultFile: 'A saída desta execução não contém npv.csv.',
-            noFigures: 'O npv.csv desta execução não contém transação nem valor.',
+            noRows: 'Esta execução não carregou linhas de resultado.',
+            noFigures: 'As linhas desta execução não têm transação nem valor.',
             failed: 'Os resultados não puderam ser lidos.',
             selectedTrade: 'A transação aberta',
             tradeErrors: 'O que a execução registou sobre esta transação',
@@ -6056,6 +6060,7 @@ const pt: SourceCatalogue = {
     },
 
     permissionWords: {
+        reportInstancesWrite: 'Executar um relatório',
         loginInfoRead: 'ver o último início de sessão das pessoas',
         partiesRead: 'ver as partes do inquilino',
         partiesWrite: 'alterar as partes do inquilino',

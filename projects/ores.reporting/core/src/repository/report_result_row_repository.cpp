@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+report_result_row_list_order(const ores::utility::domain::order& order,
+                             std::initializer_list<std::string> default_columns,
+                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!report_result_row_repository::is_sortable(order.field))
@@ -96,16 +97,32 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::report_result_rows_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> report_result_row_filter_condition(
+    const std::optional<messaging::report_result_rows_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->report_instance_id)
+        r.push_back(equals("report_instance_id", filter_value(*filter->report_instance_id)));
+    if (filter->measure)
+        r.push_back(equals("measure", filter_value(*filter->measure)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->report_instance_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->report_instance_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("report_instance_id", std::move(values)));
+    }
+    if (filter->measure_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->measure_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("measure", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -203,6 +220,23 @@ std::vector<domain::report_result_row> report_result_row_repository::read_latest
 }
 
 std::vector<domain::report_result_row>
+report_result_row_repository::read_by_run(context ctx, const std::string& run_id) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<report_result_row_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
+                             "report_instance_id"_c == run_id) |
+                       order_by("subject_id"_c);
+
+    return execute_read_query<report_result_row_entity, domain::report_result_row>(
+        ctx,
+        query,
+        [](const auto& entities) { return report_result_row_mapper::map(entities); },
+        lg(),
+        "Reading the rows of a run");
+}
+
+std::vector<domain::report_result_row>
 report_result_row_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest row. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -275,8 +309,8 @@ std::vector<domain::report_result_row> report_result_row_repository::read_latest
     return execute_ordered_read_query<report_result_row_entity, domain::report_result_row>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        report_result_row_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), report_result_row_filter_condition(filter)),
         [](const auto& entities) { return report_result_row_mapper::map(entities); },
         lg(),
         "Reading latest report result rows with pagination.");
@@ -295,7 +329,7 @@ std::uint32_t report_result_row_repository::get_total__count(
     return execute_count_query<report_result_row_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), report_result_row_filter_condition(filter)),
         lg(),
         "Counting report result rows");
 }

@@ -896,14 +896,9 @@ export interface ReportBookRow {
 }
 
 /** Why a report shows no rows, as the server stated it. */
-export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
+export type ResultReason = '' | 'no-run' | 'no-rows' | 'no-figures';
 
-const RESULT_REASONS: readonly ResultReason[] = [
-    'no-run',
-    'no-output',
-    'no-result-file',
-    'no-figures',
-];
+const RESULT_REASONS: readonly ResultReason[] = ['no-run', 'no-rows', 'no-figures'];
 
 /** The reason the server named, or nothing when it named one this client does not know. */
 function resultReasonOf(value: string | undefined): ResultReason {
@@ -3288,6 +3283,20 @@ export const api = {
             method: 'GET',
         })) as { trade?: unknown | null };
         return reply.trade ?? null;
+    },
+
+    /**
+     * Runs a report definition on demand, and answers the run it created.
+     *
+     * The definition's concurrency policy decides whether a new run starts, so a
+     * refusal is an answer with a reason rather than a failure of the write.
+     */
+    async reportRunNow(id: string): Promise<string> {
+        const reply = (await request(`/api/reporting/reports/${id}/run`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+        })) as { runId?: string };
+        return reply.runId ?? '';
     },
 
     /** The runs of one report, newest first. */

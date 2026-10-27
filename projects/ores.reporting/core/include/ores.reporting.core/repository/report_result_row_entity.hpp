@@ -62,6 +62,7 @@ struct report_result_row_entity {
     std::string currency;
 
     std::string report_definition_id;
+    std::optional<std::string> counterparty_id;
     double figure;
     std::string source;
     db_timestamp valid_from = "9999-12-31 23:59:59";

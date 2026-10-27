@@ -50,6 +50,10 @@ struct canonical_row {
      */
     std::string currency;
     /**
+     * @brief The counterparty the engine stated beside the trade, empty when it stated none.
+     */
+    std::string counterparty_id;
+    /**
      * @brief The figure as the engine stated it.
      */
     double figure = 0.0;

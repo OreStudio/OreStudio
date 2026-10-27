@@ -48,8 +48,7 @@ const LEVELS: readonly ResultLevel[] = ['trade', 'book', 'counterparty'];
 
 const REASON_TEXT: Readonly<Record<Exclude<ResultReason, ''>, string>> = {
     'no-run': 'reporting.results.noRun',
-    'no-output': 'reporting.results.noOutput',
-    'no-result-file': 'reporting.results.noResultFile',
+    'no-rows': 'reporting.results.noRows',
     'no-figures': 'reporting.results.noFigures',
 };
 

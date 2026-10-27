@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -66,6 +67,9 @@ domain::report_result_row report_result_row_mapper::map(const report_result_row_
     r.currency = v.currency;
 
     r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
+    r.counterparty_id = v.counterparty_id.has_value() ?
+                            boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id) :
+                            boost::uuids::uuid{};
     r.figure = v.figure;
     r.source = v.source;
 
@@ -97,6 +101,9 @@ report_result_row_entity report_result_row_mapper::map(const domain::report_resu
     r.currency = v.currency;
 
     r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
+    r.counterparty_id = v.counterparty_id == boost::uuids::uuid{} ?
+                            std::nullopt :
+                            std::optional(boost::uuids::to_string(v.counterparty_id));
     r.figure = v.figure;
     r.source = v.source;
 

@@ -49,6 +49,7 @@ struct report_result_row_write {
     std::string measure;
     std::string currency;
     boost::uuids::uuid report_definition_id;
+    boost::uuids::uuid counterparty_id;
     double figure;
     std::string source;
 };
@@ -69,7 +70,11 @@ struct report_result_row_lookup {
 };
 
 struct report_result_rows_filter {
+    std::optional<boost::uuids::uuid> report_instance_id;
+    std::optional<std::string> measure;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> report_instance_id_one_of;
+    std::optional<std::vector<std::string>> measure_one_of;
 };
 
 struct report_result_row_event {

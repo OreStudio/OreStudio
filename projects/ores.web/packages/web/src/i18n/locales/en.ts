@@ -5709,6 +5709,8 @@ export const en: SourceCatalogue = {
     },
     reporting: {
         run: {
+            start: 'Run',
+            starting: 'Starting…',
             title: 'Report run',
             tabs: {
                 run: 'Run',
@@ -5722,7 +5724,6 @@ export const en: SourceCatalogue = {
             pricedAt: 'Priced at',
             message: 'What the run said',
             output: 'Output archive',
-            noOutput: 'This run produced no output.',
             download: 'Download the archive',
             errors: "Read this run's errors",
         },
@@ -5757,7 +5758,7 @@ export const en: SourceCatalogue = {
                 counterparty: 'Counterparty',
             },
             sourceNote:
-                "This table reads npv.csv from the run's output archive. Every row is a trade the engine priced; a trade it could not build writes no row.",
+                "These rows are the ones the run's post-processor loaded. Every row is a trade the engine priced; a trade it could not build writes no row.",
             aggregateNote:
                 "These figures are the run's trades rolled up to their {level}. The run priced {date}.",
             degraded:
@@ -5773,6 +5774,8 @@ export const en: SourceCatalogue = {
             total: 'Total NPV',
             totalIn: 'Total NPV ({currency})',
             trade: 'Trade',
+            tradeId: 'Trade ID',
+            tradeType: 'Trade type',
             type: 'Type',
             book: 'Book',
             actions: 'Actions',
@@ -5783,9 +5786,8 @@ export const en: SourceCatalogue = {
             notional: 'Notional',
             counterparty: 'CounterParty',
             noRun: 'This report has no run to read.',
-            noOutput: 'This run produced no output.',
-            noResultFile: "This run's output holds no npv.csv.",
-            noFigures: "This run's npv.csv carries no trade and no figure.",
+            noRows: 'This run loaded no result rows.',
+            noFigures: "This run's rows carry no trade and no figure.",
             failed: 'The results could not be read.',
             selectedTrade: 'The trade you opened',
             tradeErrors: 'What the run recorded about this trade',
@@ -6013,6 +6015,7 @@ export const en: SourceCatalogue = {
     },
 
     permissionWords: {
+        reportInstancesWrite: 'Run a report',
         loginInfoRead: 'see when people last signed in',
         partiesRead: 'see the parties of the tenant',
         partiesWrite: 'change the parties of the tenant',

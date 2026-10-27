@@ -92,6 +92,13 @@ struct report_result_row final {
     boost::uuids::uuid report_definition_id;
 
     /**
+     * @brief The counterparty the engine stated beside the trade, when it stated one. It is a
+     * dimension of the row rather than a measure: the screen groups by it, and reading it here is
+     * what spares a request from joining the trading records.
+     */
+    boost::uuids::uuid counterparty_id;
+
+    /**
      * @brief The figure, as the engine stated it and never formatted.
      */
     double figure;

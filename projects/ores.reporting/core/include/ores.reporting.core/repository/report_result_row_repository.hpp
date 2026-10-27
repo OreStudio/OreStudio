@@ -131,6 +131,16 @@ public:
      */
     std::vector<domain::report_result_row> read_all(context ctx, const std::string& id);
 
+    /**
+     * @brief Reads the rows one run produced, in the order the run wrote them.
+     *
+     * A run's rows are read together or not at all, so the filter is the run
+     * rather than a page of the table. The caller states no order: the screen
+     * sorts what it draws, and the store's own order is by the subject the row is
+     * about.
+     */
+    std::vector<domain::report_result_row> read_by_run(context ctx, const std::string& run_id);
+
 
     /**
      * @brief Whether a list of report result rows can be ordered by a field.

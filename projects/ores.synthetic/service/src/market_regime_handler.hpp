@@ -180,7 +180,7 @@ public:
         const auto series = decoded->source_name.empty() ?
                                 std::nullopt :
                                 std::optional(quant::math::series_key(decoded->source_name));
-        const auto page = scheduler_.trace(series, decoded->seconds);
+        const auto page = scheduler_.trace(series, decoded->seconds, decoded->limit);
         const auto stats = scheduler_.stats();
 
         ores::synthetic::messaging::get_market_trace_response response;
@@ -191,12 +191,8 @@ public:
         response.lateness_seconds = stats.lateness_seconds;
         response.max_lateness_seconds = stats.max_lateness_seconds;
         response.series = stats.series;
-        const auto skip =
-            page.events.size() > decoded->limit ? page.events.size() - decoded->limit : 0;
-        response.events.reserve(page.events.size() - skip);
-        for (auto it = page.events.begin() + static_cast<std::ptrdiff_t>(skip);
-             it != page.events.end();
-             ++it) {
+        response.events.reserve(page.events.size());
+        for (auto it = page.events.begin(); it != page.events.end(); ++it) {
             const auto name = page.names.find(it->series);
             response.events.push_back(ores::synthetic::messaging::market_trace_event{
                 .kind = std::string(quant::service::to_string(it->kind)),

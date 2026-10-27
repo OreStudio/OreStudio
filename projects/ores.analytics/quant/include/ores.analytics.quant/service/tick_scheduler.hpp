@@ -34,6 +34,7 @@
 #include <deque>
 #include <exception>
 #include <functional>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -85,15 +86,23 @@ struct market_snapshot final {
     double population_rate;
 };
 
-/// How the loop itself is doing.
+/**
+ * @brief How the loop itself is doing.
+ *
+ * Lateness is the time the loop fires a tick less the time it was due. It counts the wake-up
+ * jitter and any time spent on commands or on earlier ticks of the same batch, because that
+ * is how late the tick reached its feed.
+ */
 struct scheduler_stats final {
-    /// Ticks a second, smoothed over about a second.
+    /// Ticks a second, taken at each heat sample and smoothed, so it is a sample period old
+    /// at most and holds its last value while the loop is idle.
     double ticks_per_second;
     /// Entries in the heap, live and stale.
     std::size_t heap_size;
-    /// How late the loop fires a tick, actual time less planned, smoothed.
+    /// Lateness smoothed over about the last ten ticks.
     double lateness_seconds;
-    /// The latest tick since the last read of these numbers.
+    /// The latest tick since the last read of these numbers. Every read starts a new window,
+    /// so two readers share it.
     double max_lateness_seconds;
     std::size_t series;
 };
@@ -181,8 +190,12 @@ public:
      * @brief The decisions of the last @p seconds of the run, oldest first.
      *
      * @param series only this series' events, and every market event, when set.
+     * @param limit the most events to return; the newest are kept.
      */
-    [[nodiscard]] trace_page trace(std::optional<std::uint64_t> series, double seconds) const;
+    [[nodiscard]] trace_page
+    trace(std::optional<std::uint64_t> series,
+          double seconds,
+          std::size_t limit = std::numeric_limits<std::size_t>::max()) const;
 
     /// The wall time of an instant of the run, as a trace event gives it.
     [[nodiscard]] std::chrono::system_clock::time_point wall_at(double at) const;

@@ -19,6 +19,7 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
@@ -55,7 +56,9 @@ void tick_scheduler::advance_to(double seconds) {
             market_.advance(by);
             return;
         }
-        market_.advance(*turn);
+        // A dwell is positive, but a zero one would not turn the chain and the loop would
+        // spin, so the step is never less than the smallest positive one.
+        market_.advance(std::max(*turn, std::numeric_limits<double>::denorm_min()));
         record(trace_kind::transition, 0);
     }
 }
@@ -197,18 +200,22 @@ std::size_t tick_scheduler::size() const {
     return series_.size();
 }
 
-trace_page tick_scheduler::trace(std::optional<std::uint64_t> series, double seconds) const {
+trace_page tick_scheduler::trace(std::optional<std::uint64_t> series,
+                                 double seconds,
+                                 std::size_t limit) const {
     const auto guard = std::lock_guard(mutex_);
     const double from = market_.now() - seconds;
     trace_page page;
-    page.events = trace_.copy_if([&](const trace_event& e) {
-        if (e.at < from)
-            return false;
-        // A series' own events, and every event of the market they all share.
-        return !series || e.series == *series || e.series == 0;
-    });
+    page.events = trace_.copy_if(
+        [&](const trace_event& e) {
+            if (e.at < from)
+                return false;
+            // A series' own events, and every event of the market they all share.
+            return !series || is_market_event(e) || e.series == *series;
+        },
+        limit);
     for (const auto& e : page.events)
-        if (e.series != 0)
+        if (!is_market_event(e))
             if (const auto it = names_.find(e.series); it != names_.end())
                 page.names.emplace(e.series, it->second);
     return page;

@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 
@@ -56,22 +58,28 @@ constexpr std::string_view to_string(trace_kind k) {
  * Trivially copyable, so the ring stores it by value and a record is one copy.
  */
 struct trace_event final {
-    trace_kind kind;
-    /// The series key, for a tick, an add or a remove; zero otherwise.
-    std::uint64_t series;
+    trace_kind kind = trace_kind::tick;
+    /// The series key, for a tick, an add or a remove; zero for a market event.
+    std::uint64_t series = 0;
     /// Seconds since the run started.
-    double at;
+    double at = 0.0;
     /// The market's operational time.
-    double tau;
+    double tau = 0.0;
     /// For a tick: the gap the series' law drew, in its own operational time.
-    double operational_gap;
+    double operational_gap = 0.0;
     /// For a tick: the wall seconds since the series last ticked.
-    double wall_gap;
+    double wall_gap = 0.0;
     /// The heat after the decision.
-    double heat;
+    double heat = 0.0;
     /// The market state after the decision.
-    domain::market_state state;
+    domain::market_state state = domain::market_state::calm;
 };
+
+/// Whether an event belongs to the market every series shares, rather than to one series.
+constexpr bool is_market_event(const trace_event& e) {
+    return e.kind == trace_kind::transition || e.kind == trace_kind::pin ||
+           e.kind == trace_kind::unpin;
+}
 
 /**
  * @brief The last N decisions of the loop, oldest overwritten first.
@@ -82,23 +90,33 @@ struct trace_event final {
 class trace_ring final {
 public:
     explicit trace_ring(std::size_t capacity)
-        : slots_(capacity) {}
+        : slots_(capacity) {
+        if (capacity == 0)
+            throw std::invalid_argument("trace_ring: capacity must be positive");
+    }
 
     void record(const trace_event& e) {
         slots_[written_ % slots_.size()] = e;
         ++written_;
     }
 
-    /// Every event @p keep accepts, oldest first.
+    /**
+     * @brief The newest @p limit events @p keep accepts, oldest first.
+     *
+     * Walks back from the newest event and stops at the limit, so a capped read costs the
+     * events it returns and not the whole ring.
+     */
     template <class Predicate>
-    [[nodiscard]] std::vector<trace_event> copy_if(Predicate keep) const {
+    [[nodiscard]] std::vector<trace_event>
+    copy_if(Predicate keep, std::size_t limit = std::numeric_limits<std::size_t>::max()) const {
         std::vector<trace_event> out;
         const auto held = std::min<std::uint64_t>(written_, slots_.size());
-        for (auto i = written_ - held; i < written_; ++i) {
-            const auto& e = slots_[i % slots_.size()];
+        for (auto i = written_; i > written_ - held && out.size() < limit; --i) {
+            const auto& e = slots_[(i - 1) % slots_.size()];
             if (keep(e))
                 out.push_back(e);
         }
+        std::ranges::reverse(out);
         return out;
     }
 

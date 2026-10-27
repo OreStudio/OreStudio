@@ -24,6 +24,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -183,4 +184,34 @@ TEST_CASE("the scheduler reports its rate, heap and lateness", "[scheduler_trace
     CHECK(stats.series == 2);
     CHECK(stats.heap_size == 2);
     CHECK(stats.lateness_seconds == 0.0);
+}
+
+TEST_CASE("a series keyed zero is a series, not the market", "[scheduler_trace]") {
+    manual_run_clock clock(trace_wall_origin);
+    tick_scheduler scheduler(clock, traced_market, 1);
+    scheduler.add({.series = 0, .arrival = every_second(1.0), .name = "zero"}, silent);
+    scheduler.add({.series = 4, .arrival = every_second(1.0), .name = "four"}, silent);
+    for (int i = 0; i < 10; ++i)
+        scheduler.step();
+
+    const auto only_four = scheduler.trace(4, 1e9);
+    for (const auto& e : only_four.events)
+        CHECK((e.series == 4 || ores::analytics::quant::service::is_market_event(e)));
+    CHECK(scheduler.trace(0, 1e9).names.at(0) == "zero");
+}
+
+TEST_CASE("a capped read keeps the newest events", "[scheduler_trace]") {
+    manual_run_clock clock(trace_wall_origin);
+    tick_scheduler scheduler(clock, traced_market, 1);
+    scheduler.pin(market_state::calm);
+    scheduler.add({.series = 1, .arrival = every_second(1.0), .name = "a"}, silent);
+    for (int i = 0; i < 20; ++i)
+        scheduler.step();
+
+    const auto all = scheduler.trace(std::nullopt, 1e9);
+    const auto last5 = scheduler.trace(std::nullopt, 1e9, 5);
+    REQUIRE(last5.events.size() == 5);
+    CHECK(last5.events.front().at == all.events[all.events.size() - 5].at);
+    CHECK(last5.events.back().at == all.events.back().at);
+    CHECK_THROWS_AS(trace_ring(0), std::invalid_argument);
 }

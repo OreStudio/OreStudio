@@ -79,6 +79,29 @@ double draw_gap(const arrival_law& law, math::rng_stream& stream) {
         law);
 }
 
+double compensator(const arrival_law& law, double gap) {
+    return std::visit(overloaded{
+                          [&](const periodic_law& p) { return p.rate * gap; },
+                          [&](const poisson_law& p) { return p.rate * gap; },
+                          [&](const hawkes_law& h) {
+                              return h.baseline * gap -
+                                     h.excess * std::expm1(-h.decay * gap) / h.decay;
+                          },
+                      },
+                      law);
+}
+
+double intensity_after(const arrival_law& law, double elapsed) {
+    return std::visit(overloaded{
+                          [](const periodic_law& p) { return p.rate; },
+                          [](const poisson_law& p) { return p.rate; },
+                          [&](const hawkes_law& h) {
+                              return h.baseline + h.excess * std::exp(-h.decay * elapsed);
+                          },
+                      },
+                      law);
+}
+
 void record_event(arrival_law& law, double gap) {
     std::visit(overloaded{
                    [](periodic_law& p) { p.offset = 1.0; },

@@ -201,9 +201,21 @@ public:
                 .tau = it->tau,
                 .operational_gap = it->operational_gap,
                 .wall_gap = it->wall_gap,
+                .compensated_gap = it->compensated_gap,
                 .heat = it->heat,
+                .multiplier = it->multiplier,
+                .pace = it->pace,
                 .state = it->state == quant::domain::market_state::active ? "active" : "calm"});
         }
+        for (const auto& state : scheduler_.series_states())
+            response.series_states.push_back(ores::synthetic::messaging::market_series_state{
+                .source_name = state.name,
+                .mode = state.mode,
+                .rate = state.rate,
+                .sensitivity = state.sensitivity,
+                .effective_rate = state.effective_rate,
+                .phase = state.phase,
+                .excess = state.excess});
         reply(nats_, msg, response);
     }
 

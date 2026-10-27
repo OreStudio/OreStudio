@@ -69,8 +69,15 @@ struct trace_event final {
     double operational_gap = 0.0;
     /// For a tick: the wall seconds since the series last ticked.
     double wall_gap = 0.0;
+    /// For a tick: the law's intensity integrated over the gap, which is Exp(1) for a
+    /// stream that follows its law.
+    double compensated_gap = 0.0;
     /// The heat after the decision.
     double heat = 0.0;
+    /// The regime's multiplier after the decision; the pace less it is the heat's share.
+    double multiplier = 1.0;
+    /// How fast market time runs after the decision.
+    double pace = 1.0;
     /// The market state after the decision.
     domain::market_state state = domain::market_state::calm;
 };

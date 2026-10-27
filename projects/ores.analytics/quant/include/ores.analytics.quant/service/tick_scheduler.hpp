@@ -107,6 +107,22 @@ struct scheduler_stats final {
     std::size_t series;
 };
 
+/// One running series and the state of its law now.
+struct series_state final {
+    std::string name;
+    /// "periodic", "poisson" or "hawkes".
+    std::string mode;
+    /// The configured mean rate, a second.
+    double rate;
+    double sensitivity;
+    /// The rate it ticks at now: its law's intensity, times its sensitivity and the pace.
+    double effective_rate;
+    /// For a periodic law: the fraction of its first gap it started at.
+    double phase;
+    /// For a Hawkes law: the excess intensity now, above the baseline.
+    double excess;
+};
+
 /// A slice of the trace, with the name of every series it mentions.
 struct trace_page final {
     std::vector<trace_event> events;
@@ -197,6 +213,9 @@ public:
           double seconds,
           std::size_t limit = std::numeric_limits<std::size_t>::max()) const;
 
+    /// Every running series and the state of its law now, in name order.
+    [[nodiscard]] std::vector<series_state> series_states() const;
+
     /// The wall time of an instant of the run, as a trace event gives it.
     [[nodiscard]] std::chrono::system_clock::time_point wall_at(double at) const;
 
@@ -235,6 +254,10 @@ private:
         double gap;
         double mark;
         double last_fired;
+        /// The market's tau at the series' last event, or when it was added.
+        double last_tau;
+        /// The phase a periodic law drew when the series was added.
+        double phase;
     };
 
     struct pending final {
@@ -260,7 +283,8 @@ private:
     void record(trace_kind kind,
                 std::uint64_t series,
                 double operational_gap = 0.0,
-                double wall_gap = 0.0);
+                double wall_gap = 0.0,
+                double compensated_gap = 0.0);
 
     /// The run time at which the next series is due, or nothing.
     [[nodiscard]] std::optional<double> next_due();

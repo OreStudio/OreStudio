@@ -215,3 +215,55 @@ TEST_CASE("a capped read keeps the newest events", "[scheduler_trace]") {
     CHECK(last5.events.back().at == all.events.back().at);
     CHECK_THROWS_AS(trace_ring(0), std::invalid_argument);
 }
+
+TEST_CASE("a tick carries its compensated gap and the pace it ran at", "[scheduler_trace]") {
+    manual_run_clock clock(trace_wall_origin);
+    tick_scheduler scheduler(clock, traced_market, 2);
+    scheduler.pin(market_state::active);
+    scheduler.add({.series = 3, .arrival = every_second(4.0), .name = "steady"}, silent);
+    for (int i = 0; i < 8; ++i)
+        scheduler.step();
+
+    // A periodic law's intensity is its rate, so a whole gap integrates to exactly one; with
+    // no heat the pace is the multiplier, two while active.
+    const auto page = scheduler.trace(3, 1e9);
+    int ticks = 0;
+    for (const auto& e : page.events) {
+        if (e.kind != trace_kind::tick)
+            continue;
+        if (++ticks > 1)
+            CHECK(e.compensated_gap == Catch::Approx(1.0).epsilon(1e-12));
+        CHECK(e.multiplier == 2.0);
+        CHECK(e.pace == 2.0);
+    }
+    CHECK(ticks == 8);
+}
+
+TEST_CASE("the series states name each law and its rate now", "[scheduler_trace]") {
+    manual_run_clock clock(trace_wall_origin);
+    tick_scheduler scheduler(clock, traced_market, 2);
+    scheduler.pin(market_state::active);
+    scheduler.add(
+        {.series = 3, .arrival = every_second(4.0), .sensitivity = 1.5, .name = "b.periodic"},
+        silent);
+    scheduler.add({.series = 4,
+                   .arrival = {.mode = "hawkes",
+                               .ticks_per_hour = 36000.0,
+                               .branching_ratio = 0.5,
+                               .decay = 10.0},
+                   .name = "a.hawkes"},
+                  silent);
+
+    const auto states = scheduler.series_states();
+    REQUIRE(states.size() == 2);
+    CHECK(states[0].name == "a.hawkes");
+    CHECK(states[0].mode == "hawkes");
+    // Started at its stationary excess, rate times n, so its intensity is the mean rate.
+    CHECK(states[0].excess == Catch::Approx(5.0));
+    CHECK(states[0].effective_rate == Catch::Approx(10.0 * 2.0));
+    CHECK(states[1].name == "b.periodic");
+    CHECK(states[1].rate == Catch::Approx(4.0));
+    CHECK(states[1].phase > 0.0);
+    CHECK(states[1].phase <= 1.0);
+    CHECK(states[1].effective_rate == Catch::Approx(4.0 * 1.5 * 2.0));
+}

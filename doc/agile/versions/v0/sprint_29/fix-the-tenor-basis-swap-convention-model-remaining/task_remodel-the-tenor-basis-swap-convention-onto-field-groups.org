@@ -8,7 +8,7 @@
 #+filetags: :refdata:codegen:dod:fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/remodel-the-tenor-basis-swap-convention-onto-field-groups
-#+pr:
+#+pr: 3908
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
@@ -262,7 +262,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3908][#3908]] | [refdata] Remodel the tenor basis swap convention onto field groups |
 
 * Review
 

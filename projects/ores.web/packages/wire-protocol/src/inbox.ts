@@ -371,6 +371,28 @@ export const inboxRequestSubjectSchema = z.object({
     label: z.string().default(''),
 });
 
+/**
+ * What a curve publish request authorises, joined from the market data
+ * component's own read.
+ *
+ * A publish request is about a curve, a party and an as-of, and the request
+ * header names none of them: the subject lives in the market data component's
+ * detail row, keyed by the request's id. The queue and the request page read it
+ * there, so a kind's subject is the component's answer and not a copy of it in
+ * the generic inbox.
+ */
+export const inboxPublishedSubjectSchema = z.object({
+    publish_id: z.string().default(''),
+    curve: z.string().default(''),
+    party: z.string().default(''),
+    party_id: z.string().default(''),
+    series_id: z.string().default(''),
+    as_of: wireTimestampSchema,
+    point_count: z.int().nonnegative().default(0),
+    state_code: z.string().default(''),
+    published_at: nullableWireTimestampSchema,
+});
+
 export const inboxRequestViewSchema = z.object({
     id: z.string().default(''),
     version: z.int().nonnegative().default(0),
@@ -386,6 +408,13 @@ export const inboxRequestViewSchema = z.object({
     parts: z.array(inboxRequestPartViewSchema).default([]),
     /** The trades this request asks about; empty for a kind that names none. */
     subjects: z.array(inboxRequestSubjectSchema).default([]),
+    /**
+     * The curve publish this request authorises, for that kind only.
+     *
+     * Null for every other kind, for a publish request whose subject the reader
+     * may not read, and for a request the market data component has no record of.
+     */
+    publishedSubject: inboxPublishedSubjectSchema.nullable().optional(),
 });
 
 /**
@@ -468,6 +497,7 @@ export type InboxRequestStory = z.infer<typeof inboxRequestStorySchema>;
 export type InboxRequestRoleView = z.infer<typeof inboxRequestRoleViewSchema>;
 export type InboxRequestPartView = z.infer<typeof inboxRequestPartViewSchema>;
 export type InboxRequestDecisionView = z.infer<typeof inboxRequestDecisionViewSchema>;
+export type InboxPublishedSubject = z.infer<typeof inboxPublishedSubjectSchema>;
 export type InboxRequestView = z.infer<typeof inboxRequestViewSchema>;
 export type InboxNotificationView = z.infer<typeof inboxNotificationViewSchema>;
 
@@ -776,6 +806,10 @@ function toRequestView(
         decision: namedDecision(join.decisionByRequest.get(wire.id), join.usernameByAccount),
         parts: [],
         subjects: [],
+        // No subject: the subject of a kind that lives in its owning component
+        // is joined by the BFF, which is the layer that may talk to that
+        // component. This read names the request and not what it is about, so no
+        // field is stated here at all.
     };
 }
 

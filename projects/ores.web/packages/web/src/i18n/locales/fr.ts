@@ -272,6 +272,7 @@ const fr: SourceCatalogue = {
         kind: {
             'iam.role_grant': 'Demande de rôle',
             'refdata.book_change': 'Modification de livre',
+            'marketdata.curve_publish': 'Publication de courbe',
         },
         bell: {
             label: 'Notifications, {count} non lues',
@@ -290,6 +291,19 @@ const fr: SourceCatalogue = {
                 "Ce que vous ne pouvez pas faire aujourd'hui, et ce que ce rôle vous permettrait",
             none: 'Il ne reste aucun rôle à demander.',
             submit: 'Demander',
+        },
+        curvePublish: {
+            subject: 'Le sujet que la demande autorise',
+            curve: 'Courbe',
+            party: 'Partie',
+            asOf: 'Date d’arrêté publiée',
+            points: 'Points',
+            openComparison: 'Ouvrir la comparaison',
+            noSubject:
+                'Cette demande est une publication de courbe, et son sujet n’est pas lisible ici : le composant de données de marché le détient, ou ce compte ne peut pas lire cette courbe.',
+            row: '{party} · arrêté au {asOf} · {points} points',
+            summary: '{curve} de {party}, arrêté au {asOf}',
+            approve: 'Approuver la publication',
         },
         mine: {
             none: 'Vous n’avez fait aucune demande.',

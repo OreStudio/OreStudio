@@ -339,6 +339,7 @@ export {
     inboxNotificationPageSchema,
     inboxNotificationViewSchema,
     inboxPageSchema,
+    inboxPublishedSubjectSchema,
     inboxRequestDecisionViewSchema,
     inboxRequestPageSchema,
     inboxRequestPartViewSchema,
@@ -360,6 +361,7 @@ export {
 export type {
     InboxNotificationView,
     InboxPage,
+    InboxPublishedSubject,
     InboxRequestDecisionView,
     InboxRequestPartView,
     InboxRequestQueue,

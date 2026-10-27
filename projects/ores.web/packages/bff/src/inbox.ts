@@ -41,6 +41,7 @@ import {
 import type { RequestViewer } from '@ores/wire-protocol';
 import { subjects as authorisationSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_authorisation_request_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as publishedCurveSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { readAll } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -207,6 +208,85 @@ async function subjectsOf(session: LiveSession, requestId: string): Promise<read
     return subjects;
 }
 
+/** The kind whose subject the market data component keeps. */
+const CURVE_PUBLISH_KIND = 'marketdata.curve_publish';
+
+/**
+ * What the curve publish requests on a page authorise.
+ *
+ * A publish request's subject is the market data component's own detail row,
+ * keyed by the request's id: the curve, the party, the as-of and how many pillars
+ * the set holds. It is read from that component and not from the generic inbox,
+ * because the inbox holds a header and the subject belongs to the kind.
+ *
+ * One read answers the whole page, so a queue of a hundred requests costs one
+ * call and not a hundred. A reader who may not read the curves keeps the page and
+ * loses the subject: the row then says what it can, and the screen never shows a
+ * curve the person may not see.
+ */
+async function publishedSubjectsOf(
+    session: LiveSession,
+    requests: readonly { readonly id: string; readonly kindCode: string }[],
+): Promise<ReadonlyMap<string, Record<string, unknown>>> {
+    const ids = requests
+        .filter((request) => request.kindCode === CURVE_PUBLISH_KIND)
+        .map((request) => request.id);
+    if (ids.length === 0) return new Map();
+
+    let sets: readonly Record<string, unknown>[];
+    try {
+        const reply = await session.client.callAuthenticated(
+            publishedCurveSubjects.list_published_curves_request,
+            {
+                party_id: '',
+                search: '',
+                include_candidates: true,
+                include_ended: true,
+                request_id_one_of: ids,
+                offset: 0,
+                limit: ids.length,
+            },
+            z.looseObject({ sets: z.array(z.looseObject({})).default([]) }),
+        );
+        sets = reply.sets;
+    } catch {
+        // The refusal costs the subject and not the queue.
+        return new Map();
+    }
+
+    const byRequest = new Map<string, Record<string, unknown>>();
+    for (const set of sets) {
+        const requestId = String(set['request_id'] ?? '');
+        if (requestId === '') continue;
+        byRequest.set(requestId, {
+            publish_id: String(set['publish_id'] ?? ''),
+            curve: String(set['curve'] ?? ''),
+            party: String(set['party'] ?? ''),
+            party_id: String(set['party_id'] ?? ''),
+            series_id: String(set['series_id'] ?? ''),
+            as_of: String(set['as_of'] ?? ''),
+            point_count: Number(set['point_count'] ?? 0),
+            state_code: String(set['state_code'] ?? ''),
+            published_at: (set['published_at'] ?? null) as string | null,
+        });
+    }
+    return byRequest;
+}
+
+/** A page of requests, each carrying the subject of its kind when one exists. */
+async function withPublishedSubjects<
+    Request extends { readonly id: string; readonly kindCode: string },
+>(session: LiveSession, requests: readonly Request[]): Promise<readonly Request[]> {
+    const subjects = await publishedSubjectsOf(session, requests);
+    if (subjects.size === 0) return requests;
+    // A kind with no such subject carries no field at all, so every other kind's
+    // row is the row it was before this join existed.
+    return requests.map((request) => {
+        const subject = subjects.get(request.id);
+        return subject === undefined ? request : { ...request, publishedSubject: subject };
+    });
+}
+
 export function registerInboxRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -259,7 +339,12 @@ export function registerInboxRoutes(
     server.get('/api/requests', async (request) => {
         const session = requireSession(request);
         const page = pageOf(request.query);
-        return await readRequestQueue(session.client, page, viewerOf(session));
+        const queue = await readRequestQueue(session.client, page, viewerOf(session));
+        return {
+            ...queue,
+            items: await withPublishedSubjects(session, queue.items),
+            answered: await withPublishedSubjects(session, queue.answered),
+        };
     });
 
     /**
@@ -275,7 +360,9 @@ export function registerInboxRoutes(
         const session = requireSession(request);
         const id = requestIdOf(request);
         const detail = await readRequest(session.client, id, viewerOf(session));
-        return { ...detail, subjects: await subjectsOf(session, id) };
+        if (detail === null) throw notFound('No such request.');
+        const [withSubject] = await withPublishedSubjects(session, [detail]);
+        return { ...(withSubject ?? detail), subjects: await subjectsOf(session, id) };
     });
 
     /**

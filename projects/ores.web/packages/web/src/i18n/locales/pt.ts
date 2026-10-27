@@ -274,6 +274,7 @@ const pt: SourceCatalogue = {
         kind: {
             'iam.role_grant': 'Pedido de papel',
             'refdata.book_change': 'Alteração de livro',
+            'marketdata.curve_publish': 'Publicação de curva',
         },
         bell: {
             label: 'Notificações, {count} por ler',
@@ -291,6 +292,19 @@ const pt: SourceCatalogue = {
             whyPlaceholder: 'O que não consegue fazer hoje, e o que isto lhe permitiria fazer',
             none: 'Não há nenhum papel para pedir.',
             submit: 'Pedir',
+        },
+        curvePublish: {
+            subject: 'O sujeito que o pedido autoriza',
+            curve: 'Curva',
+            party: 'Parte',
+            asOf: 'Data de referência publicada',
+            points: 'Pontos',
+            openComparison: 'Abrir a comparação',
+            noSubject:
+                'Este pedido é uma publicação de curva, e o seu sujeito não é legível aqui: o componente de dados de mercado detém-no, ou esta conta não pode ler essa curva.',
+            row: '{party} · com data de referência {asOf} · {points} pontos',
+            summary: '{curve} de {party}, com data de referência {asOf}',
+            approve: 'Aprovar a publicação',
         },
         mine: {
             none: 'Não fez nenhum pedido.',

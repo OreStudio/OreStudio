@@ -274,6 +274,7 @@ export const en: SourceCatalogue = {
         kind: {
             'iam.role_grant': 'Role request',
             'refdata.book_change': 'Book change',
+            'marketdata.curve_publish': 'Curve publish',
         },
         bell: {
             label: 'Notifications, {count} unread',
@@ -291,6 +292,19 @@ export const en: SourceCatalogue = {
             whyPlaceholder: 'What you cannot do today, and what this would let you do',
             none: 'There is no role left to ask for.',
             submit: 'Ask',
+        },
+        curvePublish: {
+            subject: 'The subject the request authorises',
+            curve: 'Curve',
+            party: 'Party',
+            asOf: 'Published as-of',
+            points: 'Points',
+            openComparison: 'Open the comparison',
+            noSubject:
+                'This request is a curve publish, and its subject is not readable here: the market data component holds it, or this account may not read that curve.',
+            row: '{party} · as of {asOf} · {points} points',
+            summary: '{curve} of {party}, as of {asOf}',
+            approve: 'Approve the publish',
         },
         mine: {
             none: 'You have made no requests.',

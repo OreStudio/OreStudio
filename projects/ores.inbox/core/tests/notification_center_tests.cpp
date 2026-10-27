@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "approval_fixture.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
@@ -26,16 +27,10 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
+using ores::inbox::tests::seed_account;
+using ores::inbox::tests::acting;
 
-ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
-    auto ctx = ores::testing::make_generation_context(h);
-    auto a = ores::iam::generators::generate_synthetic_account(ctx);
-    a.change_reason_code = "system.test";
-    ores::iam::repository::account_repository repo;
-    repo.write(h.context(), a);
-    return a;
-}
+namespace {
 
 ores::inbox::messaging::raise_notification_request waiting_request() {
     return ores::inbox::messaging::raise_notification_request{
@@ -46,12 +41,6 @@ ores::inbox::messaging::raise_notification_request waiting_request() {
                       {.name = "reason", .value = "Covers, \"the\" {desk}"}},
         .account_ids = {},
         .audience_permission_code = ""};
-}
-
-// The database stamps every row with the account that wrote it, and refuses a
-// write that names nobody, as production's signed-in context always names one.
-ores::database::context acting(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), h.db_user());
 }
 
 }

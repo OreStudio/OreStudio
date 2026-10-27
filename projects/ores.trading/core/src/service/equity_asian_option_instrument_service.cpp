@@ -408,9 +408,6 @@ ores::utility::domain::result equity_asian_option_instrument_service::prepare_ch
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    // The audit reaches the row through whichever member carries it, so a
-    // grouped entity is stamped member by member; stamping it whole would
-    // find no audit column and leave the row without one.
     stamp(out.audit,
           ctx_,
           intent.reason_code.empty() ?

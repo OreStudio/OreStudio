@@ -182,8 +182,8 @@ on delete to "ores_marketdata_market_data_sources_tbl" do instead (
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Market Data Source
--- Every session reads the system tenant's own rows; writes stay the
--- current tenant's.
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_marketdata_market_data_sources_tbl enable row level security;
 

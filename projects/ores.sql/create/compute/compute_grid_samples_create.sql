@@ -131,8 +131,8 @@ end $$;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Grid Sample
--- Every session reads the system tenant's own rows; writes stay the
--- current tenant's.
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table ores_compute_grid_samples_tbl enable row level security;
 

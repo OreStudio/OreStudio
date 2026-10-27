@@ -2626,12 +2626,16 @@ def cmd_lint(argv):
     all_exclude = always_exclude | extra_exclude
 
     # A file git ignores, such as scratch under tmp/, is local to one
-    # checkout and never reaches the corpus, so it is not linted.
-    visible = set(subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard",
-         "--", "*.org"],
-        cwd=PROJECT_ROOT, capture_output=True, text=True, check=True,
-    ).stdout.split("\0"))
+    # checkout and never reaches the corpus, so it is not linted. Without git,
+    # as in a source tarball, every file is linted.
+    try:
+        visible = set(subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others",
+             "--exclude-standard", "--", "*.org"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, check=True,
+        ).stdout.split("\0"))
+    except (OSError, subprocess.CalledProcessError):
+        visible = None
 
     files = []
     for org_file in sorted(doc_index.find_org_files(root)):
@@ -2639,7 +2643,7 @@ def cmd_lint(argv):
         first_part = rel.parts[0] if rel.parts else ""
         if first_part in all_exclude or org_file.name.startswith("."):
             continue
-        if rel.as_posix() not in visible:
+        if visible is not None and rel.as_posix() not in visible:
             continue
         try:
             files.append((rel, org_file.read_text(encoding="utf-8",

@@ -1172,8 +1172,8 @@ end $$;
 -- System-tenant sessions may also read every tenant's rows.
 {{/domain_entity.sql.rls_system_tenant_visible}}
 {{#domain_entity.sql.rls_own_or_system_tenant_rows}}
--- Every session reads the system tenant's own rows; writes stay the
--- current tenant's.
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 {{/domain_entity.sql.rls_own_or_system_tenant_rows}}
 -- =============================================================================
 alter table {{domain_entity.sql_name_base}}_tbl enable row level security;

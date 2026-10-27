@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "approval_fixture.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
@@ -40,25 +41,15 @@
 // service does: read a request, write the notice that tells its asker, and run
 // the three sweeps.
 
+using ores::inbox::tests::seed_account;
+using ores::inbox::tests::acting;
+
 namespace {
 
 using ores::inbox::service::approval_announcer;
 using ores::inbox::service::approval_lifecycle;
 using ores::inbox::service::notification_center;
 using ores::platform::environment::environment;
-
-ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
-    auto ctx = ores::testing::make_generation_context(h);
-    auto a = ores::iam::generators::generate_synthetic_account(ctx);
-    a.change_reason_code = "system.test";
-    ores::iam::repository::account_repository repo;
-    repo.write(h.context(), a);
-    return a;
-}
-
-ores::database::context acting(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), h.db_user());
-}
 
 /**
  * @brief The context the inbox service runs a request in: its own database

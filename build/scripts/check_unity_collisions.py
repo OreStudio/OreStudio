@@ -2,7 +2,7 @@
 """No two sources of a target define the same file-local name.
 
 A unity build merges a target's sources into a few translation units, so two
-files of one source directory that each define a name with internal linkage
+files of one target that each define a name with internal linkage
 -- in an anonymous namespace, static, or a const variable at namespace scope
 -- in the same enclosing namespace redefine it, and the build fails. The
 generator names every such helper after its entity, so generated code never
@@ -32,8 +32,10 @@ Usage:
 from __future__ import annotations
 
 import collections
+import functools
 import pathlib
 import re
+import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -88,8 +90,10 @@ def internal_names(text: str) -> set[tuple[str, str]]:
 
 
 def collisions() -> dict[tuple[str, str, str], list[str]]:
-    """Each colliding (directory, namespace, name) and its files, sorted."""
-    by_dir: dict[str, dict[tuple[str, str], list[str]]] = collections.defaultdict(
+    """Each colliding (target directory, namespace, name) and its files,
+    sorted. A target may take sources from several directories, and its unity
+    batches mix them, so files are grouped by target."""
+    by_target: dict[str, dict[tuple[str, str], list[str]]] = collections.defaultdict(
         lambda: collections.defaultdict(list))
     for cpp in sorted(ROOT.glob("projects/ores.*/**/*.cpp")):
         rel = cpp.relative_to(ROOT)
@@ -100,22 +104,30 @@ def collisions() -> dict[tuple[str, str, str], list[str]]:
         except UnicodeDecodeError:
             continue
         for namespace, name in internal_names(text):
-            by_dir[str(rel.parent)][(namespace, name)].append(str(rel))
+            by_target[target_dir(str(rel))][(namespace, name)].append(str(rel))
     return {(d, ns, name): files
-            for d, names in by_dir.items()
+            for d, names in by_target.items()
             for (ns, name), files in names.items() if len(files) > 1}
 
 
-def excluded(found: dict[tuple[str, str, str], list[str]]) -> set[str]:
+def committed() -> set[str]:
+    return set(subprocess.run(["git", "ls-files", "-z", "--", "projects"], cwd=ROOT,
+                              capture_output=True, text=True, check=True).stdout.split("\0"))
+
+
+def excluded(found: dict[tuple[str, str, str], list[str]],
+             committed: set[str] = frozenset()) -> set[str]:
     """The files to keep out of the unity build, so that at most one file of
-    each colliding group stays in it."""
+    each colliding group stays in it. A committed file is kept in before a
+    new one, so a new file that sorts first does not push an old file out."""
     out: set[str] = set()
     for _, files in sorted(found.items()):
-        kept = [f for f in files if f not in out]
+        kept = sorted((f for f in files if f not in out), key=lambda f: (f not in committed, f))
         out.update(kept[1:])
     return out
 
 
+@functools.cache
 def target_dir(source: str) -> str:
     """The directory whose CMakeLists.txt builds the source."""
     path = (ROOT / source).parent
@@ -133,20 +145,33 @@ def is_generated(source: str) -> bool:
     return bool(GENERATED.search((ROOT / source).read_text()[:2000]))
 
 
+def project_source(path: str) -> pathlib.Path | None:
+    """The repository path of a source a compiler log names. Ninja logs name
+    sources relative to the build directory, so a relative path is read from
+    its projects/ part on."""
+    resolved = pathlib.Path(path)
+    if resolved.is_absolute():
+        try:
+            rel = resolved.resolve().relative_to(ROOT)
+        except ValueError:
+            return None
+    elif "projects" in resolved.parts:
+        rel = pathlib.Path(*resolved.parts[resolved.parts.index("projects"):])
+    else:
+        return None
+    if rel.parts[0] != "projects" or not (ROOT / rel).exists():
+        return None
+    return rel
+
+
 def blamed(log: str) -> tuple[set[str], set[str]]:
     """The project sources a unity build log blames: those at an error, and
     those a note names as the other half of a clash. A note that only traces
     an instantiation names a victim, not a culprit, and is not blamed."""
     at_error, at_note = set(), set()
     for path, kind, message in SITE.findall(log):
-        resolved = pathlib.Path(path)
-        if not resolved.is_absolute():
-            continue
-        try:
-            rel = resolved.resolve().relative_to(ROOT)
-        except ValueError:
-            continue
-        if rel.parts[0] != "projects":
+        rel = project_source(path)
+        if rel is None:
             continue
         if kind == "error":
             at_error.add(str(rel))
@@ -187,7 +212,8 @@ def main(argv: list[str]) -> int:
         return 0
     have = recorded()
     if "--write" in argv:
-        merged = have | excluded({k: [f for f in fs if f not in have] for k, fs in found.items()})
+        merged = have | excluded({k: [f for f in fs if f not in have] for k, fs in found.items()},
+                                 committed())
         write(merged)
         print(f"recorded {len(merged)} files in {EXCLUSIONS.relative_to(ROOT)}")
         return 0

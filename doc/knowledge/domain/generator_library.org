@@ -12,13 +12,14 @@
 * Summary
 
 =ores.analytics.quant= is the library that holds the price and short-rate
-processes the synthetic producers step, and the arrival processes that decide
-when a producer ticks. Its three interfaces are =i_stochastic_process= in
-=ores.analytics.quant/domain/i_stochastic_process.hpp=, =i_yield_curve_process=
-beside it, and =i_arrival_process= beside them. Its entry point is
-=process_factory= in =ores.analytics.quant/service/process_factory.hpp=, which
-has one method for each family: =make_process=, =make_yield_curve_process= and
-=make_arrival_process=.
+processes the synthetic producers step, and the arrival laws that decide when a
+producer ticks. Its two process interfaces are =i_stochastic_process= in
+=ores.analytics.quant/domain/i_stochastic_process.hpp= and
+=i_yield_curve_process= beside it, and the arrival laws are values in
+=ores.analytics.quant/domain/arrival_law.hpp=. Its entry point for the processes
+is =process_factory= in =ores.analytics.quant/service/process_factory.hpp=,
+which has one method for each family: =make_process= and
+=make_yield_curve_process=. =make_arrival_law= builds an arrival law.
 
 * Detail
 
@@ -76,15 +77,14 @@ A reader who edits an FX config's components while its =process_type= is
 ="ornstein_uhlenbeck"= is therefore editing a reversion speed in a field
 labelled as a weight.
 
-** The arrival process is a third kind
+** The arrival law is a third kind
 
 Everything above answers what the next price is. When the price arrives is a
 different question with a different answer, and it does not fit
-=i_stochastic_process=, because =next()= there returns a level. A third
-interface, =i_arrival_process=, returns the gap to the next tick in seconds,
-and the factory has a third entry. The tick clock, which lives in this
-library, takes its gaps from it, and a periodic arrival process gives a fixed
-period. The value process in turn has =next(elapsed)=, so a step can be longer
+=i_stochastic_process=, because =next()= there returns a level. An arrival law
+is a value that gives the gap to the next tick in the market's operational
+time. The scheduler, which lives in this library, draws each series' gaps from
+its law, and a periodic law gives a fixed period. The value process in turn has =next(elapsed)=, so a step can be longer
 or shorter than one nominal tick. The design, its parameters and its limits are in
 [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]. The
 mathematics is in [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]

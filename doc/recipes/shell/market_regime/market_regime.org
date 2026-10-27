@@ -52,9 +52,9 @@ Forces the state, or hands it back to the chain.
 
 =auto= lets the chain choose again, =calm= and =active= pin that state. A pin
 holds however much time passes, which is what a demonstration or a stress run
-needs: a test that must wait for a random turn is not a test. A pin takes effect
-on the next tick of each feed rather than waiting for a gap already being slept,
-so a feed on a slow arrival can take one long gap to show it.
+needs: a test that must wait for a random turn is not a test. A pin is in force
+when the command returns: every feed's pace changes at that instant, including a
+feed part way through a long gap.
 
 The command is shaped like this:
 

@@ -22,6 +22,7 @@
 #include "../src/simulator_offers.hpp"
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -181,6 +182,13 @@ class flat_process final : public ores::analytics::quant::domain::i_stochastic_p
 public:
     double next() override {
         return 1.25;
+    }
+    // A flat price is the same after any step, so it takes whatever gap the market gives.
+    double next(double) override {
+        return 1.25;
+    }
+    bool supports_variable_step() const override {
+        return true;
     }
     double current() const override {
         return 1.25;
@@ -489,6 +497,7 @@ TEST_CASE("the runner survives a generator whose start throws", "[simulator_adap
 
 TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbeats",
           "[simulator_adapter][adapter]") {
+    ores::analytics::quant::service::running_scheduler run;
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
 
@@ -526,6 +535,8 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
                     std::make_unique<flat_process>(),
                     ores::analytics::quant::domain::arrival_spec{.mode = "periodic",
                                                                  .ticks_per_hour = 36000000.0},
+                    run.scheduler,
+                    1.0,
                     ores::synthetic::feed::adapter_target{
                         .id = target,
                         .subject =
@@ -734,7 +745,9 @@ TEST_CASE("the offers are the startable system configs of the provider that have
                                                        .service_account = opts.user});
     ores::nats::service::client nats(ores::testing::make_nats_options());
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
-    const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
+    ores::analytics::quant::service::running_scheduler run;
+    const ores::synthetic::feed::feed_build_context build{
+        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
 
     const auto offers =
         svc::system_generator_offers(registry, ctx, build, "bloomberg-a", "bloomberg");
@@ -838,6 +851,8 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
          .target = {.id = fra_id,
                     .subject = domain::adapter_ingress_subject(adapter_id, fra_id.external_id)}}};
 
+    ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
+    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
     ores::synthetic::feed::ir_curve_feed feed(
         nats,
         "test.usd.sofr",
@@ -850,11 +865,11 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
         ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 3600},
         {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90),
          resolved_pillar("3M", "6M", "FRA", 90, 180)},
-        {},
-        nullptr,
+        idle,
+        1.0,
         std::move(targets));
 
-    feed.tick(1.0);
+    feed.tick({.elapsed_seconds = 1.0, .observed_at = std::chrono::system_clock::now()});
 
     REQUIRE(deposit_ticks.wait_for_count(1));
     REQUIRE(fra_ticks.wait_for_count(1));
@@ -880,6 +895,8 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
     inbox<messaging::adapter_tick> ticks(
         nats, domain::adapter_ingress_subject(adapter_id, id.external_id));
 
+    ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
+    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
     ores::synthetic::feed::ir_curve_feed feed(
         nats,
         "test.usd.sofr",
@@ -890,8 +907,8 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
         std::make_unique<flat_curve_process>(),
         ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 3600},
         {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90)},
-        {},
-        nullptr,
+        idle,
+        1.0,
         {{.start_tenor_code = "SPOT",
           .end_tenor_code = "3M",
           .target = {.id = id,
@@ -900,7 +917,8 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
     // One tick a second, and a wait of two minutes: the process cannot take the step of a
     // hundred and twenty ticks the wall clock skipped, so it takes the one tick its law is
     // written for and publishes all the same.
-    CHECK_NOTHROW(feed.tick(120.0));
+    CHECK_NOTHROW(
+        feed.tick({.elapsed_seconds = 120.0, .observed_at = std::chrono::system_clock::now()}));
     REQUIRE(ticks.wait_for_count(1));
     CHECK(ticks.first().external_id == "USD/sofr/DEPO/SPOT/3M");
 }
@@ -943,7 +961,9 @@ TEST_CASE("a curve is offered once for each of its pillars, all under the curve'
                                                        .service_account = opts.user});
     ores::nats::service::client nats(ores::testing::make_nats_options());
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
-    const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
+    ores::analytics::quant::service::running_scheduler run;
+    const ores::synthetic::feed::feed_build_context build{
+        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
 
     const auto offers = svc::system_generator_offers(registry, ctx, build, "demo-a", "demo");
 
@@ -1015,7 +1035,9 @@ TEST_CASE("a curve that is not enabled is offered nothing", "[simulator_adapter]
                                                        .service_account = opts.user});
     ores::nats::service::client nats(ores::testing::make_nats_options());
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
-    const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
+    ores::analytics::quant::service::running_scheduler run;
+    const ores::synthetic::feed::feed_build_context build{
+        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
 
     CHECK(svc::system_generator_offers(registry, ctx, build, "demo-a", "demo").empty());
 }

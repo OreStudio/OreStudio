@@ -19,6 +19,7 @@
  */
 #include "../src/feed_config_handler.hpp"
 #include "../src/generator_fleet.hpp"
+#include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -363,6 +364,7 @@ struct config_fixture {
     ores::testing::scoped_database_helper db;
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
+    ores::analytics::quant::service::running_scheduler run;
     ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     ores::synthetic::service::feed_kind_registry registry;
@@ -383,19 +385,19 @@ struct config_fixture {
         start_sub = nats.queue_subscribe(
             test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.stop(std::move(msg));
             });
         list_sub = nats.queue_subscribe(
             test_list_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
                 h.list(std::move(msg));
             });
     }

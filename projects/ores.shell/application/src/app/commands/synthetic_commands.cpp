@@ -822,7 +822,10 @@ void synthetic_commands::process_regime_get(std::ostream& out,
     }
     out << "state: " << response->state << "\n"
         << "multiplier: " << response->multiplier << "\n"
-        << "pinned: " << (response->pinned ? "yes" : "no") << std::endl;
+        << "pinned: " << (response->pinned ? "yes" : "no") << "\n"
+        << "heat: " << response->heat << "\n"
+        << "jump: " << response->jump << "\n"
+        << "decay: " << response->decay << std::endl;
 }
 
 void synthetic_commands::process_regime_pin(std::ostream& out,

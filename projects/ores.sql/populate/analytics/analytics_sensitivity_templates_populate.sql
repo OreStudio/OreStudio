@@ -31,27 +31,27 @@
 \echo '--- Sensitivity Templates ---'
 
 insert into ores_analytics_sensitivity_templates_tbl (
-    code, tenant_id, version, asset_class, method, description, modified_by, change_reason_code, change_commentary
+    code, tenant_id, version, asset_class_code, method_code, description, modified_by, change_reason_code, change_commentary
 ) values
-    ('IR_Analytical', ores_utility_system_tenant_id_fn(), 0, 'IR', 'Analytical', 'Interest rate products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('IR_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'IR', 'Semianalytical', 'Interest rate products priced by a formula that needs a numerical step, such as CMS replication.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('IR_FD', ores_utility_system_tenant_id_fn(), 0, 'IR', 'Finite difference', 'Interest rate products priced on a finite difference grid, such as Bermudan swaptions.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('IR_MC', ores_utility_system_tenant_id_fn(), 0, 'IR', 'Monte Carlo', 'Interest rate products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('FX_Analytical', ores_utility_system_tenant_id_fn(), 0, 'FX', 'Analytical', 'FX products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('FX_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'FX', 'Semianalytical', 'FX products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('FX_FD', ores_utility_system_tenant_id_fn(), 0, 'FX', 'Finite difference', 'FX products priced on a finite difference grid.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('FX_MC', ores_utility_system_tenant_id_fn(), 0, 'FX', 'Monte Carlo', 'FX products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('EQ_Analytical', ores_utility_system_tenant_id_fn(), 0, 'EQ', 'Analytical', 'Equity products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('EQ_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'EQ', 'Semianalytical', 'Equity products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('EQ_FD', ores_utility_system_tenant_id_fn(), 0, 'EQ', 'Finite difference', 'Equity products priced on a finite difference grid, such as American options.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('EQ_MC', ores_utility_system_tenant_id_fn(), 0, 'EQ', 'Monte Carlo', 'Equity products priced by Monte Carlo, such as Asian options.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('COMM_Analytical', ores_utility_system_tenant_id_fn(), 0, 'COMM', 'Analytical', 'Commodity products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('COMM_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'COMM', 'Semianalytical', 'Commodity products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('COMM_FD', ores_utility_system_tenant_id_fn(), 0, 'COMM', 'Finite difference', 'Commodity products priced on a finite difference grid.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('COMM_MC', ores_utility_system_tenant_id_fn(), 0, 'COMM', 'Monte Carlo', 'Commodity products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('CR_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'CR', 'Semianalytical', 'Credit products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('CR_MC', ores_utility_system_tenant_id_fn(), 0, 'CR', 'Monte Carlo', 'Credit products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
-    ('SensiTrade', ores_utility_system_tenant_id_fn(), 0, 'ALL', 'Trade level', 'Products whose sensitivities the trade computes on its own, not by shifting the market.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary')
+    ('IR_Analytical', ores_utility_system_tenant_id_fn(), 0, 'interest_rates', 'Analytical', 'Interest rate products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('IR_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'interest_rates', 'Semianalytical', 'Interest rate products priced by a formula that needs a numerical step, such as CMS replication.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('IR_FD', ores_utility_system_tenant_id_fn(), 0, 'interest_rates', 'FD', 'Interest rate products priced on a finite difference grid, such as Bermudan swaptions.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('IR_MC', ores_utility_system_tenant_id_fn(), 0, 'interest_rates', 'MC', 'Interest rate products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('FX_Analytical', ores_utility_system_tenant_id_fn(), 0, 'fx', 'Analytical', 'FX products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('FX_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'fx', 'Semianalytical', 'FX products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('FX_FD', ores_utility_system_tenant_id_fn(), 0, 'fx', 'FD', 'FX products priced on a finite difference grid.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('FX_MC', ores_utility_system_tenant_id_fn(), 0, 'fx', 'MC', 'FX products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('EQ_Analytical', ores_utility_system_tenant_id_fn(), 0, 'equity', 'Analytical', 'Equity products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('EQ_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'equity', 'Semianalytical', 'Equity products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('EQ_FD', ores_utility_system_tenant_id_fn(), 0, 'equity', 'FD', 'Equity products priced on a finite difference grid, such as American options.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('EQ_MC', ores_utility_system_tenant_id_fn(), 0, 'equity', 'MC', 'Equity products priced by Monte Carlo, such as Asian options.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('COMM_Analytical', ores_utility_system_tenant_id_fn(), 0, 'commodity', 'Analytical', 'Commodity products priced by a closed formula.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('COMM_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'commodity', 'Semianalytical', 'Commodity products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('COMM_FD', ores_utility_system_tenant_id_fn(), 0, 'commodity', 'FD', 'Commodity products priced on a finite difference grid.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('COMM_MC', ores_utility_system_tenant_id_fn(), 0, 'commodity', 'MC', 'Commodity products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('CR_Semianalytical', ores_utility_system_tenant_id_fn(), 0, 'credit', 'Semianalytical', 'Credit products priced by a formula with a numerical step.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('CR_MC', ores_utility_system_tenant_id_fn(), 0, 'credit', 'MC', 'Credit products priced by Monte Carlo.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary'),
+    ('SensiTrade', ores_utility_system_tenant_id_fn(), 0, null, 'Trade', 'Products whose sensitivities the trade computes on its own, not by shifting the market.', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine vocabulary')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

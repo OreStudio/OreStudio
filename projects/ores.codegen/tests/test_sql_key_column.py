@@ -1,4 +1,4 @@
-"""Tests for the :sql_key: column property in sql_schema_domain_entity_create.mustache.
+"""Tests for the :sql_key: column property in the SQL schema and repository templates.
 
 Run::
 
@@ -70,7 +70,7 @@ The owning party.
 """
 
 
-def _generate_sql(tmp_path):
+def _generate(tmp_path, template, output):
     model_path = tmp_path / "ores.testcomp.party_key_entity.org"
     model_path.write_text(MODEL, encoding="utf-8")
     output_dir = tmp_path / "out"
@@ -81,10 +81,20 @@ def _generate_sql(tmp_path):
         TEMPLATES_DIR,
         output_dir,
         is_processing_batch=True,
-        target_template="sql_schema_domain_entity_create.mustache",
-        target_output="party_key_entity_create.sql",
+        target_template=template,
+        target_output=output,
     )
-    return (output_dir / "party_key_entity_create.sql").read_text(encoding="utf-8")
+    return (output_dir / output).read_text(encoding="utf-8")
+
+
+def _generate_sql(tmp_path):
+    return _generate(tmp_path, "sql_schema_domain_entity_create.mustache",
+                     "party_key_entity_create.sql")
+
+
+def _generate_repository(tmp_path):
+    return _generate(tmp_path, "cpp_domain_type_repository.cpp.mustache",
+                     "party_key_entity_repository.cpp")
 
 
 def test_a_sql_key_column_joins_the_primary_key_and_exclusion(tmp_path):
@@ -111,3 +121,22 @@ def test_a_sql_key_column_scopes_the_versioning_triggers(tmp_path):
     sql = _generate_sql(tmp_path)
     assert 'code = NEW.code and party_id = NEW.party_id' in sql
     assert 'code = OLD.code and party_id = OLD.party_id' in sql
+
+
+def test_a_party_sql_key_read_prefers_the_acting_partys_row(tmp_path):
+    cpp = _generate_repository(tmp_path)
+    assert 'const auto party = ctx.party_id();' in cpp
+    assert 'if (party.has_value() && std::ranges::any_of(found, acting))' in cpp
+
+
+def test_a_party_sql_key_removal_closes_only_the_row_it_checked(tmp_path):
+    cpp = _generate_repository(tmp_path)
+    assert 'const auto party = boost::uuids::to_string(current.front().party_id);' in cpp
+    assert '"code"_c == code && "party_id"_c == party' in cpp
+    assert 'return row.party_id == removed_party;' in cpp
+    assert '#include <boost/uuid/uuid_io.hpp>' in cpp
+
+
+def test_a_party_sql_key_read_orders_the_rows_of_other_parties(tmp_path):
+    cpp = _generate_repository(tmp_path)
+    assert 'return a.party_id < b.party_id;' in cpp

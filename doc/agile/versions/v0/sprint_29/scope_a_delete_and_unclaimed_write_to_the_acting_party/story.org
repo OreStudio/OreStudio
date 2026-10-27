@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5
+:END:
+#+title: Story: Scope a delete and an unclaimed write to the acting party
+#+description: The generated repository reads a row by key across every party the session sees, so a delete checks and may close another party's row of the same id and version, and an unclaimed write states another party's version. Scope the key read and the delete to the acting party, and retire the service-side filter.
+#+type: story
+#+level: s2
+#+filetags: :service:codegen:party:sprint_29:v0:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A write or a delete from a session that sees several parties acts on the acting party's row of the key, and only on that row. The repository makes the choice where it reads, so the service needs no filter after the read.
+
+This story takes up the capture [[id:9605A39E-CAE9-4232-90DF-C42EBE94CB41][Scope a delete and an unclaimed write to the acting party]], filed by the hotfix [[id:F80820E4-2608-4B25-92E7-C6BC189024E1][A write checks the version of another party's row]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Done: the repository scopes the key read and removal.|
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-27                               |
+
+* Acceptance
+
+- read_latest by key prefers the acting party's rows, with the rule of_acting_party() has today: keep only the acting party's rows when one exists, otherwise keep the rows as read.
+- remove checks the version of the acting party's row and closes only that row: the delete names the party of the row it checked.
+- A write with no precondition states the version of the acting party's row.
+- The service template drops of_acting_party(); the helper and its tests go if nothing else uses them.
+- A test proves from a parent party that a delete and an unclaimed write of a convention key touch only the acting party's row.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5BE764E7-C4E7-4DD5-A3DE-412C5B88DF3A][Scaffold story: Scope a delete and an unclaimed write to the acting party]] | DONE | 2026-10-27 | 2026-10-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:42320A2D-D416-4A31-A72B-E96E3C7B518B][Scope the repository's key read and delete to the acting party]] | DONE | 2026-10-27 | 2026-10-27 | Initial task for: Scope a delete and an unclaimed write to the acting party |
+
+* Decisions
+
+- The repository, not the service, picks the acting party's row of a key, because only the repository knows the store keys the row by party.
+- The key read keeps the rows as read when the acting party holds none, so another party's row stays reachable by its key.
+- A removal closes only the party of the row it checked, and its read-back ignores other parties' rows of the key.
+
+* Out of scope
+
+-

@@ -27,6 +27,8 @@ set(files
     "mapper_helpers_tests.cpp"
     "outcome_code_tests.cpp"
     "postgres_listener_service_tests.cpp"
+    "pq_layer_benchmark_tests.cpp"
+    "pq_layer_tests.cpp"
     "session_settings_tests.cpp"
     "stated_order_tests.cpp"
     "unit_of_work_tests.cpp"

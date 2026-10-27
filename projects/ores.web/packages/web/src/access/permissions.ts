@@ -56,6 +56,9 @@ export const PERMISSION = {
     engineSettingsRead: 'reporting::engine_settings:read',
     engineSettingsWrite: 'reporting::engine_settings:write',
     engineSettingsDelete: 'reporting::engine_settings:delete',
+    sensitivityTemplatesRead: 'analytics::sensitivity_templates:read',
+    sensitivityTemplatesWrite: 'analytics::sensitivity_templates:write',
+    sensitivityTemplatesDelete: 'analytics::sensitivity_templates:delete',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

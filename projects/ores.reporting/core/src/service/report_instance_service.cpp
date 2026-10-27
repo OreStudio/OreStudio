@@ -53,7 +53,6 @@
 #include <cstdint>
 #include <map>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -214,8 +213,7 @@ messaging::put_report_instance_response report_instance_service::put_report_inst
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        report_instance_read_one(repo_, ctx_, report_instance_key_from(value)), ctx_);
+    auto written = report_instance_read_one(repo_, ctx_, report_instance_key_from(value));
     if (!written.empty())
         response.report_instance = std::move(written.front());
     return response;
@@ -247,8 +245,7 @@ messaging::put_many_report_instances_response report_instance_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.instances.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            report_instance_read_one(repo_, ctx_, report_instance_key_from(value)), ctx_);
+        auto written = report_instance_read_one(repo_, ctx_, report_instance_key_from(value));
         response.instances.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -404,10 +401,7 @@ report_instance_service::prepare_change(const messaging::report_instance_change&
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = report_instance_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(report_instance_read_one(repo_, ctx_, report_instance_key_from(out)), ctx_);
+    const auto current = report_instance_read_one(repo_, ctx_, report_instance_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

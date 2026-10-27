@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-book-a-trade
-#+pr: 3928
+#+pr: 3936
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -154,6 +154,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3928][#3928]] | [trading] Name a structure, and serve the family that creates one |
+| [[https://github.com/OreStudio/OreStudio/pull/3936][#3936]] | [iam] Unblock main: seed the structure identifier permissions |
 | [[https://github.com/OreStudio/OreStudio/pull/3907][#3907]] | [trading] Model the identifiers a structure carries |
 | [[https://github.com/OreStudio/OreStudio/pull/3896][#3896]] | [iam] Copy the trading code lists into each tenant |
 | [[https://github.com/OreStudio/OreStudio/pull/3878][#3878]] | [web] Name the trade at the other end of a link |

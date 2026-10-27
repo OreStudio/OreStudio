@@ -60,9 +60,12 @@ it to =exit_code::schema_mismatch= after printing its message.
 - =include/ores.database/service/= — =health_monitor=, =postgres_listener_service=,
   =tenant_context=, =party_context=.
 - =include/ores.database/config/= — =database_configuration= parsing.
+- =include/ores.database/pq/= — the libpq layer: =pool=, =transact=, =transaction=,
+  =statement=, the binary =codec= of each type, and =store_error=.
 
 * Dependencies
 
+- libpq, the PostgreSQL C client, directly for the =pq= layer.
 - sqlgen — statements and connections over libpq, the PostgreSQL C client.
 - =ores.logging= — structured logging.
 

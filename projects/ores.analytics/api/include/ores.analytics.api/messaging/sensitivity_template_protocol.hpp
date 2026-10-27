@@ -41,8 +41,8 @@ struct sensitivity_template_key {
 
 struct sensitivity_template_write {
     std::string code;
-    std::string asset_class;
-    std::string method;
+    std::string method_code;
+    std::string asset_class_code;
     std::string description;
 };
 
@@ -63,6 +63,7 @@ struct sensitivity_template_lookup {
 
 struct sensitivity_templates_filter {
     std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::string> search;
 };
 
 struct sensitivity_template_event {

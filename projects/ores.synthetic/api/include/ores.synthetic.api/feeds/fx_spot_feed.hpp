@@ -21,10 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_FX_SPOT_FEED_HPP
 
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
-#include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
-#include "ores.analytics.quant/domain/market_link.hpp"
-#include "ores.analytics.quant/service/tick_clock.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
@@ -86,9 +83,9 @@ public:
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
                  const ores::analytics::quant::domain::arrival_spec& arrival,
-                 std::optional<adapter_target> adapter = std::nullopt,
-                 ores::analytics::quant::domain::market_link link = {},
-                 ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
+                 ores::analytics::quant::service::tick_scheduler& scheduler,
+                 double sensitivity = 1.0,
+                 std::optional<adapter_target> adapter = std::nullopt);
 
     /**
      * @brief The oresmd quote URI this feed publishes ticks under, e.g.
@@ -109,8 +106,8 @@ public:
         return fx_spot_feed_kind;
     }
     void start() override;
-    /// One tick, as the scheduler or the feed's own clock drives it.
-    std::string tick(double elapsed_seconds);
+    /// One tick, as the scheduler drives it.
+    std::string tick(const ores::analytics::quant::service::tick_context& context);
     void stop() override;
     std::uint64_t publish_count() const override {
         return published_.load(std::memory_order_relaxed);
@@ -126,26 +123,17 @@ private:
     std::vector<std::string> series_uris_;
     std::string source_name_;
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process_;
-    std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
-    /// The row's rate, which a scheduler needs to re-arm this series.
+    /// The row's arrival law, which the scheduler draws this series' gaps from.
     ores::analytics::quant::domain::arrival_spec arrival_;
-    /// The factors this feed follows.
-    ores::analytics::quant::domain::market_link link_;
-    /// The run's scheduler, or null when the feed runs its own clock.
-    ores::analytics::quant::service::tick_scheduler* scheduler_;
+    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    /// How strongly this feed follows the market.
+    double sensitivity_;
     /// The series' registration in the scheduler, while it is registered.
     std::optional<std::size_t> handle_;
-    /// Ticks this feed has published, whichever clock drove them.
+    /// Ticks this feed has published.
     std::atomic<std::uint64_t> published_{0};
-    ores::analytics::quant::service::tick_clock clock_;
-    /// The arrival rate in ticks per second, the unit a step is counted in and
-    /// the one the arrival process itself divides by.
+    /// The arrival rate in ticks per second, the unit a step is counted in.
     double ticks_per_second_;
-    /// The heat this feed adds to when it ticks, or null for a run with no
-    /// endogenous factor.
-    ores::analytics::quant::domain::shared_intensity* intensity_;
-    /// This feed's rate in the population the heat is shared over, while the feed lives.
-    ores::analytics::quant::domain::shared_intensity::enrolment enrolment_;
     std::string nats_subject_;
     /// The subject the screen tails this feed's ticks on, beside the adapter ingress.
     std::string display_subject_;
@@ -179,10 +167,9 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& auth_nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
+                  ores::analytics::quant::service::tick_scheduler& scheduler,
                   std::optional<adapter_target> adapter = std::nullopt,
-                  const ores::marketdata::domain::market_clock* clock = nullptr,
-                  ores::analytics::quant::domain::market_link link = {},
-                  ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
+                  const ores::marketdata::domain::market_clock* clock = nullptr);
 
 }
 #endif

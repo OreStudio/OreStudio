@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 49EB3369-C08A-5543-B811-3EE2C7FA111B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the sensitivity_methods commands from the shell?
+#+description: Every command the sensitivity_methods submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:sensitivity_methods:
+
+This file documents the sensitivity_methods resource at the shell, one section per command. Every command is a subcommand of =sensitivity_methods=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 33351D23-ED5B-5CF5-845E-C6B7F1A2067B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.list=.
+
+#+name: sensitivity_methods-list
+#+begin_src ores-shell :tangle sensitivity_methods-list.ores :exports none
+sensitivity_methods list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 182327A7-DCC4-583B-B484-E22207835121
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods get <code>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.get=.
+
+#+name: sensitivity_methods-get
+#+begin_src ores-shell :tangle sensitivity_methods-get.ores :exports none
+sensitivity_methods get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3FA480E8-6652-5096-AE9C-AD0B7B5E449E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.get_many=.
+
+#+name: sensitivity_methods-get-many
+#+begin_src ores-shell :tangle sensitivity_methods-get-many.ores :exports none
+sensitivity_methods get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0D7DDA8E-C2F6-54E7-9B54-D5CF9E82FCA9
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods add <code> <name> <description> <needs_asset_class> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.put=.
+
+#+name: sensitivity_methods-add
+#+begin_src ores-shell :tangle sensitivity_methods-add.ores :exports none
+sensitivity_methods add __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 83BA6FF2-11CB-57AA-B36E-9D83E160A09C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods set <code> <name> <description> <needs_asset_class> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.put=.
+
+#+name: sensitivity_methods-set
+#+begin_src ores-shell :tangle sensitivity_methods-set.ores :exports none
+sensitivity_methods set __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1CA3914D-95AA-5EF3-A6BE-ADBBADF3744A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods put-many --count <n> <code> <name> <description> <needs_asset_class> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.put_many=.
+
+#+name: sensitivity_methods-put-many
+#+begin_src ores-shell :tangle sensitivity_methods-put-many.ores :exports none
+sensitivity_methods put-many --count 1 __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 487A2D68-5D17-5C12-B046-D93372A72585
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.delete=.
+
+#+name: sensitivity_methods-delete
+#+begin_src ores-shell :tangle sensitivity_methods-delete.ores :exports none
+sensitivity_methods delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 182412AA-265E-500F-8000-DD39AD7874CE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods.delete_many=.
+
+#+name: sensitivity_methods-delete-many
+#+begin_src ores-shell :tangle sensitivity_methods-delete-many.ores :exports none
+sensitivity_methods delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C9C4C23A-5975-5AF5-8776-78BCE644F33F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods_versions.list=.
+
+#+name: sensitivity_methods-versions
+#+begin_src ores-shell :tangle sensitivity_methods-versions.ores :exports none
+sensitivity_methods versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7DFC809A-F4BC-5B3B-ABAF-A632D9FE9B9C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_methods version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_methods_versions.get=.
+
+#+name: sensitivity_methods-version
+#+begin_src ores-shell :tangle sensitivity_methods-version.ores :exports none
+sensitivity_methods version __none__ --version 1
+#+end_src
+

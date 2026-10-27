@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -183,8 +182,7 @@ system_setting_service::put_system_setting(const messaging::put_system_setting_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(system_setting_read_one(repo_, ctx_, system_setting_key_from(value)), ctx_);
+    auto written = system_setting_read_one(repo_, ctx_, system_setting_key_from(value));
     if (!written.empty())
         response.system_setting = std::move(written.front());
     return response;
@@ -216,8 +214,7 @@ messaging::put_many_system_settings_response system_setting_service::put_many_sy
     repo_.write(ctx_, batch, claims);
     response.settings.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            system_setting_read_one(repo_, ctx_, system_setting_key_from(value)), ctx_);
+        auto written = system_setting_read_one(repo_, ctx_, system_setting_key_from(value));
         response.settings.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -370,10 +367,7 @@ system_setting_service::prepare_change(const messaging::system_setting_change& c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = system_setting_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(system_setting_read_one(repo_, ctx_, system_setting_key_from(out)), ctx_);
+    const auto current = system_setting_read_one(repo_, ctx_, system_setting_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

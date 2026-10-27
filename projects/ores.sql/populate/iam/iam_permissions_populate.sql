@@ -1677,6 +1677,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_models:read',   'View pricing models');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_methods:read',   'View pricing methods');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_templates:read',   'View sensitivity templates');
+    -- The two lookups a sensitivity template names. Their screens are not built,
+    -- so nobody is granted the writes; the handlers check the codes, so the codes
+    -- are seeded for the roles that will hold them.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_methods:read',   'View sensitivity methods');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_methods:write',  'Create and modify sensitivity methods');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_methods:delete', 'Delete sensitivity methods');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_asset_classes:read',   'View sensitivity asset classes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_asset_classes:write',  'Create and modify sensitivity asset classes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::sensitivity_asset_classes:delete', 'Delete sensitivity asset classes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_pair_settings:write',  'Create and modify pricing pair settings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_models:write',  'Create and modify pricing models');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_methods:write',  'Create and modify pricing methods');

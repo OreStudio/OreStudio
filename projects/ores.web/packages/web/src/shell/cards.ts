@@ -292,6 +292,14 @@ export const CARDS = {
         permission: 'analytics::pricing_model_configs:read',
         screenTitleKey: 'pricingEngines.title',
     },
+    sensitivityTemplates: {
+        titleKey: 'reporting.area.screens.sensitivityTemplates',
+        bodyKey: 'reporting.area.screens.sensitivityTemplatesBody',
+        to: PATHS.sensitivityTemplates,
+        icon: 'pairs',
+        permission: 'analytics::sensitivity_templates:read',
+        screenTitleKey: 'sensitivityTemplates.title',
+    },
     engineSettings: {
         titleKey: 'reporting.area.screens.engineSettings',
         bodyKey: 'reporting.area.screens.engineSettingsBody',
@@ -355,7 +363,7 @@ export const AREA_CARDS = {
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'subscriptions', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataSources'],
-    reporting: ['reports', 'pricingEngines', 'engineSettings'],
+    reporting: ['reports', 'pricingEngines', 'sensitivityTemplates', 'engineSettings'],
     tenants: ['tenants'],
     trading: ['trades'],
 } as const satisfies Record<string, readonly CardId[]>;

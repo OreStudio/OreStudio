@@ -69,7 +69,10 @@ std::string sensitivity_template_repository::sql() {
 }
 
 bool sensitivity_template_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "code",
+        "description",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -107,6 +110,8 @@ std::optional<sqlgen::dynamic::Condition> sensitivity_template_filter_condition(
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"code", "description"}, *filter->search));
     return all_of(std::move(r));
 }
 

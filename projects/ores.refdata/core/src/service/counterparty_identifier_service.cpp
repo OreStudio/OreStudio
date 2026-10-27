@@ -51,7 +51,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -271,9 +270,8 @@ counterparty_identifier_service::put_counterparty_identifier(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(value)),
-        ctx_);
+    auto written =
+        counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(value));
     if (!written.empty())
         response.counterparty_identifier = std::move(written.front());
     return response;
@@ -306,9 +304,8 @@ counterparty_identifier_service::put_many_counterparty_identifiers(
     repo_.write(ctx_, batch, claims);
     response.counterparty_identifiers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(value)),
-            ctx_);
+        auto written =
+            counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(value));
         response.counterparty_identifiers.push_back(written.empty() ? value :
                                                                       std::move(written.front()));
     }
@@ -483,10 +480,8 @@ ores::utility::domain::result counterparty_identifier_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = counterparty_identifier_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(out)), ctx_);
+    const auto current =
+        counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(out));
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
     if (const auto refused = gate_put(current, out, change.precondition))
@@ -541,9 +536,7 @@ std::vector<std::string> counterparty_identifier_service::changed_columns(
     const messaging::counterparty_identifier_write& proposed) {
     const auto next = counterparty_identifier_to_domain(proposed);
     return counterparty_identifier_columns_changed(
-        of_acting_party(
-            counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(next)),
-            ctx_),
+        counterparty_identifier_read_one(repo_, ctx_, counterparty_identifier_key_from(next)),
         next);
 }
 

@@ -23,6 +23,8 @@
 \ir ./analytics_pricing_pair_settings_populate.sql
 \ir ./analytics_pricing_models_populate.sql
 \ir ./analytics_pricing_methods_populate.sql
+\ir ./analytics_sensitivity_methods_populate.sql
+\ir ./analytics_sensitivity_asset_classes_populate.sql
 \ir ./analytics_sensitivity_templates_populate.sql
 \ir ./analytics_stress_shift_families_populate.sql
 \ir ./analytics_shift_types_populate.sql

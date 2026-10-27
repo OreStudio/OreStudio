@@ -52,6 +52,8 @@ import {
     classificationListSchema,
     classificationRowSchema,
     historyVersionSchema,
+    sensitivityTemplateSchema,
+    sensitivityTemplateChoicesSchema,
     inboxNotificationPageSchema,
     bookPreviewViewSchema,
     bookRaiseViewSchema,
@@ -66,6 +68,8 @@ import {
     type ClassificationList,
     type ClassificationRow,
     type HistoryVersion,
+    type SensitivityTemplate,
+    type SensitivityTemplateChoices,
     type Timeline,
     type InboxNotificationView,
     type InboxPage,
@@ -2475,6 +2479,108 @@ export const api = {
             `/api/classifications/${encodeURIComponent(list)}/rows/${encodeURIComponent(code)}`,
             { method: 'DELETE', headers: JSON_HEADERS, body: JSON.stringify(input) },
         );
+    },
+
+    /**
+     * One page of the tenant's sensitivity templates.
+     *
+     * The search and the order are the server's, so they reach every key and
+     * not the page on the screen.
+     */
+    async sensitivityTemplates(page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search: string;
+        readonly sort: string;
+        readonly descending: boolean;
+    }): Promise<{ readonly rows: readonly SensitivityTemplate[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+            sort: page.sort,
+            descending: page.descending ? 'true' : 'false',
+        });
+        return z
+            .object({ rows: z.array(sensitivityTemplateSchema), total: z.int().nonnegative() })
+            .parse(
+                await request(`/api/analytics/sensitivity-templates?${query.toString()}`, {
+                    method: 'GET',
+                }),
+            );
+    },
+
+    /** The values a template states: the asset classes, and each method with its token. */
+    async sensitivityTemplateChoices(): Promise<SensitivityTemplateChoices> {
+        return sensitivityTemplateChoicesSchema.parse(
+            await request('/api/analytics/sensitivity-templates/choices', { method: 'GET' }),
+        );
+    },
+
+    /** One sensitivity template, or a 404 that names the code. */
+    async sensitivityTemplate(code: string): Promise<SensitivityTemplate> {
+        return z.object({ template: sensitivityTemplateSchema }).parse(
+            await request(`/api/analytics/sensitivity-templates/${encodeURIComponent(code)}`, {
+                method: 'GET',
+            }),
+        )['template'];
+    },
+
+    /** Adds a key. A code the tenant already holds is refused. */
+    async addSensitivityTemplate(input: {
+        readonly code: string;
+        readonly methodCode: string;
+        readonly assetClassCode: string | null;
+        readonly description: string;
+        readonly reasonCode: string;
+        readonly commentary: string;
+    }): Promise<SensitivityTemplate> {
+        return z.object({ template: sensitivityTemplateSchema }).parse(
+            await request('/api/analytics/sensitivity-templates', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        )['template'];
+    },
+
+    /** Corrects a key against the version the screen read. */
+    async correctSensitivityTemplate(
+        code: string,
+        input: {
+            readonly methodCode: string;
+            readonly assetClassCode: string | null;
+            readonly description: string;
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<SensitivityTemplate> {
+        return z.object({ template: sensitivityTemplateSchema }).parse(
+            await request(`/api/analytics/sensitivity-templates/${encodeURIComponent(code)}`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        )['template'];
+    },
+
+    /** Removes a key, and answers with the row it removed. */
+    async removeSensitivityTemplate(
+        code: string,
+        input: {
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<SensitivityTemplate> {
+        return z.object({ removed: sensitivityTemplateSchema }).parse(
+            await request(`/api/analytics/sensitivity-templates/${encodeURIComponent(code)}`, {
+                method: 'DELETE',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        )['removed'];
     },
 
     /** Every version of one record, newest first, with what changed in each. */

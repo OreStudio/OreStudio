@@ -29,7 +29,7 @@ A repository operation takes an open transaction, and only the unit-of-work call
 | State        | BACKLOG                              |
 | Parent story | [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The libpq layer, then each component's move. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-26                               |
 

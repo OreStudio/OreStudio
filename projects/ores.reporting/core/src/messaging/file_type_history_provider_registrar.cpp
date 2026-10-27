@@ -28,6 +28,7 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.reporting.core/presentation/file_type_history_field_mapper.hpp"
 #include "ores.reporting.core/service/file_type_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -36,7 +37,12 @@ void register_file_type_history_provider(ores::history::service::dispatch_regist
         "ores.reporting.file_type",
         "reporting::file_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-            service::file_type_service svc(scoped_ctx);
+            // The rows are the registry's, held by the system tenant, so the
+            // read is scoped there. A read in the caller's tenant answers an
+            // empty history for a row the caller may read.
+            const auto sys_ctx = scoped_ctx.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                        scoped_ctx.actor());
+            service::file_type_service svc(sys_ctx);
             auto versions = svc.get_type_history(entity_id);
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_file_type_fields);

@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -101,8 +100,8 @@ domain::sensitivity_template
 sensitivity_template_to_domain(const messaging::sensitivity_template_write& write) {
     domain::sensitivity_template v;
     v.code = write.code;
-    v.asset_class = write.asset_class;
-    v.method = write.method;
+    v.method_code = write.method_code;
+    v.asset_class_code = write.asset_class_code;
     v.description = write.description;
     return v;
 }
@@ -124,6 +123,11 @@ sensitivity_template_service::list_sensitivity_templates(
         request.filter->code_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -182,8 +186,7 @@ messaging::put_sensitivity_template_response sensitivity_template_service::put_s
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        sensitivity_template_read_one(repo_, ctx_, sensitivity_template_key_from(value)), ctx_);
+    auto written = sensitivity_template_read_one(repo_, ctx_, sensitivity_template_key_from(value));
     if (!written.empty())
         response.sensitivity_template = std::move(written.front());
     return response;
@@ -216,8 +219,8 @@ sensitivity_template_service::put_many_sensitivity_templates(
     repo_.write(ctx_, batch, claims);
     response.templates.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            sensitivity_template_read_one(repo_, ctx_, sensitivity_template_key_from(value)), ctx_);
+        auto written =
+            sensitivity_template_read_one(repo_, ctx_, sensitivity_template_key_from(value));
         response.templates.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -341,10 +344,8 @@ sensitivity_template_service::prepare_change(const messaging::sensitivity_templa
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = sensitivity_template_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        sensitivity_template_read_one(repo_, ctx_, sensitivity_template_key_from(out)), ctx_);
+    const auto current =
+        sensitivity_template_read_one(repo_, ctx_, sensitivity_template_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

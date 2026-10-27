@@ -8,6 +8,9 @@
 #include "ores.{{component_core}}/presentation/{{entity_singular}}_history_field_mapper.hpp"
 #include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+{{#system_tenant_validation}}
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/system_tenant_validation}}
 {{#history_by_row_id}}
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -30,7 +33,17 @@ void register_{{entity_singular}}_history_provider(
         "{{product}}.{{component}}.{{entity_singular}}",
         "{{component}}::{{entity_plural}}:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+{{#system_tenant_validation}}
+            // The rows are the registry's, held by the system tenant, so the
+            // read is scoped there. A read in the caller's tenant answers an
+            // empty history for a row the caller may read.
+            const auto sys_ctx = scoped_ctx.with_tenant(
+                ores::utility::uuid::tenant_id::system(), scoped_ctx.actor());
+            service::{{entity_singular}}_service svc(sys_ctx);
+{{/system_tenant_validation}}
+{{^system_tenant_validation}}
             service::{{entity_singular}}_service svc(scoped_ctx);
+{{/system_tenant_validation}}
 {{#history_by_row_id}}
             // The declared key is shared by the rows of other scopes, so the
             // history is addressed by the row's own id.

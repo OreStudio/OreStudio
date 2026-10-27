@@ -31,6 +31,8 @@ import { subjects as settingSubjects } from '@ores/wire-protocol/generated/analy
 import { subjects as modelSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_protocol';
 import { subjects as methodSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_method_protocol';
 import { subjects as templateSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_template_protocol';
+import { subjects as templateMethodSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_method_protocol';
+import { subjects as templateClassSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_asset_class_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
@@ -448,6 +450,8 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
         models,
         methods,
         templates,
+        templateMethods,
+        templateClasses,
         tenors,
         instruments,
         docs,
@@ -462,6 +466,8 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
         rows(modelSubjects.list_pricing_models_request, 'models'),
         rows(methodSubjects.list_pricing_methods_request, 'methods'),
         rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
+        rows(templateMethodSubjects.list_sensitivity_methods_request, 'methods'),
+        rows(templateClassSubjects.list_sensitivity_asset_classes_request, 'asset_classes'),
         rows(tenorSubjects.list_tenors_request, 'tenors'),
         rows(instrumentCodeSubjects.list_instrument_codes_request, 'instruments'),
         rows(oreParameterSubjects.list_ore_parameters_request, 'parameters'),
@@ -484,6 +490,12 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
     });
     const assetClassOf = new Map(
         instruments.map((row) => [text(row['code']), text(row['asset_class'])]),
+    );
+    const templateMethodNames = new Map(
+        templateMethods.map((row) => [text(row['code']), text(row['name'])]),
+    );
+    const templateClassNames = new Map(
+        templateClasses.map((row) => [text(row['asset_class_code']), text(row['name'])]),
     );
     const documented = new Map(
         docs
@@ -640,10 +652,17 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
                 source: text(row['source']),
             };
         }),
+        /*
+         * A template names two lookups, and the words a person reads for them
+         * live in their own tables. A trade-level template names no class, so
+         * its class reads empty and the screen says the method alone.
+         */
         templates: templates.map((row) => ({
             code: text(row['code']),
-            assetClass: text(row['asset_class']),
-            method: text(row['method']),
+            methodCode: text(row['method_code']),
+            assetClassCode: text(row['asset_class_code']),
+            assetClass: templateClassNames.get(text(row['asset_class_code'])) ?? '',
+            method: templateMethodNames.get(text(row['method_code'])) ?? text(row['method_code']),
             description: text(row['description']),
         })),
         tenors: tenors

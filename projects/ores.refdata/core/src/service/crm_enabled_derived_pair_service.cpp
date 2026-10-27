@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -190,9 +189,8 @@ crm_enabled_derived_pair_service::put_crm_enabled_derived_pair(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        crm_enabled_derived_pair_read_one(repo_, ctx_, crm_enabled_derived_pair_key_from(value)),
-        ctx_);
+    auto written =
+        crm_enabled_derived_pair_read_one(repo_, ctx_, crm_enabled_derived_pair_key_from(value));
     if (!written.empty())
         response.crm_enabled_derived_pair = std::move(written.front());
     return response;
@@ -225,9 +223,8 @@ crm_enabled_derived_pair_service::put_many_crm_enabled_derived_pairs(
     repo_.write(ctx_, batch, claims);
     response.crm_enabled_derived_pairs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(crm_enabled_derived_pair_read_one(
-                                           repo_, ctx_, crm_enabled_derived_pair_key_from(value)),
-                                       ctx_);
+        auto written = crm_enabled_derived_pair_read_one(
+            repo_, ctx_, crm_enabled_derived_pair_key_from(value));
         response.crm_enabled_derived_pairs.push_back(written.empty() ? value :
                                                                        std::move(written.front()));
     }
@@ -356,11 +353,8 @@ ores::utility::domain::result crm_enabled_derived_pair_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = crm_enabled_derived_pair_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        crm_enabled_derived_pair_read_one(repo_, ctx_, crm_enabled_derived_pair_key_from(out)),
-        ctx_);
+    const auto current =
+        crm_enabled_derived_pair_read_one(repo_, ctx_, crm_enabled_derived_pair_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

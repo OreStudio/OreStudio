@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -36,7 +37,12 @@ void register_pricing_method_history_provider(ores::history::service::dispatch_r
         "ores.analytics.pricing_method",
         "analytics::pricing_methods:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-            service::pricing_method_service svc(scoped_ctx);
+            // The rows are the registry's, held by the system tenant, so the
+            // read is scoped there. A read in the caller's tenant answers an
+            // empty history for a row the caller may read.
+            const auto sys_ctx = scoped_ctx.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                        scoped_ctx.actor());
+            service::pricing_method_service svc(sys_ctx);
             auto versions = svc.get_method_history(entity_id);
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_pricing_method_fields);

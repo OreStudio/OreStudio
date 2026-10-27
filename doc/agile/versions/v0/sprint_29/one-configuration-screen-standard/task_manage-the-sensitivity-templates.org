@@ -7,41 +7,140 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/manage-the-sensitivity-templates
+#+pr: 3911
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
-#+environment:
+#+updated: 2026-10-27
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give the sensitivity templates a screen: the tenant's keys, each with its
+asset class, its method and the method code ORE spells in a key, and its
+description. A person reads the keys, adds one of the tenant's own, corrects a
+description, and deletes a key it added, through the standard record screen.
+
+The screen manages the keys alone. The shift sizes and shift schemes a key
+implies belong to the sensitivity configuration, and the screen says so where
+a person would look for them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
 
 * Acceptance
 
--
+- A sensitivity template is a key a pricing engine configuration puts on a
+  product with the =SensitivityTemplate= setting, and the screen manages the
+  keys of the tenant and nothing else.
+- The list shows the code, the asset class, the method and the description,
+  searches and orders on the server, pages at 15 rows, and opens a key's page.
+- The record page titles the key by its code, offers Edit, Delete and History
+  as the standard sets them, and its Details states the asset class, the method
+  with its code, and the description, under the sentence that says what the key
+  does not decide.
+- A new key states its code once; a correction cannot change it. The form draws
+  the asset class and the method as selects over what the table allows, and
+  states the method code the chosen method implies rather than asking for it.
+- The BFF serves the list, one key, the create, the correction, the removal and
+  the history, and refuses a create of a code the tenant holds, a correction of
+  a code it does not hold, and a write against a version that moved on.
+- The screen is reachable where a person looks for sensitivity data, as one
+  entry named Sensitivity templates.
+- The words are in English, French and Portuguese.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the record kind declares
+
+| Declaration | Value |
+|-------------+-------|
+| Record kind | =sensitivity-templates=, the tenant's, with no party |
+| Key | =code=, fixed once the row exists |
+| Display field | =code=, because a template key is what a person knows a template by |
+| Versioned | Yes, and writable |
+| Natural order | The key's order, which is the store's default |
+| Exception | None of the record standard's. The =SensitivityTemplate= setting is a code list that a configuration points at, which the configuration screen standard calls a field set of another kind; it is not a configuration of its own |
+
+** The list contract
+
+The screen searches and orders on the server, as the standard requires, and the
+generated contract carried neither. The model now declares =code= and
+=description= searchable, and =code=, =asset_class=, =method= and =description=
+sortable, so the store searches the two fields a person searches by and refuses
+no column the list offers. The generated filter gains =search=, so the contract
+is extended rather than the screen reading every row.
+
+** The BFF module
+
+=sensitivity-templates.ts= registers six routes under
+=/api/analytics/sensitivity-templates=: the page, one key, the two writes, the
+removal, and the history, plus the choices the dialog draws. Each route names a
+generated subject, so the wire shape is the protocol's and not the module's.
+
+- The page reads one page through =analytics.v1.sensitivity_templates.list= and
+  answers the store's =total=, so the pager counts every key.
+- A create claims =must_not_exist= and a correction claims
+  =must_match_version=, so a key written meanwhile is refused rather than
+  replaced. The service states the refusal's code, and the module answers 409
+  for a code the tenant holds and for a row that moved on, and 404 for a code it
+  does not hold.
+- Both writes derive =method_code= from the method. The table checks the pair,
+  and a person types neither the code nor its token.
+- A removal reads the row first and answers what it removed, because the
+  versions stay in the history and the dialog says so.
+- The history route reads the key's versions through the shared history read
+  (RS-HIST-01). The generic =/api/history= route also serves the entity type,
+  because that is the request the standard's timeline reads.
+
+** The screen
+
+Two pages under =web/src/sensitivityTemplates/=, one form module, and one module
+of the reads and the permissions. The list and the record page use the shared
+parts the classifications screens use: =RecordList=, =RecordHeader=,
+=RecordDetails=, =Dialog=, =ReasonFields=, =useCloseGuard=, =DeleteDialog=,
+=RevertVersionDialog= and =RecordTimeline=. The header actions are the standard
+three: Edit, then Delete, with History as the second tab.
+
+The form is one dialog with no tabs (the form has four fields), the asset class
+and the method as selects over the choices route, the key as text on create and
+as words on a correction, and the derived method code as a statement under them.
+The reason and the commentary come last, and a new key carries =system.new_record=
+in a note rather than asking for it.
+
+** Where the screen sits
+
+Sensitivity templates are read by the pricing engine configuration, which is
+Product pricing in the reporting area, and the shifts they imply are the
+sensitivity configuration's. The reporting area has no Sensitivity analysis card
+or configuration yet, so the entry is a card of that area beside Product pricing
+and Engine run settings, named Sensitivity templates, and the area opens for a
+person who holds the read of any of its four screens.
+
+** What the standard required that did not fit
+
+- The configuration standard's "What this configuration decides" sentence wants
+  its second half to link to the other configuration. The sensitivity
+  configuration has no screen yet, so the half that names it is words and not a
+  link.
+- The record standard's natural order for reference data is the display order
+  then the name. A template has no display order and its display field is its
+  key, so the order is the key's.
+- The History tab reads the generic history request, because RS-HIST-01 names
+  it, so the module's own history route answers the same read for a caller that
+  names the record's own address. Both are tested.
 
 * Measurements
 
@@ -55,7 +154,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Seeded template keys, tenant-level | 19 | =compass sql -- -c "select count(*) from ores_analytics_sensitivity_templates_tbl where valid_to = ores_utility_infinity_timestamp_fn();"= | 11927c133c |
+| Files the model change regenerated | 5 | =git show --stat 7b09409516= | 7b09409516 |
+| Entities whose history provider the generator fix regenerated | 29 | =git show --stat fa96a6bd1b= (31 files: the 29 providers, the template and its org source) | fa96a6bd1b |
+| Tests the BFF suite runs | 1062 passing | =npm run test --workspace @ores/bff= | 11927c133c |
+| Tests the web suite runs | 2138 passing | =npm run test --workspace @ores/web= | 11927c133c |
+| Units the browser run drives | 1, over 10 screenshots | =npx playwright test --config playwright.local.config.ts specs/sensitivity-templates.spec.ts= | 11927c133c |
 
 * Notes
 
@@ -68,13 +172,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_manage-the-sensitivity-templates.org][Manage the sensitivity templates]] | PENDING | Runs on 21002 after provisioning. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3911][#3911]] | [analytics] Manage the sensitivity templates on their own screen |
 
 * Review
 
@@ -83,3 +187,89 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The screen is built, and it is driven on the running environment:
+
+- the list reads the tenant's 19 keys, pages at 15, and searches and orders on
+  the server;
+- a key opens on its page, which states what the key decides and what it does
+  not;
+- a key the run added was created, corrected and removed, and each write shows
+  in its history as a version with its reason and its commentary;
+- the seeded keys are untouched: the count returns to 19, and =IR_FD= still
+  reads version 1 with the words it was seeded with.
+
+Six commits carry it: the model change that lets the list search and order on
+the server, the BFF module, the descriptors it needed, the screens, the browser
+run with the two faults it found, and a generator fix for a standing defect the
+history read exposed.
+
+** The defect the history exposed
+
+The History tab answered nothing at first. A history provider reads with the
+caller's tenant, and the entities whose rows the system tenant holds, which
+includes every pricing engine vocabulary table, answered an empty list for a
+row the caller may read. The provider now scopes to the system tenant for the
+entities the model declares =system_tenant_validation= on, and the 29 entities
+that declare it are regenerated. The pricing engine type, method, model, pair
+and pair setting histories are fixed by the same change.
+
+** Where the screen sits
+
+The reporting area, as a card named Sensitivity templates, beside Product
+pricing and Engine run settings. The two configurations beside it are what read
+these keys: a product carries one with the =SensitivityTemplate= setting. The
+area already had no Sensitivity analysis card, so the entry went beside those
+two, and the area opens for a person who holds the read of any of its four
+screens.
+
+** Screenshots of the run
+
+They are the build tree's, not the source tree's:
+=build/output/ui-tests/01-list.png=, =02-list-second-page.png=,
+=03-search.png=, =04-add-dialog.png=, =05-record.png=,
+=06-edit-dialog.png=, =07-history.png=, =08-delete-dialog.png=,
+=09-list-after-delete.png= and =10-seeded-key-untouched.png=.
+
+** What the standard required that did not fit
+
+- The configuration standard's "What this configuration decides" sentence wants
+  its second half to link to the other configuration. The sensitivity
+  configuration has no screen, so the half that names it is words and not a
+  link.
+- The record standard's natural order for reference data is the display order
+  then the name. A template has no display order and its display field is its
+  key, so its order is the key's.
+- The History tab reads the generic history request, because RS-HIST-01 names
+  it, so the module's own history route answers the same read for a caller that
+  names the record's own address. Both are tested.
+- The browser instrument wants a Chromium revision this sandbox cannot install
+  (the home directory is read-only), so a local launch config points at the
+  revision the checkout's cache holds. It is gitignored, and the README's rule
+  about the browsers' location says why.
+
+** The second pass: the model the screen needed
+
+The first pass stored the class and the method as text and enforced them with checks. A design review settled the model this screen should sit on:
+
+- =asset_class_code= is a nullable soft FK to =ores_refdata_asset_class_codes_tbl=, validated by =ores_refdata_validate_asset_class_code_fn=, the same pattern the market series junction uses. The ORE presentation prefix (=COMM= for commodity) lives in a bridge entity, =sensitivity_asset_class=, with the class's words; the five classes ORE presents are seeded, and bond and inflation are not, because ORE's templates have no prefix for them.
+- The method is its own entity, =sensitivity_method=: code, name, description, =needs_asset_class= and display order. Trade is the one method that names no class.
+- =SensiTrade= is a real ORE product type with no asset class, so =ALL= is gone: the class is null exactly when the method is Trade. The rule is a table check, because the generator's validations see one column at a time; the method's =needs_asset_class= is what the screen reads.
+- The template key stays free: ORE resolves the key a configuration states.
+
+The catalogue view composes the label from the two lookups: *Interest rate · Analytical*, and *Trade level* alone for the classless key. The BFF choices route reads the two list subjects, the writes carry the two codes and refuse a pair the tables would refuse, and the screen draws both as selects; choosing Trade clears and disables the class, and the record states the class's words, the method's words, the method code and the prefix under the sentence that says the shifts are set per market key and may reach keys outside the class.
+
+The seeds are 5 methods, 5 classes and 19 templates, verified on a recreated database, and =SensiTrade= carries no class.
+
+** Two defects the pass exposed
+
+1. A generated synthetic generator appended =-<idx>= to a text primary key even when the model opted out with =:no_generator_suffix:=. The flag was parsed and the element generator honoured it; the scalar generator did not. The template now honours it for a text primary key, and the bridge states a refdata code unsuffixed, cycling the five so many synthetic rows stay distinct. The common case's generated output is unchanged, so no other entity was regenerated.
+2. Running the browser case as a person rather than the tenant administrator showed the screen's role could read the keys and nothing else: Operations held the template read, the write and delete were seeded without a grant, and the two lookups were granted to Member alone. The seed now grants the four to Operations, and the browser case signs in as an Operations account.
+
+** Verification of the second pass
+
+- =./compass.sh build= exit 0.
+- =ores.analytics.core.tests= 78 cases and 512 assertions; BFF 1072 tests; web 2165 tests; the pgTAP suites for the templates and the lookups pass 18 of 18 on a recreated, provisioned database.
+- The browser case passes as an Operations account against the running environment: 19 keys paged, search, add, correct, history, delete, seeded key untouched.
+- The named local checks pass: cmake-sources, model-drift, sql-hygiene, model-sql-types, handler-permissions, route-auth, bff-list-requests, web, tangle-templates, format, component-drift.
+

@@ -4622,7 +4622,7 @@ const pt: SourceCatalogue = {
             ratioHelp: 'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um.',
             decay: 'Decaimento, por segundo',
             decayHelp:
-                'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
+                'Apenas Hawkes: com que rapidez uma rajada desaparece, por segundo de tempo de mercado. Uma rajada desaparece mais depressa num mercado agitado.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
             marketUnknown: 'o estado do mercado não está legível agora',
             unsaved: 'Alterações por guardar',
@@ -5172,6 +5172,36 @@ const pt: SourceCatalogue = {
         },
     },
 
+    // sensitivityTemplates:begin
+    sensitivityTemplates: {
+        title: 'Modelos de sensibilidade',
+        lead: 'As chaves que uma configuração de motor de preços coloca num produto, com a classe de ativo e o método que cada chave nomeia.',
+        code: 'Código',
+        codeHelp: 'A chave que o ORE lê, como IR_FD. É fixada na criação e nunca muda.',
+        assetClass: 'Classe de ativo',
+        assetClassHelp:
+            'A classe dos produtos que transportam a chave, e não as chaves que os seus choques atingem.',
+        method: 'Método',
+        methodCode: 'Código do método',
+        methodCodeHelp: 'O símbolo que o ORE escreve numa chave, tal como o método o declara.',
+        templatePrefix: 'Prefixo do modelo',
+        templatePrefixHelp: 'O prefixo que o ORE escreve na chave para esta classe de ativo.',
+        noAssetClass: 'Nenhuma',
+        tradeNoClass:
+            'Um modelo ao nível da transação não nomeia classe de ativo, porque a transação declara as suas próprias sensibilidades.',
+        description: 'Descrição',
+        add: 'Novo modelo',
+        addTitle: 'Adicionar um modelo de sensibilidade',
+        decides:
+            'Nomeia uma chave que uma configuração de motor de preços coloca num produto. A classe é a desse produto, e os tamanhos de choque que a chave aplica são definidos por chave de mercado na configuração de sensibilidade, que os pode definir em chaves de mercado fora dessa classe.',
+        newRecordNote:
+            'Um novo modelo é registado como um novo registo, e o seu histórico começa nessa escrita.',
+        readerOnly: 'Alterar um modelo exige a permissão para alterar modelos de sensibilidade.',
+        removeWarning:
+            'A chave é removida. Os choques dos produtos que a transportam são lidos na configuração de sensibilidade, e as suas versões ficam no histórico.',
+    },
+    // sensitivityTemplates:end
+
     // engineSettings:begin
     engineSettings: {
         title: 'Configurações de execução do motor',
@@ -5637,6 +5667,9 @@ const pt: SourceCatalogue = {
                 pricingEngines: 'Preços por produto',
                 pricingEnginesBody:
                     'Que modelo e que motor avaliam cada produto, para a parte em que trabalha.',
+                sensitivityTemplates: 'Modelos de sensibilidade',
+                sensitivityTemplatesBody:
+                    'As chaves que um produto transporta para a configuração de sensibilidade definir os seus choques.',
                 reports: 'Relatórios',
                 reportsBody:
                     'As definições que as partes onde trabalha executam, e o estado da última execução de cada uma.',
@@ -5853,6 +5886,9 @@ const pt: SourceCatalogue = {
         engineSettingsRead: 'ver as configurações do motor',
         engineSettingsWrite: 'alterar as configurações do motor',
         engineSettingsDelete: 'remover as configurações do motor',
+        sensitivityTemplatesRead: 'ver os modelos de sensibilidade',
+        sensitivityTemplatesWrite: 'alterar os modelos de sensibilidade',
+        sensitivityTemplatesDelete: 'remover os modelos de sensibilidade',
     },
 
     unavailable: {

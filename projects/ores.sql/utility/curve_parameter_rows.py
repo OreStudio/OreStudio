@@ -21,7 +21,9 @@ The leaves, whether each is required and the type of its value come from the
 ORE source, through curve_terms.json, which extract_curve_terms.py writes. The
 words come from the curveconfig chapter of the ORE guide, through the same
 file, and from curve_term_curation.json, where a person states a text the guide
-does not give, with its reason, source and curator.
+does not give, with its reason, source and curator. That file is created when the
+first text is curated; until then the guide is the only source and every leaf it
+does not describe is a gap.
 
 A term with no text is not written. It is a gap of the contract, which the
 screen shows as an undocumented leaf, and which undocumented() lists so the
@@ -60,7 +62,7 @@ def humanise(name):
     words = re.findall(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", name) or [name]
     words = [w if (len(w) > 1 and w.isupper()) else w.lower() for w in words]
     text = " ".join(words)
-    return text[0].upper() + text[1:]
+    return text[0].upper() + text[1:] if text else name
 
 
 def first_sentence(text):

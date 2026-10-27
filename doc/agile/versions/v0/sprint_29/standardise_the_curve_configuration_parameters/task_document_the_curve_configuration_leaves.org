@@ -160,6 +160,17 @@ via its "Verifies task" field.
 | 2 | Eight parser blocks stay unresolved, so the extractor does not yet read every leaf. | extract_curve_terms.py | Accept | Each is named in =curve_terms.json= with the source line that reads it, and listed in Notes. Closing them is the next pass on the extractor; none is silently dropped. |
 | 3 | 199 leaves have no text and are not written into the contract. | this task | Accept | The generator prints them, so the coverage is visible rather than implied. A leaf gains text from a curation entry, which is how the guide's silence is recorded. |
 
+The six below came from the on-demand Claude review of PR #3905.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 4 | The docstring names =curve_term_curation.json=, which the PR does not add. | curve_parameter_rows.py | Accept | The docstring now says the file is created when the first text is curated, and that until then the guide is the only source and every leaf it does not describe is a gap. |
+| 5 | =position= has gaps within a section, because leaves without text are skipped. | curve_parameter_rows.py | Decline | The field keeps the order the document wrote, which a gap preserves. The screen sorts by it, and nothing requires the values to run 1..n. |
+| 6 | =humanise= raises =IndexError= on an empty name. | curve_parameter_rows.py | Accept | Guarded: an empty name is returned as it stands. |
+| 7 | =default_of= cuts a stated default at the first parenthesis. | curve_parameter_rows.py | Decline | Checked the rows rather than the code path: the one compound default the guide states ends "or left blank." and is intact, and a literal default never holds a parenthesis. |
+| 8 | The wildcard rule in =curated_for= should be protected by a test once the curation file has entries. | curve_parameter_rows.py | Decline | The rule cannot drift while =rows()= and =undocumented()= both reach it through the same call, and there are no curation entries to guard yet. The task that adds them can add the test. |
+| 9 | Two curve leaves could collide on the parameter id, since =subtype= is the path without the leaf's own name. | generate_ore_parameters_dataset.py | Decline | =rows()= already raises when two parameters document the same leaf, and =ore-parameters-seed= passes, so a collision stops the generator instead of writing a duplicate. |
+
 * Result
 
 The extractor reads the ORE source and writes =curve_terms.json=: 19 sections,

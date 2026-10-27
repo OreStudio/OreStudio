@@ -105,6 +105,7 @@ function render(
                 error={null}
                 marked={marked}
                 states={states}
+                mayPin
                 onPin={onPin}
             />
         </TranslationProvider>,
@@ -344,6 +345,7 @@ function renderTraced(traceNow: MarketTrace = trace()): string {
                 marked={null}
                 states={[]}
                 trace={traceNow}
+                mayPin
                 onPin={() => undefined}
             />
         </TranslationProvider>,
@@ -432,5 +434,6 @@ describe('the market regime tab for a tenant', () => {
         );
         expect(html).not.toContain('>Auto</button>');
         expect(html).not.toContain('>Active</button>');
+        expect(html).not.toContain('>Calm</button>');
     });
 });

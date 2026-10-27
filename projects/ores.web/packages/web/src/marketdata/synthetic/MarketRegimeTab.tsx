@@ -153,7 +153,7 @@ export function MarketRegimePanel({
     marked,
     states,
     trace,
-    mayPin = true,
+    mayPin,
     onPin,
 }: {
     readonly regime: MarketRegime;
@@ -168,7 +168,7 @@ export function MarketRegimePanel({
     /** The scheduler's own record, which the pace, the bands, the fit and the log are drawn from. */
     readonly trace?: MarketTrace | undefined;
     /** Whether this session may set the market: the system tenant's, and no other. */
-    readonly mayPin?: boolean;
+    readonly mayPin: boolean;
     readonly onPin: (mode: RegimeMode) => void;
 }): ReactNode {
     const { t } = useTranslation();

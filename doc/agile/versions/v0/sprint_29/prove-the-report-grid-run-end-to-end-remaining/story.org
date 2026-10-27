@@ -62,7 +62,7 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:0A905105-F500-44C7-ACF1-E8517B778E11][Add the report result rows table]] | BACKLOG | | | A hypertable of one row per subject, measure and currency at the run's priced date, with the security, indexes and retention the market data ticks use. |
 | [[id:7D867B23-569E-47FC-A3E1-003F94B787F0][Post-process a run's results into rows]] | BACKLOG | | | A post-processing step after retrieval, one reader per analytic, rows written in one transaction per run, and the run stating what was written. |
 | [[id:E2B1C2B1-3E73-4B85-B42F-C4392750DDAE][Marshal the engine's output into result rows]] | BACKLOG | | | The compute wrapper writes one canonical result file from the engine's own files, a projection of their headings rather than a parse, before it uploads. |
-| [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] | STARTED | 2026-10-27 | | A report definition runs on demand from its own page, the run is followed to the grid and its jobs, and the results the screen draws are the rows the post-processor loaded rather than the archive it used to parse. |
+| [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] | DONE | 2026-10-27 | 2026-10-27 | A report definition runs on demand from its own page, the run is followed to the grid and its jobs, and the results the screen draws are the rows the post-processor loaded rather than the archive it used to parse. |
 
 * Decisions
 
@@ -88,6 +88,17 @@ The ACME report definition runs to completion against the compute grid from an i
   namespace and a fleet cannot answer their announces. The streams that
   namespace creates are not purged yet; that is captured in
   [[id:4FABC503-2218-42FA-9086-1E94A367A638][Purge the streams a test run creates]].
+- 2026-10-27: The run's results are read from the table by run, and no request
+  path parses the archive. Merged as #3929 with four review points open: the
+  read has no bound, four filter members are ignored, no read permission is
+  checked, and the BFF keeps dead tar constants. They are recorded on
+  [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]].
+- 2026-10-27: The =report_result_row= entity generates twelve layers that the
+  branch did not commit, because the generated CRUD service cannot serve a
+  hypertable whose key is =(id, as_of)=. =check_component_drift.py --component
+  reporting= therefore fails on main, and the drift job did not see it because
+  it does not watch =projects/ores.reporting/modeling/=. The model must state
+  the layers it does not generate, or the job must watch the model.
 
 * Out of scope
 

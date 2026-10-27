@@ -39,7 +39,7 @@ import {
     type GetMyRolesRequest,
     type ListAccountPermissionsRequest,
     type ListMyPermissionsRequest,
-    type ListRolePermissionsRequest,
+    type ListRolePermissionsPageRequest,
     type ListRoleHoldersRequest,
     type ListRolesPageRequest,
     type GetRolePermissionsRequest,
@@ -62,7 +62,7 @@ export const ACCESS_SUBJECTS = {
     mine: authorizationSubjects.get_my_roles_request,
     byAccount: authorizationSubjects.get_account_roles_request,
     myPermissions: authorizationSubjects.list_my_permissions_request,
-    rolePermissionsPage: authorizationSubjects.list_role_permissions_request,
+    rolePermissionsPage: authorizationSubjects.list_role_permissions_page_request,
     rolesPage: authorizationSubjects.list_roles_page_request,
     roleHolders: authorizationSubjects.list_role_holders_request,
     accountPermissions: authorizationSubjects.list_account_permissions_request,
@@ -470,7 +470,7 @@ export async function readRolePermissionsPage(
     roleId: string,
     query: RolePermissionQuery,
 ): Promise<PermissionPage> {
-    const request: ListRolePermissionsRequest = {
+    const request: ListRolePermissionsPageRequest = {
         role_id: roleId,
         area: query.area,
         search: query.search,

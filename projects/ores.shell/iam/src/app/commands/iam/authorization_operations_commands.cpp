@@ -150,12 +150,12 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
         "list-my-permissions <area> <search> [--offset <v>] [--limit <v>]");
 
     menu->Insert(
-        "list-role-permissions",
+        "list-role-permissions-page",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_list_role_permissions(std::ref(out), std::ref(session), std::move(args));
+            process_list_role_permissions_page(std::ref(out), std::ref(session), std::move(args));
         },
-        "list-role-permissions <role_id> <area> <search> [--include_unheld <v>] [--offset <v>] "
-        "[--limit <v>]");
+        "list-role-permissions-page <role_id> <area> <search> [--include_unheld <v>] [--offset "
+        "<v>] [--limit <v>]");
 
     menu->Insert(
         "list-roles-page",
@@ -641,17 +641,17 @@ void authorization_operations_commands::process_list_my_permissions(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void authorization_operations_commands::process_list_role_permissions(
+void authorization_operations_commands::process_list_role_permissions_page(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-role-permissions request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-role-permissions-page request.";
 
-    using request_type = ores::iam::messaging::list_role_permissions_request;
+    using request_type = ores::iam::messaging::list_role_permissions_page_request;
 
     // Whether the command presents a token is the protocol's own statement, so
     // a message that establishes the session is never asked for one.
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run list-role-permissions." << std::endl;
+            fail(out) << "You must be logged in to run list-role-permissions-page." << std::endl;
             return;
         }
     }

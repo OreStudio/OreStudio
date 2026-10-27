@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,17 @@ Numbers for one component's test build and test run at the release optimisation 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- Compile CPU, wall time and peak memory of =ores.dq.core.tests= without ccache
+  at =-O3=, =-O1= and =-O0=, and the test run time at =-O3= and =-O0=.
 
 * Plan
 
@@ -91,3 +92,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Compiling =ores.dq.core.tests= at =-O0= saves 11% of its compile CPU, and the
+tests run in the same time, because they wait on the database. Tests are about
+an eighth of the files, so this saves about 1.4% of the total build. It is worth
+taking, and it makes the tests easier to debug, but it is a small lever.

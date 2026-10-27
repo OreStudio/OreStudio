@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
-#+updated: 2026-10-24
-#+environment:
+#+updated: 2026-10-26
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ tenor_basis_swap_convention is generated from field-group models: its identity a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and building. The three rows are grouped, the family service writes grouped members, and the database suites are the last gate. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-14                               |
+| Next         | Run the refdata and ORE convention suites, then raise the PR. |
+| Last touched | 2026-10-26                               |
 
 * Acceptance
 
@@ -39,6 +39,17 @@ tenor_basis_swap_convention is generated from field-group models: its identity a
 - The generated domain type carries one nested struct per group, each with at most five members, and exactly one of the two leg forms is filled.
 - The SQL columns, the database entity and the conventions mapper are unchanged in shape, and the refdata and ORE convention suites pass.
 - The generated JSON becomes nested; the document protocol and every consumer are regenerated in the same PR, and no external consumer exists.
+
+** The acceptance, read against the atomised model
+
+Two bullets were written before the atomisation and name shapes that no longer
+exist, so they are read as follows until the owner rewrites them:
+
+- The "market-data annex" is =oresmd_uri=, which the atomisation left on the
+  central row. It is grouped with the name into =payload= rather than given a
+  group of its own: two members do not make a concern worth a struct.
+- "Exactly one of the two leg forms is filled" is now structural. The forms
+  are separate tables, and a convention carries one row in one of them.
 
 * Plan
 
@@ -173,12 +184,26 @@ Measured on this branch:
 | Codegen suite | 1624 passed | =pytest projects/ores.codegen/tests= |
 | Drift sweep | clean | =check_component_drift.py --sweep --dry-run= |
 | SQL | unchanged | =git status projects/ores.sql= |
-| Build | refdata api, core, service, tests and ores.ore core | =compass build ...= |
+| Refdata core suite | 466 cases, 5595 assertions, all passed | =ores.refdata.core.tests= |
+| ORE core suite | 394 cases, 475486 assertions, all passed | =ores.ore.core.tests= |
+| Build | refdata api, core, service, tests and ores.ore core and tests | =compass build ...= |
 
-The database-backed suites did not run: the environment's PostgreSQL cannot
-load =timescaledb-2.30.1= (2.30.2 is installed), so no test process gets past
-=ORES_TEST_DB_USER=. That is a machine state left by the restart, not this
-change.
+The database suites ran after two machine repairs: PostgreSQL could not load
+=timescaledb-2.30.1= (2.30.2 was installed), fixed with
+=alter extension timescaledb update=, and this environment's schema was
+rebuilt at the branch tip because it was 68 hours out of date.
+
+** 2026-10-26: the stamp walks into a grouped row's members
+
+A grouped row carries =tenant_id= and =party_id= inside its identity member,
+and the write refuses a row whose party is the nil uuid. =stamp_document()=
+only stamped a row that had =modified_by= on the struct itself, so it walked
+past a grouped row's identity and the party stayed nil: the first database
+run of the convention bundle tests failed with "Invalid party_id".
+
+Stamp every member of an aggregate as well as walking into it. =stamp()= is
+guarded field by field, so it does nothing for a member that carries none of
+the security fields.
 
 * Measurements
 

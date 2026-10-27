@@ -374,7 +374,7 @@ TEST_CASE("the shared convention family reads back only the kind the bundle cove
     // The shared table carries every kind, so a row of another kind is written
     // straight to it and must not appear in the bundle's read.
     ores::refdata::repository::convention_repository conventions;
-    ores::service::messaging::stamp(other, ctx);
+    ores::service::messaging::stamp_document(other, ctx);
     conventions.write(ctx, other);
 
     const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
@@ -522,7 +522,7 @@ TEST_CASE("the bundle read drops a part whose central row it does not carry", ta
     other.identity.kind_code = "DEPOSIT";
     other.payload.name = "AUD-DEPOSIT";
     other.audit.change_reason_code = "system.test";
-    ores::service::messaging::stamp(other, ctx);
+    ores::service::messaging::stamp_document(other, ctx);
     ores::refdata::repository::convention_repository conventions;
     conventions.write(ctx, other);
 
@@ -532,7 +532,7 @@ TEST_CASE("the bundle read drops a part whose central row it does not carry", ta
     orphan.pay_leg.pay_index = std::string("AUD-LIBOR-6M");
     orphan.rec_leg.receive_index = std::string("AUD-LIBOR-3M");
     orphan.audit.change_reason_code = "system.test";
-    ores::service::messaging::stamp(orphan, ctx);
+    ores::service::messaging::stamp_document(orphan, ctx);
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
     parts.write(ctx, orphan);
 

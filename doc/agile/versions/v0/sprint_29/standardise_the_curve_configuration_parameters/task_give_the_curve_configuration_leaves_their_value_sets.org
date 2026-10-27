@@ -28,9 +28,9 @@ Every documented leaf of curveconfig.xsd is linked to the value set its values b
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | The extractor records the parse function behind 27 of the 434 leaves. The conventions method does not carry across, and the finding below says why. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Decide how a leaf's set is derived where ORE's config parser keeps the value as text. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -61,6 +61,27 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- *The conventions method does not carry across, and this is the finding of the
+  first pass.* The conventions extractor learns a term's type from the parser
+  its read wraps, or from the `build` method applying a parser to the member the
+  read stored. A curve config has neither for most leaves: =YieldCurveConfig=
+  declares no =build= at all, and ORE parses these strings in the curve
+  construction code, far from the parser class. Measured on ORE
+  =3d75a6908=, the extractor finds a parse function behind 27 of 434 leaves.
+- *What is left is a designed choice, not a mechanical derive.* Name-based
+  recognition of ORE's vocabularies adds 53 more leaves: currency, calendar, day
+  counter, business day convention, index and convention name, by the name ORE
+  gives the leaf. That still leaves 354. Some of those are genuinely closed
+  lists whose parser lives elsewhere, =InterpolationMethod= and
+  =VolatilityType= among them, so a curated map from leaf name to set covers
+  them, at the cost of provenance: the set is authored and marked to review
+  rather than derived from a parse function.
+- *A rule from the conventions task cannot be reused as written.* That task
+  stops the generator when a parser states no list, so a list the extractor
+  failed to read cannot become free text. Here most leaves have no parser to
+  appeal to, so the rule would stop every run. The replacement has to say what
+  a leaf with no parser is, and why that is not a silent fallback.
 
 * Test Scenarios
 

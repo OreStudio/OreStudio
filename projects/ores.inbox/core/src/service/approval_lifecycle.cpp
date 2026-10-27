@@ -366,20 +366,22 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
                                            const std::string& decision_code,
                                            const boost::uuids::uuid& decided_by,
                                            const std::string& comment,
-                                           const std::string& part_code) {
+                                           const std::string& part_code,
+                                           const std::string& hold_reason_code) {
     BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
         "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, "
-        "nullif($7, ''))",
+        "nullif($7, ''), nullif($8, ''))",
         {request_id,
          std::to_string(version),
          decision_code,
          boost::uuids::to_string(decided_by),
          comment,
          ctx_.actor(),
-         part_code},
+         part_code,
+         hold_reason_code},
         lg(),
         "Deciding an approval request");
 

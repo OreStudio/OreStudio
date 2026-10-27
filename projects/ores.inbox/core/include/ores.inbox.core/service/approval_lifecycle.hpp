@@ -212,13 +212,18 @@ public:
     /**
      * @brief Writes a decision and moves the request to the state the
      * decisions reach, in one statement.
+     *
+     * A hold names one of the hold reason lookup's codes, so a parked request
+     * says what it waits for in words a report groups by. The lookup refuses a
+     * code it does not hold, and says which ones it does.
      */
     decision_result decide(const std::string& request_id,
                            int version,
                            const std::string& decision_code,
                            const boost::uuids::uuid& decided_by,
                            const std::string& comment,
-                           const std::string& part_code = "");
+                           const std::string& part_code = "",
+                           const std::string& hold_reason_code = "");
 
     /**
      * @brief Moves an approved request to apply_failed, with the reason in the

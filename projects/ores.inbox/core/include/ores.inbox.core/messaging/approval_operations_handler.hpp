@@ -380,7 +380,8 @@ public:
                                             req->decision_code,
                                             *me,
                                             req->comment,
-                                            answers_for_part ? req->part_code : std::string{});
+                                            answers_for_part ? req->part_code : std::string{},
+                                            req->hold_reason_code);
             const auto after = lifecycle.request(req->request_id).value_or(*current);
             if (after.state_code != current->state_code)
                 tell_asker(*ctx, *kind, after, req->comment);

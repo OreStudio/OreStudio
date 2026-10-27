@@ -33,6 +33,9 @@
  *  - the decision is one the state allows: from waiting, approve, refuse,
  *    hold or withdraw; from held, approve, refuse or resume;
  *  - hold only for a kind that allows holding;
+ *  - a hold names one of the hold reasons, so a parked request says what it
+ *    waits for in the words the held-over report groups by, and never in free
+ *    text alone;
  *  - a comment when the decision type, or the kind for an approval, needs one.
  *
  * The insert trigger on the decisions table adds four-eyes, and the unique
@@ -57,7 +60,7 @@
  * the caller's tenant. It answers one row: the outcome (ok, missing, conflict,
  * invalid), a message, and the request's state and version afterwards.
  */
-drop function if exists ores_inbox_decide_approval_request_fn(uuid, integer, text, uuid, text, text);
+drop function if exists ores_inbox_decide_approval_request_fn(uuid, integer, text, uuid, text, text, text);
 
 create or replace function ores_inbox_decide_approval_request_fn(
     p_request_id uuid,
@@ -66,7 +69,8 @@ create or replace function ores_inbox_decide_approval_request_fn(
     p_decided_by uuid,
     p_comment text,
     p_actor text,
-    p_part_code text default null
+    p_part_code text default null,
+    p_hold_reason_code text default null
 ) returns table (outcome text, message text, state_code text, version integer)
 as $$
 declare
@@ -151,6 +155,29 @@ begin
         return;
     end if;
 
+    if p_decision_code = 'hold' then
+        if coalesce(btrim(p_hold_reason_code), '') = '' then
+            return query select 'invalid'::text,
+                'A hold names a reason. Must be one of: ' ||
+                coalesce((
+                    select string_agg(code::text, ', ' order by display_order)
+                    from ores_inbox_hold_reasons_tbl
+                    where tenant_id = ores_utility_system_tenant_id_fn()
+                      and valid_to = ores_utility_infinity_timestamp_fn()), '') || '.',
+                v_request.state_code, v_request.version;
+            return;
+        end if;
+        begin
+            perform ores_inbox_validate_hold_reason_fn(v_request.tenant_id, p_hold_reason_code);
+        exception when others then
+            -- The lookup's own refusal names every code it accepts, which is
+            -- the list a person needs.
+            return query select 'invalid'::text, sqlerrm,
+                v_request.state_code, v_request.version;
+            return;
+        end;
+    end if;
+
     if coalesce(btrim(p_comment), '') = ''
        and (v_type.requires_comment or (p_decision_code = 'approve' and v_kind.comment_on_approve)) then
         return query select 'invalid'::text, format('A %s needs a comment.', v_type.name),
@@ -220,13 +247,16 @@ begin
     end if;
 
     insert into ores_inbox_approval_decisions_tbl (
-        id, tenant_id, version, request_id, decision_code, part_code, decided_by, decided_at, comment,
+        id, tenant_id, version, request_id, decision_code, part_code, decided_by, decided_at,
+        hold_reason_code, comment,
         modified_by, performed_by, change_reason_code, change_commentary)
     values (
         gen_random_uuid(), v_request.tenant_id, 0, p_request_id, p_decision_code,
         case when v_has_parts and p_decision_code in ('approve', 'refuse')
              then p_part_code end,
-        p_decided_by, clock_timestamp(), coalesce(p_comment, ''),
+        p_decided_by, clock_timestamp(),
+        case when p_decision_code = 'hold' then p_hold_reason_code end,
+        coalesce(p_comment, ''),
         p_actor, p_actor, 'system.new_record', '');
 
     if p_decision_code = 'approve' and v_has_parts then

@@ -115,6 +115,7 @@ of their own. Each is a row:
 | =decision_code= | FK to =ores_inbox_approval_decision_types_tbl= | Approve, refuse, hold, resume, reverse |
 | =decided_by= | FK to =ores_iam_accounts_tbl= | Who decided |
 | =decided_at= | | When |
+| =hold_reason_code= | | Why it was parked, from the hold reason lookup; null on every decision that is not a hold |
 | =comment= | | Why |
 
 The kinds, the states and the decision types are lookups the system tenant holds,
@@ -145,10 +146,16 @@ assume it. What a screen shows together is the journey's composition of these
 tables, not a column added to one of them.
 
 The kind's own table is also where "one open request per subject" is checked,
-because only it knows what the subject is. A hold reason, for a kind that
-allows holding, is a lookup of its own, keyed from the kind's detail table. The
-first kind, the role request, does not hold, so the first build has no hold
-reasons.
+because only it knows what the subject is.
+
+A hold reason is a lookup of its own, =ores_inbox_hold_reasons_tbl=, held by the
+system tenant and read by every tenant's deciders. A hold names one of its codes
+and never free text alone: the decide operation refuses a hold whose code the
+lookup does not hold, and answers with the codes it does. The codes are the
+operational authorisation queue's — the questions an operator waits on, the
+handover markers between regional teams, and the exception flags that cause a
+hold — so the held-over report can group by them. A hold taken before the lookup
+existed keeps its comment and carries no code, and still reads.
 
 ** The lifecycle
 

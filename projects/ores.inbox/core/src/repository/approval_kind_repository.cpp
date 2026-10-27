@@ -28,6 +28,7 @@
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.api/domain/approval_kind_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.api/messaging/approval_kind_protocol.hpp"
@@ -184,9 +185,11 @@ void approval_kind_repository::write(
 std::vector<domain::approval_kind> approval_kind_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<approval_kind_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("code"_c);
 
     return execute_read_query<approval_kind_entity, domain::approval_kind>(
         ctx,
@@ -201,9 +204,10 @@ std::vector<domain::approval_kind> approval_kind_repository::read_latest(context
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<approval_kind_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<approval_kind_entity, domain::approval_kind>(
         ctx,
@@ -218,8 +222,9 @@ std::vector<domain::approval_kind> approval_kind_repository::read_all(context ct
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<approval_kind_entity, domain::approval_kind>(
@@ -235,8 +240,10 @@ std::optional<domain::approval_kind> approval_kind_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading approval kind at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<approval_kind_entity, domain::approval_kind>(
@@ -295,8 +302,10 @@ approval_kind_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kinds with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<approval_kind_entity, domain::approval_kind>(
         ctx,
@@ -315,8 +324,9 @@ std::uint32_t approval_kind_repository::get_total_kind_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<approval_kind_entity>> | where("tenant_id"_c == tid);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<approval_kind_entity>(
         ctx,
@@ -332,9 +342,10 @@ approval_kind_repository::read_latest(context ctx, const std::vector<std::string
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<approval_kind_entity>> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<approval_kind_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
+                             "valid_to"_c == max.value());
     auto result = execute_read_query<approval_kind_entity, domain::approval_kind>(
         ctx,
         query,

@@ -276,18 +276,31 @@ function Answer({
     const turns = answerable(request.parts);
     const [comment, setComment] = useState('');
     const [chosen, setChosen] = useState(turns[0]?.code ?? '');
+    const [holdReason, setHoldReason] = useState('');
     // The choice can only name a part that is still waiting.
     const part = turns.some((turn) => turn.code === chosen) ? chosen : (turns[0]?.code ?? '');
     const refusedWithoutReason = comment.trim() === '';
     const namesParts = request.parts.length > 0;
 
+    /*
+     * A hold parks the request rather than answering it, and it names why from
+     * the lookup: a reason typed in free text cannot be counted, and the
+     * held-over report groups by the code. The rule is the kind's, so both the
+     * reasons and the kinds that allow one are read once per page.
+     */
+    const holds = useQuery({ queryKey: ['hold-reasons'], queryFn: () => api.holdReasons() });
+    const reasons = holds.data?.reasons ?? [];
+    const allowsHold = holds.data?.allowsHoldByKind[request.kindCode] ?? false;
+    const holdWithoutReason = holdReason === '';
+
     const decide = useMutation({
-        mutationFn: (decisionCode: 'approve' | 'refuse') =>
+        mutationFn: (decisionCode: 'approve' | 'refuse' | 'hold') =>
             api.decideRequest(request.id, {
                 version: request.version,
                 decisionCode,
                 comment: comment.trim(),
-                ...(namesParts && { partCode: part }),
+                ...(namesParts && decisionCode !== 'hold' && { partCode: part }),
+                ...(decisionCode === 'hold' && { holdReasonCode: holdReason }),
             }),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['request-queue'] });
@@ -330,6 +343,24 @@ function Answer({
                     onChange={(event) => setComment(event.target.value)}
                 />
             </Field>
+            {allowsHold && (
+                <Field
+                    label={t('inbox.request.holdReason')}
+                    hint={t('inbox.request.holdReasonHint')}
+                >
+                    <Select
+                        value={holdReason}
+                        onChange={(event) => setHoldReason(event.target.value)}
+                    >
+                        <option value="">{t('inbox.request.chooseHoldReason')}</option>
+                        {reasons.map((reason) => (
+                            <option key={reason.code} value={reason.code}>
+                                {reason.name}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
             <div className="flex flex-wrap gap-2">
                 <Button
                     variant="primary"
@@ -347,6 +378,15 @@ function Answer({
                 >
                     {t('inbox.request.refuse')}
                 </Button>
+                {allowsHold && (
+                    <Button
+                        disabled={cannotAnswer || holdWithoutReason}
+                        pending={decide.isPending && decide.variables === 'hold'}
+                        onClick={() => decide.mutate('hold')}
+                    >
+                        {t('inbox.request.hold')}
+                    </Button>
+                )}
             </div>
         </section>
     );

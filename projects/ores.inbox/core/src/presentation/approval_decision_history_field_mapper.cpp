@@ -45,6 +45,8 @@ render_approval_decision_fields(const domain::approval_decision& v) {
     fields.push_back({.name = "Decided By", .value = boost::uuids::to_string(v.decided_by)});
     fields.push_back({.name = "Decided At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.decided_at)});
+    fields.push_back(
+        {.name = "Hold Reason Code", .value = v.hold_reason_code.value_or(std::string{})});
     fields.push_back({.name = "Comment", .value = v.comment});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

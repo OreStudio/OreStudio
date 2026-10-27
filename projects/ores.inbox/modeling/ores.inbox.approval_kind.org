@@ -192,8 +192,16 @@ the check reads it.
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_inbox_approval_kinds_tbl
+:tablename:                      ores_inbox_approval_kinds_tbl
+:rls_tenant_isolation:           true
+:rls_own_or_system_tenant_rows:  true
 :END:
+
+The kinds are the system tenant's rows, and a decider of any tenant reads the
+rule of the kind it answers: how many approvals it needs, the permission it
+takes to decide, whether it holds, and when it expires. The policy lets a reader
+see its own tenant's kinds beside the system tenant's, and a write stays the
+caller's own.
 
 * Validation function
 :PROPERTIES:
@@ -222,7 +230,11 @@ the check reads it.
 :entity_plural_short:   kinds
 :entity_singular_words: approval kind
 :entity_plural_words:   approval kinds
+:system_tenant_visible: true
 :END:
+
+A tenant session reads its own kinds and the system tenant's, because the kind a
+request is of is the system's and its rule is what a decider reads.
 
 ** Domain includes
 

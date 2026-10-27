@@ -52,6 +52,7 @@
 #include "ores.shell/app/commands/inbox/approval_request_part_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_state_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_argument_commands.hpp"
+#include "ores.shell/app/commands/inbox/hold_reason_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_channel_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_delivery_commands.hpp"
@@ -209,6 +210,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workflow_operations_commands::register_commands(*root, session_);
     workflow_run_commands::register_commands(*root, session_);
     approval_kind_commands::register_commands(*root, session_);
+    hold_reason_commands::register_commands(*root, session_);
     approval_part_commands::register_commands(*root, session_);
     approval_policy_commands::register_commands(*root, session_);
     approval_request_part_commands::register_commands(*root, session_);

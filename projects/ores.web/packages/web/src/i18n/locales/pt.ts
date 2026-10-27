@@ -433,6 +433,11 @@ const pt: SourceCatalogue = {
             reasonHint: '{who} lê isto. Obrigatório para recusar; opcional para conceder.',
             give: 'Conceder {role}',
             refuse: 'Recusar',
+            hold: 'Suspender',
+            holdReason: 'Motivo da suspensão',
+            holdReasonHint:
+                'Escolhido na lista de referência, para que o relatório de pedidos suspensos seja agrupado por motivo. Necessário para suspender.',
+            chooseHoldReason: 'Escolher um motivo',
             decided: 'Decidido',
             notFound: 'Este pedido não está aqui. Pode ter sido retirado, ou pode não ser seu.',
             approve: 'Aprovar',

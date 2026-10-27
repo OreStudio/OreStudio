@@ -742,6 +742,11 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approvals:decide_controller');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approval_requests:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approval_decisions:read');
+    -- The reasons a hold names, which the decision panel offers.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::hold_reasons:read');
+    -- The rules of the kinds it answers: how many approvals, who decides, and
+    -- whether the kind holds.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approval_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'refdata::books:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'refdata::portfolios:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'refdata::book_changes:read');
@@ -753,6 +758,11 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approvals:decide_finance');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approval_requests:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approval_decisions:read');
+    -- The reasons a hold names, which the decision panel offers.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::hold_reasons:read');
+    -- The rules of the kinds it answers: how many approvals, who decides, and
+    -- whether the kind holds.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approval_kinds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::books:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::portfolios:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::business_units:read');
@@ -1030,6 +1040,11 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'trading::trade_authorisation_requests:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approval_requests:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approval_requests:write');
+    -- The reasons a hold names, which the decision panel offers.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::hold_reasons:read');
+    -- The rules of the kinds it answers: how many approvals, who decides, and
+    -- whether the kind holds.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approval_kinds:read');
 
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::trade_summaries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'trading::trade_identifiers:read');

@@ -54,3 +54,5 @@
 \ir ./inbox_approval_parts_drop.sql
 \ir ./inbox_approval_kinds_notify_trigger_drop.sql
 \ir ./inbox_approval_kinds_drop.sql
+\ir ./inbox_hold_reasons_notify_trigger_drop.sql
+\ir ./inbox_hold_reasons_drop.sql

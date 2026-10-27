@@ -202,13 +202,11 @@ TEST_CASE("the_queue_shows_a_request_to_the_decider_of_its_open_part", "[approva
                                         asker.id,
                                         {"controller", "finance"});
     const auto id = boost::uuids::to_string(raised.id);
-    const auto listed = [&](const decidable_scope& scope,
-                            const boost::uuids::uuid& account) {
+    const auto listed = [&](const decidable_scope& scope, const boost::uuids::uuid& account) {
         const auto page = lifecycle.queue(scope, account, 0, 500);
         return std::ranges::any_of(page.requests, [&](const auto& r) { return r.id == raised.id; });
     };
-    const auto answered = [&](const decidable_scope& scope,
-                              const boost::uuids::uuid& account) {
+    const auto answered = [&](const decidable_scope& scope, const boost::uuids::uuid& account) {
         const auto tail = lifecycle.recently_answered(scope, account, std::chrono::hours(1));
         return std::ranges::any_of(tail, [&](const auto& r) { return r.id == raised.id; });
     };

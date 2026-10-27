@@ -225,12 +225,24 @@ engine_settings_execution_repository::read_latest(context ctx, const std::string
     const auto query = sqlgen::read<std::vector<engine_settings_execution_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<engine_settings_execution_entity, domain::engine_settings_execution>(
-        ctx,
-        query,
-        [](const auto& entities) { return engine_settings_execution_mapper::map(entities); },
-        lg(),
-        "Reading latest engine settings execution by id.");
+    auto found =
+        execute_read_query<engine_settings_execution_entity, domain::engine_settings_execution>(
+            ctx,
+            query,
+            [](const auto& entities) { return engine_settings_execution_mapper::map(entities); },
+            lg(),
+            "Reading latest engine settings execution by id.");
+    // The store keys the row by its party too, and a session sees the rows of
+    // every party below its own, so one key can name several rows. The acting
+    // party's row is the one the caller means when it holds one; otherwise the
+    // rows stay as read, so another party's row can still be found by its key.
+    const auto party = ctx.party_id();
+    const auto acting = [&](const auto& row) {
+        return row.party_id == *party;
+    };
+    if (party.has_value() && std::ranges::any_of(found, acting))
+        std::erase_if(found, [&](const auto& row) { return !acting(row); });
+    return found;
 }
 
 
@@ -371,16 +383,23 @@ engine_settings_execution_repository::remove_status engine_settings_execution_re
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    // The row checked above is one party's row of the key, and the removal
+    // closes that row only, not every visible party's row of the same key.
+    const auto party = boost::uuids::to_string(current.front().party_id);
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<engine_settings_execution_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "party_id"_c == party &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing engine settings execution from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, id).empty())
+    // Another party's row of the key stays open by design, so only a row of
+    // the party removed counts.
+    const auto removed_party = current.front().party_id;
+    if (std::ranges::any_of(read_latest(ctx, id),
+                            [&](const auto& row) { return row.party_id == removed_party; }))
         return remove_status::conflicting;
     return remove_status::removed;
 }

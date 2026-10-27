@@ -375,10 +375,27 @@ std::vector<domain::{{entity_singular}}>
         where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 
+{{#primary_key.party_sql_key}}
+    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
+    // The store keys the row by its party too, and a session sees the rows of
+    // every party below its own, so one key can name several rows. The acting
+    // party's row is the one the caller means when it holds one; otherwise the
+    // rows stay as read, so another party's row can still be found by its key.
+    const auto party = ctx.party_id();
+    const auto acting = [&](const auto& row) { return row.{{primary_key.party_member}} == *party; };
+    if (party.has_value() && std::ranges::any_of(found, acting))
+        std::erase_if(found, [&](const auto& row) { return !acting(row); });
+    return found;
+{{/primary_key.party_sql_key}}
+{{^primary_key.party_sql_key}}
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
+{{/primary_key.party_sql_key}}
 }
 
 {{#key_finders}}
@@ -686,14 +703,19 @@ std::vector<domain::{{entity_singular}}>
     const auto expected =
         version ? static_cast<int>(*version) : current.front().{{domain_entity.scaffold_prefix}}version;
 {{/has_audit_columns}}
+{{#primary_key.party_sql_key}}
+    // The row checked above is one party's row of the key, and the removal
+    // closes that row only, not every visible party's row of the same key.
+    const auto party = boost::uuids::to_string(current.front().{{primary_key.party_member}});
+{{/primary_key.party_sql_key}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
+        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
+        where({{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_tenant_id}}
 
     execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
@@ -701,8 +723,18 @@ std::vector<domain::{{entity_singular}}>
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
+{{#primary_key.party_sql_key}}
+    // Another party's row of the key stays open by design, so only a row of
+    // the party removed counts.
+    const auto removed_party = current.front().{{primary_key.party_member}};
+    if (std::ranges::any_of(read_latest(ctx, {{{primary_key.args}}}),
+                            [&](const auto& row) { return row.{{primary_key.party_member}} == removed_party; }))
+        return remove_status::conflicting;
+{{/primary_key.party_sql_key}}
+{{^primary_key.party_sql_key}}
     if (!read_latest(ctx, {{{primary_key.args}}}).empty())
         return remove_status::conflicting;
+{{/primary_key.party_sql_key}}
 {{/has_audit_columns}}
     return remove_status::removed;
 }

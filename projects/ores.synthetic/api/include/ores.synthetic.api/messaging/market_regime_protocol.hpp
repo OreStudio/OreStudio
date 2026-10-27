@@ -188,6 +188,16 @@ struct pin_market_regime_response {
     double multiplier = 1.0;
     /** @brief Whether the state is pinned after this request. */
     bool pinned = false;
+    /** @brief The rest of the regime after the request, as the read reports it. */
+    double heat = 0.0;
+    double jump = 0.0;
+    double decay = 0.0;
+    std::vector<market_regime_sample> samples;
+    double pace = 1.0;
+    double tau = 0.0;
+    double population_rate = 0.0;
+    double loop_gain = 0.0;
+    std::uint64_t run_seed = 0;
 };
 
 }

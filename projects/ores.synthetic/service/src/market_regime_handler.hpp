@@ -146,6 +146,7 @@ public:
         ores::synthetic::messaging::pin_market_regime_response response;
         response.success = true;
         fill(response);
+        fill_heat(response);
         reply(nats_, msg, response);
     }
 
@@ -238,7 +239,8 @@ private:
      * service's own history bounds it: a reader asks for a window and receives at
      * most what the scheduler kept.
      */
-    void fill_heat(ores::synthetic::messaging::get_market_regime_response& response) const {
+    template <typename Response>
+    void fill_heat(Response& response) const {
         const auto market = scheduler_.snapshot();
         response.heat = market.heat;
         response.jump = market.jump;

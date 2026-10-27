@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-libpq-layer
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Step 2 of 7. The layer the generated repositories run on, in place of sqlgen's c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,12 +35,28 @@ Step 2 of 7. The layer the generated repositories run on, in place of sqlgen's c
 
 * Acceptance
 
-- RAII handles for the connection and the result; no raw PQclear or PQfinish outside them.
-- One ensure call checks every result; SQLSTATE classes map to our own exception types.
-- Each connection prepares a statement once and reuses it.
-- A batch runs in libpq pipeline mode; a bulk load runs through COPY.
-- The pool sets the tenant and party settings on acquire, as the sqlgen pool does today.
-- Tests against the database cover each of these, and the repository benchmark runs on the layer.
+The layer is built to the target of the data path ([[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]]). Each point is
+tested against the database on the layer alone; callers move onto it in step 3.
+
+- RAII handles for the connection and the result; no raw =PQclear= or =PQfinish=
+  outside them.
+- A service holds a small pool of long-lived connections; nothing opens a
+  connection per query.
+- A transaction sets its own tenant, party, visible parties, actor and service
+  with =set_config(..., true)=, in the round trip of its first statement. A
+  connection carries nothing between transactions, and nothing is set when it
+  opens: UTC is a default of the role. A test reuses one connection for two
+  tenants and shows the second sees none of the first.
+- Only a unit-of-work call acquires, commits, rolls back and releases; a
+  repository operation takes an open transaction and sees no connection and no
+  credentials.
+- A statement is declared once with typed parameters and a row type, prepared
+  once per connection, and returns binary results; a per-statement counter
+  shows the one prepare.
+- One check reads every result; SQLSTATE classes map to an error that says
+  retryable or refused, with the mapping under test.
+- A batch runs in libpq pipeline mode; a bulk load runs through binary =COPY=.
+- The repository benchmark of the analysis story runs on the layer.
 
 * Plan
 

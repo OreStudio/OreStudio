@@ -135,3 +135,8 @@ def test_a_party_sql_key_removal_closes_only_the_row_it_checked(tmp_path):
     assert '"code"_c == code && "party_id"_c == party' in cpp
     assert 'return row.party_id == removed_party;' in cpp
     assert '#include <boost/uuid/uuid_io.hpp>' in cpp
+
+
+def test_a_party_sql_key_read_orders_the_rows_of_other_parties(tmp_path):
+    cpp = _generate_repository(tmp_path)
+    assert 'return a.party_id < b.party_id;' in cpp

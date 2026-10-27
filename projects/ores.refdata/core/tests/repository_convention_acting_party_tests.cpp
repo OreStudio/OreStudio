@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 
@@ -152,4 +153,33 @@ TEST_CASE("a removal that names the parent's version closes the parent's row",
     REQUIRE(status == bma_basis_swap_convention_repository::remove_status::removed);
     REQUIRE(f.repo.read_latest(f.parent_only, f.row.id).empty());
     REQUIRE(f.version_in(f.child_only) == 2);
+}
+
+TEST_CASE("a parent session removes the first party's row of a key only subsidiaries hold",
+          "[repository][acting_party]") {
+    fixture f;
+    const auto other = write_party(f.h, f.gen, f.parent);
+    const auto other_only =
+        f.h.context().with_party(f.h.tenant_id(), other, {other}, f.h.db_user());
+    auto other_row = f.row;
+    other_row.party_id = other;
+    f.repo.write(other_only, other_row);
+    REQUIRE(f.repo.remove(f.parent_only, f.row.id, std::nullopt) ==
+            bma_basis_swap_convention_repository::remove_status::removed);
+    const auto session = f.h.context().with_party(
+        f.h.tenant_id(), f.parent, {f.parent, f.child, other}, f.h.db_user());
+    const auto first = std::min(f.child, other);
+    const auto second = std::max(f.child, other);
+
+    const auto status = f.repo.remove(session, f.row.id, std::nullopt);
+
+    REQUIRE(status == bma_basis_swap_convention_repository::remove_status::removed);
+    const auto rows = f.repo.read_latest(session, f.row.id);
+    REQUIRE(rows.size() == 1);
+    REQUIRE(rows.front().party_id == second);
+    REQUIRE(
+        f.repo
+            .read_latest(f.h.context().with_party(f.h.tenant_id(), first, {first}, f.h.db_user()),
+                         f.row.id)
+            .empty());
 }

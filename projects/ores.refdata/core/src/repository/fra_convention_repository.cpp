@@ -215,14 +215,19 @@ std::vector<domain::fra_convention> fra_convention_repository::read_latest(conte
         "Reading latest FRA convention by id.");
     // The store keys the row by its party too, and a session sees the rows of
     // every party below its own, so one key can name several rows. The acting
-    // party's row is the one the caller means when it holds one; otherwise the
-    // rows stay as read, so another party's row can still be found by its key.
+    // party's row is the one the caller means when it holds one; otherwise
+    // every row stays, so another party's row can still be found by its key,
+    // ordered by party so the first row is the same on every read.
     const auto party = ctx.party_id();
     const auto acting = [&](const auto& row) {
         return row.party_id == *party;
     };
     if (party.has_value() && std::ranges::any_of(found, acting))
         std::erase_if(found, [&](const auto& row) { return !acting(row); });
+    else
+        std::sort(found.begin(), found.end(), [](const auto& a, const auto& b) {
+            return a.party_id < b.party_id;
+        });
     return found;
 }
 

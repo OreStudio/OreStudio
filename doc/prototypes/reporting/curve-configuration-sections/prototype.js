@@ -114,7 +114,6 @@ function workbench(curve) {
             <div class="leafhead"><span class="leaflabel">${escape(words(name))}</span>
                 ${documented ? '' : '<span class="tag warn">no documentation</span>'}
                 <span class="grow"></span>${shown}</div>
-            ${help === '' ? '' : `<div class="leafhelp faint">${escape(help)}</div>`}
             ${STATE.mode === 'advanced' ? `<div class="leafadv faint mono">/CurveConfiguration/${escape(section.code)}/${escape(section.entry)}/${escape(name)} · 1.8.0.7 or earlier</div>` : ''}
             <button class="leafdoc">Documentation</button>
         </li>`;

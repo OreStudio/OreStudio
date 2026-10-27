@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :scope_a_delete_and_unclaimed_write_to_the_acting_party:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/scope-a-delete-and-unclaimed-write-to-the-acting-party
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5][Scope a delete and an unclaimed write to the acting party]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A write or a delete from a session that sees several parties acts on the acting 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5][Scope a delete and an unclaimed write to the acting party]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

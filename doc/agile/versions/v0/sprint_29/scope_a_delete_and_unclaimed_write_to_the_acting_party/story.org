@@ -43,7 +43,7 @@ This story takes up the capture [[id:9605A39E-CAE9-4232-90DF-C42EBE94CB41][Scope
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5BE764E7-C4E7-4DD5-A3DE-412C5B88DF3A][Scaffold story: Scope a delete and an unclaimed write to the acting party]] | DONE | 2026-10-27 | 2026-10-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:42320A2D-D416-4A31-A72B-E96E3C7B518B][Scope the repository's key read and delete to the acting party]] | BACKLOG | | | Initial task for: Scope a delete and an unclaimed write to the acting party |
+| [[id:42320A2D-D416-4A31-A72B-E96E3C7B518B][Scope the repository's key read and delete to the acting party]] | STARTED | 2026-10-27 | | Initial task for: Scope a delete and an unclaimed write to the acting party |
 
 * Decisions
 

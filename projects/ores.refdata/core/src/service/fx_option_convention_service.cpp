@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -186,7 +187,8 @@ messaging::put_fx_option_convention_response fx_option_convention_service::put_f
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(value));
+    auto written = of_acting_party(
+        fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(value)), ctx_);
     if (!written.empty())
         response.fx_option_convention = std::move(written.front());
     return response;
@@ -219,8 +221,8 @@ fx_option_convention_service::put_many_fx_option_conventions(
     repo_.write(ctx_, batch, claims);
     response.fx_option_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(value));
+        auto written = of_acting_party(
+            fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(value)), ctx_);
         response.fx_option_conventions.push_back(written.empty() ? value :
                                                                    std::move(written.front()));
     }
@@ -345,8 +347,10 @@ fx_option_convention_service::prepare_change(const messaging::fx_option_conventi
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = fx_option_convention_to_domain(change.write);
-    const auto current =
-        fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

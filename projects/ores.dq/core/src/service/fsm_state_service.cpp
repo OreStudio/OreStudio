@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -180,7 +181,8 @@ fsm_state_service::put_fsm_state(const messaging::put_fsm_state_request& request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = fsm_state_read_one(repo_, ctx_, fsm_state_key_from(value));
+    auto written =
+        of_acting_party(fsm_state_read_one(repo_, ctx_, fsm_state_key_from(value)), ctx_);
     if (!written.empty())
         response.fsm_state = std::move(written.front());
     return response;
@@ -212,7 +214,8 @@ fsm_state_service::put_many_fsm_states(const messaging::put_many_fsm_states_requ
     repo_.write(ctx_, batch, claims);
     response.states.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = fsm_state_read_one(repo_, ctx_, fsm_state_key_from(value));
+        auto written =
+            of_acting_party(fsm_state_read_one(repo_, ctx_, fsm_state_key_from(value)), ctx_);
         response.states.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -364,7 +367,10 @@ fsm_state_service::prepare_change(const messaging::fsm_state_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = fsm_state_to_domain(change.write);
-    const auto current = fsm_state_read_one(repo_, ctx_, fsm_state_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(fsm_state_read_one(repo_, ctx_, fsm_state_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -176,7 +177,8 @@ purpose_type_service::put_purpose_type(const messaging::put_purpose_type_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = purpose_type_read_one(repo_, ctx_, purpose_type_key_from(value));
+    auto written =
+        of_acting_party(purpose_type_read_one(repo_, ctx_, purpose_type_key_from(value)), ctx_);
     if (!written.empty())
         response.purpose_type = std::move(written.front());
     return response;
@@ -208,7 +210,8 @@ messaging::put_many_purpose_types_response purpose_type_service::put_many_purpos
     repo_.write(ctx_, batch, claims);
     response.types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = purpose_type_read_one(repo_, ctx_, purpose_type_key_from(value));
+        auto written =
+            of_acting_party(purpose_type_read_one(repo_, ctx_, purpose_type_key_from(value)), ctx_);
         response.types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -326,7 +329,10 @@ purpose_type_service::prepare_change(const messaging::purpose_type_change& chang
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = purpose_type_to_domain(change.write);
-    const auto current = purpose_type_read_one(repo_, ctx_, purpose_type_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(purpose_type_read_one(repo_, ctx_, purpose_type_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

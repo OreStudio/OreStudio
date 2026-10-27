@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -177,7 +178,7 @@ provider_service::put_provider(const messaging::put_provider_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = provider_read_one(repo_, ctx_, provider_key_from(value));
+    auto written = of_acting_party(provider_read_one(repo_, ctx_, provider_key_from(value)), ctx_);
     if (!written.empty())
         response.provider = std::move(written.front());
     return response;
@@ -209,7 +210,8 @@ provider_service::put_many_providers(const messaging::put_many_providers_request
     repo_.write(ctx_, batch, claims);
     response.providers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = provider_read_one(repo_, ctx_, provider_key_from(value));
+        auto written =
+            of_acting_party(provider_read_one(repo_, ctx_, provider_key_from(value)), ctx_);
         response.providers.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -327,7 +329,10 @@ provider_service::prepare_change(const messaging::provider_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = provider_to_domain(change.write);
-    const auto current = provider_read_one(repo_, ctx_, provider_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(provider_read_one(repo_, ctx_, provider_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

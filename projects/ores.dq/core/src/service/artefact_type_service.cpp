@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -180,7 +181,8 @@ artefact_type_service::put_artefact_type(const messaging::put_artefact_type_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = artefact_type_read_one(repo_, ctx_, artefact_type_key_from(value));
+    auto written =
+        of_acting_party(artefact_type_read_one(repo_, ctx_, artefact_type_key_from(value)), ctx_);
     if (!written.empty())
         response.artefact_type = std::move(written.front());
     return response;
@@ -212,7 +214,8 @@ messaging::put_many_artefact_types_response artefact_type_service::put_many_arte
     repo_.write(ctx_, batch, claims);
     response.types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = artefact_type_read_one(repo_, ctx_, artefact_type_key_from(value));
+        auto written = of_acting_party(
+            artefact_type_read_one(repo_, ctx_, artefact_type_key_from(value)), ctx_);
         response.types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -330,7 +333,10 @@ artefact_type_service::prepare_change(const messaging::artefact_type_change& cha
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = artefact_type_to_domain(change.write);
-    const auto current = artefact_type_read_one(repo_, ctx_, artefact_type_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(artefact_type_read_one(repo_, ctx_, artefact_type_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

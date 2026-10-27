@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -222,7 +223,8 @@ messaging::put_bond_leg_amount_response bond_leg_amount_service::put_bond_leg_am
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = bond_leg_amount_read_one(repo_, ctx_, bond_leg_amount_key_from(value));
+    auto written = of_acting_party(
+        bond_leg_amount_read_one(repo_, ctx_, bond_leg_amount_key_from(value)), ctx_);
     if (!written.empty())
         response.bond_leg_amount = std::move(written.front());
     return response;
@@ -254,7 +256,8 @@ messaging::put_many_bond_leg_amounts_response bond_leg_amount_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.bond_leg_amounts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = bond_leg_amount_read_one(repo_, ctx_, bond_leg_amount_key_from(value));
+        auto written = of_acting_party(
+            bond_leg_amount_read_one(repo_, ctx_, bond_leg_amount_key_from(value)), ctx_);
         response.bond_leg_amounts.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -415,7 +418,10 @@ bond_leg_amount_service::prepare_change(const messaging::bond_leg_amount_change&
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = bond_leg_amount_to_domain(change.write);
-    const auto current = bond_leg_amount_read_one(repo_, ctx_, bond_leg_amount_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(bond_leg_amount_read_one(repo_, ctx_, bond_leg_amount_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

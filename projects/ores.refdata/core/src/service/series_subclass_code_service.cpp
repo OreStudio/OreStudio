@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -181,7 +182,8 @@ messaging::put_series_subclass_code_response series_subclass_code_service::put_s
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = series_subclass_code_read_one(repo_, ctx_, series_subclass_code_key_from(value));
+    auto written = of_acting_party(
+        series_subclass_code_read_one(repo_, ctx_, series_subclass_code_key_from(value)), ctx_);
     if (!written.empty())
         response.series_subclass_code = std::move(written.front());
     return response;
@@ -214,8 +216,8 @@ series_subclass_code_service::put_many_series_subclass_codes(
     repo_.write(ctx_, batch, claims);
     response.series_subclasses.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            series_subclass_code_read_one(repo_, ctx_, series_subclass_code_key_from(value));
+        auto written = of_acting_party(
+            series_subclass_code_read_one(repo_, ctx_, series_subclass_code_key_from(value)), ctx_);
         response.series_subclasses.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -339,8 +341,10 @@ series_subclass_code_service::prepare_change(const messaging::series_subclass_co
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = series_subclass_code_to_domain(change.write);
-    const auto current =
-        series_subclass_code_read_one(repo_, ctx_, series_subclass_code_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        series_subclass_code_read_one(repo_, ctx_, series_subclass_code_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

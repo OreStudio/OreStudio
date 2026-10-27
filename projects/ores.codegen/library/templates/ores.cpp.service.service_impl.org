@@ -88,6 +88,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.utility/domain/hierarchy.hpp"
 {{/has_parent_id}}
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -452,7 +453,7 @@ messaging::{{response}}
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
+    auto written = of_acting_party({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value)), ctx_);
     if (!written.empty())
         response.{{payload_member}} = std::move(written.front());
     return response;
@@ -504,7 +505,7 @@ messaging::{{response}}
 {{/service_batch_reads_by_trade_id}}
 {{^service_batch_reads_by_trade_id}}
     for (const auto& value : batch) {
-        auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
+        auto written = of_acting_party({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value)), ctx_);
         response.{{entity_plural_short}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -722,7 +723,9 @@ ores::utility::domain::result
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(change.write);
-    const auto current = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(out)), ctx_);
 {{#gated}}
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
@@ -811,7 +814,7 @@ void {{entity_singular}}_service::rehearse() {
 std::vector<std::string>
 {{entity_singular}}_service::changed_columns(const messaging::{{entity_singular}}_write& proposed) {
     const auto next = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(proposed);
-    return {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_columns_changed({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(next)), next);
+    return {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_columns_changed(of_acting_party({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(next)), ctx_), next);
 }
 
 bool {{entity_singular}}_service::holds_line(const std::string& operation,

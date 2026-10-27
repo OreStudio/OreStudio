@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -188,8 +189,9 @@ inflation_seasonality_factor_service::put_inflation_seasonality_factor(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = inflation_seasonality_factor_read_one(
-        repo_, ctx_, inflation_seasonality_factor_key_from(value));
+    auto written = of_acting_party(inflation_seasonality_factor_read_one(
+                                       repo_, ctx_, inflation_seasonality_factor_key_from(value)),
+                                   ctx_);
     if (!written.empty())
         response.inflation_seasonality_factor = std::move(written.front());
     return response;
@@ -222,8 +224,10 @@ inflation_seasonality_factor_service::put_many_inflation_seasonality_factors(
     repo_.write(ctx_, batch, claims);
     response.seasonality_factors.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = inflation_seasonality_factor_read_one(
-            repo_, ctx_, inflation_seasonality_factor_key_from(value));
+        auto written =
+            of_acting_party(inflation_seasonality_factor_read_one(
+                                repo_, ctx_, inflation_seasonality_factor_key_from(value)),
+                            ctx_);
         response.seasonality_factors.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -354,8 +358,12 @@ ores::utility::domain::result inflation_seasonality_factor_service::prepare_chan
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = inflation_seasonality_factor_to_domain(change.write);
-    const auto current = inflation_seasonality_factor_read_one(
-        repo_, ctx_, inflation_seasonality_factor_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(inflation_seasonality_factor_read_one(
+                            repo_, ctx_, inflation_seasonality_factor_key_from(out)),
+                        ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

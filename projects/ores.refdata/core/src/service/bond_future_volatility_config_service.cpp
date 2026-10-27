@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -196,8 +197,9 @@ bond_future_volatility_config_service::put_bond_future_volatility_config(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = bond_future_volatility_config_read_one(
-        repo_, ctx_, bond_future_volatility_config_key_from(value));
+    auto written = of_acting_party(bond_future_volatility_config_read_one(
+                                       repo_, ctx_, bond_future_volatility_config_key_from(value)),
+                                   ctx_);
     if (!written.empty())
         response.bond_future_volatility_config = std::move(written.front());
     return response;
@@ -230,8 +232,10 @@ bond_future_volatility_config_service::put_many_bond_future_volatility_configs(
     repo_.write(ctx_, batch, claims);
     response.bond_future_volatility_configs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = bond_future_volatility_config_read_one(
-            repo_, ctx_, bond_future_volatility_config_key_from(value));
+        auto written =
+            of_acting_party(bond_future_volatility_config_read_one(
+                                repo_, ctx_, bond_future_volatility_config_key_from(value)),
+                            ctx_);
         response.bond_future_volatility_configs.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -362,8 +366,12 @@ ores::utility::domain::result bond_future_volatility_config_service::prepare_cha
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = bond_future_volatility_config_to_domain(change.write);
-    const auto current = bond_future_volatility_config_read_one(
-        repo_, ctx_, bond_future_volatility_config_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(bond_future_volatility_config_read_one(
+                            repo_, ctx_, bond_future_volatility_config_key_from(out)),
+                        ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

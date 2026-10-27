@@ -214,6 +214,82 @@ CONNECTION_WARN_PERCENT = 60
 CONNECTION_CRITICAL_PERCENT = 85
 
 
+# TimescaleDB is loaded by a version-named library: the unversioned
+# shared_preload_libraries entry loads a stub, which then loads
+# timescaledb-<version>.so for whichever version the database's own
+# pg_extension catalog records. An apt upgrade replaces that file, so every
+# database still stamped with the old version fails on its first query with
+# `could not access file "timescaledb-X.Y.Z"`. `compass db status` names the
+# mismatch and the one statement that fixes it.
+
+TIMESCALEDB_FIX = 'compass sql -- -c "alter extension timescaledb update;"'
+
+
+def timescaledb_libraries(pkglibdir=None):
+    """The timescaledb versions whose library is on disk, newest last.
+
+    Reads the server's own library directory when psql can tell us where it
+    is, and every installed postgres cluster's directory otherwise, because a
+    database can outlive the server package that created it."""
+    dirs = []
+    if pkglibdir:
+        dirs.append(Path(pkglibdir))
+    dirs.extend(sorted(Path("/usr/lib/postgresql").glob("*/lib")))
+    found = set()
+    for directory in dirs:
+        for path in directory.glob("timescaledb-*.so"):
+            found.add(path.name[len("timescaledb-"):-len(".so")])
+    return sorted(found)
+
+
+def timescaledb_verdict(recorded, installed):
+    """What to say about one database's timescale extension.
+
+    Returns (label, level) where level is ok, none or critical. `none` is not
+    a problem: the extension is optional, and a database without it reads the
+    same as one whose recorded version is installed."""
+    if recorded is None:
+        return "not installed in this database", "none"
+    if not installed:
+        return f"recorded {recorded}, but no timescaledb library is on disk", "critical"
+    if recorded in installed:
+        return f"{recorded}, and its library is on disk", "ok"
+    on_disk = ", ".join(installed)
+    return (f"recorded {recorded}, but only {on_disk} is on disk", "critical")
+
+
+def timescaledb_state(env):
+    """The recorded and installed timescale versions for this environment.
+
+    Returns {recorded, installed} or None when the database cannot be read."""
+    db_name = env.get("ORES_TEST_DB_DATABASE", "")
+    pw = env.get("PGPASSWORD", "")
+    if not db_name or not pw:
+        return None
+    recorded = None
+    try:
+        out = _psql(env, "-At", "-c",
+                    "SELECT extversion FROM pg_extension "
+                    "WHERE extname = 'timescaledb';",
+                    password=pw, database=db_name, check=False, capture=True)
+    except OSError:
+        return None
+    if out.returncode:
+        return None
+    version = (out.stdout or "").strip()
+    if version:
+        recorded = version
+    pkglibdir = None
+    try:
+        probe = subprocess.run(["pg_config", "--pkglibdir"], capture_output=True,
+                               text=True, check=False)
+        if probe.returncode == 0 and probe.stdout.strip():
+            pkglibdir = probe.stdout.strip()
+    except OSError:
+        pkglibdir = None
+    return {"recorded": recorded, "installed": timescaledb_libraries(pkglibdir)}
+
+
 def level_of(value, warn_at, critical_at):
     """ok / warn / critical for a number against two thresholds.
 
@@ -707,6 +783,14 @@ def cmd_db_status(project_root, env):
     print(f"    schema    : {drift_str}")
     if drift_warn:
         print(f"    {drift_warn}")
+
+    ext = timescaledb_state(env)
+    if ext is not None:
+        label, level = timescaledb_verdict(ext["recorded"], ext["installed"])
+        colour = {"ok": _green, "none": _cyan}.get(level, _red)
+        print(f"    timescaledb: {colour(label)}")
+        if level == "critical":
+            print(f"    {_ycmd(TIMESCALEDB_FIX)}")
     print()
 
     def _query(sql):

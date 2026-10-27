@@ -20,6 +20,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/commands/scheduler_commands.hpp"
+#include "ores.testing/party_fixture.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -28,16 +30,12 @@
 #include <string_view>
 #include <vector>
 
+using ores::testing::valid_party_id;
 using ores::nats::service::nats_client;
 using ores::shell::app::commands::scheduler_commands;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][scheduler]");
-
-const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
 void log_in(nats_client& session) {
     nats_client::login_info info;
@@ -57,7 +55,7 @@ void log_in(nats_client& session) {
  */
 } // anonymous namespace
 
-TEST_CASE("scheduler_commands registers its six verbs", tags) {
+TEST_CASE("scheduler_commands registers its six verbs", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -75,7 +73,7 @@ TEST_CASE("scheduler_commands registers its six verbs", tags) {
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 }
 
-TEST_CASE("scheduler lists jobs only for a session", tags) {
+TEST_CASE("scheduler lists jobs only for a session", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -86,7 +84,7 @@ TEST_CASE("scheduler lists jobs only for a session", tags) {
     CHECK(out.str().find("must be logged in") != std::string::npos);
 }
 
-TEST_CASE("scheduler refuses a malformed cron before it sends anything", tags) {
+TEST_CASE("scheduler refuses a malformed cron before it sends anything", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -98,7 +96,7 @@ TEST_CASE("scheduler refuses a malformed cron before it sends anything", tags) {
     CHECK(out.str().find("is not a cron expression") != std::string::npos);
 }
 
-TEST_CASE("scheduler schedule states its usage when the name is missing", tags) {
+TEST_CASE("scheduler schedule states its usage when the name is missing", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -110,7 +108,7 @@ TEST_CASE("scheduler schedule states its usage when the name is missing", tags) 
     CHECK(out.str().find("Usage: scheduler schedule") != std::string::npos);
 }
 
-TEST_CASE("scheduler watch refuses a duration outside its range", tags) {
+TEST_CASE("scheduler watch refuses a duration outside its range", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -124,7 +122,7 @@ TEST_CASE("scheduler watch refuses a duration outside its range", tags) {
     CHECK(too_long.str().find("must be between 1 and") != std::string::npos);
 }
 
-TEST_CASE("scheduler instances refuses a zero limit", tags) {
+TEST_CASE("scheduler instances refuses a zero limit", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -136,7 +134,7 @@ TEST_CASE("scheduler instances refuses a zero limit", tags) {
     CHECK(out.str().find("must be a positive integer") != std::string::npos);
 }
 
-TEST_CASE("scheduler status needs a session", tags) {
+TEST_CASE("scheduler status needs a session", "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

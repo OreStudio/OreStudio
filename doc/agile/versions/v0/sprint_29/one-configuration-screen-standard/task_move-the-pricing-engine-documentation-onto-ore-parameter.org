@@ -26,11 +26,11 @@ Every pricing engine choice and parameter carries the same documentation fields 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Every ORE description on the screen comes from the contract: settings, globals, models, engines and pairs. |
+| Now          | Nothing. |
 | Waiting on   | The owner's test of the screen.        |
-| Next         | Drop the unused wording columns from the vocabulary tables. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance

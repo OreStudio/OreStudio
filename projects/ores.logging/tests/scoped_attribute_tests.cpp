@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.logging/scoped_attribute.hpp"
+#include "test_suite.hpp"
 #include <boost/log/core.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -27,9 +28,6 @@
 #include <utility>
 
 namespace {
-
-const std::string_view test_suite("ores.logging.tests");
-const std::string tags("[logging]");
 
 const std::string guarded_attribute("OresLoggingScopedAttributeGuarded");
 const std::string moved_attribute("OresLoggingScopedAttributeMoved");
@@ -43,7 +41,7 @@ bool has_thread_attribute(const std::string& name) {
 
 using ores::logging::scoped_attribute;
 
-TEST_CASE("guarded_thread_attribute_exists_only_while_guard_is_alive", tags) {
+TEST_CASE("guarded_thread_attribute_exists_only_while_guard_is_alive", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     REQUIRE_FALSE(has_thread_attribute(guarded_attribute));
 
@@ -58,7 +56,7 @@ TEST_CASE("guarded_thread_attribute_exists_only_while_guard_is_alive", tags) {
     CHECK_FALSE(has_thread_attribute(guarded_attribute));
 }
 
-TEST_CASE("moved_from_guard_does_not_remove_the_thread_attribute", tags) {
+TEST_CASE("moved_from_guard_does_not_remove_the_thread_attribute", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     REQUIRE_FALSE(has_thread_attribute(moved_attribute));
 

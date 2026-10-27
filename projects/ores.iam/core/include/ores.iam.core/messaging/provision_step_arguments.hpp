@@ -472,20 +472,40 @@ struct photo_step_arguments {
     return result;
 }
 
-/// The provider whose market data a subscribe_market_data step gives every party, and the
-/// source the parties are routed to.
+/// One party's own provider, and the source of it the party is routed to.
+///
+/// A provider or a source the entry leaves out is the step's own, so an entry names only what
+/// differs and the step may state a default for the parties it does not name.
+struct market_data_party_assignment {
+    /// The party, named by its identifier or its exact full name.
+    std::string party;
+    std::string provider;
+    std::string source;
+};
+
+/// The provider whose market data a subscribe_market_data step gives the parties it does not name,
+/// the source they are routed to, and the parties that take another.
 struct market_data_step_arguments {
     std::string provider;
     std::string source;
+    std::vector<market_data_party_assignment> parties;
 };
 
 /**
  * @brief Reads a subscribe_market_data step's arguments.
  *
  * The provider is the code of a provider in the market data catalogue, and the
- * source is the name of one of its sources. The step reads every other fact, the
- * parties, from the deployment. The generators belong to the system, so this step only
- * subscribes and routes.
+ * source is the name of one of its sources. A provider with no source is refused here and by the
+ * provider catalogue when it is looked up, so the message names the field rather than the pair.
+ *
+ * A step that names no party gives every party the tenant holds the provider and source it states.
+ * A step that names parties gives each of them its own, which is what a demonstration needs when
+ * its legal entities are meant to take their market data from different vendors: the collections
+ * publish different feeds, and a party reads the one its own collection names. A party the
+ * arguments do not name takes the step's own, and a named party the tenant does not hold is
+ * refused rather than passed over.
+ *
+ * The generators belong to the system, so this step only subscribes and routes.
  */
 [[nodiscard]] inline market_data_step_arguments
 parse_market_data_arguments(const std::string& arguments_json) {
@@ -497,6 +517,16 @@ parse_market_data_arguments(const std::string& arguments_json) {
     result.source = detail::read_string(arguments, "source");
     if (result.source.empty())
         throw std::runtime_error("The step names no 'source' argument.");
+
+    if (const auto* found = detail::member(arguments, "parties")) {
+        for (const auto& entry : detail::read_object_list(*found, "parties")) {
+            market_data_party_assignment assignment;
+            assignment.party = detail::read_required_string(entry, "party", "'parties' entry");
+            assignment.provider = detail::read_string(entry, "provider");
+            assignment.source = detail::read_string(entry, "source");
+            result.parties.push_back(std::move(assignment));
+        }
+    }
     return result;
 }
 

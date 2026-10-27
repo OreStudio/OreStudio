@@ -76,29 +76,36 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_currency_pair_classifications_response list_currency_pair_classifications(
-        const messaging::list_currency_pair_classifications_request& request);
-    messaging::get_currency_pair_classification_response get_currency_pair_classification(
-        const messaging::get_currency_pair_classification_request& request);
-    messaging::get_many_currency_pair_classifications_response
+    ::ores::refdata::messaging::list_currency_pair_classifications_response
+    list_currency_pair_classifications(
+        const ::ores::refdata::messaging::list_currency_pair_classifications_request& request);
+    ::ores::refdata::messaging::get_currency_pair_classification_response
+    get_currency_pair_classification(
+        const ::ores::refdata::messaging::get_currency_pair_classification_request& request);
+    ::ores::refdata::messaging::get_many_currency_pair_classifications_response
     get_many_currency_pair_classifications(
-        const messaging::get_many_currency_pair_classifications_request& request);
-    messaging::put_currency_pair_classification_response put_currency_pair_classification(
-        const messaging::put_currency_pair_classification_request& request);
-    messaging::put_many_currency_pair_classifications_response
+        const ::ores::refdata::messaging::get_many_currency_pair_classifications_request& request);
+    ::ores::refdata::messaging::put_currency_pair_classification_response
+    put_currency_pair_classification(
+        const ::ores::refdata::messaging::put_currency_pair_classification_request& request);
+    ::ores::refdata::messaging::put_many_currency_pair_classifications_response
     put_many_currency_pair_classifications(
-        const messaging::put_many_currency_pair_classifications_request& request);
-    messaging::delete_currency_pair_classification_response delete_currency_pair_classification(
-        const messaging::delete_currency_pair_classification_request& request);
-    messaging::delete_many_currency_pair_classifications_response
+        const ::ores::refdata::messaging::put_many_currency_pair_classifications_request& request);
+    ::ores::refdata::messaging::delete_currency_pair_classification_response
+    delete_currency_pair_classification(
+        const ::ores::refdata::messaging::delete_currency_pair_classification_request& request);
+    ::ores::refdata::messaging::delete_many_currency_pair_classifications_response
     delete_many_currency_pair_classifications(
-        const messaging::delete_many_currency_pair_classifications_request& request);
-    messaging::list_currency_pair_classification_versions_response
+        const ::ores::refdata::messaging::delete_many_currency_pair_classifications_request&
+            request);
+    ::ores::refdata::messaging::list_currency_pair_classification_versions_response
     list_currency_pair_classification_versions(
-        const messaging::list_currency_pair_classification_versions_request& request);
-    messaging::get_currency_pair_classification_version_response
+        const ::ores::refdata::messaging::list_currency_pair_classification_versions_request&
+            request);
+    ::ores::refdata::messaging::get_currency_pair_classification_version_response
     get_currency_pair_classification_version(
-        const messaging::get_currency_pair_classification_version_request& request);
+        const ::ores::refdata::messaging::get_currency_pair_classification_version_request&
+            request);
     /**@}*/
 
     /**
@@ -197,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::currency_pair_classification_change& change,
+    prepare_change(const ::ores::refdata::messaging::currency_pair_classification_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::currency_pair_classification& out);
 };

@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+coding_scheme_list_order(const ores::utility::domain::order& order,
+                         std::initializer_list<std::string> default_columns,
+                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!coding_scheme_repository::is_sortable(order.field))
@@ -96,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::coding_schemes_filter>& filter) {
+coding_scheme_filter_condition(const std::optional<messaging::coding_schemes_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -290,8 +291,8 @@ coding_scheme_repository::read_latest(context ctx,
     return execute_ordered_read_query<coding_scheme_entity, domain::coding_scheme>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        coding_scheme_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), coding_scheme_filter_condition(filter)),
         [](const auto& entities) { return coding_scheme_mapper::map(entities); },
         lg(),
         "Reading latest coding schemes with pagination.");
@@ -308,7 +309,7 @@ std::uint32_t coding_scheme_repository::get_total_scheme_count(
     return execute_count_query<coding_scheme_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), coding_scheme_filter_condition(filter)),
         lg(),
         "Counting coding schemes");
 }

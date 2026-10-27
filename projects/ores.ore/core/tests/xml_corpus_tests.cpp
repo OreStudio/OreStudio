@@ -19,6 +19,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -26,9 +27,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][corpus]");
 
 namespace fs = std::filesystem;
 using namespace ores::logging;
@@ -107,7 +105,7 @@ auto looks_numeric(std::string_view text) -> bool {
 
 }
 
-TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", tags) {
+TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", "[ore][xml][corpus]") {
     const auto root = examples_dir();
     REQUIRE(fs::is_directory(root));
 
@@ -168,7 +166,7 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", tags) {
     CHECK(failures == 0);
 }
 
-TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", tags) {
+TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", "[ore][xml][corpus]") {
     const auto root = examples_dir();
     REQUIRE(fs::is_directory(root));
 
@@ -214,7 +212,7 @@ TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", tags
     CHECK(changed == 0);
 }
 
-TEST_CASE("every_xml_document_in_the_repository_parses", tags) {
+TEST_CASE("every_xml_document_in_the_repository_parses", "[ore][xml][corpus]") {
     auto lg(make_logger(test_suite));
 
     const auto roots = corpus_roots();

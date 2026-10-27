@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string bundle_import_item_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,8 @@ std::string convert_to_table(const std::vector<bundle_import_item>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& cii : v) {
-        table << cii.family << cii.sequence << opt_str(cii.checksum) << cii.modified_by
-              << cii.version << fort::endr;
+        table << cii.family << cii.sequence << bundle_import_item_opt_str(cii.checksum)
+              << cii.modified_by << cii.version << fort::endr;
     }
     return table.to_string();
 }

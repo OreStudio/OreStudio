@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
@@ -28,9 +29,6 @@
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][scanner][directory_scanner]");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -90,7 +88,7 @@ using namespace ores::logging;
 // Classification tests
 // =============================================================================
 
-TEST_CASE("scan_empty_directory_produces_empty_results", tags) {
+TEST_CASE("scan_empty_directory_produces_empty_results", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -106,7 +104,7 @@ TEST_CASE("scan_empty_directory_produces_empty_results", tags) {
     CHECK(result.root == d.path);
 }
 
-TEST_CASE("scan_classifies_currency_config_by_root_element", tags) {
+TEST_CASE("scan_classifies_currency_config_by_root_element", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -125,7 +123,7 @@ TEST_CASE("scan_classifies_currency_config_by_root_element", tags) {
     CHECK(contains(result.currency_files, d.path / "my_currency.xml"));
 }
 
-TEST_CASE("scan_classifies_portfolio_xml_by_root_element", tags) {
+TEST_CASE("scan_classifies_portfolio_xml_by_root_element", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -146,7 +144,7 @@ TEST_CASE("scan_classifies_portfolio_xml_by_root_element", tags) {
     CHECK(contains(result.portfolio_files, d.path / "swap_usd.xml"));
 }
 
-TEST_CASE("scan_ignores_unrecognised_xml_files", tags) {
+TEST_CASE("scan_ignores_unrecognised_xml_files", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -162,7 +160,7 @@ TEST_CASE("scan_ignores_unrecognised_xml_files", tags) {
     CHECK(result.ignored_files.size() == 3);
 }
 
-TEST_CASE("scan_recurses_into_subdirectories", tags) {
+TEST_CASE("scan_recurses_into_subdirectories", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -184,7 +182,7 @@ TEST_CASE("scan_recurses_into_subdirectories", tags) {
 // Exclusion tests
 // =============================================================================
 
-TEST_CASE("scan_excludes_files_in_excluded_directory", tags) {
+TEST_CASE("scan_excludes_files_in_excluded_directory", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -202,7 +200,7 @@ TEST_CASE("scan_excludes_files_in_excluded_directory", tags) {
     CHECK(contains(result.ignored_files, d.path / "Input" / "trades.xml"));
 }
 
-TEST_CASE("scan_excludes_multiple_exclusion_directories", tags) {
+TEST_CASE("scan_excludes_multiple_exclusion_directories", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -217,7 +215,7 @@ TEST_CASE("scan_excludes_multiple_exclusion_directories", tags) {
     CHECK(contains(result.portfolio_files, d.path / "Rates" / "irs.xml"));
 }
 
-TEST_CASE("scan_excluded_currency_file_is_ignored", tags) {
+TEST_CASE("scan_excluded_currency_file_is_ignored", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
@@ -231,7 +229,7 @@ TEST_CASE("scan_excluded_currency_file_is_ignored", tags) {
     CHECK(contains(result.currency_files, d.path / "currencies.xml"));
 }
 
-TEST_CASE("scan_nonexistent_directory_returns_empty_result", tags) {
+TEST_CASE("scan_nonexistent_directory_returns_empty_result", "[ore][scanner][directory_scanner]") {
     auto lg(make_logger(test_suite));
 
     const auto nonexistent = test_tmp_base() / "ores_no_such_dir_xyz";

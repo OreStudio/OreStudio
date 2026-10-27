@@ -248,7 +248,7 @@ struct permission_page_response {
  * does not grant too. The paging fields are those of
  * iam.v1.ops.list_account_permissions. The caller needs iam::roles:read.
  */
-struct list_role_permissions_request {
+struct list_role_permissions_page_request {
     using response_type = struct permission_page_response;
     static constexpr std::string_view nats_subject = "iam.v1.ops.list_role_permissions";
     /**

@@ -3770,6 +3770,13 @@ const fr: SourceCatalogue = {
             role: 'Rôle',
             party: 'Partie',
             noRoles: 'Aucun rôle enregistré avec cette transaction.',
+            linkTypesFailed: 'Les types de lien n’ont pas pu être lus. {message}',
+            linkPickerTruncated:
+                'Affichage de {shown} transactions sur {total} ; les autres attendent un champ de recherche.',
+            linkTypesUnreadable:
+                'Les types de lien ne sont pas encore lisibles pour ce locataire, donc aucun lien ne peut être enregistré ici.',
+            addLink: 'Enregistrer un lien',
+            addLinkSubmit: 'Enregistrer le lien',
             linksFrom: 'Liens depuis cette transaction',
             linksTo: 'Liens vers cette transaction',
             linkType: 'Lien',
@@ -3993,6 +4000,8 @@ const fr: SourceCatalogue = {
             exportNote:
                 "Le serveur écrit le document ; votre navigateur l'enregistre. Rien ne change ici.",
             exported: '{file} enregistré, {count} enregistrements.',
+            recordExportLead: 'Écrit {file} avec {what}.',
+            recordSaved: '{file} enregistré, avec {what}.',
             importTitle: 'Importer les {plural}',
             importLead:
                 "Apporter un document ORE. Le serveur le lit, vous relisez la différence, et rien n'est écrit avant la dernière étape.",
@@ -4451,6 +4460,15 @@ const fr: SourceCatalogue = {
                 notFound: "Cette convention n'existe pas.",
                 readFailed: "La convention n'a pas pu être lue. {message}",
                 shared: 'Toutes les parties lisent cette convention. Elle est détenue une seule fois pour le locataire.',
+                otherParty:
+                    'Cette convention appartient à une autre partie. Passez à cette partie pour la modifier.',
+                edit: 'Modifier les termes',
+                save: 'Enregistrer',
+                conflict:
+                    "Cette convention a changé depuis que vous l'avez ouverte. Relisez-la avant de la modifier.",
+                reload: 'Relire',
+                notEditable:
+                    'Les termes de ce type sont détenus sur deux parties, donc cette page ne les modifie pas encore.',
             },
             search: 'Rechercher un type',
             assetClass: 'Classe d’actifs',
@@ -4628,13 +4646,51 @@ const fr: SourceCatalogue = {
             sensitivity: 'Sensibilité au marché',
             sensitivityHelp: 'À quel point ce flux suit le marché, où un représente le flux moyen.',
             ratio: 'Rapport de branchement',
-            ratioHelp: 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
+            ratioHelp:
+                'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
-            decayHelp: 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
+            decayHelp:
+                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
-            marketUnknown: 'l’onglet Régime de marché n’est pas encore branché',
+            marketUnknown: 'l’état du marché n’est pas lisible pour le moment',
             unsaved: 'Modifications non enregistrées',
             reasonCode: 'system.update',
+        },
+        marketRegime: {
+            title: 'Régime de marché',
+            lead: 'L’état par lequel le rythme de chaque flux est mis à l’échelle. Il appartient au run, donc il se règle ici et non sur un flux : le regroupement propre à un flux se règle dans son onglet Arrivées.',
+            state: 'État',
+            states: { calm: 'Calme', active: 'Actif' },
+            multiplier: 'Multiplicateur',
+            heldBy: 'Défini par',
+            pinned: 'Une personne, et il tient jusqu’à ce qu’on le rende',
+            chain: 'La chaîne, qui tourne seule',
+            force: 'Forcer l’état',
+            forced: 'forcé',
+            set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
+            charts: {
+                title: 'Le facteur sur la fenêtre',
+            },
+            raster: {
+                seen: 'vus',
+                asked: 'demandé',
+                heat: 'la chaleur partagée',
+                rate: 'ticks par seconde, par flux',
+                band: 'un marché actif',
+                heatParams:
+                    'un événement ajoute {jump} de chaleur, qui s’estompe à {decay} par seconde',
+                stoppedFeeds: '{count} flux qui ne tournent pas',
+                marked: 'la ligne est le moment où l’état a été fixé : {state}',
+                stopped: 'arrêté',
+                fx: 'FX',
+                ir: 'Taux d’intérêt',
+                now: 'maintenant',
+                title: 'Arrivées de ticks de chaque flux · {seconds} dernières secondes',
+                label: 'Arrivées de ticks de chaque flux, les flux en cours d’abord',
+                none: 'Il n’y a aucun flux à dessiner. Un flux dessine une ligne dès qu’il existe, et la ligne dit s’il tourne.',
+                warming:
+                    'Une ligne se remplit à chaque tick du flux : la liste commence à l’ouverture de cet onglet.',
+            },
         },
         fxFeeds: {
             add: 'Ajouter',
@@ -4664,7 +4720,11 @@ const fr: SourceCatalogue = {
         synthetic: {
             title: 'Synthétique',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
-            tabs: { dashboard: 'Tableau de bord', provider: 'Fournisseur' },
+            tabs: {
+                dashboard: 'Tableau de bord',
+                provider: 'Fournisseur',
+                regime: 'Régime de marché',
+            },
             state: { serving: 'En service', running: 'En cours', stopped: 'Arrêté' },
             dashboard: {
                 none: "Il n'y a pas encore de flux. Un jeu de données de flux synthétiques publié pour votre partie remplit cet écran.",
@@ -5287,6 +5347,7 @@ const fr: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produits',
         author: {
             next: 'Suivant',
             steps: {
@@ -5521,6 +5582,24 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            unreadRows: "{count} lignes n'ont pas pu être lues et ne sont pas affichées.",
+            otherScopes: 'Autres portées',
+            shareTitle: "Part de chaque livre dans l'exécution",
+            shareCaption:
+                'Un tout en quelques parts se lit en anneau. Les chiffres sont à côté, car un anneau dit la forme et non la valeur.',
+            problemsTitle: "Les problèmes de l'exécution par portée",
+            problemsCaption:
+                'Un tout en quelques parts se lit en anneau. Chaque problème enregistré est compté ici, quelle que soit sa portée.',
+            unscoped: 'Portée non indiquée',
+            was: 'Exécution précédente',
+            compareTo: 'Comparer à',
+            noComparison: 'Aucune comparaison',
+            change: 'Écart',
+            changePct: 'Écart %',
+            changeAgainst: 'Écart avec cette exécution',
+            gone: 'disparue',
+            runTagOne: '{count} transaction · valorisée le {date}',
+            runTagMany: '{count} transactions · valorisées le {date}',
             oneRowPer: {
                 trade: 'Une ligne par transaction',
                 book: 'Une ligne par livre',
@@ -5532,14 +5611,12 @@ const fr: SourceCatalogue = {
                 book: 'Livre',
                 counterparty: 'Contrepartie',
             },
-            runTag_one: '{count} transaction · valorisée le {date}',
-            runTag_other: '{count} transactions · valorisées le {date}',
             sourceNote:
                 "Ce tableau lit npv.csv dans l'archive de sortie de l'exécution. Chaque ligne est une transaction évaluée par le moteur ; une transaction qu'il n'a pas pu construire n'écrit aucune ligne.",
             aggregateNote:
                 "Ces chiffres sont les transactions de l'exécution agrégées par {level}. L'exécution a valorisé au {date}.",
             degraded:
-                "Les livres ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
+                "Les livres, portefeuilles ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
             selectHint:
                 "Sélectionnez une ligne pour lire le résultat de cette transaction : sa VAN, sa VAN en devise de base, son notionnel, sa contrepartie et toute erreur enregistrée par l'exécution.",
             aggregateHint:
@@ -5886,6 +5963,11 @@ const fr: SourceCatalogue = {
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",
         defaultIs: 'La valeur par défaut est {text}.',
+        defaultOption: 'Défaut ({value})',
+        changed: 'modifié',
+        noChanges: 'Aucun changement',
+        oneChange: '1 changement',
+        changes: '{count} changements',
         schema: {
             xml: 'XML ORE',
             format: 'Format',

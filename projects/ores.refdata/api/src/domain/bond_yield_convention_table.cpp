@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string bond_yield_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<bond_yield_convention>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& by : v) {
-        table << by.id << opt_str(by.price_type) << opt_str(by.frequency) << by.modified_by
-              << by.version << fort::endr;
+        table << by.id << bond_yield_convention_opt_str(by.price_type)
+              << bond_yield_convention_opt_str(by.frequency) << by.modified_by << by.version
+              << fort::endr;
     }
     return table.to_string();
 }

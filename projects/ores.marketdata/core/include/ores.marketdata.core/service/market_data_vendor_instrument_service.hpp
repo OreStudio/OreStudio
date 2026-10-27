@@ -76,29 +76,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_market_data_vendor_instruments_response list_market_data_vendor_instruments(
-        const messaging::list_market_data_vendor_instruments_request& request);
-    messaging::get_market_data_vendor_instrument_response get_market_data_vendor_instrument(
-        const messaging::get_market_data_vendor_instrument_request& request);
-    messaging::get_many_market_data_vendor_instruments_response
+    ::ores::marketdata::messaging::list_market_data_vendor_instruments_response
+    list_market_data_vendor_instruments(
+        const ::ores::marketdata::messaging::list_market_data_vendor_instruments_request& request);
+    ::ores::marketdata::messaging::get_market_data_vendor_instrument_response
+    get_market_data_vendor_instrument(
+        const ::ores::marketdata::messaging::get_market_data_vendor_instrument_request& request);
+    ::ores::marketdata::messaging::get_many_market_data_vendor_instruments_response
     get_many_market_data_vendor_instruments(
-        const messaging::get_many_market_data_vendor_instruments_request& request);
-    messaging::put_market_data_vendor_instrument_response put_market_data_vendor_instrument(
-        const messaging::put_market_data_vendor_instrument_request& request);
-    messaging::put_many_market_data_vendor_instruments_response
+        const ::ores::marketdata::messaging::get_many_market_data_vendor_instruments_request&
+            request);
+    ::ores::marketdata::messaging::put_market_data_vendor_instrument_response
+    put_market_data_vendor_instrument(
+        const ::ores::marketdata::messaging::put_market_data_vendor_instrument_request& request);
+    ::ores::marketdata::messaging::put_many_market_data_vendor_instruments_response
     put_many_market_data_vendor_instruments(
-        const messaging::put_many_market_data_vendor_instruments_request& request);
-    messaging::delete_market_data_vendor_instrument_response delete_market_data_vendor_instrument(
-        const messaging::delete_market_data_vendor_instrument_request& request);
-    messaging::delete_many_market_data_vendor_instruments_response
+        const ::ores::marketdata::messaging::put_many_market_data_vendor_instruments_request&
+            request);
+    ::ores::marketdata::messaging::delete_market_data_vendor_instrument_response
+    delete_market_data_vendor_instrument(
+        const ::ores::marketdata::messaging::delete_market_data_vendor_instrument_request& request);
+    ::ores::marketdata::messaging::delete_many_market_data_vendor_instruments_response
     delete_many_market_data_vendor_instruments(
-        const messaging::delete_many_market_data_vendor_instruments_request& request);
-    messaging::list_market_data_vendor_instrument_versions_response
+        const ::ores::marketdata::messaging::delete_many_market_data_vendor_instruments_request&
+            request);
+    ::ores::marketdata::messaging::list_market_data_vendor_instrument_versions_response
     list_market_data_vendor_instrument_versions(
-        const messaging::list_market_data_vendor_instrument_versions_request& request);
-    messaging::get_market_data_vendor_instrument_version_response
+        const ::ores::marketdata::messaging::list_market_data_vendor_instrument_versions_request&
+            request);
+    ::ores::marketdata::messaging::get_market_data_vendor_instrument_version_response
     get_market_data_vendor_instrument_version(
-        const messaging::get_market_data_vendor_instrument_version_request& request);
+        const ::ores::marketdata::messaging::get_market_data_vendor_instrument_version_request&
+            request);
     /**@}*/
 
     /**
@@ -215,10 +224,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::market_data_vendor_instrument_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::market_data_vendor_instrument& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::marketdata::messaging::market_data_vendor_instrument_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::market_data_vendor_instrument& out);
 };
 
 }

@@ -76,28 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_portfolio_rights_response
-    list_portfolio_rights(const messaging::list_portfolio_rights_request& request);
-    messaging::get_portfolio_right_response
-    get_portfolio_right(const messaging::get_portfolio_right_request& request);
-    messaging::get_many_portfolio_rights_response
-    get_many_portfolio_rights(const messaging::get_many_portfolio_rights_request& request);
-    messaging::put_portfolio_right_response
-    put_portfolio_right(const messaging::put_portfolio_right_request& request);
-    messaging::put_many_portfolio_rights_response
-    put_many_portfolio_rights(const messaging::put_many_portfolio_rights_request& request);
-    messaging::delete_portfolio_right_response
-    delete_portfolio_right(const messaging::delete_portfolio_right_request& request);
-    messaging::delete_many_portfolio_rights_response
-    delete_many_portfolio_rights(const messaging::delete_many_portfolio_rights_request& request);
-    messaging::list_by_account_id_portfolio_rights_response list_by_account_id_portfolio_rights(
-        const messaging::list_by_account_id_portfolio_rights_request& request);
-    messaging::list_by_portfolio_id_portfolio_rights_response list_by_portfolio_id_portfolio_rights(
-        const messaging::list_by_portfolio_id_portfolio_rights_request& request);
-    messaging::list_portfolio_right_versions_response
-    list_portfolio_right_versions(const messaging::list_portfolio_right_versions_request& request);
-    messaging::get_portfolio_right_version_response
-    get_portfolio_right_version(const messaging::get_portfolio_right_version_request& request);
+    ::ores::refdata::messaging::list_portfolio_rights_response
+    list_portfolio_rights(const ::ores::refdata::messaging::list_portfolio_rights_request& request);
+    ::ores::refdata::messaging::get_portfolio_right_response
+    get_portfolio_right(const ::ores::refdata::messaging::get_portfolio_right_request& request);
+    ::ores::refdata::messaging::get_many_portfolio_rights_response get_many_portfolio_rights(
+        const ::ores::refdata::messaging::get_many_portfolio_rights_request& request);
+    ::ores::refdata::messaging::put_portfolio_right_response
+    put_portfolio_right(const ::ores::refdata::messaging::put_portfolio_right_request& request);
+    ::ores::refdata::messaging::put_many_portfolio_rights_response put_many_portfolio_rights(
+        const ::ores::refdata::messaging::put_many_portfolio_rights_request& request);
+    ::ores::refdata::messaging::delete_portfolio_right_response delete_portfolio_right(
+        const ::ores::refdata::messaging::delete_portfolio_right_request& request);
+    ::ores::refdata::messaging::delete_many_portfolio_rights_response delete_many_portfolio_rights(
+        const ::ores::refdata::messaging::delete_many_portfolio_rights_request& request);
+    ::ores::refdata::messaging::list_by_account_id_portfolio_rights_response
+    list_by_account_id_portfolio_rights(
+        const ::ores::refdata::messaging::list_by_account_id_portfolio_rights_request& request);
+    ::ores::refdata::messaging::list_by_portfolio_id_portfolio_rights_response
+    list_by_portfolio_id_portfolio_rights(
+        const ::ores::refdata::messaging::list_by_portfolio_id_portfolio_rights_request& request);
+    ::ores::refdata::messaging::list_portfolio_right_versions_response
+    list_portfolio_right_versions(
+        const ::ores::refdata::messaging::list_portfolio_right_versions_request& request);
+    ::ores::refdata::messaging::get_portfolio_right_version_response get_portfolio_right_version(
+        const ::ores::refdata::messaging::get_portfolio_right_version_request& request);
     /**@}*/
 
     /**
@@ -308,9 +311,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::portfolio_right_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::portfolio_right& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::portfolio_right_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::portfolio_right& out);
 };
 
 }

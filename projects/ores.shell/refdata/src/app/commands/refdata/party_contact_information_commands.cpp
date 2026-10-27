@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void party_contact_information_read_token(T& target,
+                                          const std::string& raw,
+                                          const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void party_contact_information_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -231,7 +233,7 @@ void party_contact_information_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        party_contact_information_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -279,7 +281,8 @@ void party_contact_information_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.contact_type, parsed->positionals[next++], "contact_type");
+        party_contact_information_read_token(
+            req.key.contact_type, parsed->positionals[next++], "contact_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -324,7 +327,8 @@ void party_contact_information_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::party_contact_information_key key;
-            read_token(key.contact_type, parsed->positionals[i + 0], "contact_type");
+            party_contact_information_read_token(
+                key.contact_type, parsed->positionals[i + 0], "contact_type");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -370,18 +374,30 @@ void party_contact_information_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
-        read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
-        read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
-        read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
-        read_token(req.change.write.city, parsed->positionals[next++], "city");
-        read_token(req.change.write.state, parsed->positionals[next++], "state");
-        read_token(req.change.write.country_code, parsed->positionals[next++], "country_code");
-        read_token(req.change.write.postal_code, parsed->positionals[next++], "postal_code");
-        read_token(req.change.write.phone, parsed->positionals[next++], "phone");
-        read_token(req.change.write.email, parsed->positionals[next++], "email");
-        read_token(req.change.write.web_page, parsed->positionals[next++], "web_page");
-        read_token(req.change.write.is_primary, parsed->positionals[next++], "is_primary");
+        party_contact_information_read_token(
+            req.change.write.party_id, parsed->positionals[next++], "party_id");
+        party_contact_information_read_token(
+            req.change.write.contact_type, parsed->positionals[next++], "contact_type");
+        party_contact_information_read_token(
+            req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
+        party_contact_information_read_token(
+            req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
+        party_contact_information_read_token(
+            req.change.write.city, parsed->positionals[next++], "city");
+        party_contact_information_read_token(
+            req.change.write.state, parsed->positionals[next++], "state");
+        party_contact_information_read_token(
+            req.change.write.country_code, parsed->positionals[next++], "country_code");
+        party_contact_information_read_token(
+            req.change.write.postal_code, parsed->positionals[next++], "postal_code");
+        party_contact_information_read_token(
+            req.change.write.phone, parsed->positionals[next++], "phone");
+        party_contact_information_read_token(
+            req.change.write.email, parsed->positionals[next++], "email");
+        party_contact_information_read_token(
+            req.change.write.web_page, parsed->positionals[next++], "web_page");
+        party_contact_information_read_token(
+            req.change.write.is_primary, parsed->positionals[next++], "is_primary");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -429,19 +445,32 @@ void party_contact_information_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
-        read_token(req.change.write.contact_type, parsed->positionals[next++], "contact_type");
-        read_token(req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
-        read_token(req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
-        read_token(req.change.write.city, parsed->positionals[next++], "city");
-        read_token(req.change.write.state, parsed->positionals[next++], "state");
-        read_token(req.change.write.country_code, parsed->positionals[next++], "country_code");
-        read_token(req.change.write.postal_code, parsed->positionals[next++], "postal_code");
-        read_token(req.change.write.phone, parsed->positionals[next++], "phone");
-        read_token(req.change.write.email, parsed->positionals[next++], "email");
-        read_token(req.change.write.web_page, parsed->positionals[next++], "web_page");
-        read_token(req.change.write.is_primary, parsed->positionals[next++], "is_primary");
+        party_contact_information_read_token(
+            req.change.write.id, parsed->positionals[next++], "id");
+        party_contact_information_read_token(
+            req.change.write.party_id, parsed->positionals[next++], "party_id");
+        party_contact_information_read_token(
+            req.change.write.contact_type, parsed->positionals[next++], "contact_type");
+        party_contact_information_read_token(
+            req.change.write.street_line_1, parsed->positionals[next++], "street_line_1");
+        party_contact_information_read_token(
+            req.change.write.street_line_2, parsed->positionals[next++], "street_line_2");
+        party_contact_information_read_token(
+            req.change.write.city, parsed->positionals[next++], "city");
+        party_contact_information_read_token(
+            req.change.write.state, parsed->positionals[next++], "state");
+        party_contact_information_read_token(
+            req.change.write.country_code, parsed->positionals[next++], "country_code");
+        party_contact_information_read_token(
+            req.change.write.postal_code, parsed->positionals[next++], "postal_code");
+        party_contact_information_read_token(
+            req.change.write.phone, parsed->positionals[next++], "phone");
+        party_contact_information_read_token(
+            req.change.write.email, parsed->positionals[next++], "email");
+        party_contact_information_read_token(
+            req.change.write.web_page, parsed->positionals[next++], "web_page");
+        party_contact_information_read_token(
+            req.change.write.is_primary, parsed->positionals[next++], "is_primary");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -503,19 +532,32 @@ void party_contact_information_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::party_contact_information_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
-            read_token(change.write.contact_type, parsed->positionals[next++], "contact_type");
-            read_token(change.write.street_line_1, parsed->positionals[next++], "street_line_1");
-            read_token(change.write.street_line_2, parsed->positionals[next++], "street_line_2");
-            read_token(change.write.city, parsed->positionals[next++], "city");
-            read_token(change.write.state, parsed->positionals[next++], "state");
-            read_token(change.write.country_code, parsed->positionals[next++], "country_code");
-            read_token(change.write.postal_code, parsed->positionals[next++], "postal_code");
-            read_token(change.write.phone, parsed->positionals[next++], "phone");
-            read_token(change.write.email, parsed->positionals[next++], "email");
-            read_token(change.write.web_page, parsed->positionals[next++], "web_page");
-            read_token(change.write.is_primary, parsed->positionals[next++], "is_primary");
+            party_contact_information_read_token(
+                change.write.id, parsed->positionals[next++], "id");
+            party_contact_information_read_token(
+                change.write.party_id, parsed->positionals[next++], "party_id");
+            party_contact_information_read_token(
+                change.write.contact_type, parsed->positionals[next++], "contact_type");
+            party_contact_information_read_token(
+                change.write.street_line_1, parsed->positionals[next++], "street_line_1");
+            party_contact_information_read_token(
+                change.write.street_line_2, parsed->positionals[next++], "street_line_2");
+            party_contact_information_read_token(
+                change.write.city, parsed->positionals[next++], "city");
+            party_contact_information_read_token(
+                change.write.state, parsed->positionals[next++], "state");
+            party_contact_information_read_token(
+                change.write.country_code, parsed->positionals[next++], "country_code");
+            party_contact_information_read_token(
+                change.write.postal_code, parsed->positionals[next++], "postal_code");
+            party_contact_information_read_token(
+                change.write.phone, parsed->positionals[next++], "phone");
+            party_contact_information_read_token(
+                change.write.email, parsed->positionals[next++], "email");
+            party_contact_information_read_token(
+                change.write.web_page, parsed->positionals[next++], "web_page");
+            party_contact_information_read_token(
+                change.write.is_primary, parsed->positionals[next++], "is_primary");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -565,7 +607,8 @@ void party_contact_information_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.contact_type, parsed->positionals[next++], "contact_type");
+        party_contact_information_read_token(
+            req.removal.key.contact_type, parsed->positionals[next++], "contact_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -619,7 +662,8 @@ void party_contact_information_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::party_contact_information_key key;
-            read_token(key.contact_type, parsed->positionals[i * 1 + 0], "contact_type");
+            party_contact_information_read_token(
+                key.contact_type, parsed->positionals[i * 1 + 0], "contact_type");
             req.removals.push_back(
                 messaging::party_contact_information_removal{.key = std::move(key)});
         }
@@ -679,7 +723,7 @@ void party_contact_information_commands::process_by_party_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        party_contact_information_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -727,8 +771,9 @@ void party_contact_information_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.contact_type, parsed->positionals[next++], "contact_type");
-        apply_page(req, *parsed);
+        party_contact_information_read_token(
+            req.key.contact_type, parsed->positionals[next++], "contact_type");
+        party_contact_information_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -773,9 +818,9 @@ void party_contact_information_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.party_contact_information.contact_type,
-                   parsed->positionals[next++],
-                   "contact_type");
+        party_contact_information_read_token(req.key.party_contact_information.contact_type,
+                                             parsed->positionals[next++],
+                                             "contact_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

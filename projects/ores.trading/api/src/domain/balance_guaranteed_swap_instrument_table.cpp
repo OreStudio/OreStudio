@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string balance_guaranteed_swap_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,7 +50,8 @@ std::string convert_to_table(const std::vector<balance_guaranteed_swap_instrumen
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& bg : v) {
-        table << bg.trade_id << bg.reference_security << opt_str(bg.lockout_days) << bg.modified_by
+        table << bg.trade_id << bg.reference_security
+              << balance_guaranteed_swap_instrument_opt_str(bg.lockout_days) << bg.modified_by
               << bg.version << fort::endr;
     }
     return table.to_string();

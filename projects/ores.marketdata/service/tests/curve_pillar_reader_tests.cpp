@@ -33,8 +33,6 @@
 
 namespace {
 
-const std::string tags("[curve_pillar_reader]");
-
 using ores::marketdata::domain::market_observation;
 using ores::marketdata::domain::market_series;
 using ores::marketdata::repository::market_observation_repository;
@@ -173,7 +171,7 @@ struct fixture {
 
 }
 
-TEST_CASE("a_pillar_is_read_from_the_series_its_own_key_names", tags) {
+TEST_CASE("a_pillar_is_read_from_the_series_its_own_key_names", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
     const auto config = f.make_config();
@@ -191,7 +189,7 @@ TEST_CASE("a_pillar_is_read_from_the_series_its_own_key_names", tags) {
     CHECK(read.series_ids.front() == boost::uuids::to_string(series_id));
 }
 
-TEST_CASE("a_pillar_with_no_series_of_its_own_gets_no_rate", tags) {
+TEST_CASE("a_pillar_with_no_series_of_its_own_gets_no_rate", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
     const auto config = f.make_config();
@@ -203,7 +201,7 @@ TEST_CASE("a_pillar_with_no_series_of_its_own_gets_no_rate", tags) {
     CHECK(read.series_ids.empty());
 }
 
-TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_point_gets_no_rate", tags) {
+TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_point_gets_no_rate", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
     const auto config = f.make_config();
@@ -222,7 +220,7 @@ TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_point_gets_no_rate", tags) 
     CHECK(read.series_ids.empty());
 }
 
-TEST_CASE("the_lineage_names_only_the_series_a_rate_was_read_from", tags) {
+TEST_CASE("the_lineage_names_only_the_series_a_rate_was_read_from", "[curve_pillar_reader]") {
     fixture f;
     const auto ctx = make_context();
     const auto config = f.make_config();

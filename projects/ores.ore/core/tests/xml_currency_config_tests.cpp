@@ -21,6 +21,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <stdexcept>
@@ -28,9 +29,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml]");
 
 using namespace ores::logging;
 using ores::refdata::domain::currency;
@@ -75,7 +73,7 @@ void require_round_trip(const std::vector<currency>& original) {
 
 }
 
-TEST_CASE("a_currency_states_its_own_fields", tags) {
+TEST_CASE("a_currency_states_its_own_fields", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     const auto imported = ores::ore::xml::importer::import_currency_config_text(text);
@@ -96,7 +94,7 @@ TEST_CASE("a_currency_states_its_own_fields", tags) {
     require_round_trip(imported);
 }
 
-TEST_CASE("a_numeric_code_keeps_its_leading_zeros", tags) {
+TEST_CASE("a_numeric_code_keeps_its_leading_zeros", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     // The document carries the code as a number, so 036 arrives as 36; the
@@ -111,7 +109,7 @@ TEST_CASE("a_numeric_code_keeps_its_leading_zeros", tags) {
     require_round_trip(imported);
 }
 
-TEST_CASE("a_currency_absent_optional_fields_stay_absent", tags) {
+TEST_CASE("a_currency_absent_optional_fields_stay_absent", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     const std::string minimal = "<CurrencyConfig><Currency>"
@@ -131,7 +129,7 @@ TEST_CASE("a_currency_absent_optional_fields_stay_absent", tags) {
     require_round_trip(imported);
 }
 
-TEST_CASE("every_rounding_type_the_schema_allows_round_trips", tags) {
+TEST_CASE("every_rounding_type_the_schema_allows_round_trips", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     for (const std::string spelling : {"Up", "Down", "Closest", "Floor", "Ceiling"}) {
@@ -153,7 +151,7 @@ TEST_CASE("every_rounding_type_the_schema_allows_round_trips", tags) {
     }
 }
 
-TEST_CASE("a_rounding_type_ore_does_not_have_is_refused_on_export", tags) {
+TEST_CASE("a_rounding_type_ore_does_not_have_is_refused_on_export", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     auto imported = ores::ore::xml::importer::import_currency_config_text(text);
@@ -163,7 +161,7 @@ TEST_CASE("a_rounding_type_ore_does_not_have_is_refused_on_export", tags) {
     CHECK_THROWS_AS(ores::ore::xml::exporter::export_currency_config(imported), std::runtime_error);
 }
 
-TEST_CASE("a_numeric_code_that_is_not_a_number_is_left_out", tags) {
+TEST_CASE("a_numeric_code_that_is_not_a_number_is_left_out", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     auto imported = ores::ore::xml::importer::import_currency_config_text(text);
@@ -176,7 +174,7 @@ TEST_CASE("a_numeric_code_that_is_not_a_number_is_left_out", tags) {
     CHECK(reread[0].numeric_code.empty());
 }
 
-TEST_CASE("every_currency_config_in_the_corpus_round_trips", tags) {
+TEST_CASE("every_currency_config_in_the_corpus_round_trips", "[ore][xml]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ores::testing::project_root::resolve("external/ore/examples");

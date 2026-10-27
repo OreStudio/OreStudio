@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::login_info> read_one(repository::login_info_repository& repo,
-                                         const ores::database::context& ctx,
-                                         const messaging::login_info_key& key) {
+std::vector<domain::login_info> login_info_read_one(repository::login_info_repository& repo,
+                                                    const ores::database::context& ctx,
+                                                    const messaging::login_info_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.account_id));
 }
 
@@ -101,7 +101,7 @@ login_info_service::list_login_info(const messaging::list_login_info_request& re
 messaging::get_login_info_response
 login_info_service::get_login_info(const messaging::get_login_info_request& request) {
     messaging::get_login_info_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = login_info_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "login_info"});
         return response;
@@ -120,7 +120,7 @@ login_info_service::get_many_login_info(const messaging::get_many_login_info_req
     for (const auto& k : request.keys) {
         messaging::login_info_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = login_info_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.login_info = std::move(found.front());
         response.entries.push_back(std::move(entry));

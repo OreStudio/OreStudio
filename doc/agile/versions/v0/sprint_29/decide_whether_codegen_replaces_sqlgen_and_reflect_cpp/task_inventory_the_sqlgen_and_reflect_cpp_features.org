@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 5A8896F6-E9AF-4047-A038-3771ED77C1BC
+:END:
+#+title: Task: Inventory the sqlgen and reflect-cpp features the platform uses
+#+description: List every sqlgen and reflect-cpp feature the platform uses, generated and hand-written, and what generated code must cover to replace each.
+#+type: task
+#+level: s1
+#+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A complete list of the sqlgen and reflect-cpp features the platform uses, in
+generated and hand-written code, with what generated code over native APIs
+must provide to replace each one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- Every sqlgen construct and every reflect-cpp construct in use is listed, with
+  its count and whether its uses are generated or hand-written.
+- Every type the libraries encode for us is listed: UUIDs, timestamps, exact
+  decimals, optional values, enums, nested vectors, polymorphic messages.
+- Each entry names what replaces it, or why it stays.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files using sqlgen | 1,429, of which 924 generated | =grep -rl 'sqlgen::'= over =projects=, then the generated markers | =ced6c2fc70= |
+| Files using reflect-cpp | 1,970, of which 1,837 generated | =grep -rl 'rfl::'= over =projects=, then the generated markers | =ced6c2fc70= |
+| sqlgen calls by kind | =read= 3,692, =limit= 1,052, =delete_from= 864, conditions 842, =offset= 600, =order_by= 443, =count= 73, =insert_or_replace= 32, =insert= 13 | =grep -rhoE 'sqlgen::[a-z_]+'= with counts | =ced6c2fc70= |
+| reflect-cpp calls by kind | =json::write= 5,221, =json::read= 636, enum conversions 18, =msgpack::write= 3, =msgpack::read= 4 | =grep -rhoE 'rfl::[a-z_]+(::[a-z_]+)?'= with counts | =ced6c2fc70= |
+| Generated against hand-written uses | =sqlgen::read= 3,647 / 45, =delete_from= 862 / 2, =insert= 38 / 7, =rfl::json::write= 5,055 / 166, =rfl::json::read= 522 / 114, =rfl::Generic= 0 / 78 | the same counts over files with and without the generated markers | =ced6c2fc70= |
+
+* Notes
+
+- Writes go through =execute_write_query= in =ores.database=, which issues one
+  =sqlgen::insert= for each row, inside a unit of work for a batch.
+- The NATS wire codec chooses JSON or MessagePack at run time, both through
+  reflect-cpp templates instantiated for each message type.
+- Most of the use is generated, so a change to the templates changes most of it.
+
+** What generated code must cover
+
+| Feature in use | Where | Replacement |
+|----------------+-------+-------------|
+| =sqlgen::read= with =where=, =order_by=, =limit=, =offset= | Generated repositories (3,647), a few hand-written reads (45) | Generated statements with typed parameters and row decoders |
+| =sqlgen::delete_from= | Generated (862) | Generated statements |
+| =sqlgen::insert=, =insert_or_replace= | Generated writes through =execute_write_query= (38), hand-written (7) | Generated statements; batch writes as one statement with array parameters, or COPY |
+| =sqlgen::count= | Generated (73) | Generated statements |
+| =sqlgen::dynamic= conditions and ordering | Generated list filters | Generated filter clauses from the model's filterable columns |
+| sqlgen connection pool and sessions | =ores.database= | The pool and unit of work of the data path |
+| =rfl::json::write= / =read= | Generated JSON I/O and logging (5,577), hand-written (280) | Generated JSON codecs over yyjson in each type's =.cpp= |
+| =rfl::msgpack::write= / =read= | The NATS wire codec | Generated MessagePack codecs over msgpack-c in each type's =.cpp= |
+| =rfl::Generic=, =rfl::Object= | Hand-written dynamic JSON (78 and 28) | yyjson directly; nothing to generate |
+| =rfl::json::to_schema= | 7 uses | Schema generated from the model, or kept on reflect-cpp in a tool |
+| =rfl::Skip=, =rfl::Rename=, =rfl::Timestamp=, =rfl::DefaultIfMissing=, =rfl::to_view= | 19 uses in all | Model attributes the generator reads |
+| =rfl::enum_to_string= / =string_to_enum= | 18 uses | Generated enum tables |
+| =std::variant= in messages | 9 API headers | A generated codec per variant, keeping reflect-cpp's encoding |
+
+** Types with a custom encoding
+
+The wire form of these types is set by our reflectors, so the generated codecs
+must reproduce it exactly: =boost::uuids::uuid=, =tenant_id=,
+=std::optional<boost::uuids::uuid>=, =std::chrono::year_month_day=,
+=ores::utility::decimal::decimal=, =boost::asio::ip::address=, =error_code=,
+=std::chrono::system_clock::time_point= (a custom parser), =product_type=,
+=cron_expression=, =step_log_level= and =step_outcome=. The polymorphic payload
+pattern is deprecated, so tagged unions need no support.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The surface is almost all generated. Of the SQL use, 3,647 of 3,692 reads, 862
+of 864 deletes and 38 of 45 inserts are generated; of the JSON use, 5,577 of
+5,857 calls are. The hand-written remainder is small: 45 reads, 7 inserts, 2
+deletes and 280 JSON calls, plus 106 uses of reflect-cpp's dynamic JSON, which
+would move to yyjson directly. Twelve types have a custom wire encoding that
+generated codecs must reproduce, and the deprecated polymorphic payload means
+tagged unions need no support. The table in the notes names the replacement
+for each feature.

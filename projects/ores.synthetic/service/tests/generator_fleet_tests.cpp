@@ -29,8 +29,6 @@
 
 namespace {
 
-const std::string tags("[generator_fleet]");
-
 namespace messaging = ores::marketdata::messaging;
 namespace domain = ores::marketdata::domain;
 using ores::synthetic::service::generator_fleet;
@@ -83,9 +81,8 @@ private:
 
 // One offer: the id it answers and the feed, by source name, that it builds.
 generator_offer offer_of(const std::string& pair, const std::string& source_name) {
-    return {.id = pair_id(pair), .make = [source_name] {
-                return std::make_shared<named_generator>(source_name);
-            }};
+    return {.id = pair_id(pair),
+            .make = [source_name] { return std::make_shared<named_generator>(source_name); }};
 }
 
 std::shared_ptr<domain::i_feed> feed_named(const std::string& source_name) {
@@ -94,7 +91,7 @@ std::shared_ptr<domain::i_feed> feed_named(const std::string& source_name) {
 
 }
 
-TEST_CASE("the running set names the feeds the demanded runner runs", tags) {
+TEST_CASE("the running set names the feeds the demanded runner runs", "[generator_fleet]") {
     running_set names;
     generator_runner runner([] { return std::vector{offer_of("EUR/USD", "synthetic.eurusd")}; },
                             &names);
@@ -108,7 +105,7 @@ TEST_CASE("the running set names the feeds the demanded runner runs", tags) {
     CHECK(names.names().empty());
 }
 
-TEST_CASE("a manual run is not reconciled away by the next demand", tags) {
+TEST_CASE("a manual run is not reconciled away by the next demand", "[generator_fleet]") {
     generator_fleet fleet;
     generator_runner runner([] { return std::vector{offer_of("EUR/USD", "synthetic.eurusd")}; },
                             &fleet.running_names());
@@ -125,7 +122,7 @@ TEST_CASE("a manual run is not reconciled away by the next demand", tags) {
     CHECK(fleet.running_source_names() == std::vector<std::string>{"synthetic.manual"});
 }
 
-TEST_CASE("a feed that already runs starts no second generator", tags) {
+TEST_CASE("a feed that already runs starts no second generator", "[generator_fleet]") {
     generator_fleet fleet;
     generator_runner runner([] { return std::vector{offer_of("EUR/USD", "synthetic.eurusd")}; },
                             &fleet.running_names());
@@ -140,7 +137,7 @@ TEST_CASE("a feed that already runs starts no second generator", tags) {
     CHECK(fleet.running_source_names() == std::vector<std::string>{"synthetic.eurusd"});
 }
 
-TEST_CASE("a manual start of a feed that already runs starts nothing", tags) {
+TEST_CASE("a manual start of a feed that already runs starts nothing", "[generator_fleet]") {
     generator_fleet fleet;
     generator_runner runner([] { return std::vector{offer_of("EUR/USD", "synthetic.eurusd")}; },
                             &fleet.running_names());
@@ -150,7 +147,8 @@ TEST_CASE("a manual start of a feed that already runs starts nothing", tags) {
     CHECK(fleet.running_count() == 1);
 }
 
-TEST_CASE("a stop by source name reaches a demanded run and a manual one alike", tags) {
+TEST_CASE("a stop by source name reaches a demanded run and a manual one alike",
+          "[generator_fleet]") {
     generator_fleet fleet;
     generator_runner runner([] { return std::vector{offer_of("EUR/USD", "synthetic.eurusd")}; },
                             &fleet.running_names());

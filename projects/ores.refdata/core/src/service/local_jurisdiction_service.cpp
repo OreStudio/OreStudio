@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::local_jurisdiction> read_one(repository::local_jurisdiction_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::local_jurisdiction_key& key) {
+std::vector<domain::local_jurisdiction>
+local_jurisdiction_read_one(repository::local_jurisdiction_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::local_jurisdiction_key& key) {
     return repo.read_latest(ctx, key.code, key.coding_scheme_code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::local_jurisdiction> read_one(repository::local_jurisdiction_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::local_jurisdiction_key key_from(const domain::local_jurisdiction& v) {
+messaging::local_jurisdiction_key local_jurisdiction_key_from(const domain::local_jurisdiction& v) {
     messaging::local_jurisdiction_key key;
     key.code = v.code;
     key.coding_scheme_code = v.coding_scheme_code;
@@ -95,7 +96,8 @@ messaging::local_jurisdiction_key key_from(const domain::local_jurisdiction& v) 
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::local_jurisdiction to_domain(const messaging::local_jurisdiction_write& write) {
+domain::local_jurisdiction
+local_jurisdiction_to_domain(const messaging::local_jurisdiction_write& write) {
     domain::local_jurisdiction v;
     v.code = write.code;
     v.coding_scheme_code = write.coding_scheme_code;
@@ -136,7 +138,7 @@ messaging::list_local_jurisdictions_response local_jurisdiction_service::list_lo
 messaging::get_local_jurisdiction_response local_jurisdiction_service::get_local_jurisdiction(
     const messaging::get_local_jurisdiction_request& request) {
     messaging::get_local_jurisdiction_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = local_jurisdiction_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "local_jurisdiction"});
         return response;
@@ -156,7 +158,7 @@ local_jurisdiction_service::get_many_local_jurisdictions(
     for (const auto& k : request.keys) {
         messaging::local_jurisdiction_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = local_jurisdiction_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.local_jurisdiction = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -172,7 +174,7 @@ messaging::put_local_jurisdiction_response local_jurisdiction_service::put_local
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = local_jurisdiction_read_one(repo_, ctx_, local_jurisdiction_key_from(value));
     if (!written.empty())
         response.local_jurisdiction = std::move(written.front());
     return response;
@@ -205,7 +207,7 @@ local_jurisdiction_service::put_many_local_jurisdictions(
     repo_.write(ctx_, batch, claims);
     response.jurisdictions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = local_jurisdiction_read_one(repo_, ctx_, local_jurisdiction_key_from(value));
         response.jurisdictions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -239,7 +241,7 @@ messaging::delete_local_jurisdiction_response local_jurisdiction_service::delete
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = local_jurisdiction_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "local_jurisdiction",
@@ -334,8 +336,8 @@ local_jurisdiction_service::prepare_change(const messaging::local_jurisdiction_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = local_jurisdiction_to_domain(change.write);
+    const auto current = local_jurisdiction_read_one(repo_, ctx_, local_jurisdiction_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

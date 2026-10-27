@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_structure_template_roles_response
-    list_structure_template_roles(const messaging::list_structure_template_roles_request& request);
-    messaging::get_structure_template_role_response
-    get_structure_template_role(const messaging::get_structure_template_role_request& request);
-    messaging::get_many_structure_template_roles_response get_many_structure_template_roles(
-        const messaging::get_many_structure_template_roles_request& request);
-    messaging::put_structure_template_role_response
-    put_structure_template_role(const messaging::put_structure_template_role_request& request);
-    messaging::put_many_structure_template_roles_response put_many_structure_template_roles(
-        const messaging::put_many_structure_template_roles_request& request);
-    messaging::delete_structure_template_role_response delete_structure_template_role(
-        const messaging::delete_structure_template_role_request& request);
-    messaging::delete_many_structure_template_roles_response delete_many_structure_template_roles(
-        const messaging::delete_many_structure_template_roles_request& request);
-    messaging::list_structure_template_role_versions_response list_structure_template_role_versions(
-        const messaging::list_structure_template_role_versions_request& request);
-    messaging::get_structure_template_role_version_response get_structure_template_role_version(
-        const messaging::get_structure_template_role_version_request& request);
+    ::ores::trading::messaging::list_structure_template_roles_response
+    list_structure_template_roles(
+        const ::ores::trading::messaging::list_structure_template_roles_request& request);
+    ::ores::trading::messaging::get_structure_template_role_response get_structure_template_role(
+        const ::ores::trading::messaging::get_structure_template_role_request& request);
+    ::ores::trading::messaging::get_many_structure_template_roles_response
+    get_many_structure_template_roles(
+        const ::ores::trading::messaging::get_many_structure_template_roles_request& request);
+    ::ores::trading::messaging::put_structure_template_role_response put_structure_template_role(
+        const ::ores::trading::messaging::put_structure_template_role_request& request);
+    ::ores::trading::messaging::put_many_structure_template_roles_response
+    put_many_structure_template_roles(
+        const ::ores::trading::messaging::put_many_structure_template_roles_request& request);
+    ::ores::trading::messaging::delete_structure_template_role_response
+    delete_structure_template_role(
+        const ::ores::trading::messaging::delete_structure_template_role_request& request);
+    ::ores::trading::messaging::delete_many_structure_template_roles_response
+    delete_many_structure_template_roles(
+        const ::ores::trading::messaging::delete_many_structure_template_roles_request& request);
+    ::ores::trading::messaging::list_structure_template_role_versions_response
+    list_structure_template_role_versions(
+        const ::ores::trading::messaging::list_structure_template_role_versions_request& request);
+    ::ores::trading::messaging::get_structure_template_role_version_response
+    get_structure_template_role_version(
+        const ::ores::trading::messaging::get_structure_template_role_version_request& request);
     /**@}*/
 
     /**
@@ -194,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::structure_template_role_change& change,
+    prepare_change(const ::ores::trading::messaging::structure_template_role_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::structure_template_role& out);
 };

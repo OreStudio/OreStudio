@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view badge_severity_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_badge_severity_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<badge_severity_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_badge_severities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_badge_severities(std::move(msg));
-        }));
+        list_badge_severities_request::nats_subject,
+        badge_severity_queue_group,
+        [h](ores::nats::message msg) { h->list_badge_severities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_badge_severity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_badge_severity(std::move(msg));
-        }));
+        get_badge_severity_request::nats_subject,
+        badge_severity_queue_group,
+        [h](ores::nats::message msg) { h->get_badge_severity(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_badge_severities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_badge_severities(std::move(msg));
-        }));
+        get_many_badge_severities_request::nats_subject,
+        badge_severity_queue_group,
+        [h](ores::nats::message msg) { h->get_many_badge_severities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_badge_severity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_badge_severity(std::move(msg));
-        }));
+        put_badge_severity_request::nats_subject,
+        badge_severity_queue_group,
+        [h](ores::nats::message msg) { h->put_badge_severity(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_badge_severities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_badge_severities(std::move(msg));
-        }));
+        put_many_badge_severities_request::nats_subject,
+        badge_severity_queue_group,
+        [h](ores::nats::message msg) { h->put_many_badge_severities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_badge_severity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_badge_severity(std::move(msg));
-        }));
+        delete_badge_severity_request::nats_subject,
+        badge_severity_queue_group,
+        [h](ores::nats::message msg) { h->delete_badge_severity(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_badge_severities_request::nats_subject,
-        queue_group,
+        badge_severity_queue_group,
         [h](ores::nats::message msg) { h->delete_many_badge_severities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_badge_severity_versions_request::nats_subject,
-        queue_group,
+        badge_severity_queue_group,
         [h](ores::nats::message msg) { h->list_badge_severity_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_badge_severity_version_request::nats_subject,
-        queue_group,
+        badge_severity_queue_group,
         [h](ores::nats::message msg) { h->get_badge_severity_version(std::move(msg)); }));
     return subs;
 }

@@ -73,9 +73,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::bond_issue_call_date>
-read_one(repository::bond_issue_call_date_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::bond_issue_call_date_key& key) {
+bond_issue_call_date_read_one(repository::bond_issue_call_date_repository& repo,
+                              const ores::database::context& ctx,
+                              const messaging::bond_issue_call_date_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.issue_id), std::to_string(key.sequence_number));
 }
@@ -86,7 +86,8 @@ read_one(repository::bond_issue_call_date_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::bond_issue_call_date_key key_from(const domain::bond_issue_call_date& v) {
+messaging::bond_issue_call_date_key
+bond_issue_call_date_key_from(const domain::bond_issue_call_date& v) {
     messaging::bond_issue_call_date_key key;
     key.issue_id = v.issue_id;
     key.sequence_number = v.sequence_number;
@@ -100,7 +101,8 @@ messaging::bond_issue_call_date_key key_from(const domain::bond_issue_call_date&
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::bond_issue_call_date to_domain(const messaging::bond_issue_call_date_write& write) {
+domain::bond_issue_call_date
+bond_issue_call_date_to_domain(const messaging::bond_issue_call_date_write& write) {
     domain::bond_issue_call_date v;
     v.issue_id = write.issue_id;
     v.sequence_number = write.sequence_number;
@@ -141,7 +143,7 @@ bond_issue_call_date_service::list_bond_issue_call_dates(
 messaging::get_bond_issue_call_date_response bond_issue_call_date_service::get_bond_issue_call_date(
     const messaging::get_bond_issue_call_date_request& request) {
     messaging::get_bond_issue_call_date_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = bond_issue_call_date_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "bond_issue_call_date"});
         return response;
@@ -161,7 +163,7 @@ bond_issue_call_date_service::get_many_bond_issue_call_dates(
     for (const auto& k : request.keys) {
         messaging::bond_issue_call_date_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = bond_issue_call_date_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.bond_issue_call_date = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -177,7 +179,7 @@ messaging::put_bond_issue_call_date_response bond_issue_call_date_service::put_b
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = bond_issue_call_date_read_one(repo_, ctx_, bond_issue_call_date_key_from(value));
     if (!written.empty())
         response.bond_issue_call_date = std::move(written.front());
     return response;
@@ -210,7 +212,8 @@ bond_issue_call_date_service::put_many_bond_issue_call_dates(
     repo_.write(ctx_, batch, claims);
     response.call_dates.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            bond_issue_call_date_read_one(repo_, ctx_, bond_issue_call_date_key_from(value));
         response.call_dates.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -247,7 +250,7 @@ bond_issue_call_date_service::delete_bond_issue_call_date(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = bond_issue_call_date_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "bond_issue_call_date",
@@ -345,8 +348,9 @@ bond_issue_call_date_service::prepare_change(const messaging::bond_issue_call_da
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = bond_issue_call_date_to_domain(change.write);
+    const auto current =
+        bond_issue_call_date_read_one(repo_, ctx_, bond_issue_call_date_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void curve_volatility_config_read_token(T& target,
+                                        const std::string& raw,
+                                        const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void curve_volatility_config_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -237,7 +239,7 @@ void curve_volatility_config_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        curve_volatility_config_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -285,7 +287,7 @@ void curve_volatility_config_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
+        curve_volatility_config_read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -330,7 +332,7 @@ void curve_volatility_config_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::curve_volatility_config_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            curve_volatility_config_read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -376,58 +378,75 @@ void curve_volatility_config_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.curve_definition_id,
-                   parsed->positionals[next++],
-                   "curve_definition_id");
-        read_token(req.change.write.kind, parsed->positionals[next++], "kind");
-        read_token(req.change.write.is_wrapped, parsed->positionals[next++], "is_wrapped");
-        read_token(req.change.write.priority, parsed->positionals[next++], "priority");
-        read_token(req.change.write.quote_type, parsed->positionals[next++], "quote_type");
-        read_token(
+        curve_volatility_config_read_token(req.change.write.curve_definition_id,
+                                           parsed->positionals[next++],
+                                           "curve_definition_id");
+        curve_volatility_config_read_token(
+            req.change.write.kind, parsed->positionals[next++], "kind");
+        curve_volatility_config_read_token(
+            req.change.write.is_wrapped, parsed->positionals[next++], "is_wrapped");
+        curve_volatility_config_read_token(
+            req.change.write.priority, parsed->positionals[next++], "priority");
+        curve_volatility_config_read_token(
+            req.change.write.quote_type, parsed->positionals[next++], "quote_type");
+        curve_volatility_config_read_token(
             req.change.write.volatility_type, parsed->positionals[next++], "volatility_type");
-        read_token(req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-        read_token(req.change.write.strikes, parsed->positionals[next++], "strikes");
-        read_token(req.change.write.expiries, parsed->positionals[next++], "expiries");
-        read_token(
+        curve_volatility_config_read_token(
+            req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+        curve_volatility_config_read_token(
+            req.change.write.strikes, parsed->positionals[next++], "strikes");
+        curve_volatility_config_read_token(
+            req.change.write.expiries, parsed->positionals[next++], "expiries");
+        curve_volatility_config_read_token(
             req.change.write.time_interpolation, parsed->positionals[next++], "time_interpolation");
-        read_token(req.change.write.strike_interpolation,
-                   parsed->positionals[next++],
-                   "strike_interpolation");
-        read_token(req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        read_token(
+        curve_volatility_config_read_token(req.change.write.strike_interpolation,
+                                           parsed->positionals[next++],
+                                           "strike_interpolation");
+        curve_volatility_config_read_token(
+            req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
+        curve_volatility_config_read_token(
             req.change.write.time_extrapolation, parsed->positionals[next++], "time_extrapolation");
-        read_token(req.change.write.time_extrapolation_variance,
-                   parsed->positionals[next++],
-                   "time_extrapolation_variance");
-        read_token(req.change.write.strike_extrapolation,
-                   parsed->positionals[next++],
-                   "strike_extrapolation");
-        read_token(req.change.write.calendar, parsed->positionals[next++], "calendar");
-        read_token(req.change.write.quote, parsed->positionals[next++], "quote");
-        read_token(req.change.write.interpolation, parsed->positionals[next++], "interpolation");
-        read_token(req.change.write.enforce_monotone_variance,
-                   parsed->positionals[next++],
-                   "enforce_monotone_variance");
-        read_token(req.change.write.delta_type, parsed->positionals[next++], "delta_type");
-        read_token(req.change.write.atm_type, parsed->positionals[next++], "atm_type");
-        read_token(req.change.write.atm_delta_type, parsed->positionals[next++], "atm_delta_type");
-        read_token(req.change.write.put_deltas, parsed->positionals[next++], "put_deltas");
-        read_token(req.change.write.call_deltas, parsed->positionals[next++], "call_deltas");
-        read_token(req.change.write.future_price_correction,
-                   parsed->positionals[next++],
-                   "future_price_correction");
-        read_token(req.change.write.proxy_volatility_curve,
-                   parsed->positionals[next++],
-                   "proxy_volatility_curve");
-        read_token(req.change.write.fx_volatility_curve,
-                   parsed->positionals[next++],
-                   "fx_volatility_curve");
-        read_token(
+        curve_volatility_config_read_token(req.change.write.time_extrapolation_variance,
+                                           parsed->positionals[next++],
+                                           "time_extrapolation_variance");
+        curve_volatility_config_read_token(req.change.write.strike_extrapolation,
+                                           parsed->positionals[next++],
+                                           "strike_extrapolation");
+        curve_volatility_config_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        curve_volatility_config_read_token(
+            req.change.write.quote, parsed->positionals[next++], "quote");
+        curve_volatility_config_read_token(
+            req.change.write.interpolation, parsed->positionals[next++], "interpolation");
+        curve_volatility_config_read_token(req.change.write.enforce_monotone_variance,
+                                           parsed->positionals[next++],
+                                           "enforce_monotone_variance");
+        curve_volatility_config_read_token(
+            req.change.write.delta_type, parsed->positionals[next++], "delta_type");
+        curve_volatility_config_read_token(
+            req.change.write.atm_type, parsed->positionals[next++], "atm_type");
+        curve_volatility_config_read_token(
+            req.change.write.atm_delta_type, parsed->positionals[next++], "atm_delta_type");
+        curve_volatility_config_read_token(
+            req.change.write.put_deltas, parsed->positionals[next++], "put_deltas");
+        curve_volatility_config_read_token(
+            req.change.write.call_deltas, parsed->positionals[next++], "call_deltas");
+        curve_volatility_config_read_token(req.change.write.future_price_correction,
+                                           parsed->positionals[next++],
+                                           "future_price_correction");
+        curve_volatility_config_read_token(req.change.write.proxy_volatility_curve,
+                                           parsed->positionals[next++],
+                                           "proxy_volatility_curve");
+        curve_volatility_config_read_token(req.change.write.fx_volatility_curve,
+                                           parsed->positionals[next++],
+                                           "fx_volatility_curve");
+        curve_volatility_config_read_token(
             req.change.write.correlation_curve, parsed->positionals[next++], "correlation_curve");
-        read_token(req.change.write.cds_volatility_curve,
-                   parsed->positionals[next++],
-                   "cds_volatility_curve");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        curve_volatility_config_read_token(req.change.write.cds_volatility_curve,
+                                           parsed->positionals[next++],
+                                           "cds_volatility_curve");
+        curve_volatility_config_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -475,59 +494,76 @@ void curve_volatility_config_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.curve_definition_id,
-                   parsed->positionals[next++],
-                   "curve_definition_id");
-        read_token(req.change.write.kind, parsed->positionals[next++], "kind");
-        read_token(req.change.write.is_wrapped, parsed->positionals[next++], "is_wrapped");
-        read_token(req.change.write.priority, parsed->positionals[next++], "priority");
-        read_token(req.change.write.quote_type, parsed->positionals[next++], "quote_type");
-        read_token(
+        curve_volatility_config_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        curve_volatility_config_read_token(req.change.write.curve_definition_id,
+                                           parsed->positionals[next++],
+                                           "curve_definition_id");
+        curve_volatility_config_read_token(
+            req.change.write.kind, parsed->positionals[next++], "kind");
+        curve_volatility_config_read_token(
+            req.change.write.is_wrapped, parsed->positionals[next++], "is_wrapped");
+        curve_volatility_config_read_token(
+            req.change.write.priority, parsed->positionals[next++], "priority");
+        curve_volatility_config_read_token(
+            req.change.write.quote_type, parsed->positionals[next++], "quote_type");
+        curve_volatility_config_read_token(
             req.change.write.volatility_type, parsed->positionals[next++], "volatility_type");
-        read_token(req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-        read_token(req.change.write.strikes, parsed->positionals[next++], "strikes");
-        read_token(req.change.write.expiries, parsed->positionals[next++], "expiries");
-        read_token(
+        curve_volatility_config_read_token(
+            req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+        curve_volatility_config_read_token(
+            req.change.write.strikes, parsed->positionals[next++], "strikes");
+        curve_volatility_config_read_token(
+            req.change.write.expiries, parsed->positionals[next++], "expiries");
+        curve_volatility_config_read_token(
             req.change.write.time_interpolation, parsed->positionals[next++], "time_interpolation");
-        read_token(req.change.write.strike_interpolation,
-                   parsed->positionals[next++],
-                   "strike_interpolation");
-        read_token(req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        read_token(
+        curve_volatility_config_read_token(req.change.write.strike_interpolation,
+                                           parsed->positionals[next++],
+                                           "strike_interpolation");
+        curve_volatility_config_read_token(
+            req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
+        curve_volatility_config_read_token(
             req.change.write.time_extrapolation, parsed->positionals[next++], "time_extrapolation");
-        read_token(req.change.write.time_extrapolation_variance,
-                   parsed->positionals[next++],
-                   "time_extrapolation_variance");
-        read_token(req.change.write.strike_extrapolation,
-                   parsed->positionals[next++],
-                   "strike_extrapolation");
-        read_token(req.change.write.calendar, parsed->positionals[next++], "calendar");
-        read_token(req.change.write.quote, parsed->positionals[next++], "quote");
-        read_token(req.change.write.interpolation, parsed->positionals[next++], "interpolation");
-        read_token(req.change.write.enforce_monotone_variance,
-                   parsed->positionals[next++],
-                   "enforce_monotone_variance");
-        read_token(req.change.write.delta_type, parsed->positionals[next++], "delta_type");
-        read_token(req.change.write.atm_type, parsed->positionals[next++], "atm_type");
-        read_token(req.change.write.atm_delta_type, parsed->positionals[next++], "atm_delta_type");
-        read_token(req.change.write.put_deltas, parsed->positionals[next++], "put_deltas");
-        read_token(req.change.write.call_deltas, parsed->positionals[next++], "call_deltas");
-        read_token(req.change.write.future_price_correction,
-                   parsed->positionals[next++],
-                   "future_price_correction");
-        read_token(req.change.write.proxy_volatility_curve,
-                   parsed->positionals[next++],
-                   "proxy_volatility_curve");
-        read_token(req.change.write.fx_volatility_curve,
-                   parsed->positionals[next++],
-                   "fx_volatility_curve");
-        read_token(
+        curve_volatility_config_read_token(req.change.write.time_extrapolation_variance,
+                                           parsed->positionals[next++],
+                                           "time_extrapolation_variance");
+        curve_volatility_config_read_token(req.change.write.strike_extrapolation,
+                                           parsed->positionals[next++],
+                                           "strike_extrapolation");
+        curve_volatility_config_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        curve_volatility_config_read_token(
+            req.change.write.quote, parsed->positionals[next++], "quote");
+        curve_volatility_config_read_token(
+            req.change.write.interpolation, parsed->positionals[next++], "interpolation");
+        curve_volatility_config_read_token(req.change.write.enforce_monotone_variance,
+                                           parsed->positionals[next++],
+                                           "enforce_monotone_variance");
+        curve_volatility_config_read_token(
+            req.change.write.delta_type, parsed->positionals[next++], "delta_type");
+        curve_volatility_config_read_token(
+            req.change.write.atm_type, parsed->positionals[next++], "atm_type");
+        curve_volatility_config_read_token(
+            req.change.write.atm_delta_type, parsed->positionals[next++], "atm_delta_type");
+        curve_volatility_config_read_token(
+            req.change.write.put_deltas, parsed->positionals[next++], "put_deltas");
+        curve_volatility_config_read_token(
+            req.change.write.call_deltas, parsed->positionals[next++], "call_deltas");
+        curve_volatility_config_read_token(req.change.write.future_price_correction,
+                                           parsed->positionals[next++],
+                                           "future_price_correction");
+        curve_volatility_config_read_token(req.change.write.proxy_volatility_curve,
+                                           parsed->positionals[next++],
+                                           "proxy_volatility_curve");
+        curve_volatility_config_read_token(req.change.write.fx_volatility_curve,
+                                           parsed->positionals[next++],
+                                           "fx_volatility_curve");
+        curve_volatility_config_read_token(
             req.change.write.correlation_curve, parsed->positionals[next++], "correlation_curve");
-        read_token(req.change.write.cds_volatility_curve,
-                   parsed->positionals[next++],
-                   "cds_volatility_curve");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        curve_volatility_config_read_token(req.change.write.cds_volatility_curve,
+                                           parsed->positionals[next++],
+                                           "cds_volatility_curve");
+        curve_volatility_config_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -589,59 +625,76 @@ void curve_volatility_config_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::curve_volatility_config_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.curve_definition_id,
-                       parsed->positionals[next++],
-                       "curve_definition_id");
-            read_token(change.write.kind, parsed->positionals[next++], "kind");
-            read_token(change.write.is_wrapped, parsed->positionals[next++], "is_wrapped");
-            read_token(change.write.priority, parsed->positionals[next++], "priority");
-            read_token(change.write.quote_type, parsed->positionals[next++], "quote_type");
-            read_token(
+            curve_volatility_config_read_token(change.write.id, parsed->positionals[next++], "id");
+            curve_volatility_config_read_token(change.write.curve_definition_id,
+                                               parsed->positionals[next++],
+                                               "curve_definition_id");
+            curve_volatility_config_read_token(
+                change.write.kind, parsed->positionals[next++], "kind");
+            curve_volatility_config_read_token(
+                change.write.is_wrapped, parsed->positionals[next++], "is_wrapped");
+            curve_volatility_config_read_token(
+                change.write.priority, parsed->positionals[next++], "priority");
+            curve_volatility_config_read_token(
+                change.write.quote_type, parsed->positionals[next++], "quote_type");
+            curve_volatility_config_read_token(
                 change.write.volatility_type, parsed->positionals[next++], "volatility_type");
-            read_token(change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-            read_token(change.write.strikes, parsed->positionals[next++], "strikes");
-            read_token(change.write.expiries, parsed->positionals[next++], "expiries");
-            read_token(
+            curve_volatility_config_read_token(
+                change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+            curve_volatility_config_read_token(
+                change.write.strikes, parsed->positionals[next++], "strikes");
+            curve_volatility_config_read_token(
+                change.write.expiries, parsed->positionals[next++], "expiries");
+            curve_volatility_config_read_token(
                 change.write.time_interpolation, parsed->positionals[next++], "time_interpolation");
-            read_token(change.write.strike_interpolation,
-                       parsed->positionals[next++],
-                       "strike_interpolation");
-            read_token(change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-            read_token(
+            curve_volatility_config_read_token(change.write.strike_interpolation,
+                                               parsed->positionals[next++],
+                                               "strike_interpolation");
+            curve_volatility_config_read_token(
+                change.write.extrapolation, parsed->positionals[next++], "extrapolation");
+            curve_volatility_config_read_token(
                 change.write.time_extrapolation, parsed->positionals[next++], "time_extrapolation");
-            read_token(change.write.time_extrapolation_variance,
-                       parsed->positionals[next++],
-                       "time_extrapolation_variance");
-            read_token(change.write.strike_extrapolation,
-                       parsed->positionals[next++],
-                       "strike_extrapolation");
-            read_token(change.write.calendar, parsed->positionals[next++], "calendar");
-            read_token(change.write.quote, parsed->positionals[next++], "quote");
-            read_token(change.write.interpolation, parsed->positionals[next++], "interpolation");
-            read_token(change.write.enforce_monotone_variance,
-                       parsed->positionals[next++],
-                       "enforce_monotone_variance");
-            read_token(change.write.delta_type, parsed->positionals[next++], "delta_type");
-            read_token(change.write.atm_type, parsed->positionals[next++], "atm_type");
-            read_token(change.write.atm_delta_type, parsed->positionals[next++], "atm_delta_type");
-            read_token(change.write.put_deltas, parsed->positionals[next++], "put_deltas");
-            read_token(change.write.call_deltas, parsed->positionals[next++], "call_deltas");
-            read_token(change.write.future_price_correction,
-                       parsed->positionals[next++],
-                       "future_price_correction");
-            read_token(change.write.proxy_volatility_curve,
-                       parsed->positionals[next++],
-                       "proxy_volatility_curve");
-            read_token(change.write.fx_volatility_curve,
-                       parsed->positionals[next++],
-                       "fx_volatility_curve");
-            read_token(
+            curve_volatility_config_read_token(change.write.time_extrapolation_variance,
+                                               parsed->positionals[next++],
+                                               "time_extrapolation_variance");
+            curve_volatility_config_read_token(change.write.strike_extrapolation,
+                                               parsed->positionals[next++],
+                                               "strike_extrapolation");
+            curve_volatility_config_read_token(
+                change.write.calendar, parsed->positionals[next++], "calendar");
+            curve_volatility_config_read_token(
+                change.write.quote, parsed->positionals[next++], "quote");
+            curve_volatility_config_read_token(
+                change.write.interpolation, parsed->positionals[next++], "interpolation");
+            curve_volatility_config_read_token(change.write.enforce_monotone_variance,
+                                               parsed->positionals[next++],
+                                               "enforce_monotone_variance");
+            curve_volatility_config_read_token(
+                change.write.delta_type, parsed->positionals[next++], "delta_type");
+            curve_volatility_config_read_token(
+                change.write.atm_type, parsed->positionals[next++], "atm_type");
+            curve_volatility_config_read_token(
+                change.write.atm_delta_type, parsed->positionals[next++], "atm_delta_type");
+            curve_volatility_config_read_token(
+                change.write.put_deltas, parsed->positionals[next++], "put_deltas");
+            curve_volatility_config_read_token(
+                change.write.call_deltas, parsed->positionals[next++], "call_deltas");
+            curve_volatility_config_read_token(change.write.future_price_correction,
+                                               parsed->positionals[next++],
+                                               "future_price_correction");
+            curve_volatility_config_read_token(change.write.proxy_volatility_curve,
+                                               parsed->positionals[next++],
+                                               "proxy_volatility_curve");
+            curve_volatility_config_read_token(change.write.fx_volatility_curve,
+                                               parsed->positionals[next++],
+                                               "fx_volatility_curve");
+            curve_volatility_config_read_token(
                 change.write.correlation_curve, parsed->positionals[next++], "correlation_curve");
-            read_token(change.write.cds_volatility_curve,
-                       parsed->positionals[next++],
-                       "cds_volatility_curve");
-            read_token(change.write.position, parsed->positionals[next++], "position");
+            curve_volatility_config_read_token(change.write.cds_volatility_curve,
+                                               parsed->positionals[next++],
+                                               "cds_volatility_curve");
+            curve_volatility_config_read_token(
+                change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -691,7 +744,7 @@ void curve_volatility_config_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.id, parsed->positionals[next++], "id");
+        curve_volatility_config_read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -745,7 +798,7 @@ void curve_volatility_config_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::curve_volatility_config_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            curve_volatility_config_read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(
                 messaging::curve_volatility_config_removal{.key = std::move(key)});
         }
@@ -798,8 +851,8 @@ void curve_volatility_config_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
-        apply_page(req, *parsed);
+        curve_volatility_config_read_token(req.key.id, parsed->positionals[next++], "id");
+        curve_volatility_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -844,7 +897,8 @@ void curve_volatility_config_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.curve_volatility_config.id, parsed->positionals[next++], "id");
+        curve_volatility_config_read_token(
+            req.key.curve_volatility_config.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view structure_template_role_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_structure_template_role_handlers(
@@ -51,41 +51,41 @@ std::vector<ores::nats::service::subscription> register_structure_template_role_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_structure_template_roles_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->list_structure_template_roles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_structure_template_role_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->get_structure_template_role(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_structure_template_roles_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->get_many_structure_template_roles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_structure_template_role_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->put_structure_template_role(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_structure_template_roles_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->put_many_structure_template_roles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_structure_template_role_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->delete_structure_template_role(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_structure_template_roles_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->delete_many_structure_template_roles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_structure_template_role_versions_request::nats_subject,
-                                        queue_group,
+                                        structure_template_role_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_structure_template_role_versions(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         get_structure_template_role_version_request::nats_subject,
-        queue_group,
+        structure_template_role_queue_group,
         [h](ores::nats::message msg) { h->get_structure_template_role_version(std::move(msg)); }));
     return subs;
 }

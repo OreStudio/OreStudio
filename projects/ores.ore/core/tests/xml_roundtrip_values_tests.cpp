@@ -34,6 +34,7 @@
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -43,9 +44,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][roundtrip-values]");
 
 namespace fs = std::filesystem;
 using namespace ores::logging;
@@ -103,9 +101,8 @@ auto fingerprint_difference(const std::vector<value_entry>& left,
  * is allowed to order and spell things its own way; the records are.
  */
 template <typename Record>
-auto round_trip_values(const document_type& doc,
-                       std::string_view text,
-                       std::string& report) -> bool {
+auto round_trip_values(const document_type& doc, std::string_view text, std::string& report)
+    -> bool {
     Record first{};
     const auto bound = binder::bind(doc, text, &first);
     if (!bound) {
@@ -210,7 +207,7 @@ auto sweep_values(const fs::path& root,
 
 }
 
-TEST_CASE("a_documents_values_survive_the_writing", tags) {
+TEST_CASE("a_documents_values_survive_the_writing", "[ore][xml][roundtrip-values]") {
     auto lg(make_logger(test_suite));
 
     // Every value here is a case the reading has to keep: a decimal the
@@ -236,7 +233,7 @@ TEST_CASE("a_documents_values_survive_the_writing", tags) {
         round_trip_values<ibor_fallback_config>(ibor_fallback_config_document(), fallback, reason));
 }
 
-TEST_CASE("the_walk_names_the_value_that_changed", tags) {
+TEST_CASE("the_walk_names_the_value_that_changed", "[ore][xml][roundtrip-values]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<CalendarAdjustments>"
@@ -266,7 +263,8 @@ TEST_CASE("the_walk_names_the_value_that_changed", tags) {
     CHECK(lost->detail == "name was lost");
 }
 
-TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
+TEST_CASE("every_generated_family_keeps_its_values_across_the_writing",
+          "[ore][xml][roundtrip-values]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";

@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+stress_shift_family_list_order(const ores::utility::domain::order& order,
+                               std::initializer_list<std::string> default_columns,
+                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!stress_shift_family_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::stress_shift_families_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> stress_shift_family_filter_condition(
+    const std::optional<messaging::stress_shift_families_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -305,8 +306,8 @@ std::vector<domain::stress_shift_family> stress_shift_family_repository::read_la
     return execute_ordered_read_query<stress_shift_family_entity, domain::stress_shift_family>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        stress_shift_family_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), stress_shift_family_filter_condition(filter)),
         [](const auto& entities) { return stress_shift_family_mapper::map(entities); },
         lg(),
         "Reading latest stress shift families with pagination.");
@@ -325,7 +326,7 @@ std::uint32_t stress_shift_family_repository::get_total_family_count(
     return execute_count_query<stress_shift_family_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), stress_shift_family_filter_condition(filter)),
         lg(),
         "Counting stress shift families");
 }

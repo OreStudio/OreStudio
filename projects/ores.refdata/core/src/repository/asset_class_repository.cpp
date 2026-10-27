@@ -78,9 +78,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy asset_class_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -296,7 +296,7 @@ asset_class_repository::read_latest(context ctx,
     return execute_ordered_read_query<asset_class_entity, domain::asset_class>(
         ctx,
         query,
-        list_order(order, {"code", "coding_scheme_code"}, false),
+        asset_class_list_order(order, {"code", "coding_scheme_code"}, false),
         narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return asset_class_mapper::map(entities); },
         lg(),

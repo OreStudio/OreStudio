@@ -76,26 +76,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_fx_spot_generation_configs_response list_fx_spot_generation_configs(
-        const messaging::list_fx_spot_generation_configs_request& request);
-    messaging::get_fx_spot_generation_config_response
-    get_fx_spot_generation_config(const messaging::get_fx_spot_generation_config_request& request);
-    messaging::get_many_fx_spot_generation_configs_response get_many_fx_spot_generation_configs(
-        const messaging::get_many_fx_spot_generation_configs_request& request);
-    messaging::put_fx_spot_generation_config_response
-    put_fx_spot_generation_config(const messaging::put_fx_spot_generation_config_request& request);
-    messaging::put_many_fx_spot_generation_configs_response put_many_fx_spot_generation_configs(
-        const messaging::put_many_fx_spot_generation_configs_request& request);
-    messaging::delete_fx_spot_generation_config_response delete_fx_spot_generation_config(
-        const messaging::delete_fx_spot_generation_config_request& request);
-    messaging::delete_many_fx_spot_generation_configs_response
+    ::ores::synthetic::messaging::list_fx_spot_generation_configs_response
+    list_fx_spot_generation_configs(
+        const ::ores::synthetic::messaging::list_fx_spot_generation_configs_request& request);
+    ::ores::synthetic::messaging::get_fx_spot_generation_config_response
+    get_fx_spot_generation_config(
+        const ::ores::synthetic::messaging::get_fx_spot_generation_config_request& request);
+    ::ores::synthetic::messaging::get_many_fx_spot_generation_configs_response
+    get_many_fx_spot_generation_configs(
+        const ::ores::synthetic::messaging::get_many_fx_spot_generation_configs_request& request);
+    ::ores::synthetic::messaging::put_fx_spot_generation_config_response
+    put_fx_spot_generation_config(
+        const ::ores::synthetic::messaging::put_fx_spot_generation_config_request& request);
+    ::ores::synthetic::messaging::put_many_fx_spot_generation_configs_response
+    put_many_fx_spot_generation_configs(
+        const ::ores::synthetic::messaging::put_many_fx_spot_generation_configs_request& request);
+    ::ores::synthetic::messaging::delete_fx_spot_generation_config_response
+    delete_fx_spot_generation_config(
+        const ::ores::synthetic::messaging::delete_fx_spot_generation_config_request& request);
+    ::ores::synthetic::messaging::delete_many_fx_spot_generation_configs_response
     delete_many_fx_spot_generation_configs(
-        const messaging::delete_many_fx_spot_generation_configs_request& request);
-    messaging::list_fx_spot_generation_config_versions_response
+        const ::ores::synthetic::messaging::delete_many_fx_spot_generation_configs_request&
+            request);
+    ::ores::synthetic::messaging::list_fx_spot_generation_config_versions_response
     list_fx_spot_generation_config_versions(
-        const messaging::list_fx_spot_generation_config_versions_request& request);
-    messaging::get_fx_spot_generation_config_version_response get_fx_spot_generation_config_version(
-        const messaging::get_fx_spot_generation_config_version_request& request);
+        const ::ores::synthetic::messaging::list_fx_spot_generation_config_versions_request&
+            request);
+    ::ores::synthetic::messaging::get_fx_spot_generation_config_version_response
+    get_fx_spot_generation_config_version(
+        const ::ores::synthetic::messaging::get_fx_spot_generation_config_version_request& request);
     /**@}*/
 
     /**
@@ -199,7 +208,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::fx_spot_generation_config_change& change,
+    prepare_change(const ::ores::synthetic::messaging::fx_spot_generation_config_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::fx_spot_generation_config& out);
 };

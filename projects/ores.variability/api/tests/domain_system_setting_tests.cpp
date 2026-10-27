@@ -21,20 +21,14 @@
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp"  // IWYU pragma: keep.
 #include "ores.variability.api/domain/system_setting_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
-
-namespace {
-
-const std::string_view test_suite("ores.variability.tests");
-const std::string tags("[domain][system_setting]");
-
-}
 
 using ores::variability::domain::system_setting;
 using namespace ores::logging;
 
-TEST_CASE("create_boolean_system_setting_with_valid_fields", tags) {
+TEST_CASE("create_boolean_system_setting_with_valid_fields", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -52,7 +46,7 @@ TEST_CASE("create_boolean_system_setting_with_valid_fields", tags) {
     CHECK(sut.modified_by == "admin");
 }
 
-TEST_CASE("create_integer_system_setting", tags) {
+TEST_CASE("create_integer_system_setting", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -68,7 +62,7 @@ TEST_CASE("create_integer_system_setting", tags) {
     CHECK(sut.data_type == "integer");
 }
 
-TEST_CASE("create_string_system_setting", tags) {
+TEST_CASE("create_string_system_setting", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -84,7 +78,7 @@ TEST_CASE("create_string_system_setting", tags) {
     CHECK(sut.data_type == "string");
 }
 
-TEST_CASE("create_json_system_setting", tags) {
+TEST_CASE("create_json_system_setting", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -100,7 +94,7 @@ TEST_CASE("create_json_system_setting", tags) {
     CHECK(sut.value.find("100") != std::string::npos);
 }
 
-TEST_CASE("default_constructed_system_setting_has_zero_version", tags) {
+TEST_CASE("default_constructed_system_setting_has_zero_version", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     const system_setting sut;
@@ -112,7 +106,7 @@ TEST_CASE("default_constructed_system_setting_has_zero_version", tags) {
     CHECK(sut.data_type.empty());
 }
 
-TEST_CASE("system_setting_version_is_set_correctly", tags) {
+TEST_CASE("system_setting_version_is_set_correctly", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -125,7 +119,7 @@ TEST_CASE("system_setting_version_is_set_correctly", tags) {
     CHECK(sut.version == 7);
 }
 
-TEST_CASE("system_setting_json_output_contains_name_and_value", tags) {
+TEST_CASE("system_setting_json_output_contains_name_and_value", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -150,7 +144,7 @@ TEST_CASE("system_setting_json_output_contains_name_and_value", tags) {
     CHECK(json_output.find("boolean") != std::string::npos);
 }
 
-TEST_CASE("system_setting_json_output_for_disabled_setting", tags) {
+TEST_CASE("system_setting_json_output_for_disabled_setting", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;
@@ -173,7 +167,7 @@ TEST_CASE("system_setting_json_output_for_disabled_setting", tags) {
     CHECK(json_output.find("system.experimental") != std::string::npos);
 }
 
-TEST_CASE("system_setting_provenance_fields_are_stored", tags) {
+TEST_CASE("system_setting_provenance_fields_are_stored", "[domain][system_setting]") {
     auto lg(make_logger(test_suite));
 
     system_setting sut;

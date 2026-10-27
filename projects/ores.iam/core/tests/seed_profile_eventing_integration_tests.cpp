@@ -48,6 +48,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -63,13 +64,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("iam.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::iam::generators;
 using ores::iam::domain::seed_profile;
@@ -77,7 +71,7 @@ using ores::iam::repository::seed_profile_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_seed_profile_publishes_an_event", tags) {
+TEST_CASE("write_seed_profile_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

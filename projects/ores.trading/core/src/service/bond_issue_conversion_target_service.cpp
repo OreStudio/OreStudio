@@ -73,9 +73,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::bond_issue_conversion_target>
-read_one(repository::bond_issue_conversion_target_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::bond_issue_conversion_target_key& key) {
+bond_issue_conversion_target_read_one(repository::bond_issue_conversion_target_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const messaging::bond_issue_conversion_target_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.issue_id), std::to_string(key.sequence_number));
 }
@@ -87,7 +87,7 @@ read_one(repository::bond_issue_conversion_target_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::bond_issue_conversion_target_key
-key_from(const domain::bond_issue_conversion_target& v) {
+bond_issue_conversion_target_key_from(const domain::bond_issue_conversion_target& v) {
     messaging::bond_issue_conversion_target_key key;
     key.issue_id = v.issue_id;
     key.sequence_number = v.sequence_number;
@@ -102,7 +102,7 @@ key_from(const domain::bond_issue_conversion_target& v) {
  * database's to state, and are set after this conversion.
  */
 domain::bond_issue_conversion_target
-to_domain(const messaging::bond_issue_conversion_target_write& write) {
+bond_issue_conversion_target_to_domain(const messaging::bond_issue_conversion_target_write& write) {
     domain::bond_issue_conversion_target v;
     v.issue_id = write.issue_id;
     v.sequence_number = write.sequence_number;
@@ -146,7 +146,7 @@ messaging::get_bond_issue_conversion_target_response
 bond_issue_conversion_target_service::get_bond_issue_conversion_target(
     const messaging::get_bond_issue_conversion_target_request& request) {
     messaging::get_bond_issue_conversion_target_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = bond_issue_conversion_target_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "bond_issue_conversion_target"});
@@ -167,7 +167,7 @@ bond_issue_conversion_target_service::get_many_bond_issue_conversion_targets(
     for (const auto& k : request.keys) {
         messaging::bond_issue_conversion_target_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = bond_issue_conversion_target_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.bond_issue_conversion_target = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -184,7 +184,8 @@ bond_issue_conversion_target_service::put_bond_issue_conversion_target(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = bond_issue_conversion_target_read_one(
+        repo_, ctx_, bond_issue_conversion_target_key_from(value));
     if (!written.empty())
         response.bond_issue_conversion_target = std::move(written.front());
     return response;
@@ -217,7 +218,8 @@ bond_issue_conversion_target_service::put_many_bond_issue_conversion_targets(
     repo_.write(ctx_, batch, claims);
     response.conversion_targets.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = bond_issue_conversion_target_read_one(
+            repo_, ctx_, bond_issue_conversion_target_key_from(value));
         response.conversion_targets.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -255,7 +257,8 @@ bond_issue_conversion_target_service::delete_bond_issue_conversion_target(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                bond_issue_conversion_target_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "bond_issue_conversion_target",
@@ -355,8 +358,9 @@ ores::utility::domain::result bond_issue_conversion_target_service::prepare_chan
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = bond_issue_conversion_target_to_domain(change.write);
+    const auto current = bond_issue_conversion_target_read_one(
+        repo_, ctx_, bond_issue_conversion_target_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -80,7 +80,8 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy
+yield_curve_process_type_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::yield_curve_process_types_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> yield_curve_process_type_filter_condition(
+    const std::optional<messaging::yield_curve_process_types_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -314,8 +315,8 @@ std::vector<domain::yield_curve_process_type> yield_curve_process_type_repositor
                                       domain::yield_curve_process_type>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        yield_curve_process_type_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), yield_curve_process_type_filter_condition(filter)),
         [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
         lg(),
         "Reading latest yield curve process types with pagination.");
@@ -334,7 +335,7 @@ std::uint32_t yield_curve_process_type_repository::get_total_process_type_count(
     return execute_count_query<yield_curve_process_type_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), yield_curve_process_type_filter_condition(filter)),
         lg(),
         "Counting yield curve process types");
 }

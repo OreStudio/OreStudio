@@ -34,6 +34,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "report_instance_test_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -48,9 +49,6 @@
 // split into errors and warnings is the one the screen's Errors cell draws.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][database]");
 
 /**
  * @brief A party of this test's own, with the session scoped to it.
@@ -105,7 +103,8 @@ std::string write_instance(const ores::database::context& party_ctx,
 
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("the problems of a run read as one row split into errors and warnings", tags) {
+TEST_CASE("the problems of a run read as one row split into errors and warnings",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

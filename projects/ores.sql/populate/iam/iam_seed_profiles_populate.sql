@@ -32,6 +32,11 @@
  * produces every kind of datum a demonstration needs. Operational orders the
  * three that create real data and no test data at all.
  *
+ * A step's arguments are the profile's, so a profile that wants one party on a
+ * different feed states it in the step's row and not in code: ACME's market data
+ * step names a provider and a source for each legal entity, because each
+ * synthetic feeds collection quotes the markets its own feeds serve.
+ *
  * Operational is offered first: it is the production starting point, and the
  * demonstration is the deliberate second choice.
  *
@@ -179,7 +184,17 @@ cross join (values
         {"name": "ACME Corporation US Inc", "dataset": "acme.acme_us.accounts"},
         {"name": "ACME Corporation HK Ltd", "dataset": "acme.acme_hk.accounts"}
     ]}'::jsonb),
-    ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a"}'::jsonb),
+    -- Each legal entity takes its market data from one vendor, because each synthetic feeds
+    -- collection quotes the markets its own feeds serve: the group and Hong Kong read Bloomberg,
+    -- London reads the uniform demo collection and New York reads LSEG. The step's own provider is
+    -- the one a party the row does not name takes, so a fifth entity lands on Bloomberg without
+    -- this row changing.
+    ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a", "parties": [
+        {"party": "Acme Corporation Plc", "provider": "bloomberg", "source": "bloomberg-a"},
+        {"party": "ACME Corporation UK plc", "provider": "demo", "source": "demo-a"},
+        {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
+        {"party": "ACME Corporation HK Ltd", "provider": "bloomberg", "source": "bloomberg-a"}
+    ]}'::jsonb),
     -- One config per trading entity, each booking into the book that entity
     -- keeps its liquidity in. The book count and the population size are the
     -- config's, so a tenant that wants a thinner book changes a row and not

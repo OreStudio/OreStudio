@@ -21,22 +21,16 @@
 #include "ores.iam.api/domain/account_credential_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_credential_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::iam::domain::account_credential;
 using namespace ores::logging;
 
-TEST_CASE("credential_domain_carries_every_secret", tags) {
+TEST_CASE("credential_domain_carries_every_secret", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto account_id = boost::uuids::random_generator()();
@@ -59,7 +53,7 @@ TEST_CASE("credential_domain_carries_every_secret", tags) {
     CHECK(sut.totp_secret.value() == "JBSWY3DPEHPK3PXP");
 }
 
-TEST_CASE("credential_serialisation_carries_no_secret", tags) {
+TEST_CASE("credential_serialisation_carries_no_secret", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account_credential acc;
@@ -88,7 +82,7 @@ TEST_CASE("credential_serialisation_carries_no_secret", tags) {
     CHECK(json.find("TOTP789") == std::string::npos);
 }
 
-TEST_CASE("credential_convert_multiple_to_json_carries_no_secret", tags) {
+TEST_CASE("credential_convert_multiple_to_json_carries_no_secret", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<account_credential> credentials;
@@ -112,7 +106,7 @@ TEST_CASE("credential_convert_multiple_to_json_carries_no_secret", tags) {
     }
 }
 
-TEST_CASE("credential_convert_to_table_shows_the_account", tags) {
+TEST_CASE("credential_convert_to_table_shows_the_account", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account_credential acc;
@@ -130,7 +124,7 @@ TEST_CASE("credential_convert_to_table_shows_the_account", tags) {
     CHECK(table.find(boost::uuids::to_string(acc.account_id)) != std::string::npos);
 }
 
-TEST_CASE("credential_convert_empty_vector_to_table", tags) {
+TEST_CASE("credential_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<account_credential> credentials;

@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+market_data_provider_list_order(const ores::utility::domain::order& order,
+                                std::initializer_list<std::string> default_columns,
+                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!market_data_provider_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::market_data_providers_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> market_data_provider_filter_condition(
+    const std::optional<messaging::market_data_providers_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -317,8 +318,8 @@ std::vector<domain::market_data_provider> market_data_provider_repository::read_
     return execute_ordered_read_query<market_data_provider_entity, domain::market_data_provider>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        market_data_provider_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), market_data_provider_filter_condition(filter)),
         [](const auto& entities) { return market_data_provider_mapper::map(entities); },
         lg(),
         "Reading latest market data providers with pagination.");
@@ -338,7 +339,7 @@ std::uint32_t market_data_provider_repository::get_total_provider_count(
     return execute_count_query<market_data_provider_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), market_data_provider_filter_condition(filter)),
         lg(),
         "Counting market data providers");
 }

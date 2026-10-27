@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_approval_kinds_response
-    list_approval_kinds(const messaging::list_approval_kinds_request& request);
-    messaging::get_approval_kind_response
-    get_approval_kind(const messaging::get_approval_kind_request& request);
-    messaging::get_many_approval_kinds_response
-    get_many_approval_kinds(const messaging::get_many_approval_kinds_request& request);
-    messaging::put_approval_kind_response
-    put_approval_kind(const messaging::put_approval_kind_request& request);
-    messaging::put_many_approval_kinds_response
-    put_many_approval_kinds(const messaging::put_many_approval_kinds_request& request);
-    messaging::delete_approval_kind_response
-    delete_approval_kind(const messaging::delete_approval_kind_request& request);
-    messaging::delete_many_approval_kinds_response
-    delete_many_approval_kinds(const messaging::delete_many_approval_kinds_request& request);
-    messaging::list_approval_kind_versions_response
-    list_approval_kind_versions(const messaging::list_approval_kind_versions_request& request);
-    messaging::get_approval_kind_version_response
-    get_approval_kind_version(const messaging::get_approval_kind_version_request& request);
+    ::ores::inbox::messaging::list_approval_kinds_response
+    list_approval_kinds(const ::ores::inbox::messaging::list_approval_kinds_request& request);
+    ::ores::inbox::messaging::get_approval_kind_response
+    get_approval_kind(const ::ores::inbox::messaging::get_approval_kind_request& request);
+    ::ores::inbox::messaging::get_many_approval_kinds_response get_many_approval_kinds(
+        const ::ores::inbox::messaging::get_many_approval_kinds_request& request);
+    ::ores::inbox::messaging::put_approval_kind_response
+    put_approval_kind(const ::ores::inbox::messaging::put_approval_kind_request& request);
+    ::ores::inbox::messaging::put_many_approval_kinds_response put_many_approval_kinds(
+        const ::ores::inbox::messaging::put_many_approval_kinds_request& request);
+    ::ores::inbox::messaging::delete_approval_kind_response
+    delete_approval_kind(const ::ores::inbox::messaging::delete_approval_kind_request& request);
+    ::ores::inbox::messaging::delete_many_approval_kinds_response delete_many_approval_kinds(
+        const ::ores::inbox::messaging::delete_many_approval_kinds_request& request);
+    ::ores::inbox::messaging::list_approval_kind_versions_response list_approval_kind_versions(
+        const ::ores::inbox::messaging::list_approval_kind_versions_request& request);
+    ::ores::inbox::messaging::get_approval_kind_version_response get_approval_kind_version(
+        const ::ores::inbox::messaging::get_approval_kind_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::approval_kind_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::approval_kind& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::inbox::messaging::approval_kind_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::approval_kind& out);
 };
 
 }

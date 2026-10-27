@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_currency_market_tiers_response
-    list_currency_market_tiers(const messaging::list_currency_market_tiers_request& request);
-    messaging::get_currency_market_tier_response
-    get_currency_market_tier(const messaging::get_currency_market_tier_request& request);
-    messaging::get_many_currency_market_tiers_response get_many_currency_market_tiers(
-        const messaging::get_many_currency_market_tiers_request& request);
-    messaging::put_currency_market_tier_response
-    put_currency_market_tier(const messaging::put_currency_market_tier_request& request);
-    messaging::put_many_currency_market_tiers_response put_many_currency_market_tiers(
-        const messaging::put_many_currency_market_tiers_request& request);
-    messaging::delete_currency_market_tier_response
-    delete_currency_market_tier(const messaging::delete_currency_market_tier_request& request);
-    messaging::delete_many_currency_market_tiers_response delete_many_currency_market_tiers(
-        const messaging::delete_many_currency_market_tiers_request& request);
-    messaging::list_currency_market_tier_versions_response list_currency_market_tier_versions(
-        const messaging::list_currency_market_tier_versions_request& request);
-    messaging::get_currency_market_tier_version_response get_currency_market_tier_version(
-        const messaging::get_currency_market_tier_version_request& request);
+    ::ores::refdata::messaging::list_currency_market_tiers_response list_currency_market_tiers(
+        const ::ores::refdata::messaging::list_currency_market_tiers_request& request);
+    ::ores::refdata::messaging::get_currency_market_tier_response get_currency_market_tier(
+        const ::ores::refdata::messaging::get_currency_market_tier_request& request);
+    ::ores::refdata::messaging::get_many_currency_market_tiers_response
+    get_many_currency_market_tiers(
+        const ::ores::refdata::messaging::get_many_currency_market_tiers_request& request);
+    ::ores::refdata::messaging::put_currency_market_tier_response put_currency_market_tier(
+        const ::ores::refdata::messaging::put_currency_market_tier_request& request);
+    ::ores::refdata::messaging::put_many_currency_market_tiers_response
+    put_many_currency_market_tiers(
+        const ::ores::refdata::messaging::put_many_currency_market_tiers_request& request);
+    ::ores::refdata::messaging::delete_currency_market_tier_response delete_currency_market_tier(
+        const ::ores::refdata::messaging::delete_currency_market_tier_request& request);
+    ::ores::refdata::messaging::delete_many_currency_market_tiers_response
+    delete_many_currency_market_tiers(
+        const ::ores::refdata::messaging::delete_many_currency_market_tiers_request& request);
+    ::ores::refdata::messaging::list_currency_market_tier_versions_response
+    list_currency_market_tier_versions(
+        const ::ores::refdata::messaging::list_currency_market_tier_versions_request& request);
+    ::ores::refdata::messaging::get_currency_market_tier_version_response
+    get_currency_market_tier_version(
+        const ::ores::refdata::messaging::get_currency_market_tier_version_request& request);
     /**@}*/
 
     /**
@@ -188,7 +193,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::currency_market_tier_change& change,
+    prepare_change(const ::ores::refdata::messaging::currency_market_tier_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::currency_market_tier& out);
 };

@@ -129,6 +129,16 @@ about what the simulator claims to model, not about effort.
   run from the screen, never from SQL. The panel is the same surface the
   sensitivity per feed is edited on, so one screen answers "how does the market
   behave" and "how much does this pair follow it".
+
+  The Market regime tab of the synthetic screen is that panel today: it shows
+  the state, the multiplier and whether the chain or a person holds it, sets
+  auto, calm or active, and draws the arrivals of every feed beside the factor
+  that moved them. Above the rows it draws the shared heat, read from the
+  readings the service takes while it fades it, so the endogenous half is
+  visible as the process it is and not inferred from the ticks. The heat's jump
+  and decay are shown with it; the chain's two transition rates are neither
+  shown nor settable, because the reply does not carry them, and no verb sets
+  either.
 - As a switch, for testing: forcing the state takes effect on the next tick,
   needs no restart, is available from the screen and from the shell, and reports
   what it forced. A test that has to wait for a Markov chain to reach the active
@@ -161,3 +171,6 @@ about what the simulator claims to model, not about effort.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the tick modes this note
   extends.
 - [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] — the library whose ideas the arrival processes follow.
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] — what
+  this factor should do to a price law, once a busy market is meant to move prices
+  and not only the clock.

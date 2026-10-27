@@ -74,7 +74,7 @@ import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/Editi
 import { FilterChip, ParameterDocumentationPanel } from '../ui/OreParameter.js';
 import { ParameterControl } from '../parameters/ParameterControl.js';
 import { ParameterRow } from '../parameters/ParameterRow.js';
-import { controlOfEngineSetting } from '../parameters/control.js';
+import { controlOfEngineSetting, shortDefault } from '../parameters/control.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Tag, Textarea } from '../ui/Primitives.js';
@@ -91,7 +91,6 @@ import {
     problemOf,
     revertValues,
     setCount,
-    shortDefault,
     stepsOf,
     valueOfText,
     visibleSettings,

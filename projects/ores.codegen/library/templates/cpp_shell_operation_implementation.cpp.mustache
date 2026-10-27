@@ -40,7 +40,7 @@ namespace {
  * carry an empty argument: the tokenizer drops one, and a command whose list
  * field should be empty has no other way to say so.
  */
-std::vector<std::string> split_list_token(const std::string& value) {
+std::vector<std::string> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_split_list_token(const std::string& value) {
     if (value == "__none__")
         return {};
     std::vector<std::string> parts;
@@ -136,7 +136,7 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
     try {
 {{#positionals}}
 {{#is_list}}
-        req.{{name}} = split_list_token(parsed->positionals[next++]);
+        req.{{name}} = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_split_list_token(parsed->positionals[next++]);
 {{/is_list}}
 {{#is_bool}}
         if (!parse_flag(parsed->positionals[next++], req.{{name}})) {
@@ -155,7 +155,7 @@ void {{entity_singular}}_operations_commands::process_{{identifier}}(
 {{#flags}}
         if (const auto& raw_{{name}} = parsed->flag("{{name}}"); !raw_{{name}}.empty()) {
 {{#is_list}}
-            req.{{name}} = split_list_token(raw_{{name}});
+            req.{{name}} = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_split_list_token(raw_{{name}});
 {{/is_list}}
 {{#is_bool}}
             if (!parse_flag(raw_{{name}}, req.{{name}})) {

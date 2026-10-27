@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_type_table.hpp"
 #include "ores.trading.api/domain/trade_type_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
@@ -29,9 +30,6 @@
 namespace {
 
 using ores::trading::domain::trade_type;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 trade_type make_trade_type(const std::string& code, const std::string& description = "") {
     trade_type tt;
@@ -51,7 +49,7 @@ trade_type make_trade_type(const std::string& code, const std::string& descripti
 using ores::trading::domain::trade_type;
 using namespace ores::logging;
 
-TEST_CASE("create_trade_type_with_valid_fields", tags) {
+TEST_CASE("create_trade_type_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_trade_type("Swap", "Interest rate swap instrument");
@@ -66,7 +64,7 @@ TEST_CASE("create_trade_type_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("trade_type_insertion_operator", tags) {
+TEST_CASE("trade_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_trade_type("FxForward", "FX forward contract");
@@ -80,7 +78,7 @@ TEST_CASE("trade_type_insertion_operator", tags) {
     CHECK(json_output.find("FxForward") != std::string::npos);
 }
 
-TEST_CASE("create_trade_type_with_faker", tags) {
+TEST_CASE("create_trade_type_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade_type sut;
@@ -100,7 +98,7 @@ TEST_CASE("create_trade_type_with_faker", tags) {
     CHECK(!sut.modified_by.empty());
 }
 
-TEST_CASE("create_multiple_random_trade_types", tags) {
+TEST_CASE("create_multiple_random_trade_types", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> codes = {"Swap", "FxForward", "CapFloor"};
@@ -112,7 +110,7 @@ TEST_CASE("create_multiple_random_trade_types", tags) {
     }
 }
 
-TEST_CASE("trade_type_convert_single_to_table", tags) {
+TEST_CASE("trade_type_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_type> items = {make_trade_type("CapFloor", "Cap or floor on floating rate")};
@@ -124,7 +122,7 @@ TEST_CASE("trade_type_convert_single_to_table", tags) {
     CHECK(table.find("CapFloor") != std::string::npos);
 }
 
-TEST_CASE("trade_type_convert_multiple_to_table", tags) {
+TEST_CASE("trade_type_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_type> items;
@@ -141,7 +139,7 @@ TEST_CASE("trade_type_convert_multiple_to_table", tags) {
     CHECK(table.find("Type2") != std::string::npos);
 }
 
-TEST_CASE("trade_type_convert_empty_vector_to_table", tags) {
+TEST_CASE("trade_type_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_type> items;
@@ -152,7 +150,7 @@ TEST_CASE("trade_type_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Has Options") != std::string::npos);
 }
 
-TEST_CASE("trade_type_table_with_faker_data", tags) {
+TEST_CASE("trade_type_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_type> items;

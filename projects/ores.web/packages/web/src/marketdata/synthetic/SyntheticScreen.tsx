@@ -26,16 +26,25 @@ import { AreaTrail } from '../../shell/AreaTrail.js';
 import { PageHeader } from '../../ui/Primitives.js';
 import { useTabs } from '../../ui/Tabs.js';
 import { DashboardTab } from './DashboardTab.js';
+import { MarketRegimeTab } from './MarketRegimeTab.js';
 import { ProviderTab } from './ProviderTab.js';
 
-const TABS = ['dashboard', 'provider'] as const;
+const TABS = ['dashboard', 'provider', 'regime'] as const;
+
+/** The pane each tab shows. A tab with no pane of its own shows the dashboard. */
+const PANES: Readonly<Record<string, () => ReactNode>> = {
+    dashboard: DashboardTab,
+    provider: ProviderTab,
+    regime: MarketRegimeTab,
+};
 
 /**
  * Synthetic: the feeds the platform generates rather than receives, on one screen
- * with two tabs. The dashboard says what runs by provider; the Provider screen
+ * with three tabs. The dashboard says what runs by provider; the Provider screen
  * lists one provider's feeds, grouped by a property of the feed, and starts and
- * stops the provider's feeds. Both read through the synthetic store, so the
- * providers and the collections come from the synthetic service.
+ * stops the provider's feeds; the Market regime tab holds the state every feed is
+ * scaled by. All three read through the synthetic store, so the providers and the
+ * collections come from the synthetic service.
  */
 export function SyntheticScreen(): ReactNode {
     const { t } = useTranslation();
@@ -44,6 +53,7 @@ export function SyntheticScreen(): ReactNode {
         tabs: TABS,
         titleOf: (one) => t(`marketdata.synthetic.tabs.${one}`),
     });
+    const Pane = PANES[tab] ?? DashboardTab;
     return (
         <RecordStoreProvider store={syntheticStore}>
             <div className="space-y-6">
@@ -55,7 +65,7 @@ export function SyntheticScreen(): ReactNode {
                     />
                 </div>
                 {bar}
-                {tab === 'provider' ? <ProviderTab /> : <DashboardTab />}
+                <Pane />
             </div>
         </RecordStoreProvider>
     );

@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string zero_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<zero_convention>& v) {
 
     for ([[maybe_unused]] const auto& zc : v) {
         table << zc.id << (zc.tenor_based ? "true" : "false") << zc.day_count_fraction
-              << opt_str(zc.compounding) << opt_str(zc.tenor_calendar) << zc.modified_by
-              << zc.version << fort::endr;
+              << zero_convention_opt_str(zc.compounding)
+              << zero_convention_opt_str(zc.tenor_calendar) << zc.modified_by << zc.version
+              << fort::endr;
     }
     return table.to_string();
 }

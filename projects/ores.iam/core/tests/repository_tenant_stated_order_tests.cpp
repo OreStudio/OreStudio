@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[repository][stated_order]");
-
 using ores::database::context;
 using ores::iam::repository::tenant_repository;
 using ores::utility::domain::order;
@@ -104,7 +102,7 @@ std::vector<std::string> by_id(ores::testing::database_helper& h, std::vector<st
 
 using ores::testing::database_helper;
 
-TEST_CASE("tenants read in name order when no order is stated", tags) {
+TEST_CASE("tenants read in name order when no order is stated", "[repository][stated_order]") {
     database_helper h;
     const auto m = unique_marker();
     const auto b = write_tenant(h, m + "_1", "Order Fixture " + m + " b");
@@ -116,7 +114,8 @@ TEST_CASE("tenants read in name order when no order is stated", tags) {
     CHECK(codes_in_order(h, m, {.field = "name"}) == std::vector<std::string>{tied[0], tied[1], b});
 }
 
-TEST_CASE("a descending order reverses the field and keeps ties in key order", tags) {
+TEST_CASE("a descending order reverses the field and keeps ties in key order",
+          "[repository][stated_order]") {
     database_helper h;
     const auto m = unique_marker();
     const auto b = write_tenant(h, m + "_1", "Order Fixture " + m + " b");
@@ -130,7 +129,7 @@ TEST_CASE("a descending order reverses the field and keeps ties in key order", t
           std::vector<std::string>{b, tied[0], tied[1]});
 }
 
-TEST_CASE("tenants read in code order when code is stated", tags) {
+TEST_CASE("tenants read in code order when code is stated", "[repository][stated_order]") {
     database_helper h;
     const auto m = unique_marker();
     const auto c2 = write_tenant(h, m + "_2", "Order Fixture " + m + " a");
@@ -141,7 +140,8 @@ TEST_CASE("tenants read in code order when code is stated", tags) {
           std::vector<std::string>{c2, c1});
 }
 
-TEST_CASE("the store refuses an order by a field the model does not declare", tags) {
+TEST_CASE("the store refuses an order by a field the model does not declare",
+          "[repository][stated_order]") {
     database_helper h;
     CHECK(tenant_repository::is_sortable("name"));
     CHECK(tenant_repository::is_sortable("code"));
@@ -151,7 +151,8 @@ TEST_CASE("the store refuses an order by a field the model does not declare", ta
         std::invalid_argument);
 }
 
-TEST_CASE("the service refuses an undeclared field and honours a declared one", tags) {
+TEST_CASE("the service refuses an undeclared field and honours a declared one",
+          "[repository][stated_order]") {
     database_helper h;
     ores::iam::service::tenant_service service(system_context(h));
 

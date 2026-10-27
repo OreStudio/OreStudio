@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view stress_shift_family_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_stress_shift_family_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_stress_shift_family_hand
         std::make_shared<stress_shift_family_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_stress_shift_families_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->list_stress_shift_families(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_stress_shift_family_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_stress_shift_family(std::move(msg));
-        }));
+        get_stress_shift_family_request::nats_subject,
+        stress_shift_family_queue_group,
+        [h](ores::nats::message msg) { h->get_stress_shift_family(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_stress_shift_families_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->get_many_stress_shift_families(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_stress_shift_family_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_stress_shift_family(std::move(msg));
-        }));
+        put_stress_shift_family_request::nats_subject,
+        stress_shift_family_queue_group,
+        [h](ores::nats::message msg) { h->put_stress_shift_family(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_stress_shift_families_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->put_many_stress_shift_families(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_stress_shift_family_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->delete_stress_shift_family(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_stress_shift_families_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->delete_many_stress_shift_families(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_stress_shift_family_versions_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->list_stress_shift_family_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_stress_shift_family_version_request::nats_subject,
-        queue_group,
+        stress_shift_family_queue_group,
         [h](ores::nats::message msg) { h->get_stress_shift_family_version(std::move(msg)); }));
     return subs;
 }

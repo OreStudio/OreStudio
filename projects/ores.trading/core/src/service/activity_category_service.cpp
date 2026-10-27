@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::activity_category> read_one(repository::activity_category_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::activity_category_key& key) {
+std::vector<domain::activity_category>
+activity_category_read_one(repository::activity_category_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::activity_category_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::activity_category> read_one(repository::activity_category_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::activity_category_key key_from(const domain::activity_category& v) {
+messaging::activity_category_key activity_category_key_from(const domain::activity_category& v) {
     messaging::activity_category_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,8 @@ messaging::activity_category_key key_from(const domain::activity_category& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::activity_category to_domain(const messaging::activity_category_write& write) {
+domain::activity_category
+activity_category_to_domain(const messaging::activity_category_write& write) {
     domain::activity_category v;
     v.code = write.code;
     v.description = write.description;
@@ -139,7 +141,7 @@ messaging::list_activity_categories_response activity_category_service::list_act
 messaging::get_activity_category_response activity_category_service::get_activity_category(
     const messaging::get_activity_category_request& request) {
     messaging::get_activity_category_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = activity_category_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "activity_category"});
         return response;
@@ -159,7 +161,7 @@ activity_category_service::get_many_activity_categories(
     for (const auto& k : request.keys) {
         messaging::activity_category_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = activity_category_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.activity_category = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -175,7 +177,7 @@ messaging::put_activity_category_response activity_category_service::put_activit
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = activity_category_read_one(repo_, ctx_, activity_category_key_from(value));
     if (!written.empty())
         response.activity_category = std::move(written.front());
     return response;
@@ -208,7 +210,7 @@ activity_category_service::put_many_activity_categories(
     repo_.write(ctx_, batch, claims);
     response.activity_categories.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = activity_category_read_one(repo_, ctx_, activity_category_key_from(value));
         response.activity_categories.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -242,7 +244,7 @@ messaging::delete_activity_category_response activity_category_service::delete_a
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = activity_category_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "activity_category",
@@ -331,8 +333,8 @@ activity_category_service::prepare_change(const messaging::activity_category_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = activity_category_to_domain(change.write);
+    const auto current = activity_category_read_one(repo_, ctx_, activity_category_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

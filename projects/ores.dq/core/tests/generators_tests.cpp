@@ -31,15 +31,9 @@
 #include "ores.dq.api/generators/treatment_dimension_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <set>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::dq::generators;
 using namespace ores::logging;
@@ -47,7 +41,7 @@ using ores::utility::generation::generation_context;
 
 // --- catalog ---
 
-TEST_CASE("catalog_generator_produces_valid_instance", tags) {
+TEST_CASE("catalog_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_catalog(ctx);
@@ -61,7 +55,7 @@ TEST_CASE("catalog_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("catalog_generator_produces_multiple_instances", tags) {
+TEST_CASE("catalog_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -81,7 +75,7 @@ TEST_CASE("catalog_generator_produces_multiple_instances", tags) {
 
 // --- change_reason_category ---
 
-TEST_CASE("change_reason_category_generator_produces_valid_instance", tags) {
+TEST_CASE("change_reason_category_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_change_reason_category(ctx);
@@ -93,7 +87,7 @@ TEST_CASE("change_reason_category_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("change_reason_category_generator_produces_multiple_instances", tags) {
+TEST_CASE("change_reason_category_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -113,7 +107,7 @@ TEST_CASE("change_reason_category_generator_produces_multiple_instances", tags) 
 
 // --- change_reason ---
 
-TEST_CASE("change_reason_generator_produces_valid_instance", tags) {
+TEST_CASE("change_reason_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_change_reason(ctx);
@@ -128,7 +122,7 @@ TEST_CASE("change_reason_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("change_reason_generator_produces_multiple_instances", tags) {
+TEST_CASE("change_reason_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -149,7 +143,7 @@ TEST_CASE("change_reason_generator_produces_multiple_instances", tags) {
 
 // --- coding_scheme_authority_type ---
 
-TEST_CASE("coding_scheme_authority_type_generator_produces_valid_instance", tags) {
+TEST_CASE("coding_scheme_authority_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_coding_scheme_authority_type(ctx);
@@ -162,7 +156,7 @@ TEST_CASE("coding_scheme_authority_type_generator_produces_valid_instance", tags
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("coding_scheme_authority_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("coding_scheme_authority_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -182,7 +176,7 @@ TEST_CASE("coding_scheme_authority_type_generator_produces_multiple_instances", 
 
 // --- coding_scheme ---
 
-TEST_CASE("coding_scheme_generator_produces_valid_instance", tags) {
+TEST_CASE("coding_scheme_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_coding_scheme(ctx);
@@ -198,7 +192,7 @@ TEST_CASE("coding_scheme_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("coding_scheme_generator_produces_multiple_instances", tags) {
+TEST_CASE("coding_scheme_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -219,7 +213,7 @@ TEST_CASE("coding_scheme_generator_produces_multiple_instances", tags) {
 
 // --- data_domain ---
 
-TEST_CASE("data_domain_generator_produces_valid_instance", tags) {
+TEST_CASE("data_domain_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_data_domain(ctx);
@@ -231,7 +225,7 @@ TEST_CASE("data_domain_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("data_domain_generator_produces_multiple_instances", tags) {
+TEST_CASE("data_domain_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -251,7 +245,7 @@ TEST_CASE("data_domain_generator_produces_multiple_instances", tags) {
 
 // --- dataset ---
 
-TEST_CASE("dataset_generator_produces_valid_instance", tags) {
+TEST_CASE("dataset_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_dataset(ctx);
@@ -273,7 +267,7 @@ TEST_CASE("dataset_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("dataset_generator_produces_multiple_instances", tags) {
+TEST_CASE("dataset_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -295,7 +289,7 @@ TEST_CASE("dataset_generator_produces_multiple_instances", tags) {
 
 // --- methodology ---
 
-TEST_CASE("methodology_generator_produces_valid_instance", tags) {
+TEST_CASE("methodology_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_methodology(ctx);
@@ -308,7 +302,7 @@ TEST_CASE("methodology_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("methodology_generator_produces_multiple_instances", tags) {
+TEST_CASE("methodology_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -329,7 +323,7 @@ TEST_CASE("methodology_generator_produces_multiple_instances", tags) {
 
 // --- origin_dimension ---
 
-TEST_CASE("origin_dimension_generator_produces_valid_instance", tags) {
+TEST_CASE("origin_dimension_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_origin_dimension(ctx);
@@ -342,7 +336,7 @@ TEST_CASE("origin_dimension_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("origin_dimension_generator_produces_multiple_instances", tags) {
+TEST_CASE("origin_dimension_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -362,7 +356,7 @@ TEST_CASE("origin_dimension_generator_produces_multiple_instances", tags) {
 
 // --- nature_dimension ---
 
-TEST_CASE("nature_dimension_generator_produces_valid_instance", tags) {
+TEST_CASE("nature_dimension_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_nature_dimension(ctx);
@@ -375,7 +369,7 @@ TEST_CASE("nature_dimension_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("nature_dimension_generator_produces_multiple_instances", tags) {
+TEST_CASE("nature_dimension_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -395,7 +389,7 @@ TEST_CASE("nature_dimension_generator_produces_multiple_instances", tags) {
 
 // --- subject_area ---
 
-TEST_CASE("subject_area_generator_produces_valid_instance", tags) {
+TEST_CASE("subject_area_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_subject_area(ctx);
@@ -408,7 +402,7 @@ TEST_CASE("subject_area_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("subject_area_generator_produces_multiple_instances", tags) {
+TEST_CASE("subject_area_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -429,7 +423,7 @@ TEST_CASE("subject_area_generator_produces_multiple_instances", tags) {
 
 // --- treatment_dimension ---
 
-TEST_CASE("treatment_dimension_generator_produces_valid_instance", tags) {
+TEST_CASE("treatment_dimension_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_treatment_dimension(ctx);
@@ -442,7 +436,7 @@ TEST_CASE("treatment_dimension_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("treatment_dimension_generator_produces_multiple_instances", tags) {
+TEST_CASE("treatment_dimension_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

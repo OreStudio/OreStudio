@@ -106,7 +106,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -145,7 +145,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -209,7 +209,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     try {
 {{#is_paged}}
 
-    apply_page(req, *parsed);
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_apply_page(req, *parsed);
     if (!parsed->positionals.empty()) {
         fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                   << std::endl;
@@ -234,7 +234,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
         req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree
                                     : ores::utility::domain::scope::direct;
     }
-    apply_page(req, *parsed);
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_apply_page(req, *parsed);
 {{/is_list_by}}
 {{#is_versions}}
 
@@ -245,10 +245,10 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     }
 {{#keys}}
 {{#is_user}}
-    read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
 {{/is_user}}
 {{/keys}}
-    apply_page(req, *parsed);
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_apply_page(req, *parsed);
 {{/is_versions}}
 {{#is_key_read}}
 
@@ -259,7 +259,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     }
 {{#keys}}
 {{#is_user}}
-    read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(req.key.{{name}}, parsed->positionals[next++], "{{name}}");
 {{/is_user}}
 {{/keys}}
 {{/is_key_read}}
@@ -272,7 +272,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     }
 {{#keys}}
 {{#is_user}}
-    read_token(req.key.{{entity_singular}}.{{name}}, parsed->positionals[next++], "{{name}}");
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(req.key.{{entity_singular}}.{{name}}, parsed->positionals[next++], "{{name}}");
 {{/is_user}}
 {{/keys}}
     req.key.version = ores::shell::app::from_token<std::uint32_t>(
@@ -287,7 +287,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     }
 {{#writes}}
 {{#is_user}}
-    read_token(req.change.write.{{name}}, parsed->positionals[next++], "{{name}}");
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(req.change.write.{{name}}, parsed->positionals[next++], "{{name}}");
 {{/is_user}}
 {{#is_minted}}
     req.change.write.{{name}} = boost::uuids::random_generator()();
@@ -319,7 +319,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     }
 {{#keys}}
 {{#is_user}}
-    read_token(req.removal.key.{{name}}, parsed->positionals[next++], "{{name}}");
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(req.removal.key.{{name}}, parsed->positionals[next++], "{{name}}");
 {{/is_user}}
 {{/keys}}
     req.intent.reason_code = parsed->positionals[next++];
@@ -343,7 +343,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     for (std::size_t i = 0; i < parsed->positionals.size(); i += {{key_arity}}) {
         messaging::{{entity_singular}}_key key;
 {{#keys}}
-        read_token(key.{{name}}, parsed->positionals[i + {{index}}], "{{name}}");
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(key.{{name}}, parsed->positionals[i + {{index}}], "{{name}}");
 {{/keys}}
         req.keys.push_back(std::move(key));
     }
@@ -360,7 +360,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     for (std::size_t i = 0; i < key_groups; ++i) {
         messaging::{{entity_singular}}_key key;
 {{#keys}}
-        read_token(key.{{name}}, parsed->positionals[i * {{key_arity}} + {{index}}],
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(key.{{name}}, parsed->positionals[i * {{key_arity}} + {{index}}],
                    "{{name}}");
 {{/keys}}
         req.removals.push_back(messaging::{{entity_singular}}_removal{.key = std::move(key)});
@@ -384,7 +384,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
     for (std::uint32_t i = 0; i < change_count; ++i) {
         messaging::{{entity_singular}}_change change;
 {{#writes}}
-        read_token(change.write.{{name}}, parsed->positionals[next++], "{{name}}");
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_token(change.write.{{name}}, parsed->positionals[next++], "{{name}}");
 {{/writes}}
         change.precondition.kind =
             ores::utility::domain::precondition_kind::must_not_exist;

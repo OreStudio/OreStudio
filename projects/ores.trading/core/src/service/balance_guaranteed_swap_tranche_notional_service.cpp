@@ -74,9 +74,10 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
-read_one(repository::balance_guaranteed_swap_tranche_notional_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::balance_guaranteed_swap_tranche_notional_key& key) {
+balance_guaranteed_swap_tranche_notional_read_one(
+    repository::balance_guaranteed_swap_tranche_notional_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::balance_guaranteed_swap_tranche_notional_key& key) {
     return repo.read_latest(ctx,
                             boost::uuids::to_string(key.trade_id),
                             std::to_string(key.tranche_number),
@@ -90,7 +91,8 @@ read_one(repository::balance_guaranteed_swap_tranche_notional_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::balance_guaranteed_swap_tranche_notional_key
-key_from(const domain::balance_guaranteed_swap_tranche_notional& v) {
+balance_guaranteed_swap_tranche_notional_key_from(
+    const domain::balance_guaranteed_swap_tranche_notional& v) {
     messaging::balance_guaranteed_swap_tranche_notional_key key;
     key.trade_id = v.trade_id;
     key.tranche_number = v.tranche_number;
@@ -105,8 +107,8 @@ key_from(const domain::balance_guaranteed_swap_tranche_notional& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::balance_guaranteed_swap_tranche_notional
-to_domain(const messaging::balance_guaranteed_swap_tranche_notional_write& write) {
+domain::balance_guaranteed_swap_tranche_notional balance_guaranteed_swap_tranche_notional_to_domain(
+    const messaging::balance_guaranteed_swap_tranche_notional_write& write) {
     domain::balance_guaranteed_swap_tranche_notional v;
     v.trade_id = write.trade_id;
     v.tranche_number = write.tranche_number;
@@ -193,7 +195,7 @@ messaging::get_balance_guaranteed_swap_tranche_notional_response
 balance_guaranteed_swap_tranche_notional_service::get_balance_guaranteed_swap_tranche_notional(
     const messaging::get_balance_guaranteed_swap_tranche_notional_request& request) {
     messaging::get_balance_guaranteed_swap_tranche_notional_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = balance_guaranteed_swap_tranche_notional_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "balance_guaranteed_swap_tranche_notional"});
@@ -215,7 +217,7 @@ balance_guaranteed_swap_tranche_notional_service::
     for (const auto& k : request.keys) {
         messaging::balance_guaranteed_swap_tranche_notional_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = balance_guaranteed_swap_tranche_notional_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.balance_guaranteed_swap_tranche_notional = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -232,7 +234,8 @@ balance_guaranteed_swap_tranche_notional_service::put_balance_guaranteed_swap_tr
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = balance_guaranteed_swap_tranche_notional_read_one(
+        repo_, ctx_, balance_guaranteed_swap_tranche_notional_key_from(value));
     if (!written.empty())
         response.balance_guaranteed_swap_tranche_notional = std::move(written.front());
     return response;
@@ -266,7 +269,8 @@ balance_guaranteed_swap_tranche_notional_service::
     repo_.write(ctx_, batch, claims);
     response.balance_guaranteed_swap_tranche_notionals.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = balance_guaranteed_swap_tranche_notional_read_one(
+            repo_, ctx_, balance_guaranteed_swap_tranche_notional_key_from(value));
         response.balance_guaranteed_swap_tranche_notionals.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -309,7 +313,8 @@ balance_guaranteed_swap_tranche_notional_service::delete_balance_guaranteed_swap
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                balance_guaranteed_swap_tranche_notional_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "balance_guaranteed_swap_tranche_notional",
@@ -419,8 +424,9 @@ ores::utility::domain::result balance_guaranteed_swap_tranche_notional_service::
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = balance_guaranteed_swap_tranche_notional_to_domain(change.write);
+    const auto current = balance_guaranteed_swap_tranche_notional_read_one(
+        repo_, ctx_, balance_guaranteed_swap_tranche_notional_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

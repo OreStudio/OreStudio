@@ -81,7 +81,8 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy
+workflow_plan_dependency_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::workflow_plan_dependencies_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> workflow_plan_dependency_filter_condition(
+    const std::optional<messaging::workflow_plan_dependencies_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -283,8 +284,8 @@ workflow_plan_dependency_repository::read_latest_by_workflow_id(
                                       domain::workflow_plan_dependency>(
         ctx,
         query,
-        list_order(order, {"consumer_step_index"}, false),
-        filter_condition(filter),
+        workflow_plan_dependency_list_order(order, {"consumer_step_index"}, false),
+        workflow_plan_dependency_filter_condition(filter),
         [](const auto& entities) { return workflow_plan_dependency_mapper::map(entities); },
         lg(),
         "Reading latest workflow plan dependencies by workflow_id.");
@@ -304,7 +305,7 @@ std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_cou
     return execute_count_query<workflow_plan_dependency_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        workflow_plan_dependency_filter_condition(filter),
         lg(),
         "Counting workflow plan dependencies by workflow_id");
 }
@@ -359,8 +360,8 @@ std::vector<domain::workflow_plan_dependency> workflow_plan_dependency_repositor
                                       domain::workflow_plan_dependency>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        workflow_plan_dependency_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), workflow_plan_dependency_filter_condition(filter)),
         [](const auto& entities) { return workflow_plan_dependency_mapper::map(entities); },
         lg(),
         "Reading latest workflow plan dependencies with pagination.");
@@ -377,7 +378,7 @@ std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_cou
     return execute_count_query<workflow_plan_dependency_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), workflow_plan_dependency_filter_condition(filter)),
         lg(),
         "Counting workflow plan dependencies");
 }

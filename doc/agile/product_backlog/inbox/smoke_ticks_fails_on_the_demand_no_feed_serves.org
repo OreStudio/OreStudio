@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: D8B0F3D9-C9E9-4FB4-8611-F3C184CF2D12
+:END:
+#+title: The ticks smoke fails on the demand no feed serves
+#+description: After a database recreate, compass smoke ticks provisions Acme, sees 30 ticks arrive and then fails: the bloomberg adapter accepted 66 of the 86 ids demanded and rejected 20. The synthetic service announces 362 ids for that provider, 296 of them unknown to any feed, so the demo profile demands market data this build does not generate. The check is a gate for an environment and cannot go green until the demand matches the feeds, or the smoke reports the gap without failing.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:smoke:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass smoke ticks= provisions a tenant, waits for the first stored tick and
+then fails on the adapters: on a freshly recreated database it reported
+=bloomberg-a= accepted 66 and rejected 20 of the 86 ids demanded, after 30 ticks
+had arrived and the tenant's 10 subscriptions and 10 routes had been written.
+The synthetic service announces 362 ids for that provider, 296 of which it does
+not know, so the demo profile asks for market data no feed in this build makes.
+An environment therefore cannot pass its own smoke test.
+
+* Why
+
+The smoke is the check an environment is signed off with, and a check that
+cannot go green stops being read: the next real regression in tick delivery
+arrives as one more line among the rejected ids. Either the profile provisions
+only the instruments the feeds cover, or the smoke separates "no feed makes this
+id" from "the service dropped this tick" and fails on the second alone.
+
+* References
+
+- Measured on =prime_origin=, 2026-10-26, at =dd4af2b9ca=, after
+  =compass db recreate -y -k= and =compass services start=.
+- The supervisor line is
+  =Adapter 'bloomberg-a' accepted 66 and rejected 20 of 86 id(s)=, and the
+  announce line beside it =ready (66 served, 296 unknown)=.
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]]

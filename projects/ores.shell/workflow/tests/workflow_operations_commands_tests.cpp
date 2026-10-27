@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.workflow.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("workflow_operations_registers_every_declared_command", tags) {
+TEST_CASE("workflow_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -72,7 +70,7 @@ TEST_CASE("workflow_operations_registers_every_declared_command", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 5 command(s).";
 }
 
-TEST_CASE("workflow_operations_process_step_result_requires_a_session", tags) {
+TEST_CASE("workflow_operations_process_step_result_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -91,7 +89,7 @@ TEST_CASE("workflow_operations_process_step_result_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_step_result_reports_the_expected_count", tags) {
+TEST_CASE("workflow_operations_process_step_result_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -109,7 +107,7 @@ TEST_CASE("workflow_operations_process_step_result_reports_the_expected_count", 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_step_result_reaches_the_transport", tags) {
+TEST_CASE("workflow_operations_process_step_result_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -134,7 +132,7 @@ TEST_CASE("workflow_operations_process_step_result_reaches_the_transport", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_instances_requires_a_session", tags) {
+TEST_CASE("workflow_operations_process_instances_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -148,7 +146,7 @@ TEST_CASE("workflow_operations_process_instances_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_instances_reaches_the_transport", tags) {
+TEST_CASE("workflow_operations_process_instances_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -168,7 +166,7 @@ TEST_CASE("workflow_operations_process_instances_reaches_the_transport", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_steps_requires_a_session", tags) {
+TEST_CASE("workflow_operations_process_steps_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -186,7 +184,7 @@ TEST_CASE("workflow_operations_process_steps_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_steps_reports_the_expected_count", tags) {
+TEST_CASE("workflow_operations_process_steps_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -204,7 +202,7 @@ TEST_CASE("workflow_operations_process_steps_reports_the_expected_count", tags) 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_steps_reaches_the_transport", tags) {
+TEST_CASE("workflow_operations_process_steps_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -228,7 +226,7 @@ TEST_CASE("workflow_operations_process_steps_reaches_the_transport", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_definitions_requires_a_session", tags) {
+TEST_CASE("workflow_operations_process_definitions_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -242,7 +240,7 @@ TEST_CASE("workflow_operations_process_definitions_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_definitions_reaches_the_transport", tags) {
+TEST_CASE("workflow_operations_process_definitions_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -262,7 +260,7 @@ TEST_CASE("workflow_operations_process_definitions_reaches_the_transport", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_retry_requires_a_session", tags) {
+TEST_CASE("workflow_operations_process_retry_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -280,7 +278,7 @@ TEST_CASE("workflow_operations_process_retry_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_retry_reports_the_expected_count", tags) {
+TEST_CASE("workflow_operations_process_retry_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -298,7 +296,7 @@ TEST_CASE("workflow_operations_process_retry_reports_the_expected_count", tags) 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operations_process_retry_reaches_the_transport", tags) {
+TEST_CASE("workflow_operations_process_retry_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

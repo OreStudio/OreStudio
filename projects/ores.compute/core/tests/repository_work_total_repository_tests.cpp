@@ -27,8 +27,6 @@
 
 namespace {
 
-const std::string tags("[repository][work_total]");
-
 using ores::compute::domain::grid_sample;
 using ores::compute::repository::work_total_repository;
 using ores::compute::repository::work_totals;
@@ -66,7 +64,7 @@ struct written_totals {
 
 }
 
-TEST_CASE("add_sums_the_job_counters_of_the_rows_it_is_given", tags) {
+TEST_CASE("add_sums_the_job_counters_of_the_rows_it_is_given", "[repository][work_total]") {
     grid_sample a;
     a.results_unsent = 2;
     a.results_in_progress = 1;
@@ -88,7 +86,7 @@ TEST_CASE("add_sums_the_job_counters_of_the_rows_it_is_given", tags) {
     CHECK(totals.outcomes_success == 4);
 }
 
-TEST_CASE("read_newest_returns_the_totals_the_system_tenant_wrote", tags) {
+TEST_CASE("read_newest_returns_the_totals_the_system_tenant_wrote", "[repository][work_total]") {
     database_helper h;
     written_totals written{h};
     work_total_repository repo;
@@ -107,7 +105,7 @@ TEST_CASE("read_newest_returns_the_totals_the_system_tenant_wrote", tags) {
     CHECK(newest->total_workunits == 41);
 }
 
-TEST_CASE("a_tenants_session_reads_none_of_the_totals", tags) {
+TEST_CASE("a_tenants_session_reads_none_of_the_totals", "[repository][work_total]") {
     database_helper h;
     written_totals written{h};
     work_total_repository repo;

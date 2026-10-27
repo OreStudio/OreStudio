@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void pricing_model_config_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void pricing_model_config_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -228,7 +228,7 @@ void pricing_model_config_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        pricing_model_config_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -276,7 +276,7 @@ void pricing_model_config_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
+        pricing_model_config_read_token(req.key.name, parsed->positionals[next++], "name");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -321,7 +321,7 @@ void pricing_model_config_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::pricing_model_config_key key;
-            read_token(key.name, parsed->positionals[i + 0], "name");
+            pricing_model_config_read_token(key.name, parsed->positionals[i + 0], "name");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -367,11 +367,14 @@ void pricing_model_config_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.config_variant, parsed->positionals[next++], "config_variant");
-        read_token(
+        pricing_model_config_read_token(
+            req.change.write.party_id, parsed->positionals[next++], "party_id");
+        pricing_model_config_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        pricing_model_config_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        pricing_model_config_read_token(
+            req.change.write.config_variant, parsed->positionals[next++], "config_variant");
+        pricing_model_config_read_token(
             req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -420,12 +423,15 @@ void pricing_model_config_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.config_variant, parsed->positionals[next++], "config_variant");
-        read_token(
+        pricing_model_config_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        pricing_model_config_read_token(
+            req.change.write.party_id, parsed->positionals[next++], "party_id");
+        pricing_model_config_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        pricing_model_config_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        pricing_model_config_read_token(
+            req.change.write.config_variant, parsed->positionals[next++], "config_variant");
+        pricing_model_config_read_token(
             req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -488,12 +494,15 @@ void pricing_model_config_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::pricing_model_config_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.config_variant, parsed->positionals[next++], "config_variant");
-            read_token(
+            pricing_model_config_read_token(change.write.id, parsed->positionals[next++], "id");
+            pricing_model_config_read_token(
+                change.write.party_id, parsed->positionals[next++], "party_id");
+            pricing_model_config_read_token(change.write.name, parsed->positionals[next++], "name");
+            pricing_model_config_read_token(
+                change.write.description, parsed->positionals[next++], "description");
+            pricing_model_config_read_token(
+                change.write.config_variant, parsed->positionals[next++], "config_variant");
+            pricing_model_config_read_token(
                 change.write.configuration_id, parsed->positionals[next++], "configuration_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -544,7 +553,7 @@ void pricing_model_config_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.name, parsed->positionals[next++], "name");
+        pricing_model_config_read_token(req.removal.key.name, parsed->positionals[next++], "name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -598,7 +607,7 @@ void pricing_model_config_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::pricing_model_config_key key;
-            read_token(key.name, parsed->positionals[i * 1 + 0], "name");
+            pricing_model_config_read_token(key.name, parsed->positionals[i * 1 + 0], "name");
             req.removals.push_back(messaging::pricing_model_config_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -656,7 +665,7 @@ void pricing_model_config_commands::process_by_configuration_id(
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        pricing_model_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -705,8 +714,8 @@ void pricing_model_config_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
-        apply_page(req, *parsed);
+        pricing_model_config_read_token(req.key.name, parsed->positionals[next++], "name");
+        pricing_model_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -751,7 +760,8 @@ void pricing_model_config_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.pricing_model_config.name, parsed->positionals[next++], "name");
+        pricing_model_config_read_token(
+            req.key.pricing_model_config.name, parsed->positionals[next++], "name");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

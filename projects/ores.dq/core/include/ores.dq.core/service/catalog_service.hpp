@@ -75,22 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_catalogs_response
-    list_catalogs(const messaging::list_catalogs_request& request);
-    messaging::get_catalog_response get_catalog(const messaging::get_catalog_request& request);
-    messaging::get_many_catalogs_response
-    get_many_catalogs(const messaging::get_many_catalogs_request& request);
-    messaging::put_catalog_response put_catalog(const messaging::put_catalog_request& request);
-    messaging::put_many_catalogs_response
-    put_many_catalogs(const messaging::put_many_catalogs_request& request);
-    messaging::delete_catalog_response
-    delete_catalog(const messaging::delete_catalog_request& request);
-    messaging::delete_many_catalogs_response
-    delete_many_catalogs(const messaging::delete_many_catalogs_request& request);
-    messaging::list_catalog_versions_response
-    list_catalog_versions(const messaging::list_catalog_versions_request& request);
-    messaging::get_catalog_version_response
-    get_catalog_version(const messaging::get_catalog_version_request& request);
+    ::ores::dq::messaging::list_catalogs_response
+    list_catalogs(const ::ores::dq::messaging::list_catalogs_request& request);
+    ::ores::dq::messaging::get_catalog_response
+    get_catalog(const ::ores::dq::messaging::get_catalog_request& request);
+    ::ores::dq::messaging::get_many_catalogs_response
+    get_many_catalogs(const ::ores::dq::messaging::get_many_catalogs_request& request);
+    ::ores::dq::messaging::put_catalog_response
+    put_catalog(const ::ores::dq::messaging::put_catalog_request& request);
+    ::ores::dq::messaging::put_many_catalogs_response
+    put_many_catalogs(const ::ores::dq::messaging::put_many_catalogs_request& request);
+    ::ores::dq::messaging::delete_catalog_response
+    delete_catalog(const ::ores::dq::messaging::delete_catalog_request& request);
+    ::ores::dq::messaging::delete_many_catalogs_response
+    delete_many_catalogs(const ::ores::dq::messaging::delete_many_catalogs_request& request);
+    ::ores::dq::messaging::list_catalog_versions_response
+    list_catalog_versions(const ::ores::dq::messaging::list_catalog_versions_request& request);
+    ::ores::dq::messaging::get_catalog_version_response
+    get_catalog_version(const ::ores::dq::messaging::get_catalog_version_request& request);
     /**@}*/
 
     /**
@@ -184,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::catalog_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::catalog& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::catalog_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::catalog& out);
 };
 
 }

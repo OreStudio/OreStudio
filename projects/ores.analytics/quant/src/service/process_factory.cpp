@@ -112,7 +112,7 @@ process_factory::make_arrival_process(const std::string& mode,
     const double mean_rate = ticks_per_hour / seconds_per_hour;
 
     if (mode == "periodic")
-        return std::make_unique<periodic_arrival_process>(mean_rate);
+        return std::make_unique<periodic_arrival_process>(mean_rate, seed);
     if (mode == "poisson")
         return std::make_unique<poisson_arrival_process>(mean_rate, seed);
     if (mode == "hawkes")

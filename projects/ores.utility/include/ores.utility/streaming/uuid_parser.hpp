@@ -38,7 +38,7 @@ struct Parser<ReaderType, WriterType, boost::uuids::uuid, ProcessorsType> {
         const auto str_result =
             Parser<ReaderType, WriterType, std::string, ProcessorsType>::read(_r, _var);
         if (!str_result) {
-            return rfl::Unexpected(Error(str_result.error()->what()));
+            return rfl::Unexpected(Error(str_result.error().what()));
         }
         try {
             return boost::lexical_cast<boost::uuids::uuid>(str_result.value());

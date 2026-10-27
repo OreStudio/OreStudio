@@ -75,20 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_tags_response list_tags(const messaging::list_tags_request& request);
-    messaging::get_tag_response get_tag(const messaging::get_tag_request& request);
-    messaging::get_many_tags_response
-    get_many_tags(const messaging::get_many_tags_request& request);
-    messaging::put_tag_response put_tag(const messaging::put_tag_request& request);
-    messaging::put_many_tags_response
-    put_many_tags(const messaging::put_many_tags_request& request);
-    messaging::delete_tag_response delete_tag(const messaging::delete_tag_request& request);
-    messaging::delete_many_tags_response
-    delete_many_tags(const messaging::delete_many_tags_request& request);
-    messaging::list_tag_versions_response
-    list_tag_versions(const messaging::list_tag_versions_request& request);
-    messaging::get_tag_version_response
-    get_tag_version(const messaging::get_tag_version_request& request);
+    ::ores::assets::messaging::list_tags_response
+    list_tags(const ::ores::assets::messaging::list_tags_request& request);
+    ::ores::assets::messaging::get_tag_response
+    get_tag(const ::ores::assets::messaging::get_tag_request& request);
+    ::ores::assets::messaging::get_many_tags_response
+    get_many_tags(const ::ores::assets::messaging::get_many_tags_request& request);
+    ::ores::assets::messaging::put_tag_response
+    put_tag(const ::ores::assets::messaging::put_tag_request& request);
+    ::ores::assets::messaging::put_many_tags_response
+    put_many_tags(const ::ores::assets::messaging::put_many_tags_request& request);
+    ::ores::assets::messaging::delete_tag_response
+    delete_tag(const ::ores::assets::messaging::delete_tag_request& request);
+    ::ores::assets::messaging::delete_many_tags_response
+    delete_many_tags(const ::ores::assets::messaging::delete_many_tags_request& request);
+    ::ores::assets::messaging::list_tag_versions_response
+    list_tag_versions(const ::ores::assets::messaging::list_tag_versions_request& request);
+    ::ores::assets::messaging::get_tag_version_response
+    get_tag_version(const ::ores::assets::messaging::get_tag_version_request& request);
     /**@}*/
 
     /**
@@ -199,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::tag_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::tag& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::assets::messaging::tag_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::tag& out);
 };
 
 }

@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: F6094D03-3914-4046-8E57-3FF4AA14764B
+:END:
+#+title: The Acme catalogue is installed by the bundle, and the feeds generate the series
+#+description: What the market data catalogue holds in a provisioned Acme tenant, which component writes each part of it, and the series the simulated feeds then generate for the parties.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:marketdata:catalogue:acme:demo:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+startup: inlineimages
+
+* Summary
+
+A provisioned Acme tenant holds a market data catalogue it never wrote. The
+system bundle installs the providers, the sources, the vendor instruments, their
+mappings to internal items and the rate cards, all in the system tenant, and the
+simulator installs the generators and its own universe beside them. The tenant's
+own setup writes no catalogue row. What the tenant gains is the other half: the
+feeds the catalogue describes run, and the series they produce land in the party
+that subscribed to them. A fresh Acme tenant therefore holds 7 providers, 6
+sources, 447 vendor instruments, 447 mappings and 24 rate card components before
+any person signs in, and 341 series and 1651 observations once the feeds have
+run. The first four counts are fixed by the bundle; the last two were measured on
+a freshly provisioned tenant and grow as the demonstration is used.
+
+* Detail
+
+** What the catalogue is, and who writes it
+
+#+ATTR_HTML: :class hug-leading
+| Part of the catalogue | Rows in a fresh Acme tenant | Installed by |
+|-----------------------+-----------------------------+--------------|
+| Providers | 7 | the system bundle |
+| Sources | 6 | the system bundle |
+| Vendor instruments | 447 | the system bundle |
+| Mappings to internal items | 447 | the system bundle |
+| Rate card components | 24 | the system bundle |
+| Generators and the simulator universe | per feed collection | the synthetic feeds bundle |
+| Series and observations | 341 and 1651 after the feeds run | the running feeds, in the party |
+
+The rule that produces this split is
+[[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the
+catalogue and the simulator installs its own universe]]: a definition has one
+home, and a tenant's setup never writes the catalogue. It follows that a
+demonstration showing the wrong instrument count is a bundle fault and not a
+tenant fault, and that a person cannot break the catalogue by provisioning a
+second tenant.
+
+** The vendor instrument and its mapping
+
+A vendor instrument is an id scheme, an id and a field, in the vendor's own
+notation, and a mapping is the link from it to the internal item a consumer names.
+The two tables hold the same count because the bundle installs them together and
+a vendor instrument with no mapping is a row the service can announce but nothing
+can demand. [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an
+id scheme, an id and a field]] states the row, and
+[[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and
+not to the source]] states why the link hangs off the provider: two sources of one
+provider must map an instrument the same way.
+
+** The feeds that generate the series
+
+The series a party holds come from a feed collection, and each collection quotes
+what the ACME reports need.
+
+#+ATTR_HTML: :class hug-leading
+| Collection | Provider it stands for | What it quotes |
+|------------+------------------------+----------------|
+| =synthetic.feeds.bloomberg= | =bloomberg= | a USD spot and an interest rate curve for every currency of an ACME book, and the USD FOMC-dated short end |
+| =synthetic.feeds.uniform_demo= | =demo= | eight major and three emerging pairs at one deliberately exaggerated volatility, so movement is visible on a chart |
+| =synthetic.feeds.lseg= | =lseg= | fourteen cross pairs that Bloomberg leaves to the cross-rates matrix |
+| =synthetic.feeds.ice= | =ice= | the LIBOR curves the Bloomberg feeds leave out |
+| =synthetic.feeds.tradeweb= | =tradeweb= | the EURIBOR and LIBOR dealer composites Bloomberg does not quote |
+
+Two properties of the collections matter to a demonstration. Coverage is closed:
+every currency of an ACME book has a USD spot and a curve, and a cross comes from
+the cross-rates matrix rather than from a feed of its own, so a run that resolves
+a curve for any ACME book finds one. And one series has one running publisher:
+the five collections name disjoint series, so the four offices can read four
+different providers and none of them fights another for a series. The levels are
+sourced where a free source exists: the thirteen pairs the Federal Reserve H.10
+release quotes start at the 2026-05-05 vintage imported by
+=marketdata.reference_vintage_2026_05_05=, and the rest start at a fixed,
+illustrative level near the 2026 market.
+
+** What a party ends up holding
+
+#+ATTR_HTML: :class hug-leading
+| Party | Series from its subscribed provider | Series from =ore= |
+|-------+-------------------------------------+-------------------|
+| Acme Corporation Plc | 54 | 17 |
+| ACME Corporation UK plc | 26 | 30 |
+| ACME Corporation US Inc | 14 | 20 |
+| ACME Corporation HK Ltd | 54 | 20 |
+| System Party | 54 | 27 |
+
+The =ore= rows are the third source of the two parties' market: the values of
+the ORE example market data files, imported by the reference vintage the profile
+publishes, so a report that reads a value ORE itself states finds it. The
+per-party counts differ because a party holds the series its own provider quotes
+plus the ones the reference vintage carries, and the two collections quote
+different markets. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is
+keyed by item, provider and party]] is why the same item is a row per party
+rather than a shared one, and
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for
+each party]] is the cost decision behind it.
+
+** A demand is what makes a generator run
+
+A series exists for a party because something demanded it. The reports and the
+curve screens register demand, the service resolves the party's route to a
+source, and the synthetic runner starts the generator for the item.
+[[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter
+publishes]] is the general rule, and
+[[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus
+the tools that author its generators]] says where the generators live. The count
+above is therefore a count of what the demonstration's runs and screens asked
+for, not a fixed size.
+
+* What this note does not cover
+
+The flow a demand follows is
+[[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][the party's subscription and its
+route]] and its diagram. The providers and which source serves each is
+[[id:AC31B4F2-B1D7-4CE6-BE84-9A548ACE6754][the provider and source page]].
+
+* See also
+
+- [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
+- [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: the rule that makes the tenant a reader of the catalogue.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the row the 447 count is a count of.
+- [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: why the mapping count equals the instrument count.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: the shape the 341 series take.
+- [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] — completes: why the series count follows the demonstration's use.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note for the whole subject, of which this page is one demonstration's instance.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index of every knowledge hub.

@@ -39,7 +39,7 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view concurrency_policy_queue_group = "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_concurrency_policy_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_concurrency_policy_handl
     auto h =
         std::make_shared<concurrency_policy_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_concurrency_policies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_concurrency_policies(std::move(msg));
-        }));
+        list_concurrency_policies_request::nats_subject,
+        concurrency_policy_queue_group,
+        [h](ores::nats::message msg) { h->list_concurrency_policies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_concurrency_policy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_concurrency_policy(std::move(msg));
-        }));
+        get_concurrency_policy_request::nats_subject,
+        concurrency_policy_queue_group,
+        [h](ores::nats::message msg) { h->get_concurrency_policy(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_concurrency_policies_request::nats_subject,
-        queue_group,
+        concurrency_policy_queue_group,
         [h](ores::nats::message msg) { h->get_many_concurrency_policies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_concurrency_policy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_concurrency_policy(std::move(msg));
-        }));
+        put_concurrency_policy_request::nats_subject,
+        concurrency_policy_queue_group,
+        [h](ores::nats::message msg) { h->put_concurrency_policy(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_concurrency_policies_request::nats_subject,
-        queue_group,
+        concurrency_policy_queue_group,
         [h](ores::nats::message msg) { h->put_many_concurrency_policies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_concurrency_policy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_concurrency_policy(std::move(msg));
-        }));
+        delete_concurrency_policy_request::nats_subject,
+        concurrency_policy_queue_group,
+        [h](ores::nats::message msg) { h->delete_concurrency_policy(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_concurrency_policies_request::nats_subject,
-        queue_group,
+        concurrency_policy_queue_group,
         [h](ores::nats::message msg) { h->delete_many_concurrency_policies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_concurrency_policy_versions_request::nats_subject,
-        queue_group,
+        concurrency_policy_queue_group,
         [h](ores::nats::message msg) { h->list_concurrency_policy_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_concurrency_policy_version_request::nats_subject,
-        queue_group,
+        concurrency_policy_queue_group,
         [h](ores::nats::message msg) { h->get_concurrency_policy_version(std::move(msg)); }));
     return subs;
 }

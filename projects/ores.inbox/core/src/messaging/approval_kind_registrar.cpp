@@ -39,7 +39,7 @@
 namespace ores::inbox::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.inbox.service";
+static constexpr std::string_view approval_kind_queue_group = "ores.inbox.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_approval_kind_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<approval_kind_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_approval_kinds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_approval_kinds(std::move(msg));
-        }));
+        list_approval_kinds_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->list_approval_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_approval_kind_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_approval_kind(std::move(msg));
-        }));
+        get_approval_kind_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->get_approval_kind(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_approval_kinds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_approval_kinds(std::move(msg));
-        }));
+        get_many_approval_kinds_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->get_many_approval_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_approval_kind_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_approval_kind(std::move(msg));
-        }));
+        put_approval_kind_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->put_approval_kind(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_approval_kinds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_approval_kinds(std::move(msg));
-        }));
+        put_many_approval_kinds_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->put_many_approval_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_approval_kind_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_approval_kind(std::move(msg));
-        }));
+        delete_approval_kind_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->delete_approval_kind(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_approval_kinds_request::nats_subject,
-        queue_group,
+        approval_kind_queue_group,
         [h](ores::nats::message msg) { h->delete_many_approval_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_approval_kind_versions_request::nats_subject,
-        queue_group,
+        approval_kind_queue_group,
         [h](ores::nats::message msg) { h->list_approval_kind_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_approval_kind_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_approval_kind_version(std::move(msg));
-        }));
+        get_approval_kind_version_request::nats_subject,
+        approval_kind_queue_group,
+        [h](ores::nats::message msg) { h->get_approval_kind_version(std::move(msg)); }));
     return subs;
 }
 

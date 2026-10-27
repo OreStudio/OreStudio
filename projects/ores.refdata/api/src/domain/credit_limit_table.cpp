@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string credit_limit_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -49,7 +49,8 @@ std::string convert_to_table(const std::vector<credit_limit>& v) {
     table << fort::header << "Code" << "Description" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& cl : v) {
-        table << cl.code << opt_str(cl.description) << cl.modified_by << cl.version << fort::endr;
+        table << cl.code << credit_limit_opt_str(cl.description) << cl.modified_by << cl.version
+              << fort::endr;
     }
     return table.to_string();
 }

@@ -22,6 +22,7 @@
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/net/http_client.hpp"
 #include "support/loopback_http_server.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -37,9 +38,6 @@ using ores::storage::tests::loopback_http_server;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.storage.tests");
-const std::string tags("[net]");
 
 /// The caller token every request must carry, and the header it becomes.
 const std::string test_token("ores-storage-test-token");
@@ -57,7 +55,7 @@ std::string read_file(const std::filesystem::path& path) {
 
 }
 
-TEST_CASE("get_writes_the_exact_server_body_to_the_destination", tags) {
+TEST_CASE("get_writes_the_exact_server_body_to_the_destination", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -73,7 +71,7 @@ TEST_CASE("get_writes_the_exact_server_body_to_the_destination", tags) {
     CHECK(server.last_target() == "/objects/download.bin");
 }
 
-TEST_CASE("every_request_carries_the_callers_bearer_token", tags) {
+TEST_CASE("every_request_carries_the_callers_bearer_token", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -86,7 +84,7 @@ TEST_CASE("every_request_carries_the_callers_bearer_token", tags) {
     CHECK(server.last_authorization() == test_authorization);
 }
 
-TEST_CASE("put_delivers_the_exact_source_file_bytes", tags) {
+TEST_CASE("put_delivers_the_exact_source_file_bytes", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -104,7 +102,7 @@ TEST_CASE("put_delivers_the_exact_source_file_bytes", tags) {
     CHECK(server.last_put_body() == content);
 }
 
-TEST_CASE("put_returning_body_returns_the_exact_configured_response", tags) {
+TEST_CASE("put_returning_body_returns_the_exact_configured_response", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -121,7 +119,7 @@ TEST_CASE("put_returning_body_returns_the_exact_configured_response", tags) {
     CHECK(actual == response);
 }
 
-TEST_CASE("get_of_a_not_found_resource_throws_and_creates_no_file", tags) {
+TEST_CASE("get_of_a_not_found_resource_throws_and_creates_no_file", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -138,7 +136,7 @@ TEST_CASE("get_of_a_not_found_resource_throws_and_creates_no_file", tags) {
     CHECK(!std::filesystem::exists(destination));
 }
 
-TEST_CASE("get_of_a_not_found_resource_leaves_an_existing_file_untouched", tags) {
+TEST_CASE("get_of_a_not_found_resource_leaves_an_existing_file_untouched", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -155,7 +153,7 @@ TEST_CASE("get_of_a_not_found_resource_leaves_an_existing_file_untouched", tags)
     CHECK(read_file(destination.path()) == original_content);
 }
 
-TEST_CASE("get_returning_body_returns_the_exact_server_body", tags) {
+TEST_CASE("get_returning_body_returns_the_exact_server_body", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -172,7 +170,7 @@ TEST_CASE("get_returning_body_returns_the_exact_server_body", tags) {
     CHECK(actual == body);
 }
 
-TEST_CASE("delete_sends_the_verb_to_the_target_and_returns_the_server_body", tags) {
+TEST_CASE("delete_sends_the_verb_to_the_target_and_returns_the_server_body", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -188,7 +186,7 @@ TEST_CASE("delete_sends_the_verb_to_the_target_and_returns_the_server_body", tag
     CHECK(actual == body);
 }
 
-TEST_CASE("delete_of_a_rejected_call_throws", tags) {
+TEST_CASE("delete_of_a_rejected_call_throws", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;

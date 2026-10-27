@@ -75,27 +75,33 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_notification_deliveries_response
-    list_notification_deliveries(const messaging::list_notification_deliveries_request& request);
-    messaging::get_notification_delivery_response
-    get_notification_delivery(const messaging::get_notification_delivery_request& request);
-    messaging::get_many_notification_deliveries_response get_many_notification_deliveries(
-        const messaging::get_many_notification_deliveries_request& request);
-    messaging::put_notification_delivery_response
-    put_notification_delivery(const messaging::put_notification_delivery_request& request);
-    messaging::put_many_notification_deliveries_response put_many_notification_deliveries(
-        const messaging::put_many_notification_deliveries_request& request);
-    messaging::delete_notification_delivery_response
-    delete_notification_delivery(const messaging::delete_notification_delivery_request& request);
-    messaging::delete_many_notification_deliveries_response delete_many_notification_deliveries(
-        const messaging::delete_many_notification_deliveries_request& request);
-    messaging::list_by_notification_id_notification_deliveries_response
+    ::ores::inbox::messaging::list_notification_deliveries_response list_notification_deliveries(
+        const ::ores::inbox::messaging::list_notification_deliveries_request& request);
+    ::ores::inbox::messaging::get_notification_delivery_response get_notification_delivery(
+        const ::ores::inbox::messaging::get_notification_delivery_request& request);
+    ::ores::inbox::messaging::get_many_notification_deliveries_response
+    get_many_notification_deliveries(
+        const ::ores::inbox::messaging::get_many_notification_deliveries_request& request);
+    ::ores::inbox::messaging::put_notification_delivery_response put_notification_delivery(
+        const ::ores::inbox::messaging::put_notification_delivery_request& request);
+    ::ores::inbox::messaging::put_many_notification_deliveries_response
+    put_many_notification_deliveries(
+        const ::ores::inbox::messaging::put_many_notification_deliveries_request& request);
+    ::ores::inbox::messaging::delete_notification_delivery_response delete_notification_delivery(
+        const ::ores::inbox::messaging::delete_notification_delivery_request& request);
+    ::ores::inbox::messaging::delete_many_notification_deliveries_response
+    delete_many_notification_deliveries(
+        const ::ores::inbox::messaging::delete_many_notification_deliveries_request& request);
+    ::ores::inbox::messaging::list_by_notification_id_notification_deliveries_response
     list_by_notification_id_notification_deliveries(
-        const messaging::list_by_notification_id_notification_deliveries_request& request);
-    messaging::list_notification_delivery_versions_response list_notification_delivery_versions(
-        const messaging::list_notification_delivery_versions_request& request);
-    messaging::get_notification_delivery_version_response get_notification_delivery_version(
-        const messaging::get_notification_delivery_version_request& request);
+        const ::ores::inbox::messaging::list_by_notification_id_notification_deliveries_request&
+            request);
+    ::ores::inbox::messaging::list_notification_delivery_versions_response
+    list_notification_delivery_versions(
+        const ::ores::inbox::messaging::list_notification_delivery_versions_request& request);
+    ::ores::inbox::messaging::get_notification_delivery_version_response
+    get_notification_delivery_version(
+        const ::ores::inbox::messaging::get_notification_delivery_version_request& request);
     /**@}*/
 
     /**
@@ -214,7 +220,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::notification_delivery_change& change,
+    prepare_change(const ::ores::inbox::messaging::notification_delivery_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::notification_delivery& out);
 };

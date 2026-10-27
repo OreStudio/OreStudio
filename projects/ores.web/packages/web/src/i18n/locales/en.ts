@@ -3724,6 +3724,13 @@ export const en: SourceCatalogue = {
             role: 'Role',
             party: 'Party',
             noRoles: 'No role was recorded with this trade.',
+            linkTypesFailed: 'The link types could not be read. {message}',
+            linkPickerTruncated:
+                'Showing {shown} of {total} trades; the rest wait for a search box.',
+            linkTypesUnreadable:
+                'The link types cannot be read for this tenant yet, so no link can be recorded here.',
+            addLink: 'Record a link',
+            addLinkSubmit: 'Record the link',
             linksFrom: 'Links from this trade',
             linksTo: 'Links to this trade',
             linkType: 'Link',
@@ -3938,6 +3945,8 @@ export const en: SourceCatalogue = {
             exportNote:
                 'The server writes the document; your browser saves it. Nothing changes here.',
             exported: 'Saved {file}, {count} records.',
+            recordExportLead: 'Writes {file} with {what}.',
+            recordSaved: 'Saved {file}, with {what}.',
             importTitle: 'Import {plural}',
             importLead:
                 'Bring an ORE document in. The server reads it, you review the difference, and nothing is written before the last step.',
@@ -4389,6 +4398,15 @@ export const en: SourceCatalogue = {
                 notFound: 'There is no such convention.',
                 readFailed: 'The convention could not be read. {message}',
                 shared: 'Every party reads this convention. It is held once for the tenant.',
+                otherParty:
+                    'This convention belongs to another party. Switch to that party to change it.',
+                edit: 'Edit terms',
+                save: 'Save',
+                conflict:
+                    'This convention changed since you opened it. Read it again before you change it.',
+                reload: 'Read again',
+                notEditable:
+                    'The terms of this kind are held on two parts, so this page does not change them yet.',
             },
             search: 'Search kinds',
             assetClass: 'Asset class',
@@ -4563,15 +4581,50 @@ export const en: SourceCatalogue = {
             'model.poisson': 'Poisson — exponential gaps',
             'model.hawkes': 'Hawkes — bursts of ticks',
             sensitivity: 'Sensitivity to the market',
-            sensitivityHelp: 'How hard this feed follows the market, where one is the average series.',
+            sensitivityHelp:
+                'How hard this feed follows the market, where one is the average series.',
             ratio: 'Branching ratio',
             ratioHelp: 'Hawkes only: how many further ticks one tick causes, below one.',
             decay: 'Decay, per second',
             decayHelp: 'Hawkes only: how fast a burst fades, in units of one over a second.',
             market: 'Market now: {state}. It is read here and set on the Market regime tab.',
-            marketUnknown: 'the market regime tab is not wired yet',
+            marketUnknown: 'the market state is not readable right now',
             unsaved: 'Unsaved changes',
             reasonCode: 'system.update',
+        },
+        marketRegime: {
+            title: 'Market regime',
+            lead: 'The state every feed’s rate is scaled by. It belongs to the run, so it is set here and not on a feed: a feed’s own clustering is on its Arrivals tab.',
+            state: 'State',
+            states: { calm: 'Calm', active: 'Active' },
+            multiplier: 'Multiplier',
+            heldBy: 'Set by',
+            pinned: 'A person, and it holds until it is handed back',
+            chain: 'The chain, turning on its own',
+            force: 'Force the state',
+            forced: 'forced',
+            set: { auto: 'Auto', calm: 'Calm', active: 'Active' },
+            charts: {
+                title: 'The factor over the window',
+            },
+            raster: {
+                seen: 'seen',
+                asked: 'asked',
+                heat: 'the shared heat',
+                rate: 'ticks a second, per feed',
+                band: 'an active market',
+                heatParams: 'one event adds {jump} of heat, and it fades at {decay} a second',
+                stoppedFeeds: '{count} feeds that do not run',
+                marked: 'the line is when the state was set: {state}',
+                stopped: 'stopped',
+                title: 'Every feed’s tick arrivals · last {seconds} seconds',
+                label: 'Tick arrivals of every feed, the feeds that run first',
+                none: 'There are no feeds to draw. A feed draws a row once it exists, and the row says whether it runs.',
+                warming: 'A row fills as its feed ticks: the list starts when this tab opens.',
+                fx: 'FX',
+                ir: 'Interest rate',
+                now: 'now',
+            },
         },
         fxFeeds: {
             add: 'Add',
@@ -4600,7 +4653,7 @@ export const en: SourceCatalogue = {
         synthetic: {
             title: 'Synthetic',
             lead: 'The market data the platform generates rather than receives: what runs by provider, and the feeds of one provider.',
-            tabs: { dashboard: 'Dashboard', provider: 'Provider' },
+            tabs: { dashboard: 'Dashboard', provider: 'Provider', regime: 'Market regime' },
             state: { serving: 'Serving', running: 'Running', stopped: 'Stopped' },
             dashboard: {
                 none: 'There are no feeds yet. A synthetic feeds dataset published for your party fills this screen.',
@@ -5211,6 +5264,7 @@ export const en: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} products',
         author: {
             next: 'Next',
             steps: {
@@ -5443,6 +5497,24 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            unreadRows: '{count} rows could not be read and are not shown.',
+            otherScopes: 'Other scopes',
+            shareTitle: "Each book's share of the run",
+            shareCaption:
+                'One whole in a few parts is a donut. The figures are stated beside it, because a ring says the shape and not the value.',
+            problemsTitle: "The run's problems by scope",
+            problemsCaption:
+                'One whole in a few parts is a donut. Every problem the run recorded is counted here, whatever its scope.',
+            unscoped: 'No scope stated',
+            was: 'Earlier run',
+            compareTo: 'Compare to',
+            noComparison: 'No comparison',
+            change: 'Change',
+            changePct: 'Change %',
+            changeAgainst: 'Change against that run',
+            gone: 'gone',
+            runTagOne: '{count} trade · priced {date}',
+            runTagMany: '{count} trades · priced {date}',
             oneRowPer: {
                 trade: 'One row per trade',
                 book: 'One row per book',
@@ -5454,14 +5526,12 @@ export const en: SourceCatalogue = {
                 book: 'Book',
                 counterparty: 'Counterparty',
             },
-            runTag_one: '{count} trade · priced {date}',
-            runTag_other: '{count} trades · priced {date}',
             sourceNote:
                 "This table reads npv.csv from the run's output archive. Every row is a trade the engine priced; a trade it could not build writes no row.",
             aggregateNote:
                 "These figures are the run's trades rolled up to their {level}. The run priced {date}.",
             degraded:
-                'The books or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
+                'The books, portfolios or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
             selectHint:
                 "Select a row to read that trade's result: its NPV, its base-currency NPV, its notional, its counterparty, and any error the run recorded against it.",
             aggregateHint:
@@ -5807,6 +5877,11 @@ export const en: SourceCatalogue = {
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',
         defaultIs: 'Default: {text}',
+        defaultOption: 'Default ({value})',
+        changed: 'changed',
+        noChanges: 'No changes yet',
+        oneChange: '1 change',
+        changes: '{count} changes',
         schema: {
             xml: 'ORE XML',
             format: 'Format',

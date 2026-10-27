@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void lei_relationship_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void lei_relationship_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -168,7 +168,7 @@ void lei_relationship_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        lei_relationship_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -216,9 +216,9 @@ void lei_relationship_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.relationship_start_node_node_id,
-                   parsed->positionals[next++],
-                   "relationship_start_node_node_id");
+        lei_relationship_read_token(req.key.relationship_start_node_node_id,
+                                    parsed->positionals[next++],
+                                    "relationship_start_node_node_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -263,9 +263,9 @@ void lei_relationship_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::lei_relationship_key key;
-            read_token(key.relationship_start_node_node_id,
-                       parsed->positionals[i + 0],
-                       "relationship_start_node_node_id");
+            lei_relationship_read_token(key.relationship_start_node_node_id,
+                                        parsed->positionals[i + 0],
+                                        "relationship_start_node_node_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {

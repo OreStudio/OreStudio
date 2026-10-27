@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+equity_position_option_underlying_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -101,7 +102,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> filter_condition(
+std::optional<sqlgen::dynamic::Condition> equity_position_option_underlying_filter_condition(
     const std::optional<messaging::equity_position_option_underlyings_filter>& filter) {
     if (!filter)
         return std::nullopt;
@@ -320,8 +321,8 @@ equity_position_option_underlying_repository::read_latest_by_trade_id(
                                       domain::equity_position_option_underlying>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        equity_position_option_underlying_list_order(order, {"trade_id", "sequence_number"}, false),
+        equity_position_option_underlying_filter_condition(filter),
         [](const auto& entities) {
             return equity_position_option_underlying_mapper::map(entities);
         },
@@ -347,7 +348,7 @@ std::uint32_t equity_position_option_underlying_repository::
     return execute_count_query<equity_position_option_underlying_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        equity_position_option_underlying_filter_condition(filter),
         lg(),
         "Counting equity position option underlyings by trade_id");
 }
@@ -413,8 +414,8 @@ equity_position_option_underlying_repository::read_latest(
                                       domain::equity_position_option_underlying>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        equity_position_option_underlying_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), equity_position_option_underlying_filter_condition(filter)),
         [](const auto& entities) {
             return equity_position_option_underlying_mapper::map(entities);
         },
@@ -436,7 +437,7 @@ equity_position_option_underlying_repository::get_total_equity_position_option_u
     return execute_count_query<equity_position_option_underlying_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), equity_position_option_underlying_filter_condition(filter)),
         lg(),
         "Counting equity position option underlyings");
 }

@@ -62,8 +62,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::role_grant_request_role>
-read_one(repository::role_grant_request_role_repository& repo,
-         const messaging::role_grant_request_role_key& key) {
+role_grant_request_role_read_one(repository::role_grant_request_role_repository& repo,
+                                 const messaging::role_grant_request_role_key& key) {
     return repo.read_latest(key.request_id, key.role_id);
 }
 
@@ -73,7 +73,8 @@ read_one(repository::role_grant_request_role_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::role_grant_request_role_key key_from(const domain::role_grant_request_role& v) {
+messaging::role_grant_request_role_key
+role_grant_request_role_key_from(const domain::role_grant_request_role& v) {
     messaging::role_grant_request_role_key key;
     key.request_id = v.request_id;
     key.role_id = v.role_id;
@@ -88,7 +89,8 @@ messaging::role_grant_request_role_key key_from(const domain::role_grant_request
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::role_grant_request_role to_domain(const messaging::role_grant_request_role_write& write) {
+domain::role_grant_request_role
+role_grant_request_role_to_domain(const messaging::role_grant_request_role_write& write) {
     domain::role_grant_request_role v;
     v.request_id = write.request_id;
     v.role_id = write.role_id;
@@ -148,7 +150,7 @@ messaging::get_role_grant_request_role_response
 role_grant_request_role_service::get_role_grant_request_role(
     const messaging::get_role_grant_request_role_request& request) {
     messaging::get_role_grant_request_role_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = role_grant_request_role_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "role_grant_request_role"});
         return response;
@@ -168,7 +170,7 @@ role_grant_request_role_service::get_many_role_grant_request_roles(
     for (const auto& k : request.keys) {
         messaging::role_grant_request_role_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = role_grant_request_role_read_one(repo_, k);
         if (!found.empty())
             entry.role_grant_request_role = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +187,7 @@ role_grant_request_role_service::put_role_grant_request_role(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = role_grant_request_role_read_one(repo_, role_grant_request_role_key_from(value));
     if (!written.empty())
         response.role_grant_request_role = std::move(written.front());
     return response;
@@ -218,7 +220,8 @@ role_grant_request_role_service::put_many_role_grant_request_roles(
     repo_.write(batch, claims);
     response.role_grant_request_roles.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written =
+            role_grant_request_role_read_one(repo_, role_grant_request_role_key_from(value));
         response.role_grant_request_roles.push_back(written.empty() ? value :
                                                                       std::move(written.front()));
     }
@@ -254,7 +257,7 @@ role_grant_request_role_service::delete_role_grant_request_role(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = role_grant_request_role_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "role_grant_request_role",
@@ -307,8 +310,9 @@ ores::utility::domain::result role_grant_request_role_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = role_grant_request_role_to_domain(change.write);
+    const auto current =
+        role_grant_request_role_read_one(repo_, role_grant_request_role_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

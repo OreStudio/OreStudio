@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
 #include "ores.scheduler.core/repository/job_instance_mapper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -28,19 +29,13 @@
 // pure, so it is tested without a database, which is the point: the repository
 // test above needs a live PostgreSQL to say anything at all.
 
-namespace {
-
-const std::string_view test_suite("scheduler.tests");
-const std::string tags("[repository][mapper][job_instance]");
-
-}
-
 using namespace ores::logging;
 using ores::scheduler::domain::job_status;
 using ores::scheduler::repository::job_instance_entity;
 using ores::scheduler::repository::job_instance_mapper;
 
-TEST_CASE("job_instance_mapper reads every column of a full row", tags) {
+TEST_CASE("job_instance_mapper reads every column of a full row",
+          "[repository][mapper][job_instance]") {
     auto lg(make_logger(test_suite));
 
     job_instance_entity e;
@@ -73,7 +68,8 @@ TEST_CASE("job_instance_mapper reads every column of a full row", tags) {
     CHECK(*inst.completed_at > inst.triggered_at);
 }
 
-TEST_CASE("job_instance_mapper leaves an absent column absent", tags) {
+TEST_CASE("job_instance_mapper leaves an absent column absent",
+          "[repository][mapper][job_instance]") {
     auto lg(make_logger(test_suite));
 
     job_instance_entity e;
@@ -93,7 +89,8 @@ TEST_CASE("job_instance_mapper leaves an absent column absent", tags) {
     CHECK(inst.status == job_status::starting);
 }
 
-TEST_CASE("job_instance_mapper maps the status strings the table allows", tags) {
+TEST_CASE("job_instance_mapper maps the status strings the table allows",
+          "[repository][mapper][job_instance]") {
     auto lg(make_logger(test_suite));
 
     const auto status_of = [](const std::string& s) {

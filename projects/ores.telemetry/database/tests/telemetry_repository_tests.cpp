@@ -22,6 +22,7 @@
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -29,9 +30,6 @@
 #include <set>
 
 namespace {
-
-const std::string_view test_suite("ores.telemetry.database.tests");
-const std::string tags("[repository]");
 
 /**
  * @brief Creates a test telemetry log entry.
@@ -76,7 +74,7 @@ using namespace ores::telemetry::database::repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("create_single_telemetry_entry", tags) {
+TEST_CASE("create_single_telemetry_entry", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -100,7 +98,7 @@ TEST_CASE("create_single_telemetry_entry", tags) {
     BOOST_LOG_SEV(lg, debug) << "Telemetry entry created and read back successfully";
 }
 
-TEST_CASE("create_and_query_telemetry_entry", tags) {
+TEST_CASE("create_and_query_telemetry_entry", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -137,7 +135,7 @@ TEST_CASE("create_and_query_telemetry_entry", tags) {
     CHECK(it->source_name == "test-application");
 }
 
-TEST_CASE("create_batch_telemetry_entries", tags) {
+TEST_CASE("create_batch_telemetry_entries", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -179,7 +177,7 @@ TEST_CASE("create_batch_telemetry_entries", tags) {
     BOOST_LOG_SEV(lg, debug) << "Batch created and read back successfully";
 }
 
-TEST_CASE("read_by_session", tags) {
+TEST_CASE("read_by_session", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -216,7 +214,7 @@ TEST_CASE("read_by_session", tags) {
                                             "Session test message 2"});
 }
 
-TEST_CASE("count_telemetry_entries", tags) {
+TEST_CASE("count_telemetry_entries", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -238,7 +236,7 @@ TEST_CASE("count_telemetry_entries", tags) {
     CHECK(after == before + 1);
 }
 
-TEST_CASE("get_telemetry_summary", tags) {
+TEST_CASE("get_telemetry_summary", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -265,7 +263,7 @@ TEST_CASE("get_telemetry_summary", tags) {
     CHECK(after.error_count - before.error_count == 1);
 }
 
-TEST_CASE("create_and_list_service_sample", tags) {
+TEST_CASE("create_and_list_service_sample", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -295,7 +293,7 @@ TEST_CASE("create_and_list_service_sample", tags) {
     BOOST_LOG_SEV(lg, debug) << "Service sample read back with host id " << it->host_id;
 }
 
-TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
+TEST_CASE("list_service_roster_states_every_expected_instance", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -75,20 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_apps_response list_apps(const messaging::list_apps_request& request);
-    messaging::get_app_response get_app(const messaging::get_app_request& request);
-    messaging::get_many_apps_response
-    get_many_apps(const messaging::get_many_apps_request& request);
-    messaging::put_app_response put_app(const messaging::put_app_request& request);
-    messaging::put_many_apps_response
-    put_many_apps(const messaging::put_many_apps_request& request);
-    messaging::delete_app_response delete_app(const messaging::delete_app_request& request);
-    messaging::delete_many_apps_response
-    delete_many_apps(const messaging::delete_many_apps_request& request);
-    messaging::list_apps_versions_response
-    list_apps_versions(const messaging::list_apps_versions_request& request);
-    messaging::get_apps_version_response
-    get_apps_version(const messaging::get_apps_version_request& request);
+    ::ores::compute::messaging::list_apps_response
+    list_apps(const ::ores::compute::messaging::list_apps_request& request);
+    ::ores::compute::messaging::get_app_response
+    get_app(const ::ores::compute::messaging::get_app_request& request);
+    ::ores::compute::messaging::get_many_apps_response
+    get_many_apps(const ::ores::compute::messaging::get_many_apps_request& request);
+    ::ores::compute::messaging::put_app_response
+    put_app(const ::ores::compute::messaging::put_app_request& request);
+    ::ores::compute::messaging::put_many_apps_response
+    put_many_apps(const ::ores::compute::messaging::put_many_apps_request& request);
+    ::ores::compute::messaging::delete_app_response
+    delete_app(const ::ores::compute::messaging::delete_app_request& request);
+    ::ores::compute::messaging::delete_many_apps_response
+    delete_many_apps(const ::ores::compute::messaging::delete_many_apps_request& request);
+    ::ores::compute::messaging::list_apps_versions_response
+    list_apps_versions(const ::ores::compute::messaging::list_apps_versions_request& request);
+    ::ores::compute::messaging::get_apps_version_response
+    get_apps_version(const ::ores::compute::messaging::get_apps_version_request& request);
     /**@}*/
 
     /**
@@ -199,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::app_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::app& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::compute::messaging::app_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::app& out);
 };
 
 }

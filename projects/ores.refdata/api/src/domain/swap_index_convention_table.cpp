@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string swap_index_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,8 @@ std::string convert_to_table(const std::vector<swap_index_convention>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& sic : v) {
-        table << sic.id << sic.conventions << opt_str(sic.fixing_calendar) << sic.modified_by
-              << sic.version << fort::endr;
+        table << sic.id << sic.conventions << swap_index_convention_opt_str(sic.fixing_calendar)
+              << sic.modified_by << sic.version << fort::endr;
     }
     return table.to_string();
 }

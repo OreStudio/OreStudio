@@ -55,7 +55,7 @@ namespace {
  * carry an empty argument: the tokenizer drops one, and a command whose list
  * field should be empty has no other way to say so.
  */
-std::vector<std::string> split_list_token(const std::string& value) {
+std::vector<std::string> workflow_split_list_token(const std::string& value) {
     if (value == "__none__")
         return {};
     std::vector<std::string> parts;
@@ -229,7 +229,7 @@ void workflow_operations_commands::process_instances(std::ostream& out,
         }
         if (const auto& raw_target_ids_filter = parsed->flag("target_ids_filter");
             !raw_target_ids_filter.empty()) {
-            req.target_ids_filter = split_list_token(raw_target_ids_filter);
+            req.target_ids_filter = workflow_split_list_token(raw_target_ids_filter);
         }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;

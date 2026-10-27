@@ -34,8 +34,6 @@
 
 namespace {
 
-const std::string tags("[service]");
-
 /**
  * @brief Reads a file whole, as the bytes a transfer would hand the reader.
  */
@@ -73,7 +71,7 @@ std::vector<std::byte> make_archive(const std::string& log) {
 }
 
 TEST_CASE("a run that failed its analytics states each error with its own scope and subject",
-          tags) {
+          "[service]") {
     using ores::reporting::service::read_engine_errors_from_archive;
     using ores::reporting::tests::failing_run_log;
 
@@ -126,7 +124,8 @@ TEST_CASE("a run that failed its analytics states each error with its own scope 
     CHECK(warning_detail.at("warningType") == "Error");
 }
 
-TEST_CASE("an analytic error that names a trade is about the trade and not the analytic", tags) {
+TEST_CASE("an analytic error that names a trade is about the trade and not the analytic",
+          "[service]") {
     using ores::reporting::service::parse_engine_log_line;
 
     const auto parsed = parse_engine_log_line(
@@ -139,7 +138,8 @@ TEST_CASE("an analytic error that names a trade is about the trade and not the a
     CHECK(parsed->cause == "SA-CCR");
 }
 
-TEST_CASE("a curve error names the curve and a configuration warning names the input", tags) {
+TEST_CASE("a curve error names the curve and a configuration warning names the input",
+          "[service]") {
     using ores::reporting::service::parse_engine_log_line;
 
     const auto curve = parse_engine_log_line(
@@ -165,7 +165,7 @@ TEST_CASE("a curve error names the curve and a configuration warning names the i
     CHECK(configuration->cause == "Netting set definitions");
 }
 
-TEST_CASE("a failed trade is placed on the curve its message names", tags) {
+TEST_CASE("a failed trade is placed on the curve its message names", "[service]") {
     using ores::reporting::service::parse_engine_log_line;
 
     const auto trade = parse_engine_log_line(
@@ -177,7 +177,7 @@ TEST_CASE("a failed trade is placed on the curve its message names", tags) {
     CHECK(trade->cause == "Yield/GBP/GBP1D");
 }
 
-TEST_CASE("a run whose analytics all ran records no error", tags) {
+TEST_CASE("a run whose analytics all ran records no error", "[service]") {
     using ores::reporting::service::read_engine_errors_from_archive;
     using ores::reporting::service::parse_engine_log_line;
 

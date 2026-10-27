@@ -22,13 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * @brief One ORE document, as the browser saves it: its file name and its text.
- */
-export interface OreDocument {
-    name: string;
-    content: string;
-}
+import type { OreDocument } from '../../../generated/ore/protocol/ore_document_protocol.js';
 
 /**
  * @brief Writes the tenant's currencies as an ORE currency configuration.

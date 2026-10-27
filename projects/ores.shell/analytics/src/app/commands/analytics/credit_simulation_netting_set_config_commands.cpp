@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void credit_simulation_netting_set_config_read_token(T& target,
+                                                     const std::string& raw,
+                                                     const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void credit_simulation_netting_set_config_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -228,7 +230,7 @@ void credit_simulation_netting_set_config_commands::process_list(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        credit_simulation_netting_set_config_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -275,7 +277,8 @@ void credit_simulation_netting_set_config_commands::process_get(
                       << std::endl;
             return;
         }
-        read_token(req.key.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        credit_simulation_netting_set_config_read_token(
+            req.key.netting_set_id, parsed->positionals[next++], "netting_set_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -319,7 +322,8 @@ void credit_simulation_netting_set_config_commands::process_get_many(
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::credit_simulation_netting_set_config_key key;
-            read_token(key.netting_set_id, parsed->positionals[i + 0], "netting_set_id");
+            credit_simulation_netting_set_config_read_token(
+                key.netting_set_id, parsed->positionals[i + 0], "netting_set_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -365,11 +369,14 @@ void credit_simulation_netting_set_config_commands::process_add(
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.credit_simulation_config_id,
-                   parsed->positionals[next++],
-                   "credit_simulation_config_id");
-        read_token(req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.credit_simulation_config_id,
+            parsed->positionals[next++],
+            "credit_simulation_config_id");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -416,12 +423,16 @@ void credit_simulation_netting_set_config_commands::process_set(
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.credit_simulation_config_id,
-                   parsed->positionals[next++],
-                   "credit_simulation_config_id");
-        read_token(req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.id, parsed->positionals[next++], "id");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.credit_simulation_config_id,
+            parsed->positionals[next++],
+            "credit_simulation_config_id");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        credit_simulation_netting_set_config_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -482,12 +493,16 @@ void credit_simulation_netting_set_config_commands::process_put_many(
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::credit_simulation_netting_set_config_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.credit_simulation_config_id,
-                       parsed->positionals[next++],
-                       "credit_simulation_config_id");
-            read_token(change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
-            read_token(change.write.position, parsed->positionals[next++], "position");
+            credit_simulation_netting_set_config_read_token(
+                change.write.id, parsed->positionals[next++], "id");
+            credit_simulation_netting_set_config_read_token(
+                change.write.credit_simulation_config_id,
+                parsed->positionals[next++],
+                "credit_simulation_config_id");
+            credit_simulation_netting_set_config_read_token(
+                change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
+            credit_simulation_netting_set_config_read_token(
+                change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -537,7 +552,8 @@ void credit_simulation_netting_set_config_commands::process_delete(
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        credit_simulation_netting_set_config_read_token(
+            req.removal.key.netting_set_id, parsed->positionals[next++], "netting_set_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -590,7 +606,8 @@ void credit_simulation_netting_set_config_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::credit_simulation_netting_set_config_key key;
-            read_token(key.netting_set_id, parsed->positionals[i * 1 + 0], "netting_set_id");
+            credit_simulation_netting_set_config_read_token(
+                key.netting_set_id, parsed->positionals[i * 1 + 0], "netting_set_id");
             req.removals.push_back(
                 messaging::credit_simulation_netting_set_config_removal{.key = std::move(key)});
         }
@@ -652,7 +669,7 @@ void credit_simulation_netting_set_config_commands::process_by_credit_simulation
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        credit_simulation_netting_set_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -701,8 +718,9 @@ void credit_simulation_netting_set_config_commands::process_versions(
                       << std::endl;
             return;
         }
-        read_token(req.key.netting_set_id, parsed->positionals[next++], "netting_set_id");
-        apply_page(req, *parsed);
+        credit_simulation_netting_set_config_read_token(
+            req.key.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        credit_simulation_netting_set_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -747,9 +765,10 @@ void credit_simulation_netting_set_config_commands::process_version(
                       << std::endl;
             return;
         }
-        read_token(req.key.credit_simulation_netting_set_config.netting_set_id,
-                   parsed->positionals[next++],
-                   "netting_set_id");
+        credit_simulation_netting_set_config_read_token(
+            req.key.credit_simulation_netting_set_config.netting_set_id,
+            parsed->positionals[next++],
+            "netting_set_id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

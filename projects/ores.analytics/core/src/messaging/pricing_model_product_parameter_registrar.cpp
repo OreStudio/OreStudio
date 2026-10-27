@@ -39,7 +39,8 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view pricing_model_product_parameter_queue_group =
+    "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_pricing_model_product_parameter_handlers(
@@ -50,52 +51,52 @@ std::vector<ores::nats::service::subscription> register_pricing_model_product_pa
     auto h = std::make_shared<pricing_model_product_parameter_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(list_pricing_model_product_parameters_request::nats_subject,
-                                        queue_group,
+                                        pricing_model_product_parameter_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_pricing_model_product_parameters(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         get_pricing_model_product_parameter_request::nats_subject,
-        queue_group,
+        pricing_model_product_parameter_queue_group,
         [h](ores::nats::message msg) { h->get_pricing_model_product_parameter(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_pricing_model_product_parameters_request::nats_subject,
-                             queue_group,
+                             pricing_model_product_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_pricing_model_product_parameters(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_pricing_model_product_parameter_request::nats_subject,
-        queue_group,
+        pricing_model_product_parameter_queue_group,
         [h](ores::nats::message msg) { h->put_pricing_model_product_parameter(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_pricing_model_product_parameters_request::nats_subject,
-                             queue_group,
+                             pricing_model_product_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_pricing_model_product_parameters(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_pricing_model_product_parameter_request::nats_subject,
-                             queue_group,
+                             pricing_model_product_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_pricing_model_product_parameter(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_many_pricing_model_product_parameters_request::nats_subject,
-                             queue_group,
+                             pricing_model_product_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_pricing_model_product_parameters(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_pricing_model_product_parameter_versions_request::nats_subject,
-                             queue_group,
+                             pricing_model_product_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_pricing_model_product_parameter_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_pricing_model_product_parameter_version_request::nats_subject,
-                             queue_group,
+                             pricing_model_product_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_pricing_model_product_parameter_version(std::move(msg));
                              }));

@@ -21,6 +21,7 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <openssl/evp.h>
 #include <sstream>
@@ -28,9 +29,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.security.tests");
-const std::string tags("[crypto]");
 
 const std::string fast_flag("ORES_TEST_PASSWORD_FAST");
 
@@ -68,7 +66,7 @@ std::string make_scrypt_hash(const std::string& password, int ln) {
 using ores::security::crypto::password_hasher;
 using namespace ores::logging;
 
-TEST_CASE("verify_hash_with_correct_password", tags) {
+TEST_CASE("verify_hash_with_correct_password", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
@@ -81,7 +79,7 @@ TEST_CASE("verify_hash_with_correct_password", tags) {
     CHECK(password_hasher::verify(password, hash));
 }
 
-TEST_CASE("verify_hash_with_incorrect_password", tags) {
+TEST_CASE("verify_hash_with_incorrect_password", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "correct_password";
@@ -97,7 +95,7 @@ TEST_CASE("verify_hash_with_incorrect_password", tags) {
     CHECK(!password_hasher::verify(wrong_password, hash));
 }
 
-TEST_CASE("hash_is_not_deterministic", tags) {
+TEST_CASE("hash_is_not_deterministic", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "a_simple_password";
@@ -114,7 +112,7 @@ TEST_CASE("hash_is_not_deterministic", tags) {
     CHECK(hash1 != hash2);
 }
 
-TEST_CASE("invalid_hash_format_fails_verification", tags) {
+TEST_CASE("invalid_hash_format_fails_verification", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "any_password";
@@ -126,14 +124,14 @@ TEST_CASE("invalid_hash_format_fails_verification", tags) {
     CHECK(!password_hasher::verify(password, malformed_hash));
 }
 
-TEST_CASE("empty_password_throws", tags) {
+TEST_CASE("empty_password_throws", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string empty_password = "";
     CHECK_THROWS_AS(password_hasher::hash(empty_password), std::invalid_argument);
 }
 
-TEST_CASE("verify_rejects_an_empty_password_or_hash", tags) {
+TEST_CASE("verify_rejects_an_empty_password_or_hash", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "a_password";
@@ -145,7 +143,7 @@ TEST_CASE("verify_rejects_an_empty_password_or_hash", tags) {
     CHECK_FALSE(password_hasher::verify("", ""));
 }
 
-TEST_CASE("verify_rejects_a_downgraded_scrypt_cost", tags) {
+TEST_CASE("verify_rejects_a_downgraded_scrypt_cost", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "a_password";
@@ -165,7 +163,7 @@ TEST_CASE("verify_rejects_a_downgraded_scrypt_cost", tags) {
     CHECK_FALSE(password_hasher::verify(password, below_the_floor));
 }
 
-TEST_CASE("stored_hash_pins_the_format_and_the_production_cost", tags) {
+TEST_CASE("stored_hash_pins_the_format_and_the_production_cost", "[crypto]") {
     auto lg(make_logger(test_suite));
     using ores::platform::environment::environment;
 

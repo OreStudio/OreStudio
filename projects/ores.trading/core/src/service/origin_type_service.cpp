@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::origin_type> read_one(repository::origin_type_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::origin_type_key& key) {
+std::vector<domain::origin_type> origin_type_read_one(repository::origin_type_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::origin_type_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::origin_type> read_one(repository::origin_type_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::origin_type_key key_from(const domain::origin_type& v) {
+messaging::origin_type_key origin_type_key_from(const domain::origin_type& v) {
     messaging::origin_type_key key;
     key.code = v.code;
     return key;
@@ -94,7 +94,7 @@ messaging::origin_type_key key_from(const domain::origin_type& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::origin_type to_domain(const messaging::origin_type_write& write) {
+domain::origin_type origin_type_to_domain(const messaging::origin_type_write& write) {
     domain::origin_type v;
     v.code = write.code;
     v.description = write.description;
@@ -139,7 +139,7 @@ origin_type_service::list_origin_types(const messaging::list_origin_types_reques
 messaging::get_origin_type_response
 origin_type_service::get_origin_type(const messaging::get_origin_type_request& request) {
     messaging::get_origin_type_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = origin_type_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "origin_type"});
         return response;
@@ -158,7 +158,7 @@ messaging::get_many_origin_types_response origin_type_service::get_many_origin_t
     for (const auto& k : request.keys) {
         messaging::origin_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = origin_type_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.origin_type = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -174,7 +174,7 @@ origin_type_service::put_origin_type(const messaging::put_origin_type_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = origin_type_read_one(repo_, ctx_, origin_type_key_from(value));
     if (!written.empty())
         response.origin_type = std::move(written.front());
     return response;
@@ -206,7 +206,7 @@ messaging::put_many_origin_types_response origin_type_service::put_many_origin_t
     repo_.write(ctx_, batch, claims);
     response.origin_types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = origin_type_read_one(repo_, ctx_, origin_type_key_from(value));
         response.origin_types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -239,7 +239,7 @@ origin_type_service::delete_origin_type(const messaging::delete_origin_type_requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = origin_type_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "origin_type",
@@ -323,8 +323,8 @@ origin_type_service::prepare_change(const messaging::origin_type_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = origin_type_to_domain(change.write);
+    const auto current = origin_type_read_one(repo_, ctx_, origin_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

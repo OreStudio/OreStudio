@@ -20,20 +20,14 @@
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
-
-namespace {
-
-const std::string_view test_suite("ores.assets.tests");
-const std::string tags("[domain][image]");
-
-}
 
 using ores::assets::domain::image;
 using namespace ores::logging;
 
-TEST_CASE("create_image_with_code_and_description", tags) {
+TEST_CASE("create_image_with_code_and_description", "[domain][image]") {
     auto lg(make_logger(test_suite));
 
     image sut;
@@ -47,7 +41,7 @@ TEST_CASE("create_image_with_code_and_description", tags) {
     CHECK(sut.modified_by == "admin");
 }
 
-TEST_CASE("default_constructed_image_has_zero_version", tags) {
+TEST_CASE("default_constructed_image_has_zero_version", "[domain][image]") {
     auto lg(make_logger(test_suite));
 
     const image sut;
@@ -60,7 +54,7 @@ TEST_CASE("default_constructed_image_has_zero_version", tags) {
     CHECK(sut.mime_type == "image/svg+xml");
 }
 
-TEST_CASE("image_version_can_be_set", tags) {
+TEST_CASE("image_version_can_be_set", "[domain][image]") {
     auto lg(make_logger(test_suite));
 
     image sut;
@@ -73,7 +67,7 @@ TEST_CASE("image_version_can_be_set", tags) {
     CHECK(sut.version == 3);
 }
 
-TEST_CASE("image_json_output_contains_code_and_description", tags) {
+TEST_CASE("image_json_output_contains_code_and_description", "[domain][image]") {
     auto lg(make_logger(test_suite));
 
     image sut;

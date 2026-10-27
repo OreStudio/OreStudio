@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::provider> read_one(repository::provider_repository& repo,
-                                       const ores::database::context& ctx,
-                                       const messaging::provider_key& key) {
+std::vector<domain::provider> provider_read_one(repository::provider_repository& repo,
+                                                const ores::database::context& ctx,
+                                                const messaging::provider_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::provider> read_one(repository::provider_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::provider_key key_from(const domain::provider& v) {
+messaging::provider_key provider_key_from(const domain::provider& v) {
     messaging::provider_key key;
     key.code = v.code;
     return key;
@@ -94,7 +94,7 @@ messaging::provider_key key_from(const domain::provider& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::provider to_domain(const messaging::provider_write& write) {
+domain::provider provider_to_domain(const messaging::provider_write& write) {
     domain::provider v;
     v.code = write.code;
     v.name = write.name;
@@ -142,7 +142,7 @@ provider_service::list_providers(const messaging::list_providers_request& reques
 messaging::get_provider_response
 provider_service::get_provider(const messaging::get_provider_request& request) {
     messaging::get_provider_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = provider_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "provider"});
         return response;
@@ -161,7 +161,7 @@ provider_service::get_many_providers(const messaging::get_many_providers_request
     for (const auto& k : request.keys) {
         messaging::provider_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = provider_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.provider = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -177,7 +177,7 @@ provider_service::put_provider(const messaging::put_provider_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = provider_read_one(repo_, ctx_, provider_key_from(value));
     if (!written.empty())
         response.provider = std::move(written.front());
     return response;
@@ -209,7 +209,7 @@ provider_service::put_many_providers(const messaging::put_many_providers_request
     repo_.write(ctx_, batch, claims);
     response.providers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = provider_read_one(repo_, ctx_, provider_key_from(value));
         response.providers.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -242,7 +242,7 @@ provider_service::delete_provider(const messaging::delete_provider_request& requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = provider_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "provider",
@@ -326,8 +326,8 @@ provider_service::prepare_change(const messaging::provider_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = provider_to_domain(change.write);
+    const auto current = provider_read_one(repo_, ctx_, provider_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

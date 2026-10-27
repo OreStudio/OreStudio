@@ -20,20 +20,14 @@
 #include "ores.assets.api/domain/tag.hpp"
 #include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
-
-namespace {
-
-const std::string_view test_suite("ores.assets.tests");
-const std::string tags("[domain][tag]");
-
-}
 
 using ores::assets::domain::tag;
 using namespace ores::logging;
 
-TEST_CASE("create_tag_with_name_and_description", tags) {
+TEST_CASE("create_tag_with_name_and_description", "[domain][tag]") {
     auto lg(make_logger(test_suite));
 
     tag sut;
@@ -47,7 +41,7 @@ TEST_CASE("create_tag_with_name_and_description", tags) {
     CHECK(sut.modified_by == "admin");
 }
 
-TEST_CASE("default_constructed_tag_has_zero_version", tags) {
+TEST_CASE("default_constructed_tag_has_zero_version", "[domain][tag]") {
     auto lg(make_logger(test_suite));
 
     const tag sut;
@@ -60,7 +54,7 @@ TEST_CASE("default_constructed_tag_has_zero_version", tags) {
     CHECK(sut.tenant_id.is_system());
 }
 
-TEST_CASE("tag_provenance_fields_can_be_set", tags) {
+TEST_CASE("tag_provenance_fields_can_be_set", "[domain][tag]") {
     auto lg(make_logger(test_suite));
 
     tag sut;
@@ -77,7 +71,7 @@ TEST_CASE("tag_provenance_fields_can_be_set", tags) {
     CHECK(sut.performed_by == "system");
 }
 
-TEST_CASE("tag_json_output_contains_name", tags) {
+TEST_CASE("tag_json_output_contains_name", "[domain][tag]") {
     auto lg(make_logger(test_suite));
 
     tag sut;

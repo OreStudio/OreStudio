@@ -22,14 +22,12 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.core/service/fx_forward_instrument_service.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.service.fx_forward.get_many.tests");
-const std::string tags("[service][fx][fx_forward][get_many]");
 
 using namespace ores::logging;
 using ores::testing::database_helper;
@@ -62,7 +60,8 @@ fx_forward_instrument_key key_of(const fx_forward_instrument_write& w) {
 
 } // namespace
 
-TEST_CASE("get_many_answers_one_entry_per_key_in_the_order_asked", tags) {
+TEST_CASE("get_many_answers_one_entry_per_key_in_the_order_asked",
+          "[service][fx][fx_forward][get_many]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

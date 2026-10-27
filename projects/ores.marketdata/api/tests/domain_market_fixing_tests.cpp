@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -27,9 +28,6 @@
 namespace {
 
 using ores::marketdata::domain::market_fixing;
-
-const std::string_view test_suite("ores.marketdata.api.tests");
-const std::string tags("[domain]");
 
 market_fixing make_euribor_fixing(const std::string& value = "0.038940") {
     static boost::uuids::random_generator gen;
@@ -46,7 +44,7 @@ market_fixing make_euribor_fixing(const std::string& value = "0.038940") {
 
 using namespace ores::logging;
 
-TEST_CASE("create_fixing_with_valid_fields", tags) {
+TEST_CASE("create_fixing_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_euribor_fixing("0.038940");
@@ -61,7 +59,7 @@ TEST_CASE("create_fixing_with_valid_fields", tags) {
     CHECK(sut.source == "ECB");
 }
 
-TEST_CASE("create_fixing_without_source", tags) {
+TEST_CASE("create_fixing_without_source", "[domain]") {
     auto lg(make_logger(test_suite));
 
     static boost::uuids::random_generator gen;
@@ -76,7 +74,7 @@ TEST_CASE("create_fixing_without_source", tags) {
     CHECK(sut.value == "0.052300");
 }
 
-TEST_CASE("market_fixing_json_serialisation", tags) {
+TEST_CASE("market_fixing_json_serialisation", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_euribor_fixing("0.038940");
@@ -92,7 +90,7 @@ TEST_CASE("market_fixing_json_serialisation", tags) {
     CHECK(json_output.find("ECB") != std::string::npos);
 }
 
-TEST_CASE("create_fixing_history_series", tags) {
+TEST_CASE("create_fixing_history_series", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<market_fixing> fixings;

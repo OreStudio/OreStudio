@@ -76,27 +76,32 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bond_leg_amortizations_response
-    list_bond_leg_amortizations(const messaging::list_bond_leg_amortizations_request& request);
-    messaging::get_bond_leg_amortization_response
-    get_bond_leg_amortization(const messaging::get_bond_leg_amortization_request& request);
-    messaging::get_many_bond_leg_amortizations_response get_many_bond_leg_amortizations(
-        const messaging::get_many_bond_leg_amortizations_request& request);
-    messaging::put_bond_leg_amortization_response
-    put_bond_leg_amortization(const messaging::put_bond_leg_amortization_request& request);
-    messaging::put_many_bond_leg_amortizations_response put_many_bond_leg_amortizations(
-        const messaging::put_many_bond_leg_amortizations_request& request);
-    messaging::delete_bond_leg_amortization_response
-    delete_bond_leg_amortization(const messaging::delete_bond_leg_amortization_request& request);
-    messaging::delete_many_bond_leg_amortizations_response delete_many_bond_leg_amortizations(
-        const messaging::delete_many_bond_leg_amortizations_request& request);
-    messaging::list_by_trade_id_bond_leg_amortizations_response
+    ::ores::trading::messaging::list_bond_leg_amortizations_response list_bond_leg_amortizations(
+        const ::ores::trading::messaging::list_bond_leg_amortizations_request& request);
+    ::ores::trading::messaging::get_bond_leg_amortization_response get_bond_leg_amortization(
+        const ::ores::trading::messaging::get_bond_leg_amortization_request& request);
+    ::ores::trading::messaging::get_many_bond_leg_amortizations_response
+    get_many_bond_leg_amortizations(
+        const ::ores::trading::messaging::get_many_bond_leg_amortizations_request& request);
+    ::ores::trading::messaging::put_bond_leg_amortization_response put_bond_leg_amortization(
+        const ::ores::trading::messaging::put_bond_leg_amortization_request& request);
+    ::ores::trading::messaging::put_many_bond_leg_amortizations_response
+    put_many_bond_leg_amortizations(
+        const ::ores::trading::messaging::put_many_bond_leg_amortizations_request& request);
+    ::ores::trading::messaging::delete_bond_leg_amortization_response delete_bond_leg_amortization(
+        const ::ores::trading::messaging::delete_bond_leg_amortization_request& request);
+    ::ores::trading::messaging::delete_many_bond_leg_amortizations_response
+    delete_many_bond_leg_amortizations(
+        const ::ores::trading::messaging::delete_many_bond_leg_amortizations_request& request);
+    ::ores::trading::messaging::list_by_trade_id_bond_leg_amortizations_response
     list_by_trade_id_bond_leg_amortizations(
-        const messaging::list_by_trade_id_bond_leg_amortizations_request& request);
-    messaging::list_bond_leg_amortization_versions_response list_bond_leg_amortization_versions(
-        const messaging::list_bond_leg_amortization_versions_request& request);
-    messaging::get_bond_leg_amortization_version_response get_bond_leg_amortization_version(
-        const messaging::get_bond_leg_amortization_version_request& request);
+        const ::ores::trading::messaging::list_by_trade_id_bond_leg_amortizations_request& request);
+    ::ores::trading::messaging::list_bond_leg_amortization_versions_response
+    list_bond_leg_amortization_versions(
+        const ::ores::trading::messaging::list_bond_leg_amortization_versions_request& request);
+    ::ores::trading::messaging::get_bond_leg_amortization_version_response
+    get_bond_leg_amortization_version(
+        const ::ores::trading::messaging::get_bond_leg_amortization_version_request& request);
     /**@}*/
 
     /**
@@ -251,7 +256,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::bond_leg_amortization_change& change,
+    prepare_change(const ::ores::trading::messaging::bond_leg_amortization_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::bond_leg_amortization& out);
 };

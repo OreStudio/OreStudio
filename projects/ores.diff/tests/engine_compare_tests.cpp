@@ -20,16 +20,10 @@
 #include "ores.diff/engine/compare.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
-
-const std::string tags("[engine]");
-
-}
-
 using ores::diff::domain::field_value;
 using ores::diff::engine::compute;
 
-TEST_CASE("compare_identical_inputs_yields_empty_result", tags) {
+TEST_CASE("compare_identical_inputs_yields_empty_result", "[engine]") {
     const std::vector<field_value> fields{{.name = "ISO Code", .value = "USD"},
                                           {.name = "Name", .value = "US Dollar"}};
 
@@ -38,13 +32,13 @@ TEST_CASE("compare_identical_inputs_yields_empty_result", tags) {
     CHECK(result.entries.empty());
 }
 
-TEST_CASE("compare_both_lists_empty_yields_empty_result", tags) {
+TEST_CASE("compare_both_lists_empty_yields_empty_result", "[engine]") {
     const auto result = compute({}, {});
 
     CHECK(result.entries.empty());
 }
 
-TEST_CASE("compare_changed_value_yields_entry_with_both_sides", tags) {
+TEST_CASE("compare_changed_value_yields_entry_with_both_sides", "[engine]") {
     const std::vector<field_value> previous{{.name = "Name", .value = "US Dollar"}};
     const std::vector<field_value> current{{.name = "Name", .value = "United States Dollar"}};
 
@@ -56,7 +50,7 @@ TEST_CASE("compare_changed_value_yields_entry_with_both_sides", tags) {
     CHECK(result.entries[0].new_value == "United States Dollar");
 }
 
-TEST_CASE("compare_unchanged_fields_are_omitted", tags) {
+TEST_CASE("compare_unchanged_fields_are_omitted", "[engine]") {
     const std::vector<field_value> previous{{.name = "ISO Code", .value = "USD"},
                                             {.name = "Name", .value = "US Dollar"},
                                             {.name = "Symbol", .value = "$"}};
@@ -70,7 +64,7 @@ TEST_CASE("compare_unchanged_fields_are_omitted", tags) {
     CHECK(result.entries[0].field_name == "Name");
 }
 
-TEST_CASE("compare_added_field_has_empty_old_value", tags) {
+TEST_CASE("compare_added_field_has_empty_old_value", "[engine]") {
     const std::vector<field_value> previous{{.name = "ISO Code", .value = "USD"}};
     const std::vector<field_value> current{{.name = "ISO Code", .value = "USD"},
                                            {.name = "Market Tier", .value = "Major"}};
@@ -83,7 +77,7 @@ TEST_CASE("compare_added_field_has_empty_old_value", tags) {
     CHECK(result.entries[0].new_value == "Major");
 }
 
-TEST_CASE("compare_removed_field_has_empty_new_value", tags) {
+TEST_CASE("compare_removed_field_has_empty_new_value", "[engine]") {
     const std::vector<field_value> previous{{.name = "ISO Code", .value = "USD"},
                                             {.name = "Legacy Flag", .value = "true"}};
     const std::vector<field_value> current{{.name = "ISO Code", .value = "USD"}};
@@ -96,7 +90,7 @@ TEST_CASE("compare_removed_field_has_empty_new_value", tags) {
     CHECK(result.entries[0].new_value == "");
 }
 
-TEST_CASE("compare_previous_empty_reports_all_fields_added", tags) {
+TEST_CASE("compare_previous_empty_reports_all_fields_added", "[engine]") {
     const std::vector<field_value> current{{.name = "ISO Code", .value = "USD"},
                                            {.name = "Name", .value = "US Dollar"}};
 
@@ -111,7 +105,7 @@ TEST_CASE("compare_previous_empty_reports_all_fields_added", tags) {
     CHECK(result.entries[1].new_value == "US Dollar");
 }
 
-TEST_CASE("compare_current_empty_reports_all_fields_removed", tags) {
+TEST_CASE("compare_current_empty_reports_all_fields_removed", "[engine]") {
     const std::vector<field_value> previous{{.name = "ISO Code", .value = "USD"},
                                             {.name = "Name", .value = "US Dollar"}};
 
@@ -126,7 +120,7 @@ TEST_CASE("compare_current_empty_reports_all_fields_removed", tags) {
     CHECK(result.entries[1].new_value == "");
 }
 
-TEST_CASE("compare_preserves_current_order_for_changes", tags) {
+TEST_CASE("compare_preserves_current_order_for_changes", "[engine]") {
     // Previous deliberately lists fields in a different order; the
     // output must follow the current (mapper) order.
     const std::vector<field_value> previous{
@@ -143,7 +137,7 @@ TEST_CASE("compare_preserves_current_order_for_changes", tags) {
     CHECK(result.entries[2].field_name == "C");
 }
 
-TEST_CASE("compare_removed_fields_follow_in_previous_order", tags) {
+TEST_CASE("compare_removed_fields_follow_in_previous_order", "[engine]") {
     const std::vector<field_value> previous{{.name = "Kept", .value = "old"},
                                             {.name = "Removed Last", .value = "x"},
                                             {.name = "Removed First", .value = "y"}};
@@ -161,7 +155,7 @@ TEST_CASE("compare_removed_fields_follow_in_previous_order", tags) {
     CHECK(result.entries[3].field_name == "Removed First");
 }
 
-TEST_CASE("compare_empty_values_on_both_sides_are_equal", tags) {
+TEST_CASE("compare_empty_values_on_both_sides_are_equal", "[engine]") {
     const std::vector<field_value> previous{{.name = "Notes", .value = ""}};
     const std::vector<field_value> current{{.name = "Notes", .value = ""}};
 
@@ -170,7 +164,7 @@ TEST_CASE("compare_empty_values_on_both_sides_are_equal", tags) {
     CHECK(result.entries.empty());
 }
 
-TEST_CASE("compare_duplicate_names_first_occurrence_wins", tags) {
+TEST_CASE("compare_duplicate_names_first_occurrence_wins", "[engine]") {
     const std::vector<field_value> previous{{.name = "Name", .value = "first"},
                                             {.name = "Name", .value = "second"}};
     const std::vector<field_value> current{{.name = "Name", .value = "changed"},

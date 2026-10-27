@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view bond_leg_amortization_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_bond_leg_amortization_handlers(
@@ -51,45 +51,45 @@ std::vector<ores::nats::service::subscription> register_bond_leg_amortization_ha
         std::make_shared<bond_leg_amortization_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_bond_leg_amortizations_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->list_bond_leg_amortizations(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_bond_leg_amortization_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_bond_leg_amortization(std::move(msg));
-        }));
+        get_bond_leg_amortization_request::nats_subject,
+        bond_leg_amortization_queue_group,
+        [h](ores::nats::message msg) { h->get_bond_leg_amortization(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_bond_leg_amortizations_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->get_many_bond_leg_amortizations(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_bond_leg_amortization_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_bond_leg_amortization(std::move(msg));
-        }));
+        put_bond_leg_amortization_request::nats_subject,
+        bond_leg_amortization_queue_group,
+        [h](ores::nats::message msg) { h->put_bond_leg_amortization(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_bond_leg_amortizations_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->put_many_bond_leg_amortizations(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_bond_leg_amortization_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->delete_bond_leg_amortization(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_bond_leg_amortizations_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->delete_many_bond_leg_amortizations(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_trade_id_bond_leg_amortizations_request::nats_subject,
-                             queue_group,
+                             bond_leg_amortization_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_trade_id_bond_leg_amortizations(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_bond_leg_amortization_versions_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->list_bond_leg_amortization_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_bond_leg_amortization_version_request::nats_subject,
-        queue_group,
+        bond_leg_amortization_queue_group,
         [h](ores::nats::message msg) { h->get_bond_leg_amortization_version(std::move(msg)); }));
     return subs;
 }

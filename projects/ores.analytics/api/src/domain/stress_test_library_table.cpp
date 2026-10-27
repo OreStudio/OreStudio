@@ -31,7 +31,7 @@ namespace ores::analytics::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string stress_test_library_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,8 @@ std::string convert_to_table(const std::vector<stress_test_library>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& stl : v) {
-        table << stl.name << opt_str(stl.use_spreaded_term_structures) << stl.modified_by
-              << stl.version << fort::endr;
+        table << stl.name << stress_test_library_opt_str(stl.use_spreaded_term_structures)
+              << stl.modified_by << stl.version << fort::endr;
     }
     return table.to_string();
 }

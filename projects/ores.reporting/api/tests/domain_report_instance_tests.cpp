@@ -22,6 +22,7 @@
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_instance_table.hpp"
 #include "ores.reporting.api/domain/report_instance_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -30,9 +31,6 @@
 namespace {
 
 using ores::reporting::domain::report_instance;
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[domain]");
 
 report_instance make_report_instance(const std::string& name) {
     report_instance ri;
@@ -57,7 +55,7 @@ report_instance make_report_instance(const std::string& name) {
 using ores::reporting::domain::report_instance;
 using namespace ores::logging;
 
-TEST_CASE("create_report_instance_with_valid_fields", tags) {
+TEST_CASE("create_report_instance_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto trigger = boost::uuids::random_generator()();
@@ -89,7 +87,7 @@ TEST_CASE("create_report_instance_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_report_instance_with_optional_fields", tags) {
+TEST_CASE("create_report_instance_with_optional_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto now = std::chrono::system_clock::now();
@@ -120,7 +118,7 @@ TEST_CASE("create_report_instance_with_optional_fields", tags) {
     CHECK(sut.output_message == "Report generated successfully");
 }
 
-TEST_CASE("report_instance_insertion_operator", tags) {
+TEST_CASE("report_instance_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_instance sut;
@@ -148,7 +146,7 @@ TEST_CASE("report_instance_insertion_operator", tags) {
     CHECK(json_output.find("Test Report") != std::string::npos);
 }
 
-TEST_CASE("create_report_instance_with_faker", tags) {
+TEST_CASE("create_report_instance_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_instance sut;
@@ -176,7 +174,7 @@ TEST_CASE("create_report_instance_with_faker", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_multiple_random_report_instances", tags) {
+TEST_CASE("create_multiple_random_report_instances", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> names = {"Daily Risk", "Weekly Grid", "Monthly Summary"};
@@ -188,7 +186,7 @@ TEST_CASE("create_multiple_random_report_instances", tags) {
     }
 }
 
-TEST_CASE("report_instance_convert_single_to_table", tags) {
+TEST_CASE("report_instance_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_instance> items = {make_report_instance("Daily Risk")};
@@ -200,7 +198,7 @@ TEST_CASE("report_instance_convert_single_to_table", tags) {
     CHECK(table.find(items.front().name) != std::string::npos);
 }
 
-TEST_CASE("report_instance_convert_multiple_to_table", tags) {
+TEST_CASE("report_instance_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_instance> items;
@@ -215,7 +213,7 @@ TEST_CASE("report_instance_convert_multiple_to_table", tags) {
     CHECK(table.find(items.front().name) != std::string::npos);
 }
 
-TEST_CASE("report_instance_convert_empty_vector_to_table", tags) {
+TEST_CASE("report_instance_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_instance> items;
@@ -228,7 +226,7 @@ TEST_CASE("report_instance_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Name") != std::string::npos);
 }
 
-TEST_CASE("report_instance_table_with_faker_data", tags) {
+TEST_CASE("report_instance_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_instance> items;

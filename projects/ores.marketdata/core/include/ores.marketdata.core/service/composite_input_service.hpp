@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_composite_inputs_response
-    list_composite_inputs(const messaging::list_composite_inputs_request& request);
-    messaging::get_composite_input_response
-    get_composite_input(const messaging::get_composite_input_request& request);
-    messaging::get_many_composite_inputs_response
-    get_many_composite_inputs(const messaging::get_many_composite_inputs_request& request);
-    messaging::put_composite_input_response
-    put_composite_input(const messaging::put_composite_input_request& request);
-    messaging::put_many_composite_inputs_response
-    put_many_composite_inputs(const messaging::put_many_composite_inputs_request& request);
-    messaging::delete_composite_input_response
-    delete_composite_input(const messaging::delete_composite_input_request& request);
-    messaging::delete_many_composite_inputs_response
-    delete_many_composite_inputs(const messaging::delete_many_composite_inputs_request& request);
-    messaging::list_composite_input_versions_response
-    list_composite_input_versions(const messaging::list_composite_input_versions_request& request);
-    messaging::get_composite_input_version_response
-    get_composite_input_version(const messaging::get_composite_input_version_request& request);
+    ::ores::marketdata::messaging::list_composite_inputs_response list_composite_inputs(
+        const ::ores::marketdata::messaging::list_composite_inputs_request& request);
+    ::ores::marketdata::messaging::get_composite_input_response
+    get_composite_input(const ::ores::marketdata::messaging::get_composite_input_request& request);
+    ::ores::marketdata::messaging::get_many_composite_inputs_response get_many_composite_inputs(
+        const ::ores::marketdata::messaging::get_many_composite_inputs_request& request);
+    ::ores::marketdata::messaging::put_composite_input_response
+    put_composite_input(const ::ores::marketdata::messaging::put_composite_input_request& request);
+    ::ores::marketdata::messaging::put_many_composite_inputs_response put_many_composite_inputs(
+        const ::ores::marketdata::messaging::put_many_composite_inputs_request& request);
+    ::ores::marketdata::messaging::delete_composite_input_response delete_composite_input(
+        const ::ores::marketdata::messaging::delete_composite_input_request& request);
+    ::ores::marketdata::messaging::delete_many_composite_inputs_response
+    delete_many_composite_inputs(
+        const ::ores::marketdata::messaging::delete_many_composite_inputs_request& request);
+    ::ores::marketdata::messaging::list_composite_input_versions_response
+    list_composite_input_versions(
+        const ::ores::marketdata::messaging::list_composite_input_versions_request& request);
+    ::ores::marketdata::messaging::get_composite_input_version_response get_composite_input_version(
+        const ::ores::marketdata::messaging::get_composite_input_version_request& request);
     /**@}*/
 
     /**
@@ -205,9 +207,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::composite_input_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::composite_input& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::composite_input_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::composite_input& out);
 };
 
 }

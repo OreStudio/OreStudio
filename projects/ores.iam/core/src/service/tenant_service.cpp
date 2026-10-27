@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::tenant> read_one(repository::tenant_repository& repo,
-                                     const ores::database::context& ctx,
-                                     const messaging::tenant_key& key) {
+std::vector<domain::tenant> tenant_read_one(repository::tenant_repository& repo,
+                                            const ores::database::context& ctx,
+                                            const messaging::tenant_key& key) {
     return repo.read_latest_by_code(ctx, key.code);
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::tenant> read_one(repository::tenant_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::tenant_key key_from(const domain::tenant& v) {
+messaging::tenant_key tenant_key_from(const domain::tenant& v) {
     messaging::tenant_key key;
     key.code = v.code;
     return key;
@@ -98,7 +98,7 @@ messaging::tenant_key key_from(const domain::tenant& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::tenant to_domain(const messaging::tenant_write& write) {
+domain::tenant tenant_to_domain(const messaging::tenant_write& write) {
     domain::tenant v;
     v.id = write.id;
     v.code = write.code;
@@ -165,7 +165,7 @@ tenant_service::list_tenants(const messaging::list_tenants_request& request) {
 messaging::get_tenant_response
 tenant_service::get_tenant(const messaging::get_tenant_request& request) {
     messaging::get_tenant_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = tenant_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "tenant"});
         return response;
@@ -184,7 +184,7 @@ tenant_service::get_many_tenants(const messaging::get_many_tenants_request& requ
     for (const auto& k : request.keys) {
         messaging::tenant_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = tenant_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.tenant = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -200,7 +200,7 @@ tenant_service::put_tenant(const messaging::put_tenant_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = tenant_read_one(repo_, ctx_, tenant_key_from(value));
     if (!written.empty())
         response.tenant = std::move(written.front());
     return response;
@@ -232,7 +232,7 @@ tenant_service::put_many_tenants(const messaging::put_many_tenants_request& requ
     repo_.write(ctx_, batch, claims);
     response.tenants.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = tenant_read_one(repo_, ctx_, tenant_key_from(value));
         response.tenants.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -255,7 +255,7 @@ tenant_service::delete_tenant(const messaging::delete_tenant_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = tenant_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "tenant"});
         return response;
@@ -271,7 +271,7 @@ tenant_service::delete_tenant(const messaging::delete_tenant_request& request) {
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = tenant_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "tenant",
@@ -312,7 +312,7 @@ tenant_service::delete_many_tenants(const messaging::delete_many_tenants_request
     std::vector<domain::tenant> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = tenant_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -338,7 +338,7 @@ tenant_service::list_tenant_versions(const messaging::list_tenant_versions_reque
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = tenant_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "tenant"});
         return response;
@@ -361,7 +361,7 @@ tenant_service::get_tenant_version(const messaging::get_tenant_version_request& 
     messaging::get_tenant_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.tenant);
+    const auto named = tenant_read_one(repo_, ctx_, request.key.tenant);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "tenant"});
         return response;
@@ -383,8 +383,8 @@ tenant_service::prepare_change(const messaging::tenant_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = tenant_to_domain(change.write);
+    const auto current = tenant_read_one(repo_, ctx_, tenant_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -454,7 +454,7 @@ std::optional<domain::tenant> tenant_service::get_tenant_by_code(const std::stri
     BOOST_LOG_SEV(lg(), debug) << "Getting tenant by code: " << code;
     messaging::tenant_key k;
     k.code = code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = tenant_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

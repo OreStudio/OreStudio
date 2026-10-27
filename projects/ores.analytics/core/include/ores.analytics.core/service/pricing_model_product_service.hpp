@@ -77,24 +77,30 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_pricing_model_products_response
-    list_pricing_model_products(const messaging::list_pricing_model_products_request& request);
-    messaging::get_pricing_model_product_response
-    get_pricing_model_product(const messaging::get_pricing_model_product_request& request);
-    messaging::get_many_pricing_model_products_response get_many_pricing_model_products(
-        const messaging::get_many_pricing_model_products_request& request);
-    messaging::put_pricing_model_product_response
-    put_pricing_model_product(const messaging::put_pricing_model_product_request& request);
-    messaging::put_many_pricing_model_products_response put_many_pricing_model_products(
-        const messaging::put_many_pricing_model_products_request& request);
-    messaging::delete_pricing_model_product_response
-    delete_pricing_model_product(const messaging::delete_pricing_model_product_request& request);
-    messaging::delete_many_pricing_model_products_response delete_many_pricing_model_products(
-        const messaging::delete_many_pricing_model_products_request& request);
-    messaging::list_pricing_model_product_versions_response list_pricing_model_product_versions(
-        const messaging::list_pricing_model_product_versions_request& request);
-    messaging::get_pricing_model_product_version_response get_pricing_model_product_version(
-        const messaging::get_pricing_model_product_version_request& request);
+    ::ores::analytics::messaging::list_pricing_model_products_response list_pricing_model_products(
+        const ::ores::analytics::messaging::list_pricing_model_products_request& request);
+    ::ores::analytics::messaging::get_pricing_model_product_response get_pricing_model_product(
+        const ::ores::analytics::messaging::get_pricing_model_product_request& request);
+    ::ores::analytics::messaging::get_many_pricing_model_products_response
+    get_many_pricing_model_products(
+        const ::ores::analytics::messaging::get_many_pricing_model_products_request& request);
+    ::ores::analytics::messaging::put_pricing_model_product_response put_pricing_model_product(
+        const ::ores::analytics::messaging::put_pricing_model_product_request& request);
+    ::ores::analytics::messaging::put_many_pricing_model_products_response
+    put_many_pricing_model_products(
+        const ::ores::analytics::messaging::put_many_pricing_model_products_request& request);
+    ::ores::analytics::messaging::delete_pricing_model_product_response
+    delete_pricing_model_product(
+        const ::ores::analytics::messaging::delete_pricing_model_product_request& request);
+    ::ores::analytics::messaging::delete_many_pricing_model_products_response
+    delete_many_pricing_model_products(
+        const ::ores::analytics::messaging::delete_many_pricing_model_products_request& request);
+    ::ores::analytics::messaging::list_pricing_model_product_versions_response
+    list_pricing_model_product_versions(
+        const ::ores::analytics::messaging::list_pricing_model_product_versions_request& request);
+    ::ores::analytics::messaging::get_pricing_model_product_version_response
+    get_pricing_model_product_version(
+        const ::ores::analytics::messaging::get_pricing_model_product_version_request& request);
     /**@}*/
 
     /**
@@ -228,7 +234,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::pricing_model_product_change& change,
+    prepare_change(const ::ores::analytics::messaging::pricing_model_product_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::pricing_model_product& out);
 };

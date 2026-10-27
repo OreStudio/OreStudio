@@ -113,7 +113,7 @@ namespace {
  * The stored column behind a sortable field. A field is named as the wire
  * names it, which is the column itself except for the recording time.
  */
-std::string sort_column(std::string_view field) {
+std::string {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_sort_column(std::string_view field) {
     const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
 {{#domain_entity.sortable_fields}}
         {"{{name}}", "{{column}}"},
@@ -132,7 +132,7 @@ std::string sort_column(std::string_view field) {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -142,7 +142,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
         throw std::invalid_argument(
             "A list of {{entity_plural_words}} cannot be ordered by " + order.field + ".");
 {{#domain_entity.sortable_recorded_at}}
-    return make_order({sort_column(order.field)}, order.descending,
+    return make_order({ {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_sort_column(order.field)}, order.descending,
                       {{{domain_entity.order_key_columns}}});
 {{/domain_entity.sortable_recorded_at}}
 {{^domain_entity.sortable_recorded_at}}
@@ -156,7 +156,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<{{domain_entity.filter_type}}>& filter) {
+{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(const std::optional<{{domain_entity.filter_type}}>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -590,8 +590,8 @@ std::vector<domain::{{entity_singular}}>
 
     return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
-        list_order(order, {{{list_by_default_columns}}}, {{list_by_default_desc}}),
-        {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(order, {{{list_by_default_columns}}}, {{list_by_default_desc}}),
+        {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} by {{column}}.");
 }
@@ -620,7 +620,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{/read_tenant_filtered}}
 
     return execute_count_query<{{entity_singular}}_entity>(
-        ctx, query, {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}} by {{column}}");
+        ctx, query, {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}} by {{column}}");
 }
 {{/list_by}}
 
@@ -741,8 +741,8 @@ std::vector<domain::{{entity_singular}}>
 
     return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
-        list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
-        {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}},
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
+        {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}},
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} with pagination.");
 }
@@ -802,7 +802,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{/read_tenant_filtered}}
 
     return execute_count_query<{{entity_singular}}_entity>(
-        ctx, query, {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}}, lg(), "Counting {{entity_plural_words}}");
+        ctx, query, {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}}, lg(), "Counting {{entity_plural_words}}");
 }
 
 std::vector<domain::{{entity_singular}}>

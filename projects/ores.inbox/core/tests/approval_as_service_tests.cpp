@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[approval][as_service]");
-
 using ores::inbox::service::approval_announcer;
 using ores::inbox::service::approval_lifecycle;
 using ores::inbox::service::notification_center;
@@ -85,7 +83,8 @@ ores::database::context as_inbox_service(ores::testing::scoped_database_helper& 
 
 }
 
-TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked", tags) {
+TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked",
+          "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -111,7 +110,8 @@ TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked
     CHECK(std::ranges::any_of(page.notifications, [&](const auto& n) { return n.link_id == id; }));
 }
 
-TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep", tags) {
+TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep",
+          "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -131,7 +131,8 @@ TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep"
     CHECK(lifecycle.request(id)->state_code == "expired");
 }
 
-TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_finished", tags) {
+TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_finished",
+          "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -147,7 +148,7 @@ TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_
     CHECK(std::ranges::any_of(stalled, [&](const auto& s) { return s.request_id == id; }));
 }
 
-TEST_CASE("the_inbox_service_user_runs_the_reminder_sweep", tags) {
+TEST_CASE("the_inbox_service_user_runs_the_reminder_sweep", "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
 
     // The reminder reads across tenants and raises a notice only for a request
@@ -156,7 +157,7 @@ TEST_CASE("the_inbox_service_user_runs_the_reminder_sweep", tags) {
     CHECK_NOTHROW(approval_lifecycle(as_inbox_service(h)).remind_expiring(std::chrono::hours(48)));
 }
 
-TEST_CASE("the_inbox_service_user_reads_who_holds_a_permission", tags) {
+TEST_CASE("the_inbox_service_user_reads_who_holds_a_permission", "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     notification_center center(as_inbox_service(h));
 

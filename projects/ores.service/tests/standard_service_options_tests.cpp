@@ -24,7 +24,6 @@
 
 namespace {
 
-const std::string tags("[standard_service_options]");
 const std::string log_file("ores.service.tests.log");
 const std::string app_name("SERVICE_TESTS");
 
@@ -32,7 +31,7 @@ const std::string app_name("SERVICE_TESTS");
 
 using ores::service::config::standard_service_options;
 
-TEST_CASE("the common options describe help and version", tags) {
+TEST_CASE("the common options describe help and version", "[standard_service_options]") {
     const auto od = standard_service_options::make_options_description(log_file);
 
     const auto help = standard_service_options::parse(od, {"--help"}, app_name);
@@ -44,7 +43,8 @@ TEST_CASE("the common options describe help and version", tags) {
     REQUIRE(standard_service_options::wants_version(version));
 }
 
-TEST_CASE("the application's own options are merged into the shared set", tags) {
+TEST_CASE("the application's own options are merged into the shared set",
+          "[standard_service_options]") {
     boost::program_options::options_description extra("Extra");
     extra.add_options()("custom", boost::program_options::value<std::string>(), "A custom option");
 
@@ -54,7 +54,8 @@ TEST_CASE("the application's own options are merged into the shared set", tags) 
     REQUIRE(vm["custom"].as<std::string>() == "hello");
 }
 
-TEST_CASE("read_options reports no logging until logging is switched on", tags) {
+TEST_CASE("read_options reports no logging until logging is switched on",
+          "[standard_service_options]") {
     const auto od = standard_service_options::make_options_description(log_file);
     const std::vector<std::string> required{
         "--db-user", "ores_test_user", "--db-database", "ores_test_db"};
@@ -75,7 +76,7 @@ TEST_CASE("read_options reports no logging until logging is switched on", tags) 
     REQUIRE(on.logging->severity == "info");
 }
 
-TEST_CASE("read_options honours the filename it is given", tags) {
+TEST_CASE("read_options honours the filename it is given", "[standard_service_options]") {
     const auto od = standard_service_options::make_options_description(log_file);
     const auto on = standard_service_options::read_options(
         standard_service_options::parse(od,
@@ -92,7 +93,8 @@ TEST_CASE("read_options honours the filename it is given", tags) {
     REQUIRE(on.logging->severity == "info");
 }
 
-TEST_CASE("read_options reads the database sub-options it was given", tags) {
+TEST_CASE("read_options reads the database sub-options it was given",
+          "[standard_service_options]") {
     const auto od = standard_service_options::make_options_description(log_file);
     const auto vm = standard_service_options::parse(
         od, {"--db-user", "ores_test_user", "--db-database", "ores_test_db"}, app_name);

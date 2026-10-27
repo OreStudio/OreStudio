@@ -77,32 +77,40 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_tenor_basis_swap_pay_receives_response list_tenor_basis_swap_pay_receives(
-        const messaging::list_tenor_basis_swap_pay_receives_request& request);
-    messaging::get_tenor_basis_swap_pay_receive_response get_tenor_basis_swap_pay_receive(
-        const messaging::get_tenor_basis_swap_pay_receive_request& request);
-    messaging::get_many_tenor_basis_swap_pay_receives_response
+    ::ores::refdata::messaging::list_tenor_basis_swap_pay_receives_response
+    list_tenor_basis_swap_pay_receives(
+        const ::ores::refdata::messaging::list_tenor_basis_swap_pay_receives_request& request);
+    ::ores::refdata::messaging::get_tenor_basis_swap_pay_receive_response
+    get_tenor_basis_swap_pay_receive(
+        const ::ores::refdata::messaging::get_tenor_basis_swap_pay_receive_request& request);
+    ::ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_response
     get_many_tenor_basis_swap_pay_receives(
-        const messaging::get_many_tenor_basis_swap_pay_receives_request& request);
-    messaging::put_tenor_basis_swap_pay_receive_response put_tenor_basis_swap_pay_receive(
-        const messaging::put_tenor_basis_swap_pay_receive_request& request);
-    messaging::put_many_tenor_basis_swap_pay_receives_response
+        const ::ores::refdata::messaging::get_many_tenor_basis_swap_pay_receives_request& request);
+    ::ores::refdata::messaging::put_tenor_basis_swap_pay_receive_response
+    put_tenor_basis_swap_pay_receive(
+        const ::ores::refdata::messaging::put_tenor_basis_swap_pay_receive_request& request);
+    ::ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_response
     put_many_tenor_basis_swap_pay_receives(
-        const messaging::put_many_tenor_basis_swap_pay_receives_request& request);
-    messaging::delete_tenor_basis_swap_pay_receive_response delete_tenor_basis_swap_pay_receive(
-        const messaging::delete_tenor_basis_swap_pay_receive_request& request);
-    messaging::delete_many_tenor_basis_swap_pay_receives_response
+        const ::ores::refdata::messaging::put_many_tenor_basis_swap_pay_receives_request& request);
+    ::ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_response
+    delete_tenor_basis_swap_pay_receive(
+        const ::ores::refdata::messaging::delete_tenor_basis_swap_pay_receive_request& request);
+    ::ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_response
     delete_many_tenor_basis_swap_pay_receives(
-        const messaging::delete_many_tenor_basis_swap_pay_receives_request& request);
-    messaging::list_by_convention_id_tenor_basis_swap_pay_receives_response
+        const ::ores::refdata::messaging::delete_many_tenor_basis_swap_pay_receives_request&
+            request);
+    ::ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_pay_receives_response
     list_by_convention_id_tenor_basis_swap_pay_receives(
-        const messaging::list_by_convention_id_tenor_basis_swap_pay_receives_request& request);
-    messaging::list_tenor_basis_swap_pay_receive_versions_response
+        const ::ores::refdata::messaging::
+            list_by_convention_id_tenor_basis_swap_pay_receives_request& request);
+    ::ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_response
     list_tenor_basis_swap_pay_receive_versions(
-        const messaging::list_tenor_basis_swap_pay_receive_versions_request& request);
-    messaging::get_tenor_basis_swap_pay_receive_version_response
+        const ::ores::refdata::messaging::list_tenor_basis_swap_pay_receive_versions_request&
+            request);
+    ::ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_response
     get_tenor_basis_swap_pay_receive_version(
-        const messaging::get_tenor_basis_swap_pay_receive_version_request& request);
+        const ::ores::refdata::messaging::get_tenor_basis_swap_pay_receive_version_request&
+            request);
     /**@}*/
 
     /**
@@ -270,7 +278,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::tenor_basis_swap_pay_receive_change& change,
+    prepare_change(const ::ores::refdata::messaging::tenor_basis_swap_pay_receive_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::tenor_basis_swap_pay_receive& out);
 };

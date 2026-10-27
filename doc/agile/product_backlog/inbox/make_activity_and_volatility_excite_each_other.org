@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 4A00CBE5-E42B-46A8-A09B-FD698A09E4BB
+:END:
+#+title: Make activity and volatility excite each other
+#+description: A bivariate Hawkes: activity excites volatility and volatility excites activity, with today's shared heat as one coordinate. The rank-one kernel becomes a 2x2 block and stability stops being max n + sum m < 1 and becomes a spectral radius. It depends on the volatility channel landing first.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:volatility:hawkes:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Activity and volatility as two mutually exciting coordinates: a bivariate Hawkes
+whose activity coordinate is the shared heat the platform already carries. The
+rank-one kernel =K = diag(n) + m 1'= becomes a 2x2 block of the same shape, and
+stability stops being the scalar test =max n + sum m < 1= and becomes a spectral
+radius: the largest eigenvalue of the mean kernel must be below one.
+
+* Why
+
+A real panic is self-reinforcing in both directions: a burst of trades raises
+volatility, and volatility raises the appetite to trade. One dimension can only
+carry half of that, so today's factor can speed a market up or calm it down but
+cannot feed on itself the way a crisis does.
+
+It depends on the volatility channel, so it is captured rather than scoped: the
+design note states it as out of scope.
+
+* References
+
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]], its
+  *Out of scope* section.
+- Hawkes (1971) already states the mutually exciting form; Brémaud and Massoulié
+  (1996) give the stability conditions a bivariate kernel needs.
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]]

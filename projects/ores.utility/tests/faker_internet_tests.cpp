@@ -19,21 +19,15 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/internet.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <regex>
 #include <set>
 
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[faker]");
-
-}
-
 using ores::utility::faker::internet;
 using namespace ores::logging;
 
-TEST_CASE("internet_endpoint_format", tags) {
+TEST_CASE("internet_endpoint_format", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto endpoint = internet::endpoint();
@@ -48,7 +42,7 @@ TEST_CASE("internet_endpoint_format", tags) {
     CHECK(std::regex_match(endpoint, endpoint_regex));
 }
 
-TEST_CASE("internet_endpoint_port_range", tags) {
+TEST_CASE("internet_endpoint_port_range", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto endpoint = internet::endpoint();
@@ -69,7 +63,7 @@ TEST_CASE("internet_endpoint_port_range", tags) {
     CHECK(port <= 65535);
 }
 
-TEST_CASE("internet_endpoint_unique_values", tags) {
+TEST_CASE("internet_endpoint_unique_values", "[faker]") {
     auto lg(make_logger(test_suite));
 
     std::set<std::string> endpoints;
@@ -86,7 +80,7 @@ TEST_CASE("internet_endpoint_unique_values", tags) {
     CHECK(endpoints.size() >= count - 5);
 }
 
-TEST_CASE("internet_ipv4_is_valid", tags) {
+TEST_CASE("internet_ipv4_is_valid", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto ip = internet::ipv4();
@@ -98,7 +92,7 @@ TEST_CASE("internet_ipv4_is_valid", tags) {
     CHECK(!ip.is_v6());
 }
 
-TEST_CASE("internet_ipv4_to_string_format", tags) {
+TEST_CASE("internet_ipv4_to_string_format", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto ip = internet::ipv4();
@@ -111,7 +105,7 @@ TEST_CASE("internet_ipv4_to_string_format", tags) {
     CHECK(std::regex_match(ip_str, ipv4_regex));
 }
 
-TEST_CASE("internet_ipv4_octets_in_range", tags) {
+TEST_CASE("internet_ipv4_octets_in_range", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto ip = internet::ipv4();
@@ -135,7 +129,7 @@ TEST_CASE("internet_ipv4_octets_in_range", tags) {
     }
 }
 
-TEST_CASE("internet_ipv4_unique_values", tags) {
+TEST_CASE("internet_ipv4_unique_values", "[faker]") {
     auto lg(make_logger(test_suite));
 
     std::set<std::string> ips;
@@ -151,7 +145,7 @@ TEST_CASE("internet_ipv4_unique_values", tags) {
     CHECK(ips.size() >= count - 5);
 }
 
-TEST_CASE("internet_ipv4_can_create_address", tags) {
+TEST_CASE("internet_ipv4_can_create_address", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto ip = internet::ipv4();
@@ -163,7 +157,7 @@ TEST_CASE("internet_ipv4_can_create_address", tags) {
     CHECK(ip.is_v4());
 }
 
-TEST_CASE("internet_endpoint_multiple_calls", tags) {
+TEST_CASE("internet_endpoint_multiple_calls", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto endpoint1 = internet::endpoint();
@@ -179,7 +173,7 @@ TEST_CASE("internet_endpoint_multiple_calls", tags) {
     CHECK((endpoint1 != endpoint2 || endpoint2 != endpoint3 || endpoint1 != endpoint3));
 }
 
-TEST_CASE("internet_ipv4_not_unspecified", tags) {
+TEST_CASE("internet_ipv4_not_unspecified", "[faker]") {
     auto lg(make_logger(test_suite));
 
     auto ip = internet::ipv4();

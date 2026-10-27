@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void commodity_future_convention_read_token(T& target,
+                                            const std::string& raw,
+                                            const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void commodity_future_convention_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -266,7 +268,7 @@ void commodity_future_convention_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        commodity_future_convention_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -314,7 +316,7 @@ void commodity_future_convention_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
+        commodity_future_convention_read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -359,7 +361,7 @@ void commodity_future_convention_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::commodity_future_convention_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            commodity_future_convention_read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -404,125 +406,141 @@ void commodity_future_convention_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.id, parsed->positionals[next++], "id");
+        commodity_future_convention_read_token(
             req.change.write.contract_frequency, parsed->positionals[next++], "contract_frequency");
-        read_token(req.change.write.calendar, parsed->positionals[next++], "calendar");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        commodity_future_convention_read_token(
             req.change.write.expiry_calendar, parsed->positionals[next++], "expiry_calendar");
-        read_token(
+        commodity_future_convention_read_token(
             req.change.write.expiry_month_lag, parsed->positionals[next++], "expiry_month_lag");
-        read_token(
+        commodity_future_convention_read_token(
             req.change.write.one_contract_month, parsed->positionals[next++], "one_contract_month");
-        read_token(req.change.write.offset_days, parsed->positionals[next++], "offset_days");
-        read_token(req.change.write.business_day_convention,
-                   parsed->positionals[next++],
-                   "business_day_convention");
-        read_token(req.change.write.adjust_before_offset,
-                   parsed->positionals[next++],
-                   "adjust_before_offset");
-        read_token(req.change.write.is_averaging, parsed->positionals[next++], "is_averaging");
-        read_token(req.change.write.valid_contract_months,
-                   parsed->positionals[next++],
-                   "valid_contract_months");
-        read_token(req.change.write.anchor_day_of_month,
-                   parsed->positionals[next++],
-                   "anchor_day_of_month");
-        read_token(req.change.write.anchor_calendar_days_before,
-                   parsed->positionals[next++],
-                   "anchor_calendar_days_before");
-        read_token(req.change.write.anchor_business_days_after,
-                   parsed->positionals[next++],
-                   "anchor_business_days_after");
-        read_token(req.change.write.anchor_nth_nth, parsed->positionals[next++], "anchor_nth_nth");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.offset_days, parsed->positionals[next++], "offset_days");
+        commodity_future_convention_read_token(req.change.write.business_day_convention,
+                                               parsed->positionals[next++],
+                                               "business_day_convention");
+        commodity_future_convention_read_token(req.change.write.adjust_before_offset,
+                                               parsed->positionals[next++],
+                                               "adjust_before_offset");
+        commodity_future_convention_read_token(
+            req.change.write.is_averaging, parsed->positionals[next++], "is_averaging");
+        commodity_future_convention_read_token(req.change.write.valid_contract_months,
+                                               parsed->positionals[next++],
+                                               "valid_contract_months");
+        commodity_future_convention_read_token(req.change.write.anchor_day_of_month,
+                                               parsed->positionals[next++],
+                                               "anchor_day_of_month");
+        commodity_future_convention_read_token(req.change.write.anchor_calendar_days_before,
+                                               parsed->positionals[next++],
+                                               "anchor_calendar_days_before");
+        commodity_future_convention_read_token(req.change.write.anchor_business_days_after,
+                                               parsed->positionals[next++],
+                                               "anchor_business_days_after");
+        commodity_future_convention_read_token(
+            req.change.write.anchor_nth_nth, parsed->positionals[next++], "anchor_nth_nth");
+        commodity_future_convention_read_token(
             req.change.write.anchor_nth_weekday, parsed->positionals[next++], "anchor_nth_weekday");
-        read_token(req.change.write.anchor_last_weekday,
-                   parsed->positionals[next++],
-                   "anchor_last_weekday");
-        read_token(req.change.write.anchor_weekly_day_of_the_week,
-                   parsed->positionals[next++],
-                   "anchor_weekly_day_of_the_week");
-        read_token(req.change.write.option_expiry_month_lag,
-                   parsed->positionals[next++],
-                   "option_expiry_month_lag");
-        read_token(req.change.write.option_contract_frequency,
-                   parsed->positionals[next++],
-                   "option_contract_frequency");
-        read_token(req.change.write.option_expiry_offset,
-                   parsed->positionals[next++],
-                   "option_expiry_offset");
-        read_token(req.change.write.option_calendar_days_before,
-                   parsed->positionals[next++],
-                   "option_calendar_days_before");
-        read_token(req.change.write.option_min_business_days_before,
-                   parsed->positionals[next++],
-                   "option_min_business_days_before");
-        read_token(
+        commodity_future_convention_read_token(req.change.write.anchor_last_weekday,
+                                               parsed->positionals[next++],
+                                               "anchor_last_weekday");
+        commodity_future_convention_read_token(req.change.write.anchor_weekly_day_of_the_week,
+                                               parsed->positionals[next++],
+                                               "anchor_weekly_day_of_the_week");
+        commodity_future_convention_read_token(req.change.write.option_expiry_month_lag,
+                                               parsed->positionals[next++],
+                                               "option_expiry_month_lag");
+        commodity_future_convention_read_token(req.change.write.option_contract_frequency,
+                                               parsed->positionals[next++],
+                                               "option_contract_frequency");
+        commodity_future_convention_read_token(req.change.write.option_expiry_offset,
+                                               parsed->positionals[next++],
+                                               "option_expiry_offset");
+        commodity_future_convention_read_token(req.change.write.option_calendar_days_before,
+                                               parsed->positionals[next++],
+                                               "option_calendar_days_before");
+        commodity_future_convention_read_token(req.change.write.option_min_business_days_before,
+                                               parsed->positionals[next++],
+                                               "option_min_business_days_before");
+        commodity_future_convention_read_token(
             req.change.write.option_expiry_day, parsed->positionals[next++], "option_expiry_day");
-        read_token(req.change.write.option_nth_nth, parsed->positionals[next++], "option_nth_nth");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.option_nth_nth, parsed->positionals[next++], "option_nth_nth");
+        commodity_future_convention_read_token(
             req.change.write.option_nth_weekday, parsed->positionals[next++], "option_nth_weekday");
-        read_token(req.change.write.option_expiry_last_weekday_of_month,
-                   parsed->positionals[next++],
-                   "option_expiry_last_weekday_of_month");
-        read_token(req.change.write.option_expiry_weekly_day_of_the_week,
-                   parsed->positionals[next++],
-                   "option_expiry_weekly_day_of_the_week");
-        read_token(req.change.write.option_business_day_convention,
-                   parsed->positionals[next++],
-                   "option_business_day_convention");
-        read_token(req.change.write.hours_per_day, parsed->positionals[next++], "hours_per_day");
-        read_token(req.change.write.off_peak_index, parsed->positionals[next++], "off_peak_index");
-        read_token(req.change.write.peak_index, parsed->positionals[next++], "peak_index");
-        read_token(req.change.write.off_peak_hours, parsed->positionals[next++], "off_peak_hours");
-        read_token(req.change.write.peak_calendar, parsed->positionals[next++], "peak_calendar");
-        read_token(req.change.write.index_name, parsed->positionals[next++], "index_name");
-        read_token(req.change.write.savings_time, parsed->positionals[next++], "savings_time");
-        read_token(
+        commodity_future_convention_read_token(req.change.write.option_expiry_last_weekday_of_month,
+                                               parsed->positionals[next++],
+                                               "option_expiry_last_weekday_of_month");
+        commodity_future_convention_read_token(
+            req.change.write.option_expiry_weekly_day_of_the_week,
+            parsed->positionals[next++],
+            "option_expiry_weekly_day_of_the_week");
+        commodity_future_convention_read_token(req.change.write.option_business_day_convention,
+                                               parsed->positionals[next++],
+                                               "option_business_day_convention");
+        commodity_future_convention_read_token(
+            req.change.write.hours_per_day, parsed->positionals[next++], "hours_per_day");
+        commodity_future_convention_read_token(
+            req.change.write.off_peak_index, parsed->positionals[next++], "off_peak_index");
+        commodity_future_convention_read_token(
+            req.change.write.peak_index, parsed->positionals[next++], "peak_index");
+        commodity_future_convention_read_token(
+            req.change.write.off_peak_hours, parsed->positionals[next++], "off_peak_hours");
+        commodity_future_convention_read_token(
+            req.change.write.peak_calendar, parsed->positionals[next++], "peak_calendar");
+        commodity_future_convention_read_token(
+            req.change.write.index_name, parsed->positionals[next++], "index_name");
+        commodity_future_convention_read_token(
+            req.change.write.savings_time, parsed->positionals[next++], "savings_time");
+        commodity_future_convention_read_token(
             req.change.write.delivery_location, parsed->positionals[next++], "delivery_location");
-        read_token(req.change.write.balance_of_the_month,
-                   parsed->positionals[next++],
-                   "balance_of_the_month");
-        read_token(req.change.write.balance_of_the_month_pricing_calendar,
-                   parsed->positionals[next++],
-                   "balance_of_the_month_pricing_calendar");
-        read_token(req.change.write.option_underlying_future_convention,
-                   parsed->positionals[next++],
-                   "option_underlying_future_convention");
-        read_token(req.change.write.averaging_commodity_name,
-                   parsed->positionals[next++],
-                   "averaging_commodity_name");
-        read_token(
+        commodity_future_convention_read_token(req.change.write.balance_of_the_month,
+                                               parsed->positionals[next++],
+                                               "balance_of_the_month");
+        commodity_future_convention_read_token(
+            req.change.write.balance_of_the_month_pricing_calendar,
+            parsed->positionals[next++],
+            "balance_of_the_month_pricing_calendar");
+        commodity_future_convention_read_token(req.change.write.option_underlying_future_convention,
+                                               parsed->positionals[next++],
+                                               "option_underlying_future_convention");
+        commodity_future_convention_read_token(req.change.write.averaging_commodity_name,
+                                               parsed->positionals[next++],
+                                               "averaging_commodity_name");
+        commodity_future_convention_read_token(
             req.change.write.averaging_period, parsed->positionals[next++], "averaging_period");
-        read_token(req.change.write.averaging_pricing_calendar,
-                   parsed->positionals[next++],
-                   "averaging_pricing_calendar");
-        read_token(req.change.write.averaging_conventions,
-                   parsed->positionals[next++],
-                   "averaging_conventions");
-        read_token(req.change.write.averaging_use_business_days,
-                   parsed->positionals[next++],
-                   "averaging_use_business_days");
-        read_token(req.change.write.averaging_delivery_roll_days,
-                   parsed->positionals[next++],
-                   "averaging_delivery_roll_days");
-        read_token(req.change.write.averaging_future_month_offset,
-                   parsed->positionals[next++],
-                   "averaging_future_month_offset");
-        read_token(req.change.write.averaging_daily_expiry_offset,
-                   parsed->positionals[next++],
-                   "averaging_daily_expiry_offset");
-        read_token(req.change.write.prohibited_expiries,
-                   parsed->positionals[next++],
-                   "prohibited_expiries");
-        read_token(req.change.write.future_continuation_mappings,
-                   parsed->positionals[next++],
-                   "future_continuation_mappings");
-        read_token(req.change.write.option_continuation_mappings,
-                   parsed->positionals[next++],
-                   "option_continuation_mappings");
-        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+        commodity_future_convention_read_token(req.change.write.averaging_pricing_calendar,
+                                               parsed->positionals[next++],
+                                               "averaging_pricing_calendar");
+        commodity_future_convention_read_token(req.change.write.averaging_conventions,
+                                               parsed->positionals[next++],
+                                               "averaging_conventions");
+        commodity_future_convention_read_token(req.change.write.averaging_use_business_days,
+                                               parsed->positionals[next++],
+                                               "averaging_use_business_days");
+        commodity_future_convention_read_token(req.change.write.averaging_delivery_roll_days,
+                                               parsed->positionals[next++],
+                                               "averaging_delivery_roll_days");
+        commodity_future_convention_read_token(req.change.write.averaging_future_month_offset,
+                                               parsed->positionals[next++],
+                                               "averaging_future_month_offset");
+        commodity_future_convention_read_token(req.change.write.averaging_daily_expiry_offset,
+                                               parsed->positionals[next++],
+                                               "averaging_daily_expiry_offset");
+        commodity_future_convention_read_token(req.change.write.prohibited_expiries,
+                                               parsed->positionals[next++],
+                                               "prohibited_expiries");
+        commodity_future_convention_read_token(req.change.write.future_continuation_mappings,
+                                               parsed->positionals[next++],
+                                               "future_continuation_mappings");
+        commodity_future_convention_read_token(req.change.write.option_continuation_mappings,
+                                               parsed->positionals[next++],
+                                               "option_continuation_mappings");
+        commodity_future_convention_read_token(
+            req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -570,125 +588,141 @@ void commodity_future_convention_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.id, parsed->positionals[next++], "id");
+        commodity_future_convention_read_token(
             req.change.write.contract_frequency, parsed->positionals[next++], "contract_frequency");
-        read_token(req.change.write.calendar, parsed->positionals[next++], "calendar");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        commodity_future_convention_read_token(
             req.change.write.expiry_calendar, parsed->positionals[next++], "expiry_calendar");
-        read_token(
+        commodity_future_convention_read_token(
             req.change.write.expiry_month_lag, parsed->positionals[next++], "expiry_month_lag");
-        read_token(
+        commodity_future_convention_read_token(
             req.change.write.one_contract_month, parsed->positionals[next++], "one_contract_month");
-        read_token(req.change.write.offset_days, parsed->positionals[next++], "offset_days");
-        read_token(req.change.write.business_day_convention,
-                   parsed->positionals[next++],
-                   "business_day_convention");
-        read_token(req.change.write.adjust_before_offset,
-                   parsed->positionals[next++],
-                   "adjust_before_offset");
-        read_token(req.change.write.is_averaging, parsed->positionals[next++], "is_averaging");
-        read_token(req.change.write.valid_contract_months,
-                   parsed->positionals[next++],
-                   "valid_contract_months");
-        read_token(req.change.write.anchor_day_of_month,
-                   parsed->positionals[next++],
-                   "anchor_day_of_month");
-        read_token(req.change.write.anchor_calendar_days_before,
-                   parsed->positionals[next++],
-                   "anchor_calendar_days_before");
-        read_token(req.change.write.anchor_business_days_after,
-                   parsed->positionals[next++],
-                   "anchor_business_days_after");
-        read_token(req.change.write.anchor_nth_nth, parsed->positionals[next++], "anchor_nth_nth");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.offset_days, parsed->positionals[next++], "offset_days");
+        commodity_future_convention_read_token(req.change.write.business_day_convention,
+                                               parsed->positionals[next++],
+                                               "business_day_convention");
+        commodity_future_convention_read_token(req.change.write.adjust_before_offset,
+                                               parsed->positionals[next++],
+                                               "adjust_before_offset");
+        commodity_future_convention_read_token(
+            req.change.write.is_averaging, parsed->positionals[next++], "is_averaging");
+        commodity_future_convention_read_token(req.change.write.valid_contract_months,
+                                               parsed->positionals[next++],
+                                               "valid_contract_months");
+        commodity_future_convention_read_token(req.change.write.anchor_day_of_month,
+                                               parsed->positionals[next++],
+                                               "anchor_day_of_month");
+        commodity_future_convention_read_token(req.change.write.anchor_calendar_days_before,
+                                               parsed->positionals[next++],
+                                               "anchor_calendar_days_before");
+        commodity_future_convention_read_token(req.change.write.anchor_business_days_after,
+                                               parsed->positionals[next++],
+                                               "anchor_business_days_after");
+        commodity_future_convention_read_token(
+            req.change.write.anchor_nth_nth, parsed->positionals[next++], "anchor_nth_nth");
+        commodity_future_convention_read_token(
             req.change.write.anchor_nth_weekday, parsed->positionals[next++], "anchor_nth_weekday");
-        read_token(req.change.write.anchor_last_weekday,
-                   parsed->positionals[next++],
-                   "anchor_last_weekday");
-        read_token(req.change.write.anchor_weekly_day_of_the_week,
-                   parsed->positionals[next++],
-                   "anchor_weekly_day_of_the_week");
-        read_token(req.change.write.option_expiry_month_lag,
-                   parsed->positionals[next++],
-                   "option_expiry_month_lag");
-        read_token(req.change.write.option_contract_frequency,
-                   parsed->positionals[next++],
-                   "option_contract_frequency");
-        read_token(req.change.write.option_expiry_offset,
-                   parsed->positionals[next++],
-                   "option_expiry_offset");
-        read_token(req.change.write.option_calendar_days_before,
-                   parsed->positionals[next++],
-                   "option_calendar_days_before");
-        read_token(req.change.write.option_min_business_days_before,
-                   parsed->positionals[next++],
-                   "option_min_business_days_before");
-        read_token(
+        commodity_future_convention_read_token(req.change.write.anchor_last_weekday,
+                                               parsed->positionals[next++],
+                                               "anchor_last_weekday");
+        commodity_future_convention_read_token(req.change.write.anchor_weekly_day_of_the_week,
+                                               parsed->positionals[next++],
+                                               "anchor_weekly_day_of_the_week");
+        commodity_future_convention_read_token(req.change.write.option_expiry_month_lag,
+                                               parsed->positionals[next++],
+                                               "option_expiry_month_lag");
+        commodity_future_convention_read_token(req.change.write.option_contract_frequency,
+                                               parsed->positionals[next++],
+                                               "option_contract_frequency");
+        commodity_future_convention_read_token(req.change.write.option_expiry_offset,
+                                               parsed->positionals[next++],
+                                               "option_expiry_offset");
+        commodity_future_convention_read_token(req.change.write.option_calendar_days_before,
+                                               parsed->positionals[next++],
+                                               "option_calendar_days_before");
+        commodity_future_convention_read_token(req.change.write.option_min_business_days_before,
+                                               parsed->positionals[next++],
+                                               "option_min_business_days_before");
+        commodity_future_convention_read_token(
             req.change.write.option_expiry_day, parsed->positionals[next++], "option_expiry_day");
-        read_token(req.change.write.option_nth_nth, parsed->positionals[next++], "option_nth_nth");
-        read_token(
+        commodity_future_convention_read_token(
+            req.change.write.option_nth_nth, parsed->positionals[next++], "option_nth_nth");
+        commodity_future_convention_read_token(
             req.change.write.option_nth_weekday, parsed->positionals[next++], "option_nth_weekday");
-        read_token(req.change.write.option_expiry_last_weekday_of_month,
-                   parsed->positionals[next++],
-                   "option_expiry_last_weekday_of_month");
-        read_token(req.change.write.option_expiry_weekly_day_of_the_week,
-                   parsed->positionals[next++],
-                   "option_expiry_weekly_day_of_the_week");
-        read_token(req.change.write.option_business_day_convention,
-                   parsed->positionals[next++],
-                   "option_business_day_convention");
-        read_token(req.change.write.hours_per_day, parsed->positionals[next++], "hours_per_day");
-        read_token(req.change.write.off_peak_index, parsed->positionals[next++], "off_peak_index");
-        read_token(req.change.write.peak_index, parsed->positionals[next++], "peak_index");
-        read_token(req.change.write.off_peak_hours, parsed->positionals[next++], "off_peak_hours");
-        read_token(req.change.write.peak_calendar, parsed->positionals[next++], "peak_calendar");
-        read_token(req.change.write.index_name, parsed->positionals[next++], "index_name");
-        read_token(req.change.write.savings_time, parsed->positionals[next++], "savings_time");
-        read_token(
+        commodity_future_convention_read_token(req.change.write.option_expiry_last_weekday_of_month,
+                                               parsed->positionals[next++],
+                                               "option_expiry_last_weekday_of_month");
+        commodity_future_convention_read_token(
+            req.change.write.option_expiry_weekly_day_of_the_week,
+            parsed->positionals[next++],
+            "option_expiry_weekly_day_of_the_week");
+        commodity_future_convention_read_token(req.change.write.option_business_day_convention,
+                                               parsed->positionals[next++],
+                                               "option_business_day_convention");
+        commodity_future_convention_read_token(
+            req.change.write.hours_per_day, parsed->positionals[next++], "hours_per_day");
+        commodity_future_convention_read_token(
+            req.change.write.off_peak_index, parsed->positionals[next++], "off_peak_index");
+        commodity_future_convention_read_token(
+            req.change.write.peak_index, parsed->positionals[next++], "peak_index");
+        commodity_future_convention_read_token(
+            req.change.write.off_peak_hours, parsed->positionals[next++], "off_peak_hours");
+        commodity_future_convention_read_token(
+            req.change.write.peak_calendar, parsed->positionals[next++], "peak_calendar");
+        commodity_future_convention_read_token(
+            req.change.write.index_name, parsed->positionals[next++], "index_name");
+        commodity_future_convention_read_token(
+            req.change.write.savings_time, parsed->positionals[next++], "savings_time");
+        commodity_future_convention_read_token(
             req.change.write.delivery_location, parsed->positionals[next++], "delivery_location");
-        read_token(req.change.write.balance_of_the_month,
-                   parsed->positionals[next++],
-                   "balance_of_the_month");
-        read_token(req.change.write.balance_of_the_month_pricing_calendar,
-                   parsed->positionals[next++],
-                   "balance_of_the_month_pricing_calendar");
-        read_token(req.change.write.option_underlying_future_convention,
-                   parsed->positionals[next++],
-                   "option_underlying_future_convention");
-        read_token(req.change.write.averaging_commodity_name,
-                   parsed->positionals[next++],
-                   "averaging_commodity_name");
-        read_token(
+        commodity_future_convention_read_token(req.change.write.balance_of_the_month,
+                                               parsed->positionals[next++],
+                                               "balance_of_the_month");
+        commodity_future_convention_read_token(
+            req.change.write.balance_of_the_month_pricing_calendar,
+            parsed->positionals[next++],
+            "balance_of_the_month_pricing_calendar");
+        commodity_future_convention_read_token(req.change.write.option_underlying_future_convention,
+                                               parsed->positionals[next++],
+                                               "option_underlying_future_convention");
+        commodity_future_convention_read_token(req.change.write.averaging_commodity_name,
+                                               parsed->positionals[next++],
+                                               "averaging_commodity_name");
+        commodity_future_convention_read_token(
             req.change.write.averaging_period, parsed->positionals[next++], "averaging_period");
-        read_token(req.change.write.averaging_pricing_calendar,
-                   parsed->positionals[next++],
-                   "averaging_pricing_calendar");
-        read_token(req.change.write.averaging_conventions,
-                   parsed->positionals[next++],
-                   "averaging_conventions");
-        read_token(req.change.write.averaging_use_business_days,
-                   parsed->positionals[next++],
-                   "averaging_use_business_days");
-        read_token(req.change.write.averaging_delivery_roll_days,
-                   parsed->positionals[next++],
-                   "averaging_delivery_roll_days");
-        read_token(req.change.write.averaging_future_month_offset,
-                   parsed->positionals[next++],
-                   "averaging_future_month_offset");
-        read_token(req.change.write.averaging_daily_expiry_offset,
-                   parsed->positionals[next++],
-                   "averaging_daily_expiry_offset");
-        read_token(req.change.write.prohibited_expiries,
-                   parsed->positionals[next++],
-                   "prohibited_expiries");
-        read_token(req.change.write.future_continuation_mappings,
-                   parsed->positionals[next++],
-                   "future_continuation_mappings");
-        read_token(req.change.write.option_continuation_mappings,
-                   parsed->positionals[next++],
-                   "option_continuation_mappings");
-        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+        commodity_future_convention_read_token(req.change.write.averaging_pricing_calendar,
+                                               parsed->positionals[next++],
+                                               "averaging_pricing_calendar");
+        commodity_future_convention_read_token(req.change.write.averaging_conventions,
+                                               parsed->positionals[next++],
+                                               "averaging_conventions");
+        commodity_future_convention_read_token(req.change.write.averaging_use_business_days,
+                                               parsed->positionals[next++],
+                                               "averaging_use_business_days");
+        commodity_future_convention_read_token(req.change.write.averaging_delivery_roll_days,
+                                               parsed->positionals[next++],
+                                               "averaging_delivery_roll_days");
+        commodity_future_convention_read_token(req.change.write.averaging_future_month_offset,
+                                               parsed->positionals[next++],
+                                               "averaging_future_month_offset");
+        commodity_future_convention_read_token(req.change.write.averaging_daily_expiry_offset,
+                                               parsed->positionals[next++],
+                                               "averaging_daily_expiry_offset");
+        commodity_future_convention_read_token(req.change.write.prohibited_expiries,
+                                               parsed->positionals[next++],
+                                               "prohibited_expiries");
+        commodity_future_convention_read_token(req.change.write.future_continuation_mappings,
+                                               parsed->positionals[next++],
+                                               "future_continuation_mappings");
+        commodity_future_convention_read_token(req.change.write.option_continuation_mappings,
+                                               parsed->positionals[next++],
+                                               "option_continuation_mappings");
+        commodity_future_convention_read_token(
+            req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -750,125 +784,141 @@ void commodity_future_convention_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::commodity_future_convention_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(
+            commodity_future_convention_read_token(
+                change.write.id, parsed->positionals[next++], "id");
+            commodity_future_convention_read_token(
                 change.write.contract_frequency, parsed->positionals[next++], "contract_frequency");
-            read_token(change.write.calendar, parsed->positionals[next++], "calendar");
-            read_token(
+            commodity_future_convention_read_token(
+                change.write.calendar, parsed->positionals[next++], "calendar");
+            commodity_future_convention_read_token(
                 change.write.expiry_calendar, parsed->positionals[next++], "expiry_calendar");
-            read_token(
+            commodity_future_convention_read_token(
                 change.write.expiry_month_lag, parsed->positionals[next++], "expiry_month_lag");
-            read_token(
+            commodity_future_convention_read_token(
                 change.write.one_contract_month, parsed->positionals[next++], "one_contract_month");
-            read_token(change.write.offset_days, parsed->positionals[next++], "offset_days");
-            read_token(change.write.business_day_convention,
-                       parsed->positionals[next++],
-                       "business_day_convention");
-            read_token(change.write.adjust_before_offset,
-                       parsed->positionals[next++],
-                       "adjust_before_offset");
-            read_token(change.write.is_averaging, parsed->positionals[next++], "is_averaging");
-            read_token(change.write.valid_contract_months,
-                       parsed->positionals[next++],
-                       "valid_contract_months");
-            read_token(change.write.anchor_day_of_month,
-                       parsed->positionals[next++],
-                       "anchor_day_of_month");
-            read_token(change.write.anchor_calendar_days_before,
-                       parsed->positionals[next++],
-                       "anchor_calendar_days_before");
-            read_token(change.write.anchor_business_days_after,
-                       parsed->positionals[next++],
-                       "anchor_business_days_after");
-            read_token(change.write.anchor_nth_nth, parsed->positionals[next++], "anchor_nth_nth");
-            read_token(
+            commodity_future_convention_read_token(
+                change.write.offset_days, parsed->positionals[next++], "offset_days");
+            commodity_future_convention_read_token(change.write.business_day_convention,
+                                                   parsed->positionals[next++],
+                                                   "business_day_convention");
+            commodity_future_convention_read_token(change.write.adjust_before_offset,
+                                                   parsed->positionals[next++],
+                                                   "adjust_before_offset");
+            commodity_future_convention_read_token(
+                change.write.is_averaging, parsed->positionals[next++], "is_averaging");
+            commodity_future_convention_read_token(change.write.valid_contract_months,
+                                                   parsed->positionals[next++],
+                                                   "valid_contract_months");
+            commodity_future_convention_read_token(change.write.anchor_day_of_month,
+                                                   parsed->positionals[next++],
+                                                   "anchor_day_of_month");
+            commodity_future_convention_read_token(change.write.anchor_calendar_days_before,
+                                                   parsed->positionals[next++],
+                                                   "anchor_calendar_days_before");
+            commodity_future_convention_read_token(change.write.anchor_business_days_after,
+                                                   parsed->positionals[next++],
+                                                   "anchor_business_days_after");
+            commodity_future_convention_read_token(
+                change.write.anchor_nth_nth, parsed->positionals[next++], "anchor_nth_nth");
+            commodity_future_convention_read_token(
                 change.write.anchor_nth_weekday, parsed->positionals[next++], "anchor_nth_weekday");
-            read_token(change.write.anchor_last_weekday,
-                       parsed->positionals[next++],
-                       "anchor_last_weekday");
-            read_token(change.write.anchor_weekly_day_of_the_week,
-                       parsed->positionals[next++],
-                       "anchor_weekly_day_of_the_week");
-            read_token(change.write.option_expiry_month_lag,
-                       parsed->positionals[next++],
-                       "option_expiry_month_lag");
-            read_token(change.write.option_contract_frequency,
-                       parsed->positionals[next++],
-                       "option_contract_frequency");
-            read_token(change.write.option_expiry_offset,
-                       parsed->positionals[next++],
-                       "option_expiry_offset");
-            read_token(change.write.option_calendar_days_before,
-                       parsed->positionals[next++],
-                       "option_calendar_days_before");
-            read_token(change.write.option_min_business_days_before,
-                       parsed->positionals[next++],
-                       "option_min_business_days_before");
-            read_token(
+            commodity_future_convention_read_token(change.write.anchor_last_weekday,
+                                                   parsed->positionals[next++],
+                                                   "anchor_last_weekday");
+            commodity_future_convention_read_token(change.write.anchor_weekly_day_of_the_week,
+                                                   parsed->positionals[next++],
+                                                   "anchor_weekly_day_of_the_week");
+            commodity_future_convention_read_token(change.write.option_expiry_month_lag,
+                                                   parsed->positionals[next++],
+                                                   "option_expiry_month_lag");
+            commodity_future_convention_read_token(change.write.option_contract_frequency,
+                                                   parsed->positionals[next++],
+                                                   "option_contract_frequency");
+            commodity_future_convention_read_token(change.write.option_expiry_offset,
+                                                   parsed->positionals[next++],
+                                                   "option_expiry_offset");
+            commodity_future_convention_read_token(change.write.option_calendar_days_before,
+                                                   parsed->positionals[next++],
+                                                   "option_calendar_days_before");
+            commodity_future_convention_read_token(change.write.option_min_business_days_before,
+                                                   parsed->positionals[next++],
+                                                   "option_min_business_days_before");
+            commodity_future_convention_read_token(
                 change.write.option_expiry_day, parsed->positionals[next++], "option_expiry_day");
-            read_token(change.write.option_nth_nth, parsed->positionals[next++], "option_nth_nth");
-            read_token(
+            commodity_future_convention_read_token(
+                change.write.option_nth_nth, parsed->positionals[next++], "option_nth_nth");
+            commodity_future_convention_read_token(
                 change.write.option_nth_weekday, parsed->positionals[next++], "option_nth_weekday");
-            read_token(change.write.option_expiry_last_weekday_of_month,
-                       parsed->positionals[next++],
-                       "option_expiry_last_weekday_of_month");
-            read_token(change.write.option_expiry_weekly_day_of_the_week,
-                       parsed->positionals[next++],
-                       "option_expiry_weekly_day_of_the_week");
-            read_token(change.write.option_business_day_convention,
-                       parsed->positionals[next++],
-                       "option_business_day_convention");
-            read_token(change.write.hours_per_day, parsed->positionals[next++], "hours_per_day");
-            read_token(change.write.off_peak_index, parsed->positionals[next++], "off_peak_index");
-            read_token(change.write.peak_index, parsed->positionals[next++], "peak_index");
-            read_token(change.write.off_peak_hours, parsed->positionals[next++], "off_peak_hours");
-            read_token(change.write.peak_calendar, parsed->positionals[next++], "peak_calendar");
-            read_token(change.write.index_name, parsed->positionals[next++], "index_name");
-            read_token(change.write.savings_time, parsed->positionals[next++], "savings_time");
-            read_token(
+            commodity_future_convention_read_token(change.write.option_expiry_last_weekday_of_month,
+                                                   parsed->positionals[next++],
+                                                   "option_expiry_last_weekday_of_month");
+            commodity_future_convention_read_token(
+                change.write.option_expiry_weekly_day_of_the_week,
+                parsed->positionals[next++],
+                "option_expiry_weekly_day_of_the_week");
+            commodity_future_convention_read_token(change.write.option_business_day_convention,
+                                                   parsed->positionals[next++],
+                                                   "option_business_day_convention");
+            commodity_future_convention_read_token(
+                change.write.hours_per_day, parsed->positionals[next++], "hours_per_day");
+            commodity_future_convention_read_token(
+                change.write.off_peak_index, parsed->positionals[next++], "off_peak_index");
+            commodity_future_convention_read_token(
+                change.write.peak_index, parsed->positionals[next++], "peak_index");
+            commodity_future_convention_read_token(
+                change.write.off_peak_hours, parsed->positionals[next++], "off_peak_hours");
+            commodity_future_convention_read_token(
+                change.write.peak_calendar, parsed->positionals[next++], "peak_calendar");
+            commodity_future_convention_read_token(
+                change.write.index_name, parsed->positionals[next++], "index_name");
+            commodity_future_convention_read_token(
+                change.write.savings_time, parsed->positionals[next++], "savings_time");
+            commodity_future_convention_read_token(
                 change.write.delivery_location, parsed->positionals[next++], "delivery_location");
-            read_token(change.write.balance_of_the_month,
-                       parsed->positionals[next++],
-                       "balance_of_the_month");
-            read_token(change.write.balance_of_the_month_pricing_calendar,
-                       parsed->positionals[next++],
-                       "balance_of_the_month_pricing_calendar");
-            read_token(change.write.option_underlying_future_convention,
-                       parsed->positionals[next++],
-                       "option_underlying_future_convention");
-            read_token(change.write.averaging_commodity_name,
-                       parsed->positionals[next++],
-                       "averaging_commodity_name");
-            read_token(
+            commodity_future_convention_read_token(change.write.balance_of_the_month,
+                                                   parsed->positionals[next++],
+                                                   "balance_of_the_month");
+            commodity_future_convention_read_token(
+                change.write.balance_of_the_month_pricing_calendar,
+                parsed->positionals[next++],
+                "balance_of_the_month_pricing_calendar");
+            commodity_future_convention_read_token(change.write.option_underlying_future_convention,
+                                                   parsed->positionals[next++],
+                                                   "option_underlying_future_convention");
+            commodity_future_convention_read_token(change.write.averaging_commodity_name,
+                                                   parsed->positionals[next++],
+                                                   "averaging_commodity_name");
+            commodity_future_convention_read_token(
                 change.write.averaging_period, parsed->positionals[next++], "averaging_period");
-            read_token(change.write.averaging_pricing_calendar,
-                       parsed->positionals[next++],
-                       "averaging_pricing_calendar");
-            read_token(change.write.averaging_conventions,
-                       parsed->positionals[next++],
-                       "averaging_conventions");
-            read_token(change.write.averaging_use_business_days,
-                       parsed->positionals[next++],
-                       "averaging_use_business_days");
-            read_token(change.write.averaging_delivery_roll_days,
-                       parsed->positionals[next++],
-                       "averaging_delivery_roll_days");
-            read_token(change.write.averaging_future_month_offset,
-                       parsed->positionals[next++],
-                       "averaging_future_month_offset");
-            read_token(change.write.averaging_daily_expiry_offset,
-                       parsed->positionals[next++],
-                       "averaging_daily_expiry_offset");
-            read_token(change.write.prohibited_expiries,
-                       parsed->positionals[next++],
-                       "prohibited_expiries");
-            read_token(change.write.future_continuation_mappings,
-                       parsed->positionals[next++],
-                       "future_continuation_mappings");
-            read_token(change.write.option_continuation_mappings,
-                       parsed->positionals[next++],
-                       "option_continuation_mappings");
-            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+            commodity_future_convention_read_token(change.write.averaging_pricing_calendar,
+                                                   parsed->positionals[next++],
+                                                   "averaging_pricing_calendar");
+            commodity_future_convention_read_token(change.write.averaging_conventions,
+                                                   parsed->positionals[next++],
+                                                   "averaging_conventions");
+            commodity_future_convention_read_token(change.write.averaging_use_business_days,
+                                                   parsed->positionals[next++],
+                                                   "averaging_use_business_days");
+            commodity_future_convention_read_token(change.write.averaging_delivery_roll_days,
+                                                   parsed->positionals[next++],
+                                                   "averaging_delivery_roll_days");
+            commodity_future_convention_read_token(change.write.averaging_future_month_offset,
+                                                   parsed->positionals[next++],
+                                                   "averaging_future_month_offset");
+            commodity_future_convention_read_token(change.write.averaging_daily_expiry_offset,
+                                                   parsed->positionals[next++],
+                                                   "averaging_daily_expiry_offset");
+            commodity_future_convention_read_token(change.write.prohibited_expiries,
+                                                   parsed->positionals[next++],
+                                                   "prohibited_expiries");
+            commodity_future_convention_read_token(change.write.future_continuation_mappings,
+                                                   parsed->positionals[next++],
+                                                   "future_continuation_mappings");
+            commodity_future_convention_read_token(change.write.option_continuation_mappings,
+                                                   parsed->positionals[next++],
+                                                   "option_continuation_mappings");
+            commodity_future_convention_read_token(
+                change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -918,7 +968,8 @@ void commodity_future_convention_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.id, parsed->positionals[next++], "id");
+        commodity_future_convention_read_token(
+            req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -971,7 +1022,7 @@ void commodity_future_convention_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::commodity_future_convention_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            commodity_future_convention_read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(
                 messaging::commodity_future_convention_removal{.key = std::move(key)});
         }
@@ -1024,8 +1075,8 @@ void commodity_future_convention_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
-        apply_page(req, *parsed);
+        commodity_future_convention_read_token(req.key.id, parsed->positionals[next++], "id");
+        commodity_future_convention_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -1070,7 +1121,8 @@ void commodity_future_convention_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.commodity_future_convention.id, parsed->positionals[next++], "id");
+        commodity_future_convention_read_token(
+            req.key.commodity_future_convention.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

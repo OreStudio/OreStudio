@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string equity_cliquet_option_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,10 @@ std::string convert_to_table(const std::vector<equity_cliquet_option_instrument>
 
     for ([[maybe_unused]] const auto& cliquet : v) {
         table << cliquet.underlying_name << cliquet.currency << cliquet.notional
-              << cliquet.option_type << opt_str(cliquet.moneyness) << opt_str(cliquet.global_cap)
-              << opt_str(cliquet.global_floor) << opt_str(cliquet.premium) << fort::endr;
+              << cliquet.option_type << equity_cliquet_option_instrument_opt_str(cliquet.moneyness)
+              << equity_cliquet_option_instrument_opt_str(cliquet.global_cap)
+              << equity_cliquet_option_instrument_opt_str(cliquet.global_floor)
+              << equity_cliquet_option_instrument_opt_str(cliquet.premium) << fort::endr;
     }
     return table.to_string();
 }

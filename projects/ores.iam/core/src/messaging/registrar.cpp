@@ -417,7 +417,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             rh->my_permissions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+        list_role_permissions_page_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->role_permissions_page(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(

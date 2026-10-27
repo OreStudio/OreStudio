@@ -18,14 +18,12 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/scanner.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][scanner]");
 
 using namespace ores::logging;
 using ores::ore::xml::event_type;
@@ -55,7 +53,7 @@ auto collect(const std::string& document, bool& failed) -> std::vector<seen> {
 
 }
 
-TEST_CASE("a_document_without_markup_yields_one_text_event", tags) {
+TEST_CASE("a_document_without_markup_yields_one_text_event", "[ore][xml][scanner]") {
     bool failed = false;
     const auto events = collect("hello", failed);
 
@@ -65,7 +63,7 @@ TEST_CASE("a_document_without_markup_yields_one_text_event", tags) {
     CHECK(events[0].value == "hello");
 }
 
-TEST_CASE("an_element_yields_the_begin_and_the_end", tags) {
+TEST_CASE("an_element_yields_the_begin_and_the_end", "[ore][xml][scanner]") {
     bool failed = false;
     const auto events = collect("<a/>", failed);
 
@@ -77,7 +75,7 @@ TEST_CASE("an_element_yields_the_begin_and_the_end", tags) {
     CHECK(events[1].name == "a");
 }
 
-TEST_CASE("an_attribute_arrives_between_the_begin_and_the_first_child", tags) {
+TEST_CASE("an_attribute_arrives_between_the_begin_and_the_first_child", "[ore][xml][scanner]") {
     bool failed = false;
     const auto events = collect("<a x=\"1\" y='2'>t</a>", failed);
 
@@ -93,7 +91,7 @@ TEST_CASE("an_attribute_arrives_between_the_begin_and_the_first_child", tags) {
     CHECK(events[3].value == "t");
 }
 
-TEST_CASE("leading_whitespace_belongs_to_the_text", tags) {
+TEST_CASE("leading_whitespace_belongs_to_the_text", "[ore][xml][scanner]") {
     bool failed = false;
     const auto events = collect("<a>\n  indented</a>", failed);
 
@@ -103,7 +101,7 @@ TEST_CASE("leading_whitespace_belongs_to_the_text", tags) {
     CHECK(events[1].value == "\n  indented");
 }
 
-TEST_CASE("a_cdata_section_keeps_its_markup_characters", tags) {
+TEST_CASE("a_cdata_section_keeps_its_markup_characters", "[ore][xml][scanner]") {
     auto lg(make_logger(test_suite));
 
     bool failed = false;
@@ -115,7 +113,7 @@ TEST_CASE("a_cdata_section_keeps_its_markup_characters", tags) {
     CHECK(events[1].value == "if (x < 1 && y > 2) {}");
 }
 
-TEST_CASE("the_five_predefined_entities_decode", tags) {
+TEST_CASE("the_five_predefined_entities_decode", "[ore][xml][scanner]") {
     bool failed = false;
     const auto events = collect("<a>&lt;&gt;&amp;&quot;&apos;</a>", failed);
 
@@ -124,7 +122,7 @@ TEST_CASE("the_five_predefined_entities_decode", tags) {
     CHECK(events[1].value == "<>&\"'");
 }
 
-TEST_CASE("an_unknown_entity_is_kept_verbatim", tags) {
+TEST_CASE("an_unknown_entity_is_kept_verbatim", "[ore][xml][scanner]") {
     auto lg(make_logger(test_suite));
 
     bool failed = false;
@@ -135,7 +133,7 @@ TEST_CASE("an_unknown_entity_is_kept_verbatim", tags) {
     CHECK(events[1].value == "&nbsp;");
 }
 
-TEST_CASE("comments_and_processing_instructions_are_skipped", tags) {
+TEST_CASE("comments_and_processing_instructions_are_skipped", "[ore][xml][scanner]") {
     bool failed = false;
     const auto events = collect("<?xml version=\"1.0\"?><!-- a --><a><!-- b -->x</a>", failed);
 
@@ -145,7 +143,7 @@ TEST_CASE("comments_and_processing_instructions_are_skipped", tags) {
     CHECK(events[1].value == "x");
 }
 
-TEST_CASE("an_abruptly_closed_comment_runs_to_the_next_terminator", tags) {
+TEST_CASE("an_abruptly_closed_comment_runs_to_the_next_terminator", "[ore][xml][scanner]") {
     // ORE ships ore.xml files that open a comment as "<!-->", which XML
     // forbids and every parser in use repairs. The scanner must agree with
     // them or it reads the rest of the line as markup.
@@ -157,7 +155,7 @@ TEST_CASE("an_abruptly_closed_comment_runs_to_the_next_terminator", tags) {
     CHECK(events[0].name == "a");
 }
 
-TEST_CASE("an_end_tag_that_does_not_match_is_rejected_with_a_position", tags) {
+TEST_CASE("an_end_tag_that_does_not_match_is_rejected_with_a_position", "[ore][xml][scanner]") {
     reader input("<a>\n  <b></a>");
     for (;;) {
         const auto ev = input.next();
@@ -172,7 +170,7 @@ TEST_CASE("an_end_tag_that_does_not_match_is_rejected_with_a_position", tags) {
     FAIL("a mismatched end tag was accepted");
 }
 
-TEST_CASE("a_declaration_is_rejected", tags) {
+TEST_CASE("a_declaration_is_rejected", "[ore][xml][scanner]") {
     reader input("<!DOCTYPE a><a/>");
     CHECK(input.next().kind == event_type::error);
 }

@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+configuration_parameter_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!configuration_parameter_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::configuration_parameters_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> configuration_parameter_filter_condition(
+    const std::optional<messaging::configuration_parameters_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -349,8 +350,8 @@ configuration_parameter_repository::read_latest_by_configuration_id(
                                       domain::configuration_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        configuration_parameter_list_order(order, {"id"}, false),
+        configuration_parameter_filter_condition(filter),
         [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
         lg(),
         "Reading latest configuration parameters by configuration_id.");
@@ -374,7 +375,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_configura
     return execute_count_query<configuration_parameter_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        configuration_parameter_filter_condition(filter),
         lg(),
         "Counting configuration parameters by configuration_id");
 }
@@ -401,8 +402,8 @@ configuration_parameter_repository::read_latest_by_ore_parameter_id(
                                       domain::configuration_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        configuration_parameter_list_order(order, {"id"}, false),
+        configuration_parameter_filter_condition(filter),
         [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
         lg(),
         "Reading latest configuration parameters by ore_parameter_id.");
@@ -426,7 +427,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_ore_param
     return execute_count_query<configuration_parameter_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        configuration_parameter_filter_condition(filter),
         lg(),
         "Counting configuration parameters by ore_parameter_id");
 }
@@ -482,8 +483,8 @@ std::vector<domain::configuration_parameter> configuration_parameter_repository:
                                       domain::configuration_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        configuration_parameter_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), configuration_parameter_filter_condition(filter)),
         [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
         lg(),
         "Reading latest configuration parameters with pagination.");
@@ -502,7 +503,7 @@ std::uint32_t configuration_parameter_repository::get_total_parameter_value_coun
     return execute_count_query<configuration_parameter_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), configuration_parameter_filter_condition(filter)),
         lg(),
         "Counting configuration parameters");
 }

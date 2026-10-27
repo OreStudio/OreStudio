@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view trade_authorisation_request_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_trade_authorisation_request_handlers(
@@ -51,53 +51,53 @@ std::vector<ores::nats::service::subscription> register_trade_authorisation_requ
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_trade_authorisation_requests_request::nats_subject,
-        queue_group,
+        trade_authorisation_request_queue_group,
         [h](ores::nats::message msg) { h->list_trade_authorisation_requests(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_trade_authorisation_request_request::nats_subject,
-        queue_group,
+        trade_authorisation_request_queue_group,
         [h](ores::nats::message msg) { h->get_trade_authorisation_request(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_trade_authorisation_requests_request::nats_subject,
-                                        queue_group,
+                                        trade_authorisation_request_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_trade_authorisation_requests(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_trade_authorisation_request_request::nats_subject,
-        queue_group,
+        trade_authorisation_request_queue_group,
         [h](ores::nats::message msg) { h->put_trade_authorisation_request(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_trade_authorisation_requests_request::nats_subject,
-                                        queue_group,
+                                        trade_authorisation_request_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_trade_authorisation_requests(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         delete_trade_authorisation_request_request::nats_subject,
-        queue_group,
+        trade_authorisation_request_queue_group,
         [h](ores::nats::message msg) { h->delete_trade_authorisation_request(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_trade_authorisation_requests_request::nats_subject,
-                             queue_group,
+                             trade_authorisation_request_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_trade_authorisation_requests(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_by_trade_id_trade_authorisation_requests_request::nats_subject,
-                             queue_group,
+                             trade_authorisation_request_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_trade_id_trade_authorisation_requests(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_trade_authorisation_request_versions_request::nats_subject,
-                             queue_group,
+                             trade_authorisation_request_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_trade_authorisation_request_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_trade_authorisation_request_version_request::nats_subject,
-                             queue_group,
+                             trade_authorisation_request_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_trade_authorisation_request_version(std::move(msg));
                              }));

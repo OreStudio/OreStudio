@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_subject_areas_response
-    list_subject_areas(const messaging::list_subject_areas_request& request);
-    messaging::get_subject_area_response
-    get_subject_area(const messaging::get_subject_area_request& request);
-    messaging::get_many_subject_areas_response
-    get_many_subject_areas(const messaging::get_many_subject_areas_request& request);
-    messaging::put_subject_area_response
-    put_subject_area(const messaging::put_subject_area_request& request);
-    messaging::put_many_subject_areas_response
-    put_many_subject_areas(const messaging::put_many_subject_areas_request& request);
-    messaging::delete_subject_area_response
-    delete_subject_area(const messaging::delete_subject_area_request& request);
-    messaging::delete_many_subject_areas_response
-    delete_many_subject_areas(const messaging::delete_many_subject_areas_request& request);
-    messaging::list_subject_area_versions_response
-    list_subject_area_versions(const messaging::list_subject_area_versions_request& request);
-    messaging::get_subject_area_version_response
-    get_subject_area_version(const messaging::get_subject_area_version_request& request);
+    ::ores::dq::messaging::list_subject_areas_response
+    list_subject_areas(const ::ores::dq::messaging::list_subject_areas_request& request);
+    ::ores::dq::messaging::get_subject_area_response
+    get_subject_area(const ::ores::dq::messaging::get_subject_area_request& request);
+    ::ores::dq::messaging::get_many_subject_areas_response
+    get_many_subject_areas(const ::ores::dq::messaging::get_many_subject_areas_request& request);
+    ::ores::dq::messaging::put_subject_area_response
+    put_subject_area(const ::ores::dq::messaging::put_subject_area_request& request);
+    ::ores::dq::messaging::put_many_subject_areas_response
+    put_many_subject_areas(const ::ores::dq::messaging::put_many_subject_areas_request& request);
+    ::ores::dq::messaging::delete_subject_area_response
+    delete_subject_area(const ::ores::dq::messaging::delete_subject_area_request& request);
+    ::ores::dq::messaging::delete_many_subject_areas_response delete_many_subject_areas(
+        const ::ores::dq::messaging::delete_many_subject_areas_request& request);
+    ::ores::dq::messaging::list_subject_area_versions_response list_subject_area_versions(
+        const ::ores::dq::messaging::list_subject_area_versions_request& request);
+    ::ores::dq::messaging::get_subject_area_version_response get_subject_area_version(
+        const ::ores::dq::messaging::get_subject_area_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +191,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::subject_area_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::subject_area& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::subject_area_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::subject_area& out);
 };
 
 }

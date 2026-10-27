@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -35,20 +36,13 @@
 #include <string_view>
 #include <vector>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::business_unit_type;
 using ores::refdata::repository::business_unit_type_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_business_unit_type", tags) {
+TEST_CASE("write_single_business_unit_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_single_business_unit_type", tags) {
     CHECK(rows[0].name == ut.name);
 }
 
-TEST_CASE("write_multiple_business_unit_types", tags) {
+TEST_CASE("write_multiple_business_unit_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -89,7 +83,7 @@ TEST_CASE("write_multiple_business_unit_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_business_unit_types", tags) {
+TEST_CASE("read_latest_business_unit_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -114,7 +108,7 @@ TEST_CASE("read_latest_business_unit_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_business_unit_type_by_id", tags) {
+TEST_CASE("read_latest_business_unit_type_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -139,7 +133,7 @@ TEST_CASE("read_latest_business_unit_type_by_id", tags) {
     CHECK(read_types[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_all_business_unit_type_versions", tags) {
+TEST_CASE("read_all_business_unit_type_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -170,7 +164,7 @@ TEST_CASE("read_all_business_unit_type_versions", tags) {
     CHECK(v2->name == original_name + " v2");
 }
 
-TEST_CASE("remove_business_unit_type", tags) {
+TEST_CASE("remove_business_unit_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -206,7 +200,7 @@ TEST_CASE("remove_business_unit_type", tags) {
     CHECK(keeper_rows[0].name == keeper.name);
 }
 
-TEST_CASE("remove_multiple_business_unit_types", tags) {
+TEST_CASE("remove_multiple_business_unit_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -246,7 +240,7 @@ TEST_CASE("remove_multiple_business_unit_types", tags) {
     CHECK(keeper_rows[0].name == keeper.name);
 }
 
-TEST_CASE("read_latest_business_unit_types_paginated", tags) {
+TEST_CASE("read_latest_business_unit_types_paginated", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -273,7 +267,7 @@ TEST_CASE("read_latest_business_unit_types_paginated", tags) {
     CHECK(page[1].name == all[1].name);
 }
 
-TEST_CASE("get_total_business_unit_type_count", tags) {
+TEST_CASE("get_total_business_unit_type_count", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -292,7 +286,7 @@ TEST_CASE("get_total_business_unit_type_count", tags) {
     CHECK(count >= written.size());
 }
 
-TEST_CASE("read_business_unit_type_at_version", tags) {
+TEST_CASE("read_business_unit_type_at_version", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

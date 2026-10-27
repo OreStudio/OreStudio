@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_fsm_states_response
-    list_fsm_states(const messaging::list_fsm_states_request& request);
-    messaging::get_fsm_state_response
-    get_fsm_state(const messaging::get_fsm_state_request& request);
-    messaging::get_many_fsm_states_response
-    get_many_fsm_states(const messaging::get_many_fsm_states_request& request);
-    messaging::put_fsm_state_response
-    put_fsm_state(const messaging::put_fsm_state_request& request);
-    messaging::put_many_fsm_states_response
-    put_many_fsm_states(const messaging::put_many_fsm_states_request& request);
-    messaging::delete_fsm_state_response
-    delete_fsm_state(const messaging::delete_fsm_state_request& request);
-    messaging::delete_many_fsm_states_response
-    delete_many_fsm_states(const messaging::delete_many_fsm_states_request& request);
-    messaging::list_fsm_state_versions_response
-    list_fsm_state_versions(const messaging::list_fsm_state_versions_request& request);
-    messaging::get_fsm_state_version_response
-    get_fsm_state_version(const messaging::get_fsm_state_version_request& request);
+    ::ores::dq::messaging::list_fsm_states_response
+    list_fsm_states(const ::ores::dq::messaging::list_fsm_states_request& request);
+    ::ores::dq::messaging::get_fsm_state_response
+    get_fsm_state(const ::ores::dq::messaging::get_fsm_state_request& request);
+    ::ores::dq::messaging::get_many_fsm_states_response
+    get_many_fsm_states(const ::ores::dq::messaging::get_many_fsm_states_request& request);
+    ::ores::dq::messaging::put_fsm_state_response
+    put_fsm_state(const ::ores::dq::messaging::put_fsm_state_request& request);
+    ::ores::dq::messaging::put_many_fsm_states_response
+    put_many_fsm_states(const ::ores::dq::messaging::put_many_fsm_states_request& request);
+    ::ores::dq::messaging::delete_fsm_state_response
+    delete_fsm_state(const ::ores::dq::messaging::delete_fsm_state_request& request);
+    ::ores::dq::messaging::delete_many_fsm_states_response
+    delete_many_fsm_states(const ::ores::dq::messaging::delete_many_fsm_states_request& request);
+    ::ores::dq::messaging::list_fsm_state_versions_response
+    list_fsm_state_versions(const ::ores::dq::messaging::list_fsm_state_versions_request& request);
+    ::ores::dq::messaging::get_fsm_state_version_response
+    get_fsm_state_version(const ::ores::dq::messaging::get_fsm_state_version_request& request);
     /**@}*/
 
     /**
@@ -203,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::fsm_state_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::fsm_state& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::fsm_state_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::fsm_state& out);
 };
 
 }

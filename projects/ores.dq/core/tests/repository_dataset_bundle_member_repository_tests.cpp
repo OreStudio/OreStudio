@@ -25,16 +25,10 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::dq::generators;
@@ -43,7 +37,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::dataset_bundle_member_repository;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("write_single_dataset_bundle_member", tags) {
+TEST_CASE("write_single_dataset_bundle_member", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -66,7 +60,7 @@ TEST_CASE("write_single_dataset_bundle_member", tags) {
     CHECK(read_members[0].dataset_code == member.dataset_code);
 }
 
-TEST_CASE("write_multiple_dataset_bundle_members", tags) {
+TEST_CASE("write_multiple_dataset_bundle_members", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -98,7 +92,7 @@ TEST_CASE("write_multiple_dataset_bundle_members", tags) {
     }
 }
 
-TEST_CASE("read_latest_dataset_bundle_members", tags) {
+TEST_CASE("read_latest_dataset_bundle_members", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -131,7 +125,7 @@ TEST_CASE("read_latest_dataset_bundle_members", tags) {
     }
 }
 
-TEST_CASE("read_latest_dataset_bundle_members_by_bundle", tags) {
+TEST_CASE("read_latest_dataset_bundle_members_by_bundle", "[repository]") {
 
     auto lg(make_logger(test_suite));
 

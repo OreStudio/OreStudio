@@ -70,9 +70,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::trade_summary> read_one(repository::trade_summary_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::trade_summary_key& key) {
+std::vector<domain::trade_summary>
+trade_summary_read_one(repository::trade_summary_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::trade_summary_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -170,7 +171,7 @@ messaging::list_trade_summaries_response trade_summary_service::list_trade_summa
 messaging::get_trade_summary_response
 trade_summary_service::get_trade_summary(const messaging::get_trade_summary_request& request) {
     messaging::get_trade_summary_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = trade_summary_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "trade_summary"});
         return response;
@@ -189,7 +190,7 @@ messaging::get_many_trade_summaries_response trade_summary_service::get_many_tra
     for (const auto& k : request.keys) {
         messaging::trade_summary_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = trade_summary_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.trade_summary = std::move(found.front());
         response.entries.push_back(std::move(entry));

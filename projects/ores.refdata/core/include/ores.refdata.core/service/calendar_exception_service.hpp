@@ -75,27 +75,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_calendar_exceptions_response
-    list_calendar_exceptions(const messaging::list_calendar_exceptions_request& request);
-    messaging::get_calendar_exception_response
-    get_calendar_exception(const messaging::get_calendar_exception_request& request);
-    messaging::get_many_calendar_exceptions_response
-    get_many_calendar_exceptions(const messaging::get_many_calendar_exceptions_request& request);
-    messaging::put_calendar_exception_response
-    put_calendar_exception(const messaging::put_calendar_exception_request& request);
-    messaging::put_many_calendar_exceptions_response
-    put_many_calendar_exceptions(const messaging::put_many_calendar_exceptions_request& request);
-    messaging::delete_calendar_exception_response
-    delete_calendar_exception(const messaging::delete_calendar_exception_request& request);
-    messaging::delete_many_calendar_exceptions_response delete_many_calendar_exceptions(
-        const messaging::delete_many_calendar_exceptions_request& request);
-    messaging::list_by_calendar_code_calendar_exceptions_response
+    ::ores::refdata::messaging::list_calendar_exceptions_response list_calendar_exceptions(
+        const ::ores::refdata::messaging::list_calendar_exceptions_request& request);
+    ::ores::refdata::messaging::get_calendar_exception_response get_calendar_exception(
+        const ::ores::refdata::messaging::get_calendar_exception_request& request);
+    ::ores::refdata::messaging::get_many_calendar_exceptions_response get_many_calendar_exceptions(
+        const ::ores::refdata::messaging::get_many_calendar_exceptions_request& request);
+    ::ores::refdata::messaging::put_calendar_exception_response put_calendar_exception(
+        const ::ores::refdata::messaging::put_calendar_exception_request& request);
+    ::ores::refdata::messaging::put_many_calendar_exceptions_response put_many_calendar_exceptions(
+        const ::ores::refdata::messaging::put_many_calendar_exceptions_request& request);
+    ::ores::refdata::messaging::delete_calendar_exception_response delete_calendar_exception(
+        const ::ores::refdata::messaging::delete_calendar_exception_request& request);
+    ::ores::refdata::messaging::delete_many_calendar_exceptions_response
+    delete_many_calendar_exceptions(
+        const ::ores::refdata::messaging::delete_many_calendar_exceptions_request& request);
+    ::ores::refdata::messaging::list_by_calendar_code_calendar_exceptions_response
     list_by_calendar_code_calendar_exceptions(
-        const messaging::list_by_calendar_code_calendar_exceptions_request& request);
-    messaging::list_calendar_exception_versions_response list_calendar_exception_versions(
-        const messaging::list_calendar_exception_versions_request& request);
-    messaging::get_calendar_exception_version_response get_calendar_exception_version(
-        const messaging::get_calendar_exception_version_request& request);
+        const ::ores::refdata::messaging::list_by_calendar_code_calendar_exceptions_request&
+            request);
+    ::ores::refdata::messaging::list_calendar_exception_versions_response
+    list_calendar_exception_versions(
+        const ::ores::refdata::messaging::list_calendar_exception_versions_request& request);
+    ::ores::refdata::messaging::get_calendar_exception_version_response
+    get_calendar_exception_version(
+        const ::ores::refdata::messaging::get_calendar_exception_version_request& request);
     /**@}*/
 
     /**
@@ -230,9 +234,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::calendar_exception_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::calendar_exception& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::calendar_exception_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::calendar_exception& out);
 };
 
 }

@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::payment_frequency> read_one(repository::payment_frequency_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::payment_frequency_key& key) {
+std::vector<domain::payment_frequency>
+payment_frequency_read_one(repository::payment_frequency_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::payment_frequency_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::payment_frequency> read_one(repository::payment_frequency_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::payment_frequency_key key_from(const domain::payment_frequency& v) {
+messaging::payment_frequency_key payment_frequency_key_from(const domain::payment_frequency& v) {
     messaging::payment_frequency_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,8 @@ messaging::payment_frequency_key key_from(const domain::payment_frequency& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::payment_frequency to_domain(const messaging::payment_frequency_write& write) {
+domain::payment_frequency
+payment_frequency_to_domain(const messaging::payment_frequency_write& write) {
     domain::payment_frequency v;
     v.code = write.code;
     v.name = write.name;
@@ -143,7 +145,7 @@ messaging::list_payment_frequencies_response payment_frequency_service::list_pay
 messaging::get_payment_frequency_response payment_frequency_service::get_payment_frequency(
     const messaging::get_payment_frequency_request& request) {
     messaging::get_payment_frequency_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = payment_frequency_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "payment_frequency"});
         return response;
@@ -163,7 +165,7 @@ payment_frequency_service::get_many_payment_frequencies(
     for (const auto& k : request.keys) {
         messaging::payment_frequency_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = payment_frequency_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.payment_frequency = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -179,7 +181,7 @@ messaging::put_payment_frequency_response payment_frequency_service::put_payment
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = payment_frequency_read_one(repo_, ctx_, payment_frequency_key_from(value));
     if (!written.empty())
         response.payment_frequency = std::move(written.front());
     return response;
@@ -212,7 +214,7 @@ payment_frequency_service::put_many_payment_frequencies(
     repo_.write(ctx_, batch, claims);
     response.payment_frequencies.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = payment_frequency_read_one(repo_, ctx_, payment_frequency_key_from(value));
         response.payment_frequencies.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -246,7 +248,7 @@ messaging::delete_payment_frequency_response payment_frequency_service::delete_p
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = payment_frequency_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "payment_frequency",
@@ -335,8 +337,8 @@ payment_frequency_service::prepare_change(const messaging::payment_frequency_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = payment_frequency_to_domain(change.write);
+    const auto current = payment_frequency_read_one(repo_, ctx_, payment_frequency_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

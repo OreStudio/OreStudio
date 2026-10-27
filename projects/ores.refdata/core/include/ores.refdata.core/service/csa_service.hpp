@@ -76,22 +76,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_csas_response list_csas(const messaging::list_csas_request& request);
-    messaging::get_csa_response get_csa(const messaging::get_csa_request& request);
-    messaging::get_many_csas_response
-    get_many_csas(const messaging::get_many_csas_request& request);
-    messaging::put_csa_response put_csa(const messaging::put_csa_request& request);
-    messaging::put_many_csas_response
-    put_many_csas(const messaging::put_many_csas_request& request);
-    messaging::delete_csa_response delete_csa(const messaging::delete_csa_request& request);
-    messaging::delete_many_csas_response
-    delete_many_csas(const messaging::delete_many_csas_request& request);
-    messaging::list_by_netting_set_id_csas_response
-    list_by_netting_set_id_csas(const messaging::list_by_netting_set_id_csas_request& request);
-    messaging::list_csa_versions_response
-    list_csa_versions(const messaging::list_csa_versions_request& request);
-    messaging::get_csa_version_response
-    get_csa_version(const messaging::get_csa_version_request& request);
+    ::ores::refdata::messaging::list_csas_response
+    list_csas(const ::ores::refdata::messaging::list_csas_request& request);
+    ::ores::refdata::messaging::get_csa_response
+    get_csa(const ::ores::refdata::messaging::get_csa_request& request);
+    ::ores::refdata::messaging::get_many_csas_response
+    get_many_csas(const ::ores::refdata::messaging::get_many_csas_request& request);
+    ::ores::refdata::messaging::put_csa_response
+    put_csa(const ::ores::refdata::messaging::put_csa_request& request);
+    ::ores::refdata::messaging::put_many_csas_response
+    put_many_csas(const ::ores::refdata::messaging::put_many_csas_request& request);
+    ::ores::refdata::messaging::delete_csa_response
+    delete_csa(const ::ores::refdata::messaging::delete_csa_request& request);
+    ::ores::refdata::messaging::delete_many_csas_response
+    delete_many_csas(const ::ores::refdata::messaging::delete_many_csas_request& request);
+    ::ores::refdata::messaging::list_by_netting_set_id_csas_response list_by_netting_set_id_csas(
+        const ::ores::refdata::messaging::list_by_netting_set_id_csas_request& request);
+    ::ores::refdata::messaging::list_csa_versions_response
+    list_csa_versions(const ::ores::refdata::messaging::list_csa_versions_request& request);
+    ::ores::refdata::messaging::get_csa_version_response
+    get_csa_version(const ::ores::refdata::messaging::get_csa_version_request& request);
     /**@}*/
 
     /**
@@ -249,9 +253,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::csa_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::csa& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::csa_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::csa& out);
 };
 
 }

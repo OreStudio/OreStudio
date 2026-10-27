@@ -76,26 +76,32 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_counterparty_business_centres_response list_counterparty_business_centres(
-        const messaging::list_counterparty_business_centres_request& request);
-    messaging::get_counterparty_business_centre_response get_counterparty_business_centre(
-        const messaging::get_counterparty_business_centre_request& request);
-    messaging::get_many_counterparty_business_centres_response
+    ::ores::refdata::messaging::list_counterparty_business_centres_response
+    list_counterparty_business_centres(
+        const ::ores::refdata::messaging::list_counterparty_business_centres_request& request);
+    ::ores::refdata::messaging::get_counterparty_business_centre_response
+    get_counterparty_business_centre(
+        const ::ores::refdata::messaging::get_counterparty_business_centre_request& request);
+    ::ores::refdata::messaging::get_many_counterparty_business_centres_response
     get_many_counterparty_business_centres(
-        const messaging::get_many_counterparty_business_centres_request& request);
-    messaging::put_counterparty_business_centre_response put_counterparty_business_centre(
-        const messaging::put_counterparty_business_centre_request& request);
-    messaging::put_many_counterparty_business_centres_response
+        const ::ores::refdata::messaging::get_many_counterparty_business_centres_request& request);
+    ::ores::refdata::messaging::put_counterparty_business_centre_response
+    put_counterparty_business_centre(
+        const ::ores::refdata::messaging::put_counterparty_business_centre_request& request);
+    ::ores::refdata::messaging::put_many_counterparty_business_centres_response
     put_many_counterparty_business_centres(
-        const messaging::put_many_counterparty_business_centres_request& request);
-    messaging::delete_counterparty_business_centre_response delete_counterparty_business_centre(
-        const messaging::delete_counterparty_business_centre_request& request);
-    messaging::delete_many_counterparty_business_centres_response
+        const ::ores::refdata::messaging::put_many_counterparty_business_centres_request& request);
+    ::ores::refdata::messaging::delete_counterparty_business_centre_response
+    delete_counterparty_business_centre(
+        const ::ores::refdata::messaging::delete_counterparty_business_centre_request& request);
+    ::ores::refdata::messaging::delete_many_counterparty_business_centres_response
     delete_many_counterparty_business_centres(
-        const messaging::delete_many_counterparty_business_centres_request& request);
-    messaging::list_by_counterparty_id_counterparty_business_centres_response
+        const ::ores::refdata::messaging::delete_many_counterparty_business_centres_request&
+            request);
+    ::ores::refdata::messaging::list_by_counterparty_id_counterparty_business_centres_response
     list_by_counterparty_id_counterparty_business_centres(
-        const messaging::list_by_counterparty_id_counterparty_business_centres_request& request);
+        const ::ores::refdata::messaging::
+            list_by_counterparty_id_counterparty_business_centres_request& request);
     /**@}*/
 
 private:
@@ -116,7 +122,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::counterparty_business_centre_change& change,
+    prepare_change(const ::ores::refdata::messaging::counterparty_business_centre_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::counterparty_business_centre& out);
 };

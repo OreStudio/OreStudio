@@ -39,7 +39,8 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view credit_simulation_entity_config_queue_group =
+    "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_credit_simulation_entity_config_handlers(
@@ -50,64 +51,64 @@ std::vector<ores::nats::service::subscription> register_credit_simulation_entity
     auto h = std::make_shared<credit_simulation_entity_config_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(list_credit_simulation_entity_configs_request::nats_subject,
-                                        queue_group,
+                                        credit_simulation_entity_config_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_credit_simulation_entity_configs(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         get_credit_simulation_entity_config_request::nats_subject,
-        queue_group,
+        credit_simulation_entity_config_queue_group,
         [h](ores::nats::message msg) { h->get_credit_simulation_entity_config(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_credit_simulation_entity_configs_request::nats_subject,
-                             queue_group,
+                             credit_simulation_entity_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_credit_simulation_entity_configs(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_credit_simulation_entity_config_request::nats_subject,
-        queue_group,
+        credit_simulation_entity_config_queue_group,
         [h](ores::nats::message msg) { h->put_credit_simulation_entity_config(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_credit_simulation_entity_configs_request::nats_subject,
-                             queue_group,
+                             credit_simulation_entity_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_credit_simulation_entity_configs(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_credit_simulation_entity_config_request::nats_subject,
-                             queue_group,
+                             credit_simulation_entity_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_credit_simulation_entity_config(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_many_credit_simulation_entity_configs_request::nats_subject,
-                             queue_group,
+                             credit_simulation_entity_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_credit_simulation_entity_configs(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_credit_simulation_config_id_credit_simulation_entity_configs_request::nats_subject,
-        queue_group,
+        credit_simulation_entity_config_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_credit_simulation_config_id_credit_simulation_entity_configs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_by_transition_matrix_id_credit_simulation_entity_configs_request::nats_subject,
-        queue_group,
+        credit_simulation_entity_config_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_transition_matrix_id_credit_simulation_entity_configs(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(list_credit_simulation_entity_config_versions_request::nats_subject,
-                             queue_group,
+                             credit_simulation_entity_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_credit_simulation_entity_config_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_credit_simulation_entity_config_version_request::nats_subject,
-                             queue_group,
+                             credit_simulation_entity_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_credit_simulation_entity_config_version(std::move(msg));
                              }));

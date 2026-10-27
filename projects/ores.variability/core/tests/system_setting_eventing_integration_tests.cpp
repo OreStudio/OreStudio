@@ -47,6 +47,7 @@
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include "ores.variability.core/repository/system_setting_repository.hpp"
 #include "ores.variability.core/service/system_setting_service.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -64,14 +65,10 @@
 
 namespace {
 
-const std::string_view test_suite("variability.tests");
-const std::string tags("[eventing][integration]");
-
 // System Setting writes are party-scoped: the session-level
 // app.current_party_id GUC must be set before writing.
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& ctx) {
+ores::database::context system_setting_write_test_party_and_scope_context(
+    ores::testing::scoped_database_helper& h, ores::utility::generation::generation_context& ctx) {
     using ores::refdata::repository::party_repository;
     party_repository party_repo;
     auto party = ores::refdata::generators::generate_synthetic_party(ctx);
@@ -95,12 +92,12 @@ using ores::variability::repository::system_setting_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_system_setting_publishes_an_event", tags) {
+TEST_CASE("write_system_setting_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = system_setting_write_test_party_and_scope_context(h, ctx);
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled

@@ -72,9 +72,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::range_bound> read_one(repository::range_bound_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::range_bound_key& key) {
+std::vector<domain::range_bound> range_bound_read_one(repository::range_bound_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::range_bound_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
@@ -85,7 +85,7 @@ std::vector<domain::range_bound> read_one(repository::range_bound_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::range_bound_key key_from(const domain::range_bound& v) {
+messaging::range_bound_key range_bound_key_from(const domain::range_bound& v) {
     messaging::range_bound_key key;
     key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
@@ -99,7 +99,7 @@ messaging::range_bound_key key_from(const domain::range_bound& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::range_bound to_domain(const messaging::range_bound_write& write) {
+domain::range_bound range_bound_to_domain(const messaging::range_bound_write& write) {
     domain::range_bound v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
@@ -178,7 +178,7 @@ range_bound_service::list_by_trade_id_range_bounds(
 messaging::get_range_bound_response
 range_bound_service::get_range_bound(const messaging::get_range_bound_request& request) {
     messaging::get_range_bound_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = range_bound_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "range_bound"});
         return response;
@@ -197,7 +197,7 @@ messaging::get_many_range_bounds_response range_bound_service::get_many_range_bo
     for (const auto& k : request.keys) {
         messaging::range_bound_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = range_bound_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.range_bound = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -213,7 +213,7 @@ range_bound_service::put_range_bound(const messaging::put_range_bound_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = range_bound_read_one(repo_, ctx_, range_bound_key_from(value));
     if (!written.empty())
         response.range_bound = std::move(written.front());
     return response;
@@ -245,7 +245,7 @@ messaging::put_many_range_bounds_response range_bound_service::put_many_range_bo
     repo_.write(ctx_, batch, claims);
     response.range_bounds.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = range_bound_read_one(repo_, ctx_, range_bound_key_from(value));
         response.range_bounds.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -281,7 +281,7 @@ range_bound_service::delete_range_bound(const messaging::delete_range_bound_requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = range_bound_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "range_bound",
@@ -374,8 +374,8 @@ range_bound_service::prepare_change(const messaging::range_bound_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = range_bound_to_domain(change.write);
+    const auto current = range_bound_read_one(repo_, ctx_, range_bound_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

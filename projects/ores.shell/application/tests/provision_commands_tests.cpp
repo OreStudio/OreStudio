@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
@@ -28,9 +29,6 @@ using ores::shell::app::commands::provision_commands;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][provision]");
 
 /// The fields a provisioning command prints its ending from.
 provision_commands::tenant_fields demo_fields() {
@@ -45,7 +43,7 @@ provision_commands::tenant_fields demo_fields() {
 
 }
 
-TEST_CASE("provision_commands_waits_on_the_run_a_successful_reply_names", tags) {
+TEST_CASE("provision_commands_waits_on_the_run_a_successful_reply_names", "[commands][provision]") {
     auto lg(make_logger(test_suite));
 
     const auto run = provision_commands::started_run(true, "bac74724-221e-4594-ab54-bbe3b9acc5c9");
@@ -55,7 +53,7 @@ TEST_CASE("provision_commands_waits_on_the_run_a_successful_reply_names", tags) 
     CHECK(*run == "bac74724-221e-4594-ab54-bbe3b9acc5c9");
 }
 
-TEST_CASE("provision_commands_waits_on_no_run_when_the_reply_names_none", tags) {
+TEST_CASE("provision_commands_waits_on_no_run_when_the_reply_names_none", "[commands][provision]") {
     auto lg(make_logger(test_suite));
 
     // A failed request, and a success that names no instance, both leave
@@ -71,7 +69,7 @@ TEST_CASE("provision_commands_waits_on_no_run_when_the_reply_names_none", tags) 
     CHECK(!unnamed.has_value());
 }
 
-TEST_CASE("provision_commands_calls_a_followed_tenant_ready", tags) {
+TEST_CASE("provision_commands_calls_a_followed_tenant_ready", "[commands][provision]") {
     auto lg(make_logger(test_suite));
 
     std::ostringstream out;
@@ -88,7 +86,8 @@ TEST_CASE("provision_commands_calls_a_followed_tenant_ready", tags) {
     CHECK(out.str().find("setup continues") == std::string::npos);
 }
 
-TEST_CASE("provision_commands_does_not_call_a_tenant_ready_while_its_setup_continues", tags) {
+TEST_CASE("provision_commands_does_not_call_a_tenant_ready_while_its_setup_continues",
+          "[commands][provision]") {
     auto lg(make_logger(test_suite));
 
     std::ostringstream out;
@@ -105,7 +104,7 @@ TEST_CASE("provision_commands_does_not_call_a_tenant_ready_while_its_setup_conti
     CHECK(out.str().find("the tenant is ready to work in") == std::string::npos);
 }
 
-TEST_CASE("provision_commands_names_the_system_it_provisioned", tags) {
+TEST_CASE("provision_commands_names_the_system_it_provisioned", "[commands][provision]") {
     auto lg(make_logger(test_suite));
 
     std::ostringstream followed;

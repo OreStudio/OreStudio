@@ -38,6 +38,7 @@ component has no part under =projects/ores.shell=.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.ore.api/messaging/ore_document_protocol.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -45,24 +46,6 @@ component has no part under =projects/ores.shell=.
 #+end_src
 
 * Messages
-
-** ore_document
-
-#+begin_src cpp :name comment
-/**
- * @brief One ORE document, as the browser saves it: its file name and its text.
- */
-#+end_src
-
-*** name
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** content
-:PROPERTIES:
-:cpp_type: std::string
-:END:
 
 ** export_currency_config_request
 :PROPERTIES:
@@ -110,7 +93,7 @@ component has no part under =projects/ores.shell=.
 
 *** files
 :PROPERTIES:
-:cpp_type: std::vector<ore_document>
+:cpp_type: std::vector<ores::ore::messaging::ore_document>
 :END:
 
 ** currency_import_row

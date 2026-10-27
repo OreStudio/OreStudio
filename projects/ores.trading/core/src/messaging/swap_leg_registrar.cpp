@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view swap_leg_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,45 +49,45 @@ register_swap_leg_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<swap_leg_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_swap_legs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_swap_legs_request::nats_subject, swap_leg_queue_group, [h](ores::nats::message msg) {
             h->list_swap_legs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_swap_leg_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_swap_leg_request::nats_subject, swap_leg_queue_group, [h](ores::nats::message msg) {
             h->get_swap_leg(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_swap_legs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_swap_legs(std::move(msg));
-        }));
+        get_many_swap_legs_request::nats_subject,
+        swap_leg_queue_group,
+        [h](ores::nats::message msg) { h->get_many_swap_legs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_swap_leg_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_swap_leg_request::nats_subject, swap_leg_queue_group, [h](ores::nats::message msg) {
             h->put_swap_leg(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_swap_legs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_swap_legs(std::move(msg));
-        }));
+        put_many_swap_legs_request::nats_subject,
+        swap_leg_queue_group,
+        [h](ores::nats::message msg) { h->put_many_swap_legs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_swap_leg_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_swap_leg_request::nats_subject, swap_leg_queue_group, [h](ores::nats::message msg) {
             h->delete_swap_leg(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_swap_legs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_swap_legs(std::move(msg));
-        }));
+        delete_many_swap_legs_request::nats_subject,
+        swap_leg_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_swap_legs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_trade_id_swap_legs_request::nats_subject,
-        queue_group,
+        swap_leg_queue_group,
         [h](ores::nats::message msg) { h->list_by_trade_id_swap_legs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_swap_leg_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_swap_leg_versions(std::move(msg));
-        }));
+        list_swap_leg_versions_request::nats_subject,
+        swap_leg_queue_group,
+        [h](ores::nats::message msg) { h->list_swap_leg_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_swap_leg_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_swap_leg_version(std::move(msg));
-        }));
+        get_swap_leg_version_request::nats_subject,
+        swap_leg_queue_group,
+        [h](ores::nats::message msg) { h->get_swap_leg_version(std::move(msg)); }));
     return subs;
 }
 

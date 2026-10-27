@@ -431,6 +431,30 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Move each family's serialisation into a unit of its own, or lower the "
             "ceiling in KNOWN when a file has improved.",
     ),
+    # The tree builds as a unity build. Generated code never collides; the
+    # hand-written files that did are recorded, and the record only shrinks.
+    Check(
+        id="unity-collisions",
+        title="No two sources of a target define the same file-local name",
+        argv=("python3", "build/scripts/check_unity_collisions.py"),
+        classes=("cpp",),
+        paths=("projects/*",
+               "cmake/unity_exclusions.cmake",
+               "build/scripts/check_unity_collisions.py"),
+        fix="Name the new helper for what it does, or share one definition; when a "
+            "recorded file no longer collides, remove it from cmake/unity_exclusions.cmake.",
+    ),
+    # Two types of one qualified name share their template instantiations at
+    # link time, so a message can be encoded with the other type's layout.
+    Check(
+        id="unique-type-names",
+        title="No two headers define a type of the same name in one namespace",
+        argv=("python3", "build/scripts/check_unique_type_names.py"),
+        classes=("cpp",),
+        paths=("projects/*",
+               "build/scripts/check_unique_type_names.py"),
+        fix="Rename one of the two types; for a generated message, rename it in its model.",
+    ),
     # A family is either supported by a table, migrating from a mapper, or
     # unused. The census is a decision; this check is whether the tree still
     # agrees with it.
@@ -618,6 +642,9 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "projects/ores.sql/populate/refdata/refdata_convention_kind_terms_populate.sql",
             "projects/ores.sql/populate/refdata/refdata_convention_kinds_populate.sql",
+            "projects/ores.sql/create/refdata/refdata_convention_terms_validate_create.sql",
+            "projects/ores.sql/drop/refdata/refdata_drop.sql",
+            "projects/ores.sql/drop/refdata/refdata_convention_terms_validate_drop.sql",
             "projects/ores.sql/utility/generate_convention_kind_terms.py",
             "projects/ores.sql/utility/convention_terms.json",
             "projects/ores.ore/core/src/domain/conventions_family_*.cpp",

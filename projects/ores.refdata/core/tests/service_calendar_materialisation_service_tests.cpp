@@ -34,6 +34,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -56,9 +57,6 @@ using ores::refdata::service::calendar_materialisation_service;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[service][calendar_materialisation]");
 
 void write_zz_country_sentinel(scoped_database_helper& h,
                                ores::utility::generation::generation_context& gctx) {
@@ -123,7 +121,8 @@ calendar_exception make_exception(scoped_database_helper& h,
 
 } // namespace
 
-TEST_CASE("regenerate_base_less_calendar_applies_rules_and_exceptions", tags) {
+TEST_CASE("regenerate_base_less_calendar_applies_rules_and_exceptions",
+          "[service][calendar_materialisation]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -189,7 +188,8 @@ TEST_CASE("regenerate_base_less_calendar_applies_rules_and_exceptions", tags) {
     CHECK(found_plain_business_day);
 }
 
-TEST_CASE("regenerate_leaves_a_saturday_rule_where_it_is_when_only_sundays_move", tags) {
+TEST_CASE("regenerate_leaves_a_saturday_rule_where_it_is_when_only_sundays_move",
+          "[service][calendar_materialisation]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -249,7 +249,8 @@ TEST_CASE("regenerate_leaves_a_saturday_rule_where_it_is_when_only_sundays_move"
     CHECK(found_following_monday);
 }
 
-TEST_CASE("regenerate_exception_overrides_rule_holiday_back_to_business_day", tags) {
+TEST_CASE("regenerate_exception_overrides_rule_holiday_back_to_business_day",
+          "[service][calendar_materialisation]") {
     scoped_database_helper h;
     calendar_repository cal_repo;
     calendar_rule_repository rule_repo;
@@ -288,7 +289,8 @@ TEST_CASE("regenerate_exception_overrides_rule_holiday_back_to_business_day", ta
     CHECK(found);
 }
 
-TEST_CASE("regenerate_based_calendar_inherits_base_and_overlays_own_exceptions", tags) {
+TEST_CASE("regenerate_based_calendar_inherits_base_and_overlays_own_exceptions",
+          "[service][calendar_materialisation]") {
     scoped_database_helper h;
     calendar_repository cal_repo;
     calendar_rule_repository rule_repo;
@@ -343,7 +345,8 @@ TEST_CASE("regenerate_based_calendar_inherits_base_and_overlays_own_exceptions",
     }
 }
 
-TEST_CASE("regenerate_is_extend_only_and_does_not_rewrite_existing_watermark", tags) {
+TEST_CASE("regenerate_is_extend_only_and_does_not_rewrite_existing_watermark",
+          "[service][calendar_materialisation]") {
     scoped_database_helper h;
     calendar_repository cal_repo;
     calendar_rule_repository rule_repo;
@@ -377,14 +380,15 @@ TEST_CASE("regenerate_is_extend_only_and_does_not_rewrite_existing_watermark", t
     CHECK(extended_pass > 0);
 }
 
-TEST_CASE("regenerate_unknown_calendar_throws", tags) {
+TEST_CASE("regenerate_unknown_calendar_throws", "[service][calendar_materialisation]") {
     scoped_database_helper h;
     calendar_materialisation_service service(h.context());
 
     CHECK_THROWS_AS(service.regenerate("NO-SUCH-CALENDAR"), std::runtime_error);
 }
 
-TEST_CASE("regenerate_throws_when_base_calendar_removed_after_being_referenced", tags) {
+TEST_CASE("regenerate_throws_when_base_calendar_removed_after_being_referenced",
+          "[service][calendar_materialisation]") {
     scoped_database_helper h;
     calendar_repository cal_repo;
     calendar_materialisation_service service(h.context());

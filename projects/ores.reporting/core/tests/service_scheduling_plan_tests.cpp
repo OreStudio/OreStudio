@@ -35,25 +35,23 @@ using namespace ores::reporting::service;
 
 namespace {
 
-const std::string tags("[service][scheduling]");
-
 boost::uuids::uuid uuid_of(const std::string& text) {
     return boost::uuids::string_generator()(text);
 }
 
 }
 
-TEST_CASE("scheduler_job_name is the definition prefixed", tags) {
+TEST_CASE("scheduler_job_name is the definition prefixed", "[service][scheduling]") {
     const auto id = uuid_of("11111111-2222-3333-4444-555555555555");
     CHECK(scheduler_job_name(id) == "report_definition.11111111-2222-3333-4444-555555555555");
 }
 
-TEST_CASE("only a report job name is a report job name", tags) {
+TEST_CASE("only a report job name is a report job name", "[service][scheduling]") {
     CHECK(is_report_definition_job_name("report_definition.11111111-2222-3333-4444-555555555555"));
     CHECK_FALSE(is_report_definition_job_name("some_other_job"));
 }
 
-TEST_CASE("a report job a definition accounts for is kept", tags) {
+TEST_CASE("a report job a definition accounts for is kept", "[service][scheduling]") {
     const auto definition = uuid_of("11111111-2222-3333-4444-555555555555");
     const auto job = uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
     const std::map<std::string, boost::uuids::uuid> jobs{{scheduler_job_name(definition), job}};
@@ -62,7 +60,7 @@ TEST_CASE("a report job a definition accounts for is kept", tags) {
     CHECK(unaccounted_report_jobs(jobs, accounted).empty());
 }
 
-TEST_CASE("a report job no definition accounts for is removed", tags) {
+TEST_CASE("a report job no definition accounts for is removed", "[service][scheduling]") {
     const auto definition = uuid_of("11111111-2222-3333-4444-555555555555");
     const auto job = uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
     const std::map<std::string, boost::uuids::uuid> jobs{{scheduler_job_name(definition), job}};
@@ -71,7 +69,7 @@ TEST_CASE("a report job no definition accounts for is removed", tags) {
     CHECK(unaccounted_report_jobs(jobs, {}) == std::vector<boost::uuids::uuid>{job});
 }
 
-TEST_CASE("another component's job is never a report orphan", tags) {
+TEST_CASE("another component's job is never a report orphan", "[service][scheduling]") {
     const std::map<std::string, boost::uuids::uuid> jobs{
         {"marketdata.curve.refresh", uuid_of("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")}};
 

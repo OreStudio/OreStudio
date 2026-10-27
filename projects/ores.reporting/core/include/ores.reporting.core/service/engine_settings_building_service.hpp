@@ -77,28 +77,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_engine_settings_building_response
-    list_engine_settings_building(const messaging::list_engine_settings_building_request& request);
-    messaging::get_engine_settings_building_response
-    get_engine_settings_building(const messaging::get_engine_settings_building_request& request);
-    messaging::get_many_engine_settings_building_response get_many_engine_settings_building(
-        const messaging::get_many_engine_settings_building_request& request);
-    messaging::put_engine_settings_building_response
-    put_engine_settings_building(const messaging::put_engine_settings_building_request& request);
-    messaging::put_many_engine_settings_building_response put_many_engine_settings_building(
-        const messaging::put_many_engine_settings_building_request& request);
-    messaging::delete_engine_settings_building_response delete_engine_settings_building(
-        const messaging::delete_engine_settings_building_request& request);
-    messaging::delete_many_engine_settings_building_response delete_many_engine_settings_building(
-        const messaging::delete_many_engine_settings_building_request& request);
-    messaging::list_by_engine_settings_id_engine_settings_building_response
+    ::ores::reporting::messaging::list_engine_settings_building_response
+    list_engine_settings_building(
+        const ::ores::reporting::messaging::list_engine_settings_building_request& request);
+    ::ores::reporting::messaging::get_engine_settings_building_response
+    get_engine_settings_building(
+        const ::ores::reporting::messaging::get_engine_settings_building_request& request);
+    ::ores::reporting::messaging::get_many_engine_settings_building_response
+    get_many_engine_settings_building(
+        const ::ores::reporting::messaging::get_many_engine_settings_building_request& request);
+    ::ores::reporting::messaging::put_engine_settings_building_response
+    put_engine_settings_building(
+        const ::ores::reporting::messaging::put_engine_settings_building_request& request);
+    ::ores::reporting::messaging::put_many_engine_settings_building_response
+    put_many_engine_settings_building(
+        const ::ores::reporting::messaging::put_many_engine_settings_building_request& request);
+    ::ores::reporting::messaging::delete_engine_settings_building_response
+    delete_engine_settings_building(
+        const ::ores::reporting::messaging::delete_engine_settings_building_request& request);
+    ::ores::reporting::messaging::delete_many_engine_settings_building_response
+    delete_many_engine_settings_building(
+        const ::ores::reporting::messaging::delete_many_engine_settings_building_request& request);
+    ::ores::reporting::messaging::list_by_engine_settings_id_engine_settings_building_response
     list_by_engine_settings_id_engine_settings_building(
-        const messaging::list_by_engine_settings_id_engine_settings_building_request& request);
-    messaging::list_engine_settings_building_versions_response
+        const ::ores::reporting::messaging::
+            list_by_engine_settings_id_engine_settings_building_request& request);
+    ::ores::reporting::messaging::list_engine_settings_building_versions_response
     list_engine_settings_building_versions(
-        const messaging::list_engine_settings_building_versions_request& request);
-    messaging::get_engine_settings_building_version_response get_engine_settings_building_version(
-        const messaging::get_engine_settings_building_version_request& request);
+        const ::ores::reporting::messaging::list_engine_settings_building_versions_request&
+            request);
+    ::ores::reporting::messaging::get_engine_settings_building_version_response
+    get_engine_settings_building_version(
+        const ::ores::reporting::messaging::get_engine_settings_building_version_request& request);
     /**@}*/
 
     /**
@@ -264,7 +274,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::engine_settings_building_change& change,
+    prepare_change(const ::ores::reporting::messaging::engine_settings_building_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::engine_settings_building& out);
 };

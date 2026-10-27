@@ -20,21 +20,15 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/faker/datetime.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <regex>
 #include <string>
 
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[faker]");
-
-}
-
 using ores::utility::faker::datetime;
 using namespace ores::logging;
 
-TEST_CASE("make_timepoint_places_the_parts_in_utc", tags) {
+TEST_CASE("make_timepoint_places_the_parts_in_utc", "[faker]") {
     auto lg(make_logger(test_suite));
 
     const auto tp = datetime::make_timepoint(2024, 3, 15, 13, 45, 30);
@@ -44,7 +38,7 @@ TEST_CASE("make_timepoint_places_the_parts_in_utc", tags) {
     CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 13:45:30.000000Z");
 }
 
-TEST_CASE("make_timepoint_defaults_the_time_of_day_to_midnight", tags) {
+TEST_CASE("make_timepoint_defaults_the_time_of_day_to_midnight", "[faker]") {
     auto lg(make_logger(test_suite));
 
     const auto tp = datetime::make_timepoint(2024, 3, 15);
@@ -52,7 +46,7 @@ TEST_CASE("make_timepoint_defaults_the_time_of_day_to_midnight", tags) {
     CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 00:00:00.000000Z");
 }
 
-TEST_CASE("past_timepoint_stays_inside_the_declared_window", tags) {
+TEST_CASE("past_timepoint_stays_inside_the_declared_window", "[faker]") {
     auto lg(make_logger(test_suite));
 
     const auto lower = datetime::make_timepoint(1970, 1, 1);
@@ -65,7 +59,7 @@ TEST_CASE("past_timepoint_stays_inside_the_declared_window", tags) {
     }
 }
 
-TEST_CASE("past_string_is_a_database_timestamp_between_1970_and_2038", tags) {
+TEST_CASE("past_string_is_a_database_timestamp_between_1970_and_2038", "[faker]") {
     auto lg(make_logger(test_suite));
 
     // to_db_string keeps the six-digit fraction, because the database column

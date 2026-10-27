@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+fsm_transition_list_order(const ores::utility::domain::order& order,
+                          std::initializer_list<std::string> default_columns,
+                          bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!fsm_transition_repository::is_sortable(order.field))
@@ -97,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::fsm_transitions_filter>& filter) {
+fsm_transition_filter_condition(const std::optional<messaging::fsm_transitions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -322,8 +323,8 @@ std::vector<domain::fsm_transition> fsm_transition_repository::read_latest(
     return execute_ordered_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        fsm_transition_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), fsm_transition_filter_condition(filter)),
         [](const auto& entities) { return fsm_transition_mapper::map(entities); },
         lg(),
         "Reading latest fsm transitions with pagination.");
@@ -340,7 +341,7 @@ std::uint32_t fsm_transition_repository::get_total_transition_count(
     return execute_count_query<fsm_transition_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), fsm_transition_filter_condition(filter)),
         lg(),
         "Counting fsm transitions");
 }

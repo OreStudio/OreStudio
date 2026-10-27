@@ -75,20 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_images_response list_images(const messaging::list_images_request& request);
-    messaging::get_image_response get_image(const messaging::get_image_request& request);
-    messaging::get_many_images_response
-    get_many_images(const messaging::get_many_images_request& request);
-    messaging::put_image_response put_image(const messaging::put_image_request& request);
-    messaging::put_many_images_response
-    put_many_images(const messaging::put_many_images_request& request);
-    messaging::delete_image_response delete_image(const messaging::delete_image_request& request);
-    messaging::delete_many_images_response
-    delete_many_images(const messaging::delete_many_images_request& request);
-    messaging::list_image_versions_response
-    list_image_versions(const messaging::list_image_versions_request& request);
-    messaging::get_image_version_response
-    get_image_version(const messaging::get_image_version_request& request);
+    ::ores::assets::messaging::list_images_response
+    list_images(const ::ores::assets::messaging::list_images_request& request);
+    ::ores::assets::messaging::get_image_response
+    get_image(const ::ores::assets::messaging::get_image_request& request);
+    ::ores::assets::messaging::get_many_images_response
+    get_many_images(const ::ores::assets::messaging::get_many_images_request& request);
+    ::ores::assets::messaging::put_image_response
+    put_image(const ::ores::assets::messaging::put_image_request& request);
+    ::ores::assets::messaging::put_many_images_response
+    put_many_images(const ::ores::assets::messaging::put_many_images_request& request);
+    ::ores::assets::messaging::delete_image_response
+    delete_image(const ::ores::assets::messaging::delete_image_request& request);
+    ::ores::assets::messaging::delete_many_images_response
+    delete_many_images(const ::ores::assets::messaging::delete_many_images_request& request);
+    ::ores::assets::messaging::list_image_versions_response
+    list_image_versions(const ::ores::assets::messaging::list_image_versions_request& request);
+    ::ores::assets::messaging::get_image_version_response
+    get_image_version(const ::ores::assets::messaging::get_image_version_request& request);
     /**@}*/
 
     /**
@@ -199,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::image_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::image& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::assets::messaging::image_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::image& out);
 };
 
 }

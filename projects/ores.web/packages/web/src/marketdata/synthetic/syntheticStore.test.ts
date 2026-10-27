@@ -35,11 +35,14 @@ function source(name: string): string {
 }
 
 describe('the screens of Synthetic', () => {
-    it('SyntheticScreen holds both tabs inside the synthetic store', () => {
+    it('SyntheticScreen holds every tab inside the synthetic store', () => {
         const text = source('SyntheticScreen.tsx');
         expect(text).toContain('<RecordStoreProvider store={syntheticStore}>');
-        expect(text).toContain('<DashboardTab />');
-        expect(text).toContain('<ProviderTab />');
+        // Every tab is a pane of the one record drawn inside the provider.
+        expect(text).toContain('<Pane />');
+        expect(text).toContain('dashboard: DashboardTab');
+        expect(text).toContain('provider: ProviderTab');
+        expect(text).toContain('regime: MarketRegimeTab');
     });
 
     for (const name of ['DashboardTab.tsx', 'ProviderTab.tsx']) {

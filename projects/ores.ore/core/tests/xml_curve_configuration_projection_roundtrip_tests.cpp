@@ -21,6 +21,7 @@
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
@@ -39,9 +40,6 @@
  */
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][roundtrip][curveconfig]");
 
 using namespace ores::logging;
 using namespace ores::ore::domain;
@@ -90,7 +88,8 @@ curve_configuration_projection::document read_document(const std::string& text) 
 
 }
 
-TEST_CASE("every_curve_configuration_in_the_corpus_round_trips", tags) {
+TEST_CASE("every_curve_configuration_in_the_corpus_round_trips",
+          "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     std::size_t documents = 0;
@@ -113,7 +112,7 @@ TEST_CASE("every_curve_configuration_in_the_corpus_round_trips", tags) {
     CHECK(failures.empty());
 }
 
-TEST_CASE("every_segment_element_round_trips", tags) {
+TEST_CASE("every_segment_element_round_trips", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     // One yield curve holding one segment of every element the schema allows,
@@ -210,7 +209,7 @@ TEST_CASE("every_segment_element_round_trips", tags) {
     CHECK(round_trip(text, "every segment element").empty());
 }
 
-TEST_CASE("an_fx_parametric_smile_round_trips", tags) {
+TEST_CASE("an_fx_parametric_smile_round_trips", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = R"(<CurveConfiguration>
@@ -240,7 +239,8 @@ TEST_CASE("an_fx_parametric_smile_round_trips", tags) {
     CHECK(round_trip(text, "fx smile").empty());
 }
 
-TEST_CASE("an_element_the_projection_cannot_hold_is_refused", tags) {
+TEST_CASE("an_element_the_projection_cannot_hold_is_refused",
+          "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = R"(<CurveConfiguration>
@@ -284,7 +284,8 @@ record_writer writer_of(curve_configuration_projection::document& d) {
 
 }
 
-TEST_CASE("an_element_the_projection_cannot_hold_is_refused_at_import", tags) {
+TEST_CASE("an_element_the_projection_cannot_hold_is_refused_at_import",
+          "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     {
@@ -344,7 +345,8 @@ TEST_CASE("an_element_the_projection_cannot_hold_is_refused_at_import", tags) {
     }
 }
 
-TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export", tags) {
+TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export",
+          "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     {
@@ -391,7 +393,7 @@ TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export", tags) {
     }
 }
 
-TEST_CASE("a_segment_document_states_its_optional_settings", tags) {
+TEST_CASE("a_segment_document_states_its_optional_settings", "[ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>

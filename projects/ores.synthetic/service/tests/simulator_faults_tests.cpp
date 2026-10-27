@@ -40,8 +40,6 @@
 
 namespace {
 
-const std::string tags("[simulator_faults]");
-
 namespace messaging = ores::marketdata::messaging;
 namespace domain = ores::marketdata::domain;
 using ores::synthetic::feed::fault_plan;
@@ -74,13 +72,13 @@ bool eventually(const std::function<bool()>& done) {
 
 }
 
-TEST_CASE("every fault is off by default", tags) {
+TEST_CASE("every fault is off by default", "[simulator_faults]") {
     fault_state state;
     CHECK_FALSE(state.get().any());
     CHECK_FALSE(fault_plan{}.any());
 }
 
-TEST_CASE("with no fault a tick goes out once and unchanged", tags) {
+TEST_CASE("with no fault a tick goes out once and unchanged", "[simulator_faults]") {
     std::optional<messaging::adapter_tick> previous;
     const auto now = std::chrono::system_clock::now();
 
@@ -91,7 +89,8 @@ TEST_CASE("with no fault a tick goes out once and unchanged", tags) {
     CHECK(out.front().vendor_time == now);
 }
 
-TEST_CASE("an out of range fault sends a value beyond what the service accepts", tags) {
+TEST_CASE("an out of range fault sends a value beyond what the service accepts",
+          "[simulator_faults]") {
     std::optional<messaging::adapter_tick> previous;
     fault_plan plan;
     plan.out_of_range = true;
@@ -103,7 +102,7 @@ TEST_CASE("an out of range fault sends a value beyond what the service accepts",
     CHECK(std::stod(out.front().value) > domain::adapter_limits::max_abs_value);
 }
 
-TEST_CASE("a delay fault sends a vendor time older than the age limit", tags) {
+TEST_CASE("a delay fault sends a vendor time older than the age limit", "[simulator_faults]") {
     std::optional<messaging::adapter_tick> previous;
     fault_plan plan;
     plan.tick_delay = domain::adapter_limits::max_tick_age + std::chrono::milliseconds(1);
@@ -115,7 +114,7 @@ TEST_CASE("a delay fault sends a vendor time older than the age limit", tags) {
     CHECK(now - out.front().vendor_time > domain::adapter_limits::max_tick_age);
 }
 
-TEST_CASE("a lost connection delivers no tick", tags) {
+TEST_CASE("a lost connection delivers no tick", "[simulator_faults]") {
     std::optional<messaging::adapter_tick> previous;
     fault_plan plan;
     plan.connection_lost = true;
@@ -124,7 +123,7 @@ TEST_CASE("a lost connection delivers no tick", tags) {
 }
 
 TEST_CASE("a repeat fault sends the tick before the new one again, with its older vendor time",
-          tags) {
+          "[simulator_faults]") {
     std::optional<messaging::adapter_tick> previous;
     fault_plan plan;
     plan.repeat_ticks = true;
@@ -141,7 +140,7 @@ TEST_CASE("a repeat fault sends the tick before the new one again, with its olde
     CHECK(second[1].vendor_time < second[0].vendor_time);
 }
 
-TEST_CASE("a not entitled fault rejects every id and runs no generator", tags) {
+TEST_CASE("a not entitled fault rejects every id and runs no generator", "[simulator_faults]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     auto faults = std::make_shared<fault_state>();
     generator_runner runner([] { return std::vector<generator_offer>{}; });
@@ -165,7 +164,8 @@ TEST_CASE("a not entitled fault rejects every id and runs no generator", tags) {
     CHECK(normal.rejected.front().reason == "unknown_id");
 }
 
-TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is off", tags) {
+TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is off",
+          "[simulator_faults]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     const auto adapter_id =
@@ -219,7 +219,7 @@ TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is of
     adapter.stop();
 }
 
-TEST_CASE("the set_faults request maps to the plan", tags) {
+TEST_CASE("the set_faults request maps to the plan", "[simulator_faults]") {
     ores::synthetic::messaging::set_faults_request request;
     request.connection_lost = true;
     request.tick_delay_ms = 7000;

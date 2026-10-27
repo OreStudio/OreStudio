@@ -604,15 +604,15 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
 
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
     subs.push_back(nats.queue_subscribe(
-        resolve_tenor_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        resolve_tenor_request::nats_subject, tenor_queue_group, [h](ores::nats::message msg) {
             h->resolve_tenor(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        preview_tenor_resolution_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        preview_tenor_resolution_request::nats_subject, tenor_queue_group, [h](ores::nats::message msg) {
             h->preview_tenor_resolution(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        resolve_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        resolve_convention_request::nats_subject, tenor_queue_group, [h](ores::nats::message msg) {
             h->resolve_convention(std::move(msg));
         }));
 #+end_src

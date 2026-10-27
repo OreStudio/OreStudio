@@ -24,11 +24,7 @@
 
 using ores::refdata::service::cache::currency_pair_convention_cache;
 
-namespace {
-
-const std::string tags("[client][cache]");
-
-} // namespace
+namespace {} // namespace
 
 // currency_pair_convention_cache::load() round-trips through a real NATS
 // request/reply -- like party_cache (the exemplar this facet generalises
@@ -41,7 +37,8 @@ const std::string tags("[client][cache]");
 // here is that the generated class itself is real, compiling C++ wired to
 // the right types -- not a stale/broken template render -- and behaves
 // correctly before any load() has ever run.
-TEST_CASE("a currency_pair_convention_cache with nothing loaded misses every lookup", tags) {
+TEST_CASE("a currency_pair_convention_cache with nothing loaded misses every lookup",
+          "[client][cache]") {
     // Construction alone never connects (connect() is a separate, explicit
     // call the cache's load() never makes) -- safe to build a client here
     // without a live NATS server as long as this test never calls load().

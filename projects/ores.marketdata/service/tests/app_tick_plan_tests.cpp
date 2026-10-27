@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[app][tick_plan]");
-
 using ores::marketdata::service::app::consumer;
 using ores::marketdata::messaging::market_tick;
 using ores::marketdata::service::app::make_targets;
@@ -56,14 +54,14 @@ consumer make_owner(const std::string& tenant, const std::string& party) {
 
 }
 
-TEST_CASE("a_tick_from_a_source_no_route_names_is_dropped", tags) {
+TEST_CASE("a_tick_from_a_source_no_route_names_is_dropped", "[app][tick_plan]") {
     const auto plan = plan_tick(make_tick(eur_usd_spot, "1.0845"), {});
 
     REQUIRE_FALSE(plan.has_value());
     CHECK(plan.error() == tick_drop::unbound_source);
 }
 
-TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", tags) {
+TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
@@ -73,7 +71,7 @@ TEST_CASE("a_tick_whose_uri_names_no_datum_is_dropped", tags) {
     CHECK(plan.error() == tick_drop::unnameable_datum);
 }
 
-TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", tags) {
+TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
@@ -85,7 +83,7 @@ TEST_CASE("a_tick_spelled_another_way_is_dropped_so_a_datum_has_one_subject", ta
     CHECK(plan.error() == tick_drop::unnameable_datum);
 }
 
-TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", tags) {
+TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 
@@ -95,7 +93,7 @@ TEST_CASE("a_tick_whose_value_is_not_a_number_is_dropped", tags) {
     CHECK(plan.error() == tick_drop::not_a_number);
 }
 
-TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", tags) {
+TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"),
         make_owner("33333333-3333-3333-3333-333333333333", "44444444-4444-4444-4444-444444444444")};
@@ -118,7 +116,8 @@ TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", tag
               token);
 }
 
-TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_series", tags) {
+TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_series",
+          "[app][tick_plan]") {
     const auto named = name_datum(eur_usd_spot);
 
     REQUIRE(named.has_value());
@@ -127,14 +126,14 @@ TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_se
           "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
 }
 
-TEST_CASE("a_uri_that_names_no_datum_is_not_named", tags) {
+TEST_CASE("a_uri_that_names_no_datum_is_not_named", "[app][tick_plan]") {
     const auto named = name_datum("oresmd://fx/EUR?type=quote");
 
     REQUIRE_FALSE(named.has_value());
     CHECK(named.error() == tick_drop::unnameable_datum);
 }
 
-TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", tags) {
+TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
     const auto named = name_datum(eur_usd_spot).value();
@@ -149,7 +148,8 @@ TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", tags) {
     CHECK((*targets)[0].party_text == "22222222-2222-2222-2222-222222222222");
 }
 
-TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number", tags) {
+TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number",
+          "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 

@@ -33,6 +33,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -54,9 +55,6 @@ using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[rls][party_isolation]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
                                         ores::database::context ctx,
@@ -105,7 +103,7 @@ std::vector<boost::uuids::uuid> compute_visible_parties(ores::database::context&
 
 }
 
-TEST_CASE("system_party_sees_all_assignments", tags) {
+TEST_CASE("system_party_sees_all_assignments", "[rls][party_isolation]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -206,7 +204,7 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
     CHECK_FALSE(has_foreign_tenant_row);
 }
 
-TEST_CASE("party_a_sees_only_own_assignments", tags) {
+TEST_CASE("party_a_sees_only_own_assignments", "[rls][party_isolation]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -265,7 +263,7 @@ TEST_CASE("party_a_sees_only_own_assignments", tags) {
         CHECK(r.party_id == party_a.id);
 }
 
-TEST_CASE("party_b_sees_only_own_assignments", tags) {
+TEST_CASE("party_b_sees_only_own_assignments", "[rls][party_isolation]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -321,7 +319,7 @@ TEST_CASE("party_b_sees_only_own_assignments", tags) {
         CHECK(r.party_id == party_b.id);
 }
 
-TEST_CASE("nested_party_hierarchy_visibility", tags) {
+TEST_CASE("nested_party_hierarchy_visibility", "[rls][party_isolation]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

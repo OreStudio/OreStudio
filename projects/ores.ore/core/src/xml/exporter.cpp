@@ -20,10 +20,12 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
+#include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
@@ -32,6 +34,8 @@
 #include <format>
 #include <iterator>
 #include <optional>
+#include <pugixml.hpp>
+#include <sstream>
 #include <stdexcept>
 
 namespace ores::ore::xml {
@@ -137,6 +141,27 @@ auto build_currency(const refdata::domain::currency& v) -> xc::currency_definiti
     return r;
 }
 
+namespace xp = generated::pricing_engines;
+
+/**
+ * @brief Writes one parameters section of a product or of the document.
+ *
+ * The element is written even when the list is empty, because the document
+ * states every section rather than leaving out the ones it has nothing to put
+ * in. The order is the order the rows carry, and nothing is sorted here: the
+ * projection has already put them back in it.
+ */
+auto write_parameters(pugi::xml_node parent,
+                      const char* name,
+                      const std::vector<xp::parameter>& parameters) -> void {
+    auto section = parent.append_child(name);
+    for (const auto& parameter : parameters) {
+        auto node = section.append_child("Parameter");
+        node.append_attribute("name").set_value(parameter.name.c_str());
+        node.text().set(parameter.value.c_str());
+    }
+}
+
 } // namespace
 
 std::string exporter::export_currency_config(const std::vector<currency>& v) {
@@ -152,6 +177,39 @@ std::string exporter::export_currency_config(const std::vector<currency>& v) {
     if (!emitted)
         throw std::runtime_error(emitted.error().message);
     return out;
+}
+
+std::string
+exporter::export_pricing_engines(const analytics::messaging::pricing_engines_document& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting pricing engines. Products: " << v.products.size();
+
+    // The projection is the one statement of which parameter belongs to which
+    // product, of what a row the document has no place for is refused with, and
+    // of the order the rows were written in, so the writer adds no rule of its
+    // own on top of it.
+    return export_pricing_engines(domain::pricing_engine_projection::reverse(v));
+}
+
+std::string exporter::export_pricing_engines(const pricing_engines_document& v) {
+    pugi::xml_document document;
+    auto declaration = document.append_child(pugi::node_declaration);
+    declaration.append_attribute("version").set_value("1.0");
+
+    auto root = document.append_child("PricingEngines");
+    for (const auto& product : v.product) {
+        auto node = root.append_child("Product");
+        node.append_attribute("type").set_value(product.type.c_str());
+        node.append_child("Model").text().set(product.model.c_str());
+        write_parameters(node, "ModelParameters", product.model_parameters.parameter);
+        node.append_child("Engine").text().set(product.engine.c_str());
+        write_parameters(node, "EngineParameters", product.engine_parameters.parameter);
+    }
+    // One block, after the products, holding the parameters no product owns.
+    write_parameters(root, "GlobalParameters", v.global_parameters.parameter);
+
+    std::ostringstream out;
+    document.save(out, "  ", pugi::format_default, pugi::encoding_utf8);
+    return out.str();
 }
 
 std::string exporter::export_calendar_adjustments(

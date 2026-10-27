@@ -33,8 +33,6 @@
 
 namespace {
 
-const std::string tags("[approval][apply_step]");
-
 ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
     auto ctx = ores::testing::make_generation_context(h);
     auto a = ores::iam::generators::generate_synthetic_account(ctx);
@@ -46,13 +44,14 @@ ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h
 
 }
 
-TEST_CASE("an_approved_request_is_told_as_applied_and_any_other_state_keeps_its_name", tags) {
+TEST_CASE("an_approved_request_is_told_as_applied_and_any_other_state_keeps_its_name",
+          "[approval][apply_step]") {
     using ores::inbox::messaging::apply_result_state;
     CHECK(apply_result_state("approved") == "applied");
     CHECK(apply_result_state("apply_failed") == "apply_failed");
 }
 
-TEST_CASE("the_person_who_asked_is_told_how_the_apply_ended", tags) {
+TEST_CASE("the_person_who_asked_is_told_how_the_apply_ended", "[approval][apply_step]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     // The notice is sent by the account the context acts as, which in the

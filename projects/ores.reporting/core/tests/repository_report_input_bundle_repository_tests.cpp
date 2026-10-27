@@ -22,6 +22,7 @@
 #include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -29,9 +30,6 @@
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[repository]");
 
 std::string new_uuid() {
     return boost::uuids::to_string(boost::uuids::random_generator()());
@@ -62,7 +60,7 @@ using namespace ores::logging;
 using ores::testing::database_helper;
 using ores::reporting::repository::report_input_bundle_repository;
 
-TEST_CASE("create_and_find_report_input_bundle_by_instance_id", tags) {
+TEST_CASE("create_and_find_report_input_bundle_by_instance_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -88,7 +86,7 @@ TEST_CASE("create_and_find_report_input_bundle_by_instance_id", tags) {
     CHECK(found->series_count == 5);
 }
 
-TEST_CASE("find_report_input_bundle_by_unknown_instance_id_returns_nothing", tags) {
+TEST_CASE("find_report_input_bundle_by_unknown_instance_id_returns_nothing", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

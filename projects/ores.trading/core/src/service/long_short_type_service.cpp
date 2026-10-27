@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::long_short_type> read_one(repository::long_short_type_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::long_short_type_key& key) {
+std::vector<domain::long_short_type>
+long_short_type_read_one(repository::long_short_type_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::long_short_type_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::long_short_type> read_one(repository::long_short_type_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::long_short_type_key key_from(const domain::long_short_type& v) {
+messaging::long_short_type_key long_short_type_key_from(const domain::long_short_type& v) {
     messaging::long_short_type_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,7 @@ messaging::long_short_type_key key_from(const domain::long_short_type& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::long_short_type to_domain(const messaging::long_short_type_write& write) {
+domain::long_short_type long_short_type_to_domain(const messaging::long_short_type_write& write) {
     domain::long_short_type v;
     v.code = write.code;
     v.description = write.description;
@@ -139,7 +140,7 @@ messaging::list_long_short_types_response long_short_type_service::list_long_sho
 messaging::get_long_short_type_response long_short_type_service::get_long_short_type(
     const messaging::get_long_short_type_request& request) {
     messaging::get_long_short_type_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = long_short_type_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "long_short_type"});
         return response;
@@ -158,7 +159,7 @@ messaging::get_many_long_short_types_response long_short_type_service::get_many_
     for (const auto& k : request.keys) {
         messaging::long_short_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = long_short_type_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.long_short_type = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -174,7 +175,7 @@ messaging::put_long_short_type_response long_short_type_service::put_long_short_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = long_short_type_read_one(repo_, ctx_, long_short_type_key_from(value));
     if (!written.empty())
         response.long_short_type = std::move(written.front());
     return response;
@@ -206,7 +207,7 @@ messaging::put_many_long_short_types_response long_short_type_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.long_short_types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = long_short_type_read_one(repo_, ctx_, long_short_type_key_from(value));
         response.long_short_types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -239,7 +240,7 @@ messaging::delete_long_short_type_response long_short_type_service::delete_long_
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = long_short_type_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "long_short_type",
@@ -327,8 +328,8 @@ long_short_type_service::prepare_change(const messaging::long_short_type_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = long_short_type_to_domain(change.write);
+    const auto current = long_short_type_read_one(repo_, ctx_, long_short_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

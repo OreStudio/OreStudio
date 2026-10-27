@@ -36,8 +36,6 @@
 
 namespace {
 
-const std::string tags("[bundle_import][database]");
-
 // An import belongs to a party, so each case writes one and acts for it.
 ores::database::context party_context(ores::testing::scoped_database_helper& h) {
     auto gen = ores::testing::make_generation_context(h);
@@ -73,7 +71,8 @@ void stage(ores::database::context ctx,
 
 }
 
-TEST_CASE("a part staged before its central row still commits into one row each", tags) {
+TEST_CASE("a part staged before its central row still commits into one row each",
+          "[bundle_import][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -111,7 +110,8 @@ TEST_CASE("a part staged before its central row still commits into one row each"
     CHECK(held_parts.front().identity.convention_id == held.front().identity.id);
 }
 
-TEST_CASE("a commit that cannot decode a family leaves the import staging", tags) {
+TEST_CASE("a commit that cannot decode a family leaves the import staging",
+          "[bundle_import][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -140,7 +140,7 @@ TEST_CASE("a commit that cannot decode a family leaves the import staging", tags
     CHECK(import_row.front().state == "staging");
 }
 
-TEST_CASE("a second commit of the same import applies nothing", tags) {
+TEST_CASE("a second commit of the same import applies nothing", "[bundle_import][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;

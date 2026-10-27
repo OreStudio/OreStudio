@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_asset_measures_response
-    list_asset_measures(const messaging::list_asset_measures_request& request);
-    messaging::get_asset_measure_response
-    get_asset_measure(const messaging::get_asset_measure_request& request);
-    messaging::get_many_asset_measures_response
-    get_many_asset_measures(const messaging::get_many_asset_measures_request& request);
-    messaging::put_asset_measure_response
-    put_asset_measure(const messaging::put_asset_measure_request& request);
-    messaging::put_many_asset_measures_response
-    put_many_asset_measures(const messaging::put_many_asset_measures_request& request);
-    messaging::delete_asset_measure_response
-    delete_asset_measure(const messaging::delete_asset_measure_request& request);
-    messaging::delete_many_asset_measures_response
-    delete_many_asset_measures(const messaging::delete_many_asset_measures_request& request);
-    messaging::list_asset_measure_versions_response
-    list_asset_measure_versions(const messaging::list_asset_measure_versions_request& request);
-    messaging::get_asset_measure_version_response
-    get_asset_measure_version(const messaging::get_asset_measure_version_request& request);
+    ::ores::refdata::messaging::list_asset_measures_response
+    list_asset_measures(const ::ores::refdata::messaging::list_asset_measures_request& request);
+    ::ores::refdata::messaging::get_asset_measure_response
+    get_asset_measure(const ::ores::refdata::messaging::get_asset_measure_request& request);
+    ::ores::refdata::messaging::get_many_asset_measures_response get_many_asset_measures(
+        const ::ores::refdata::messaging::get_many_asset_measures_request& request);
+    ::ores::refdata::messaging::put_asset_measure_response
+    put_asset_measure(const ::ores::refdata::messaging::put_asset_measure_request& request);
+    ::ores::refdata::messaging::put_many_asset_measures_response put_many_asset_measures(
+        const ::ores::refdata::messaging::put_many_asset_measures_request& request);
+    ::ores::refdata::messaging::delete_asset_measure_response
+    delete_asset_measure(const ::ores::refdata::messaging::delete_asset_measure_request& request);
+    ::ores::refdata::messaging::delete_many_asset_measures_response delete_many_asset_measures(
+        const ::ores::refdata::messaging::delete_many_asset_measures_request& request);
+    ::ores::refdata::messaging::list_asset_measure_versions_response list_asset_measure_versions(
+        const ::ores::refdata::messaging::list_asset_measure_versions_request& request);
+    ::ores::refdata::messaging::get_asset_measure_version_response get_asset_measure_version(
+        const ::ores::refdata::messaging::get_asset_measure_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +191,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::asset_measure_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::asset_measure& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::asset_measure_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::asset_measure& out);
 };
 
 }

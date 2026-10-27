@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 7C4EF710-3A04-4E3E-B5A0-9BE3FC25418F
+:END:
+#+title: Task: Make a rate change change sampling, not time
+#+description: A process that steps once per nominal tick gains variance per wall-clock second when the rate rises, because more steps fit into the second; a curve process also runs its calendar faster. Make a rate change change only how often a series is observed, with a test that variance per wall-clock second is invariant under the rate factor.
+#+type: task
+#+level: s1
+#+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A rate change changes how often a series is observed and not how much time its
+process covers, for every process the feeds use. An operator who doubles a rate
+gets twice the samples of the same path, not twice the realized volatility.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- Variance per wall-clock second is invariant under a rate multiplier of two,
+  measured on a long run, for every process a feed can build.
+- The three processes that answer =supports_variable_step() == true= keep their
+  behaviour: the Gaussian mixture, the arithmetic mixture and the
+  Ornstein–Uhlenbeck process.
+- The processes that answer false gain a time-scaled law, so a feed can hand them
+  the gap. They are converted, not refused: refusing would break every feed that
+  runs today.
+- A non-periodic arrival mode is still refused for any process that cannot take a
+  gap, as it is today.
+- The existing time-rescaling test stays green, and the new test names the process
+  it measures.
+
+* Plan
+
+1. Enumerate the processes and their =supports_variable_step()= answer; the list
+   is the test's parameter.
+2. Give each process that answers false a law in elapsed time, keeping its
+   existing parameters and its one-tick behaviour exact.
+3. Add the invariance test: the same seed, the same window, one run at the
+   configured rate and one at twice it, and the two realize the same variance per
+   second within sampling error.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

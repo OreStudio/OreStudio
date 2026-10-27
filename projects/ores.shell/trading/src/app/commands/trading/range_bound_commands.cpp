@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void range_bound_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void range_bound_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -228,7 +228,7 @@ void range_bound_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        range_bound_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -276,8 +276,9 @@ void range_bound_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.sequence_number, parsed->positionals[next++], "sequence_number");
+        range_bound_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        range_bound_read_token(
+            req.key.sequence_number, parsed->positionals[next++], "sequence_number");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -322,8 +323,9 @@ void range_bound_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::range_bound_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
-            read_token(key.sequence_number, parsed->positionals[i + 1], "sequence_number");
+            range_bound_read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            range_bound_read_token(
+                key.sequence_number, parsed->positionals[i + 1], "sequence_number");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -368,17 +370,19 @@ void range_bound_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        range_bound_read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        range_bound_read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
-        read_token(
+        range_bound_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
-        read_token(req.change.write.range_from, parsed->positionals[next++], "range_from");
-        read_token(req.change.write.range_to, parsed->positionals[next++], "range_to");
-        read_token(req.change.write.leverage, parsed->positionals[next++], "leverage");
-        read_token(req.change.write.strike, parsed->positionals[next++], "strike");
-        read_token(
+        range_bound_read_token(
+            req.change.write.start_date, parsed->positionals[next++], "start_date");
+        range_bound_read_token(
+            req.change.write.range_from, parsed->positionals[next++], "range_from");
+        range_bound_read_token(req.change.write.range_to, parsed->positionals[next++], "range_to");
+        range_bound_read_token(req.change.write.leverage, parsed->positionals[next++], "leverage");
+        range_bound_read_token(req.change.write.strike, parsed->positionals[next++], "strike");
+        range_bound_read_token(
             req.change.write.strike_adjustment, parsed->positionals[next++], "strike_adjustment");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -427,17 +431,19 @@ void range_bound_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        range_bound_read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        range_bound_read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
-        read_token(
+        range_bound_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
-        read_token(req.change.write.range_from, parsed->positionals[next++], "range_from");
-        read_token(req.change.write.range_to, parsed->positionals[next++], "range_to");
-        read_token(req.change.write.leverage, parsed->positionals[next++], "leverage");
-        read_token(req.change.write.strike, parsed->positionals[next++], "strike");
-        read_token(
+        range_bound_read_token(
+            req.change.write.start_date, parsed->positionals[next++], "start_date");
+        range_bound_read_token(
+            req.change.write.range_from, parsed->positionals[next++], "range_from");
+        range_bound_read_token(req.change.write.range_to, parsed->positionals[next++], "range_to");
+        range_bound_read_token(req.change.write.leverage, parsed->positionals[next++], "leverage");
+        range_bound_read_token(req.change.write.strike, parsed->positionals[next++], "strike");
+        range_bound_read_token(
             req.change.write.strike_adjustment, parsed->positionals[next++], "strike_adjustment");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -500,17 +506,19 @@ void range_bound_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::range_bound_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(
+            range_bound_read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
+            range_bound_read_token(
                 change.write.sequence_number, parsed->positionals[next++], "sequence_number");
-            read_token(
+            range_bound_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(change.write.start_date, parsed->positionals[next++], "start_date");
-            read_token(change.write.range_from, parsed->positionals[next++], "range_from");
-            read_token(change.write.range_to, parsed->positionals[next++], "range_to");
-            read_token(change.write.leverage, parsed->positionals[next++], "leverage");
-            read_token(change.write.strike, parsed->positionals[next++], "strike");
-            read_token(
+            range_bound_read_token(
+                change.write.start_date, parsed->positionals[next++], "start_date");
+            range_bound_read_token(
+                change.write.range_from, parsed->positionals[next++], "range_from");
+            range_bound_read_token(change.write.range_to, parsed->positionals[next++], "range_to");
+            range_bound_read_token(change.write.leverage, parsed->positionals[next++], "leverage");
+            range_bound_read_token(change.write.strike, parsed->positionals[next++], "strike");
+            range_bound_read_token(
                 change.write.strike_adjustment, parsed->positionals[next++], "strike_adjustment");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -561,8 +569,9 @@ void range_bound_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.removal.key.sequence_number, parsed->positionals[next++], "sequence_number");
+        range_bound_read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        range_bound_read_token(
+            req.removal.key.sequence_number, parsed->positionals[next++], "sequence_number");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -616,8 +625,9 @@ void range_bound_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::range_bound_key key;
-            read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
-            read_token(key.sequence_number, parsed->positionals[i * 2 + 1], "sequence_number");
+            range_bound_read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
+            range_bound_read_token(
+                key.sequence_number, parsed->positionals[i * 2 + 1], "sequence_number");
             req.removals.push_back(messaging::range_bound_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -676,7 +686,7 @@ void range_bound_commands::process_by_trade_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        range_bound_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -724,9 +734,10 @@ void range_bound_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.sequence_number, parsed->positionals[next++], "sequence_number");
-        apply_page(req, *parsed);
+        range_bound_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        range_bound_read_token(
+            req.key.sequence_number, parsed->positionals[next++], "sequence_number");
+        range_bound_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -771,8 +782,9 @@ void range_bound_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.range_bound.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        range_bound_read_token(
+            req.key.range_bound.trade_id, parsed->positionals[next++], "trade_id");
+        range_bound_read_token(
             req.key.range_bound.sequence_number, parsed->positionals[next++], "sequence_number");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");

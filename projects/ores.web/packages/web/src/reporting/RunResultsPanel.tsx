@@ -31,7 +31,9 @@ import {
     type RunResultRow,
 } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { Donut, bookSharesOf, problemsOf, type Share } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
+import { asFigure, toAggregateRows, toErrors, toTradeRows, type RunError } from './resultsModel.js';
 
 /**
  * What a run produced, read at the level the reader asks for.
@@ -51,79 +53,13 @@ const REASON_TEXT: Readonly<Record<Exclude<ResultReason, ''>, string>> = {
     'no-figures': 'reporting.results.noFigures',
 };
 
-/** A figure with its thousands grouped and two decimals, or the text as written. */
-const asFigure = (text: string): string => {
-    const figure = Number.parseFloat(text);
-    if (!Number.isFinite(figure)) {
-        return text;
-    }
-    return new Intl.NumberFormat('en-GB', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(figure);
-};
-
-const asText = (value: unknown): string => (typeof value === 'string' ? value : '');
-
-const toTrade = (raw: unknown): RunResultRow => {
-    const row = raw as Record<string, unknown>;
-    return {
-        trade_id: asText(row['trade_id']),
-        trade_type: asText(row['trade_type']),
-        npv: asText(row['npv']),
-        npv_currency: asText(row['npv_currency']),
-        npv_base: asText(row['npv_base']),
-        notional: asText(row['notional']),
-        notional_currency: asText(row['notional_currency']),
-        counterparty: asText(row['counterparty']),
-        counterparty_name: asText(row['counterparty_name']),
-        book_id: asText(row['book_id']),
-        book_name: asText(row['book_name']),
-    };
-};
-
-const toAggregate = (raw: unknown): AggregateRow => {
-    const row = raw as Record<string, unknown>;
-    const money = (value: unknown): readonly Money[] =>
-        Array.isArray(value)
-            ? value.map((entry) => {
-                  const item = entry as Record<string, unknown>;
-                  return { currency: asText(item['currency']), total: asText(item['total']) };
-              })
-            : [];
-    return {
-        key: asText(row['key']),
-        name: asText(row['name']),
-        trades: typeof row['trades'] === 'number' ? row['trades'] : 0,
-        totals: money(row['totals']),
-        notional: money(row['notional']),
-    };
-};
-
-type RunError = {
-    readonly scope: string;
-    readonly severity: string;
-    readonly message: string;
-    readonly cause: string;
-    readonly subjectId: string;
-};
-
-const toError = (raw: unknown): RunError => {
-    const row = raw as Record<string, unknown>;
-    return {
-        scope: asText(row['scope']),
-        severity: asText(row['severity']),
-        message: asText(row['message']),
-        cause: asText(row['cause']),
-        subjectId: asText(row['subject_id']),
-    };
-};
-
 export function RunResultsPanel({
     runId,
+    definitionId,
     pricedAt,
 }: {
     readonly runId: string;
+    readonly definitionId: string;
     readonly pricedAt: string;
 }): ReactNode {
     const { t } = useTranslation();
@@ -133,10 +69,16 @@ export function RunResultsPanel({
     const bookFilter = search.get('book') ?? '';
     const counterpartyFilter = search.get('counterparty') ?? '';
     const noBook = search.get('nobook') === '1';
+    const baseline = search.get('baseline') ?? '';
 
     const results = useQuery({
-        queryKey: ['reporting-run-results', runId, level],
-        queryFn: () => api.reportRunResults(runId, level),
+        queryKey: ['reporting-run-results', runId, level, baseline],
+        queryFn: () => api.reportRunResults(runId, level, baseline),
+        meta: { quiet: true },
+    });
+    const otherRuns = useQuery({
+        queryKey: ['report-runs', definitionId],
+        queryFn: () => api.reportRuns(definitionId),
         meta: { quiet: true },
     });
     const errors = useQuery({
@@ -146,7 +88,7 @@ export function RunResultsPanel({
     });
     const errorsOf = useMemo(() => {
         const byTrade = new Map<string, RunError[]>();
-        for (const error of (errors.data ?? []).map(toError)) {
+        for (const error of toErrors(errors.data ?? []).rows) {
             if (error.scope !== 'Trade' || error.subjectId === '') {
                 continue;
             }
@@ -156,6 +98,21 @@ export function RunResultsPanel({
     }, [errors.data]);
     const [selected, setSelected] = useState('');
 
+    const text = (value: unknown): string => (typeof value === 'string' ? value : '');
+    const candidates = (otherRuns.data ?? [])
+        .map((entry) => entry as Record<string, unknown>)
+        .filter((entry) => text(entry['state_name']) === 'completed')
+        .filter((entry) => text(entry['id']) !== runId)
+        .map((entry) => ({ id: text(entry['id']), name: text(entry['name']) }));
+    const chooseBaseline = (next: string): void => {
+        const params = new URLSearchParams(search);
+        if (next === '') {
+            params.delete('baseline');
+        } else {
+            params.set('baseline', next);
+        }
+        setSearch(params, { replace: true });
+    };
     const chooseLevel = (next: ResultLevel): void => {
         const params = new URLSearchParams(search);
         params.set('by', next);
@@ -186,8 +143,11 @@ export function RunResultsPanel({
     };
 
     const rows = results.data?.rows ?? [];
-    const trades = level === 'trade' ? rows.map(toTrade) : [];
-    const aggregates = level === 'trade' ? [] : rows.map(toAggregate);
+    const tradeParse = level === 'trade' ? toTradeRows(rows) : { rows: [], unread: 0 };
+    const aggregateParse = level === 'trade' ? { rows: [], unread: 0 } : toAggregateRows(rows);
+    const trades = tradeParse.rows;
+    const aggregates = aggregateParse.rows;
+    const unread = tradeParse.unread + aggregateParse.unread;
     const filtered =
         level !== 'trade'
             ? []
@@ -203,8 +163,21 @@ export function RunResultsPanel({
     const totals = results.data?.totals ?? [];
     const reason = results.data?.reason ?? '';
     const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
-    const tradeCount =
-        level === 'trade' ? trades.length : aggregates.reduce((sum, row) => sum + row.trades, 0);
+    const tradeCount = results.data?.tradeCount ?? 0;
+    const bookShares = bookSharesOf(
+        aggregates.map((row) => ({
+            key: row.key,
+            name: row.name,
+            is_group: row.is_group,
+            is_removed: row.is_removed,
+            totals: row.totals,
+        })),
+    );
+    const problems: readonly Share[] = problemsOf(
+        toErrors(errors.data ?? []).rows,
+        t(`${field}.unscoped`),
+        t(`${field}.otherScopes`),
+    );
     const filterName = noBook
         ? t(`${field}.unbooked`)
         : bookFilter !== ''
@@ -218,9 +191,30 @@ export function RunResultsPanel({
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t(`${field}.oneRowPer.${level}`)}</h2>
                 <span className="rounded border border-line px-2 py-0.5 text-xs text-ink-muted">
-                    {t(`${field}.runTag`, { count: tradeCount, date: pricedAt })}
+                    {t(`${field}.${tradeCount === 1 ? 'runTagOne' : 'runTagMany'}`, {
+                        count: tradeCount,
+                        date: pricedAt,
+                    })}
                 </span>
             </header>
+            {level !== 'trade' && (
+                <label className="flex items-center gap-2 text-sm">
+                    <span className="text-ink-faint">{t(`${field}.compareTo`)}</span>
+                    <select
+                        aria-label={t(`${field}.compareTo`)}
+                        value={baseline}
+                        onChange={(event) => chooseBaseline(event.target.value)}
+                        className="rounded border border-line bg-surface px-2 py-1"
+                    >
+                        <option value="">{t(`${field}.noComparison`)}</option>
+                        {candidates.map((candidate) => (
+                            <option key={candidate.id} value={candidate.id}>
+                                {candidate.name === '' ? candidate.id.slice(0, 8) : candidate.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            )}
             <label className="flex items-center gap-2 text-sm">
                 <span className="text-ink-faint">{t(`${field}.aggregateBy`)}</span>
                 <select
@@ -238,6 +232,14 @@ export function RunResultsPanel({
             </label>
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {results.isError && <p className="text-sm text-down">{t(`${field}.failed`)}</p>}
+            {results.isSuccess && !errors.isPending && problems.length > 0 && (
+                <Donut
+                    title={t(`${field}.problemsTitle`)}
+                    caption={t(`${field}.problemsCaption`)}
+                    parts={problems}
+                    format={(value) => String(value)}
+                />
+            )}
             {results.isSuccess && (
                 <>
                     {trades.length === 0 && aggregates.length === 0 ? (
@@ -258,6 +260,11 @@ export function RunResultsPanel({
                             </p>
                             {degraded && (
                                 <p className="text-sm text-down">{t(`${field}.degraded`)}</p>
+                            )}
+                            {unread > 0 && (
+                                <p className="text-sm text-down">
+                                    {t(`${field}.unreadRows`, { count: unread })}
+                                </p>
                             )}
                             <dl className="flex flex-wrap gap-8">
                                 <div>
@@ -280,6 +287,37 @@ export function RunResultsPanel({
                                         </dd>
                                     </div>
                                 ))}
+                                {results.data?.baseline?.change.map((money) => {
+                                    const was = results.data?.baseline?.totals.find(
+                                        (entry) => entry.currency === money.currency,
+                                    );
+                                    const share = results.data?.baseline?.change_pct.find(
+                                        (entry) => entry.currency === money.currency,
+                                    );
+                                    return (
+                                        <div key={`baseline-${money.currency}`}>
+                                            <dt className="text-xs text-ink-faint">
+                                                {t(`${field}.was`)}
+                                            </dt>
+                                            <dd className="font-mono text-sm">
+                                                {was === undefined ? '—' : asFigure(was.total)}
+                                            </dd>
+                                            <dd
+                                                className={`font-mono text-xs ${
+                                                    money.total.startsWith('-')
+                                                        ? 'text-down'
+                                                        : 'text-ink-muted'
+                                                }`}
+                                            >
+                                                {asFigure(money.total)}
+                                                {' · '}
+                                                {share === undefined || share.total === ''
+                                                    ? '—'
+                                                    : `${asFigure(share.total)}%`}
+                                            </dd>
+                                        </div>
+                                    );
+                                })}
                             </dl>
                             {filtering && level === 'trade' && (
                                 <p className="flex items-center gap-2 text-sm">
@@ -301,6 +339,14 @@ export function RunResultsPanel({
                                     </button>
                                 </p>
                             )}
+                            {level === 'book' && bookShares !== null && (
+                                <Donut
+                                    title={t(`${field}.shareTitle`)}
+                                    caption={t(`${field}.shareCaption`)}
+                                    parts={bookShares}
+                                    format={(value) => asFigure(value.toFixed(2))}
+                                />
+                            )}
                             {level === 'trade' ? (
                                 <TradeTable
                                     rows={filtered}
@@ -313,6 +359,7 @@ export function RunResultsPanel({
                                     level={level}
                                     rows={aggregates}
                                     onTrades={chooseFilter}
+                                    compared={baseline !== ''}
                                 />
                             )}
                             {level === 'trade' ? (
@@ -441,10 +488,12 @@ function AggregateTable({
     level,
     rows,
     onTrades,
+    compared,
 }: {
     readonly level: Exclude<ResultLevel, 'trade'>;
     readonly rows: readonly AggregateRow[];
     readonly onTrades: (key: string) => void;
+    readonly compared: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.results';
@@ -459,18 +508,47 @@ function AggregateTable({
                         <th className="px-2 py-1 text-right font-normal">
                             {t(`${field}.notional`)}
                         </th>
+                        {compared && (
+                            <>
+                                <th className="px-2 py-1 text-right font-normal">
+                                    {t(`${field}.change`)}
+                                </th>
+                                <th className="px-2 py-1 text-right font-normal">
+                                    {t(`${field}.changePct`)}
+                                </th>
+                            </>
+                        )}
                         <th className="px-2 py-1 font-normal">{t(`${field}.actions`)}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((row) => (
-                        <tr key={row.key} className="border-t border-line-subtle">
-                            <td className="px-2 py-1 uppercase">
+                        <tr
+                            key={`${row.is_group ? 'group' : 'row'}-${row.key}`}
+                            className={`border-t border-line-subtle ${
+                                row.is_group ? 'font-medium' : ''
+                            }`}
+                        >
+                            <td
+                                className="px-2 py-1 uppercase"
+                                style={{ paddingLeft: `${8 + row.depth * 16}px` }}
+                            >
+                                {row.is_removed && (
+                                    <span className="mr-2 rounded border border-line px-1 text-xs text-ink-muted">
+                                        {t(`${field}.gone`)}
+                                    </span>
+                                )}
                                 {row.key === '' ? (
                                     level === 'book' ? (
                                         t(`${field}.unbooked`)
                                     ) : (
                                         t(`${field}.unassigned`)
+                                    )
+                                ) : level === 'book' && row.is_group ? (
+                                    row.name === '' ? (
+                                        row.key
+                                    ) : (
+                                        row.name
                                     )
                                 ) : level === 'book' ? (
                                     <Link
@@ -505,14 +583,44 @@ function AggregateTable({
                                     </span>
                                 ))}
                             </td>
+                            {compared && (
+                                <>
+                                    <td className="px-2 py-1 text-right font-mono">
+                                        {row.change.map((money) => (
+                                            <span
+                                                key={money.currency}
+                                                className={`mr-2 ${
+                                                    money.total.startsWith('-') ? 'text-down' : ''
+                                                }`}
+                                            >
+                                                {asFigure(money.total)}
+                                                {money.currency === '' ? '' : ` ${money.currency}`}
+                                            </span>
+                                        ))}
+                                    </td>
+                                    <td className="px-2 py-1 text-right font-mono text-ink-muted">
+                                        {row.change_pct.map((money) => (
+                                            <span key={money.currency} className="mr-2">
+                                                {money.total === ''
+                                                    ? '—'
+                                                    : `${asFigure(money.total)}%`}
+                                            </span>
+                                        ))}
+                                    </td>
+                                </>
+                            )}
                             <td className="px-2 py-1">
-                                <button
-                                    type="button"
-                                    onClick={() => onTrades(row.key)}
-                                    className="text-accent hover:text-accent-bright"
-                                >
-                                    {t(`${field}.showTrades`)}
-                                </button>
+                                {row.is_group ? (
+                                    ''
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => onTrades(row.key)}
+                                        className="text-accent hover:text-accent-bright"
+                                    >
+                                        {t(`${field}.showTrades`)}
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ))}

@@ -75,23 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_notification_arguments_response
-    list_notification_arguments(const messaging::list_notification_arguments_request& request);
-    messaging::get_notification_argument_response
-    get_notification_argument(const messaging::get_notification_argument_request& request);
-    messaging::get_many_notification_arguments_response get_many_notification_arguments(
-        const messaging::get_many_notification_arguments_request& request);
-    messaging::put_notification_argument_response
-    put_notification_argument(const messaging::put_notification_argument_request& request);
-    messaging::put_many_notification_arguments_response put_many_notification_arguments(
-        const messaging::put_many_notification_arguments_request& request);
-    messaging::delete_notification_argument_response
-    delete_notification_argument(const messaging::delete_notification_argument_request& request);
-    messaging::delete_many_notification_arguments_response delete_many_notification_arguments(
-        const messaging::delete_many_notification_arguments_request& request);
-    messaging::list_by_notification_id_notification_arguments_response
+    ::ores::inbox::messaging::list_notification_arguments_response list_notification_arguments(
+        const ::ores::inbox::messaging::list_notification_arguments_request& request);
+    ::ores::inbox::messaging::get_notification_argument_response get_notification_argument(
+        const ::ores::inbox::messaging::get_notification_argument_request& request);
+    ::ores::inbox::messaging::get_many_notification_arguments_response
+    get_many_notification_arguments(
+        const ::ores::inbox::messaging::get_many_notification_arguments_request& request);
+    ::ores::inbox::messaging::put_notification_argument_response put_notification_argument(
+        const ::ores::inbox::messaging::put_notification_argument_request& request);
+    ::ores::inbox::messaging::put_many_notification_arguments_response
+    put_many_notification_arguments(
+        const ::ores::inbox::messaging::put_many_notification_arguments_request& request);
+    ::ores::inbox::messaging::delete_notification_argument_response delete_notification_argument(
+        const ::ores::inbox::messaging::delete_notification_argument_request& request);
+    ::ores::inbox::messaging::delete_many_notification_arguments_response
+    delete_many_notification_arguments(
+        const ::ores::inbox::messaging::delete_many_notification_arguments_request& request);
+    ::ores::inbox::messaging::list_by_notification_id_notification_arguments_response
     list_by_notification_id_notification_arguments(
-        const messaging::list_by_notification_id_notification_arguments_request& request);
+        const ::ores::inbox::messaging::list_by_notification_id_notification_arguments_request&
+            request);
     /**@}*/
 
 private:
@@ -112,7 +116,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::notification_argument_change& change,
+    prepare_change(const ::ores::inbox::messaging::notification_argument_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::notification_argument& out);
 };

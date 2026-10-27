@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -38,9 +39,6 @@ using ores::shell::app::commands::tick_source;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][marketdata][stream]");
 
 const std::string tenant_id("11111111-1111-1111-1111-111111111111");
 const std::string party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
@@ -88,7 +86,7 @@ private:
 
 }
 
-TEST_CASE("marketdata_commands registers the stream verb", tags) {
+TEST_CASE("marketdata_commands registers the stream verb", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -101,7 +99,7 @@ TEST_CASE("marketdata_commands registers the stream verb", tags) {
           completions.end());
 }
 
-TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", tags) {
+TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, eurusd_uri);
@@ -112,7 +110,8 @@ TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", tags) {
     CHECK_FALSE(watch->series.has_value());
 }
 
-TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree", tags) {
+TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, rating_series_uri);
@@ -127,7 +126,7 @@ TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree", tags) {
     CHECK(watch->series->is_series());
 }
 
-TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", tags) {
+TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto series = ores::marketdata::datum::oresmd_uri_codec::read(rating_series_uri);
@@ -152,7 +151,8 @@ TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", tags) {
     CHECK(output.rows.size() == 2);
 }
 
-TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message", tags) {
+TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto subjects = marketdata_commands::stream_subjects(
@@ -166,7 +166,8 @@ TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message", tags) {
     CHECK(subjects.error().find("quote") != std::string::npos);
 }
 
-TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows", tags) {
+TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     stub_tick_source source({tick(eurusd_uri, "1.0812", "synthetic.eurusd", 9),
@@ -191,7 +192,7 @@ TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows", tags) {
           "2026-10-06 10:00:00.000000Z," + eurusd_uri + ",1.0815,synthetic.eurusd");
 }
 
-TEST_CASE("a_csv_field_holding_a_separator_is_quoted", tags) {
+TEST_CASE("a_csv_field_holding_a_separator_is_quoted", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto row =
@@ -200,7 +201,8 @@ TEST_CASE("a_csv_field_holding_a_separator_is_quoted", tags) {
     CHECK(row == "2026-10-06 09:00:00.000000Z," + eurusd_uri + ",1.0812,\"synthetic, quoted\"");
 }
 
-TEST_CASE("a_stream_that_receives_nothing_still_writes_the_header", tags) {
+TEST_CASE("a_stream_that_receives_nothing_still_writes_the_header",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     stub_tick_source source({});
@@ -215,7 +217,7 @@ TEST_CASE("a_stream_that_receives_nothing_still_writes_the_header", tags) {
     CHECK(out.str().empty());
 }
 
-TEST_CASE("an_unwritable_csv_path_is_reported", tags) {
+TEST_CASE("an_unwritable_csv_path_is_reported", "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     stub_tick_source source({tick(eurusd_uri, "1.0812", "synthetic.eurusd", 9)});

@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view origin_dimension_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_origin_dimension_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<origin_dimension_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_origin_dimensions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_origin_dimensions(std::move(msg));
-        }));
+        list_origin_dimensions_request::nats_subject,
+        origin_dimension_queue_group,
+        [h](ores::nats::message msg) { h->list_origin_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_origin_dimension_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_origin_dimension(std::move(msg));
-        }));
+        get_origin_dimension_request::nats_subject,
+        origin_dimension_queue_group,
+        [h](ores::nats::message msg) { h->get_origin_dimension(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_origin_dimensions_request::nats_subject,
-        queue_group,
+        origin_dimension_queue_group,
         [h](ores::nats::message msg) { h->get_many_origin_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_origin_dimension_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_origin_dimension(std::move(msg));
-        }));
+        put_origin_dimension_request::nats_subject,
+        origin_dimension_queue_group,
+        [h](ores::nats::message msg) { h->put_origin_dimension(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_origin_dimensions_request::nats_subject,
-        queue_group,
+        origin_dimension_queue_group,
         [h](ores::nats::message msg) { h->put_many_origin_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_origin_dimension_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_origin_dimension(std::move(msg));
-        }));
+        delete_origin_dimension_request::nats_subject,
+        origin_dimension_queue_group,
+        [h](ores::nats::message msg) { h->delete_origin_dimension(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_origin_dimensions_request::nats_subject,
-        queue_group,
+        origin_dimension_queue_group,
         [h](ores::nats::message msg) { h->delete_many_origin_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_origin_dimension_versions_request::nats_subject,
-        queue_group,
+        origin_dimension_queue_group,
         [h](ores::nats::message msg) { h->list_origin_dimension_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_origin_dimension_version_request::nats_subject,
-        queue_group,
+        origin_dimension_queue_group,
         [h](ores::nats::message msg) { h->get_origin_dimension_version(std::move(msg)); }));
     return subs;
 }

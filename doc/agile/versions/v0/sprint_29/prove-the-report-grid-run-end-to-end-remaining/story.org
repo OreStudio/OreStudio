@@ -54,6 +54,14 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:CACDECCE-638E-4F72-AF7E-D4EE1D238FD5][Read a report's runs and one run's results]] | DONE | | 2026-10-25 | The report page keeps the definition first and lists the runs beside it; a run's details and results live on the run's own page. |
 | [[id:1E27811E-5193-48BF-A4F2-0C5F6C0F2EA3][Read a trade from a run's results]] | DONE | | 2026-10-26 | Each result row names its trade and its counterparty, links to both, and opens onto that trade's figures and the error the run recorded against it. |
 | [[id:627A5FF2-C353-4861-8401-4BF6C985AC3F][Read a run's results at trade, book or counterparty level]] | DONE | | 2026-10-26 | One control chooses the level a run's results are read at, and the server does the aggregation. |
+| [[id:6644C73A-ADB5-4379-AF80-78B79B6C15A6][Roll a run's counterparties up to their groups]] | DONE | | 2026-10-26 | The counterparty level states each group's rolled-up figure above its members, so a group can be checked against the parts beneath it. |
+| [[id:1379A7DF-8755-4314-A564-B4771A4C1B5F][Compare a run with an earlier one]] | DONE | | 2026-10-26 | A run's aggregate levels can be stated against an earlier completed run of the same report, with each row's change and share. |
+| [[id:9B64F464-EC3D-4B3F-B2B7-4DF1E7F321EA][Group books under their portfolios]] | DONE | | 2026-10-26 | The book level states each portfolio's rolled-up figure above the books it holds. |
+| [[id:EF671389-BF56-4635-A154-5FF2BC19BF57][Nest the portfolios into a tree]] | DONE | | 2026-10-26 | The book level reads as a tree: a global portfolio over banking books over the ports and books beneath them, each row rolled up from what it holds. |
+| [[id:4010067E-6BEB-4A54-9183-8736D264BFC7][Draw the plots the run can answer]] | DONE | | 2026-10-27 | The results screen draws a donut of each book's share of the run, and a donut of the run's problems by scope, each with its figures beside it. |
+| [[id:0A905105-F500-44C7-ACF1-E8517B778E11][Add the report result rows table]] | BACKLOG | | | A hypertable of one row per subject, measure and currency at the run's priced date, with the security, indexes and retention the market data ticks use. |
+| [[id:7D867B23-569E-47FC-A3E1-003F94B787F0][Post-process a run's results into rows]] | BACKLOG | | | A post-processing step after retrieval, one reader per analytic, rows written in one transaction per run, and the run stating what was written. |
+| [[id:E2B1C2B1-3E73-4B85-B42F-C4392750DDAE][Marshal the engine's output into result rows]] | BACKLOG | | | The compute wrapper writes one canonical result file from the engine's own files, a projection of their headings rather than a parse, before it uploads. |
 
 * Decisions
 

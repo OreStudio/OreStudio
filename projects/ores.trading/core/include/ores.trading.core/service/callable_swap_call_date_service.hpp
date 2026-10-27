@@ -76,27 +76,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_callable_swap_call_dates_response
-    list_callable_swap_call_dates(const messaging::list_callable_swap_call_dates_request& request);
-    messaging::get_callable_swap_call_date_response
-    get_callable_swap_call_date(const messaging::get_callable_swap_call_date_request& request);
-    messaging::get_many_callable_swap_call_dates_response get_many_callable_swap_call_dates(
-        const messaging::get_many_callable_swap_call_dates_request& request);
-    messaging::put_callable_swap_call_date_response
-    put_callable_swap_call_date(const messaging::put_callable_swap_call_date_request& request);
-    messaging::put_many_callable_swap_call_dates_response put_many_callable_swap_call_dates(
-        const messaging::put_many_callable_swap_call_dates_request& request);
-    messaging::delete_callable_swap_call_date_response delete_callable_swap_call_date(
-        const messaging::delete_callable_swap_call_date_request& request);
-    messaging::delete_many_callable_swap_call_dates_response delete_many_callable_swap_call_dates(
-        const messaging::delete_many_callable_swap_call_dates_request& request);
-    messaging::list_by_trade_id_callable_swap_call_dates_response
+    ::ores::trading::messaging::list_callable_swap_call_dates_response
+    list_callable_swap_call_dates(
+        const ::ores::trading::messaging::list_callable_swap_call_dates_request& request);
+    ::ores::trading::messaging::get_callable_swap_call_date_response get_callable_swap_call_date(
+        const ::ores::trading::messaging::get_callable_swap_call_date_request& request);
+    ::ores::trading::messaging::get_many_callable_swap_call_dates_response
+    get_many_callable_swap_call_dates(
+        const ::ores::trading::messaging::get_many_callable_swap_call_dates_request& request);
+    ::ores::trading::messaging::put_callable_swap_call_date_response put_callable_swap_call_date(
+        const ::ores::trading::messaging::put_callable_swap_call_date_request& request);
+    ::ores::trading::messaging::put_many_callable_swap_call_dates_response
+    put_many_callable_swap_call_dates(
+        const ::ores::trading::messaging::put_many_callable_swap_call_dates_request& request);
+    ::ores::trading::messaging::delete_callable_swap_call_date_response
+    delete_callable_swap_call_date(
+        const ::ores::trading::messaging::delete_callable_swap_call_date_request& request);
+    ::ores::trading::messaging::delete_many_callable_swap_call_dates_response
+    delete_many_callable_swap_call_dates(
+        const ::ores::trading::messaging::delete_many_callable_swap_call_dates_request& request);
+    ::ores::trading::messaging::list_by_trade_id_callable_swap_call_dates_response
     list_by_trade_id_callable_swap_call_dates(
-        const messaging::list_by_trade_id_callable_swap_call_dates_request& request);
-    messaging::list_callable_swap_call_date_versions_response list_callable_swap_call_date_versions(
-        const messaging::list_callable_swap_call_date_versions_request& request);
-    messaging::get_callable_swap_call_date_version_response get_callable_swap_call_date_version(
-        const messaging::get_callable_swap_call_date_version_request& request);
+        const ::ores::trading::messaging::list_by_trade_id_callable_swap_call_dates_request&
+            request);
+    ::ores::trading::messaging::list_callable_swap_call_date_versions_response
+    list_callable_swap_call_date_versions(
+        const ::ores::trading::messaging::list_callable_swap_call_date_versions_request& request);
+    ::ores::trading::messaging::get_callable_swap_call_date_version_response
+    get_callable_swap_call_date_version(
+        const ::ores::trading::messaging::get_callable_swap_call_date_version_request& request);
     /**@}*/
 
     /**
@@ -221,7 +229,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::callable_swap_call_date_change& change,
+    prepare_change(const ::ores::trading::messaging::callable_swap_call_date_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::callable_swap_call_date& out);
 };

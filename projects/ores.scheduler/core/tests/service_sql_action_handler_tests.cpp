@@ -21,6 +21,7 @@
 #include "ores.scheduler.core/service/sql_action_handler.hpp"
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <expected>
@@ -33,9 +34,6 @@
 // instance instead of taking the scheduler loop down with it.
 
 namespace {
-
-const std::string_view test_suite("scheduler.tests");
-const std::string tags("[action][sql]");
 
 ores::scheduler::domain::job_definition make_job(const std::string& command) {
     ores::scheduler::domain::job_definition job;
@@ -53,14 +51,14 @@ using ores::scheduler::service::action_context;
 using ores::scheduler::service::sql_action_handler;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("sql_action_handler claims the execute_sql action type", tags) {
+TEST_CASE("sql_action_handler claims the execute_sql action type", "[action][sql]") {
     auto lg(make_logger(test_suite));
 
     sql_action_handler handler;
     CHECK(handler.action_type() == "execute_sql");
 }
 
-TEST_CASE("sql_action_handler runs the job's command", tags) {
+TEST_CASE("sql_action_handler runs the job's command", "[action][sql]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -76,7 +74,7 @@ TEST_CASE("sql_action_handler runs the job's command", tags) {
     CHECK(result.has_value());
 }
 
-TEST_CASE("sql_action_handler reports a bad command instead of throwing", tags) {
+TEST_CASE("sql_action_handler reports a bad command instead of throwing", "[action][sql]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -35,8 +35,6 @@
 
 namespace {
 
-const std::string tags("[app][crm]");
-
 using ores::refdata::domain::crm_driver_pair;
 using ores::refdata::domain::crm_enabled_derived_pair;
 using ores::refdata::domain::crm_topology_config;
@@ -108,7 +106,7 @@ struct fixture {
 }
 
 TEST_CASE("refresh builds an engine from persisted config and driver pairs, update/rate work",
-          tags) {
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -143,7 +141,8 @@ TEST_CASE("refresh builds an engine from persisted config and driver pairs, upda
     CHECK(derived->rate == Catch::Approx(1.10 * 150.0));
 }
 
-TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, party)", tags) {
+TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, party)",
+          "[app][crm]") {
     fixture f;
     crm_ingest_bridge bridge(f.h.context());
     // Nothing is persisted, so the engines map stays empty.
@@ -154,7 +153,8 @@ TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, par
     CHECK_FALSE(result.has_value());
 }
 
-TEST_CASE("rate() returns nullopt for an unknown CRM name when others are configured", tags) {
+TEST_CASE("rate() returns nullopt for an unknown CRM name when others are configured",
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -170,7 +170,7 @@ TEST_CASE("rate() returns nullopt for an unknown CRM name when others are config
     CHECK_FALSE(result.has_value());
 }
 
-TEST_CASE("update() silently ignores a pair that is not a driver edge", tags) {
+TEST_CASE("update() silently ignores a pair that is not a driver edge", "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -189,7 +189,8 @@ TEST_CASE("update() silently ignores a pair that is not a driver edge", tags) {
         bridge.update(tenant_id_str, "GBP", "USD", 1.25, std::chrono::system_clock::now()));
 }
 
-TEST_CASE("rates() returns every configured pair (driver + enabled derived) in one batch", tags) {
+TEST_CASE("rates() returns every configured pair (driver + enabled derived) in one batch",
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -218,7 +219,7 @@ TEST_CASE("rates() returns every configured pair (driver + enabled derived) in o
 }
 
 TEST_CASE("two enabled configs for the same (tenant, party) build two independent named engines",
-          tags) {
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -274,7 +275,7 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
 
 TEST_CASE(
     "resolved_rates() synthesises a reverse-pair reciprocal when the reverse isn't configured",
-    tags) {
+    "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -307,7 +308,7 @@ TEST_CASE(
 }
 
 TEST_CASE("resolved_rates() synthesises no reciprocal when the reverse pair is itself configured",
-          tags) {
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -340,7 +341,7 @@ TEST_CASE("resolved_rates() synthesises no reciprocal when the reverse pair is i
     CHECK(usd_eur->rate == Catch::Approx(1.0 / 1.10));
 }
 
-TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
+TEST_CASE("refresh() resets the per-named-engine delta baseline", "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -377,7 +378,7 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
     CHECK_FALSE(after_refresh[0].delta_pct.has_value());
 }
 
-TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine", tags) {
+TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine", "[app][crm]") {
     // A tick's route party does not scope which party's CRM
     // engines get fed: update() takes only tenant_id_str. Two
     // parties in the same tenant, each with their own "majors" config and
@@ -420,7 +421,8 @@ TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine
     CHECK(second_party_rate->status == ores::analytics::quant::domain::rate_status::fresh);
 }
 
-TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's CRM name", tags) {
+TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's CRM name",
+          "[app][crm]") {
     // crm_ingest_bridge::refresh() relies on this: it would throw
     // std::logic_error if it ever saw two enabled, same-named configs for
     // one party, but that can only happen if this DB invariant is somehow

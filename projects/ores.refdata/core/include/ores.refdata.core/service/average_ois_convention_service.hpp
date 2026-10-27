@@ -76,24 +76,30 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_average_ois_conventions_response
-    list_average_ois_conventions(const messaging::list_average_ois_conventions_request& request);
-    messaging::get_average_ois_convention_response
-    get_average_ois_convention(const messaging::get_average_ois_convention_request& request);
-    messaging::get_many_average_ois_conventions_response get_many_average_ois_conventions(
-        const messaging::get_many_average_ois_conventions_request& request);
-    messaging::put_average_ois_convention_response
-    put_average_ois_convention(const messaging::put_average_ois_convention_request& request);
-    messaging::put_many_average_ois_conventions_response put_many_average_ois_conventions(
-        const messaging::put_many_average_ois_conventions_request& request);
-    messaging::delete_average_ois_convention_response
-    delete_average_ois_convention(const messaging::delete_average_ois_convention_request& request);
-    messaging::delete_many_average_ois_conventions_response delete_many_average_ois_conventions(
-        const messaging::delete_many_average_ois_conventions_request& request);
-    messaging::list_average_ois_convention_versions_response list_average_ois_convention_versions(
-        const messaging::list_average_ois_convention_versions_request& request);
-    messaging::get_average_ois_convention_version_response get_average_ois_convention_version(
-        const messaging::get_average_ois_convention_version_request& request);
+    ::ores::refdata::messaging::list_average_ois_conventions_response list_average_ois_conventions(
+        const ::ores::refdata::messaging::list_average_ois_conventions_request& request);
+    ::ores::refdata::messaging::get_average_ois_convention_response get_average_ois_convention(
+        const ::ores::refdata::messaging::get_average_ois_convention_request& request);
+    ::ores::refdata::messaging::get_many_average_ois_conventions_response
+    get_many_average_ois_conventions(
+        const ::ores::refdata::messaging::get_many_average_ois_conventions_request& request);
+    ::ores::refdata::messaging::put_average_ois_convention_response put_average_ois_convention(
+        const ::ores::refdata::messaging::put_average_ois_convention_request& request);
+    ::ores::refdata::messaging::put_many_average_ois_conventions_response
+    put_many_average_ois_conventions(
+        const ::ores::refdata::messaging::put_many_average_ois_conventions_request& request);
+    ::ores::refdata::messaging::delete_average_ois_convention_response
+    delete_average_ois_convention(
+        const ::ores::refdata::messaging::delete_average_ois_convention_request& request);
+    ::ores::refdata::messaging::delete_many_average_ois_conventions_response
+    delete_many_average_ois_conventions(
+        const ::ores::refdata::messaging::delete_many_average_ois_conventions_request& request);
+    ::ores::refdata::messaging::list_average_ois_convention_versions_response
+    list_average_ois_convention_versions(
+        const ::ores::refdata::messaging::list_average_ois_convention_versions_request& request);
+    ::ores::refdata::messaging::get_average_ois_convention_version_response
+    get_average_ois_convention_version(
+        const ::ores::refdata::messaging::get_average_ois_convention_version_request& request);
     /**@}*/
 
     /**
@@ -192,7 +198,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::average_ois_convention_change& change,
+    prepare_change(const ::ores::refdata::messaging::average_ois_convention_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::average_ois_convention& out);
 };

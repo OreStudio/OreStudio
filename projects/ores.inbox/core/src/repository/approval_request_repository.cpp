@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+approval_request_list_order(const ores::utility::domain::order& order,
+                            std::initializer_list<std::string> default_columns,
+                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!approval_request_repository::is_sortable(order.field))
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::approval_requests_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> approval_request_filter_condition(
+    const std::optional<messaging::approval_requests_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -298,8 +299,8 @@ std::vector<domain::approval_request> approval_request_repository::read_latest_b
     return execute_ordered_read_query<approval_request_entity, domain::approval_request>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        approval_request_list_order(order, {"id"}, false),
+        approval_request_filter_condition(filter),
         [](const auto& entities) { return approval_request_mapper::map(entities); },
         lg(),
         "Reading latest approval requests by kind_code.");
@@ -318,8 +319,11 @@ std::uint32_t approval_request_repository::get_total_request_count_by_kind_code(
         sqlgen::read<std::vector<approval_request_entity>> |
         where("tenant_id"_c == tid && "kind_code"_c == kind_code && "valid_to"_c == max.value());
 
-    return execute_count_query<approval_request_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting approval requests by kind_code");
+    return execute_count_query<approval_request_entity>(ctx,
+                                                        query,
+                                                        approval_request_filter_condition(filter),
+                                                        lg(),
+                                                        "Counting approval requests by kind_code");
 }
 
 
@@ -372,8 +376,8 @@ std::vector<domain::approval_request> approval_request_repository::read_latest(
     return execute_ordered_read_query<approval_request_entity, domain::approval_request>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        approval_request_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), approval_request_filter_condition(filter)),
         [](const auto& entities) { return approval_request_mapper::map(entities); },
         lg(),
         "Reading latest approval requests with pagination.");
@@ -392,7 +396,7 @@ std::uint32_t approval_request_repository::get_total_request_count(
     return execute_count_query<approval_request_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), approval_request_filter_condition(filter)),
         lg(),
         "Counting approval requests");
 }

@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view publication_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,33 +49,33 @@ register_publication_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<publication_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_publications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_publications(std::move(msg));
-        }));
+        list_publications_request::nats_subject,
+        publication_queue_group,
+        [h](ores::nats::message msg) { h->list_publications(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_publication_request::nats_subject,
+                             publication_queue_group,
+                             [h](ores::nats::message msg) { h->get_publication(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_publication_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_publication(std::move(msg));
-        }));
+        get_many_publications_request::nats_subject,
+        publication_queue_group,
+        [h](ores::nats::message msg) { h->get_many_publications(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_publication_request::nats_subject,
+                             publication_queue_group,
+                             [h](ores::nats::message msg) { h->put_publication(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_publications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_publications(std::move(msg));
-        }));
+        put_many_publications_request::nats_subject,
+        publication_queue_group,
+        [h](ores::nats::message msg) { h->put_many_publications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_publication_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_publication(std::move(msg));
-        }));
+        delete_publication_request::nats_subject,
+        publication_queue_group,
+        [h](ores::nats::message msg) { h->delete_publication(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_publications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_publications(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_publication_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_publication(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_publications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_publications(std::move(msg));
-        }));
+        delete_many_publications_request::nats_subject,
+        publication_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_publications(std::move(msg)); }));
     return subs;
 }
 

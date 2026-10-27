@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+tenor_basis_swap_long_short_list_order(const ores::utility::domain::order& order,
+                                       std::initializer_list<std::string> default_columns,
+                                       bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!tenor_basis_swap_long_short_repository::is_sortable(order.field))
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::tenor_basis_swap_long_shorts_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> tenor_basis_swap_long_short_filter_condition(
+    const std::optional<messaging::tenor_basis_swap_long_shorts_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -299,8 +300,8 @@ tenor_basis_swap_long_short_repository::read_latest_by_convention_id(
                                       domain::tenor_basis_swap_long_short>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        tenor_basis_swap_long_short_list_order(order, {"id"}, false),
+        tenor_basis_swap_long_short_filter_condition(filter),
         [](const auto& entities) { return tenor_basis_swap_long_short_mapper::map(entities); },
         lg(),
         "Reading latest tenor basis swap long shorts by convention_id.");
@@ -324,7 +325,7 @@ std::uint32_t tenor_basis_swap_long_short_repository::
     return execute_count_query<tenor_basis_swap_long_short_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        tenor_basis_swap_long_short_filter_condition(filter),
         lg(),
         "Counting tenor basis swap long shorts by convention_id");
 }
@@ -411,8 +412,8 @@ tenor_basis_swap_long_short_repository::read_latest(
                                       domain::tenor_basis_swap_long_short>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        tenor_basis_swap_long_short_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), tenor_basis_swap_long_short_filter_condition(filter)),
         [](const auto& entities) { return tenor_basis_swap_long_short_mapper::map(entities); },
         lg(),
         "Reading latest tenor basis swap long shorts with pagination.");
@@ -431,7 +432,7 @@ std::uint32_t tenor_basis_swap_long_short_repository::get_total_tenor_basis_swap
     return execute_count_query<tenor_basis_swap_long_short_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), tenor_basis_swap_long_short_filter_condition(filter)),
         lg(),
         "Counting tenor basis swap long shorts");
 }

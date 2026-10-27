@@ -76,26 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_party_identifiers_response
-    list_party_identifiers(const messaging::list_party_identifiers_request& request);
-    messaging::get_party_identifier_response
-    get_party_identifier(const messaging::get_party_identifier_request& request);
-    messaging::get_many_party_identifiers_response
-    get_many_party_identifiers(const messaging::get_many_party_identifiers_request& request);
-    messaging::put_party_identifier_response
-    put_party_identifier(const messaging::put_party_identifier_request& request);
-    messaging::put_many_party_identifiers_response
-    put_many_party_identifiers(const messaging::put_many_party_identifiers_request& request);
-    messaging::delete_party_identifier_response
-    delete_party_identifier(const messaging::delete_party_identifier_request& request);
-    messaging::delete_many_party_identifiers_response
-    delete_many_party_identifiers(const messaging::delete_many_party_identifiers_request& request);
-    messaging::list_by_party_id_party_identifiers_response list_by_party_id_party_identifiers(
-        const messaging::list_by_party_id_party_identifiers_request& request);
-    messaging::list_party_identifier_versions_response list_party_identifier_versions(
-        const messaging::list_party_identifier_versions_request& request);
-    messaging::get_party_identifier_version_response
-    get_party_identifier_version(const messaging::get_party_identifier_version_request& request);
+    ::ores::refdata::messaging::list_party_identifiers_response list_party_identifiers(
+        const ::ores::refdata::messaging::list_party_identifiers_request& request);
+    ::ores::refdata::messaging::get_party_identifier_response
+    get_party_identifier(const ::ores::refdata::messaging::get_party_identifier_request& request);
+    ::ores::refdata::messaging::get_many_party_identifiers_response get_many_party_identifiers(
+        const ::ores::refdata::messaging::get_many_party_identifiers_request& request);
+    ::ores::refdata::messaging::put_party_identifier_response
+    put_party_identifier(const ::ores::refdata::messaging::put_party_identifier_request& request);
+    ::ores::refdata::messaging::put_many_party_identifiers_response put_many_party_identifiers(
+        const ::ores::refdata::messaging::put_many_party_identifiers_request& request);
+    ::ores::refdata::messaging::delete_party_identifier_response delete_party_identifier(
+        const ::ores::refdata::messaging::delete_party_identifier_request& request);
+    ::ores::refdata::messaging::delete_many_party_identifiers_response
+    delete_many_party_identifiers(
+        const ::ores::refdata::messaging::delete_many_party_identifiers_request& request);
+    ::ores::refdata::messaging::list_by_party_id_party_identifiers_response
+    list_by_party_id_party_identifiers(
+        const ::ores::refdata::messaging::list_by_party_id_party_identifiers_request& request);
+    ::ores::refdata::messaging::list_party_identifier_versions_response
+    list_party_identifier_versions(
+        const ::ores::refdata::messaging::list_party_identifier_versions_request& request);
+    ::ores::refdata::messaging::get_party_identifier_version_response get_party_identifier_version(
+        const ::ores::refdata::messaging::get_party_identifier_version_request& request);
     /**@}*/
 
     /**
@@ -294,9 +297,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::party_identifier_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::party_identifier& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::party_identifier_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::party_identifier& out);
 };
 
 }

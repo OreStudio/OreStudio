@@ -28,15 +28,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.analytics.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::analytics::generators;
 using ores::analytics::domain::pricing_model_product;
@@ -45,7 +39,7 @@ using ores::analytics::repository::pricing_model_config_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_pricing_model_product", tags) {
+TEST_CASE("write_single_pricing_model_product", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -70,7 +64,7 @@ TEST_CASE("write_single_pricing_model_product", tags) {
     CHECK_NOTHROW(repo.write(h.context(), products[0]));
 }
 
-TEST_CASE("write_multiple_pricing_model_products", tags) {
+TEST_CASE("write_multiple_pricing_model_products", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -94,7 +88,7 @@ TEST_CASE("write_multiple_pricing_model_products", tags) {
     CHECK_NOTHROW(repo.write(h.context(), products));
 }
 
-TEST_CASE("read_latest_pricing_model_products_for_config", tags) {
+TEST_CASE("read_latest_pricing_model_products_for_config", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -117,7 +111,7 @@ TEST_CASE("read_latest_pricing_model_products_for_config", tags) {
     CHECK(read.size() >= written.size());
 }
 
-TEST_CASE("read_latest_pricing_model_product_by_id", tags) {
+TEST_CASE("read_latest_pricing_model_product_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -150,7 +144,7 @@ TEST_CASE("read_latest_pricing_model_product_by_id", tags) {
     CHECK(read[0].id == p.id);
 }
 
-TEST_CASE("read_all_pricing_model_product_history", tags) {
+TEST_CASE("read_all_pricing_model_product_history", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -185,7 +179,7 @@ TEST_CASE("read_all_pricing_model_product_history", tags) {
     CHECK(history.size() >= 2);
 }
 
-TEST_CASE("remove_pricing_model_product", tags) {
+TEST_CASE("remove_pricing_model_product", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -216,7 +210,7 @@ TEST_CASE("remove_pricing_model_product", tags) {
     CHECK(read.empty());
 }
 
-TEST_CASE("remove_pricing_model_products_for_config", tags) {
+TEST_CASE("remove_pricing_model_products_for_config", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

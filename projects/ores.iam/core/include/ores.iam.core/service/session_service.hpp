@@ -75,18 +75,20 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_sessions_response
-    list_sessions(const messaging::list_sessions_request& request);
-    messaging::get_session_response get_session(const messaging::get_session_request& request);
-    messaging::get_many_sessions_response
-    get_many_sessions(const messaging::get_many_sessions_request& request);
-    messaging::put_session_response put_session(const messaging::put_session_request& request);
-    messaging::put_many_sessions_response
-    put_many_sessions(const messaging::put_many_sessions_request& request);
-    messaging::delete_session_response
-    delete_session(const messaging::delete_session_request& request);
-    messaging::delete_many_sessions_response
-    delete_many_sessions(const messaging::delete_many_sessions_request& request);
+    ::ores::iam::messaging::list_sessions_response
+    list_sessions(const ::ores::iam::messaging::list_sessions_request& request);
+    ::ores::iam::messaging::get_session_response
+    get_session(const ::ores::iam::messaging::get_session_request& request);
+    ::ores::iam::messaging::get_many_sessions_response
+    get_many_sessions(const ::ores::iam::messaging::get_many_sessions_request& request);
+    ::ores::iam::messaging::put_session_response
+    put_session(const ::ores::iam::messaging::put_session_request& request);
+    ::ores::iam::messaging::put_many_sessions_response
+    put_many_sessions(const ::ores::iam::messaging::put_many_sessions_request& request);
+    ::ores::iam::messaging::delete_session_response
+    delete_session(const ::ores::iam::messaging::delete_session_request& request);
+    ::ores::iam::messaging::delete_many_sessions_response
+    delete_many_sessions(const ::ores::iam::messaging::delete_many_sessions_request& request);
     /**@}*/
 
     /**
@@ -175,9 +177,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::session_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::session& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::iam::messaging::session_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::session& out);
 };
 
 }

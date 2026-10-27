@@ -76,5 +76,9 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '6a877aa9-7ee6-541a-84a3-a4d02b90c274', 0, 'matthew.day', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'matthew.day@acmecorp.co.uk', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a3365d2b-9f1b-56f2-9c84-d1d53d3cedde', 0, 'eleanor.jackson', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'eleanor.jackson@acmecorp.co.uk', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '90a7c2f6-7522-591f-b2e4-0398e309628b', 0, 'howard.scott', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'howard.scott@acmecorp.co.uk', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f538eab3-d1de-5ee8-a74b-ed3731821044', 0, 'maureen.palmer', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'maureen.palmer@acmecorp.co.uk', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f538eab3-d1de-5ee8-a74b-ed3731821044', 0, 'maureen.palmer', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'maureen.palmer@acmecorp.co.uk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd0149d29-f086-5393-a9b4-3f7939d667ab', 0, 'benjamin.matthews', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'benjamin.matthews@acmecorp.co.uk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f409d0be-4bb7-5364-914d-4727b5872f70', 0, 'louise.taylor', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'louise.taylor@acmecorp.co.uk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9ceb5b67-7c03-5861-b340-0840a76e3034', 0, 'terry.freeman', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'terry.freeman@acmecorp.co.uk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e7b0e7c6-8bfe-5d52-a327-9806f0f1247f', 0, 'beth.clark', '1 Poultry', null, 'London', null, 'GB', 'EC2R 8EJ', '+44 20 7946 0958', 'beth.clark@acmecorp.co.uk', null);
 end $$;

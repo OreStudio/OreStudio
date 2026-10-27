@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view lei_bic_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,15 +49,15 @@ register_lei_bic_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<lei_bic_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_lei_bic_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_lei_bic_request::nats_subject, lei_bic_queue_group, [h](ores::nats::message msg) {
             h->list_lei_bic(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_lei_bic_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_lei_bic_request::nats_subject, lei_bic_queue_group, [h](ores::nats::message msg) {
             h->get_lei_bic(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_lei_bic_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_lei_bic_request::nats_subject, lei_bic_queue_group, [h](ores::nats::message msg) {
             h->get_many_lei_bic(std::move(msg));
         }));
     return subs;

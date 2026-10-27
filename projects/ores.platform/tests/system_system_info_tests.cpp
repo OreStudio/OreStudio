@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[system]");
-
 #if defined(__linux__)
 /// MemTotal from /proc/meminfo in MiB, read through a different API from the subject's.
 std::int64_t kernel_mem_total_mb() {
@@ -48,11 +46,11 @@ std::int64_t kernel_mem_total_mb() {
 
 using ores::platform::system::get_system_info;
 
-TEST_CASE("system_info_reports_at_least_one_processor", tags) {
+TEST_CASE("system_info_reports_at_least_one_processor", "[system]") {
     CHECK(get_system_info().cpu_count >= 1);
 }
 
-TEST_CASE("system_info_reports_a_plausible_amount_of_memory", tags) {
+TEST_CASE("system_info_reports_a_plausible_amount_of_memory", "[system]") {
     const auto ram_mb = get_system_info().ram_mb;
 
     // Over a hundred MiB and under sixteen TiB: a unit mistake would miss both.
@@ -60,7 +58,7 @@ TEST_CASE("system_info_reports_a_plausible_amount_of_memory", tags) {
     CHECK(ram_mb < 16LL * 1024 * 1024);
 }
 
-TEST_CASE("system_info_agrees_with_the_kernel_about_memory", tags) {
+TEST_CASE("system_info_agrees_with_the_kernel_about_memory", "[system]") {
 #if defined(__linux__)
     const auto reported = get_system_info().ram_mb;
     const auto kernel = kernel_mem_total_mb();

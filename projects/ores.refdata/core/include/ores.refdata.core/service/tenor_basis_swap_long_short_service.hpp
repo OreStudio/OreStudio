@@ -77,30 +77,39 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_tenor_basis_swap_long_shorts_response list_tenor_basis_swap_long_shorts(
-        const messaging::list_tenor_basis_swap_long_shorts_request& request);
-    messaging::get_tenor_basis_swap_long_short_response get_tenor_basis_swap_long_short(
-        const messaging::get_tenor_basis_swap_long_short_request& request);
-    messaging::get_many_tenor_basis_swap_long_shorts_response get_many_tenor_basis_swap_long_shorts(
-        const messaging::get_many_tenor_basis_swap_long_shorts_request& request);
-    messaging::put_tenor_basis_swap_long_short_response put_tenor_basis_swap_long_short(
-        const messaging::put_tenor_basis_swap_long_short_request& request);
-    messaging::put_many_tenor_basis_swap_long_shorts_response put_many_tenor_basis_swap_long_shorts(
-        const messaging::put_many_tenor_basis_swap_long_shorts_request& request);
-    messaging::delete_tenor_basis_swap_long_short_response delete_tenor_basis_swap_long_short(
-        const messaging::delete_tenor_basis_swap_long_short_request& request);
-    messaging::delete_many_tenor_basis_swap_long_shorts_response
+    ::ores::refdata::messaging::list_tenor_basis_swap_long_shorts_response
+    list_tenor_basis_swap_long_shorts(
+        const ::ores::refdata::messaging::list_tenor_basis_swap_long_shorts_request& request);
+    ::ores::refdata::messaging::get_tenor_basis_swap_long_short_response
+    get_tenor_basis_swap_long_short(
+        const ::ores::refdata::messaging::get_tenor_basis_swap_long_short_request& request);
+    ::ores::refdata::messaging::get_many_tenor_basis_swap_long_shorts_response
+    get_many_tenor_basis_swap_long_shorts(
+        const ::ores::refdata::messaging::get_many_tenor_basis_swap_long_shorts_request& request);
+    ::ores::refdata::messaging::put_tenor_basis_swap_long_short_response
+    put_tenor_basis_swap_long_short(
+        const ::ores::refdata::messaging::put_tenor_basis_swap_long_short_request& request);
+    ::ores::refdata::messaging::put_many_tenor_basis_swap_long_shorts_response
+    put_many_tenor_basis_swap_long_shorts(
+        const ::ores::refdata::messaging::put_many_tenor_basis_swap_long_shorts_request& request);
+    ::ores::refdata::messaging::delete_tenor_basis_swap_long_short_response
+    delete_tenor_basis_swap_long_short(
+        const ::ores::refdata::messaging::delete_tenor_basis_swap_long_short_request& request);
+    ::ores::refdata::messaging::delete_many_tenor_basis_swap_long_shorts_response
     delete_many_tenor_basis_swap_long_shorts(
-        const messaging::delete_many_tenor_basis_swap_long_shorts_request& request);
-    messaging::list_by_convention_id_tenor_basis_swap_long_shorts_response
+        const ::ores::refdata::messaging::delete_many_tenor_basis_swap_long_shorts_request&
+            request);
+    ::ores::refdata::messaging::list_by_convention_id_tenor_basis_swap_long_shorts_response
     list_by_convention_id_tenor_basis_swap_long_shorts(
-        const messaging::list_by_convention_id_tenor_basis_swap_long_shorts_request& request);
-    messaging::list_tenor_basis_swap_long_short_versions_response
+        const ::ores::refdata::messaging::
+            list_by_convention_id_tenor_basis_swap_long_shorts_request& request);
+    ::ores::refdata::messaging::list_tenor_basis_swap_long_short_versions_response
     list_tenor_basis_swap_long_short_versions(
-        const messaging::list_tenor_basis_swap_long_short_versions_request& request);
-    messaging::get_tenor_basis_swap_long_short_version_response
+        const ::ores::refdata::messaging::list_tenor_basis_swap_long_short_versions_request&
+            request);
+    ::ores::refdata::messaging::get_tenor_basis_swap_long_short_version_response
     get_tenor_basis_swap_long_short_version(
-        const messaging::get_tenor_basis_swap_long_short_version_request& request);
+        const ::ores::refdata::messaging::get_tenor_basis_swap_long_short_version_request& request);
     /**@}*/
 
     /**
@@ -265,7 +274,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::tenor_basis_swap_long_short_change& change,
+    prepare_change(const ::ores::refdata::messaging::tenor_basis_swap_long_short_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::tenor_basis_swap_long_short& out);
 };

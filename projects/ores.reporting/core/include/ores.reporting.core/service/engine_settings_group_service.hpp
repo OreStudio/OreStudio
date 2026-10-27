@@ -76,24 +76,30 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_engine_settings_groups_response
-    list_engine_settings_groups(const messaging::list_engine_settings_groups_request& request);
-    messaging::get_engine_settings_group_response
-    get_engine_settings_group(const messaging::get_engine_settings_group_request& request);
-    messaging::get_many_engine_settings_groups_response get_many_engine_settings_groups(
-        const messaging::get_many_engine_settings_groups_request& request);
-    messaging::put_engine_settings_group_response
-    put_engine_settings_group(const messaging::put_engine_settings_group_request& request);
-    messaging::put_many_engine_settings_groups_response put_many_engine_settings_groups(
-        const messaging::put_many_engine_settings_groups_request& request);
-    messaging::delete_engine_settings_group_response
-    delete_engine_settings_group(const messaging::delete_engine_settings_group_request& request);
-    messaging::delete_many_engine_settings_groups_response delete_many_engine_settings_groups(
-        const messaging::delete_many_engine_settings_groups_request& request);
-    messaging::list_engine_settings_group_versions_response list_engine_settings_group_versions(
-        const messaging::list_engine_settings_group_versions_request& request);
-    messaging::get_engine_settings_group_version_response get_engine_settings_group_version(
-        const messaging::get_engine_settings_group_version_request& request);
+    ::ores::reporting::messaging::list_engine_settings_groups_response list_engine_settings_groups(
+        const ::ores::reporting::messaging::list_engine_settings_groups_request& request);
+    ::ores::reporting::messaging::get_engine_settings_group_response get_engine_settings_group(
+        const ::ores::reporting::messaging::get_engine_settings_group_request& request);
+    ::ores::reporting::messaging::get_many_engine_settings_groups_response
+    get_many_engine_settings_groups(
+        const ::ores::reporting::messaging::get_many_engine_settings_groups_request& request);
+    ::ores::reporting::messaging::put_engine_settings_group_response put_engine_settings_group(
+        const ::ores::reporting::messaging::put_engine_settings_group_request& request);
+    ::ores::reporting::messaging::put_many_engine_settings_groups_response
+    put_many_engine_settings_groups(
+        const ::ores::reporting::messaging::put_many_engine_settings_groups_request& request);
+    ::ores::reporting::messaging::delete_engine_settings_group_response
+    delete_engine_settings_group(
+        const ::ores::reporting::messaging::delete_engine_settings_group_request& request);
+    ::ores::reporting::messaging::delete_many_engine_settings_groups_response
+    delete_many_engine_settings_groups(
+        const ::ores::reporting::messaging::delete_many_engine_settings_groups_request& request);
+    ::ores::reporting::messaging::list_engine_settings_group_versions_response
+    list_engine_settings_group_versions(
+        const ::ores::reporting::messaging::list_engine_settings_group_versions_request& request);
+    ::ores::reporting::messaging::get_engine_settings_group_version_response
+    get_engine_settings_group_version(
+        const ::ores::reporting::messaging::get_engine_settings_group_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +195,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::engine_settings_group_change& change,
+    prepare_change(const ::ores::reporting::messaging::engine_settings_group_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::engine_settings_group& out);
 };

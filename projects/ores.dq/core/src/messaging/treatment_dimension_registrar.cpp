@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view treatment_dimension_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription> register_treatment_dimension_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_treatment_dimension_hand
     auto h =
         std::make_shared<treatment_dimension_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_treatment_dimensions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_treatment_dimensions(std::move(msg));
-        }));
+        list_treatment_dimensions_request::nats_subject,
+        treatment_dimension_queue_group,
+        [h](ores::nats::message msg) { h->list_treatment_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_treatment_dimension_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_treatment_dimension(std::move(msg));
-        }));
+        get_treatment_dimension_request::nats_subject,
+        treatment_dimension_queue_group,
+        [h](ores::nats::message msg) { h->get_treatment_dimension(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_treatment_dimensions_request::nats_subject,
-        queue_group,
+        treatment_dimension_queue_group,
         [h](ores::nats::message msg) { h->get_many_treatment_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_treatment_dimension_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_treatment_dimension(std::move(msg));
-        }));
+        put_treatment_dimension_request::nats_subject,
+        treatment_dimension_queue_group,
+        [h](ores::nats::message msg) { h->put_treatment_dimension(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_treatment_dimensions_request::nats_subject,
-        queue_group,
+        treatment_dimension_queue_group,
         [h](ores::nats::message msg) { h->put_many_treatment_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_treatment_dimension_request::nats_subject,
-        queue_group,
+        treatment_dimension_queue_group,
         [h](ores::nats::message msg) { h->delete_treatment_dimension(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_treatment_dimensions_request::nats_subject,
-        queue_group,
+        treatment_dimension_queue_group,
         [h](ores::nats::message msg) { h->delete_many_treatment_dimensions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_treatment_dimension_versions_request::nats_subject,
-        queue_group,
+        treatment_dimension_queue_group,
         [h](ores::nats::message msg) { h->list_treatment_dimension_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_treatment_dimension_version_request::nats_subject,
-        queue_group,
+        treatment_dimension_queue_group,
         [h](ores::nats::message msg) { h->get_treatment_dimension_version(std::move(msg)); }));
     return subs;
 }

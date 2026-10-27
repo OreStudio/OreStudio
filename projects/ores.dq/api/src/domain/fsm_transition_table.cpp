@@ -31,7 +31,7 @@ namespace ores::dq::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string fsm_transition_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -49,7 +49,8 @@ std::string convert_to_table(const std::vector<fsm_transition>& v) {
     table << fort::header << "Name" << "Guard" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& t : v) {
-        table << t.name << opt_str(t.guard_function) << t.modified_by << t.version << fort::endr;
+        table << t.name << fsm_transition_opt_str(t.guard_function) << t.modified_by << t.version
+              << fort::endr;
     }
     return table.to_string();
 }

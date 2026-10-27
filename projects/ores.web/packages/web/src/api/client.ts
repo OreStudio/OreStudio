@@ -399,6 +399,52 @@ const feedFolderSchema = z.object({
 /** A folder of the feed hierarchy, with how many feeds of each kind it holds. */
 export type FeedFolder = z.infer<typeof feedFolderSchema>;
 
+/** The states the market chain has. A state the screen does not know is a reply it does not read. */
+const marketStateSchema = z.enum(['calm', 'active']);
+
+/** One reading of the shared heat, as the service took it. */
+const heatSampleSchema = z.object({
+    at: z.string(),
+    heat: z.number(),
+});
+
+/** The market-wide arrival factor in force: what a screen shows and a switch forces. */
+const marketRegimeSchema = z.object({
+    state: marketStateSchema,
+    multiplier: z.number(),
+    pinned: z.boolean(),
+    /** The endogenous half: the heat now, the two numbers that move it, and its readings. */
+    heat: z.number(),
+    jump: z.number(),
+    decay: z.number(),
+    samples: z.array(heatSampleSchema),
+});
+
+export type MarketRegime = z.infer<typeof marketRegimeSchema>;
+export type MarketState = z.infer<typeof marketStateSchema>;
+
+/** What the market switch may force: a state, or control handed back to the chain. */
+export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
+export type RegimeMode = (typeof REGIME_MODES)[number];
+
+/** One row of the raster: a feed, whether it runs, and when its ticks arrived. */
+const feedRasterSchema = z.object({
+    seconds: z.number(),
+    feeds: z.array(
+        z.object({
+            sourceName: z.string(),
+            label: z.string(),
+            assetClass: z.string(),
+            running: z.boolean(),
+            ticks: z.array(z.string()),
+            /** The rate the feed's own configuration asks for, in ticks a second. */
+            expectedPerSecond: z.number(),
+        }),
+    ),
+});
+
+export type FeedRaster = z.infer<typeof feedRasterSchema>;
+
 const folderFeedSchema = z.object({
     id: z.string(),
     kind: z.string(),
@@ -646,6 +692,21 @@ export interface AggregateRow {
     readonly trades: number;
     readonly totals: readonly Money[];
     readonly notional: readonly Money[];
+    readonly group: string;
+    readonly is_group: boolean;
+    readonly previous: readonly Money[];
+    readonly change: readonly Money[];
+    readonly change_pct: readonly Money[];
+    readonly is_removed: boolean;
+    readonly depth: number;
+}
+
+/** The run a comparison is against. */
+export interface BaselineSummary {
+    readonly id: string;
+    readonly totals: readonly Money[];
+    readonly change: readonly Money[];
+    readonly change_pct: readonly Money[];
 }
 
 /** A run's results, as the server answered them. */
@@ -653,8 +714,10 @@ export interface RunResults {
     readonly level: ResultLevel;
     readonly rows: readonly unknown[];
     readonly totals: readonly Money[];
+    readonly tradeCount: number;
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
+    readonly baseline: BaselineSummary | null;
 }
 
 /** One report run, as the reporting area reads it. */
@@ -2162,6 +2225,45 @@ export const api = {
             );
     },
 
+    /**
+     * The market-wide arrival factor in force. The factor belongs to the run, so
+     * this is one read for the whole screen and not a value of any feed.
+     */
+    async marketRegime(): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Forces the market state, or hands it back to the chain. The answer is the
+     * regime the service says is in force after the request, not what was asked.
+     */
+    async pinMarketRegime(mode: RegimeMode): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ mode }),
+            }),
+        );
+    },
+
+    /**
+     * When the ticks of every running feed arrived in the last window, one row
+     * per feed, oldest first. The rows are the feeds the service says run.
+     */
+    async feedRaster(input: { readonly seconds: number }): Promise<FeedRaster> {
+        return feedRasterSchema.parse(
+            await request(
+                `/api/synthetic/feed-raster?${new URLSearchParams({
+                    seconds: String(input.seconds),
+                }).toString()}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
     /** The materialised days of one calendar in one year. */
     async calendarDays(calendar: string, year: number): Promise<readonly CalendarDay[]> {
         return z
@@ -2829,22 +2931,29 @@ export const api = {
     },
 
     /** The results of one run, at the level the reader asked for. */
-    async reportRunResults(id: string, by: ResultLevel): Promise<RunResults> {
-        const reply = (await request(
-            `/api/reporting/runs/${id}/results?by=${encodeURIComponent(by)}`,
-            { method: 'GET' },
-        )) as {
+    async reportRunResults(id: string, by: ResultLevel, baseline?: string): Promise<RunResults> {
+        const query = new URLSearchParams({ by });
+        if (baseline !== undefined && baseline !== '') {
+            query.set('baseline', baseline);
+        }
+        const reply = (await request(`/api/reporting/runs/${id}/results?${query.toString()}`, {
+            method: 'GET',
+        })) as {
             rows?: readonly unknown[];
             totals?: readonly Money[];
+            tradeCount?: number;
             reason?: string;
             recordsComplete?: boolean;
+            baseline?: BaselineSummary | null;
         };
         return {
             level: by,
             rows: reply.rows ?? [],
             totals: reply.totals ?? [],
+            tradeCount: reply.tradeCount ?? 0,
             reason: resultReasonOf(reply.reason),
             recordsComplete: reply.recordsComplete !== false,
+            baseline: reply.baseline ?? null,
         };
     },
 

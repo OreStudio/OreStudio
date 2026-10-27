@@ -34,17 +34,11 @@
 #include <string>
 #include <vector>
 
-namespace {
-
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::marketdata::generators;
 using namespace ores::marketdata::repository;
 using ores::testing::database_helper;
 
-TEST_CASE("observation_lineage_reads_back_by_id_until_removed", tags) {
+TEST_CASE("observation_lineage_reads_back_by_id_until_removed", "[repository]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     observation_lineage_repository repo;
@@ -63,7 +57,7 @@ TEST_CASE("observation_lineage_reads_back_by_id_until_removed", tags) {
     CHECK(repo.read_latest(h.context(), id).empty());
 }
 
-TEST_CASE("series_classification_rule_reads_back_by_key_until_removed", tags) {
+TEST_CASE("series_classification_rule_reads_back_by_key_until_removed", "[repository]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     series_classification_rule_repository repo;
@@ -79,7 +73,7 @@ TEST_CASE("series_classification_rule_reads_back_by_key_until_removed", tags) {
     CHECK(repo.read_latest(h.context(), r.series_type, r.metric).empty());
 }
 
-TEST_CASE("market_series_asset_class_pages_the_classes_of_one_series", tags) {
+TEST_CASE("market_series_asset_class_pages_the_classes_of_one_series", "[repository]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 

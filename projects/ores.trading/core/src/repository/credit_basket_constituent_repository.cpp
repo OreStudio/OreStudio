@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+credit_basket_constituent_list_order(const ores::utility::domain::order& order,
+                                     std::initializer_list<std::string> default_columns,
+                                     bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::credit_basket_constituents_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> credit_basket_constituent_filter_condition(
+    const std::optional<messaging::credit_basket_constituents_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -304,8 +305,8 @@ credit_basket_constituent_repository::read_latest_by_trade_id(
                                       domain::credit_basket_constituent>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        credit_basket_constituent_list_order(order, {"trade_id", "sequence_number"}, false),
+        credit_basket_constituent_filter_condition(filter),
         [](const auto& entities) { return credit_basket_constituent_mapper::map(entities); },
         lg(),
         "Reading latest credit basket constituents by trade_id.");
@@ -328,7 +329,7 @@ credit_basket_constituent_repository::get_total_credit_basket_constituent_count_
     return execute_count_query<credit_basket_constituent_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        credit_basket_constituent_filter_condition(filter),
         lg(),
         "Counting credit basket constituents by trade_id");
 }
@@ -391,8 +392,8 @@ std::vector<domain::credit_basket_constituent> credit_basket_constituent_reposit
                                       domain::credit_basket_constituent>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        credit_basket_constituent_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), credit_basket_constituent_filter_condition(filter)),
         [](const auto& entities) { return credit_basket_constituent_mapper::map(entities); },
         lg(),
         "Reading latest credit basket constituents with pagination.");
@@ -411,7 +412,7 @@ std::uint32_t credit_basket_constituent_repository::get_total_credit_basket_cons
     return execute_count_query<credit_basket_constituent_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), credit_basket_constituent_filter_condition(filter)),
         lg(),
         "Counting credit basket constituents");
 }

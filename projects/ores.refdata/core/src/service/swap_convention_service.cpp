@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::swap_convention> read_one(repository::swap_convention_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::swap_convention_key& key) {
+std::vector<domain::swap_convention>
+swap_convention_read_one(repository::swap_convention_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::swap_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::swap_convention> read_one(repository::swap_convention_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::swap_convention_key key_from(const domain::swap_convention& v) {
+messaging::swap_convention_key swap_convention_key_from(const domain::swap_convention& v) {
     messaging::swap_convention_key key;
     key.id = v.id;
     return key;
@@ -94,7 +95,7 @@ messaging::swap_convention_key key_from(const domain::swap_convention& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::swap_convention to_domain(const messaging::swap_convention_write& write) {
+domain::swap_convention swap_convention_to_domain(const messaging::swap_convention_write& write) {
     domain::swap_convention v;
     v.id = write.id;
     v.fixed_calendar = write.fixed_calendar;
@@ -145,7 +146,7 @@ messaging::list_swap_conventions_response swap_convention_service::list_swap_con
 messaging::get_swap_convention_response swap_convention_service::get_swap_convention(
     const messaging::get_swap_convention_request& request) {
     messaging::get_swap_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = swap_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "swap_convention"});
         return response;
@@ -164,7 +165,7 @@ messaging::get_many_swap_conventions_response swap_convention_service::get_many_
     for (const auto& k : request.keys) {
         messaging::swap_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = swap_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.swap_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +181,7 @@ messaging::put_swap_convention_response swap_convention_service::put_swap_conven
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = swap_convention_read_one(repo_, ctx_, swap_convention_key_from(value));
     if (!written.empty())
         response.swap_convention = std::move(written.front());
     return response;
@@ -212,7 +213,7 @@ messaging::put_many_swap_conventions_response swap_convention_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.swap_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = swap_convention_read_one(repo_, ctx_, swap_convention_key_from(value));
         response.swap_conventions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -245,7 +246,7 @@ messaging::delete_swap_convention_response swap_convention_service::delete_swap_
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = swap_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "swap_convention",
@@ -333,8 +334,8 @@ swap_convention_service::prepare_change(const messaging::swap_convention_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = swap_convention_to_domain(change.write);
+    const auto current = swap_convention_read_one(repo_, ctx_, swap_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

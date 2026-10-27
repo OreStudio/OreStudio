@@ -68,7 +68,8 @@ read_convention(repository::convention_repository& repo,
  * @brief The key a central domain row states, so the row read back is
  * addressed exactly as the request addressed it.
  */
-messaging::tenor_basis_swap_convention_key key_from(const domain::convention& v) {
+messaging::tenor_basis_swap_convention_key
+tenor_basis_swap_convention_key_from(const domain::convention& v) {
     messaging::tenor_basis_swap_convention_key key;
     key.id = v.identity.id;
     return key;
@@ -81,7 +82,7 @@ messaging::tenor_basis_swap_convention_key key_from(const domain::convention& v)
  * provenance, the version and the validity window are the service's and the
  * database's to state.
  */
-domain::convention to_domain(const messaging::convention_write& write) {
+domain::convention tenor_basis_swap_convention_to_domain(const messaging::convention_write& write) {
     domain::convention v;
     v.identity.id = write.id;
     v.identity.kind_code = write.kind_code;
@@ -230,7 +231,7 @@ tenor_basis_swap_convention_service::put_tenor_basis_swap_convention(
 
     // The store owns the key and the window, so the key the row was written
     // under is the one the write stated rather than assumed from the request.
-    const auto key = key_from(central);
+    const auto key = tenor_basis_swap_convention_key_from(central);
     // A part write bumps the central row through the part table's own trigger,
     // so the central row is read back after the parts land and the item carries
     // the version the write produced.
@@ -269,7 +270,7 @@ tenor_basis_swap_convention_service::put_many_tenor_basis_swap_conventions(
             return response;
         central_repo_.write(ctx, central, write.change.precondition);
 
-        const auto key = key_from(central);
+        const auto key = tenor_basis_swap_convention_key_from(central);
         // A part write bumps the central row, so it is read back after them.
         response.result = reconcile_pay_receive(ctx, central, write.pay_receive, request.intent);
         if (response.result.outcome != ores::utility::domain::outcome::ok)
@@ -311,8 +312,9 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_conve
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_convention(central_repo_, ctx, key_from(out));
+    out = tenor_basis_swap_convention_to_domain(change.write);
+    const auto current =
+        read_convention(central_repo_, ctx, tenor_basis_swap_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

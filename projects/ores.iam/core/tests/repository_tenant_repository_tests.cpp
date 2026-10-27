@@ -28,16 +28,10 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -47,7 +41,7 @@ using ores::iam::repository::tenant_repository;
 using ores::iam::repository::read_active_tenant_by_hostname;
 using ores::iam::repository::read_active_tenant_by_id;
 
-TEST_CASE("write_single_tenant", tags) {
+TEST_CASE("write_single_tenant", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -61,7 +55,7 @@ TEST_CASE("write_single_tenant", tags) {
     CHECK_NOTHROW(repo.write(sys_ctx, t));
 }
 
-TEST_CASE("write_multiple_tenants", tags) {
+TEST_CASE("write_multiple_tenants", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -75,7 +69,7 @@ TEST_CASE("write_multiple_tenants", tags) {
     CHECK_NOTHROW(repo.write(sys_ctx, tenants));
 }
 
-TEST_CASE("read_latest_tenants", tags) {
+TEST_CASE("read_latest_tenants", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -95,7 +89,7 @@ TEST_CASE("read_latest_tenants", tags) {
     CHECK(read_tenants.size() >= written.size());
 }
 
-TEST_CASE("read_latest_tenant_by_id", tags) {
+TEST_CASE("read_latest_tenant_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -127,7 +121,7 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
     CHECK(read_tenants[0] == expected);
 }
 
-TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", tags) {
+TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -208,7 +202,7 @@ TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", tags) {
     CHECK(foreign_by_hostname.empty());
 }
 
-TEST_CASE("read_nonexistent_tenant", tags) {
+TEST_CASE("read_nonexistent_tenant", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -230,7 +224,7 @@ TEST_CASE("read_nonexistent_tenant", tags) {
  * administration. A removal marks the row terminated, and the table's check
  * keeps the system tenant active, so the removal is refused and the row stays.
  */
-TEST_CASE("removing_the_system_tenant_is_refused", tags) {
+TEST_CASE("removing_the_system_tenant_is_refused", "[repository]") {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     const auto system_id = ores::utility::uuid::tenant_id::system().to_uuid();

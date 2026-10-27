@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_stress_test_libraries_response
-    list_stress_test_libraries(const messaging::list_stress_test_libraries_request& request);
-    messaging::get_stress_test_library_response
-    get_stress_test_library(const messaging::get_stress_test_library_request& request);
-    messaging::get_many_stress_test_libraries_response get_many_stress_test_libraries(
-        const messaging::get_many_stress_test_libraries_request& request);
-    messaging::put_stress_test_library_response
-    put_stress_test_library(const messaging::put_stress_test_library_request& request);
-    messaging::put_many_stress_test_libraries_response put_many_stress_test_libraries(
-        const messaging::put_many_stress_test_libraries_request& request);
-    messaging::delete_stress_test_library_response
-    delete_stress_test_library(const messaging::delete_stress_test_library_request& request);
-    messaging::delete_many_stress_test_libraries_response delete_many_stress_test_libraries(
-        const messaging::delete_many_stress_test_libraries_request& request);
-    messaging::list_stress_test_library_versions_response list_stress_test_library_versions(
-        const messaging::list_stress_test_library_versions_request& request);
-    messaging::get_stress_test_library_version_response get_stress_test_library_version(
-        const messaging::get_stress_test_library_version_request& request);
+    ::ores::analytics::messaging::list_stress_test_libraries_response list_stress_test_libraries(
+        const ::ores::analytics::messaging::list_stress_test_libraries_request& request);
+    ::ores::analytics::messaging::get_stress_test_library_response get_stress_test_library(
+        const ::ores::analytics::messaging::get_stress_test_library_request& request);
+    ::ores::analytics::messaging::get_many_stress_test_libraries_response
+    get_many_stress_test_libraries(
+        const ::ores::analytics::messaging::get_many_stress_test_libraries_request& request);
+    ::ores::analytics::messaging::put_stress_test_library_response put_stress_test_library(
+        const ::ores::analytics::messaging::put_stress_test_library_request& request);
+    ::ores::analytics::messaging::put_many_stress_test_libraries_response
+    put_many_stress_test_libraries(
+        const ::ores::analytics::messaging::put_many_stress_test_libraries_request& request);
+    ::ores::analytics::messaging::delete_stress_test_library_response delete_stress_test_library(
+        const ::ores::analytics::messaging::delete_stress_test_library_request& request);
+    ::ores::analytics::messaging::delete_many_stress_test_libraries_response
+    delete_many_stress_test_libraries(
+        const ::ores::analytics::messaging::delete_many_stress_test_libraries_request& request);
+    ::ores::analytics::messaging::list_stress_test_library_versions_response
+    list_stress_test_library_versions(
+        const ::ores::analytics::messaging::list_stress_test_library_versions_request& request);
+    ::ores::analytics::messaging::get_stress_test_library_version_response
+    get_stress_test_library_version(
+        const ::ores::analytics::messaging::get_stress_test_library_version_request& request);
     /**@}*/
 
     /**
@@ -195,7 +200,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::stress_test_library_change& change,
+    prepare_change(const ::ores::analytics::messaging::stress_test_library_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::stress_test_library& out);
 };

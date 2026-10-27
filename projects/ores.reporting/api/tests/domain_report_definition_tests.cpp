@@ -22,6 +22,7 @@
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_definition_table.hpp"
 #include "ores.reporting.api/domain/report_definition_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -30,9 +31,6 @@
 namespace {
 
 using ores::reporting::domain::report_definition;
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[domain]");
 
 report_definition make_report_definition(const std::string& name,
                                          const std::string& report_type = "risk") {
@@ -58,7 +56,7 @@ report_definition make_report_definition(const std::string& name,
 using ores::reporting::domain::report_definition;
 using namespace ores::logging;
 
-TEST_CASE("create_report_definition_with_valid_fields", tags) {
+TEST_CASE("create_report_definition_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_definition sut;
@@ -88,7 +86,7 @@ TEST_CASE("create_report_definition_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_report_definition_with_optional_fields", tags) {
+TEST_CASE("create_report_definition_with_optional_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_definition sut;
@@ -115,7 +113,7 @@ TEST_CASE("create_report_definition_with_optional_fields", tags) {
     CHECK(!sut.scheduler_job_id->is_nil());
 }
 
-TEST_CASE("report_definition_insertion_operator", tags) {
+TEST_CASE("report_definition_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_definition sut;
@@ -143,7 +141,7 @@ TEST_CASE("report_definition_insertion_operator", tags) {
     CHECK(json_output.find("Monthly Summary") != std::string::npos);
 }
 
-TEST_CASE("create_report_definition_with_faker", tags) {
+TEST_CASE("create_report_definition_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_definition sut;
@@ -171,7 +169,7 @@ TEST_CASE("create_report_definition_with_faker", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_multiple_random_report_definitions", tags) {
+TEST_CASE("create_multiple_random_report_definitions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::pair<std::string, std::string>> defs = {
@@ -184,7 +182,7 @@ TEST_CASE("create_multiple_random_report_definitions", tags) {
     }
 }
 
-TEST_CASE("report_definition_convert_single_to_table", tags) {
+TEST_CASE("report_definition_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_definition> items = {make_report_definition("Daily Risk Report")};
@@ -196,7 +194,7 @@ TEST_CASE("report_definition_convert_single_to_table", tags) {
     CHECK(table.find(items.front().name) != std::string::npos);
 }
 
-TEST_CASE("report_definition_convert_multiple_to_table", tags) {
+TEST_CASE("report_definition_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_definition> items;
@@ -211,7 +209,7 @@ TEST_CASE("report_definition_convert_multiple_to_table", tags) {
     CHECK(table.find(items.front().name) != std::string::npos);
 }
 
-TEST_CASE("report_definition_convert_empty_vector_to_table", tags) {
+TEST_CASE("report_definition_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_definition> items;
@@ -224,7 +222,7 @@ TEST_CASE("report_definition_convert_empty_vector_to_table", tags) {
     CHECK(table.find("ID") != std::string::npos);
 }
 
-TEST_CASE("report_definition_table_with_faker_data", tags) {
+TEST_CASE("report_definition_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_definition> items;

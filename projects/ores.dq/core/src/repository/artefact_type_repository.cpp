@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+artefact_type_list_order(const ores::utility::domain::order& order,
+                         std::initializer_list<std::string> default_columns,
+                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!artefact_type_repository::is_sortable(order.field))
@@ -96,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::artefact_types_filter>& filter) {
+artefact_type_filter_condition(const std::optional<messaging::artefact_types_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -290,8 +291,8 @@ artefact_type_repository::read_latest(context ctx,
     return execute_ordered_read_query<artefact_type_entity, domain::artefact_type>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        artefact_type_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), artefact_type_filter_condition(filter)),
         [](const auto& entities) { return artefact_type_mapper::map(entities); },
         lg(),
         "Reading latest artefact types with pagination.");
@@ -308,7 +309,7 @@ std::uint32_t artefact_type_repository::get_total_type_count(
     return execute_count_query<artefact_type_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), artefact_type_filter_condition(filter)),
         lg(),
         "Counting artefact types");
 }

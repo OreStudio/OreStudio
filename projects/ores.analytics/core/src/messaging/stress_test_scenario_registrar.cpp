@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view stress_test_scenario_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_stress_test_scenario_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_stress_test_scenario_han
         std::make_shared<stress_test_scenario_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_stress_test_scenarios_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->list_stress_test_scenarios(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_stress_test_scenario_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_stress_test_scenario(std::move(msg));
-        }));
+        get_stress_test_scenario_request::nats_subject,
+        stress_test_scenario_queue_group,
+        [h](ores::nats::message msg) { h->get_stress_test_scenario(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_stress_test_scenarios_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->get_many_stress_test_scenarios(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_stress_test_scenario_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_stress_test_scenario(std::move(msg));
-        }));
+        put_stress_test_scenario_request::nats_subject,
+        stress_test_scenario_queue_group,
+        [h](ores::nats::message msg) { h->put_stress_test_scenario(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_stress_test_scenarios_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->put_many_stress_test_scenarios(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_stress_test_scenario_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->delete_stress_test_scenario(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_stress_test_scenarios_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->delete_many_stress_test_scenarios(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_stress_test_scenario_versions_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->list_stress_test_scenario_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_stress_test_scenario_version_request::nats_subject,
-        queue_group,
+        stress_test_scenario_queue_group,
         [h](ores::nats::message msg) { h->get_stress_test_scenario_version(std::move(msg)); }));
     return subs;
 }

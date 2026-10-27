@@ -76,25 +76,34 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_yield_curve_process_types_response list_yield_curve_process_types(
-        const messaging::list_yield_curve_process_types_request& request);
-    messaging::get_yield_curve_process_type_response
-    get_yield_curve_process_type(const messaging::get_yield_curve_process_type_request& request);
-    messaging::get_many_yield_curve_process_types_response get_many_yield_curve_process_types(
-        const messaging::get_many_yield_curve_process_types_request& request);
-    messaging::put_yield_curve_process_type_response
-    put_yield_curve_process_type(const messaging::put_yield_curve_process_type_request& request);
-    messaging::put_many_yield_curve_process_types_response put_many_yield_curve_process_types(
-        const messaging::put_many_yield_curve_process_types_request& request);
-    messaging::delete_yield_curve_process_type_response delete_yield_curve_process_type(
-        const messaging::delete_yield_curve_process_type_request& request);
-    messaging::delete_many_yield_curve_process_types_response delete_many_yield_curve_process_types(
-        const messaging::delete_many_yield_curve_process_types_request& request);
-    messaging::list_yield_curve_process_type_versions_response
+    ::ores::synthetic::messaging::list_yield_curve_process_types_response
+    list_yield_curve_process_types(
+        const ::ores::synthetic::messaging::list_yield_curve_process_types_request& request);
+    ::ores::synthetic::messaging::get_yield_curve_process_type_response
+    get_yield_curve_process_type(
+        const ::ores::synthetic::messaging::get_yield_curve_process_type_request& request);
+    ::ores::synthetic::messaging::get_many_yield_curve_process_types_response
+    get_many_yield_curve_process_types(
+        const ::ores::synthetic::messaging::get_many_yield_curve_process_types_request& request);
+    ::ores::synthetic::messaging::put_yield_curve_process_type_response
+    put_yield_curve_process_type(
+        const ::ores::synthetic::messaging::put_yield_curve_process_type_request& request);
+    ::ores::synthetic::messaging::put_many_yield_curve_process_types_response
+    put_many_yield_curve_process_types(
+        const ::ores::synthetic::messaging::put_many_yield_curve_process_types_request& request);
+    ::ores::synthetic::messaging::delete_yield_curve_process_type_response
+    delete_yield_curve_process_type(
+        const ::ores::synthetic::messaging::delete_yield_curve_process_type_request& request);
+    ::ores::synthetic::messaging::delete_many_yield_curve_process_types_response
+    delete_many_yield_curve_process_types(
+        const ::ores::synthetic::messaging::delete_many_yield_curve_process_types_request& request);
+    ::ores::synthetic::messaging::list_yield_curve_process_type_versions_response
     list_yield_curve_process_type_versions(
-        const messaging::list_yield_curve_process_type_versions_request& request);
-    messaging::get_yield_curve_process_type_version_response get_yield_curve_process_type_version(
-        const messaging::get_yield_curve_process_type_version_request& request);
+        const ::ores::synthetic::messaging::list_yield_curve_process_type_versions_request&
+            request);
+    ::ores::synthetic::messaging::get_yield_curve_process_type_version_response
+    get_yield_curve_process_type_version(
+        const ::ores::synthetic::messaging::get_yield_curve_process_type_version_request& request);
     /**@}*/
 
     /**
@@ -191,7 +200,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::yield_curve_process_type_change& change,
+    prepare_change(const ::ores::synthetic::messaging::yield_curve_process_type_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::yield_curve_process_type& out);
 };

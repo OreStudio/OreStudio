@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[staleness]");
-
 using ores::marketdata::repository::observation_record;
 using ores::marketdata::repository::staleness_summary;
 using ores::marketdata::repository::summarise_staleness;
@@ -45,7 +43,7 @@ observation_record point_at(std::int64_t age_seconds) {
 
 }
 
-TEST_CASE("an empty snapshot is in no way mixed", tags) {
+TEST_CASE("an empty snapshot is in no way mixed", "[staleness]") {
     const auto summary = summarise_staleness({}, read_instant);
 
     CHECK(summary.oldest_age_seconds == 0);
@@ -53,7 +51,7 @@ TEST_CASE("an empty snapshot is in no way mixed", tags) {
     CHECK_FALSE(summary.warning);
 }
 
-TEST_CASE("points that share one instant have no spread however old they are", tags) {
+TEST_CASE("points that share one instant have no spread however old they are", "[staleness]") {
     // Three days old, and every point the same age: one market state, drawn
     // late. The age is not the warning; the spread is.
     const auto summary =
@@ -64,7 +62,7 @@ TEST_CASE("points that share one instant have no spread however old they are", t
     CHECK_FALSE(summary.warning);
 }
 
-TEST_CASE("spread_under_the_threshold_is_not_a_warning", tags) {
+TEST_CASE("spread_under_the_threshold_is_not_a_warning", "[staleness]") {
     const auto summary = summarise_staleness({point_at(60), point_at(1800)}, read_instant);
 
     CHECK(summary.oldest_age_seconds == 1800);
@@ -72,7 +70,7 @@ TEST_CASE("spread_under_the_threshold_is_not_a_warning", tags) {
     CHECK_FALSE(summary.warning);
 }
 
-TEST_CASE("spread_at_the_threshold_warns", tags) {
+TEST_CASE("spread_at_the_threshold_warns", "[staleness]") {
     const auto summary = summarise_staleness({point_at(0), point_at(1800)}, read_instant);
 
     CHECK(summary.oldest_age_seconds == 1800);
@@ -80,7 +78,7 @@ TEST_CASE("spread_at_the_threshold_warns", tags) {
     CHECK(summary.warning);
 }
 
-TEST_CASE("a_curve_stitched_across_market_horizons_warns", tags) {
+TEST_CASE("a_curve_stitched_across_market_horizons_warns", "[staleness]") {
     // A minute-old pillar beside one three days old: the case the whole
     // capability exists for.
     const auto summary =
@@ -91,7 +89,7 @@ TEST_CASE("a_curve_stitched_across_market_horizons_warns", tags) {
     CHECK(summary.warning);
 }
 
-TEST_CASE("a_point_after_the_read_carries_no_age", tags) {
+TEST_CASE("a_point_after_the_read_carries_no_age", "[staleness]") {
     // A snapshot read as of a past instant holds only points at or before it,
     // but a point exactly at it is age zero and counts, and one after it
     // carries no age at all rather than a negative one.
@@ -103,7 +101,7 @@ TEST_CASE("a_point_after_the_read_carries_no_age", tags) {
     CHECK_FALSE(summary.warning);
 }
 
-TEST_CASE("the_newest_point_is_age_zero_and_sets_the_spread", tags) {
+TEST_CASE("the_newest_point_is_age_zero_and_sets_the_spread", "[staleness]") {
     // A point exactly at the read instant counts: without it the spread would
     // read as zero however far back the rest of the curve went.
     const auto summary = summarise_staleness({point_at(0), point_at(3600)}, read_instant);
@@ -113,7 +111,7 @@ TEST_CASE("the_newest_point_is_age_zero_and_sets_the_spread", tags) {
     CHECK(summary.warning);
 }
 
-TEST_CASE("a_snapshot_with_no_aged_point_is_in_no_way_mixed", tags) {
+TEST_CASE("a_snapshot_with_no_aged_point_is_in_no_way_mixed", "[staleness]") {
     const auto summary = summarise_staleness({point_at(0), point_at(-30)}, read_instant);
 
     CHECK(summary.oldest_age_seconds == 0);

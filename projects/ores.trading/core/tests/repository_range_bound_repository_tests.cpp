@@ -23,15 +23,13 @@
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.repository.range_bound.tests");
-const std::string tags("[repository][range_bound]");
 
 using ores::testing::database_helper;
 using ores::trading::domain::range_bound;
@@ -68,7 +66,7 @@ range_bound make_bound(database_helper& h,
 
 } // namespace
 
-TEST_CASE("range_bound_reads_back_in_the_document_order", tags) {
+TEST_CASE("range_bound_reads_back_in_the_document_order", "[repository][range_bound]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

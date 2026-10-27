@@ -1,0 +1,3 @@
+{ "category": "Error", "group": "Analytics", "message": "Failed to build market: There are no quotes available for date October 15th, 2026", "sub_fields": [ { "name": "analyticType", "value": "PRICING" }, { "name": "exceptionType", "value": "Failed Analytic" } ] }
+{ "category": "Error", "group": "Analytics", "message": "Failed to build market: There are no quotes available for date October 15th, 2026", "sub_fields": [ { "name": "analyticType", "value": "SA_CCR" }, { "name": "exceptionType", "value": "Failed Analytic" } ] }
+{ "category": "Warning", "group": "Analytics", "message": "Error in ORE analytics: Failed to run analytics PRICING,SA_CCR", "sub_fields": [ { "name": "analyticType", "value": "OREApp::run()" }, { "name": "warningType", "value": "Error" } ] }

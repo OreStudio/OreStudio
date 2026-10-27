@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::asset_measure> read_one(repository::asset_measure_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::asset_measure_key& key) {
+std::vector<domain::asset_measure>
+asset_measure_read_one(repository::asset_measure_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::asset_measure_key& key) {
     return repo.read_latest(ctx, key.code, key.coding_scheme_code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::asset_measure> read_one(repository::asset_measure_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::asset_measure_key key_from(const domain::asset_measure& v) {
+messaging::asset_measure_key asset_measure_key_from(const domain::asset_measure& v) {
     messaging::asset_measure_key key;
     key.code = v.code;
     key.coding_scheme_code = v.coding_scheme_code;
@@ -95,7 +96,7 @@ messaging::asset_measure_key key_from(const domain::asset_measure& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::asset_measure to_domain(const messaging::asset_measure_write& write) {
+domain::asset_measure asset_measure_to_domain(const messaging::asset_measure_write& write) {
     domain::asset_measure v;
     v.code = write.code;
     v.coding_scheme_code = write.coding_scheme_code;
@@ -136,7 +137,7 @@ asset_measure_service::list_asset_measures(const messaging::list_asset_measures_
 messaging::get_asset_measure_response
 asset_measure_service::get_asset_measure(const messaging::get_asset_measure_request& request) {
     messaging::get_asset_measure_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = asset_measure_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "asset_measure"});
         return response;
@@ -155,7 +156,7 @@ messaging::get_many_asset_measures_response asset_measure_service::get_many_asse
     for (const auto& k : request.keys) {
         messaging::asset_measure_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = asset_measure_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.asset_measure = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -171,7 +172,7 @@ asset_measure_service::put_asset_measure(const messaging::put_asset_measure_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = asset_measure_read_one(repo_, ctx_, asset_measure_key_from(value));
     if (!written.empty())
         response.asset_measure = std::move(written.front());
     return response;
@@ -203,7 +204,7 @@ messaging::put_many_asset_measures_response asset_measure_service::put_many_asse
     repo_.write(ctx_, batch, claims);
     response.measures.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = asset_measure_read_one(repo_, ctx_, asset_measure_key_from(value));
         response.measures.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -237,7 +238,7 @@ messaging::delete_asset_measure_response asset_measure_service::delete_asset_mea
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = asset_measure_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "asset_measure",
@@ -328,8 +329,8 @@ asset_measure_service::prepare_change(const messaging::asset_measure_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = asset_measure_to_domain(change.write);
+    const auto current = asset_measure_read_one(repo_, ctx_, asset_measure_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

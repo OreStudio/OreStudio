@@ -2,62 +2,66 @@
 :ID: 3CB96E53-1EF3-486D-B644-7E26D34C7BAD
 :END:
 #+title: Task: Check a convention value against its term's set on write
-#+description: Refuse a convention write whose value lies outside the value set of its term, reading the column-to-term map and the contract's links, so every client gets the same answer; decide whether the check lives in the BFF, as the engine run settings check does, or on the refdata write path.
+#+description: Refuse a convention write whose value lies outside the value set of its term, in the database, so every client gets the same answer: a trigger on each convention entity reads the column-to-term map and the contract's links and checks each value by the rule a pricing parameter meets.
 #+type: task
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/check-a-convention-value-on-write
+#+pr: 3875
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Refuse a convention value that lies outside the value set of the term it holds, in the database, so the shell, the screens and a data quality publish all get the same answer, and a value set means the same thing for a convention term as for a pricing parameter.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- A convention write whose value is outside its term's set is refused, and the refusal names the value, the term and the set.
+- The rule a value meets is one function, which the pricing parameter trigger and the convention trigger both call.
+- Every seeded convention meets its sets, measured before the trigger is on, so the seed still loads and a tenant still provisions.
+- The triggers are generated from the same terms as the term seed, so a term added to the map is checked without an edit.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The owner chose the database on 2026-10-26, as pricing does, over the BFF the engine run settings use.
+
+1. Measure every seeded convention against its term's set with the rule pricing uses, before any trigger exists.
+2. Fix what fails in the data, not in the rule.
+3. Move pricing's rule, unchanged, into =ores_reporting_value_in_set_fn=, and call it from pricing's trigger.
+4. Generate a trigger on every convention entity that holds a term, beside the term seed.
+5. Test the trigger in pgTAP, and provision a tenant through it.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Distinct seeded values a set refuses, before the fix | 2 (MXV and CLF, on 15 rows of the cross-currency fix-float fixed currency) | a pg_temp copy of the rule over every term's distinct values, on the provisioned database | a1689861ee |
+| Entities guarded by a trigger | 28 | =python3 -I projects/ores.sql/utility/generate_convention_kind_terms.py --check= | a1689861ee |
 
 * Notes
+
+- *Two ISO 4217 fund codes were missing from the currencies.* MXV, the Mexican unidad de inversion, and CLF, the Chilean unidad de fomento, are ISO codes the seeded conventions use; they are added to the ISO currency seed as synthetic emerging currencies, with the minor units ISO states.
+- *The business day convention catalogue holds the full names only.* The ORE parser also reads MF or F, but the mapper stores the full name, so every seeded value meets the catalogue; a write of MF is refused.
+- *The calendar and the index stay text*, as the value set task recorded, so the trigger admits any calendar.
 
 * Test Scenarios
 
@@ -74,12 +78,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3875][#3875]] | [sql] Check a convention value against its term's set on write |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The triggers fire on insert only; an update in place passes unchecked | refdata_convention_terms_validate_create.sql | Accepted | Fires on insert or update of the term columns, as pricing does; closing a version updates only valid_to, so an old row is not checked again. |
+| 2 | Each insert runs a three-table join | refdata_convention_terms_validate_create.sql | Declined | Provisioning of a tenant ran through it without a measurable cost; cache the terms only if a bulk load slows. |
+| 3 | Do the reporting drops run before the trigger drops? | drop.sql | Declined | They do, and it is harmless: a trigger depends on its own function, not on the functions its body calls, and no trigger fires during a drop. |
+| 4 | The test covers swap only | refdata_convention_terms_validate_test.sql | Accepted | The test now checks that every entity holding a term has its trigger, and that an update of a term column is refused. |
 
 * Result
+
+- A trigger on each of the 28 convention entities refuses a value outside its term's set, on insert or on an update of a term column. The message names the value, the term and the set: =Invalid value Fortnightly for Swap.FixedFrequency: the value is not in set ...=.
+- =ores_reporting_value_in_set_fn= holds the rule. The pricing parameter trigger and the convention trigger both call it.
+- =generate_convention_kind_terms.py= writes the triggers and their drop from the same terms as the term seed. Its gate compares all three files.
+- The ISO currency seed now holds MXV and CLF, so every seeded convention meets its sets. The gate provisioned acme_corporation through the trigger without an error.
+- The pgTAP test =refdata_convention_terms_validate_test.sql= accepts a good swap and refuses a bad frequency, a bad business day convention, a bad day counter and an update to a bad frequency. It checks that every entity holding a term has its trigger, and it publishes the parameter contract itself, so it passes on a fresh database.
+- =refdata_conventions_publish_test.sql= is flaky on main: 1 failure in 8 runs without these triggers. The capture /Fix the flaky conventions publish pgTAP test/ records it.
+- The gate failed on ticks-smoke: the Bloomberg adapter rejected 20 of 86 demanded IDs. This branch changes no market data. Commit =b56a374918= on main added about 60 Bloomberg curve instruments the simulated adapter does not serve. The known failures from main stay: er-diagram, prototypes, the XPath pgTAP test and the trading suites.

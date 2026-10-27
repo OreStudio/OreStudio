@@ -27,8 +27,6 @@
 
 namespace {
 
-const std::string tags("[event_bus]");
-
 // Test event types
 struct test_event_a {
     int value;
@@ -45,7 +43,7 @@ struct test_event_empty {};
 
 using namespace ores::eventing::service;
 
-TEST_CASE("event_bus_subscribe_and_publish", tags) {
+TEST_CASE("event_bus_subscribe_and_publish", "[event_bus]") {
     event_bus bus;
 
     bool handler_called = false;
@@ -68,7 +66,7 @@ TEST_CASE("event_bus_subscribe_and_publish", tags) {
     REQUIRE(received_message == "hello");
 }
 
-TEST_CASE("event_bus_multiple_subscribers", tags) {
+TEST_CASE("event_bus_multiple_subscribers", "[event_bus]") {
     event_bus bus;
 
     int call_count = 0;
@@ -94,7 +92,7 @@ TEST_CASE("event_bus_multiple_subscribers", tags) {
     REQUIRE(received_values[1] == 50);
 }
 
-TEST_CASE("event_bus_different_event_types", tags) {
+TEST_CASE("event_bus_different_event_types", "[event_bus]") {
     event_bus bus;
 
     bool a_called = false;
@@ -119,7 +117,7 @@ TEST_CASE("event_bus_different_event_types", tags) {
     REQUIRE(b_called);
 }
 
-TEST_CASE("event_bus_unsubscribe_on_destruction", tags) {
+TEST_CASE("event_bus_unsubscribe_on_destruction", "[event_bus]") {
     event_bus bus;
 
     int call_count = 0;
@@ -140,7 +138,7 @@ TEST_CASE("event_bus_unsubscribe_on_destruction", tags) {
     REQUIRE(call_count == 1); // Should not be incremented
 }
 
-TEST_CASE("event_bus_manual_unsubscribe", tags) {
+TEST_CASE("event_bus_manual_unsubscribe", "[event_bus]") {
     event_bus bus;
 
     int call_count = 0;
@@ -162,7 +160,7 @@ TEST_CASE("event_bus_manual_unsubscribe", tags) {
     REQUIRE(call_count == 1); // Should not be incremented
 }
 
-TEST_CASE("event_bus_subscription_move", tags) {
+TEST_CASE("event_bus_subscription_move", "[event_bus]") {
     event_bus bus;
 
     int call_count = 0;
@@ -185,7 +183,7 @@ TEST_CASE("event_bus_subscription_move", tags) {
     REQUIRE(bus.subscriber_count<test_event_a>() == 0);
 }
 
-TEST_CASE("event_bus_no_subscribers", tags) {
+TEST_CASE("event_bus_no_subscribers", "[event_bus]") {
     event_bus bus;
 
     REQUIRE(bus.subscriber_count<test_event_a>() == 0);
@@ -196,7 +194,7 @@ TEST_CASE("event_bus_no_subscribers", tags) {
     REQUIRE(bus.subscriber_count<test_event_a>() == 0);
 }
 
-TEST_CASE("event_bus_empty_event", tags) {
+TEST_CASE("event_bus_empty_event", "[event_bus]") {
     event_bus bus;
 
     bool called = false;
@@ -208,7 +206,7 @@ TEST_CASE("event_bus_empty_event", tags) {
     REQUIRE(called);
 }
 
-TEST_CASE("event_bus_handler_exception_does_not_break_other_handlers", tags) {
+TEST_CASE("event_bus_handler_exception_does_not_break_other_handlers", "[event_bus]") {
     event_bus bus;
 
     int call_count = 0;
@@ -225,7 +223,7 @@ TEST_CASE("event_bus_handler_exception_does_not_break_other_handlers", tags) {
     REQUIRE(call_count == 2);
 }
 
-TEST_CASE("event_bus_thread_safety", tags) {
+TEST_CASE("event_bus_thread_safety", "[event_bus]") {
     event_bus bus;
 
     std::atomic<int> total_received{0};
@@ -253,7 +251,7 @@ TEST_CASE("event_bus_thread_safety", tags) {
     REQUIRE(total_received == num_threads * events_per_thread);
 }
 
-TEST_CASE("event_bus_concurrent_subscribe_unsubscribe", tags) {
+TEST_CASE("event_bus_concurrent_subscribe_unsubscribe", "[event_bus]") {
     event_bus bus;
 
     std::atomic<bool> running{true};

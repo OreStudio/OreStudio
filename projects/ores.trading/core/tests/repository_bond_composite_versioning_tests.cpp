@@ -36,6 +36,7 @@
 #include "ores.trading.core/repository/bond_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_entity.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -45,9 +46,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.repository.bond_composite_versioning.tests");
-const std::string tags("[repository][bond][versioning]");
 
 using ores::database::context;
 using ores::testing::database_helper;
@@ -182,7 +180,8 @@ void write_leg(context ctx,
  * the leg lands. The test measures the leg's own contribution rather than the
  * absolute count, which the other parts would otherwise decide.
  */
-TEST_CASE("rewriting_a_bond_leg_advances_the_parent_trade_version", tags) {
+TEST_CASE("rewriting_a_bond_leg_advances_the_parent_trade_version",
+          "[repository][bond][versioning]") {
     database_helper h;
 
     /*
@@ -224,7 +223,8 @@ TEST_CASE("rewriting_a_bond_leg_advances_the_parent_trade_version", tags) {
  * a bond write produces land microseconds apart inside one transaction, so a
  * bound taken straight from one version row can fall inside its neighbour.
  */
-TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version", tags) {
+TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version",
+          "[repository][bond][versioning]") {
     database_helper h;
 
     auto gen = ores::testing::make_generation_context(h);

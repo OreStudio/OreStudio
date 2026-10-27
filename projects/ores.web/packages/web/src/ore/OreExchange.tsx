@@ -151,6 +151,103 @@ function ExportDialog({
     );
 }
 
+/**
+ * The document one record is written as: the name the file types table gives it,
+ * what it holds in words, and the write the server answers with (RS-ORE-02).
+ */
+export interface OreRecordDocument {
+    /** The name the table gives the document, for the sentence before the press. */
+    readonly fileName: string;
+    /** What the document holds, in words, such as "5 products". */
+    readonly what: string;
+    /** Asks the server to write the document and answers the file it names. */
+    readonly write: () => Promise<{ readonly name: string; readonly content: string }>;
+}
+
+/**
+ * The Export of a kind whose document is one record, on the record header beside
+ * Edit, drawn only for a person who may read the record (RS-ORE-02).
+ */
+export function OreRecordExport({ document }: { readonly document: OreRecordDocument }): ReactNode {
+    const { t } = useTranslation();
+    const [exporting, setExporting] = useState(false);
+    return (
+        <>
+            <Button icon="export" onClick={() => setExporting(true)}>
+                {t('refdata.ore.export')}
+            </Button>
+            {exporting && (
+                <RecordExportDialog document={document} onClose={() => setExporting(false)} />
+            )}
+        </>
+    );
+}
+
+/**
+ * The Export dialog of one record: it states what it will write and its scope,
+ * writes on one press, and saves the file under the name the server gave
+ * (RS-ORE-03, RS-ORE-04). Nothing is written in the browser.
+ */
+export function RecordExportDialog({
+    document,
+    onClose,
+}: {
+    readonly document: OreRecordDocument;
+    readonly onClose: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [saved, setSaved] = useState<readonly string[]>([]);
+    const run = useMutation({
+        mutationFn: async () => {
+            const file = await document.write();
+            save(file.name, file.content);
+            return file;
+        },
+        onSuccess: (file) => setSaved([file.name]),
+    });
+    return (
+        <Dialog
+            title={t('refdata.ore.export')}
+            onClose={onClose}
+            footer={
+                <>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
+                        {run.isSuccess ? t('refdata.ore.close') : t('refdata.records.cancel')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        icon="export"
+                        disabled={run.isSuccess}
+                        pending={run.isPending}
+                        onClick={() => run.mutate()}
+                    >
+                        {t('refdata.ore.export')}
+                    </Button>
+                </>
+            }
+        >
+            <div className="space-y-3">
+                <p className="text-sm text-ink-muted">
+                    {t('refdata.ore.recordExportLead', {
+                        file: document.fileName,
+                        what: document.what,
+                    })}
+                </p>
+                <p className="text-xs text-ink-faint">{t('refdata.ore.exportNote')}</p>
+                {run.isSuccess && (
+                    <Notice tone="success">
+                        {t('refdata.ore.recordSaved', {
+                            file: saved.join(', '),
+                            what: document.what,
+                        })}
+                    </Notice>
+                )}
+                {run.isError && <Notice tone="error">{run.error.message}</Notice>}
+            </div>
+        </Dialog>
+    );
+}
+
 type Choice = 'take' | 'keep' | 'delete' | 'skip';
 
 /** What the review offers for a row of the difference, and which is the default (RS-ORE-05). */

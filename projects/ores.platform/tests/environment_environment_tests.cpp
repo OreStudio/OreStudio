@@ -34,8 +34,6 @@
 
 namespace {
 
-const std::string tags("[environment]");
-
 using ores::platform::environment::environment;
 using ores::platform::environment::environment_provider;
 using ores::platform::environment::fake_environment_provider;
@@ -68,70 +66,70 @@ private:
 
 }
 
-TEST_CASE("get_value_returns_installed_provider_value", tags) {
+TEST_CASE("get_value_returns_installed_provider_value", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_KEY", "installed-value"}});
 
     CHECK(environment::get_value("ORES_PLATFORM_TEST_KEY") ==
           std::optional<std::string>("installed-value"));
 }
 
-TEST_CASE("get_value_returns_empty_optional_for_absent_variable", tags) {
+TEST_CASE("get_value_returns_empty_optional_for_absent_variable", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_PRESENT", "present"}});
 
     CHECK_FALSE(environment::get_value("ORES_PLATFORM_TEST_ABSENT").has_value());
 }
 
-TEST_CASE("get_value_or_default_returns_default_for_absent_variable", tags) {
+TEST_CASE("get_value_or_default_returns_default_for_absent_variable", "[environment]") {
     const scoped_fake_provider guard({});
 
     CHECK(environment::get_value_or_default("ORES_PLATFORM_TEST_ABSENT", "fallback") == "fallback");
 }
 
-TEST_CASE("get_value_or_default_prefers_present_value_over_default", tags) {
+TEST_CASE("get_value_or_default_prefers_present_value_over_default", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_KEY", "present"}});
 
     CHECK(environment::get_value_or_default("ORES_PLATFORM_TEST_KEY", "fallback") == "present");
 }
 
-TEST_CASE("get_int_value_or_default_parses_decimal_value", tags) {
+TEST_CASE("get_int_value_or_default_parses_decimal_value", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_INT", "42"}});
 
     CHECK(environment::get_int_value_or_default("ORES_PLATFORM_TEST_INT", 7) == 42);
 }
 
-TEST_CASE("get_int_value_or_default_returns_default_for_absent_variable", tags) {
+TEST_CASE("get_int_value_or_default_returns_default_for_absent_variable", "[environment]") {
     const scoped_fake_provider guard({});
 
     CHECK(environment::get_int_value_or_default("ORES_PLATFORM_TEST_ABSENT", 7) == 7);
 }
 
-TEST_CASE("get_int_value_or_default_returns_default_for_unparseable_value", tags) {
+TEST_CASE("get_int_value_or_default_returns_default_for_unparseable_value", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_INT", "not-a-number"}});
 
     CHECK(environment::get_int_value_or_default("ORES_PLATFORM_TEST_INT", 7) == 7);
 }
 
-TEST_CASE("get_value_or_throw_returns_present_value", tags) {
+TEST_CASE("get_value_or_throw_returns_present_value", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_KEY", "required-value"}});
 
     CHECK(environment::get_value_or_throw("ORES_PLATFORM_TEST_KEY") == "required-value");
 }
 
-TEST_CASE("get_value_or_throw_throws_for_absent_variable", tags) {
+TEST_CASE("get_value_or_throw_throws_for_absent_variable", "[environment]") {
     const scoped_fake_provider guard({});
 
     CHECK_THROWS_AS(environment::get_value_or_throw("ORES_PLATFORM_TEST_ABSENT"),
                     std::runtime_error);
 }
 
-TEST_CASE("get_value_or_throw_names_the_missing_variable", tags) {
+TEST_CASE("get_value_or_throw_names_the_missing_variable", "[environment]") {
     const scoped_fake_provider guard({});
 
     CHECK_THROWS_WITH(environment::get_value_or_throw("ORES_PLATFORM_TEST_ABSENT"),
                       "Required environment variable not set: ORES_PLATFORM_TEST_ABSENT");
 }
 
-TEST_CASE("set_value_writes_through_the_installed_provider", tags) {
+TEST_CASE("set_value_writes_through_the_installed_provider", "[environment]") {
     const scoped_fake_provider guard({});
 
     environment::set_value("ORES_PLATFORM_TEST_KEY", "written");
@@ -140,7 +138,7 @@ TEST_CASE("set_value_writes_through_the_installed_provider", tags) {
           std::optional<std::string>("written"));
 }
 
-TEST_CASE("unset_value_removes_the_variable_from_the_installed_provider", tags) {
+TEST_CASE("unset_value_removes_the_variable_from_the_installed_provider", "[environment]") {
     const scoped_fake_provider guard({{"ORES_PLATFORM_TEST_KEY", "present"}});
 
     environment::unset_value("ORES_PLATFORM_TEST_KEY");
@@ -148,7 +146,7 @@ TEST_CASE("unset_value_removes_the_variable_from_the_installed_provider", tags) 
     CHECK_FALSE(environment::get_value("ORES_PLATFORM_TEST_KEY").has_value());
 }
 
-TEST_CASE("swap_provider_returns_the_previous_provider", tags) {
+TEST_CASE("swap_provider_returns_the_previous_provider", "[environment]") {
     fake_environment_provider first({{"ORES_PLATFORM_TEST_KEY", "first"}});
     fake_environment_provider second({{"ORES_PLATFORM_TEST_KEY", "second"}});
 
@@ -162,14 +160,14 @@ TEST_CASE("swap_provider_returns_the_previous_provider", tags) {
     environment::swap_provider(originally_installed);
 }
 
-TEST_CASE("default_provider_reads_the_process_environment", tags) {
+TEST_CASE("default_provider_reads_the_process_environment", "[environment]") {
     const char* path_from_c_runtime = std::getenv("PATH");
     REQUIRE(path_from_c_runtime != nullptr);
 
     CHECK(environment::get_value("PATH") == std::optional<std::string>(path_from_c_runtime));
 }
 
-TEST_CASE("real_environment_provider_round_trips_a_variable", tags) {
+TEST_CASE("real_environment_provider_round_trips_a_variable", "[environment]") {
     real_environment_provider provider;
     const std::string name("ORES_PLATFORM_TEST_REAL_ROUND_TRIP");
     const std::string value("real-value");
@@ -182,13 +180,14 @@ TEST_CASE("real_environment_provider_round_trips_a_variable", tags) {
     CHECK(std::getenv(name.c_str()) == nullptr);
 }
 
-TEST_CASE("real_environment_provider_get_returns_empty_optional_for_absent_variable", tags) {
+TEST_CASE("real_environment_provider_get_returns_empty_optional_for_absent_variable",
+          "[environment]") {
     real_environment_provider provider;
 
     CHECK_FALSE(provider.get("ORES_PLATFORM_TEST_NEVER_SET").has_value());
 }
 
-TEST_CASE("real_environment_provider_set_overwrites_an_existing_value", tags) {
+TEST_CASE("real_environment_provider_set_overwrites_an_existing_value", "[environment]") {
     real_environment_provider provider;
     const std::string name("ORES_PLATFORM_TEST_OVERWRITE");
 
@@ -200,7 +199,7 @@ TEST_CASE("real_environment_provider_set_overwrites_an_existing_value", tags) {
     provider.unset(name);
 }
 
-TEST_CASE("real_environment_provider_set_is_visible_to_std_getenv", tags) {
+TEST_CASE("real_environment_provider_set_is_visible_to_std_getenv", "[environment]") {
 #ifndef _WIN32
     real_environment_provider provider;
     const std::string name("ORES_PLATFORM_TEST_VISIBLE_TO_GETENV");

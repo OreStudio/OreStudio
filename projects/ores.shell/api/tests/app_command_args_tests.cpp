@@ -19,14 +19,8 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/command_args.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.shell.tests");
-const std::string tags("[app]");
-
-}
 
 using ores::shell::app::flag_spec;
 using ores::shell::app::parse_args;
@@ -35,7 +29,7 @@ using ores::shell::app::parse_uint32;
 using ores::shell::app::parse_uint64;
 using namespace ores::logging;
 
-TEST_CASE("parse_args_positionals_only", tags) {
+TEST_CASE("parse_args_positionals_only", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"alpha", "beta"}, {});
@@ -44,7 +38,7 @@ TEST_CASE("parse_args_positionals_only", tags) {
     CHECK(r->flags.empty());
 }
 
-TEST_CASE("parse_args_switch_defaults_to_false", tags) {
+TEST_CASE("parse_args_switch_defaults_to_false", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"file.ores"}, {{.name = "continue-on-error"}});
@@ -53,7 +47,7 @@ TEST_CASE("parse_args_switch_defaults_to_false", tags) {
     CHECK(r->positionals == std::vector<std::string>{"file.ores"});
 }
 
-TEST_CASE("parse_args_switch_present", tags) {
+TEST_CASE("parse_args_switch_present", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"file.ores", "--continue-on-error"}, {{.name = "continue-on-error"}});
@@ -61,7 +55,7 @@ TEST_CASE("parse_args_switch_present", tags) {
     CHECK(r->flag_set("continue-on-error"));
 }
 
-TEST_CASE("parse_args_switch_anywhere_among_positionals", tags) {
+TEST_CASE("parse_args_switch_anywhere_among_positionals", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--continue-on-error", "file.ores"}, {{.name = "continue-on-error"}});
@@ -70,7 +64,7 @@ TEST_CASE("parse_args_switch_anywhere_among_positionals", tags) {
     CHECK(r->positionals == std::vector<std::string>{"file.ores"});
 }
 
-TEST_CASE("parse_args_value_flag_with_separate_value", tags) {
+TEST_CASE("parse_args_value_flag_with_separate_value", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--seed", "42"},
@@ -79,7 +73,7 @@ TEST_CASE("parse_args_value_flag_with_separate_value", tags) {
     CHECK(r->flag("seed") == "42");
 }
 
-TEST_CASE("parse_args_value_flag_with_inline_value", tags) {
+TEST_CASE("parse_args_value_flag_with_inline_value", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r =
@@ -88,7 +82,7 @@ TEST_CASE("parse_args_value_flag_with_inline_value", tags) {
     CHECK(r->flag("seed") == "42");
 }
 
-TEST_CASE("parse_args_value_flag_uses_default_when_absent", tags) {
+TEST_CASE("parse_args_value_flag_uses_default_when_absent", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args(
@@ -97,7 +91,7 @@ TEST_CASE("parse_args_value_flag_uses_default_when_absent", tags) {
     CHECK(r->flag("dataset-size") == "small");
 }
 
-TEST_CASE("parse_args_unknown_flag_is_error", tags) {
+TEST_CASE("parse_args_unknown_flag_is_error", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--bogus"}, {{.name = "continue-on-error"}});
@@ -106,7 +100,7 @@ TEST_CASE("parse_args_unknown_flag_is_error", tags) {
     CHECK(r.error().find("--bogus") != std::string::npos);
 }
 
-TEST_CASE("parse_args_value_flag_missing_value_is_error", tags) {
+TEST_CASE("parse_args_value_flag_missing_value_is_error", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r =
@@ -115,7 +109,7 @@ TEST_CASE("parse_args_value_flag_missing_value_is_error", tags) {
     CHECK(r.error().find("--seed") != std::string::npos);
 }
 
-TEST_CASE("parse_args_value_flag_followed_by_flag_is_error", tags) {
+TEST_CASE("parse_args_value_flag_followed_by_flag_is_error", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--seed", "--continue-on-error"},
@@ -125,7 +119,7 @@ TEST_CASE("parse_args_value_flag_followed_by_flag_is_error", tags) {
     CHECK(r.error().find("--seed") != std::string::npos);
 }
 
-TEST_CASE("parse_args_switch_with_inline_value_is_error", tags) {
+TEST_CASE("parse_args_switch_with_inline_value_is_error", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--continue-on-error=yes"}, {{.name = "continue-on-error"}});
@@ -133,7 +127,7 @@ TEST_CASE("parse_args_switch_with_inline_value_is_error", tags) {
     CHECK(r.error().find("continue-on-error") != std::string::npos);
 }
 
-TEST_CASE("parse_positive_seconds_accepts_positive_integers", tags) {
+TEST_CASE("parse_positive_seconds_accepts_positive_integers", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_positive_seconds("300");
@@ -141,7 +135,7 @@ TEST_CASE("parse_positive_seconds_accepts_positive_integers", tags) {
     CHECK(r->count() == 300);
 }
 
-TEST_CASE("parse_positive_seconds_rejects_bad_input", tags) {
+TEST_CASE("parse_positive_seconds_rejects_bad_input", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(parse_positive_seconds("0").has_value());
@@ -151,7 +145,7 @@ TEST_CASE("parse_positive_seconds_rejects_bad_input", tags) {
     CHECK_FALSE(parse_positive_seconds("").has_value());
 }
 
-TEST_CASE("parse_uint32_accepts_unsigned_integers", tags) {
+TEST_CASE("parse_uint32_accepts_unsigned_integers", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_uint32("42");
@@ -161,7 +155,7 @@ TEST_CASE("parse_uint32_accepts_unsigned_integers", tags) {
     CHECK(parse_uint32("4294967295").has_value());
 }
 
-TEST_CASE("parse_uint32_rejects_bad_input", tags) {
+TEST_CASE("parse_uint32_rejects_bad_input", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(parse_uint32("-1").has_value());
@@ -173,7 +167,7 @@ TEST_CASE("parse_uint32_rejects_bad_input", tags) {
     CHECK_FALSE(parse_uint32("").has_value());
 }
 
-TEST_CASE("parse_uint64_accepts_large_values_and_rejects_bad_input", tags) {
+TEST_CASE("parse_uint64_accepts_large_values_and_rejects_bad_input", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_uint64("18446744073709551615");
@@ -185,7 +179,7 @@ TEST_CASE("parse_uint64_accepts_large_values_and_rejects_bad_input", tags) {
     CHECK_FALSE(parse_uint64("").has_value());
 }
 
-TEST_CASE("parse_args_keeps_every_value_of_a_repeatable_flag_in_order", tags) {
+TEST_CASE("parse_args_keeps_every_value_of_a_repeatable_flag_in_order", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"tenant",
@@ -201,7 +195,7 @@ TEST_CASE("parse_args_keeps_every_value_of_a_repeatable_flag_in_order", tags) {
     CHECK(r->flag("param") == "counterparty_size=small");
 }
 
-TEST_CASE("parse_args_keeps_the_last_value_of_a_flag_that_is_not_repeatable", tags) {
+TEST_CASE("parse_args_keeps_the_last_value_of_a_flag_that_is_not_repeatable", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--tenant-code", "first", "--tenant-code", "second"},
@@ -211,7 +205,7 @@ TEST_CASE("parse_args_keeps_the_last_value_of_a_flag_that_is_not_repeatable", ta
     CHECK(r->values("tenant-code").empty());
 }
 
-TEST_CASE("parse_args_reads_a_repeatable_flag_written_with_its_value_inline", tags) {
+TEST_CASE("parse_args_reads_a_repeatable_flag_written_with_its_value_inline", "[app]") {
     auto lg(make_logger(test_suite));
 
     auto r = parse_args({"--param=root_lei=213800LBQA1Y9L22JB70"},

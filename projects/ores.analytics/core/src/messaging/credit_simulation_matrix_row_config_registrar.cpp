@@ -39,7 +39,8 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view credit_simulation_matrix_row_config_queue_group =
+    "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -52,61 +53,61 @@ register_credit_simulation_matrix_row_config_handlers(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_credit_simulation_matrix_row_configs_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_credit_simulation_matrix_row_configs(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_credit_simulation_matrix_row_config_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_credit_simulation_matrix_row_config(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_many_credit_simulation_matrix_row_configs_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_credit_simulation_matrix_row_configs(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(put_credit_simulation_matrix_row_config_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_credit_simulation_matrix_row_config(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(put_many_credit_simulation_matrix_row_configs_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_credit_simulation_matrix_row_configs(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_credit_simulation_matrix_row_config_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_credit_simulation_matrix_row_config(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_many_credit_simulation_matrix_row_configs_request::nats_subject,
-        queue_group,
+        credit_simulation_matrix_row_config_queue_group,
         [h](ores::nats::message msg) {
             h->delete_many_credit_simulation_matrix_row_configs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_by_transition_matrix_id_credit_simulation_matrix_row_configs_request::nats_subject,
-        queue_group,
+        credit_simulation_matrix_row_config_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_transition_matrix_id_credit_simulation_matrix_row_configs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_credit_simulation_matrix_row_config_versions_request::nats_subject,
-        queue_group,
+        credit_simulation_matrix_row_config_queue_group,
         [h](ores::nats::message msg) {
             h->list_credit_simulation_matrix_row_config_versions(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(get_credit_simulation_matrix_row_config_version_request::nats_subject,
-                             queue_group,
+                             credit_simulation_matrix_row_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_credit_simulation_matrix_row_config_version(std::move(msg));
                              }));

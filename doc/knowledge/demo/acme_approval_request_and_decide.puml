@@ -1,0 +1,80 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The Acme demonstration: raising, queueing and deciding an approval
+
+participant "The raiser\n(a trader, or a desk)" as raiser
+participant "The decider\n(Operations, Market Risk,\nController, Finance)" as decider
+participant "ores.inbox" as inbox
+database "the request, its parts\nand its decisions" as db
+
+== A desk raises ==
+
+raiser -> inbox : the owning component's own operation\n(a booking, a book change)
+inbox -> db : raise the request: kind, state waiting,\nrequested_by = the raiser
+alt the kind asks parts
+    inbox -> db : one request-part row for each part\n(controller, finance, market_risk, operations)
+    inbox -> decider : a notice to whoever holds\neach part's decide permission
+end
+
+== The decider opens the queue ==
+
+decider -> inbox : inbox.v1.ops.list_approval_queue
+inbox -> db : the open requests of the kinds\nthis person may decide
+note right of inbox
+  The queue is filtered by the permission
+  each kind names, and the person's own
+  requests are cut from the page before
+  it is paged. A person never decides
+  what they raised.
+end note
+db --> inbox : waiting and held requests,\nthe raiser's left out
+inbox --> decider : the queue, oldest first
+
+== The decider decides ==
+
+decider -> inbox : inbox.v1.ops.decide_approval\n(approve, refuse, hold, resume)
+inbox -> inbox : does the caller hold the kind's\nor the named part's decide permission?
+alt no
+    inbox --> decider : denied, not_a_decider
+else yes
+    inbox -> db : write the decision\n(decided_by, comment)
+    db -> db : the four-eyes trigger refuses\na decision by the raiser
+    alt every part approved, or the count reached
+        db -> db : state := approved
+        inbox -> inbox : the owning component applies it
+    else refused, or held
+        db -> db : state := refused, or held
+    end
+    inbox --> decider : the request's state after the decision
+    inbox -> raiser : a notice naming the decision
+end
+
+== What the demonstration shows ==
+
+note over raiser, db
+  The acme_demo seed books each trade as one of
+  the party's own traders, so the operational
+  authorisation each live trade raises belongs to
+  a trader and waits for Operations. Trading
+  raises and Operations decides: the two people
+  are never the same one.
+end note
+
+@enduml

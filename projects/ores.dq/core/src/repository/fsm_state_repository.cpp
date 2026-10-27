@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy fsm_state_list_order(const ores::utility::domain::order& order,
+                                              std::initializer_list<std::string> default_columns,
+                                              bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!fsm_state_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::fsm_states_filter>& filter) {
+fsm_state_filter_condition(const std::optional<messaging::fsm_states_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -316,8 +316,8 @@ fsm_state_repository::read_latest(context ctx,
     return execute_ordered_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        fsm_state_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), fsm_state_filter_condition(filter)),
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
         lg(),
         "Reading latest fsm states with pagination.");
@@ -334,7 +334,7 @@ std::uint32_t fsm_state_repository::get_total_state_count(
     return execute_count_query<fsm_state_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), fsm_state_filter_condition(filter)),
         lg(),
         "Counting fsm states");
 }

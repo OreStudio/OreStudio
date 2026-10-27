@@ -166,7 +166,7 @@ export interface PermissionPageResponse {
  * does not grant too. The paging fields are those of
  * iam.v1.ops.list_account_permissions. The caller needs iam::roles:read.
  */
-export interface ListRolePermissionsRequest {
+export interface ListRolePermissionsPageRequest {
     role_id: string;
     area: string;
     search: string;
@@ -331,7 +331,7 @@ export const subjects = {
     get_my_roles_request: 'iam.v1.ops.get_my_roles',
     list_account_permissions_request: 'iam.v1.ops.list_account_permissions',
     list_my_permissions_request: 'iam.v1.ops.list_my_permissions',
-    list_role_permissions_request: 'iam.v1.ops.list_role_permissions',
+    list_role_permissions_page_request: 'iam.v1.ops.list_role_permissions',
     list_roles_page_request: 'iam.v1.ops.list_roles_page',
     list_role_holders_request: 'iam.v1.ops.list_role_holders',
     get_role_permissions_request: 'iam.v1.ops.get_role_permissions',
@@ -352,7 +352,7 @@ export const requiresSession = {
     get_my_roles_request: true,
     list_account_permissions_request: true,
     list_my_permissions_request: true,
-    list_role_permissions_request: true,
+    list_role_permissions_page_request: true,
     list_roles_page_request: true,
     list_role_holders_request: true,
     get_role_permissions_request: true,

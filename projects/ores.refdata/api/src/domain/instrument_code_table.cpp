@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string instrument_code_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,9 @@ std::string convert_to_table(const std::vector<instrument_code>& v) {
           << "Curve Role" << "Display Order" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ic : v) {
-        table << ic.code << ic.name << ic.description << opt_str(ic.asset_class)
-              << opt_str(ic.ore_trade_type) << ic.curve_role << ic.display_order << ic.modified_by
-              << ic.version << fort::endr;
+        table << ic.code << ic.name << ic.description << instrument_code_opt_str(ic.asset_class)
+              << instrument_code_opt_str(ic.ore_trade_type) << ic.curve_role << ic.display_order
+              << ic.modified_by << ic.version << fort::endr;
     }
     return table.to_string();
 }

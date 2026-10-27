@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 3CE13A0F-4C1D-4C98-A1C6-A2E77FA24A6B
+:END:
+#+title: How a run's results are post-processed
+#+description: How the engine's output archive becomes time-series result rows: the post-processing step, the readers, the result table, and what the screens may read.
+#+type: knowledge
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+* Summary
+
+A run's result is a set of rows in a time-series table, and the post-processor's
+whole job is to write them. Each analytic has one reader that alone knows the
+files the engine wrote; the screens, the exports and the comparisons read the
+table and never the archive. The pipeline's retrieval and post-processing phases
+are two steps, because a transport failure and a contract failure read
+differently.
+
+* Detail
+
+* The question this answers
+
+A report run hands its work to the engine and gets back an archive of files. This
+page says how those files become something a screen, an export or another service
+can read, where that happens, and what may depend on it. It is the contract behind
+the reporting screens and the reason the web tier does not read an archive.
+
+* What the pipeline already says
+
+The pipeline has six phases: pre-processing, submission, execution, retrieval,
+post-processing and finalisation. The workflow has seven steps, because
+pre-processing is four steps and retrieval and post-processing were folded into
+one: =reporting.v1.ops.collect_compute_results=. That fold is the gap this page
+closes.
+
+Retrieval answers *where the output is*. Post-processing answers *what it says*.
+They fail differently: a retrieval that fails is a transport problem, a
+post-processing that fails is a contract problem, and the errors a reader sees
+should say which.
+
+* The decision
+
+Every result a run produces is written to a time-series table,
+=ores_reporting_report_result_rows_tbl=, before any screen reads it. The
+post-processor's whole job is to turn the engine's output into those rows. A
+screen never parses an archive, and no analytic's file format is known outside its
+reader.
+
+* The result table
+
+One row per subject, measure and currency, at the run's priced date:
+
+| Column | Meaning |
+|--------+---------|
+| =tenant_id=, =party_id= | the owner of the run, as on every party-owned row |
+| =report_instance_id= | the run that produced the row |
+| =report_definition_id= | the report it came from, so a definition's runs are one query |
+| =as_of= | the date the run priced at; the time column of the series |
+| =subject_type= | =trade=, =book=, =counterparty=, =portfolio=, or the analytic's own |
+| =subject_id= | the record the row is about |
+| =measure= | =npv=, =npv_base=, =notional=, =delta=, =gamma=, and whatever an analytic adds |
+| =currency= | the currency the figure is stated in, empty when the measure has none |
+| =value= | the figure, as a double precision |
+| =source= | the file and row the post-processor read, for provenance |
+
+The shape is long and narrow on purpose: a new analytic adds a measure, not a
+column, and the series across runs is the same query whatever the measure is.
+
+The table is a hypertable on =as_of=, in the form the market data ticks use: a
+plain table, =create_hypertable= when TimescaleDB is present, a chunk interval by
+day, and a retention policy only where the licence allows one. It carries row-level
+security on the tenant and the party like the rest of the reporting tables, and an
+index on the run and the subject, and one on the definition and =as_of= for the
+trend a history screen draws.
+
+* The post-processing step
+
+=reporting.v1.ops.post_process_results= runs after retrieval and before
+finalisation. It is handed the run and the location retrieval stored, and it:
+
+1. Asks which analytics the run's configuration names.
+2. Finds the reader registered for each analytic, and skips an analytic with no
+   reader, recording a warning rather than failing the run.
+3. Lets each reader read the archive and emit rows of the table's shape.
+4. Writes the rows through a writer role, in one transaction per run, so a run's
+   rows are all there or none are.
+5. Records on the run what was written: the measures, the row counts and the files
+   each came from.
+
+A reader is the only place an analytic's file format is known. The NPV reader
+knows =npv.csv= and its columns; the sensitivity reader knows the files the
+sensitivity analytic writes and how a Delta and a Gamma row are keyed. A reader
+declares the measures it emits, so the run can state what a screen may ask for.
+
+* What the screens and services may depend on
+
+- A run that completed has its rows, or has said why it has none.
+- A screen asks for a run's rows by measure and subject type; it never asks for a
+  file.
+- A book, counterparty or portfolio figure is a query over the trade rows, not a
+  second dataset.
+- A comparison reads two runs' rows; a trend reads one definition's runs by
+  =as_of=.
+- The archive stays where it is, as the run's own record and the provenance of the
+  rows. Nothing reads it in the request path.
+
+* Where the work happens: on the grid, not in the service
+
+The expensive work is reading what the engine wrote. It belongs where the engine
+already is: the compute wrapper, which runs on the worker beside the engine and is
+the only component that knows which analytics the package ran and what files they
+wrote. The wrapper marshals those files into one canonical result file before it
+uploads, and the service's post-processing step becomes download, validate, load.
+
+That split is what keeps the service scalable. A run's rows are written by a
+single =COPY= inside one transaction, so a hundred runs finishing at once are a
+hundred short inserts rather than a hundred parsers, and the work grows with the
+grid rather than with the reporting service's replica count. The queue group and
+the run grant already spread and limit the load; nothing new is needed to admit
+it.
+
+The marshal is a projection, not a parser, because the canonical columns are the
+engine's own words. =npv.csv= becomes rows by renaming its headings: =TradeId= to
+=subject_id=, =NPV= to a =value= with =measure='npv'=, =NpvCurrency= to
+=currency=. A file that states several measures in one row, as the sensitivity
+output does, is widened into one row per measure. Nothing is inferred, and a file
+whose headings the marshal does not know is refused with a stated reason rather
+than read on a guess.
+
+The service keeps a fallback: when a run's output has no canonical file, the
+registered readers may read the archive in the service, and the run records that
+it was read the old way. That is a migration path for the wrappers already
+deployed, not a second architecture.
+
+* The contract the screens see does not change
+
+A screen asks for a run's rows by measure and subject type. Whether those rows
+came from the wrapper's canonical file or from the service's fallback reader is
+not the screen's business, and the answer keeps the same shape. A new measure
+adds a selector, not a rewrite.
+
+* What that means for the result table's columns
+
+The columns are chosen to match the engine's output, not to suit a screen:
+=subject_id= is the engine's trade id, =measure= is the name of the column the
+engine wrote, =value= and =currency= are the figure and its currency, and
+=source= names the file and the row. A column that ORE does not write is not in
+the table, and a new analytic adds a measure value rather than a column.
+
+* What is not built
+
+- The canonical file, the wrapper marshal, the result table and the post-processing
+  step are designed here and not yet built. Today the web tier parses =npv.csv= per
+  request, which this page replaces.
+- The error path: a reader that refuses a file should record a run error with its
+  own scope, so a failed post-processing reads differently from a failed
+  retrieval. The scope table gains a value for it when the step is built.
+- Retention: the ticks model reports its interval because the community licence has
+  no retention job. The same choice applies here when the table is created.

@@ -76,30 +76,37 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_account_contact_informations_response list_account_contact_informations(
-        const messaging::list_account_contact_informations_request& request);
-    messaging::get_account_contact_information_response get_account_contact_information(
-        const messaging::get_account_contact_information_request& request);
-    messaging::get_many_account_contact_informations_response get_many_account_contact_informations(
-        const messaging::get_many_account_contact_informations_request& request);
-    messaging::put_account_contact_information_response put_account_contact_information(
-        const messaging::put_account_contact_information_request& request);
-    messaging::put_many_account_contact_informations_response put_many_account_contact_informations(
-        const messaging::put_many_account_contact_informations_request& request);
-    messaging::delete_account_contact_information_response delete_account_contact_information(
-        const messaging::delete_account_contact_information_request& request);
-    messaging::delete_many_account_contact_informations_response
+    ::ores::iam::messaging::list_account_contact_informations_response
+    list_account_contact_informations(
+        const ::ores::iam::messaging::list_account_contact_informations_request& request);
+    ::ores::iam::messaging::get_account_contact_information_response
+    get_account_contact_information(
+        const ::ores::iam::messaging::get_account_contact_information_request& request);
+    ::ores::iam::messaging::get_many_account_contact_informations_response
+    get_many_account_contact_informations(
+        const ::ores::iam::messaging::get_many_account_contact_informations_request& request);
+    ::ores::iam::messaging::put_account_contact_information_response
+    put_account_contact_information(
+        const ::ores::iam::messaging::put_account_contact_information_request& request);
+    ::ores::iam::messaging::put_many_account_contact_informations_response
+    put_many_account_contact_informations(
+        const ::ores::iam::messaging::put_many_account_contact_informations_request& request);
+    ::ores::iam::messaging::delete_account_contact_information_response
+    delete_account_contact_information(
+        const ::ores::iam::messaging::delete_account_contact_information_request& request);
+    ::ores::iam::messaging::delete_many_account_contact_informations_response
     delete_many_account_contact_informations(
-        const messaging::delete_many_account_contact_informations_request& request);
-    messaging::list_by_account_id_account_contact_informations_response
+        const ::ores::iam::messaging::delete_many_account_contact_informations_request& request);
+    ::ores::iam::messaging::list_by_account_id_account_contact_informations_response
     list_by_account_id_account_contact_informations(
-        const messaging::list_by_account_id_account_contact_informations_request& request);
-    messaging::list_account_contact_information_versions_response
+        const ::ores::iam::messaging::list_by_account_id_account_contact_informations_request&
+            request);
+    ::ores::iam::messaging::list_account_contact_information_versions_response
     list_account_contact_information_versions(
-        const messaging::list_account_contact_information_versions_request& request);
-    messaging::get_account_contact_information_version_response
+        const ::ores::iam::messaging::list_account_contact_information_versions_request& request);
+    ::ores::iam::messaging::get_account_contact_information_version_response
     get_account_contact_information_version(
-        const messaging::get_account_contact_information_version_request& request);
+        const ::ores::iam::messaging::get_account_contact_information_version_request& request);
     /**@}*/
 
     /**
@@ -256,7 +263,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::account_contact_information_change& change,
+    prepare_change(const ::ores::iam::messaging::account_contact_information_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::account_contact_information& out);
 };

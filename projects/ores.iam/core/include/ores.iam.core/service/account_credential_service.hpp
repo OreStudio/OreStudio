@@ -75,19 +75,20 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_account_credentials_response
-    list_account_credentials(const messaging::list_account_credentials_request& request);
-    messaging::get_account_credential_response
-    get_account_credential(const messaging::get_account_credential_request& request);
-    messaging::get_many_account_credentials_response
-    get_many_account_credentials(const messaging::get_many_account_credentials_request& request);
-    messaging::list_by_account_id_account_credentials_response
+    ::ores::iam::messaging::list_account_credentials_response list_account_credentials(
+        const ::ores::iam::messaging::list_account_credentials_request& request);
+    ::ores::iam::messaging::get_account_credential_response
+    get_account_credential(const ::ores::iam::messaging::get_account_credential_request& request);
+    ::ores::iam::messaging::get_many_account_credentials_response get_many_account_credentials(
+        const ::ores::iam::messaging::get_many_account_credentials_request& request);
+    ::ores::iam::messaging::list_by_account_id_account_credentials_response
     list_by_account_id_account_credentials(
-        const messaging::list_by_account_id_account_credentials_request& request);
-    messaging::list_account_credential_versions_response list_account_credential_versions(
-        const messaging::list_account_credential_versions_request& request);
-    messaging::get_account_credential_version_response get_account_credential_version(
-        const messaging::get_account_credential_version_request& request);
+        const ::ores::iam::messaging::list_by_account_id_account_credentials_request& request);
+    ::ores::iam::messaging::list_account_credential_versions_response
+    list_account_credential_versions(
+        const ::ores::iam::messaging::list_account_credential_versions_request& request);
+    ::ores::iam::messaging::get_account_credential_version_response get_account_credential_version(
+        const ::ores::iam::messaging::get_account_credential_version_request& request);
     /**@}*/
 
     /**

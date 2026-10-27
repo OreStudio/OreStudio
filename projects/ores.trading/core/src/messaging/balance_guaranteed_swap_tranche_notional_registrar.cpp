@@ -39,7 +39,8 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view balance_guaranteed_swap_tranche_notional_queue_group =
+    "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -52,61 +53,61 @@ register_balance_guaranteed_swap_tranche_notional_handlers(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
-                             queue_group,
+                             balance_guaranteed_swap_tranche_notional_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_balance_guaranteed_swap_tranche_notionals(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_balance_guaranteed_swap_tranche_notional_request::nats_subject,
-                             queue_group,
+                             balance_guaranteed_swap_tranche_notional_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_balance_guaranteed_swap_tranche_notional(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         get_many_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
-        queue_group,
+        balance_guaranteed_swap_tranche_notional_queue_group,
         [h](ores::nats::message msg) {
             h->get_many_balance_guaranteed_swap_tranche_notionals(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(put_balance_guaranteed_swap_tranche_notional_request::nats_subject,
-                             queue_group,
+                             balance_guaranteed_swap_tranche_notional_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_balance_guaranteed_swap_tranche_notional(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_many_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
-        queue_group,
+        balance_guaranteed_swap_tranche_notional_queue_group,
         [h](ores::nats::message msg) {
             h->put_many_balance_guaranteed_swap_tranche_notionals(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(delete_balance_guaranteed_swap_tranche_notional_request::nats_subject,
-                             queue_group,
+                             balance_guaranteed_swap_tranche_notional_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_balance_guaranteed_swap_tranche_notional(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_many_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
-        queue_group,
+        balance_guaranteed_swap_tranche_notional_queue_group,
         [h](ores::nats::message msg) {
             h->delete_many_balance_guaranteed_swap_tranche_notionals(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
-        queue_group,
+        balance_guaranteed_swap_tranche_notional_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_trade_id_balance_guaranteed_swap_tranche_notionals(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_balance_guaranteed_swap_tranche_notional_versions_request::nats_subject,
-        queue_group,
+        balance_guaranteed_swap_tranche_notional_queue_group,
         [h](ores::nats::message msg) {
             h->list_balance_guaranteed_swap_tranche_notional_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_balance_guaranteed_swap_tranche_notional_version_request::nats_subject,
-        queue_group,
+        balance_guaranteed_swap_tranche_notional_queue_group,
         [h](ores::nats::message msg) {
             h->get_balance_guaranteed_swap_tranche_notional_version(std::move(msg));
         }));

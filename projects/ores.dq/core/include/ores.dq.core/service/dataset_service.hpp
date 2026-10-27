@@ -75,22 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_datasets_response
-    list_datasets(const messaging::list_datasets_request& request);
-    messaging::get_dataset_response get_dataset(const messaging::get_dataset_request& request);
-    messaging::get_many_datasets_response
-    get_many_datasets(const messaging::get_many_datasets_request& request);
-    messaging::put_dataset_response put_dataset(const messaging::put_dataset_request& request);
-    messaging::put_many_datasets_response
-    put_many_datasets(const messaging::put_many_datasets_request& request);
-    messaging::delete_dataset_response
-    delete_dataset(const messaging::delete_dataset_request& request);
-    messaging::delete_many_datasets_response
-    delete_many_datasets(const messaging::delete_many_datasets_request& request);
-    messaging::list_dataset_versions_response
-    list_dataset_versions(const messaging::list_dataset_versions_request& request);
-    messaging::get_dataset_version_response
-    get_dataset_version(const messaging::get_dataset_version_request& request);
+    ::ores::dq::messaging::list_datasets_response
+    list_datasets(const ::ores::dq::messaging::list_datasets_request& request);
+    ::ores::dq::messaging::get_dataset_response
+    get_dataset(const ::ores::dq::messaging::get_dataset_request& request);
+    ::ores::dq::messaging::get_many_datasets_response
+    get_many_datasets(const ::ores::dq::messaging::get_many_datasets_request& request);
+    ::ores::dq::messaging::put_dataset_response
+    put_dataset(const ::ores::dq::messaging::put_dataset_request& request);
+    ::ores::dq::messaging::put_many_datasets_response
+    put_many_datasets(const ::ores::dq::messaging::put_many_datasets_request& request);
+    ::ores::dq::messaging::delete_dataset_response
+    delete_dataset(const ::ores::dq::messaging::delete_dataset_request& request);
+    ::ores::dq::messaging::delete_many_datasets_response
+    delete_many_datasets(const ::ores::dq::messaging::delete_many_datasets_request& request);
+    ::ores::dq::messaging::list_dataset_versions_response
+    list_dataset_versions(const ::ores::dq::messaging::list_dataset_versions_request& request);
+    ::ores::dq::messaging::get_dataset_version_response
+    get_dataset_version(const ::ores::dq::messaging::get_dataset_version_request& request);
     /**@}*/
 
     /**
@@ -201,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::dataset_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::dataset& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::dataset_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::dataset& out);
 };
 
 }

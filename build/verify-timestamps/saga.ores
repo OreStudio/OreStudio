@@ -1,0 +1,10 @@
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+
+# One step completes and declares a compensation, a later step fails, and the
+# engine rolls the run back. The run must end compensated with no step of it
+# still reading as unfinished.
+workflow start identity_workflow '{"steps":[{"name":"ok","compensate":true},{"name":"boom","behaviour":"fail"}]}' --instance-id 10000000-0000-4000-8000-000000000005
+workflow wait 10000000-0000-4000-8000-000000000005 --timeout 120 --expect-state compensated
+workflow steps 10000000-0000-4000-8000-000000000005
+logout

@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -35,20 +36,13 @@
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::counterparty;
 using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_counterparty", tags) {
+TEST_CASE("write_single_counterparty", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -65,7 +59,7 @@ TEST_CASE("write_single_counterparty", tags) {
     CHECK(read_counterparties[0].full_name == cp.full_name);
 }
 
-TEST_CASE("write_multiple_counterparties", tags) {
+TEST_CASE("write_multiple_counterparties", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -88,7 +82,7 @@ TEST_CASE("write_multiple_counterparties", tags) {
     }
 }
 
-TEST_CASE("read_latest_counterparties", tags) {
+TEST_CASE("read_latest_counterparties", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -113,7 +107,7 @@ TEST_CASE("read_latest_counterparties", tags) {
     }
 }
 
-TEST_CASE("read_latest_counterparty_by_id", tags) {
+TEST_CASE("read_latest_counterparty_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -137,7 +131,7 @@ TEST_CASE("read_latest_counterparty_by_id", tags) {
     CHECK(read_counterparties[0].full_name == original_full_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_counterparty_id", tags) {
+TEST_CASE("read_nonexistent_counterparty_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

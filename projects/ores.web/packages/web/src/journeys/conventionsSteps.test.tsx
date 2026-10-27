@@ -56,6 +56,7 @@ const swap: ConventionRow = {
 function outcome(success: boolean, message = ''): ConventionWriteOutcome {
     return {
         success,
+        conflict: false,
         code: success ? '' : 'stale_version',
         message,
         fields: success ? [] : [{ field: 'index', code: 'stale', message }],

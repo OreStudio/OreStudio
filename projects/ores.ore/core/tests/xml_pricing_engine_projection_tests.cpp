@@ -23,6 +23,7 @@
 #include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -42,9 +43,6 @@
  */
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][roundtrip][pricingengines]");
 
 namespace xg = ores::ore::xml::generated::pricing_engines;
 using namespace ores::logging;
@@ -100,7 +98,8 @@ make_product(const std::string& type, const std::string& model, const std::strin
 
 }
 
-TEST_CASE("a_repeated_product_type_keeps_the_order_the_document_wrote", tags) {
+TEST_CASE("a_repeated_product_type_keeps_the_order_the_document_wrote",
+          "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     xg::pricingengines document;
@@ -118,7 +117,8 @@ TEST_CASE("a_repeated_product_type_keeps_the_order_the_document_wrote", tags) {
     CHECK(rebuilt.product.at(1).model == "Second");
 }
 
-TEST_CASE("a_repeated_parameter_name_in_one_scope_keeps_its_order", tags) {
+TEST_CASE("a_repeated_parameter_name_in_one_scope_keeps_its_order",
+          "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     auto product = make_product("ScriptedTrade", "Scripted", "Scripted");
@@ -143,7 +143,8 @@ TEST_CASE("a_repeated_parameter_name_in_one_scope_keeps_its_order", tags) {
     CHECK(parameters.at(1).value == "true");
 }
 
-TEST_CASE("a_global_parameter_belongs_to_no_product_and_comes_back", tags) {
+TEST_CASE("a_global_parameter_belongs_to_no_product_and_comes_back",
+          "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     xg::pricingengines document;
@@ -166,7 +167,8 @@ TEST_CASE("a_global_parameter_belongs_to_no_product_and_comes_back", tags) {
     CHECK(rebuilt.global_parameters.parameter.at(0).name == "Calendar");
 }
 
-TEST_CASE("a_row_the_document_has_no_place_for_is_refused", tags) {
+TEST_CASE("a_row_the_document_has_no_place_for_is_refused",
+          "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document mapped;
@@ -189,7 +191,7 @@ TEST_CASE("a_row_the_document_has_no_place_for_is_refused", tags) {
                     std::runtime_error);
 }
 
-TEST_CASE("rows_that_share_a_position_are_ordered_by_id", tags) {
+TEST_CASE("rows_that_share_a_position_are_ordered_by_id", "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document mapped;
@@ -208,7 +210,7 @@ TEST_CASE("rows_that_share_a_position_are_ordered_by_id", tags) {
     CHECK(rebuilt.product.at(0).type == expected.pricing_engine_type_code);
 }
 
-TEST_CASE("a_document_without_a_global_list_writes_none", tags) {
+TEST_CASE("a_document_without_a_global_list_writes_none", "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     xg::pricingengines document;
@@ -223,13 +225,19 @@ TEST_CASE("a_document_without_a_global_list_writes_none", tags) {
     CHECK_FALSE(rebuilt.product.empty());
 }
 
-TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips", tags) {
+TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips",
+          "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ores::testing::project_root::resolve("external/ore/examples");
     REQUIRE(std::filesystem::is_directory(root));
 
     std::size_t files = 0;
+    // The writer states every section of the document, so a file that names no
+    // GlobalParameters block comes back with an empty one. That is the only
+    // difference the round trip may carry, and the counts below pin it: a
+    // document that loses anything, or gains anything else, fails.
+    std::size_t gained_globals = 0;
     for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
         if (!entry.is_regular_file() || entry.path().extension() != ".xml")
             continue;
@@ -252,10 +260,20 @@ TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips", tags) {
             ores::ore::domain::pricing_engine_projection::write(rebuilt));
 
         const auto difference = ores::ore::xml::compare_records(table().root, &original, &exported);
-        if (difference)
-            INFO(difference->path << ": " << difference->detail);
-        CHECK_FALSE(difference);
+        if (!difference)
+            continue;
+        INFO(difference->path << ": " << difference->detail);
+        ++gained_globals;
+        // The difference is stated at the record the block sits under, which
+        // is the document itself.
+        CHECK(difference->path == table().root.name);
+        CHECK(difference->detail == "GlobalParameters was added");
+        // The block is empty: the parameters it would hold are the ones the
+        // rows carry, and the file held none.
+        CHECK(exported.global_parameters.parameter.empty());
     }
-    BOOST_LOG_SEV(lg, info) << "pricing engine documents: " << files;
+    BOOST_LOG_SEV(lg, info) << "pricing engine documents: " << files
+                            << ", of which gained an empty GlobalParameters: " << gained_globals;
     CHECK(files == 125);
+    CHECK(gained_globals == 70);
 }

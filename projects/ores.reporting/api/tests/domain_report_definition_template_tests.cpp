@@ -29,11 +29,7 @@
 
 using ores::reporting::domain::report_definition_template;
 
-namespace {
-const std::string tags("[domain][template]");
-}
-
-TEST_CASE("a template streams the values it was given", tags) {
+TEST_CASE("a template streams the values it was given", "[domain][template]") {
     report_definition_template sut;
     sut.name = "Capital Report";
     sut.description = "Regulatory capital";
@@ -52,7 +48,7 @@ TEST_CASE("a template streams the values it was given", tags) {
     CHECK(json.find("skip") != std::string::npos);
 }
 
-TEST_CASE("two templates with different names stream differently", tags) {
+TEST_CASE("two templates with different names stream differently", "[domain][template]") {
     report_definition_template a;
     a.name = "A";
     report_definition_template b;

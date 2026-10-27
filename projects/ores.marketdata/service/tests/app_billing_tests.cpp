@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[app][billing]");
-
 using namespace std::chrono_literals;
 using namespace ores::marketdata::service::app;
 
@@ -138,7 +136,7 @@ const std::string gbp = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rat
 
 }
 
-TEST_CASE("an_even_split_adds_up_and_differs_by_at_most_one", tags) {
+TEST_CASE("an_even_split_adds_up_and_differs_by_at_most_one", "[app][billing]") {
     const auto parts = split_evenly(100, 3);
     REQUIRE(parts.size() == 3);
     CHECK(parts[0] == 34);
@@ -149,7 +147,7 @@ TEST_CASE("an_even_split_adds_up_and_differs_by_at_most_one", tags) {
     CHECK(split_evenly(0, 4) == std::vector<std::int64_t>(4, 0));
 }
 
-TEST_CASE("a_weighted_split_adds_up_and_follows_the_weights", tags) {
+TEST_CASE("a_weighted_split_adds_up_and_follows_the_weights", "[app][billing]") {
     const auto parts = split_weighted(1000, {1, 1, 2});
     REQUIRE(parts.size() == 3);
     CHECK(parts[0] == 250);
@@ -161,12 +159,12 @@ TEST_CASE("a_weighted_split_adds_up_and_follows_the_weights", tags) {
     CHECK(odd[0] == 34);
 }
 
-TEST_CASE("a_weighted_split_with_no_weight_gives_nothing", tags) {
+TEST_CASE("a_weighted_split_with_no_weight_gives_nothing", "[app][billing]") {
     CHECK(split_weighted(100, {0, 0}) == std::vector<std::int64_t>(2, 0));
     CHECK(split_weighted(100, {}).empty());
 }
 
-TEST_CASE("each_driver_counts_what_it_names", tags) {
+TEST_CASE("each_driver_counts_what_it_names", "[app][billing]") {
     world w;
     w.component(w.live, "fixed_per_period", 1000000);
     w.component(w.live, "per_instrument", 50000);
@@ -201,7 +199,7 @@ TEST_CASE("each_driver_counts_what_it_names", tags) {
     CHECK(bill.currency == "USD");
 }
 
-TEST_CASE("the_charge_for_ticks_is_rounded_to_the_nearest_micro", tags) {
+TEST_CASE("the_charge_for_ticks_is_rounded_to_the_nearest_micro", "[app][billing]") {
     world w;
     w.component(w.live, "per_thousand_ticks", 1);
     w.subscribes(w.alice, w.live);
@@ -212,7 +210,7 @@ TEST_CASE("the_charge_for_ticks_is_rounded_to_the_nearest_micro", tags) {
     CHECK(rate_source(w.live, w.card, w.events, w.period()).total_micros == 2);
 }
 
-TEST_CASE("events_of_another_source_are_not_counted", tags) {
+TEST_CASE("events_of_another_source_are_not_counted", "[app][billing]") {
     world w;
     w.component(w.live, "per_party", 100);
     w.subscribes(w.alice, w.simulated);
@@ -220,7 +218,7 @@ TEST_CASE("events_of_another_source_are_not_counted", tags) {
     CHECK(rate_source(w.live, w.card, w.events, w.period()).total_micros == 0);
 }
 
-TEST_CASE("an_interval_counts_only_when_it_overlaps_the_period", tags) {
+TEST_CASE("an_interval_counts_only_when_it_overlaps_the_period", "[app][billing]") {
     world w;
     w.component(w.live, "per_party", 100);
     w.subscribes(w.alice, w.live);
@@ -234,7 +232,7 @@ TEST_CASE("an_interval_counts_only_when_it_overlaps_the_period", tags) {
     CHECK(rate_source(w.live, w.card, w.events, w.period()).total_micros == 100);
 }
 
-TEST_CASE("a_component_counts_only_in_the_period_it_applies_to", tags) {
+TEST_CASE("a_component_counts_only_in_the_period_it_applies_to", "[app][billing]") {
     world w;
     w.component(w.live, "fixed_per_period", 100);
     w.component(w.live, "fixed_per_period", 900);
@@ -244,7 +242,8 @@ TEST_CASE("a_component_counts_only_in_the_period_it_applies_to", tags) {
     CHECK(rate_source(w.live, w.card, w.events, w.period()).lines.empty());
 }
 
-TEST_CASE("a_live_and_a_simulated_source_give_the_same_bill_apart_from_the_label", tags) {
+TEST_CASE("a_live_and_a_simulated_source_give_the_same_bill_apart_from_the_label",
+          "[app][billing]") {
     world w;
     for (const auto* source : {&w.live, &w.simulated}) {
         w.component(*source, "fixed_per_period", 1000000);
@@ -274,7 +273,7 @@ TEST_CASE("a_live_and_a_simulated_source_give_the_same_bill_apart_from_the_label
     CHECK(total_of(live_split) == total_of(simulated_split));
 }
 
-TEST_CASE("a_fixed_fee_is_split_equally_among_the_active_subscribers", tags) {
+TEST_CASE("a_fixed_fee_is_split_equally_among_the_active_subscribers", "[app][billing]") {
     world w;
     w.component(w.live, "fixed_per_period", 1000001);
     w.subscribes(w.alice, w.live);
@@ -292,7 +291,7 @@ TEST_CASE("a_fixed_fee_is_split_equally_among_the_active_subscribers", tags) {
     CHECK(split.unallocated_micros == 0);
 }
 
-TEST_CASE("a_fixed_fee_with_no_subscriber_is_left_unallocated", tags) {
+TEST_CASE("a_fixed_fee_with_no_subscriber_is_left_unallocated", "[app][billing]") {
     world w;
     w.component(w.live, "fixed_per_period", 500);
     const auto bill = rate_source(w.live, w.card, w.events, w.period());
@@ -303,7 +302,7 @@ TEST_CASE("a_fixed_fee_with_no_subscriber_is_left_unallocated", tags) {
     CHECK(split.unallocated_micros == 500);
 }
 
-TEST_CASE("an_instrument_is_shared_among_the_parties_that_demanded_it", tags) {
+TEST_CASE("an_instrument_is_shared_among_the_parties_that_demanded_it", "[app][billing]") {
     world w;
     w.component(w.live, "per_instrument", 90);
     w.subscribes(w.alice, w.live);
@@ -320,7 +319,7 @@ TEST_CASE("an_instrument_is_shared_among_the_parties_that_demanded_it", tags) {
     CHECK(total_of(split) == bill.total_micros);
 }
 
-TEST_CASE("a_licence_is_borne_by_the_party_that_holds_the_right", tags) {
+TEST_CASE("a_licence_is_borne_by_the_party_that_holds_the_right", "[app][billing]") {
     world w;
     w.component(w.live, "per_licence", 700, "derived");
     w.subscribes(w.alice, w.live, false, true);
@@ -333,7 +332,7 @@ TEST_CASE("a_licence_is_borne_by_the_party_that_holds_the_right", tags) {
     CHECK(charge_of(split, w.bob, "per_licence") == 0);
 }
 
-TEST_CASE("ticks_are_split_by_the_deliveries_counted_for_each_party", tags) {
+TEST_CASE("ticks_are_split_by_the_deliveries_counted_for_each_party", "[app][billing]") {
     world w;
     w.component(w.live, "per_thousand_ticks", 1000000);
     w.subscribes(w.alice, w.live);
@@ -349,7 +348,7 @@ TEST_CASE("ticks_are_split_by_the_deliveries_counted_for_each_party", tags) {
     CHECK(charge_of(split, w.bob, "per_thousand_ticks") == 1000000);
 }
 
-TEST_CASE("the_charges_and_the_unallocated_part_add_up_to_the_bill", tags) {
+TEST_CASE("the_charges_and_the_unallocated_part_add_up_to_the_bill", "[app][billing]") {
     world w;
     w.component(w.live, "fixed_per_period", 1000003);
     w.component(w.live, "per_instrument", 77777);
@@ -370,7 +369,7 @@ TEST_CASE("the_charges_and_the_unallocated_part_add_up_to_the_bill", tags) {
     CHECK(total_of(split) == bill.total_micros);
 }
 
-TEST_CASE("a_report_has_a_bill_for_each_source_with_a_rate_card", tags) {
+TEST_CASE("a_report_has_a_bill_for_each_source_with_a_rate_card", "[app][billing]") {
     world w;
     w.component(w.live, "per_party", 100);
     w.subscribes(w.alice, w.live);
@@ -383,7 +382,7 @@ TEST_CASE("a_report_has_a_bill_for_each_source_with_a_rate_card", tags) {
     CHECK(report.unallocated_micros == 0);
 }
 
-TEST_CASE("a_report_can_be_narrowed_to_one_source_by_name", tags) {
+TEST_CASE("a_report_can_be_narrowed_to_one_source_by_name", "[app][billing]") {
     world w;
     for (const auto* source : {&w.live, &w.simulated}) {
         w.component(*source, "per_party", 100);
@@ -398,7 +397,7 @@ TEST_CASE("a_report_can_be_narrowed_to_one_source_by_name", tags) {
     CHECK(report.bills.front().shadow);
 }
 
-TEST_CASE("the_charges_of_a_report_add_up_to_its_bills", tags) {
+TEST_CASE("the_charges_of_a_report_add_up_to_its_bills", "[app][billing]") {
     world w;
     for (const auto* source : {&w.live, &w.simulated}) {
         w.component(*source, "fixed_per_period", 1000003);
@@ -421,7 +420,7 @@ TEST_CASE("the_charges_of_a_report_add_up_to_its_bills", tags) {
     CHECK(charged == billed);
 }
 
-TEST_CASE("of_two_components_that_overlap_the_newest_one_bills", tags) {
+TEST_CASE("of_two_components_that_overlap_the_newest_one_bills", "[app][billing]") {
     world w;
     w.component(w.live, "per_party", 100);
     w.component(w.live, "per_party", 250);
@@ -435,7 +434,7 @@ TEST_CASE("of_two_components_that_overlap_the_newest_one_bills", tags) {
     CHECK(bill.total_micros == 250);
 }
 
-TEST_CASE("components_of_different_licence_rights_do_not_replace_each_other", tags) {
+TEST_CASE("components_of_different_licence_rights_do_not_replace_each_other", "[app][billing]") {
     world w;
     w.component(w.live, "per_licence", 100, "non_display");
     w.component(w.live, "per_licence", 200, "derived");

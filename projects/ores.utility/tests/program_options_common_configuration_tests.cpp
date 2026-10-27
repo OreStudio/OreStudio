@@ -23,9 +23,6 @@
 
 namespace {
 
-const std::string test_suite("ores.utility.tests");
-const std::string tags("[common_configuration]");
-
 namespace po = boost::program_options;
 using ores::utility::program_options::common_configuration;
 using ores::utility::program_options::common_options;
@@ -40,14 +37,14 @@ po::variables_map parse_args(const std::vector<const char*>& args) {
 
 }
 
-TEST_CASE("make_options_description_returns_general_group", tags) {
+TEST_CASE("make_options_description_returns_general_group", "[common_configuration]") {
     auto desc = common_configuration::make_options_description();
 
     // Check that the description is not empty
     REQUIRE(desc.options().size() == 3);
 }
 
-TEST_CASE("make_options_description_contains_help_option", tags) {
+TEST_CASE("make_options_description_contains_help_option", "[common_configuration]") {
     auto desc = common_configuration::make_options_description();
 
     // Should contain help option with short form
@@ -55,7 +52,7 @@ TEST_CASE("make_options_description_contains_help_option", tags) {
     REQUIRE(help != nullptr);
 }
 
-TEST_CASE("make_options_description_contains_version_option", tags) {
+TEST_CASE("make_options_description_contains_version_option", "[common_configuration]") {
     auto desc = common_configuration::make_options_description();
 
     // Should contain version option with short form
@@ -63,7 +60,7 @@ TEST_CASE("make_options_description_contains_version_option", tags) {
     REQUIRE(version != nullptr);
 }
 
-TEST_CASE("make_options_description_contains_verbose_option", tags) {
+TEST_CASE("make_options_description_contains_verbose_option", "[common_configuration]") {
     auto desc = common_configuration::make_options_description();
 
     // Should contain verbose option (long form only)
@@ -71,7 +68,7 @@ TEST_CASE("make_options_description_contains_verbose_option", tags) {
     REQUIRE(verbose != nullptr);
 }
 
-TEST_CASE("read_options_returns_verbose_false_when_not_set", tags) {
+TEST_CASE("read_options_returns_verbose_false_when_not_set", "[common_configuration]") {
     std::vector<const char*> args = {"test"};
     auto vm = parse_args(args);
 
@@ -80,7 +77,7 @@ TEST_CASE("read_options_returns_verbose_false_when_not_set", tags) {
     REQUIRE(opts.verbose == false);
 }
 
-TEST_CASE("read_options_returns_verbose_true_when_set", tags) {
+TEST_CASE("read_options_returns_verbose_true_when_set", "[common_configuration]") {
     std::vector<const char*> args = {"test", "--verbose"};
     auto vm = parse_args(args);
 
@@ -89,7 +86,7 @@ TEST_CASE("read_options_returns_verbose_true_when_set", tags) {
     REQUIRE(opts.verbose == true);
 }
 
-TEST_CASE("parse_help_short_form", tags) {
+TEST_CASE("parse_help_short_form", "[common_configuration]") {
     std::vector<const char*> args = {"test", "-h"};
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
@@ -100,7 +97,7 @@ TEST_CASE("parse_help_short_form", tags) {
     REQUIRE(vm.count("help") != 0);
 }
 
-TEST_CASE("parse_version_short_form", tags) {
+TEST_CASE("parse_version_short_form", "[common_configuration]") {
     std::vector<const char*> args = {"test", "-v"};
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
@@ -111,7 +108,7 @@ TEST_CASE("parse_version_short_form", tags) {
     REQUIRE(vm.count("version") != 0);
 }
 
-TEST_CASE("parse_help_long_form", tags) {
+TEST_CASE("parse_help_long_form", "[common_configuration]") {
     std::vector<const char*> args = {"test", "--help"};
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
@@ -121,7 +118,7 @@ TEST_CASE("parse_help_long_form", tags) {
     REQUIRE(vm.count("help") != 0);
 }
 
-TEST_CASE("parse_version_long_form", tags) {
+TEST_CASE("parse_version_long_form", "[common_configuration]") {
     std::vector<const char*> args = {"test", "--version"};
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
@@ -131,7 +128,7 @@ TEST_CASE("parse_version_long_form", tags) {
     REQUIRE(vm.count("version") != 0);
 }
 
-TEST_CASE("parse_verbose_long_form", tags) {
+TEST_CASE("parse_verbose_long_form", "[common_configuration]") {
     std::vector<const char*> args = {"test", "--verbose"};
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;

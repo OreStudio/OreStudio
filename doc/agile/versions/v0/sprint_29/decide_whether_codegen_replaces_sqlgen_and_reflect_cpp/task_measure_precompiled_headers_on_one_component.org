@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 86F3D15C-D648-4C2D-B21F-4C5B6B19811C
+:END:
+#+title: Task: Measure precompiled headers on one component
+#+description: Build one component without ccache with and without a precompiled header of its heaviest common headers, and compare total CPU, wall time and peak memory.
+#+type: task
+#+level: s1
+#+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Numbers for the total CPU, wall time and peak memory of one component's build with and without a precompiled header.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- Total CPU, wall time and peak memory of =ores.dq.core= without ccache, with
+  and without a precompiled header of its heaviest common headers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.dq.core=, 173 files, baseline | 8 min 08 s wall, 23 min 18 s CPU, 1.8 GiB peak | =build_target.sh= (deletes the target's objects, builds =ores.dq.core.lib= under =systemd-run --wait=) | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| =ores.dq.core= with a precompiled header | 4 min 36 s wall (-43%), 12 min 46 s CPU (-45%), 1.8 GiB peak | the same, with =target_precompile_headers= of the standard headers, Boost.Log's severity source, sqlgen's read and where, reflect-cpp's JSON, and the common =ores.logging=, =ores.database= and =ores.utility= headers | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A precompiled header of the common headers cut =ores.dq.core='s compile CPU by
+45% and its wall time by 43%, with no change in peak memory. On top of a unity
+build it adds little: 2 min 06 s becomes 1 min 53 s, because each unity batch
+already parses its headers once. Use the unity build first. A precompiled header
+is worth adding later only for targets that cannot build as a unity build.

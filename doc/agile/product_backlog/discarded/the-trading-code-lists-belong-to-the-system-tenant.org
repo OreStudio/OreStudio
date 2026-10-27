@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 6D14A3B8-2E75-4C90-8F31-B5E7C6A02D94
+:END
+#+title: The trading code lists belong to the system tenant (fixed)
+#+description: The trade types, identifier schemes and link types are seeded for the system tenant only, so a tenant session reads none of them, while the writes still accept their codes.
+#+type: capture
+#+level: cross
+#+filetags: :trading:seeding:bug:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+Three code lists a booking cannot work without are invisible to the tenant that
+books:
+
+#+begin_example
+select tenant_id, count(*) from ores_trading_trade_link_types_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn() group by tenant_id;
+-- ffffffff-… | 12        (the system tenant, and no other)
+#+end_example
+
+The same holds for =trade_types= and =trade_id_types=. Every populate script
+hardcodes =ores_utility_system_tenant_id_fn()=, and the tables are read under
+row-level security, so a session in =acme_corporation= answers an empty list for
+each one.
+
+The writes do not agree. An identifier scheme is validated by name without
+tenant scoping, so =Internal= is accepted for a tenant that cannot list it:
+
+#+begin_example
+Invalid id_type: POP. No active trade id type found with this code.
+-- while 'Internal' books cleanly
+#+end_example
+
+The screen now works around this twice: the booking form offers the identifier
+schemes the tenant's own trades already use, and the Links tab says the link
+types cannot be read rather than showing an empty picker. Neither workaround
+helps a tenant that has not traded yet, and neither can offer a *new* scheme or
+link type.
+
+Two ways to fix it, and the first is the one the rest of the reference data
+takes:
+
+- *Seed the lists per tenant at provisioning*, as the refdata lists are seeded,
+  so each tenant owns a copy it can extend.
+- *Or make them readable across tenants*, as a code list every tenant shares,
+  and then make the writes validate the same way the reads scope — the mismatch
+  between the two is the defect whichever way it goes.
+
+* What was done about it
+
+The tenant provisioner already copies the reference lists a tenant owns, one
+block each, and the trading lists were simply missing from it. Seven blocks were
+added to =ores_iam_tenant_provisioner_create.sql=, following the pattern the
+refdata blocks beside them use:
+
+#+begin_example
+Copied 121 trade types
+Copied 4 trade ID types
+Copied 12 trade link types
+Copied 33 activity types
+Copied 4 structure kinds
+Copied 5 structure templates
+Copied 9 structure template roles
+#+end_example
+
+A tenant provisioned before the fix still holds none, so the booking form falls
+back to the schemes its trades already use, and the link picker says the types
+cannot be read. The copy above was also run for this environment's tenant, so
+both work here now.

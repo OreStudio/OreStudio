@@ -20,13 +20,11 @@
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.geo.tests");
-const std::string tags("[service]");
 
 // 198.51.100.0/24 is RFC 5737 documentation space. No ip2country dataset maps
 // it to a real country, so the only row that can answer a lookup inside it is
@@ -45,7 +43,7 @@ using ores::geo::service::geolocation_service;
 using ores::geo::service::geolocation_error;
 using namespace ores::logging;
 
-TEST_CASE("lookup returns the country code for a seeded range", tags) {
+TEST_CASE("lookup returns the country code for a seeded range", "[service]") {
     auto lg(make_logger(test_suite));
     ores::testing::database_helper h;
     const auto tenant = h.tenant_id().to_string();
@@ -73,7 +71,7 @@ TEST_CASE("lookup returns the country code for a seeded range", tags) {
         h.context(), clear_sql, lg, "Clearing the seeded ip2country range");
 }
 
-TEST_CASE("lookup returns invalid_address for a string that is not an address", tags) {
+TEST_CASE("lookup returns invalid_address for a string that is not an address", "[service]") {
     auto lg(make_logger(test_suite));
     ores::testing::database_helper h;
     geolocation_service sut(h.context());
@@ -84,7 +82,7 @@ TEST_CASE("lookup returns invalid_address for a string that is not an address", 
     REQUIRE(result.error() == geolocation_error::invalid_address);
 }
 
-TEST_CASE("lookup returns address_not_found for a private address", tags) {
+TEST_CASE("lookup returns address_not_found for a private address", "[service]") {
     auto lg(make_logger(test_suite));
     ores::testing::database_helper h;
     geolocation_service sut(h.context());
@@ -95,7 +93,7 @@ TEST_CASE("lookup returns address_not_found for a private address", tags) {
     REQUIRE(result.error() == geolocation_error::address_not_found);
 }
 
-TEST_CASE("lookup returns address_not_found for an uncovered address", tags) {
+TEST_CASE("lookup returns address_not_found for an uncovered address", "[service]") {
     auto lg(make_logger(test_suite));
     ores::testing::database_helper h;
     geolocation_service sut(h.context());

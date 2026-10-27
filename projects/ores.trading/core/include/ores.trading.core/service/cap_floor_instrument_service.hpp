@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_cap_floor_instruments_response
-    list_cap_floor_instruments(const messaging::list_cap_floor_instruments_request& request);
-    messaging::get_cap_floor_instrument_response
-    get_cap_floor_instrument(const messaging::get_cap_floor_instrument_request& request);
-    messaging::get_many_cap_floor_instruments_response get_many_cap_floor_instruments(
-        const messaging::get_many_cap_floor_instruments_request& request);
-    messaging::put_cap_floor_instrument_response
-    put_cap_floor_instrument(const messaging::put_cap_floor_instrument_request& request);
-    messaging::put_many_cap_floor_instruments_response put_many_cap_floor_instruments(
-        const messaging::put_many_cap_floor_instruments_request& request);
-    messaging::delete_cap_floor_instrument_response
-    delete_cap_floor_instrument(const messaging::delete_cap_floor_instrument_request& request);
-    messaging::delete_many_cap_floor_instruments_response delete_many_cap_floor_instruments(
-        const messaging::delete_many_cap_floor_instruments_request& request);
-    messaging::list_cap_floor_instrument_versions_response list_cap_floor_instrument_versions(
-        const messaging::list_cap_floor_instrument_versions_request& request);
-    messaging::get_cap_floor_instrument_version_response get_cap_floor_instrument_version(
-        const messaging::get_cap_floor_instrument_version_request& request);
+    ::ores::trading::messaging::list_cap_floor_instruments_response list_cap_floor_instruments(
+        const ::ores::trading::messaging::list_cap_floor_instruments_request& request);
+    ::ores::trading::messaging::get_cap_floor_instrument_response get_cap_floor_instrument(
+        const ::ores::trading::messaging::get_cap_floor_instrument_request& request);
+    ::ores::trading::messaging::get_many_cap_floor_instruments_response
+    get_many_cap_floor_instruments(
+        const ::ores::trading::messaging::get_many_cap_floor_instruments_request& request);
+    ::ores::trading::messaging::put_cap_floor_instrument_response put_cap_floor_instrument(
+        const ::ores::trading::messaging::put_cap_floor_instrument_request& request);
+    ::ores::trading::messaging::put_many_cap_floor_instruments_response
+    put_many_cap_floor_instruments(
+        const ::ores::trading::messaging::put_many_cap_floor_instruments_request& request);
+    ::ores::trading::messaging::delete_cap_floor_instrument_response delete_cap_floor_instrument(
+        const ::ores::trading::messaging::delete_cap_floor_instrument_request& request);
+    ::ores::trading::messaging::delete_many_cap_floor_instruments_response
+    delete_many_cap_floor_instruments(
+        const ::ores::trading::messaging::delete_many_cap_floor_instruments_request& request);
+    ::ores::trading::messaging::list_cap_floor_instrument_versions_response
+    list_cap_floor_instrument_versions(
+        const ::ores::trading::messaging::list_cap_floor_instrument_versions_request& request);
+    ::ores::trading::messaging::get_cap_floor_instrument_version_response
+    get_cap_floor_instrument_version(
+        const ::ores::trading::messaging::get_cap_floor_instrument_version_request& request);
     /**@}*/
 
     /**
@@ -196,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::cap_floor_instrument_change& change,
+    prepare_change(const ::ores::trading::messaging::cap_floor_instrument_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::cap_floor_instrument& out);
 };

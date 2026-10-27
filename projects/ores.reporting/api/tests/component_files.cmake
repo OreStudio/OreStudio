@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "domain_concurrency_policy_tests.cpp"
+    "domain_file_type_lookup_tests.cpp"
     "domain_report_definition_template_tests.cpp"
     "domain_report_definition_tests.cpp"
     "domain_report_instance_tests.cpp"

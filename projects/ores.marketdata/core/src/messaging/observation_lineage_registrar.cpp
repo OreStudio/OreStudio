@@ -39,7 +39,7 @@
 namespace ores::marketdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.marketdata.service";
+static constexpr std::string_view observation_lineage_queue_group = "ores.marketdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_observation_lineage_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_observation_lineage_hand
     auto h =
         std::make_shared<observation_lineage_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_observation_lineages_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_observation_lineages(std::move(msg));
-        }));
+        list_observation_lineages_request::nats_subject,
+        observation_lineage_queue_group,
+        [h](ores::nats::message msg) { h->list_observation_lineages(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_observation_lineage_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_observation_lineage(std::move(msg));
-        }));
+        get_observation_lineage_request::nats_subject,
+        observation_lineage_queue_group,
+        [h](ores::nats::message msg) { h->get_observation_lineage(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_observation_lineages_request::nats_subject,
-        queue_group,
+        observation_lineage_queue_group,
         [h](ores::nats::message msg) { h->get_many_observation_lineages(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_observation_lineage_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_observation_lineage(std::move(msg));
-        }));
+        put_observation_lineage_request::nats_subject,
+        observation_lineage_queue_group,
+        [h](ores::nats::message msg) { h->put_observation_lineage(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_observation_lineages_request::nats_subject,
-        queue_group,
+        observation_lineage_queue_group,
         [h](ores::nats::message msg) { h->put_many_observation_lineages(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_observation_lineage_request::nats_subject,
-        queue_group,
+        observation_lineage_queue_group,
         [h](ores::nats::message msg) { h->delete_observation_lineage(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_observation_lineages_request::nats_subject,
-        queue_group,
+        observation_lineage_queue_group,
         [h](ores::nats::message msg) { h->delete_many_observation_lineages(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_observation_lineage_versions_request::nats_subject,
-        queue_group,
+        observation_lineage_queue_group,
         [h](ores::nats::message msg) { h->list_observation_lineage_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_observation_lineage_version_request::nats_subject,
-        queue_group,
+        observation_lineage_queue_group,
         [h](ores::nats::message msg) { h->get_observation_lineage_version(std::move(msg)); }));
     return subs;
 }

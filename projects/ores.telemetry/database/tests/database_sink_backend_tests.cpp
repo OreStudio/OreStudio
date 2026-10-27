@@ -23,6 +23,7 @@
 #include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include "ores.telemetry.core/log/database_sink_utils.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
+#include "test_suite.hpp"
 #include <boost/log/attributes/attribute_value_impl.hpp>
 #include <boost/log/attributes/attribute_value_set.hpp>
 #include <boost/log/core.hpp>
@@ -33,9 +34,6 @@
 #include <vector>
 
 namespace {
-
-const std::string test_suite("ores.telemetry.database.tests");
-const std::string tags("[database_sink_backend]");
 
 /**
  * @brief Builds a record view carrying the given attribute values.
@@ -73,7 +71,7 @@ using namespace ores::telemetry::domain;
 using namespace ores::telemetry::messaging;
 using namespace ores::logging;
 
-TEST_CASE("database_sink_backend_constructs_with_defaults", tags) {
+TEST_CASE("database_sink_backend_constructs_with_defaults", "[database_sink_backend]") {
     auto lg(make_logger(test_suite));
 
     auto resource = make_resource();
@@ -99,7 +97,7 @@ TEST_CASE("database_sink_backend_constructs_with_defaults", tags) {
     BOOST_LOG_SEV(lg, debug) << "Backend constructed successfully with defaults";
 }
 
-TEST_CASE("database_sink_backend_constructs_with_custom_source", tags) {
+TEST_CASE("database_sink_backend_constructs_with_custom_source", "[database_sink_backend]") {
     auto lg(make_logger(test_suite));
 
     auto resource = make_resource();
@@ -123,7 +121,7 @@ TEST_CASE("database_sink_backend_constructs_with_custom_source", tags) {
     BOOST_LOG_SEV(lg, debug) << "Backend constructed successfully with custom source";
 }
 
-TEST_CASE("database_sink_backend_accepts_session_and_account_ids", tags) {
+TEST_CASE("database_sink_backend_accepts_session_and_account_ids", "[database_sink_backend]") {
     auto lg(make_logger(test_suite));
 
     auto resource = make_resource();
@@ -154,7 +152,7 @@ TEST_CASE("database_sink_backend_accepts_session_and_account_ids", tags) {
     BOOST_LOG_SEV(lg, debug) << "Session and account IDs set successfully";
 }
 
-TEST_CASE("make_forwarding_handler_forwards_entries", tags) {
+TEST_CASE("make_forwarding_handler_forwards_entries", "[database_sink_backend]") {
     auto lg(make_logger(test_suite));
 
     std::vector<telemetry_log_entry> received_entries;
@@ -184,7 +182,7 @@ TEST_CASE("make_forwarding_handler_forwards_entries", tags) {
     BOOST_LOG_SEV(lg, debug) << "Forwarding handler works correctly";
 }
 
-TEST_CASE("make_forwarding_handler_handles_exceptions", tags) {
+TEST_CASE("make_forwarding_handler_handles_exceptions", "[database_sink_backend]") {
     auto lg(make_logger(test_suite));
 
     auto throwing_handler = [](const telemetry_log_entry&) {
@@ -218,7 +216,7 @@ TEST_CASE("make_forwarding_handler_handles_exceptions", tags) {
 // lifecycle_manager conflicts with the test framework's logging setup.
 // The lifecycle_manager functionality is tested via other integration tests.
 
-TEST_CASE("telemetry_log_entry_has_correct_defaults", tags) {
+TEST_CASE("telemetry_log_entry_has_correct_defaults", "[database_sink_backend]") {
     auto lg(make_logger(test_suite));
 
     telemetry_log_entry entry;

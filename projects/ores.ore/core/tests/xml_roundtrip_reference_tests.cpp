@@ -39,15 +39,12 @@
 
 namespace {
 
-const std::string tags("[ore][xml][roundtrip][reference]");
-
 using namespace ores::ore::domain;
 namespace fs = std::filesystem;
 
 fs::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
-
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions, ores::ore::domain::conventions_package>(

@@ -71,9 +71,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::market_observation> read_one(repository::market_observation_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::market_observation_key& key) {
+std::vector<domain::market_observation>
+market_observation_read_one(repository::market_observation_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::market_observation_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -83,7 +84,7 @@ std::vector<domain::market_observation> read_one(repository::market_observation_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::market_observation_key key_from(const domain::market_observation& v) {
+messaging::market_observation_key market_observation_key_from(const domain::market_observation& v) {
     messaging::market_observation_key key;
     key.id = v.id;
     return key;
@@ -96,7 +97,8 @@ messaging::market_observation_key key_from(const domain::market_observation& v) 
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::market_observation to_domain(const messaging::market_observation_write& write) {
+domain::market_observation
+market_observation_to_domain(const messaging::market_observation_write& write) {
     domain::market_observation v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -234,7 +236,7 @@ market_observation_service::list_by_series_id_market_observations(
 messaging::get_market_observation_response market_observation_service::get_market_observation(
     const messaging::get_market_observation_request& request) {
     messaging::get_market_observation_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = market_observation_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "market_observation"});
         return response;
@@ -254,7 +256,7 @@ market_observation_service::get_many_market_observations(
     for (const auto& k : request.keys) {
         messaging::market_observation_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = market_observation_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.market_observation = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -270,7 +272,7 @@ messaging::put_market_observation_response market_observation_service::put_marke
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = market_observation_read_one(repo_, ctx_, market_observation_key_from(value));
     if (!written.empty())
         response.market_observation = std::move(written.front());
     return response;
@@ -303,7 +305,7 @@ market_observation_service::put_many_market_observations(
     repo_.write(ctx_, batch, claims);
     response.market_observations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = market_observation_read_one(repo_, ctx_, market_observation_key_from(value));
         response.market_observations.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -383,8 +385,8 @@ market_observation_service::prepare_change(const messaging::market_observation_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = market_observation_to_domain(change.write);
+    const auto current = market_observation_read_one(repo_, ctx_, market_observation_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

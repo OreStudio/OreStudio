@@ -21,23 +21,17 @@
 #include "ores.compute.api/domain/app_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/app_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.compute.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::compute::domain::app;
 using namespace ores::compute::domain;
 using namespace ores::logging;
 
-TEST_CASE("create_app_with_valid_fields", tags) {
+TEST_CASE("create_app_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app sut;
@@ -55,7 +49,7 @@ TEST_CASE("create_app_with_valid_fields", tags) {
     CHECK(sut.description == "ORE Studio financial computation engine");
 }
 
-TEST_CASE("create_app_with_specific_uuid", tags) {
+TEST_CASE("create_app_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -74,7 +68,7 @@ TEST_CASE("create_app_with_specific_uuid", tags) {
     CHECK(sut.name == "LLAMA_CPP");
 }
 
-TEST_CASE("app_insertion_operator", tags) {
+TEST_CASE("app_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app sut;
@@ -94,7 +88,7 @@ TEST_CASE("app_insertion_operator", tags) {
     CHECK(json_output.find("LEDGER") != std::string::npos);
 }
 
-TEST_CASE("app_convert_single_to_table", tags) {
+TEST_CASE("app_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app a;
@@ -113,7 +107,7 @@ TEST_CASE("app_convert_single_to_table", tags) {
     CHECK(table.find("ORE_STUDIO") != std::string::npos);
 }
 
-TEST_CASE("app_convert_multiple_to_table", tags) {
+TEST_CASE("app_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<app> apps;
@@ -138,7 +132,7 @@ TEST_CASE("app_convert_multiple_to_table", tags) {
     CHECK(table.find("LEDGER") != std::string::npos);
 }
 
-TEST_CASE("app_convert_empty_vector_to_table", tags) {
+TEST_CASE("app_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<app> apps;
@@ -150,7 +144,7 @@ TEST_CASE("app_convert_empty_vector_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("create_app_with_faker", tags) {
+TEST_CASE("create_app_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app sut;
@@ -169,7 +163,7 @@ TEST_CASE("create_app_with_faker", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("app_table_with_faker_data", tags) {
+TEST_CASE("app_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<app> apps;

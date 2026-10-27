@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::seed_profile_parameter>
-read_one(repository::seed_profile_parameter_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::seed_profile_parameter_key& key) {
+seed_profile_parameter_read_one(repository::seed_profile_parameter_repository& repo,
+                                const ores::database::context& ctx,
+                                const messaging::seed_profile_parameter_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::seed_profile_parameter_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::seed_profile_parameter_key key_from(const domain::seed_profile_parameter& v) {
+messaging::seed_profile_parameter_key
+seed_profile_parameter_key_from(const domain::seed_profile_parameter& v) {
     messaging::seed_profile_parameter_key key;
     key.id = v.id;
     return key;
@@ -99,7 +100,8 @@ messaging::seed_profile_parameter_key key_from(const domain::seed_profile_parame
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::seed_profile_parameter to_domain(const messaging::seed_profile_parameter_write& write) {
+domain::seed_profile_parameter
+seed_profile_parameter_to_domain(const messaging::seed_profile_parameter_write& write) {
     domain::seed_profile_parameter v;
     v.id = write.id;
     v.seed_profile_id = write.seed_profile_id;
@@ -195,7 +197,7 @@ messaging::get_seed_profile_parameter_response
 seed_profile_parameter_service::get_seed_profile_parameter(
     const messaging::get_seed_profile_parameter_request& request) {
     messaging::get_seed_profile_parameter_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = seed_profile_parameter_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "seed_profile_parameter"});
         return response;
@@ -215,7 +217,7 @@ seed_profile_parameter_service::get_many_seed_profile_parameters(
     for (const auto& k : request.keys) {
         messaging::seed_profile_parameter_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = seed_profile_parameter_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.seed_profile_parameter = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -232,7 +234,8 @@ seed_profile_parameter_service::put_seed_profile_parameter(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        seed_profile_parameter_read_one(repo_, ctx_, seed_profile_parameter_key_from(value));
     if (!written.empty())
         response.seed_profile_parameter = std::move(written.front());
     return response;
@@ -265,7 +268,8 @@ seed_profile_parameter_service::put_many_seed_profile_parameters(
     repo_.write(ctx_, batch, claims);
     response.seed_profile_parameters.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            seed_profile_parameter_read_one(repo_, ctx_, seed_profile_parameter_key_from(value));
         response.seed_profile_parameters.push_back(written.empty() ? value :
                                                                      std::move(written.front()));
     }
@@ -300,7 +304,7 @@ seed_profile_parameter_service::delete_seed_profile_parameter(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = seed_profile_parameter_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "seed_profile_parameter",
@@ -390,8 +394,9 @@ ores::utility::domain::result seed_profile_parameter_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = seed_profile_parameter_to_domain(change.write);
+    const auto current =
+        seed_profile_parameter_read_one(repo_, ctx_, seed_profile_parameter_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

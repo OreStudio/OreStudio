@@ -25,14 +25,12 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 
 namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
 
 using ores::utility::faker::datetime;
 using ores::utility::generation::generation_context;
@@ -42,7 +40,7 @@ using ores::utility::generation::generation_context;
 using ores::dq::domain::dataset_bundle;
 using namespace ores::logging;
 
-TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
+TEST_CASE("create_dataset_bundle_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     dataset_bundle sut;
@@ -67,7 +65,7 @@ TEST_CASE("create_dataset_bundle_with_valid_fields", tags) {
     CHECK(sut.change_commentary == "Initial creation");
 }
 
-TEST_CASE("dataset_bundle_convert_single_to_table", tags) {
+TEST_CASE("dataset_bundle_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     dataset_bundle db;
@@ -93,7 +91,7 @@ TEST_CASE("dataset_bundle_convert_single_to_table", tags) {
     CHECK(table.contains("base"));
 }
 
-TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
+TEST_CASE("dataset_bundle_generator_produces_valid_instance", "[domain]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;
@@ -109,7 +107,7 @@ TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("dataset_bundle_generator_produces_multiple_instances", tags) {
+TEST_CASE("dataset_bundle_generator_produces_multiple_instances", "[domain]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;

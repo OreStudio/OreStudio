@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_market_series_response
-    list_market_series(const messaging::list_market_series_request& request);
-    messaging::get_market_series_response
-    get_market_series(const messaging::get_market_series_request& request);
-    messaging::get_many_market_series_response
-    get_many_market_series(const messaging::get_many_market_series_request& request);
-    messaging::put_market_series_response
-    put_market_series(const messaging::put_market_series_request& request);
-    messaging::put_many_market_series_response
-    put_many_market_series(const messaging::put_many_market_series_request& request);
-    messaging::delete_market_series_response
-    delete_market_series(const messaging::delete_market_series_request& request);
-    messaging::delete_many_market_series_response
-    delete_many_market_series(const messaging::delete_many_market_series_request& request);
-    messaging::list_market_series_versions_response
-    list_market_series_versions(const messaging::list_market_series_versions_request& request);
-    messaging::get_market_series_version_response
-    get_market_series_version(const messaging::get_market_series_version_request& request);
+    ::ores::marketdata::messaging::list_market_series_response
+    list_market_series(const ::ores::marketdata::messaging::list_market_series_request& request);
+    ::ores::marketdata::messaging::get_market_series_response
+    get_market_series(const ::ores::marketdata::messaging::get_market_series_request& request);
+    ::ores::marketdata::messaging::get_many_market_series_response get_many_market_series(
+        const ::ores::marketdata::messaging::get_many_market_series_request& request);
+    ::ores::marketdata::messaging::put_market_series_response
+    put_market_series(const ::ores::marketdata::messaging::put_market_series_request& request);
+    ::ores::marketdata::messaging::put_many_market_series_response put_many_market_series(
+        const ::ores::marketdata::messaging::put_many_market_series_request& request);
+    ::ores::marketdata::messaging::delete_market_series_response delete_market_series(
+        const ::ores::marketdata::messaging::delete_market_series_request& request);
+    ::ores::marketdata::messaging::delete_many_market_series_response delete_many_market_series(
+        const ::ores::marketdata::messaging::delete_many_market_series_request& request);
+    ::ores::marketdata::messaging::list_market_series_versions_response list_market_series_versions(
+        const ::ores::marketdata::messaging::list_market_series_versions_request& request);
+    ::ores::marketdata::messaging::get_market_series_version_response get_market_series_version(
+        const ::ores::marketdata::messaging::get_market_series_version_request& request);
     /**@}*/
 
     /**
@@ -190,9 +190,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::market_series_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::market_series& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::market_series_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::market_series& out);
 };
 
 }

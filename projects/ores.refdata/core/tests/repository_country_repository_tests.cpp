@@ -27,18 +27,12 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
-
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::country;
@@ -46,7 +40,7 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_country", tags) {
+TEST_CASE("write_single_country", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -64,7 +58,7 @@ TEST_CASE("write_single_country", tags) {
     CHECK(read_countries[0].name == cntry.name);
 }
 
-TEST_CASE("write_multiple_countries", tags) {
+TEST_CASE("write_multiple_countries", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -84,7 +78,7 @@ TEST_CASE("write_multiple_countries", tags) {
     }
 }
 
-TEST_CASE("read_latest_countries", tags) {
+TEST_CASE("read_latest_countries", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -107,7 +101,7 @@ TEST_CASE("read_latest_countries", tags) {
     }
 }
 
-TEST_CASE("read_latest_country_by_alpha2_code", tags) {
+TEST_CASE("read_latest_country_by_alpha2_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -132,7 +126,7 @@ TEST_CASE("read_latest_country_by_alpha2_code", tags) {
     CHECK(read_countries[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_alpha2_code", tags) {
+TEST_CASE("read_nonexistent_alpha2_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -160,7 +154,7 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     CHECK(keeper_rows[0].name == keeper.name);
 }
 
-TEST_CASE("read_country_versions_by_code", tags) {
+TEST_CASE("read_country_versions_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -177,7 +171,7 @@ TEST_CASE("read_country_versions_by_code", tags) {
     CHECK(versions[0].alpha2_code == cntry.alpha2_code);
 }
 
-TEST_CASE("read_country_versions_resolve_each_version", tags) {
+TEST_CASE("read_country_versions_resolve_each_version", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -207,7 +201,7 @@ TEST_CASE("read_country_versions_resolve_each_version", tags) {
     CHECK(at_v2->name == original_name + " v2");
 }
 
-TEST_CASE("read_latest_country_includes_the_written_row", tags) {
+TEST_CASE("read_latest_country_includes_the_written_row", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

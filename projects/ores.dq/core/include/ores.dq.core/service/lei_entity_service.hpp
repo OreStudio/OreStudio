@@ -75,12 +75,12 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_lei_entities_response
-    list_lei_entities(const messaging::list_lei_entities_request& request);
-    messaging::get_lei_entity_response
-    get_lei_entity(const messaging::get_lei_entity_request& request);
-    messaging::get_many_lei_entities_response
-    get_many_lei_entities(const messaging::get_many_lei_entities_request& request);
+    ::ores::dq::messaging::list_lei_entities_response
+    list_lei_entities(const ::ores::dq::messaging::list_lei_entities_request& request);
+    ::ores::dq::messaging::get_lei_entity_response
+    get_lei_entity(const ::ores::dq::messaging::get_lei_entity_request& request);
+    ::ores::dq::messaging::get_many_lei_entities_response
+    get_many_lei_entities(const ::ores::dq::messaging::get_many_lei_entities_request& request);
     /**@}*/
 
     /**

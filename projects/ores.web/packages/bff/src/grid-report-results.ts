@@ -24,6 +24,7 @@ import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { readAll, resultSchema, row, text } from './refdata-calls.js';
@@ -46,6 +47,7 @@ import type { LiveSession } from './sessions.js';
 const runParamsSchema = z.object({ id: z.uuid() });
 const resultsQuerySchema = z.object({
     by: z.enum(['trade', 'book', 'counterparty']).default('trade'),
+    baseline: z.uuid().optional(),
 });
 
 /** The levels a result can be read at. */
@@ -79,6 +81,20 @@ export interface AggregateRow {
     readonly trades: number;
     readonly totals: readonly Money[];
     readonly notional: readonly Money[];
+    /** The counterparty group a member belongs to, empty when it is top level. */
+    readonly group: string;
+    /** Whether the row is a group's roll-up rather than a member of one. */
+    readonly is_group: boolean;
+    /** What this row was in the run it is compared with. */
+    readonly previous: readonly Money[];
+    /** The change against that run, each currency apart. */
+    readonly change: readonly Money[];
+    /** The change as a share of the earlier figure, empty when it had none. */
+    readonly change_pct: readonly Money[];
+    /** Whether the row is only in the earlier run. */
+    readonly is_removed: boolean;
+    /** How deep the row sits under its group, zero at the top. */
+    readonly depth: number;
 }
 
 /** Why a report has no rows to show. */
@@ -88,6 +104,8 @@ interface TradeAnswer {
     readonly level: 'trade';
     readonly rows: readonly RunResultRow[];
     readonly totals: readonly Money[];
+    /** How many trades the run priced, whatever the level draws. */
+    readonly tradeCount: number;
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
 }
@@ -96,8 +114,20 @@ interface AggregateAnswer {
     readonly level: 'book' | 'counterparty';
     readonly rows: readonly AggregateRow[];
     readonly totals: readonly Money[];
+    /** How many trades the run priced, whatever the level draws. */
+    readonly tradeCount: number;
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
+    /** The run this answer is compared with, empty when it is compared with none. */
+    readonly baseline: BaselineSummary | null;
+}
+
+/** The run a comparison is against. */
+export interface BaselineSummary {
+    readonly id: string;
+    readonly totals: readonly Money[];
+    readonly change: readonly Money[];
+    readonly change_pct: readonly Money[];
 }
 
 export type ResultsAnswer = TradeAnswer | AggregateAnswer;
@@ -229,8 +259,12 @@ export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
 /** What the records say about the trades in a run. */
 interface TradeRecords {
     readonly counterpartyName: ReadonlyMap<string, string>;
+    readonly counterpartyParent: ReadonlyMap<string, string>;
     readonly bookOf: ReadonlyMap<string, string>;
     readonly bookName: ReadonlyMap<string, string>;
+    readonly bookPortfolio: ReadonlyMap<string, string>;
+    readonly portfolioName: ReadonlyMap<string, string>;
+    readonly portfolioParent: ReadonlyMap<string, string>;
     readonly complete: boolean;
 }
 
@@ -244,8 +278,12 @@ interface TradeRecords {
 async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Promise<TradeRecords> {
     const empty = {
         counterpartyName: new Map<string, string>(),
+        counterpartyParent: new Map<string, string>(),
         bookOf: new Map<string, string>(),
         bookName: new Map<string, string>(),
+        bookPortfolio: new Map<string, string>(),
+        portfolioName: new Map<string, string>(),
+        portfolioParent: new Map<string, string>(),
         complete: false,
     };
     try {
@@ -259,6 +297,18 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
             }),
             readAll(session, bookSubjects.list_books_request, 'books', { filter: null }),
         ]);
+        // A portfolio read that fails costs the portfolio names, not the
+        // counterparties and the books beside it.
+        let portfoliosRead = true;
+        const portfolios = await readAll(
+            session,
+            portfolioSubjects.list_portfolios_request,
+            'portfolios',
+            { filter: null },
+        ).catch(() => {
+            portfoliosRead = false;
+            return [];
+        });
         const counterpartyName = new Map(
             counterparties.map((counterparty) => [
                 text(counterparty['id']),
@@ -267,11 +317,41 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
         );
         return {
             counterpartyName,
+            counterpartyParent: new Map(
+                counterparties
+                    .map(
+                        (counterparty) =>
+                            [
+                                text(counterparty['id']),
+                                text(counterparty['parent_counterparty_id']),
+                            ] as const,
+                    )
+                    .filter(([, parent]) => parent !== ''),
+            ),
             bookOf: new Map(
                 bookings.map((booking) => [text(booking['trade_id']), text(booking['book_id'])]),
             ),
             bookName: new Map(books.map((book) => [text(book['id']), text(book['name'])])),
-            complete: true,
+            bookPortfolio: new Map(
+                books
+                    .map((book) => [text(book['id']), text(book['parent_portfolio_id'])] as const)
+                    .filter(([, portfolio]) => portfolio !== ''),
+            ),
+            portfolioName: new Map(
+                portfolios.map((portfolio) => [text(portfolio['id']), text(portfolio['name'])]),
+            ),
+            portfolioParent: new Map(
+                portfolios
+                    .map(
+                        (portfolio) =>
+                            [
+                                text(portfolio['id']),
+                                text(portfolio['parent_portfolio_id']),
+                            ] as const,
+                    )
+                    .filter(([, parent]) => parent !== ''),
+            ),
+            complete: portfoliosRead,
         };
     } catch {
         return empty;
@@ -282,7 +362,15 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
 async function withRecords(
     session: LiveSession,
     rows: readonly RunResultRow[],
-): Promise<{ rows: readonly RunResultRow[]; complete: boolean }> {
+): Promise<{
+    rows: readonly RunResultRow[];
+    complete: boolean;
+    counterpartyParent: ReadonlyMap<string, string>;
+    counterpartyName: ReadonlyMap<string, string>;
+    bookPortfolio: ReadonlyMap<string, string>;
+    portfolioName: ReadonlyMap<string, string>;
+    portfolioParent: ReadonlyMap<string, string>;
+}> {
     const records = await recordsOf(
         session,
         rows.map((row) => row.trade_id),
@@ -296,7 +384,15 @@ async function withRecords(
             book_name: records.bookName.get(bookId) ?? '',
         };
     });
-    return { rows: resolved, complete: records.complete };
+    return {
+        rows: resolved,
+        complete: records.complete,
+        counterpartyParent: records.counterpartyParent,
+        counterpartyName: records.counterpartyName,
+        bookPortfolio: records.bookPortfolio,
+        portfolioName: records.portfolioName,
+        portfolioParent: records.portfolioParent,
+    };
 }
 
 /** The per-currency total of a figure the rows carry. */
@@ -319,6 +415,304 @@ function totalsOf(
     }));
 }
 
+/** The change between two sets of figures, each currency apart. */
+function changeBetween(
+    current: readonly Money[],
+    previous: readonly Money[],
+): { change: readonly Money[]; pct: readonly Money[] } {
+    const currencies = [
+        ...new Set([
+            ...current.map((money) => money.currency),
+            ...previous.map((money) => money.currency),
+        ]),
+    ];
+    // A total that cannot be read counts as no figure, so a malformed row does
+    // not look like a figure that moved.
+    const figureIn = (money: readonly Money[], currency: string): number => {
+        const found = money.find((entry) => entry.currency === currency);
+        const figure = found === undefined ? Number.NaN : Number.parseFloat(found.total);
+        return Number.isFinite(figure) ? figure : 0;
+    };
+    const change: Money[] = [];
+    const pct: Money[] = [];
+    for (const currency of currencies) {
+        const now = figureIn(current, currency);
+        const before = figureIn(previous, currency);
+        change.push({ currency, total: (now - before).toFixed(2) });
+        pct.push({
+            currency,
+            total: before === 0 ? '' : (((now - before) / Math.abs(before)) * 100).toFixed(2),
+        });
+    }
+    return { change, pct };
+}
+
+/**
+ * The rows stated against an earlier run of the same report.
+ *
+ * A row the earlier run did not have carries no earlier figure, and a row only
+ * the earlier run had is kept and marked, so a book or a name that stopped
+ * appearing is read as gone rather than silently dropped.
+ */
+export function comparedWith(
+    current: readonly AggregateRow[],
+    earlier: readonly AggregateRow[],
+): readonly AggregateRow[] {
+    const before = new Map(earlier.map((row) => [row.key, row]));
+    const rows = current.map((row) => {
+        const was = before.get(row.key);
+        const previous = was?.totals ?? [];
+        const { change, pct } = changeBetween(row.totals, previous);
+        return { ...row, previous, change, change_pct: pct };
+    });
+    const keys = new Set(current.map((row) => row.key));
+    for (const row of earlier) {
+        if (keys.has(row.key)) {
+            continue;
+        }
+        const { change, pct } = changeBetween([], row.totals);
+        // A removed row states what it was, not figures that look current, so it
+        // cannot be read as a book that still holds trades.
+        const removed = {
+            ...row,
+            trades: 0,
+            totals: [],
+            notional: [],
+            previous: row.totals,
+            change,
+            change_pct: pct,
+            is_removed: true,
+        };
+        // A removed row stays with its group rather than trailing the table, so a
+        // group and the names under it keep reading together.
+        const anchor =
+            removed.group !== ''
+                ? rows.findLastIndex((entry) => entry.group === removed.group)
+                : removed.is_group
+                  ? rows.findLastIndex((entry) => entry.key === removed.key)
+                  : -1;
+        if (anchor === -1) {
+            rows.push(removed);
+        } else {
+            rows.splice(anchor + 1, 0, removed);
+        }
+    }
+    return rows;
+}
+
+/** A group row that sums its children, at the given depth. */
+function nodeOf(
+    key: string,
+    name: string,
+    children: readonly AggregateRow[],
+    depth: number,
+): AggregateRow {
+    return {
+        key,
+        name,
+        trades: children.reduce((sum, child) => sum + child.trades, 0),
+        totals: moneyOf(children, (row) => row.totals),
+        notional: moneyOf(children, (row) => row.notional),
+        group: '',
+        is_group: true,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        depth,
+    };
+}
+
+/**
+ * The books as a tree: each portfolio above the books and portfolios it holds.
+ *
+ * Portfolios nest, so a portfolio's figure is its own books plus the portfolios
+ * under it, and the depth lets the screen indent each row by its place. A book in
+ * no portfolio, or in one whose name was not read, stands at the top rather than
+ * under a guess.
+ */
+export function withPortfolioTree(
+    books: readonly AggregateRow[],
+    bookPortfolio: ReadonlyMap<string, string>,
+    portfolioName: ReadonlyMap<string, string>,
+    portfolioParent: ReadonlyMap<string, string>,
+): readonly AggregateRow[] {
+    const booksUnder = new Map<string, AggregateRow[]>();
+    const standing: AggregateRow[] = [];
+    for (const book of books) {
+        const portfolio = bookPortfolio.get(book.key) ?? '';
+        if (portfolio === '' || (portfolioName.get(portfolio) ?? '') === '') {
+            standing.push(book);
+            continue;
+        }
+        booksUnder.set(portfolio, [...(booksUnder.get(portfolio) ?? []), book]);
+    }
+
+    const nodeIds = new Set(booksUnder.keys());
+    for (const portfolio of [...booksUnder.keys()]) {
+        let parent = portfolioParent.get(portfolio) ?? '';
+        while (parent !== '' && !nodeIds.has(parent)) {
+            if ((portfolioName.get(parent) ?? '') === '') {
+                parent = '';
+                break;
+            }
+            nodeIds.add(parent);
+            parent = portfolioParent.get(parent) ?? '';
+        }
+    }
+    const childrenOf = new Map<string, string[]>();
+    for (const id of nodeIds) {
+        const parent = portfolioParent.get(id) ?? '';
+        const key = parent !== '' && nodeIds.has(parent) ? parent : '';
+        childrenOf.set(key, [...(childrenOf.get(key) ?? []), id]);
+    }
+
+    const build = (id: string, depth: number): { node: AggregateRow; rows: AggregateRow[] } => {
+        const own = [...(booksUnder.get(id) ?? [])].sort(
+            (left, right) => figureOf(right) - figureOf(left),
+        );
+        const children = [...(childrenOf.get(id) ?? [])]
+            .map((child) => build(child, depth + 1))
+            .sort((left, right) => figureOf(right.node) - figureOf(left.node));
+        const node = nodeOf(
+            id,
+            portfolioName.get(id) ?? id,
+            [...own, ...children.map((child) => child.node)],
+            depth,
+        );
+        const rows: AggregateRow[] = [
+            node,
+            ...own.map((book) => ({ ...book, group: node.name, depth: depth + 1 })),
+        ];
+        for (const child of children) {
+            rows.push(...child.rows);
+        }
+        return { node, rows };
+    };
+    const reachable = new Set<string>();
+    const walk = (id: string): void => {
+        if (reachable.has(id)) {
+            return;
+        }
+        reachable.add(id);
+        for (const child of childrenOf.get(id) ?? []) {
+            walk(child);
+        }
+    };
+    for (const top of childrenOf.get('') ?? []) {
+        walk(top);
+    }
+    for (const id of nodeIds) {
+        if (reachable.has(id)) {
+            continue;
+        }
+        const parent = portfolioParent.get(id) ?? '';
+        if (parent !== '') {
+            childrenOf.set(
+                parent,
+                (childrenOf.get(parent) ?? []).filter((child) => child !== id),
+            );
+        }
+        childrenOf.set('', [...(childrenOf.get('') ?? []), id]);
+        reachable.add(id);
+    }
+    const tops = [...(childrenOf.get('') ?? [])]
+        .map((top) => build(top, 0))
+        .sort((left, right) => figureOf(right.node) - figureOf(left.node));
+    const rows: AggregateRow[] = tops.flatMap((top) => top.rows);
+    rows.push(
+        ...[...standing]
+            .sort((left, right) => figureOf(right) - figureOf(left))
+            .map((book) => ({ ...book, depth: 0 })),
+    );
+    return rows;
+}
+
+/** One figure of a set of rows, each currency added apart. */
+function moneyOf(
+    rows: readonly AggregateRow[],
+    figureOfRow: (row: AggregateRow) => readonly Money[],
+): readonly Money[] {
+    const totals = new Map<string, number>();
+    for (const row of rows) {
+        for (const money of figureOfRow(row)) {
+            const figure = Number.parseFloat(money.total);
+            if (Number.isFinite(figure)) {
+                totals.set(money.currency, (totals.get(money.currency) ?? 0) + figure);
+            }
+        }
+    }
+    return [...totals.entries()].map(([currency, total]) => ({
+        currency,
+        total: total.toFixed(2),
+    }));
+}
+
+/**
+ * The rows with a group row above the members that share a parent.
+ *
+ * One helper serves both levels: books group under their portfolios, and
+ * counterparties under their parent counterparty. The two id spaces never mix,
+ * because each call is given one parent map.
+ *
+ * A group's figure is the sum of its members, so a reader can check one against
+ * the other. A parent that also trades in the run is one of its own group's
+ * members, so its trades are counted once and its row is stated under the group
+ * it leads; at the book level that branch cannot match, because a portfolio is
+ * never a book. A row with no parent stands on its own, and a parent whose name
+ * was not read is left standing rather than grouped under a guess.
+ */
+export function withGroups(
+    rows: readonly AggregateRow[],
+    parents: ReadonlyMap<string, string>,
+    names: ReadonlyMap<string, string>,
+): readonly AggregateRow[] {
+    // Only a parent that has at least one child row in this run leads a group;
+    // a parent whose children did not trade would otherwise repeat its own row.
+    const leading = new Set(
+        rows.map((row) => parents.get(row.key) ?? '').filter((parent) => parent !== ''),
+    );
+    const members = new Map<string, AggregateRow[]>();
+    const standing: AggregateRow[] = [];
+    for (const row of rows) {
+        const parent = parents.get(row.key) ?? '';
+        const group = parent !== '' ? parent : leading.has(row.key) ? row.key : '';
+        const groupName = names.get(group) ?? '';
+        if (group === '' || groupName === '') {
+            standing.push(row);
+            continue;
+        }
+        members.set(group, [...(members.get(group) ?? []), { ...row, group: groupName, depth: 1 }]);
+    }
+    const groups = [...members.entries()]
+        .map(([parent, children]) => {
+            const ordered = [...children].sort((left, right) => figureOf(right) - figureOf(left));
+            const group: AggregateRow = {
+                key: parent,
+                name: names.get(parent) ?? '',
+                trades: children.reduce((sum, child) => sum + child.trades, 0),
+                totals: moneyOf(children, (row) => row.totals),
+                notional: moneyOf(children, (row) => row.notional),
+                group: '',
+                is_group: true,
+                previous: [],
+                change: [],
+                change_pct: [],
+                is_removed: false,
+                depth: 0,
+            };
+            return { group, ordered };
+        })
+        .sort((left, right) => figureOf(right.group) - figureOf(left.group));
+
+    const ordered: AggregateRow[] = [];
+    for (const entry of groups) {
+        ordered.push(entry.group, ...entry.ordered);
+    }
+    ordered.push(...[...standing].sort((left, right) => figureOf(right) - figureOf(left)));
+    return ordered;
+}
+
 /** The rows rolled up by the key they share. */
 export function aggregateRows(
     rows: readonly RunResultRow[],
@@ -335,6 +729,13 @@ export function aggregateRows(
             key,
             name: names.get(key) ?? '',
             trades: members.length,
+            group: '',
+            is_group: false,
+            previous: [],
+            change: [],
+            change_pct: [],
+            is_removed: false,
+            depth: 0,
             totals: totalsOf(members, (row) => ({
                 amount: row.npv,
                 currency: row.npv_currency,
@@ -359,9 +760,27 @@ function figureOf(row: AggregateRow): number {
 async function tradeRowsOfKey(
     session: LiveSession,
     key: string,
-): Promise<{ rows: readonly RunResultRow[]; reason: ResultReason; recordsComplete: boolean }> {
+): Promise<{
+    rows: readonly RunResultRow[];
+    reason: ResultReason;
+    recordsComplete: boolean;
+    counterpartyParent: ReadonlyMap<string, string>;
+    counterpartyName: ReadonlyMap<string, string>;
+    bookPortfolio: ReadonlyMap<string, string>;
+    portfolioName: ReadonlyMap<string, string>;
+    portfolioParent: ReadonlyMap<string, string>;
+}> {
     if (key === '') {
-        return { rows: [], reason: 'no-output', recordsComplete: true };
+        return {
+            rows: [],
+            reason: 'no-output',
+            recordsComplete: true,
+            counterpartyParent: new Map(),
+            counterpartyName: new Map(),
+            bookPortfolio: new Map(),
+            portfolioName: new Map(),
+            portfolioParent: new Map(),
+        };
     }
     const archive = await fetchStored(session, key);
     const tar = archive[0] === 0x1f && archive[1] === 0x8b ? gunzipSync(archive) : archive;
@@ -369,14 +788,41 @@ async function tradeRowsOfKey(
         ([name]) => name.split('/').pop()?.toLowerCase() === 'npv.csv',
     );
     if (resultFile === undefined) {
-        return { rows: [], reason: 'no-result-file', recordsComplete: true };
+        return {
+            rows: [],
+            reason: 'no-result-file',
+            recordsComplete: true,
+            counterpartyParent: new Map(),
+            counterpartyName: new Map(),
+            bookPortfolio: new Map(),
+            portfolioName: new Map(),
+            portfolioParent: new Map(),
+        };
     }
     const rows = rowsOf(resultFile[1].toString('utf8'));
     if (rows === null) {
-        return { rows: [], reason: 'no-figures', recordsComplete: true };
+        return {
+            rows: [],
+            reason: 'no-figures',
+            recordsComplete: true,
+            counterpartyParent: new Map(),
+            counterpartyName: new Map(),
+            bookPortfolio: new Map(),
+            portfolioName: new Map(),
+            portfolioParent: new Map(),
+        };
     }
     const resolved = await withRecords(session, rows);
-    return { rows: resolved.rows, reason: '', recordsComplete: resolved.complete };
+    return {
+        rows: resolved.rows,
+        reason: '',
+        recordsComplete: resolved.complete,
+        counterpartyParent: resolved.counterpartyParent,
+        counterpartyName: resolved.counterpartyName,
+        bookPortfolio: resolved.bookPortfolio,
+        portfolioName: resolved.portfolioName,
+        portfolioParent: resolved.portfolioParent,
+    };
 }
 
 /** The answer for the level the reader asked for. */
@@ -395,6 +841,7 @@ async function resultsOfKey(
             level,
             rows: read.rows,
             totals,
+            tradeCount: read.rows.length,
             reason: read.reason,
             recordsComplete: read.recordsComplete,
         };
@@ -409,12 +856,56 @@ async function resultsOfKey(
             level === 'book' ? row.book_name : row.counterparty_name,
         ]),
     );
+    const rows = aggregateRows(read.rows, keyOf, names);
+    const grouped =
+        level === 'counterparty'
+            ? withGroups(rows, read.counterpartyParent, read.counterpartyName)
+            : withPortfolioTree(rows, read.bookPortfolio, read.portfolioName, read.portfolioParent);
     return {
         level,
-        rows: aggregateRows(read.rows, keyOf, names),
+        rows: grouped,
         totals,
+        tradeCount: read.rows.length,
         reason: read.reason,
         recordsComplete: read.recordsComplete,
+        baseline: null,
+    };
+}
+
+/**
+ * The answer for a level, stated against an earlier run of the same report.
+ *
+ * The two runs are read at the same level and compared row by row. A level that
+ * is not an aggregate is not compared, because a trade is read on its own.
+ */
+async function comparedOfKey(
+    session: LiveSession,
+    key: string,
+    baselineKey: string,
+    level: 'book' | 'counterparty',
+    baselineId: string,
+): Promise<AggregateAnswer> {
+    const [current, earlier] = await Promise.all([
+        resultsOfKey(session, key, level),
+        resultsOfKey(session, baselineKey, level),
+    ]);
+    if (current.level === 'trade' || earlier.level === 'trade') {
+        throw new Error('a trade level is not compared');
+    }
+    const { change, pct } = changeBetween(current.totals, earlier.totals);
+    return {
+        level,
+        rows: comparedWith(current.rows, earlier.rows),
+        totals: current.totals,
+        tradeCount: current.tradeCount,
+        reason: current.reason,
+        recordsComplete: current.recordsComplete,
+        baseline: {
+            id: baselineId,
+            totals: earlier.totals,
+            change,
+            change_pct: pct,
+        },
     };
 }
 
@@ -467,9 +958,41 @@ export function registerGridReportResultsRoutes(
                 level: query.data.by,
                 rows: [],
                 totals: [],
+                tradeCount: 0,
                 reason: 'no-run',
                 recordsComplete: true,
+                baseline: null,
             };
+        }
+        if (query.data.baseline !== undefined && query.data.by !== 'trade') {
+            if (query.data.baseline === parsed.data.id) {
+                throw invalidRequest('A run is not compared with itself.');
+            }
+            const earlierRun = await readRun(session, query.data.baseline);
+            if (earlierRun === null) {
+                throw invalidRequest('The run compared with does not exist.');
+            }
+            if (text(earlierRun['definition_id']) !== text(run['definition_id'])) {
+                throw invalidRequest('The run compared with is a run of another report.');
+            }
+            const earlierStates = await readStates(session, [query.data.baseline]);
+            if (earlierStates.get(query.data.baseline) !== 'completed') {
+                throw invalidRequest('The run compared with has not completed.');
+            }
+            const compared = await comparedOfKey(
+                session,
+                text(run['output_storage_key']),
+                text(earlierRun['output_storage_key']),
+                query.data.by,
+                query.data.baseline,
+            );
+            request.log.info(
+                'reporting results: run %s compared with %s at the %s level',
+                parsed.data.id,
+                query.data.baseline,
+                query.data.by,
+            );
+            return compared;
         }
         const answer = await resultsOfKey(session, text(run['output_storage_key']), query.data.by);
         if (!answer.recordsComplete) {

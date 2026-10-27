@@ -91,8 +91,9 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::party_counterparty> read_one(repository::party_counterparty_repository& repo,
-                                                 const messaging::party_counterparty_key& key) {
+std::vector<domain::party_counterparty>
+party_counterparty_read_one(repository::party_counterparty_repository& repo,
+                            const messaging::party_counterparty_key& key) {
     return repo.read_latest(key.party_id, key.counterparty_id);
 }
 
@@ -102,7 +103,7 @@ std::vector<domain::party_counterparty> read_one(repository::party_counterparty_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::party_counterparty_key key_from(const domain::party_counterparty& v) {
+messaging::party_counterparty_key party_counterparty_key_from(const domain::party_counterparty& v) {
     messaging::party_counterparty_key key;
     key.party_id = v.party_id;
     key.counterparty_id = v.counterparty_id;
@@ -117,7 +118,8 @@ messaging::party_counterparty_key key_from(const domain::party_counterparty& v) 
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::party_counterparty to_domain(const messaging::party_counterparty_write& write) {
+domain::party_counterparty
+party_counterparty_to_domain(const messaging::party_counterparty_write& write) {
     domain::party_counterparty v;
     v.party_id = write.party_id;
     v.counterparty_id = write.counterparty_id;
@@ -198,7 +200,7 @@ party_counterparty_service::list_by_counterparty_id_party_counterparties(
 messaging::get_party_counterparty_response party_counterparty_service::get_party_counterparty(
     const messaging::get_party_counterparty_request& request) {
     messaging::get_party_counterparty_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = party_counterparty_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_counterparty"});
         return response;
@@ -218,7 +220,7 @@ party_counterparty_service::get_many_party_counterparties(
     for (const auto& k : request.keys) {
         messaging::party_counterparty_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = party_counterparty_read_one(repo_, k);
         if (!found.empty())
             entry.party_counterparty = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -234,7 +236,7 @@ messaging::put_party_counterparty_response party_counterparty_service::put_party
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = party_counterparty_read_one(repo_, party_counterparty_key_from(value));
     if (!written.empty())
         response.party_counterparty = std::move(written.front());
     return response;
@@ -267,7 +269,7 @@ party_counterparty_service::put_many_party_counterparties(
     repo_.write(batch, claims);
     response.party_counterparties.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = party_counterparty_read_one(repo_, party_counterparty_key_from(value));
         response.party_counterparties.push_back(written.empty() ? value :
                                                                   std::move(written.front()));
     }
@@ -291,7 +293,8 @@ messaging::delete_party_counterparty_response party_counterparty_service::delete
         }
         expected = request.removal.precondition.version;
     }
-    if (const auto refused = gate_delete(read_one(repo_, request.removal.key), expected)) {
+    if (const auto refused =
+            gate_delete(party_counterparty_read_one(repo_, request.removal.key), expected)) {
         response.result = *refused;
         return response;
     }
@@ -306,7 +309,7 @@ messaging::delete_party_counterparty_response party_counterparty_service::delete
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = party_counterparty_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "party_counterparty",
@@ -343,7 +346,8 @@ party_counterparty_service::delete_many_party_counterparties(
     // A batch carries no versions, so an approved line that claims one never
     // matches here. The applier removes one link at a time, with its version.
     for (const auto& removal : request.removals) {
-        if (const auto refused = gate_delete(read_one(repo_, removal.key), std::nullopt)) {
+        if (const auto refused =
+                gate_delete(party_counterparty_read_one(repo_, removal.key), std::nullopt)) {
             response.result = *refused;
             return response;
         }
@@ -367,8 +371,8 @@ party_counterparty_service::prepare_change(const messaging::party_counterparty_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = party_counterparty_to_domain(change.write);
+    const auto current = party_counterparty_read_one(repo_, party_counterparty_key_from(out));
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the link from a conflict.
     if (const auto refused = gate_put(out, change.precondition))

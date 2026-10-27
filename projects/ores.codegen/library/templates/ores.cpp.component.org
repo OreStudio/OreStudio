@@ -47,6 +47,7 @@ remain.
 |-----------+-------------|
 | [[id:D92591EC-9F4C-4194-BFE3-B4E1B0806A4E][ores.cpp.component.export]] | Per-component shared-library export/import macros. All component profiles. |
 | [[id:06465495-818E-418D-9A1F-A617865C0ABA][ores.cpp.component.test_main]] | Catch2 main with the project's logging/test-env setup. |
+| [[id:DD7F22E6-112F-44AC-879F-32A9F7E9DBBD][ores.cpp.component.test_suite]] | The test target's shared constants: its logger name and the fixture values every test file uses. |
 | [[id:1CA9A1E1-6E02-47BB-BE1F-40F5888DAAE0][ores.cpp.component.umbrella_header]] | The aggregate include header that carries the component's Doxygen namespace brief. |
 
 * See also

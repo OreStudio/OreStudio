@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void credit_simulation_config_read_token(T& target,
+                                         const std::string& raw,
+                                         const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void credit_simulation_config_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -231,7 +233,7 @@ void credit_simulation_config_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        credit_simulation_config_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -279,7 +281,7 @@ void credit_simulation_config_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
+        credit_simulation_config_read_token(req.key.name, parsed->positionals[next++], "name");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -324,7 +326,7 @@ void credit_simulation_config_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::credit_simulation_config_key key;
-            read_token(key.name, parsed->positionals[i + 0], "name");
+            credit_simulation_config_read_token(key.name, parsed->positionals[i + 0], "name");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -370,19 +372,27 @@ void credit_simulation_config_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(
+        credit_simulation_config_read_token(
+            req.change.write.name, parsed->positionals[next++], "name");
+        credit_simulation_config_read_token(
             req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
-        read_token(req.change.write.market, parsed->positionals[next++], "market");
-        read_token(req.change.write.credit, parsed->positionals[next++], "credit");
-        read_token(
+        credit_simulation_config_read_token(
+            req.change.write.market, parsed->positionals[next++], "market");
+        credit_simulation_config_read_token(
+            req.change.write.credit, parsed->positionals[next++], "credit");
+        credit_simulation_config_read_token(
             req.change.write.zero_market_pnl, parsed->positionals[next++], "zero_market_pnl");
-        read_token(req.change.write.evaluation, parsed->positionals[next++], "evaluation");
-        read_token(req.change.write.double_default, parsed->positionals[next++], "double_default");
-        read_token(req.change.write.seed, parsed->positionals[next++], "seed");
-        read_token(req.change.write.paths, parsed->positionals[next++], "paths");
-        read_token(req.change.write.credit_mode, parsed->positionals[next++], "credit_mode");
-        read_token(
+        credit_simulation_config_read_token(
+            req.change.write.evaluation, parsed->positionals[next++], "evaluation");
+        credit_simulation_config_read_token(
+            req.change.write.double_default, parsed->positionals[next++], "double_default");
+        credit_simulation_config_read_token(
+            req.change.write.seed, parsed->positionals[next++], "seed");
+        credit_simulation_config_read_token(
+            req.change.write.paths, parsed->positionals[next++], "paths");
+        credit_simulation_config_read_token(
+            req.change.write.credit_mode, parsed->positionals[next++], "credit_mode");
+        credit_simulation_config_read_token(
             req.change.write.loan_exposure_mode, parsed->positionals[next++], "loan_exposure_mode");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -431,20 +441,28 @@ void credit_simulation_config_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(
+        credit_simulation_config_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        credit_simulation_config_read_token(
+            req.change.write.name, parsed->positionals[next++], "name");
+        credit_simulation_config_read_token(
             req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
-        read_token(req.change.write.market, parsed->positionals[next++], "market");
-        read_token(req.change.write.credit, parsed->positionals[next++], "credit");
-        read_token(
+        credit_simulation_config_read_token(
+            req.change.write.market, parsed->positionals[next++], "market");
+        credit_simulation_config_read_token(
+            req.change.write.credit, parsed->positionals[next++], "credit");
+        credit_simulation_config_read_token(
             req.change.write.zero_market_pnl, parsed->positionals[next++], "zero_market_pnl");
-        read_token(req.change.write.evaluation, parsed->positionals[next++], "evaluation");
-        read_token(req.change.write.double_default, parsed->positionals[next++], "double_default");
-        read_token(req.change.write.seed, parsed->positionals[next++], "seed");
-        read_token(req.change.write.paths, parsed->positionals[next++], "paths");
-        read_token(req.change.write.credit_mode, parsed->positionals[next++], "credit_mode");
-        read_token(
+        credit_simulation_config_read_token(
+            req.change.write.evaluation, parsed->positionals[next++], "evaluation");
+        credit_simulation_config_read_token(
+            req.change.write.double_default, parsed->positionals[next++], "double_default");
+        credit_simulation_config_read_token(
+            req.change.write.seed, parsed->positionals[next++], "seed");
+        credit_simulation_config_read_token(
+            req.change.write.paths, parsed->positionals[next++], "paths");
+        credit_simulation_config_read_token(
+            req.change.write.credit_mode, parsed->positionals[next++], "credit_mode");
+        credit_simulation_config_read_token(
             req.change.write.loan_exposure_mode, parsed->positionals[next++], "loan_exposure_mode");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -507,20 +525,28 @@ void credit_simulation_config_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::credit_simulation_config_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(
+            credit_simulation_config_read_token(change.write.id, parsed->positionals[next++], "id");
+            credit_simulation_config_read_token(
+                change.write.name, parsed->positionals[next++], "name");
+            credit_simulation_config_read_token(
                 change.write.configuration_id, parsed->positionals[next++], "configuration_id");
-            read_token(change.write.market, parsed->positionals[next++], "market");
-            read_token(change.write.credit, parsed->positionals[next++], "credit");
-            read_token(
+            credit_simulation_config_read_token(
+                change.write.market, parsed->positionals[next++], "market");
+            credit_simulation_config_read_token(
+                change.write.credit, parsed->positionals[next++], "credit");
+            credit_simulation_config_read_token(
                 change.write.zero_market_pnl, parsed->positionals[next++], "zero_market_pnl");
-            read_token(change.write.evaluation, parsed->positionals[next++], "evaluation");
-            read_token(change.write.double_default, parsed->positionals[next++], "double_default");
-            read_token(change.write.seed, parsed->positionals[next++], "seed");
-            read_token(change.write.paths, parsed->positionals[next++], "paths");
-            read_token(change.write.credit_mode, parsed->positionals[next++], "credit_mode");
-            read_token(
+            credit_simulation_config_read_token(
+                change.write.evaluation, parsed->positionals[next++], "evaluation");
+            credit_simulation_config_read_token(
+                change.write.double_default, parsed->positionals[next++], "double_default");
+            credit_simulation_config_read_token(
+                change.write.seed, parsed->positionals[next++], "seed");
+            credit_simulation_config_read_token(
+                change.write.paths, parsed->positionals[next++], "paths");
+            credit_simulation_config_read_token(
+                change.write.credit_mode, parsed->positionals[next++], "credit_mode");
+            credit_simulation_config_read_token(
                 change.write.loan_exposure_mode, parsed->positionals[next++], "loan_exposure_mode");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -571,7 +597,8 @@ void credit_simulation_config_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.name, parsed->positionals[next++], "name");
+        credit_simulation_config_read_token(
+            req.removal.key.name, parsed->positionals[next++], "name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -625,7 +652,7 @@ void credit_simulation_config_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::credit_simulation_config_key key;
-            read_token(key.name, parsed->positionals[i * 1 + 0], "name");
+            credit_simulation_config_read_token(key.name, parsed->positionals[i * 1 + 0], "name");
             req.removals.push_back(
                 messaging::credit_simulation_config_removal{.key = std::move(key)});
         }
@@ -684,7 +711,7 @@ void credit_simulation_config_commands::process_by_configuration_id(
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        credit_simulation_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -733,8 +760,8 @@ void credit_simulation_config_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
-        apply_page(req, *parsed);
+        credit_simulation_config_read_token(req.key.name, parsed->positionals[next++], "name");
+        credit_simulation_config_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -779,7 +806,8 @@ void credit_simulation_config_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.credit_simulation_config.name, parsed->positionals[next++], "name");
+        credit_simulation_config_read_token(
+            req.key.credit_simulation_config.name, parsed->positionals[next++], "name");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

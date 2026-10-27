@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_economic_digest.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -33,9 +34,6 @@ namespace {
 
 using ores::trading::domain::trade;
 using ores::trading::domain::trade_economic_digest;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 ores::utility::uuid::tenant_id tenant_of(std::string_view text) {
     return ores::utility::uuid::tenant_id::from_string(text).value();
@@ -68,7 +66,7 @@ trade make_trade() {
 
 using namespace ores::logging;
 
-TEST_CASE("trade_economic_digest_is_stable_for_the_same_inputs", tags) {
+TEST_CASE("trade_economic_digest_is_stable_for_the_same_inputs", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();
@@ -82,7 +80,7 @@ TEST_CASE("trade_economic_digest_is_stable_for_the_same_inputs", tags) {
     CHECK(first != trade_economic_digest(trade{}, {}));
 }
 
-TEST_CASE("trade_economic_digest_changes_when_a_component_digest_changes", tags) {
+TEST_CASE("trade_economic_digest_changes_when_a_component_digest_changes", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();
@@ -95,7 +93,7 @@ TEST_CASE("trade_economic_digest_changes_when_a_component_digest_changes", tags)
     CHECK(trade_economic_digest(sut, baseline) != trade_economic_digest(sut, amended));
 }
 
-TEST_CASE("trade_economic_digest_changes_when_components_are_reordered", tags) {
+TEST_CASE("trade_economic_digest_changes_when_components_are_reordered", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();
@@ -107,7 +105,7 @@ TEST_CASE("trade_economic_digest_changes_when_components_are_reordered", tags) {
     CHECK(trade_economic_digest(sut, ascending) != trade_economic_digest(sut, descending));
 }
 
-TEST_CASE("trade_economic_digest_changes_when_a_component_is_added_or_removed", tags) {
+TEST_CASE("trade_economic_digest_changes_when_a_component_is_added_or_removed", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();
@@ -122,7 +120,7 @@ TEST_CASE("trade_economic_digest_changes_when_a_component_is_added_or_removed", 
     CHECK(trade_economic_digest(sut, baseline) != trade_economic_digest(sut, added));
 }
 
-TEST_CASE("trade_economic_digest_distinguishes_an_empty_component_list", tags) {
+TEST_CASE("trade_economic_digest_distinguishes_an_empty_component_list", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();
@@ -141,7 +139,7 @@ TEST_CASE("trade_economic_digest_distinguishes_an_empty_component_list", tags) {
  * audit and identity fields must not reach this digest either, because it
  * reuses economic_digest for the trade's own fields.
  */
-TEST_CASE("trade_economic_digest_ignores_the_trade_audit_and_identity_tail", tags) {
+TEST_CASE("trade_economic_digest_ignores_the_trade_audit_and_identity_tail", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto baseline = make_trade();
@@ -168,7 +166,7 @@ TEST_CASE("trade_economic_digest_ignores_the_trade_audit_and_identity_tail", tag
     CHECK(trade_economic_digest(changed, components) == expected);
 }
 
-TEST_CASE("trade_economic_digest_moves_with_a_trade_classification", tags) {
+TEST_CASE("trade_economic_digest_moves_with_a_trade_classification", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto baseline = make_trade();
@@ -189,7 +187,7 @@ TEST_CASE("trade_economic_digest_moves_with_a_trade_classification", tags) {
  * bytes must still fold to different digests; a fold that only appended the
  * digests would collide here.
  */
-TEST_CASE("trade_economic_digest_does_not_collide_on_ambiguous_concatenation", tags) {
+TEST_CASE("trade_economic_digest_does_not_collide_on_ambiguous_concatenation", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();
@@ -207,7 +205,7 @@ TEST_CASE("trade_economic_digest_does_not_collide_on_ambiguous_concatenation", t
  * value, so a long component digest cannot merge with the count and make a
  * list fold as a different one.
  */
-TEST_CASE("trade_economic_digest_pins_the_component_count_boundary", tags) {
+TEST_CASE("trade_economic_digest_pins_the_component_count_boundary", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_trade();

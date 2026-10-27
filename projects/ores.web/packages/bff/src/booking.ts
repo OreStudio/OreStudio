@@ -15,6 +15,10 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as instrumentSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as idTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_id_type_protocol';
+import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
+import { subjects as linkTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_type_protocol';
+import { subjects as stateSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_state_protocol';
 import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_issue_protocol';
 import { invalidRequest, notPermitted } from './errors.js';
 import { HttpFailure } from './errors.js';
@@ -29,6 +33,14 @@ const bookingReason = 'system.new_record';
 
 /** The system tenant: the service stamps the caller's own over it. */
 const statedByTheService = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+
+/** The link a person records between two trades. */
+const linkBodySchema = z.object({
+    linkType: z.string().min(1).max(80),
+    otherTradeId: z.uuid(),
+});
+
+const linkParamsSchema = z.object({ id: z.uuid() });
 
 const bookingBodySchema = z.object({
     bookId: z.uuid(),
@@ -185,24 +197,124 @@ export function registerBookingRoutes(
             { filter: null, as_of: null },
         );
         /*
-         * The identifier schemes come from the trades the tenant already has.
-         *
-         * The scheme table itself is system-tenant reference data, which a tenant
-         * session cannot see, so listing it answers nothing. What the desk
-         * actually uses is on its own identifiers, and that is the list worth
-         * offering: a scheme the tenant has never booked with would be refused.
+         * The identifier schemes are the tenant's own list, copied from the
+         * system tenant when the tenant was provisioned. A tenant provisioned
+         * before that copy existed has none, so the schemes its trades already
+         * use stand in: that is worse than the list, and better than an empty
+         * picker that cannot book at all.
          */
-        const identifiers = await readAll(
+        const declared = await readAll(
             session,
-            identifierSubjects.list_trade_identifiers_request,
-            'identifiers',
+            idTypeSubjects.list_trade_id_types_request,
+            'id_types',
             { filter: null, as_of: null },
         );
-        const schemes = [...new Set(identifiers.map((row) => String(row['id_type'] ?? '')))]
-            .filter((code) => code !== '')
-            .sort()
-            .map((code) => ({ code }));
+        let schemes: readonly { readonly code: string }[];
+        if (declared.length > 0) {
+            schemes = declared
+                .map((row) => String(row['code'] ?? ''))
+                .filter((code) => code !== '')
+                // Sorted like the fallback below, so a picker reads the same
+                // whichever path a tenant takes.
+                .sort()
+                .map((code) => ({ code }));
+        } else {
+            const used = await readAll(
+                session,
+                identifierSubjects.list_trade_identifiers_request,
+                'identifiers',
+                { filter: null, as_of: null },
+            );
+            const codes = new Set<string>();
+            for (const row of used) {
+                const code = String(row['id_type'] ?? '');
+                if (code !== '') codes.add(code);
+            }
+            schemes = [...codes].sort().map((code) => ({ code }));
+        }
+
         return { books, issues, idTypes: schemes };
+    });
+
+    /** The link types a person can record, each with the words that describe it. */
+    server.get('/api/trade-link-types', async (request) => {
+        const session = requireSession(request);
+        const rows = await readAll(
+            session,
+            linkTypeSubjects.list_trade_link_types_request,
+            'link_types',
+            { filter: null, as_of: null },
+        );
+        return {
+            rows: rows.map((row) => ({
+                code: String(row['code'] ?? ''),
+                description: String(row['description'] ?? ''),
+            })),
+        };
+    });
+
+    /**
+     * Records a link from one trade to another.
+     *
+     * A link is made by an activity, and the activity is the one that last
+     * moved the trade: the state names it, so the client does not have to know
+     * which write came last. The link type is the caller's, because whether a
+     * relationship is a hedge or a close-out is a fact about the deal.
+     */
+    server.post('/api/trades/:id/links', async (request) => {
+        const session = requireSession(request);
+        const parsed = linkParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address does not name a trade.');
+        }
+        const body = input(linkBodySchema, request.body);
+        const id = parsed.data.id;
+        if (id === body.otherTradeId) {
+            throw invalidRequest('A trade cannot be linked to itself.');
+        }
+        const states = await readAll(
+            session,
+            stateSubjects.list_trade_states_request,
+            'trade_states',
+            {
+                filter: { trade_id_one_of: [id] },
+                order: { field: 'version', descending: true },
+            },
+        );
+        /*
+         * The newest state names the activity, and the newest is decided here
+         * rather than trusted to the reply's order: a read that ignores the
+         * order would otherwise record the link against an older activity, and
+         * nothing would say so.
+         */
+        const newest = states.reduce<Record<string, unknown> | undefined>((best, row) => {
+            if (best === undefined) return row;
+            return Number(row['version'] ?? 0) > Number(best['version'] ?? 0) ? row : best;
+        }, undefined);
+        const activityId = String(newest?.['trade_activity_id'] ?? '');
+        if (activityId === '') {
+            throw invalidRequest('The trade has no activity to record the link against.');
+        }
+        const written = await session.client.callAuthenticated(
+            linkSubjects.put_trade_link_request,
+            {
+                change: {
+                    write: {
+                        from_trade_id: id,
+                        to_trade_id: body.otherTradeId,
+                        link_type: body.linkType,
+                        trade_activity_id: activityId,
+                    },
+                    precondition: mustNotExist(),
+                },
+                intent: intent(),
+            },
+            z.looseObject({ result: resultSchema }),
+        );
+        if (written.result.outcome !== 'ok') {
+            throw refusalOfBooking(written.result);
+        }
+        return { from: id, to: body.otherTradeId, linkType: body.linkType };
     });
 
     server.post('/api/trades', async (request, reply) => {

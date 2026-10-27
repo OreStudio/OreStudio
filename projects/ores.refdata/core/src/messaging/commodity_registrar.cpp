@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view commodity_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_commodity_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<commodity_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_commodities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_commodities(std::move(msg));
-        }));
+        list_commodities_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->list_commodities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_commodity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_commodity_request::nats_subject, commodity_queue_group, [h](ores::nats::message msg) {
             h->get_commodity(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_commodities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_commodities(std::move(msg));
-        }));
+        get_many_commodities_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->get_many_commodities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_commodity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_commodity_request::nats_subject, commodity_queue_group, [h](ores::nats::message msg) {
             h->put_commodity(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_commodities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_commodities(std::move(msg));
-        }));
+        put_many_commodities_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->put_many_commodities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_commodity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_commodity(std::move(msg));
-        }));
+        delete_commodity_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->delete_commodity(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_commodities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_commodities(std::move(msg));
-        }));
+        delete_many_commodities_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_commodities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_commodity_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_commodity_versions(std::move(msg));
-        }));
+        list_commodity_versions_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->list_commodity_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_commodity_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_commodity_version(std::move(msg));
-        }));
+        get_commodity_version_request::nats_subject,
+        commodity_queue_group,
+        [h](ores::nats::message msg) { h->get_commodity_version(std::move(msg)); }));
     return subs;
 }
 

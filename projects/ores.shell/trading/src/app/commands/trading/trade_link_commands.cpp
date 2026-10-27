@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void trade_link_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void trade_link_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -220,7 +220,7 @@ void trade_link_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        trade_link_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -268,9 +268,9 @@ void trade_link_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
-        read_token(req.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
-        read_token(req.key.link_type, parsed->positionals[next++], "link_type");
+        trade_link_read_token(req.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        trade_link_read_token(req.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
+        trade_link_read_token(req.key.link_type, parsed->positionals[next++], "link_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -315,9 +315,9 @@ void trade_link_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 3) {
             messaging::trade_link_key key;
-            read_token(key.from_trade_id, parsed->positionals[i + 0], "from_trade_id");
-            read_token(key.to_trade_id, parsed->positionals[i + 1], "to_trade_id");
-            read_token(key.link_type, parsed->positionals[i + 2], "link_type");
+            trade_link_read_token(key.from_trade_id, parsed->positionals[i + 0], "from_trade_id");
+            trade_link_read_token(key.to_trade_id, parsed->positionals[i + 1], "to_trade_id");
+            trade_link_read_token(key.link_type, parsed->positionals[i + 2], "link_type");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -364,8 +364,8 @@ void trade_link_commands::process_add(std::ostream& out,
         }
         req.change.write.from_trade_id = boost::uuids::random_generator()();
         req.change.write.to_trade_id = boost::uuids::random_generator()();
-        read_token(req.change.write.link_type, parsed->positionals[next++], "link_type");
-        read_token(
+        trade_link_read_token(req.change.write.link_type, parsed->positionals[next++], "link_type");
+        trade_link_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -414,10 +414,12 @@ void trade_link_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.from_trade_id, parsed->positionals[next++], "from_trade_id");
-        read_token(req.change.write.to_trade_id, parsed->positionals[next++], "to_trade_id");
-        read_token(req.change.write.link_type, parsed->positionals[next++], "link_type");
-        read_token(
+        trade_link_read_token(
+            req.change.write.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        trade_link_read_token(
+            req.change.write.to_trade_id, parsed->positionals[next++], "to_trade_id");
+        trade_link_read_token(req.change.write.link_type, parsed->positionals[next++], "link_type");
+        trade_link_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -480,10 +482,12 @@ void trade_link_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::trade_link_change change;
-            read_token(change.write.from_trade_id, parsed->positionals[next++], "from_trade_id");
-            read_token(change.write.to_trade_id, parsed->positionals[next++], "to_trade_id");
-            read_token(change.write.link_type, parsed->positionals[next++], "link_type");
-            read_token(
+            trade_link_read_token(
+                change.write.from_trade_id, parsed->positionals[next++], "from_trade_id");
+            trade_link_read_token(
+                change.write.to_trade_id, parsed->positionals[next++], "to_trade_id");
+            trade_link_read_token(change.write.link_type, parsed->positionals[next++], "link_type");
+            trade_link_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -534,9 +538,11 @@ void trade_link_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
-        read_token(req.removal.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
-        read_token(req.removal.key.link_type, parsed->positionals[next++], "link_type");
+        trade_link_read_token(
+            req.removal.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        trade_link_read_token(
+            req.removal.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
+        trade_link_read_token(req.removal.key.link_type, parsed->positionals[next++], "link_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -590,9 +596,10 @@ void trade_link_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 3;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::trade_link_key key;
-            read_token(key.from_trade_id, parsed->positionals[i * 3 + 0], "from_trade_id");
-            read_token(key.to_trade_id, parsed->positionals[i * 3 + 1], "to_trade_id");
-            read_token(key.link_type, parsed->positionals[i * 3 + 2], "link_type");
+            trade_link_read_token(
+                key.from_trade_id, parsed->positionals[i * 3 + 0], "from_trade_id");
+            trade_link_read_token(key.to_trade_id, parsed->positionals[i * 3 + 1], "to_trade_id");
+            trade_link_read_token(key.link_type, parsed->positionals[i * 3 + 2], "link_type");
             req.removals.push_back(messaging::trade_link_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -644,10 +651,10 @@ void trade_link_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
-        read_token(req.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
-        read_token(req.key.link_type, parsed->positionals[next++], "link_type");
-        apply_page(req, *parsed);
+        trade_link_read_token(req.key.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        trade_link_read_token(req.key.to_trade_id, parsed->positionals[next++], "to_trade_id");
+        trade_link_read_token(req.key.link_type, parsed->positionals[next++], "link_type");
+        trade_link_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -692,9 +699,12 @@ void trade_link_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_link.from_trade_id, parsed->positionals[next++], "from_trade_id");
-        read_token(req.key.trade_link.to_trade_id, parsed->positionals[next++], "to_trade_id");
-        read_token(req.key.trade_link.link_type, parsed->positionals[next++], "link_type");
+        trade_link_read_token(
+            req.key.trade_link.from_trade_id, parsed->positionals[next++], "from_trade_id");
+        trade_link_read_token(
+            req.key.trade_link.to_trade_id, parsed->positionals[next++], "to_trade_id");
+        trade_link_read_token(
+            req.key.trade_link.link_type, parsed->positionals[next++], "link_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

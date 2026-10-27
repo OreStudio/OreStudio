@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view csa_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,43 +49,43 @@ register_csa_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<csa_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_csas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_csas_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->list_csas(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_csa_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_csa_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->get_csa(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_csas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_csas_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->get_many_csas(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_csa_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_csa_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->put_csa(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_csas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_csas_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->put_many_csas(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_csa_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_csa_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->delete_csa(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_csas_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_many_csas_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->delete_many_csas(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_by_netting_set_id_csas_request::nats_subject,
-        queue_group,
+        csa_queue_group,
         [h](ores::nats::message msg) { h->list_by_netting_set_id_csas(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_csa_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_csa_versions_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->list_csa_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_csa_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_csa_version_request::nats_subject, csa_queue_group, [h](ores::nats::message msg) {
             h->get_csa_version(std::move(msg));
         }));
     return subs;

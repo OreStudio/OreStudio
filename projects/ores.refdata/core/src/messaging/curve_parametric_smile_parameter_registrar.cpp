@@ -39,7 +39,8 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view curve_parametric_smile_parameter_queue_group =
+    "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_curve_parametric_smile_parameter_handlers(
@@ -51,51 +52,51 @@ std::vector<ores::nats::service::subscription> register_curve_parametric_smile_p
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_curve_parametric_smile_parameters_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_curve_parametric_smile_parameters(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         get_curve_parametric_smile_parameter_request::nats_subject,
-        queue_group,
+        curve_parametric_smile_parameter_queue_group,
         [h](ores::nats::message msg) { h->get_curve_parametric_smile_parameter(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_curve_parametric_smile_parameters_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_curve_parametric_smile_parameters(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_curve_parametric_smile_parameter_request::nats_subject,
-        queue_group,
+        curve_parametric_smile_parameter_queue_group,
         [h](ores::nats::message msg) { h->put_curve_parametric_smile_parameter(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_curve_parametric_smile_parameters_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_curve_parametric_smile_parameters(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_curve_parametric_smile_parameter_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_curve_parametric_smile_parameter(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_many_curve_parametric_smile_parameters_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_curve_parametric_smile_parameters(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_curve_parametric_smile_parameter_versions_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_curve_parametric_smile_parameter_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_curve_parametric_smile_parameter_version_request::nats_subject,
-                             queue_group,
+                             curve_parametric_smile_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_curve_parametric_smile_parameter_version(std::move(msg));
                              }));

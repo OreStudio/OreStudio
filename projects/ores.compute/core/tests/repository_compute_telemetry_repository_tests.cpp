@@ -31,6 +31,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -51,9 +52,6 @@
 // are correctly not visible, because the policy admits only those two.
 
 namespace {
-
-const std::string test_suite("ores.compute.tests");
-const std::string tags("[repository]");
 
 boost::uuids::uuid random_uuid() {
     static boost::uuids::random_generator gen;
@@ -175,7 +173,7 @@ using ores::testing::database_helper;
 using ores::testing::test_database_manager;
 using ores::utility::uuid::tenant_id;
 
-TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third", tags) {
+TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -234,7 +232,8 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
     CHECK(!std::ranges::contains(hosts, boost::uuids::to_string(third_row.host_id)));
 }
 
-TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant_row", tags) {
+TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant_row",
+          "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -324,7 +323,7 @@ grid_sample sample_at(const grid_sample& model,
 
 } // namespace
 
-TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps", tags) {
+TEST_CASE("grid_series_holds_the_newest_sample_of_each_bucket_and_marks_the_gaps", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -408,7 +407,7 @@ grid_sample party_row(const grid_sample& model,
 } // namespace
 
 TEST_CASE("grid_series_sums_the_party_rows_of_an_instant_and_takes_the_fleet_from_the_system",
-          tags) {
+          "[repository]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto model = generate_synthetic_grid_sample(gen);
@@ -450,7 +449,7 @@ TEST_CASE("grid_series_sums_the_party_rows_of_an_instant_and_takes_the_fleet_fro
     CHECK(series.idle_hosts == std::vector<int>{3});
 }
 
-TEST_CASE("grid_series_of_a_party_session_sums_only_the_parties_it_acts_for", tags) {
+TEST_CASE("grid_series_of_a_party_session_sums_only_the_parties_it_acts_for", "[repository]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto model = generate_synthetic_grid_sample(gen);
@@ -478,7 +477,7 @@ TEST_CASE("grid_series_of_a_party_session_sums_only_the_parties_it_acts_for", ta
     CHECK(series.results_done == std::vector<int>{5});
 }
 
-TEST_CASE("grid_series_of_a_session_in_the_system_party_sums_every_party", tags) {
+TEST_CASE("grid_series_of_a_session_in_the_system_party_sums_every_party", "[repository]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto model = generate_synthetic_grid_sample(gen);
@@ -522,7 +521,7 @@ TEST_CASE("grid_series_of_a_session_in_the_system_party_sums_every_party", tags)
           std::vector<int>{4});
 }
 
-TEST_CASE("parties_with_work_always_lists_the_empty_party", tags) {
+TEST_CASE("parties_with_work_always_lists_the_empty_party", "[repository]") {
     database_helper h;
 
     compute_telemetry_repository telemetry;
@@ -532,7 +531,7 @@ TEST_CASE("parties_with_work_always_lists_the_empty_party", tags) {
     CHECK(!parties.front().has_value());
 }
 
-TEST_CASE("grid_series_widens_the_range_to_whole_buckets", tags) {
+TEST_CASE("grid_series_widens_the_range_to_whole_buckets", "[repository]") {
     database_helper h;
 
     using std::chrono::seconds;
@@ -546,7 +545,7 @@ TEST_CASE("grid_series_widens_the_range_to_whole_buckets", tags) {
     CHECK(series.bucket_count == 3);
 }
 
-TEST_CASE("grid_series_of_an_empty_range_says_every_bucket_holds_no_sample", tags) {
+TEST_CASE("grid_series_of_an_empty_range_says_every_bucket_holds_no_sample", "[repository]") {
     database_helper h;
 
     using std::chrono::seconds;
@@ -559,7 +558,7 @@ TEST_CASE("grid_series_of_an_empty_range_says_every_bucket_holds_no_sample", tag
     CHECK(series.samples == std::vector<int>(10, 0));
 }
 
-TEST_CASE("grid_series_refuses_a_bad_bucket_and_a_range_that_needs_too_many", tags) {
+TEST_CASE("grid_series_refuses_a_bad_bucket_and_a_range_that_needs_too_many", "[repository]") {
     database_helper h;
 
     using std::chrono::seconds;
@@ -606,7 +605,8 @@ node_sample node_sample_at(const node_sample& model,
 
 } // namespace
 
-TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machine", tags) {
+TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machine",
+          "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -682,7 +682,7 @@ TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machin
     CHECK(series.avg_task_duration_ms == std::vector<std::int64_t>{0, 10, 0, 160, 0, 50});
 }
 
-TEST_CASE("node_series_of_an_empty_range_lists_no_nodes", tags) {
+TEST_CASE("node_series_of_an_empty_range_lists_no_nodes", "[repository]") {
     database_helper h;
 
     using std::chrono::seconds;
@@ -696,7 +696,7 @@ TEST_CASE("node_series_of_an_empty_range_lists_no_nodes", tags) {
     CHECK(series.samples.empty());
 }
 
-TEST_CASE("node_series_refuses_a_bad_bucket_and_an_empty_range", tags) {
+TEST_CASE("node_series_refuses_a_bad_bucket_and_an_empty_range", "[repository]") {
     database_helper h;
 
     using std::chrono::seconds;
@@ -733,7 +733,7 @@ ores::compute::domain::batch usage_batch(ores::utility::generation::generation_c
 
 }
 
-TEST_CASE("grid_usage_of_a_tenant_session_groups_its_batches_by_party", tags) {
+TEST_CASE("grid_usage_of_a_tenant_session_groups_its_batches_by_party", "[repository]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto own = h.tenant_id();
@@ -767,7 +767,7 @@ TEST_CASE("grid_usage_of_a_tenant_session_groups_its_batches_by_party", tags) {
     CHECK(usage.oldest_unsent_seconds[static_cast<std::size_t>(a)] == 0);
 }
 
-TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties", tags) {
+TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties", "[repository]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto own = h.tenant_id();
@@ -792,7 +792,7 @@ TEST_CASE("grid_usage_of_a_session_that_acts_for_a_party_hides_the_other_parties
     CHECK(usage_index_of(usage, boost::uuids::to_string(party_b)) == -1);
 }
 
-TEST_CASE("grid_usage_reads_one_tenant_and_a_system_session_reads_no_other", tags) {
+TEST_CASE("grid_usage_reads_one_tenant_and_a_system_session_reads_no_other", "[repository]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto own = h.tenant_id();

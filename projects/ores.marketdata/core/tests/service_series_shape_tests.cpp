@@ -25,6 +25,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
@@ -33,9 +34,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][series_shape]");
-
 using ores::marketdata::service::in_term_order;
 using ores::testing::database_helper;
 
@@ -43,7 +41,8 @@ using strings = std::vector<std::string>;
 
 }
 
-TEST_CASE("terms_are_ordered_by_length_whatever_order_a_source_stated_them", tags) {
+TEST_CASE("terms_are_ordered_by_length_whatever_order_a_source_stated_them",
+          "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"2M",
@@ -77,26 +76,28 @@ TEST_CASE("terms_are_ordered_by_length_whatever_order_a_source_stated_them", tag
                                             "30Y"});
 }
 
-TEST_CASE("a_compound_period_sits_by_its_length", tags) {
+TEST_CASE("a_compound_period_sits_by_its_length", "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"2Y", "1Y6M", "1Y", "13M"}) == strings{"1Y", "13M", "1Y6M", "2Y"});
 }
 
-TEST_CASE("overnight_tenors_come_before_periods_and_dates_and_continuations_after", tags) {
+TEST_CASE("overnight_tenors_come_before_periods_and_dates_and_continuations_after",
+          "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"c2", "2030-01-15", "1W", "SN", "ON", "c1", "TN", "1M"}) ==
           strings{"ON", "TN", "SN", "1W", "1M", "2030-01-15", "c1", "c2"});
 }
 
-TEST_CASE("a_value_that_is_no_term_follows_the_terms_in_its_stated_order", tags) {
+TEST_CASE("a_value_that_is_no_term_follows_the_terms_in_its_stated_order",
+          "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"odd", "1Y", "other", "1M"}) == strings{"1M", "1Y", "odd", "other"});
 }
 
-TEST_CASE("terms_a_few_days_apart_are_ordered_by_their_days", tags) {
+TEST_CASE("terms_a_few_days_apart_are_ordered_by_their_days", "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     // A month counts as 30 days and a year as 365, so 12M is 360 days, 52W is 364
@@ -104,7 +105,7 @@ TEST_CASE("terms_a_few_days_apart_are_ordered_by_their_days", tags) {
     CHECK(in_term_order({"1Y", "52W", "12M"}) == strings{"12M", "52W", "1Y"});
 }
 
-TEST_CASE("terms_of_equal_length_keep_their_stated_order", tags) {
+TEST_CASE("terms_of_equal_length_keep_their_stated_order", "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     // 7D and 1W are two spellings of seven days.
@@ -112,7 +113,7 @@ TEST_CASE("terms_of_equal_length_keep_their_stated_order", tags) {
     CHECK(in_term_order({"1W", "7D"}) == strings{"1W", "7D"});
 }
 
-TEST_CASE("an_imported_surface_is_read_with_its_expiries_in_order", tags) {
+TEST_CASE("an_imported_surface_is_read_with_its_expiries_in_order", "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -146,7 +147,7 @@ TEST_CASE("an_imported_surface_is_read_with_its_expiries_in_order", tags) {
     CHECK(resp.values == strings{"0.070", "0.075", "0.085", "0.120"});
 }
 
-TEST_CASE("an_axis_that_is_no_term_keeps_the_order_its_source_stated", tags) {
+TEST_CASE("an_axis_that_is_no_term_keeps_the_order_its_source_stated", "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

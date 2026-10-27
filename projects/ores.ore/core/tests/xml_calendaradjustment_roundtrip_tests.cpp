@@ -21,14 +21,12 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.calendaradjustment.roundtrip.tests");
-const std::string tags("[ore][xml][roundtrip][calendaradjustment]");
 
 using namespace ores::logging;
 
@@ -67,14 +65,16 @@ void round_trip_messages(const std::filesystem::path& path) {
 
 }
 
-TEST_CASE("calendar_adjustments_round_trip_through_the_codec", tags) {
+TEST_CASE("calendar_adjustments_round_trip_through_the_codec",
+          "[ore][xml][roundtrip][calendaradjustment]") {
     auto lg(make_logger(test_suite));
 
     round_trip_messages(
         ores::testing::project_root::resolve("external/ore/examples/Input/calendaradjustment.xml"));
 }
 
-TEST_CASE("every_calendar_adjustment_in_the_corpus_round_trips", tags) {
+TEST_CASE("every_calendar_adjustment_in_the_corpus_round_trips",
+          "[ore][xml][roundtrip][calendaradjustment]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ores::testing::project_root::resolve("external/ore/examples");

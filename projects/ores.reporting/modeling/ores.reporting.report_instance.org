@@ -1181,17 +1181,17 @@ report_instance_service::count_report_definitions_by_health(
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
     subs.push_back(nats.queue_subscribe(
         get_latest_report_instances_by_definition_request::nats_subject,
-        queue_group,
+        report_instance_queue_group,
         [h](ores::nats::message msg) {
             h->get_latest_report_instances_by_definition(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_report_instance_health_request::nats_subject,
-        queue_group,
+        report_instance_queue_group,
         [h](ores::nats::message msg) { h->get_report_instance_health(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         count_report_definitions_by_health_request::nats_subject,
-        queue_group,
+        report_instance_queue_group,
         [h](ores::nats::message msg) { h->count_report_definitions_by_health(std::move(msg)); }));
 #+end_src
 

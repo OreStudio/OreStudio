@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_report_instance_kinds_response
-    list_report_instance_kinds(const messaging::list_report_instance_kinds_request& request);
-    messaging::get_report_instance_kind_response
-    get_report_instance_kind(const messaging::get_report_instance_kind_request& request);
-    messaging::get_many_report_instance_kinds_response get_many_report_instance_kinds(
-        const messaging::get_many_report_instance_kinds_request& request);
-    messaging::put_report_instance_kind_response
-    put_report_instance_kind(const messaging::put_report_instance_kind_request& request);
-    messaging::put_many_report_instance_kinds_response put_many_report_instance_kinds(
-        const messaging::put_many_report_instance_kinds_request& request);
-    messaging::delete_report_instance_kind_response
-    delete_report_instance_kind(const messaging::delete_report_instance_kind_request& request);
-    messaging::delete_many_report_instance_kinds_response delete_many_report_instance_kinds(
-        const messaging::delete_many_report_instance_kinds_request& request);
-    messaging::list_report_instance_kind_versions_response list_report_instance_kind_versions(
-        const messaging::list_report_instance_kind_versions_request& request);
-    messaging::get_report_instance_kind_version_response get_report_instance_kind_version(
-        const messaging::get_report_instance_kind_version_request& request);
+    ::ores::reporting::messaging::list_report_instance_kinds_response list_report_instance_kinds(
+        const ::ores::reporting::messaging::list_report_instance_kinds_request& request);
+    ::ores::reporting::messaging::get_report_instance_kind_response get_report_instance_kind(
+        const ::ores::reporting::messaging::get_report_instance_kind_request& request);
+    ::ores::reporting::messaging::get_many_report_instance_kinds_response
+    get_many_report_instance_kinds(
+        const ::ores::reporting::messaging::get_many_report_instance_kinds_request& request);
+    ::ores::reporting::messaging::put_report_instance_kind_response put_report_instance_kind(
+        const ::ores::reporting::messaging::put_report_instance_kind_request& request);
+    ::ores::reporting::messaging::put_many_report_instance_kinds_response
+    put_many_report_instance_kinds(
+        const ::ores::reporting::messaging::put_many_report_instance_kinds_request& request);
+    ::ores::reporting::messaging::delete_report_instance_kind_response delete_report_instance_kind(
+        const ::ores::reporting::messaging::delete_report_instance_kind_request& request);
+    ::ores::reporting::messaging::delete_many_report_instance_kinds_response
+    delete_many_report_instance_kinds(
+        const ::ores::reporting::messaging::delete_many_report_instance_kinds_request& request);
+    ::ores::reporting::messaging::list_report_instance_kind_versions_response
+    list_report_instance_kind_versions(
+        const ::ores::reporting::messaging::list_report_instance_kind_versions_request& request);
+    ::ores::reporting::messaging::get_report_instance_kind_version_response
+    get_report_instance_kind_version(
+        const ::ores::reporting::messaging::get_report_instance_kind_version_request& request);
     /**@}*/
 
     /**
@@ -188,7 +193,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::report_instance_kind_change& change,
+    prepare_change(const ::ores::reporting::messaging::report_instance_kind_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::report_instance_kind& out);
 };

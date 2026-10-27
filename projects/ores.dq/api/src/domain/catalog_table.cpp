@@ -31,7 +31,7 @@ namespace ores::dq::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string catalog_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<catalog>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& c : v) {
-        table << c.name << c.description << opt_str(c.owner) << c.modified_by << c.version
+        table << c.name << c.description << catalog_opt_str(c.owner) << c.modified_by << c.version
               << fort::endr;
     }
     return table.to_string();

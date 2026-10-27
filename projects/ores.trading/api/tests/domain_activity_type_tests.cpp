@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/activity_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/activity_type_table.hpp"
 #include "ores.trading.api/domain/activity_type_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -30,9 +31,6 @@
 namespace {
 
 using ores::trading::domain::activity_type;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 activity_type make_activity_type(const std::string& code,
                                  const std::string& category = "lifecycle_event") {
@@ -56,7 +54,7 @@ activity_type make_activity_type(const std::string& code,
 using ores::trading::domain::activity_type;
 using namespace ores::logging;
 
-TEST_CASE("create_activity_type_with_valid_fields", tags) {
+TEST_CASE("create_activity_type_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     activity_type sut;
@@ -83,7 +81,7 @@ TEST_CASE("create_activity_type_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_activity_type_with_fsm_transition", tags) {
+TEST_CASE("create_activity_type_with_fsm_transition", "[domain]") {
     auto lg(make_logger(test_suite));
 
     activity_type sut;
@@ -107,7 +105,7 @@ TEST_CASE("create_activity_type_with_fsm_transition", tags) {
     CHECK(!sut.fsm_transition_id->is_nil());
 }
 
-TEST_CASE("activity_type_insertion_operator", tags) {
+TEST_CASE("activity_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     activity_type sut;
@@ -132,7 +130,7 @@ TEST_CASE("activity_type_insertion_operator", tags) {
     CHECK(json_output.find("amendment") != std::string::npos);
 }
 
-TEST_CASE("create_activity_type_with_faker", tags) {
+TEST_CASE("create_activity_type_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     activity_type sut;
@@ -155,7 +153,7 @@ TEST_CASE("create_activity_type_with_faker", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_multiple_random_activity_types", tags) {
+TEST_CASE("create_multiple_random_activity_types", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> codes = {"new_booking", "amendment", "novation", "cancellation"};
@@ -167,7 +165,7 @@ TEST_CASE("create_multiple_random_activity_types", tags) {
     }
 }
 
-TEST_CASE("activity_type_convert_single_to_table", tags) {
+TEST_CASE("activity_type_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<activity_type> items = {make_activity_type("cancellation", "cancellation")};
@@ -179,7 +177,7 @@ TEST_CASE("activity_type_convert_single_to_table", tags) {
     CHECK(table.find("cancellation") != std::string::npos);
 }
 
-TEST_CASE("activity_type_convert_multiple_to_table", tags) {
+TEST_CASE("activity_type_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<activity_type> items;
@@ -196,7 +194,7 @@ TEST_CASE("activity_type_convert_multiple_to_table", tags) {
     CHECK(table.find("activity2") != std::string::npos);
 }
 
-TEST_CASE("activity_type_convert_empty_vector_to_table", tags) {
+TEST_CASE("activity_type_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<activity_type> items;
@@ -207,7 +205,7 @@ TEST_CASE("activity_type_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Requires Confirmation") != std::string::npos);
 }
 
-TEST_CASE("activity_type_table_with_faker_data", tags) {
+TEST_CASE("activity_type_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<activity_type> items;

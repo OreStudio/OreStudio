@@ -46,8 +46,6 @@
 
 namespace {
 
-const std::string tags("[seed][acme][passwords]");
-
 // The demonstration password, as the contract states it. The profile row is
 // asserted against this literal, so the two disagree loudly.
 const std::string development_password("Secure-Password-123");
@@ -67,7 +65,7 @@ std::string read_repo_file(const std::string& relative_path) {
 
 }
 
-TEST_CASE("the acme profile states the demonstration password once", tags) {
+TEST_CASE("the acme profile states the demonstration password once", "[seed][acme][passwords]") {
     const auto profile =
         read_repo_file("projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql");
     const std::regex row(
@@ -81,7 +79,8 @@ TEST_CASE("the acme profile states the demonstration password once", tags) {
     CHECK(passwords.front() == development_password);
 }
 
-TEST_CASE("an account whose password is provisioned this way authenticates", tags) {
+TEST_CASE("an account whose password is provisioned this way authenticates",
+          "[seed][acme][passwords]") {
     ores::testing::scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     ores::iam::service::account_operations_service sut(h.context());
@@ -107,7 +106,7 @@ TEST_CASE("an account whose password is provisioned this way authenticates", tag
                     std::runtime_error);
 }
 
-TEST_CASE("the acme account artefacts carry no password material", tags) {
+TEST_CASE("the acme account artefacts carry no password material", "[seed][acme][passwords]") {
     for (const auto& script : account_artefact_scripts) {
         const auto text = read_repo_file(script);
         INFO("artefact script: " << script);

@@ -1,0 +1,7 @@
+feature/close-the-bond-population-findings d858a7f6d80e7777beed5b5e823e30b21064179b SUPERSEDED-by-6711ee54c0
+task/5F-bff-registry 1f8e9a3a45c81ef94d1224dcfe872c88736a2774 SUPERSEDED-by-template-registry
+fix/the-accounts-wire-timestamp e29fe5cbcab30ed6b860503d0a0d1b4d1741318d SUPERSEDED-by-time.ts
+feature/generate-tables-for-every-document-family 1bb5cf9e1b428853b13326241fb490e66f62741f SUPERSEDED-by-later-doc-updates
+doc/close-the-continuous-columns-unit defef0b33dc2e6ce66cba09309effd0a06b83c07 SUPERSEDED-by-PR-3518
+docs/record-the-arena-design 6acb368432bd83a903de1d7812781929b4055d4e SUPERSEDED-by-main-rewrite
+feature/label-a-curve-binding-by-its-curve 4e6bc13a74b56e003fb49fea7f9f92cdfb0cdfc0 CAPTURED-as-9125B649

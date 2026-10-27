@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view reporting_regime_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_reporting_regime_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<reporting_regime_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_reporting_regimes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_reporting_regimes(std::move(msg));
-        }));
+        list_reporting_regimes_request::nats_subject,
+        reporting_regime_queue_group,
+        [h](ores::nats::message msg) { h->list_reporting_regimes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_reporting_regime_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_reporting_regime(std::move(msg));
-        }));
+        get_reporting_regime_request::nats_subject,
+        reporting_regime_queue_group,
+        [h](ores::nats::message msg) { h->get_reporting_regime(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_reporting_regimes_request::nats_subject,
-        queue_group,
+        reporting_regime_queue_group,
         [h](ores::nats::message msg) { h->get_many_reporting_regimes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_reporting_regime_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_reporting_regime(std::move(msg));
-        }));
+        put_reporting_regime_request::nats_subject,
+        reporting_regime_queue_group,
+        [h](ores::nats::message msg) { h->put_reporting_regime(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_reporting_regimes_request::nats_subject,
-        queue_group,
+        reporting_regime_queue_group,
         [h](ores::nats::message msg) { h->put_many_reporting_regimes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_reporting_regime_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_reporting_regime(std::move(msg));
-        }));
+        delete_reporting_regime_request::nats_subject,
+        reporting_regime_queue_group,
+        [h](ores::nats::message msg) { h->delete_reporting_regime(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_reporting_regimes_request::nats_subject,
-        queue_group,
+        reporting_regime_queue_group,
         [h](ores::nats::message msg) { h->delete_many_reporting_regimes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_reporting_regime_versions_request::nats_subject,
-        queue_group,
+        reporting_regime_queue_group,
         [h](ores::nats::message msg) { h->list_reporting_regime_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_reporting_regime_version_request::nats_subject,
-        queue_group,
+        reporting_regime_queue_group,
         [h](ores::nats::message msg) { h->get_reporting_regime_version(std::move(msg)); }));
     return subs;
 }

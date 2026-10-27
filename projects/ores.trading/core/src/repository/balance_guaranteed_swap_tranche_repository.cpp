@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+balance_guaranteed_swap_tranche_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::balance_guaranteed_swap_tranches_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> balance_guaranteed_swap_tranche_filter_condition(
+    const std::optional<messaging::balance_guaranteed_swap_tranches_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -311,8 +312,8 @@ balance_guaranteed_swap_tranche_repository::read_latest_by_trade_id(
                                       domain::balance_guaranteed_swap_tranche>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        balance_guaranteed_swap_tranche_list_order(order, {"trade_id", "sequence_number"}, false),
+        balance_guaranteed_swap_tranche_filter_condition(filter),
         [](const auto& entities) { return balance_guaranteed_swap_tranche_mapper::map(entities); },
         lg(),
         "Reading latest balance guaranteed swap tranches by trade_id.");
@@ -335,7 +336,7 @@ std::uint32_t balance_guaranteed_swap_tranche_repository::
     return execute_count_query<balance_guaranteed_swap_tranche_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        balance_guaranteed_swap_tranche_filter_condition(filter),
         lg(),
         "Counting balance guaranteed swap tranches by trade_id");
 }
@@ -401,8 +402,8 @@ balance_guaranteed_swap_tranche_repository::read_latest(
                                       domain::balance_guaranteed_swap_tranche>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        balance_guaranteed_swap_tranche_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), balance_guaranteed_swap_tranche_filter_condition(filter)),
         [](const auto& entities) { return balance_guaranteed_swap_tranche_mapper::map(entities); },
         lg(),
         "Reading latest balance guaranteed swap tranches with pagination.");
@@ -422,7 +423,7 @@ balance_guaranteed_swap_tranche_repository::get_total_balance_guaranteed_swap_tr
     return execute_count_query<balance_guaranteed_swap_tranche_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), balance_guaranteed_swap_tranche_filter_condition(filter)),
         lg(),
         "Counting balance guaranteed swap tranches");
 }

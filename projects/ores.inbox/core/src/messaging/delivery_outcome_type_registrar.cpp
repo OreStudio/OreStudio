@@ -39,7 +39,7 @@
 namespace ores::inbox::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.inbox.service";
+static constexpr std::string_view delivery_outcome_type_queue_group = "ores.inbox.service";
 }
 
 std::vector<ores::nats::service::subscription> register_delivery_outcome_type_handlers(
@@ -51,15 +51,15 @@ std::vector<ores::nats::service::subscription> register_delivery_outcome_type_ha
         std::make_shared<delivery_outcome_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_delivery_outcome_types_request::nats_subject,
-        queue_group,
+        delivery_outcome_type_queue_group,
         [h](ores::nats::message msg) { h->list_delivery_outcome_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_delivery_outcome_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_delivery_outcome_type(std::move(msg));
-        }));
+        get_delivery_outcome_type_request::nats_subject,
+        delivery_outcome_type_queue_group,
+        [h](ores::nats::message msg) { h->get_delivery_outcome_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_delivery_outcome_types_request::nats_subject,
-        queue_group,
+        delivery_outcome_type_queue_group,
         [h](ores::nats::message msg) { h->get_many_delivery_outcome_types(std::move(msg)); }));
     return subs;
 }

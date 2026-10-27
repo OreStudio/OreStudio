@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <rfl.hpp>
@@ -28,9 +29,6 @@
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[rfl][decimal]");
 
 struct holds_amount {
     std::string label;
@@ -46,7 +44,7 @@ struct maybe_holds_amount {
 using ores::utility::decimal::decimal;
 using namespace ores::logging;
 
-TEST_CASE("decimal_reflects_as_its_exact_text", tags) {
+TEST_CASE("decimal_reflects_as_its_exact_text", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     const auto value = decimal::from_string("0.1").value();
@@ -55,7 +53,7 @@ TEST_CASE("decimal_reflects_as_its_exact_text", tags) {
     CHECK(rfl::Reflector<decimal>::to("1e-10").to_string() == "0.0000000001");
 }
 
-TEST_CASE("decimal_travels_as_a_json_string_not_a_number", tags) {
+TEST_CASE("decimal_travels_as_a_json_string_not_a_number", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     holds_amount sut{.label = "notional", .amount = decimal::from_string("0.1").value()};
@@ -68,7 +66,7 @@ TEST_CASE("decimal_travels_as_a_json_string_not_a_number", tags) {
     CHECK(read->amount == sut.amount);
 }
 
-TEST_CASE("decimal_json_read_keeps_a_value_a_double_cannot", tags) {
+TEST_CASE("decimal_json_read_keeps_a_value_a_double_cannot", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     const auto text = R"({"label":"notional","amount":"12345678901234567890.123456789"})";
@@ -77,7 +75,7 @@ TEST_CASE("decimal_json_read_keeps_a_value_a_double_cannot", tags) {
     CHECK(read->amount.to_string() == "12345678901234567890.123456789");
 }
 
-TEST_CASE("decimal_travels_the_msgpack_wire_exactly", tags) {
+TEST_CASE("decimal_travels_the_msgpack_wire_exactly", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     const auto sut =
@@ -90,7 +88,7 @@ TEST_CASE("decimal_travels_the_msgpack_wire_exactly", tags) {
     CHECK(read->amount.to_string() == "12345678901234567890.123456789");
 }
 
-TEST_CASE("decimal_json_read_refuses_text_that_is_not_a_decimal", tags) {
+TEST_CASE("decimal_json_read_refuses_text_that_is_not_a_decimal", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(
@@ -98,7 +96,7 @@ TEST_CASE("decimal_json_read_refuses_text_that_is_not_a_decimal", tags) {
     CHECK_FALSE(rfl::json::read<holds_amount>(R"({"label":"notional","amount":""})").has_value());
 }
 
-TEST_CASE("optional_decimal_travels_as_an_omitted_field_when_absent", tags) {
+TEST_CASE("optional_decimal_travels_as_an_omitted_field_when_absent", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     const auto absent = rfl::json::write(maybe_holds_amount{});

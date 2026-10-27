@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 974EC72D-5B19-4979-A9B4-3E96E732981A
+:END:
+#+title: Task: Compare one repository on sqlgen, libpqxx and raw libpq
+#+description: Write one entity's repository three ways and measure reads, batch writes and allocations against the same database.
+#+type: task
+#+level: s1
+#+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Numbers for one entity's reads, batch writes and allocations on sqlgen, libpqxx and raw libpq in binary format, and which one the generated control plane should target.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- One entity's repository work runs on sqlgen, libpqxx and raw libpq against
+  the same table, with the same row type and the same timestamp parser.
+- Each workload has a median, a range and an allocation count.
+- Each client's translation unit has a compile time and a peak memory.
+- Every large gap has a cause, found on the wire and not guessed.
+
+* Plan
+
+The entity is the change reason category of =ores.dq=: nine columns, a text
+key, and the shape of most control-plane entities. The benchmark is in
+=evidence/repository_bench/=.
+
+- =row.hpp= is the row every client writes and reads, with =recorded_at= as a
+  =time_point=. Every client parses the timestamp with
+  =ores::platform::time::datetime::from_iso8601_utc=, as the real mapper does.
+- Each client creates a session table, =pg_temp.bench_crc=, with the columns
+  and primary key of =ores_dq_change_reason_categories_tbl= and none of its
+  triggers. The triggers cost the same whatever client writes, so without them
+  the benchmark measures the client.
+- =sqlgen_client.cpp= uses the same calls as the generated repository:
+  =insert= in a transaction, and =read= with =where= and =order_by=.
+- =pqxx_client.cpp= uses prepared statements, one round trip each. Its copy
+  variant writes through =stream_to=.
+- =libpq_client.cpp= writes a batch in pipeline mode with a prepared insert, and
+  reads with prepared statements in text format.
+- =main.cpp= runs five rounds of each workload on each client: write 1,000
+  rows, read all 1,000, and 1,000 point reads by code. It counts C++
+  allocations with a replaced =operator new=.
+- =build.py= compiles each client as its own unit with the project's release
+  flags and reports each unit's wall time and peak memory.
+
+The server traffic was then traced with =strace= and TLS off
+(=PGSSLMODE=disable=), to count the statements each client sends.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+Localhost, PostgreSQL 18.6 over TLS, five rounds, medians with the range. The
+machine was heavily loaded during the run (load average 21–24 on 8 cores: a
+unity build here and builds in three other worktrees), so the absolute times
+are high and the ranges wide. The ratios between the clients were the same in
+the TLS run and in the run with TLS off. The decision uses the ratios.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| sqlgen: write 1,000 rows | 70.8 ms (69.3–79.7), 24,073 allocations | =evidence/repository_bench/main.cpp= | 824be0b56a |
+| libpqxx, prepared: write 1,000 rows | 121.9 ms (80.0–190.4), 11,005 allocations | same | 824be0b56a |
+| libpqxx, =stream_to=: write 1,000 rows | 16.4 ms (11.6–23.1), 19 allocations | same | 824be0b56a |
+| libpq, pipeline mode: write 1,000 rows | 24.4 ms (19.8–28.6) | same | 824be0b56a |
+| sqlgen: read all 1,000 | 4.26 ms (4.20–7.83), 24,111 allocations | same | 824be0b56a |
+| libpqxx: read all 1,000 | 5.18 ms (3.96–9.22), 9,008 allocations | same | 824be0b56a |
+| libpq: read all 1,000 | 3.76 ms (3.59–4.60), 9,001 allocations | same | 824be0b56a |
+| sqlgen: 1,000 point reads | 540 ms (462–568), 114 allocations a read | same | 824be0b56a |
+| libpqxx: 1,000 point reads | 101 ms (72–168), 17 allocations a read | same | 824be0b56a |
+| libpq: 1,000 point reads | 72.9 ms (68.5–84.6), 10 allocations a read | same | 824be0b56a |
+| Statements per sqlgen read | 6: =BEGIN=, =DECLARE= cursor, 2 × =FETCH FORWARD=, =CLOSE=, end | =strace -e sendto=, TLS off: 5,005 =DECLARE= and 10,010 =FETCH= for 5,005 reads | 824be0b56a |
+| Compile, =sqlgen_client.cpp= | 10.0 s, 410 MiB | =evidence/repository_bench/build.py= | 824be0b56a |
+| Compile, =pqxx_client.cpp= | 4.6 s, 251 MiB | same | 824be0b56a |
+| Compile, =libpq_client.cpp= | 2.0 s, 175 MiB | same | 824be0b56a |
+
+The allocation counter sees only C++ =new=. libpq allocates its results with
+=malloc=, which the counter does not see, so the libpq write shows none. The
+counts compare the C++ side of each client, not the whole process.
+
+* Notes
+
+** Why sqlgen reads are slow
+
+sqlgen reads every query through a cursor. One read sends =BEGIN=, =DECLARE
+sqlgen_cursor_N CURSOR FOR SELECT ...=, =FETCH FORWARD= until the cursor is
+empty, =CLOSE= and the end of the transaction: six round trips where the other
+clients send one. A point read therefore costs 5–7 times as much on sqlgen.
+Every repository read in the services pays this today, and a service behind
+the pooler pays it on each acquire as well. A read of 1,000 rows hides the cost,
+because the transfer of the rows is most of the time.
+
+** Writes
+
+sqlgen and prepared libpqxx both send one prepared insert per row, so both are
+bound by the round trip. Pipeline mode and COPY remove that bound: 3–5 times
+faster than sqlgen for a batch of 1,000. COPY through =stream_to= is the
+fastest batch write. It suits tick ingest and bulk loads; pipeline mode suits
+control-plane batches, which need a result for each row.
+
+** Allocations
+
+sqlgen allocates 24 C++ objects per row it writes or reads, and 114 per point
+read, against 9–17 for the others. The causes are not measured. The likely
+ones are the SQL text sqlgen builds for each call, the cursor statements, and
+=rfl::Timestamp=, which the mapper formats to a string and parses again.
+
+** Compile cost
+
+The sqlgen unit takes five times as long as the libpq unit to compile, and 2.3
+times as much memory. libpqxx is between them. A generated repository on libpq
+is the cheapest of the three to build.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The control plane should target raw libpq through a thin generated layer, with
+prepared statements, pipeline mode for batches and COPY for bulk loads.
+Against sqlgen, a point read is 5–7 times faster because it is one round trip
+and not six. A batch write is 3–5 times faster, and the translation unit
+compiles in a fifth of the time. libpqxx is close to libpq at run time, but it
+does not have pipeline mode, it needs a clang triplet, and it compiles twice as
+slowly as libpq. Binary results are not needed for this entity: a read of 1,000
+text rows takes about 4 ms on every client. The absolute numbers come from a
+loaded machine and must be measured again when it is quiet.

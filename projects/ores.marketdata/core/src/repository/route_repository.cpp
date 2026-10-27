@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy route_list_order(const ores::utility::domain::order& order,
+                                          std::initializer_list<std::string> default_columns,
+                                          bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!route_repository::is_sortable(order.field))
@@ -96,7 +96,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::routes_filter>& filter) {
+route_filter_condition(const std::optional<messaging::routes_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -367,8 +367,8 @@ route_repository::read_latest(context ctx,
     return execute_ordered_read_query<route_entity, domain::route>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        route_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), route_filter_condition(filter)),
         [](const auto& entities) { return route_mapper::map(entities); },
         lg(),
         "Reading latest routes with pagination.");
@@ -384,7 +384,11 @@ route_repository::get_total_route_count(context ctx,
     const auto query = sqlgen::read<std::vector<route_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<route_entity>(
-        ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting routes");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), route_filter_condition(filter)),
+        lg(),
+        "Counting routes");
 }
 
 std::vector<domain::route> route_repository::read_latest(context ctx,

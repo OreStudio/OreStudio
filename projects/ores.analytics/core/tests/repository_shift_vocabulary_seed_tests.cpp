@@ -41,8 +41,6 @@
 
 namespace {
 
-const std::string tags("[repository][shift_vocabulary][database]");
-
 std::string read_schema(const std::string& name) {
     std::ifstream in(ores::testing::project_root::resolve("external/ore/xsd/" + name));
     REQUIRE(in.good());
@@ -70,7 +68,8 @@ ores::database::context system_context(ores::testing::scoped_database_helper& h)
 
 }
 
-TEST_CASE("the seeded stress shift families are the stresstest type's elements", tags) {
+TEST_CASE("the seeded stress shift families are the stresstest type's elements",
+          "[repository][shift_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
     const auto body = type_body(read_schema("stress.xsd"), "complexType", "stresstest");
     auto expected = matches(body, std::regex(R"re(<xs:element[^>]*name="([A-Za-z]+)")re"));
@@ -84,7 +83,8 @@ TEST_CASE("the seeded stress shift families are the stresstest type's elements",
     CHECK(seeded == expected);
 }
 
-TEST_CASE("the seeded shift types are the schema's shiftType enumeration", tags) {
+TEST_CASE("the seeded shift types are the schema's shiftType enumeration",
+          "[repository][shift_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
     const auto body = type_body(read_schema("ore_types.xsd"), "simpleType", "shiftType");
     const auto expected = matches(body, std::regex(R"re(<xs:enumeration value="([^"]+)")re"));

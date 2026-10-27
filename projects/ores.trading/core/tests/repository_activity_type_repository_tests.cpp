@@ -25,14 +25,8 @@
 #include "ores.trading.api/generators/activity_type_generator.hpp"
 #include "ores.trading.core/repository/activity_type_repository.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::trading::generators;
@@ -40,7 +34,7 @@ using namespace ores::trading::generators;
 using ores::testing::database_helper;
 using ores::trading::repository::activity_type_repository;
 
-TEST_CASE("write_single_activity_type", tags) {
+TEST_CASE("write_single_activity_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -58,7 +52,7 @@ TEST_CASE("write_single_activity_type", tags) {
     CHECK(read[0].description == at.description);
 }
 
-TEST_CASE("write_multiple_activity_types", tags) {
+TEST_CASE("write_multiple_activity_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -80,7 +74,7 @@ TEST_CASE("write_multiple_activity_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_activity_types", tags) {
+TEST_CASE("read_latest_activity_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -103,7 +97,7 @@ TEST_CASE("read_latest_activity_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_activity_type_by_code", tags) {
+TEST_CASE("read_latest_activity_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -123,7 +117,7 @@ TEST_CASE("read_latest_activity_type_by_code", tags) {
     CHECK(read[0].description == target.description);
 }
 
-TEST_CASE("read_all_versions_of_activity_type", tags) {
+TEST_CASE("read_all_versions_of_activity_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -150,7 +144,7 @@ TEST_CASE("read_all_versions_of_activity_type", tags) {
     CHECK(all.size() >= 2);
 }
 
-TEST_CASE("remove_activity_type", tags) {
+TEST_CASE("remove_activity_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -171,7 +165,7 @@ TEST_CASE("remove_activity_type", tags) {
     CHECK(after.size() == before.size() - 1);
 }
 
-TEST_CASE("read_nonexistent_activity_type", tags) {
+TEST_CASE("read_nonexistent_activity_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

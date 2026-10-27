@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void notification_recipient_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void notification_recipient_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -213,7 +213,7 @@ void notification_recipient_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        notification_recipient_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -261,8 +261,10 @@ void notification_recipient_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.notification_id, parsed->positionals[next++], "notification_id");
-        read_token(req.key.account_id, parsed->positionals[next++], "account_id");
+        notification_recipient_read_token(
+            req.key.notification_id, parsed->positionals[next++], "notification_id");
+        notification_recipient_read_token(
+            req.key.account_id, parsed->positionals[next++], "account_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -307,8 +309,10 @@ void notification_recipient_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::notification_recipient_key key;
-            read_token(key.notification_id, parsed->positionals[i + 0], "notification_id");
-            read_token(key.account_id, parsed->positionals[i + 1], "account_id");
+            notification_recipient_read_token(
+                key.notification_id, parsed->positionals[i + 0], "notification_id");
+            notification_recipient_read_token(
+                key.account_id, parsed->positionals[i + 1], "account_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -353,11 +357,14 @@ void notification_recipient_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(
+        notification_recipient_read_token(
             req.change.write.notification_id, parsed->positionals[next++], "notification_id");
-        read_token(req.change.write.account_id, parsed->positionals[next++], "account_id");
-        read_token(req.change.write.read_at, parsed->positionals[next++], "read_at");
-        read_token(req.change.write.cleared_at, parsed->positionals[next++], "cleared_at");
+        notification_recipient_read_token(
+            req.change.write.account_id, parsed->positionals[next++], "account_id");
+        notification_recipient_read_token(
+            req.change.write.read_at, parsed->positionals[next++], "read_at");
+        notification_recipient_read_token(
+            req.change.write.cleared_at, parsed->positionals[next++], "cleared_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -405,11 +412,14 @@ void notification_recipient_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(
+        notification_recipient_read_token(
             req.change.write.notification_id, parsed->positionals[next++], "notification_id");
-        read_token(req.change.write.account_id, parsed->positionals[next++], "account_id");
-        read_token(req.change.write.read_at, parsed->positionals[next++], "read_at");
-        read_token(req.change.write.cleared_at, parsed->positionals[next++], "cleared_at");
+        notification_recipient_read_token(
+            req.change.write.account_id, parsed->positionals[next++], "account_id");
+        notification_recipient_read_token(
+            req.change.write.read_at, parsed->positionals[next++], "read_at");
+        notification_recipient_read_token(
+            req.change.write.cleared_at, parsed->positionals[next++], "cleared_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -471,11 +481,14 @@ void notification_recipient_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::notification_recipient_change change;
-            read_token(
+            notification_recipient_read_token(
                 change.write.notification_id, parsed->positionals[next++], "notification_id");
-            read_token(change.write.account_id, parsed->positionals[next++], "account_id");
-            read_token(change.write.read_at, parsed->positionals[next++], "read_at");
-            read_token(change.write.cleared_at, parsed->positionals[next++], "cleared_at");
+            notification_recipient_read_token(
+                change.write.account_id, parsed->positionals[next++], "account_id");
+            notification_recipient_read_token(
+                change.write.read_at, parsed->positionals[next++], "read_at");
+            notification_recipient_read_token(
+                change.write.cleared_at, parsed->positionals[next++], "cleared_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -525,8 +538,10 @@ void notification_recipient_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.notification_id, parsed->positionals[next++], "notification_id");
-        read_token(req.removal.key.account_id, parsed->positionals[next++], "account_id");
+        notification_recipient_read_token(
+            req.removal.key.notification_id, parsed->positionals[next++], "notification_id");
+        notification_recipient_read_token(
+            req.removal.key.account_id, parsed->positionals[next++], "account_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -580,8 +595,10 @@ void notification_recipient_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::notification_recipient_key key;
-            read_token(key.notification_id, parsed->positionals[i * 2 + 0], "notification_id");
-            read_token(key.account_id, parsed->positionals[i * 2 + 1], "account_id");
+            notification_recipient_read_token(
+                key.notification_id, parsed->positionals[i * 2 + 0], "notification_id");
+            notification_recipient_read_token(
+                key.account_id, parsed->positionals[i * 2 + 1], "account_id");
             req.removals.push_back(
                 messaging::notification_recipient_removal{.key = std::move(key)});
         }
@@ -641,7 +658,7 @@ void notification_recipient_commands::process_by_account_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        notification_recipient_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

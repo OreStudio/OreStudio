@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view tenor_basis_swap_long_short_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_tenor_basis_swap_long_short_handlers(
@@ -51,53 +51,53 @@ std::vector<ores::nats::service::subscription> register_tenor_basis_swap_long_sh
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_tenor_basis_swap_long_shorts_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_long_short_queue_group,
         [h](ores::nats::message msg) { h->list_tenor_basis_swap_long_shorts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_tenor_basis_swap_long_short_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_long_short_queue_group,
         [h](ores::nats::message msg) { h->get_tenor_basis_swap_long_short(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_tenor_basis_swap_long_shorts_request::nats_subject,
-                                        queue_group,
+                                        tenor_basis_swap_long_short_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_tenor_basis_swap_long_shorts(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_tenor_basis_swap_long_short_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_long_short_queue_group,
         [h](ores::nats::message msg) { h->put_tenor_basis_swap_long_short(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_tenor_basis_swap_long_shorts_request::nats_subject,
-                                        queue_group,
+                                        tenor_basis_swap_long_short_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_tenor_basis_swap_long_shorts(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         delete_tenor_basis_swap_long_short_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_long_short_queue_group,
         [h](ores::nats::message msg) { h->delete_tenor_basis_swap_long_short(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_tenor_basis_swap_long_shorts_request::nats_subject,
-                             queue_group,
+                             tenor_basis_swap_long_short_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_tenor_basis_swap_long_shorts(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_convention_id_tenor_basis_swap_long_shorts_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_long_short_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_convention_id_tenor_basis_swap_long_shorts(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(list_tenor_basis_swap_long_short_versions_request::nats_subject,
-                             queue_group,
+                             tenor_basis_swap_long_short_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_tenor_basis_swap_long_short_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_tenor_basis_swap_long_short_version_request::nats_subject,
-                             queue_group,
+                             tenor_basis_swap_long_short_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_tenor_basis_swap_long_short_version(std::move(msg));
                              }));

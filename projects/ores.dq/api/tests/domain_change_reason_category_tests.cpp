@@ -21,19 +21,13 @@
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/change_reason_category_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::dq::domain::change_reason_category;
 using namespace ores::logging;
 
-TEST_CASE("create_change_reason_category_with_valid_fields", tags) {
+TEST_CASE("create_change_reason_category_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     change_reason_category sut;
@@ -49,7 +43,7 @@ TEST_CASE("create_change_reason_category_with_valid_fields", tags) {
     CHECK(sut.modified_by == "admin");
 }
 
-TEST_CASE("change_reason_category_convert_single_to_table", tags) {
+TEST_CASE("change_reason_category_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     change_reason_category cat;

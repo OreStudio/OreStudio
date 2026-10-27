@@ -21,33 +21,28 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-namespace {
-
-const std::string tags("[domain][adapter_subjects]");
-
-}
-
 using namespace ores::marketdata::domain;
 
-TEST_CASE("the_control_subjects_name_the_adapter", tags) {
+TEST_CASE("the_control_subjects_name_the_adapter", "[domain][adapter_subjects]") {
     CHECK(adapter_announce_subject() == "marketdata.v1.adapters.announce");
     CHECK(adapter_demand_subject("bloomberg-sim") == "marketdata.v1.adapters.bloomberg-sim.demand");
     CHECK(adapter_heartbeat_subject("bloomberg-sim") ==
           "marketdata.v1.adapters.bloomberg-sim.heartbeat");
 }
 
-TEST_CASE("the_control_subjects_encode_an_awkward_adapter_id", tags) {
+TEST_CASE("the_control_subjects_encode_an_awkward_adapter_id", "[domain][adapter_subjects]") {
     CHECK(adapter_demand_subject("ore sim.1") == "marketdata.v1.adapters.ore%20sim%2E1.demand");
     CHECK(adapter_heartbeat_subject("ore sim.1") ==
           "marketdata.v1.adapters.ore%20sim%2E1.heartbeat");
 }
 
-TEST_CASE("an_ingress_subject_holds_one_token_for_the_adapter_and_one_for_the_id", tags) {
+TEST_CASE("an_ingress_subject_holds_one_token_for_the_adapter_and_one_for_the_id",
+          "[domain][adapter_subjects]") {
     const auto subject = adapter_ingress_subject("bloomberg-sim", "EURUSD Curncy");
     CHECK(subject == "marketdata.v1.ingress.bloomberg-sim.EURUSD%20Curncy");
 }
 
-TEST_CASE("an_ingress_subject_encodes_spaces_equals_signs_and_dots", tags) {
+TEST_CASE("an_ingress_subject_encodes_spaces_equals_signs_and_dots", "[domain][adapter_subjects]") {
     const auto bloomberg = adapter_ingress_subject("a", "EURUSD Curncy");
     const auto lseg = adapter_ingress_subject("a", "EUR=");
     const auto dotted = adapter_ingress_subject("a", "GBP.USD");
@@ -62,7 +57,7 @@ TEST_CASE("an_ingress_subject_encodes_spaces_equals_signs_and_dots", tags) {
     }
 }
 
-TEST_CASE("an_ingress_subject_gives_its_adapter_and_id_back", tags) {
+TEST_CASE("an_ingress_subject_gives_its_adapter_and_id_back", "[domain][adapter_subjects]") {
     for (const auto& id : {std::string("EURUSD Curncy"),
                            std::string("EUR="),
                            std::string("GBP.USD"),
@@ -76,7 +71,8 @@ TEST_CASE("an_ingress_subject_gives_its_adapter_and_id_back", tags) {
     }
 }
 
-TEST_CASE("a_subject_that_is_not_an_ingress_subject_gives_nothing_back", tags) {
+TEST_CASE("a_subject_that_is_not_an_ingress_subject_gives_nothing_back",
+          "[domain][adapter_subjects]") {
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.adapters.announce").has_value());
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.only").has_value());
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.a.b.c").has_value());
@@ -85,12 +81,12 @@ TEST_CASE("a_subject_that_is_not_an_ingress_subject_gives_nothing_back", tags) {
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress..x").has_value());
 }
 
-TEST_CASE("the_wildcards_cover_every_adapter_or_one", tags) {
+TEST_CASE("the_wildcards_cover_every_adapter_or_one", "[domain][adapter_subjects]") {
     CHECK(adapter_ingress_subject_all() == "marketdata.v1.ingress.>");
     CHECK(adapter_ingress_subject_for("ore-sim") == "marketdata.v1.ingress.ore-sim.>");
 }
 
-TEST_CASE("no_adapter_subject_carries_a_mark_of_the_source_kind", tags) {
+TEST_CASE("no_adapter_subject_carries_a_mark_of_the_source_kind", "[domain][adapter_subjects]") {
     for (const auto& subject : {adapter_announce_subject(),
                                 adapter_demand_subject("a"),
                                 adapter_heartbeat_subject("a"),
@@ -102,7 +98,7 @@ TEST_CASE("no_adapter_subject_carries_a_mark_of_the_source_kind", tags) {
     }
 }
 
-TEST_CASE("a_heartbeat_subject_gives_its_adapter_back", tags) {
+TEST_CASE("a_heartbeat_subject_gives_its_adapter_back", "[domain][adapter_subjects]") {
     for (const auto& id :
          {std::string("bloomberg-sim"), std::string("ore sim.1"), std::string("a=b")}) {
         CAPTURE(id);
@@ -113,7 +109,7 @@ TEST_CASE("a_heartbeat_subject_gives_its_adapter_back", tags) {
     CHECK(adapter_heartbeat_subject_all() == "marketdata.v1.adapters.*.heartbeat");
 }
 
-TEST_CASE("a_subject_that_is_not_a_heartbeat_gives_no_adapter", tags) {
+TEST_CASE("a_subject_that_is_not_a_heartbeat_gives_no_adapter", "[domain][adapter_subjects]") {
     CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters.announce").has_value());
     CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters.a.demand").has_value());
     CHECK_FALSE(adapter_heartbeat_subject_adapter("marketdata.v1.adapters..heartbeat").has_value());

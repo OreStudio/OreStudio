@@ -39,6 +39,8 @@ const PARTY = '99999999-9999-4999-8999-999999999999';
 const BOOK = '77777777-7777-4777-8777-777777777777';
 const COUNTERPARTY = '88888888-8888-4888-8888-888888888888';
 const ISSUE = '66666666-6666-4666-8666-666666666666';
+const TRADE = '77777777-7777-4777-8777-777777777777';
+const OTHER = '88888888-8888-4888-8888-888888888888';
 const ACTIVITY = '55555555-5555-4555-8555-555555555555';
 const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
 
@@ -189,6 +191,92 @@ describe('POST /api/trades', () => {
         const { server, sessionId } = buildTestServer({});
 
         const reply = await book(server, sessionId, { bookId: 'not-a-uuid' });
+
+        expect(reply.statusCode).toBe(400);
+    });
+});
+
+describe('the link routes', () => {
+    it('answers the link types with the words that describe them', async () => {
+        const { server, sessionId } = buildTestServer({
+            'trading.v1.trade_link_types.list': {
+                result: ok,
+                total: 1,
+                link_types: [{ code: 'Hedge', description: 'A hedge of another trade' }],
+            },
+        });
+
+        const reply = await server.inject({
+            method: 'GET',
+            url: '/api/trade-link-types',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(reply.statusCode).toBe(200);
+        expect(reply.json()).toEqual({
+            rows: [{ code: 'Hedge', description: 'A hedge of another trade' }],
+        });
+    });
+
+    it('records a link against the newest state, whatever order the reply is in', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'trading.v1.trade_states.list': {
+                result: ok,
+                trade_states: [
+                    {
+                        trade_id: TRADE,
+                        trade_activity_id: '11111111-1111-4111-8111-111111111111',
+                        version: 9,
+                    },
+                    { trade_id: TRADE, trade_activity_id: ACTIVITY, version: 2 },
+                ],
+            },
+            'trading.v1.trade_links.put': { result: ok },
+        });
+
+        const reply = await server.inject({
+            method: 'POST',
+            url: `/api/trades/${TRADE}/links`,
+            cookies: { [SESSION_COOKIE]: sessionId },
+            payload: { linkType: 'Hedge', otherTradeId: OTHER },
+        });
+
+        expect(reply.statusCode).toBe(200);
+        const written = calls.at(-1)?.body as { change: { write: Record<string, unknown> } };
+        expect(written.change.write['from_trade_id']).toBe(TRADE);
+        expect(written.change.write['to_trade_id']).toBe(OTHER);
+        expect(written.change.write['link_type']).toBe('Hedge');
+        // The higher version wins even though the reply lists it first.
+        expect(written.change.write['trade_activity_id']).toBe(
+            '11111111-1111-4111-8111-111111111111',
+        );
+    });
+
+    it('refuses a trade linked to itself', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const reply = await server.inject({
+            method: 'POST',
+            url: `/api/trades/${TRADE}/links`,
+            cookies: { [SESSION_COOKIE]: sessionId },
+            payload: { linkType: 'Hedge', otherTradeId: TRADE },
+        });
+
+        expect(reply.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a trade with no activity to record the link against', async () => {
+        const { server, sessionId } = buildTestServer({
+            'trading.v1.trade_states.list': { result: ok, trade_states: [] },
+        });
+
+        const reply = await server.inject({
+            method: 'POST',
+            url: `/api/trades/${TRADE}/links`,
+            cookies: { [SESSION_COOKIE]: sessionId },
+            payload: { linkType: 'Hedge', otherTradeId: OTHER },
+        });
 
         expect(reply.statusCode).toBe(400);
     });

@@ -19,7 +19,7 @@
  */
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
-#include "ores.ore.core/xml/emitter.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/projection.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -195,11 +195,11 @@ pricing_engine_projection::document pricing_engine_projection::read(std::string_
 }
 
 std::string pricing_engine_projection::write(const document& v) {
-    std::string out;
-    const auto emitted = xml::emitter::emit(xg::pricing_engines_document(), &v, out);
-    if (!emitted)
-        throw std::runtime_error(emitted.error().message);
-    return out;
+    // One writer states this document: the ORE exporter writes it with pugixml,
+    // and it writes every section the document states, an empty one as an empty
+    // element. The emitter this used to call is gone, so the round trip and the
+    // export cannot write two different documents.
+    return xml::exporter::export_pricing_engines(v);
 }
 
 pricing_engine_projection::document

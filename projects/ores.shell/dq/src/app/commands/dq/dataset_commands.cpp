@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void dataset_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void dataset_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -228,7 +228,7 @@ void dataset_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        dataset_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -276,7 +276,7 @@ void dataset_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.code, parsed->positionals[next++], "code");
+        dataset_read_token(req.key.code, parsed->positionals[next++], "code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -321,7 +321,7 @@ void dataset_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::dataset_key key;
-            read_token(key.code, parsed->positionals[i + 0], "code");
+            dataset_read_token(key.code, parsed->positionals[i + 0], "code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -367,33 +367,43 @@ void dataset_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.code, parsed->positionals[next++], "code");
-        read_token(req.change.write.catalog_name, parsed->positionals[next++], "catalog_name");
-        read_token(
+        dataset_read_token(req.change.write.code, parsed->positionals[next++], "code");
+        dataset_read_token(
+            req.change.write.catalog_name, parsed->positionals[next++], "catalog_name");
+        dataset_read_token(
             req.change.write.subject_area_name, parsed->positionals[next++], "subject_area_name");
-        read_token(req.change.write.domain_name, parsed->positionals[next++], "domain_name");
-        read_token(
+        dataset_read_token(
+            req.change.write.domain_name, parsed->positionals[next++], "domain_name");
+        dataset_read_token(
             req.change.write.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-        read_token(req.change.write.origin_code, parsed->positionals[next++], "origin_code");
-        read_token(req.change.write.nature_code, parsed->positionals[next++], "nature_code");
-        read_token(req.change.write.treatment_code, parsed->positionals[next++], "treatment_code");
-        read_token(req.change.write.methodology_id, parsed->positionals[next++], "methodology_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(
+        dataset_read_token(
+            req.change.write.origin_code, parsed->positionals[next++], "origin_code");
+        dataset_read_token(
+            req.change.write.nature_code, parsed->positionals[next++], "nature_code");
+        dataset_read_token(
+            req.change.write.treatment_code, parsed->positionals[next++], "treatment_code");
+        dataset_read_token(
+            req.change.write.methodology_id, parsed->positionals[next++], "methodology_id");
+        dataset_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        dataset_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        dataset_read_token(
             req.change.write.source_system_id, parsed->positionals[next++], "source_system_id");
-        read_token(
+        dataset_read_token(
             req.change.write.business_context, parsed->positionals[next++], "business_context");
-        read_token(req.change.write.upstream_derivation_id,
-                   parsed->positionals[next++],
-                   "upstream_derivation_id");
-        read_token(req.change.write.lineage_depth, parsed->positionals[next++], "lineage_depth");
-        read_token(req.change.write.as_of_date, parsed->positionals[next++], "as_of_date");
-        read_token(req.change.write.ingestion_timestamp,
-                   parsed->positionals[next++],
-                   "ingestion_timestamp");
-        read_token(req.change.write.license_info, parsed->positionals[next++], "license_info");
-        read_token(req.change.write.artefact_type, parsed->positionals[next++], "artefact_type");
+        dataset_read_token(req.change.write.upstream_derivation_id,
+                           parsed->positionals[next++],
+                           "upstream_derivation_id");
+        dataset_read_token(
+            req.change.write.lineage_depth, parsed->positionals[next++], "lineage_depth");
+        dataset_read_token(req.change.write.as_of_date, parsed->positionals[next++], "as_of_date");
+        dataset_read_token(req.change.write.ingestion_timestamp,
+                           parsed->positionals[next++],
+                           "ingestion_timestamp");
+        dataset_read_token(
+            req.change.write.license_info, parsed->positionals[next++], "license_info");
+        dataset_read_token(
+            req.change.write.artefact_type, parsed->positionals[next++], "artefact_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -441,34 +451,44 @@ void dataset_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.code, parsed->positionals[next++], "code");
-        read_token(req.change.write.catalog_name, parsed->positionals[next++], "catalog_name");
-        read_token(
+        dataset_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        dataset_read_token(req.change.write.code, parsed->positionals[next++], "code");
+        dataset_read_token(
+            req.change.write.catalog_name, parsed->positionals[next++], "catalog_name");
+        dataset_read_token(
             req.change.write.subject_area_name, parsed->positionals[next++], "subject_area_name");
-        read_token(req.change.write.domain_name, parsed->positionals[next++], "domain_name");
-        read_token(
+        dataset_read_token(
+            req.change.write.domain_name, parsed->positionals[next++], "domain_name");
+        dataset_read_token(
             req.change.write.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-        read_token(req.change.write.origin_code, parsed->positionals[next++], "origin_code");
-        read_token(req.change.write.nature_code, parsed->positionals[next++], "nature_code");
-        read_token(req.change.write.treatment_code, parsed->positionals[next++], "treatment_code");
-        read_token(req.change.write.methodology_id, parsed->positionals[next++], "methodology_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(
+        dataset_read_token(
+            req.change.write.origin_code, parsed->positionals[next++], "origin_code");
+        dataset_read_token(
+            req.change.write.nature_code, parsed->positionals[next++], "nature_code");
+        dataset_read_token(
+            req.change.write.treatment_code, parsed->positionals[next++], "treatment_code");
+        dataset_read_token(
+            req.change.write.methodology_id, parsed->positionals[next++], "methodology_id");
+        dataset_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        dataset_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        dataset_read_token(
             req.change.write.source_system_id, parsed->positionals[next++], "source_system_id");
-        read_token(
+        dataset_read_token(
             req.change.write.business_context, parsed->positionals[next++], "business_context");
-        read_token(req.change.write.upstream_derivation_id,
-                   parsed->positionals[next++],
-                   "upstream_derivation_id");
-        read_token(req.change.write.lineage_depth, parsed->positionals[next++], "lineage_depth");
-        read_token(req.change.write.as_of_date, parsed->positionals[next++], "as_of_date");
-        read_token(req.change.write.ingestion_timestamp,
-                   parsed->positionals[next++],
-                   "ingestion_timestamp");
-        read_token(req.change.write.license_info, parsed->positionals[next++], "license_info");
-        read_token(req.change.write.artefact_type, parsed->positionals[next++], "artefact_type");
+        dataset_read_token(req.change.write.upstream_derivation_id,
+                           parsed->positionals[next++],
+                           "upstream_derivation_id");
+        dataset_read_token(
+            req.change.write.lineage_depth, parsed->positionals[next++], "lineage_depth");
+        dataset_read_token(req.change.write.as_of_date, parsed->positionals[next++], "as_of_date");
+        dataset_read_token(req.change.write.ingestion_timestamp,
+                           parsed->positionals[next++],
+                           "ingestion_timestamp");
+        dataset_read_token(
+            req.change.write.license_info, parsed->positionals[next++], "license_info");
+        dataset_read_token(
+            req.change.write.artefact_type, parsed->positionals[next++], "artefact_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -530,34 +550,44 @@ void dataset_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::dataset_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.code, parsed->positionals[next++], "code");
-            read_token(change.write.catalog_name, parsed->positionals[next++], "catalog_name");
-            read_token(
+            dataset_read_token(change.write.id, parsed->positionals[next++], "id");
+            dataset_read_token(change.write.code, parsed->positionals[next++], "code");
+            dataset_read_token(
+                change.write.catalog_name, parsed->positionals[next++], "catalog_name");
+            dataset_read_token(
                 change.write.subject_area_name, parsed->positionals[next++], "subject_area_name");
-            read_token(change.write.domain_name, parsed->positionals[next++], "domain_name");
-            read_token(
+            dataset_read_token(
+                change.write.domain_name, parsed->positionals[next++], "domain_name");
+            dataset_read_token(
                 change.write.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-            read_token(change.write.origin_code, parsed->positionals[next++], "origin_code");
-            read_token(change.write.nature_code, parsed->positionals[next++], "nature_code");
-            read_token(change.write.treatment_code, parsed->positionals[next++], "treatment_code");
-            read_token(change.write.methodology_id, parsed->positionals[next++], "methodology_id");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(
+            dataset_read_token(
+                change.write.origin_code, parsed->positionals[next++], "origin_code");
+            dataset_read_token(
+                change.write.nature_code, parsed->positionals[next++], "nature_code");
+            dataset_read_token(
+                change.write.treatment_code, parsed->positionals[next++], "treatment_code");
+            dataset_read_token(
+                change.write.methodology_id, parsed->positionals[next++], "methodology_id");
+            dataset_read_token(change.write.name, parsed->positionals[next++], "name");
+            dataset_read_token(
+                change.write.description, parsed->positionals[next++], "description");
+            dataset_read_token(
                 change.write.source_system_id, parsed->positionals[next++], "source_system_id");
-            read_token(
+            dataset_read_token(
                 change.write.business_context, parsed->positionals[next++], "business_context");
-            read_token(change.write.upstream_derivation_id,
-                       parsed->positionals[next++],
-                       "upstream_derivation_id");
-            read_token(change.write.lineage_depth, parsed->positionals[next++], "lineage_depth");
-            read_token(change.write.as_of_date, parsed->positionals[next++], "as_of_date");
-            read_token(change.write.ingestion_timestamp,
-                       parsed->positionals[next++],
-                       "ingestion_timestamp");
-            read_token(change.write.license_info, parsed->positionals[next++], "license_info");
-            read_token(change.write.artefact_type, parsed->positionals[next++], "artefact_type");
+            dataset_read_token(change.write.upstream_derivation_id,
+                               parsed->positionals[next++],
+                               "upstream_derivation_id");
+            dataset_read_token(
+                change.write.lineage_depth, parsed->positionals[next++], "lineage_depth");
+            dataset_read_token(change.write.as_of_date, parsed->positionals[next++], "as_of_date");
+            dataset_read_token(change.write.ingestion_timestamp,
+                               parsed->positionals[next++],
+                               "ingestion_timestamp");
+            dataset_read_token(
+                change.write.license_info, parsed->positionals[next++], "license_info");
+            dataset_read_token(
+                change.write.artefact_type, parsed->positionals[next++], "artefact_type");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -607,7 +637,7 @@ void dataset_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.code, parsed->positionals[next++], "code");
+        dataset_read_token(req.removal.key.code, parsed->positionals[next++], "code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -661,7 +691,7 @@ void dataset_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::dataset_key key;
-            read_token(key.code, parsed->positionals[i * 1 + 0], "code");
+            dataset_read_token(key.code, parsed->positionals[i * 1 + 0], "code");
             req.removals.push_back(messaging::dataset_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -713,8 +743,8 @@ void dataset_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.code, parsed->positionals[next++], "code");
-        apply_page(req, *parsed);
+        dataset_read_token(req.key.code, parsed->positionals[next++], "code");
+        dataset_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -759,7 +789,7 @@ void dataset_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.dataset.code, parsed->positionals[next++], "code");
+        dataset_read_token(req.key.dataset.code, parsed->positionals[next++], "code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

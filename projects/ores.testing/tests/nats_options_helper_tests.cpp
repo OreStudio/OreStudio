@@ -20,17 +20,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-namespace {
-
-const std::string test_suite("ores.testing.tests");
-const std::string tags("[testing]");
-
-}
-
-TEST_CASE("reads_every_setting_from_the_environment", tags) {
+TEST_CASE("reads_every_setting_from_the_environment", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const ores::testing::scoped_environment_override env({
@@ -51,7 +45,7 @@ TEST_CASE("reads_every_setting_from_the_environment", tags) {
     CHECK(opts.tls_client_key == "/keys/client.key");
 }
 
-TEST_CASE("falls_back_to_the_local_broker", tags) {
+TEST_CASE("falls_back_to_the_local_broker", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const ores::testing::scoped_environment_override env({}, {"ORES_NATS_URL"});

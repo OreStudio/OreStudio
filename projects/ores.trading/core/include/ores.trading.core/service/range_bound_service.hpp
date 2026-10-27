@@ -75,26 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_range_bounds_response
-    list_range_bounds(const messaging::list_range_bounds_request& request);
-    messaging::get_range_bound_response
-    get_range_bound(const messaging::get_range_bound_request& request);
-    messaging::get_many_range_bounds_response
-    get_many_range_bounds(const messaging::get_many_range_bounds_request& request);
-    messaging::put_range_bound_response
-    put_range_bound(const messaging::put_range_bound_request& request);
-    messaging::put_many_range_bounds_response
-    put_many_range_bounds(const messaging::put_many_range_bounds_request& request);
-    messaging::delete_range_bound_response
-    delete_range_bound(const messaging::delete_range_bound_request& request);
-    messaging::delete_many_range_bounds_response
-    delete_many_range_bounds(const messaging::delete_many_range_bounds_request& request);
-    messaging::list_by_trade_id_range_bounds_response
-    list_by_trade_id_range_bounds(const messaging::list_by_trade_id_range_bounds_request& request);
-    messaging::list_range_bound_versions_response
-    list_range_bound_versions(const messaging::list_range_bound_versions_request& request);
-    messaging::get_range_bound_version_response
-    get_range_bound_version(const messaging::get_range_bound_version_request& request);
+    ::ores::trading::messaging::list_range_bounds_response
+    list_range_bounds(const ::ores::trading::messaging::list_range_bounds_request& request);
+    ::ores::trading::messaging::get_range_bound_response
+    get_range_bound(const ::ores::trading::messaging::get_range_bound_request& request);
+    ::ores::trading::messaging::get_many_range_bounds_response
+    get_many_range_bounds(const ::ores::trading::messaging::get_many_range_bounds_request& request);
+    ::ores::trading::messaging::put_range_bound_response
+    put_range_bound(const ::ores::trading::messaging::put_range_bound_request& request);
+    ::ores::trading::messaging::put_many_range_bounds_response
+    put_many_range_bounds(const ::ores::trading::messaging::put_many_range_bounds_request& request);
+    ::ores::trading::messaging::delete_range_bound_response
+    delete_range_bound(const ::ores::trading::messaging::delete_range_bound_request& request);
+    ::ores::trading::messaging::delete_many_range_bounds_response delete_many_range_bounds(
+        const ::ores::trading::messaging::delete_many_range_bounds_request& request);
+    ::ores::trading::messaging::list_by_trade_id_range_bounds_response
+    list_by_trade_id_range_bounds(
+        const ::ores::trading::messaging::list_by_trade_id_range_bounds_request& request);
+    ::ores::trading::messaging::list_range_bound_versions_response list_range_bound_versions(
+        const ::ores::trading::messaging::list_range_bound_versions_request& request);
+    ::ores::trading::messaging::get_range_bound_version_response get_range_bound_version(
+        const ::ores::trading::messaging::get_range_bound_version_request& request);
     /**@}*/
 
     /**
@@ -214,9 +215,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::range_bound_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::range_bound& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::range_bound_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::range_bound& out);
 };
 
 }

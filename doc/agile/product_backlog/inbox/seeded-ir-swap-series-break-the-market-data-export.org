@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 09236ECF-1728-4193-ACE7-7E35B9B909C4
+:END:
+#+title: Seeded IR swap series break the market data export
+#+description: A fresh database seeds oresmd://ir/<ccy>?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D rows, and the export refuses them with 'has no ORE key: a series has no ORE key'. One such observation fails the whole export, so every report run dies at gather_market_data until the rows are deleted by hand.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

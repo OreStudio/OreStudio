@@ -1,0 +1,27 @@
+d7793dfb260e954c03875abed68b825a9cbb8e8d
+100644 30c88474f424a5308b3b1617567d8887eab4207e 1	projects/ores.codegen/scripts/check_convention_family_registry.py
+100644 94fbe94ef1516a24c7fb8724a927de7277767a25 3	projects/ores.codegen/scripts/check_convention_family_registry.py
+100644 acc831c5c7da9da3714e1e4d050dfc6474aa134a 1	projects/ores.codegen/scripts/regenerate_convention_family_registry.py
+100644 7bb375baa2bcdba26042e33b3b8a68fc4409beeb 3	projects/ores.codegen/scripts/regenerate_convention_family_registry.py
+100644 8d5875e8419cd0462c16cf3f435794bf6452ad78 1	projects/ores.codegen/src/codegen/convention_family_registry.py
+100644 4e3fefb3327eeb699b0b99371a0e06c716b4bcf6 2	projects/ores.codegen/src/codegen/convention_family_registry.py
+100644 34d40fe6c1eb4c265f0449d7ac1123d6c738e459 3	projects/ores.codegen/src/codegen/convention_family_registry.py
+100644 20f8645d7831e03707e29630908b4bb149c9e77c 1	projects/ores.codegen/tests/test_convention_family_registry.py
+100644 c6d3e124f1d41724c00d30a8860e85f69bdbf9cb 2	projects/ores.codegen/tests/test_convention_family_registry.py
+100644 e7aaf29ff1e85fce6a06bb56c6f4306225cc9898 3	projects/ores.codegen/tests/test_convention_family_registry.py
+100644 1c76d3ab9ec855f609b737bd98da6443b3202969 1	projects/ores.web/packages/bff/src/conventions.ts
+100644 160a6b116a6fd6ead414676b131280486ccd852a 2	projects/ores.web/packages/bff/src/conventions.ts
+100644 9d02d313f4afa61a173a7e0a495a14af1ddc0ffa 3	projects/ores.web/packages/bff/src/conventions.ts
+100644 e6317cbd1e72bdd30f35d22e06519b85e6bbe80f 2	projects/ores.web/packages/wire-protocol/src/generated/refdata/domain/convention_family_registry.ts
+100644 cea2f83d712f924a54f9e42566b927f85586074e 3	projects/ores.web/packages/wire-protocol/src/generated/refdata/domain/convention_family_registry.ts
+
+CONFLICT (modify/delete): projects/ores.codegen/scripts/check_convention_family_registry.py deleted in origin/main and modified in task/5F-bff-registry.  Version task/5F-bff-registry of projects/ores.codegen/scripts/check_convention_family_registry.py left in tree.
+CONFLICT (modify/delete): projects/ores.codegen/scripts/regenerate_convention_family_registry.py deleted in origin/main and modified in task/5F-bff-registry.  Version task/5F-bff-registry of projects/ores.codegen/scripts/regenerate_convention_family_registry.py left in tree.
+Auto-merging projects/ores.codegen/src/codegen/convention_family_registry.py
+CONFLICT (content): Merge conflict in projects/ores.codegen/src/codegen/convention_family_registry.py
+Auto-merging projects/ores.codegen/tests/test_convention_family_registry.py
+CONFLICT (content): Merge conflict in projects/ores.codegen/tests/test_convention_family_registry.py
+Auto-merging projects/ores.web/packages/bff/src/conventions.ts
+CONFLICT (content): Merge conflict in projects/ores.web/packages/bff/src/conventions.ts
+Auto-merging projects/ores.web/packages/wire-protocol/src/generated/refdata/domain/convention_family_registry.ts
+CONFLICT (add/add): Merge conflict in projects/ores.web/packages/wire-protocol/src/generated/refdata/domain/convention_family_registry.ts

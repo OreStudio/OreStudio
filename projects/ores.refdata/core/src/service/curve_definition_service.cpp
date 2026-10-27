@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::curve_definition> read_one(repository::curve_definition_repository& repo,
-                                               const ores::database::context& ctx,
-                                               const messaging::curve_definition_key& key) {
+std::vector<domain::curve_definition>
+curve_definition_read_one(repository::curve_definition_repository& repo,
+                          const ores::database::context& ctx,
+                          const messaging::curve_definition_key& key) {
     return repo.read_latest_by_curve_id(ctx, key.curve_id);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::curve_definition> read_one(repository::curve_definition_repo
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::curve_definition_key key_from(const domain::curve_definition& v) {
+messaging::curve_definition_key curve_definition_key_from(const domain::curve_definition& v) {
     messaging::curve_definition_key key;
     key.curve_id = v.curve_id;
     return key;
@@ -98,7 +99,8 @@ messaging::curve_definition_key key_from(const domain::curve_definition& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::curve_definition to_domain(const messaging::curve_definition_write& write) {
+domain::curve_definition
+curve_definition_to_domain(const messaging::curve_definition_write& write) {
     domain::curve_definition v;
     v.id = write.id;
     v.curve_configuration_id = write.curve_configuration_id;
@@ -146,7 +148,7 @@ messaging::list_curve_definitions_response curve_definition_service::list_curve_
 messaging::get_curve_definition_response curve_definition_service::get_curve_definition(
     const messaging::get_curve_definition_request& request) {
     messaging::get_curve_definition_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = curve_definition_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_definition"});
         return response;
@@ -165,7 +167,7 @@ messaging::get_many_curve_definitions_response curve_definition_service::get_man
     for (const auto& k : request.keys) {
         messaging::curve_definition_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = curve_definition_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.curve_definition = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +183,7 @@ messaging::put_curve_definition_response curve_definition_service::put_curve_def
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = curve_definition_read_one(repo_, ctx_, curve_definition_key_from(value));
     if (!written.empty())
         response.curve_definition = std::move(written.front());
     return response;
@@ -213,7 +215,7 @@ messaging::put_many_curve_definitions_response curve_definition_service::put_man
     repo_.write(ctx_, batch, claims);
     response.curves.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = curve_definition_read_one(repo_, ctx_, curve_definition_key_from(value));
         response.curves.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -236,7 +238,7 @@ messaging::delete_curve_definition_response curve_definition_service::delete_cur
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = curve_definition_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_definition"});
         return response;
@@ -252,7 +254,7 @@ messaging::delete_curve_definition_response curve_definition_service::delete_cur
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = curve_definition_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "curve_definition",
@@ -294,7 +296,7 @@ curve_definition_service::delete_many_curve_definitions(
     std::vector<domain::curve_definition> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = curve_definition_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -322,7 +324,7 @@ curve_definition_service::list_curve_definition_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = curve_definition_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_definition"});
         return response;
@@ -346,7 +348,7 @@ curve_definition_service::get_curve_definition_version(
     messaging::get_curve_definition_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.curve_definition);
+    const auto named = curve_definition_read_one(repo_, ctx_, request.key.curve_definition);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_definition"});
         return response;
@@ -368,8 +370,8 @@ curve_definition_service::prepare_change(const messaging::curve_definition_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = curve_definition_to_domain(change.write);
+    const auto current = curve_definition_read_one(repo_, ctx_, curve_definition_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -443,7 +445,7 @@ curve_definition_service::get_curve_by_curve_id(const std::string& curve_id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting curve definition by curve_id: " << curve_id;
     messaging::curve_definition_key k;
     k.curve_id = curve_id;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = curve_definition_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

@@ -75,24 +75,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_pricing_methods_response
-    list_pricing_methods(const messaging::list_pricing_methods_request& request);
-    messaging::get_pricing_method_response
-    get_pricing_method(const messaging::get_pricing_method_request& request);
-    messaging::get_many_pricing_methods_response
-    get_many_pricing_methods(const messaging::get_many_pricing_methods_request& request);
-    messaging::put_pricing_method_response
-    put_pricing_method(const messaging::put_pricing_method_request& request);
-    messaging::put_many_pricing_methods_response
-    put_many_pricing_methods(const messaging::put_many_pricing_methods_request& request);
-    messaging::delete_pricing_method_response
-    delete_pricing_method(const messaging::delete_pricing_method_request& request);
-    messaging::delete_many_pricing_methods_response
-    delete_many_pricing_methods(const messaging::delete_many_pricing_methods_request& request);
-    messaging::list_pricing_method_versions_response
-    list_pricing_method_versions(const messaging::list_pricing_method_versions_request& request);
-    messaging::get_pricing_method_version_response
-    get_pricing_method_version(const messaging::get_pricing_method_version_request& request);
+    ::ores::analytics::messaging::list_pricing_methods_response
+    list_pricing_methods(const ::ores::analytics::messaging::list_pricing_methods_request& request);
+    ::ores::analytics::messaging::get_pricing_method_response
+    get_pricing_method(const ::ores::analytics::messaging::get_pricing_method_request& request);
+    ::ores::analytics::messaging::get_many_pricing_methods_response get_many_pricing_methods(
+        const ::ores::analytics::messaging::get_many_pricing_methods_request& request);
+    ::ores::analytics::messaging::put_pricing_method_response
+    put_pricing_method(const ::ores::analytics::messaging::put_pricing_method_request& request);
+    ::ores::analytics::messaging::put_many_pricing_methods_response put_many_pricing_methods(
+        const ::ores::analytics::messaging::put_many_pricing_methods_request& request);
+    ::ores::analytics::messaging::delete_pricing_method_response delete_pricing_method(
+        const ::ores::analytics::messaging::delete_pricing_method_request& request);
+    ::ores::analytics::messaging::delete_many_pricing_methods_response delete_many_pricing_methods(
+        const ::ores::analytics::messaging::delete_many_pricing_methods_request& request);
+    ::ores::analytics::messaging::list_pricing_method_versions_response
+    list_pricing_method_versions(
+        const ::ores::analytics::messaging::list_pricing_method_versions_request& request);
+    ::ores::analytics::messaging::get_pricing_method_version_response get_pricing_method_version(
+        const ::ores::analytics::messaging::get_pricing_method_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::pricing_method_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::pricing_method& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::analytics::messaging::pricing_method_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::pricing_method& out);
 };
 
 }

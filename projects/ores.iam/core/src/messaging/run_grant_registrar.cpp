@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view run_grant_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,31 +49,31 @@ register_run_grant_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<run_grant_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_run_grants_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_run_grants_request::nats_subject, run_grant_queue_group, [h](ores::nats::message msg) {
             h->list_run_grants(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_run_grant_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_run_grant_request::nats_subject, run_grant_queue_group, [h](ores::nats::message msg) {
             h->get_run_grant(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_run_grants_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_run_grants(std::move(msg));
-        }));
+        get_many_run_grants_request::nats_subject,
+        run_grant_queue_group,
+        [h](ores::nats::message msg) { h->get_many_run_grants(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_by_grantor_account_id_run_grants_request::nats_subject,
-                                        queue_group,
+                                        run_grant_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_by_grantor_account_id_run_grants(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
-        list_run_grant_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_run_grant_versions(std::move(msg));
-        }));
+        list_run_grant_versions_request::nats_subject,
+        run_grant_queue_group,
+        [h](ores::nats::message msg) { h->list_run_grant_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_run_grant_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_run_grant_version(std::move(msg));
-        }));
+        get_run_grant_version_request::nats_subject,
+        run_grant_queue_group,
+        [h](ores::nats::message msg) { h->get_run_grant_version(std::move(msg)); }));
     return subs;
 }
 

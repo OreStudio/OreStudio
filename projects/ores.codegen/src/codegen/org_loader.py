@@ -2657,6 +2657,11 @@ _TS_UTILITY_DOMAIN_TYPES = {
         "InstrumentBatch", "generated/trading/instrument_batch"),
     "ores::trading::domain::trade_envelope_data": ("TradeEnvelopeData", "trading/payload"),
     "ores::security::jwt::storage_grant": ("StorageGrant", "security/payload"),
+    # The ORE document a document export answers with is a protocol payload in a
+    # model of its own, so the second export reads it rather than restating it,
+    # and the interface imports from the generated module that model writes.
+    "ores::ore::messaging::ore_document": (
+        "OreDocument", "generated/ore/protocol/ore_document_protocol"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.

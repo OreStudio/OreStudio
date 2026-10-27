@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy bond_issue_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"issue_id"});
     if (!bond_issue_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::bond_issues_filter>& filter) {
+bond_issue_filter_condition(const std::optional<messaging::bond_issues_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -299,8 +299,8 @@ bond_issue_repository::read_latest(context ctx,
     return execute_ordered_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
         query,
-        list_order(order, {"issue_id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        bond_issue_list_order(order, {"issue_id"}, false),
+        narrowed(valid_at(as_of), bond_issue_filter_condition(filter)),
         [](const auto& entities) { return bond_issue_mapper::map(entities); },
         lg(),
         "Reading latest bond issues with pagination.");
@@ -318,7 +318,7 @@ std::uint32_t bond_issue_repository::get_total_issue_count(
     return execute_count_query<bond_issue_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), bond_issue_filter_condition(filter)),
         lg(),
         "Counting bond issues");
 }

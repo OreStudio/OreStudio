@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+workflow_step_list_order(const ores::utility::domain::order& order,
+                         std::initializer_list<std::string> default_columns,
+                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!workflow_step_repository::is_sortable(order.field))
@@ -97,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::workflow_steps_filter>& filter) {
+workflow_step_filter_condition(const std::optional<messaging::workflow_steps_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -268,8 +269,8 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest_by_work
     return execute_ordered_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
         query,
-        list_order(order, {"step_index"}, false),
-        filter_condition(filter),
+        workflow_step_list_order(order, {"step_index"}, false),
+        workflow_step_filter_condition(filter),
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
         lg(),
         "Reading latest workflow steps by workflow_id.");
@@ -286,8 +287,11 @@ std::uint32_t workflow_step_repository::get_total_step_count_by_workflow_id(
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
                        where("workflow_id"_c == workflow_id && "valid_to"_c == max.value());
 
-    return execute_count_query<workflow_step_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting workflow steps by workflow_id");
+    return execute_count_query<workflow_step_entity>(ctx,
+                                                     query,
+                                                     workflow_step_filter_condition(filter),
+                                                     lg(),
+                                                     "Counting workflow steps by workflow_id");
 }
 
 
@@ -339,8 +343,8 @@ workflow_step_repository::read_latest(context ctx,
     return execute_ordered_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        workflow_step_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), workflow_step_filter_condition(filter)),
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
         lg(),
         "Reading latest workflow steps with pagination.");
@@ -357,7 +361,7 @@ std::uint32_t workflow_step_repository::get_total_step_count(
     return execute_count_query<workflow_step_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), workflow_step_filter_condition(filter)),
         lg(),
         "Counting workflow steps");
 }

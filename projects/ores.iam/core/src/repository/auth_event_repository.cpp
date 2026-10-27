@@ -82,9 +82,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy auth_event_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"id", "event_time"});
@@ -246,7 +246,7 @@ auth_event_repository::read_latest(context ctx,
     return execute_ordered_read_query<auth_event_entity, domain::auth_event>(
         ctx,
         query,
-        list_order(order, {"id", "event_time"}, false),
+        auth_event_list_order(order, {"id", "event_time"}, false),
         std::nullopt,
         [](const auto& entities) { return auth_event_mapper::map(entities); },
         lg(),

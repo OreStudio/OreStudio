@@ -77,21 +77,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_folders_response list_folders(const messaging::list_folders_request& request);
-    messaging::get_folder_response get_folder(const messaging::get_folder_request& request);
-    messaging::get_many_folders_response
-    get_many_folders(const messaging::get_many_folders_request& request);
-    messaging::put_folder_response put_folder(const messaging::put_folder_request& request);
-    messaging::put_many_folders_response
-    put_many_folders(const messaging::put_many_folders_request& request);
-    messaging::delete_folder_response
-    delete_folder(const messaging::delete_folder_request& request);
-    messaging::delete_many_folders_response
-    delete_many_folders(const messaging::delete_many_folders_request& request);
-    messaging::list_folder_versions_response
-    list_folder_versions(const messaging::list_folder_versions_request& request);
-    messaging::get_folder_version_response
-    get_folder_version(const messaging::get_folder_version_request& request);
+    ::ores::synthetic::messaging::list_folders_response
+    list_folders(const ::ores::synthetic::messaging::list_folders_request& request);
+    ::ores::synthetic::messaging::get_folder_response
+    get_folder(const ::ores::synthetic::messaging::get_folder_request& request);
+    ::ores::synthetic::messaging::get_many_folders_response
+    get_many_folders(const ::ores::synthetic::messaging::get_many_folders_request& request);
+    ::ores::synthetic::messaging::put_folder_response
+    put_folder(const ::ores::synthetic::messaging::put_folder_request& request);
+    ::ores::synthetic::messaging::put_many_folders_response
+    put_many_folders(const ::ores::synthetic::messaging::put_many_folders_request& request);
+    ::ores::synthetic::messaging::delete_folder_response
+    delete_folder(const ::ores::synthetic::messaging::delete_folder_request& request);
+    ::ores::synthetic::messaging::delete_many_folders_response
+    delete_many_folders(const ::ores::synthetic::messaging::delete_many_folders_request& request);
+    ::ores::synthetic::messaging::list_folder_versions_response
+    list_folder_versions(const ::ores::synthetic::messaging::list_folder_versions_request& request);
+    ::ores::synthetic::messaging::get_folder_version_response
+    get_folder_version(const ::ores::synthetic::messaging::get_folder_version_request& request);
     /**@}*/
 
     /**
@@ -200,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::folder_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::folder& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::synthetic::messaging::folder_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::folder& out);
 };
 
 }

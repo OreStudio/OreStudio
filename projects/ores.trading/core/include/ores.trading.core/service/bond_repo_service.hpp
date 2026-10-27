@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bond_repos_response
-    list_bond_repos(const messaging::list_bond_repos_request& request);
-    messaging::get_bond_repo_response
-    get_bond_repo(const messaging::get_bond_repo_request& request);
-    messaging::get_many_bond_repos_response
-    get_many_bond_repos(const messaging::get_many_bond_repos_request& request);
-    messaging::put_bond_repo_response
-    put_bond_repo(const messaging::put_bond_repo_request& request);
-    messaging::put_many_bond_repos_response
-    put_many_bond_repos(const messaging::put_many_bond_repos_request& request);
-    messaging::delete_bond_repo_response
-    delete_bond_repo(const messaging::delete_bond_repo_request& request);
-    messaging::delete_many_bond_repos_response
-    delete_many_bond_repos(const messaging::delete_many_bond_repos_request& request);
-    messaging::list_bond_repo_versions_response
-    list_bond_repo_versions(const messaging::list_bond_repo_versions_request& request);
-    messaging::get_bond_repo_version_response
-    get_bond_repo_version(const messaging::get_bond_repo_version_request& request);
+    ::ores::trading::messaging::list_bond_repos_response
+    list_bond_repos(const ::ores::trading::messaging::list_bond_repos_request& request);
+    ::ores::trading::messaging::get_bond_repo_response
+    get_bond_repo(const ::ores::trading::messaging::get_bond_repo_request& request);
+    ::ores::trading::messaging::get_many_bond_repos_response
+    get_many_bond_repos(const ::ores::trading::messaging::get_many_bond_repos_request& request);
+    ::ores::trading::messaging::put_bond_repo_response
+    put_bond_repo(const ::ores::trading::messaging::put_bond_repo_request& request);
+    ::ores::trading::messaging::put_many_bond_repos_response
+    put_many_bond_repos(const ::ores::trading::messaging::put_many_bond_repos_request& request);
+    ::ores::trading::messaging::delete_bond_repo_response
+    delete_bond_repo(const ::ores::trading::messaging::delete_bond_repo_request& request);
+    ::ores::trading::messaging::delete_many_bond_repos_response delete_many_bond_repos(
+        const ::ores::trading::messaging::delete_many_bond_repos_request& request);
+    ::ores::trading::messaging::list_bond_repo_versions_response list_bond_repo_versions(
+        const ::ores::trading::messaging::list_bond_repo_versions_request& request);
+    ::ores::trading::messaging::get_bond_repo_version_response
+    get_bond_repo_version(const ::ores::trading::messaging::get_bond_repo_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +189,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::bond_repo_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::bond_repo& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::bond_repo_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::bond_repo& out);
 };
 
 }

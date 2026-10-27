@@ -37,10 +37,16 @@ test('a trade opens its own page and every tab answers', async ({ page }) => {
 test('the instrument issue links to its calendar', async ({ page }) => {
     await signIn(page);
 
+    // The calendar belongs to a bond's issue, so the case opens a bond rather
+    // than whichever trade the list happens to put first: the seed's order is
+    // not this screen's contract.
     await page.goto('/trading/trades');
-    const row = page.locator('tbody tr').first();
-    await row.waitFor({ state: 'visible' });
-    await row.locator('td').first().click();
+    const bond = page
+        .locator('tbody tr')
+        .filter({ has: page.locator('td', { hasText: /^Bond$/ }) })
+        .first();
+    await bond.waitFor({ state: 'visible' });
+    await bond.locator('td').first().click();
     await page.getByRole('tab', { name: 'Instrument' }).click();
 
     const linked = page.locator('main a[href^="/refdata/calendars/"]');

@@ -21,12 +21,12 @@ One standard says how every screen draws a leaf of an ORE document and the eleme
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | A convention's record page draws its terms with the shared leaf parts; it does not edit yet. |
+| Now           | Done: a convention's terms are drawn and edited with the shared leaf parts, and the database checks each value against its term's set. |
 | Waiting on    | Nothing.                               |
-| Next          | Check a convention value against its term's set on write, then edit on the page. |
-| Last touched  | 2026-10-25                               |
+| Next          | Nothing. The hotfix of the service's version check is its own story.              |
+| Last touched  | 2026-10-26                               |
 
 * Acceptance
 
@@ -46,11 +46,13 @@ One standard says how every screen draws a leaf of an ORE document and the eleme
 | [[id:F8CA3B52-F299-4A92-84A0-CF4F9A2694F0][Move the convention kind metadata into data]] | DONE | 2026-10-25 | 2026-10-25 | Move the asset class and the holder of each convention kind out of conventionKinds.ts, and the term labels out of the codegen models, into data the screen reads, so the screen restates nothing about a kind; and map each refdata convention column to the term it holds, so the write path can check a value against the term's set. |
 | [[id:813FD0C3-10EF-4B64-A6EF-0C1F52B72A1E][Draw a convention's terms with the shared leaf parts]] | DONE | 2026-10-26 | 2026-10-26 | Give a convention a record page whose terms follow the ORE element and leaf screen standard: the shared switch, documentation panel, controls and filters, the oreParameter words, and the kind card; record its conformance line. |
 | [[id:47D039AC-300C-4FE9-86EA-7FB473F07692][Give the convention terms their value sets]] | DONE | 2026-10-25 | 2026-10-25 | Link every documented convention term to a value set: a business day convention, a day counter or a currency draws on a refdata catalogue, a value an ORE parser maps takes that parser's list, and the rest their type, so a screen draws the control from it. |
-| [[id:3CB96E53-1EF3-486D-B644-7E26D34C7BAD][Check a convention value against its term's set on write]] | BACKLOG | | | Refuse a convention write whose value lies outside the value set of its term, reading the column-to-term map and the contract's links, so every client gets the same answer; decide whether the check lives in the BFF, as the engine run settings check does, or on the refdata write path. |
-| [[id:8FC2FA09-8223-4741-A0E7-1FD9C6396331][Edit a convention's terms on its record page]] | BACKLOG | | | Edit a convention's terms in place on its record page as the ORE element and leaf screen standard states: Default (X) first, the controls from the value sets, the changed mark and the count, focus opening the documentation and a refusal on its term, reusing the write the journey already has. |
+| [[id:3CB96E53-1EF3-486D-B644-7E26D34C7BAD][Check a convention value against its term's set on write]] | DONE | 2026-10-26 | 2026-10-26 | Refuse a convention write whose value lies outside the value set of its term, reading the column-to-term map and the contract's links, so every client gets the same answer; decide whether the check lives in the BFF, as the engine run settings check does, or on the refdata write path. |
+| [[id:8FC2FA09-8223-4741-A0E7-1FD9C6396331][Edit a convention's terms on its record page]] | DONE | 2026-10-26 | 2026-10-26 | Edit a convention's terms in place on its record page as the ORE element and leaf screen standard states: Default (X) first, the controls from the value sets, the changed mark and the count, focus opening the documentation and a refusal on its term, reusing the write the journey already has. |
 
 * Decisions
 
+- *A convention's terms are changed on its record page, from the acting party, decided on 2026-10-26.* The service writes under the acting party, so the page edits only a convention the acting party holds, and the journey keeps =writable= for the two families it draws. A composite stays read-only there.
+- *The database checks a convention value on write, decided by the owner on 2026-10-26.* A trigger on each convention entity checks a value against its term's set with =ores_reporting_value_in_set_fn=, the rule a pricing parameter meets, so every client gets the same answer.
 - *The screen words of a leaf, decided by the owner on 2026-10-26.* A convention leaf is a /term/; the section button says *Show all documentation*; the Simple and Advanced switch is named *How much to show* on a screen of leaves; the fourth source tag says *Carried over from the old seed, to review*.
 - *A convention kind is modelled as the engine run settings model their groups, decided by the owner on 2026-10-25.* =convention_kinds= is the group and =convention_kind_term= the setting; a term names its leaf by schema and XPath.
 

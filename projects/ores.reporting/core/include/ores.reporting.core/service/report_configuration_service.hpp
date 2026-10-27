@@ -76,33 +76,41 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_report_configurations_response
-    list_report_configurations(const messaging::list_report_configurations_request& request);
-    messaging::get_report_configuration_response
-    get_report_configuration(const messaging::get_report_configuration_request& request);
-    messaging::get_many_report_configurations_response get_many_report_configurations(
-        const messaging::get_many_report_configurations_request& request);
-    messaging::put_report_configuration_response
-    put_report_configuration(const messaging::put_report_configuration_request& request);
-    messaging::put_many_report_configurations_response put_many_report_configurations(
-        const messaging::put_many_report_configurations_request& request);
-    messaging::delete_report_configuration_response
-    delete_report_configuration(const messaging::delete_report_configuration_request& request);
-    messaging::delete_many_report_configurations_response delete_many_report_configurations(
-        const messaging::delete_many_report_configurations_request& request);
-    messaging::list_by_report_definition_id_report_configurations_response
+    ::ores::reporting::messaging::list_report_configurations_response list_report_configurations(
+        const ::ores::reporting::messaging::list_report_configurations_request& request);
+    ::ores::reporting::messaging::get_report_configuration_response get_report_configuration(
+        const ::ores::reporting::messaging::get_report_configuration_request& request);
+    ::ores::reporting::messaging::get_many_report_configurations_response
+    get_many_report_configurations(
+        const ::ores::reporting::messaging::get_many_report_configurations_request& request);
+    ::ores::reporting::messaging::put_report_configuration_response put_report_configuration(
+        const ::ores::reporting::messaging::put_report_configuration_request& request);
+    ::ores::reporting::messaging::put_many_report_configurations_response
+    put_many_report_configurations(
+        const ::ores::reporting::messaging::put_many_report_configurations_request& request);
+    ::ores::reporting::messaging::delete_report_configuration_response delete_report_configuration(
+        const ::ores::reporting::messaging::delete_report_configuration_request& request);
+    ::ores::reporting::messaging::delete_many_report_configurations_response
+    delete_many_report_configurations(
+        const ::ores::reporting::messaging::delete_many_report_configurations_request& request);
+    ::ores::reporting::messaging::list_by_report_definition_id_report_configurations_response
     list_by_report_definition_id_report_configurations(
-        const messaging::list_by_report_definition_id_report_configurations_request& request);
-    messaging::list_by_configuration_type_code_report_configurations_response
+        const ::ores::reporting::messaging::
+            list_by_report_definition_id_report_configurations_request& request);
+    ::ores::reporting::messaging::list_by_configuration_type_code_report_configurations_response
     list_by_configuration_type_code_report_configurations(
-        const messaging::list_by_configuration_type_code_report_configurations_request& request);
-    messaging::list_by_configuration_id_report_configurations_response
+        const ::ores::reporting::messaging::
+            list_by_configuration_type_code_report_configurations_request& request);
+    ::ores::reporting::messaging::list_by_configuration_id_report_configurations_response
     list_by_configuration_id_report_configurations(
-        const messaging::list_by_configuration_id_report_configurations_request& request);
-    messaging::list_report_configuration_versions_response list_report_configuration_versions(
-        const messaging::list_report_configuration_versions_request& request);
-    messaging::get_report_configuration_version_response get_report_configuration_version(
-        const messaging::get_report_configuration_version_request& request);
+        const ::ores::reporting::messaging::list_by_configuration_id_report_configurations_request&
+            request);
+    ::ores::reporting::messaging::list_report_configuration_versions_response
+    list_report_configuration_versions(
+        const ::ores::reporting::messaging::list_report_configuration_versions_request& request);
+    ::ores::reporting::messaging::get_report_configuration_version_response
+    get_report_configuration_version(
+        const ::ores::reporting::messaging::get_report_configuration_version_request& request);
     /**@}*/
 
     /**
@@ -284,7 +292,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::report_configuration_change& change,
+    prepare_change(const ::ores::reporting::messaging::report_configuration_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::report_configuration& out);
 };

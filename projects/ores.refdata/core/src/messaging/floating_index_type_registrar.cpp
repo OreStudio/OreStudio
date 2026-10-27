@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view floating_index_type_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_floating_index_type_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_floating_index_type_hand
     auto h =
         std::make_shared<floating_index_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_floating_index_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_floating_index_types(std::move(msg));
-        }));
+        list_floating_index_types_request::nats_subject,
+        floating_index_type_queue_group,
+        [h](ores::nats::message msg) { h->list_floating_index_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_floating_index_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_floating_index_type(std::move(msg));
-        }));
+        get_floating_index_type_request::nats_subject,
+        floating_index_type_queue_group,
+        [h](ores::nats::message msg) { h->get_floating_index_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_floating_index_types_request::nats_subject,
-        queue_group,
+        floating_index_type_queue_group,
         [h](ores::nats::message msg) { h->get_many_floating_index_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_floating_index_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_floating_index_type(std::move(msg));
-        }));
+        put_floating_index_type_request::nats_subject,
+        floating_index_type_queue_group,
+        [h](ores::nats::message msg) { h->put_floating_index_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_floating_index_types_request::nats_subject,
-        queue_group,
+        floating_index_type_queue_group,
         [h](ores::nats::message msg) { h->put_many_floating_index_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_floating_index_type_request::nats_subject,
-        queue_group,
+        floating_index_type_queue_group,
         [h](ores::nats::message msg) { h->delete_floating_index_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_floating_index_types_request::nats_subject,
-        queue_group,
+        floating_index_type_queue_group,
         [h](ores::nats::message msg) { h->delete_many_floating_index_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_floating_index_type_versions_request::nats_subject,
-        queue_group,
+        floating_index_type_queue_group,
         [h](ores::nats::message msg) { h->list_floating_index_type_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_floating_index_type_version_request::nats_subject,
-        queue_group,
+        floating_index_type_queue_group,
         [h](ores::nats::message msg) { h->get_floating_index_type_version(std::move(msg)); }));
     return subs;
 }

@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view netting_agreement_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_netting_agreement_handlers(
@@ -49,46 +49,46 @@ std::vector<ores::nats::service::subscription> register_netting_agreement_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<netting_agreement_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_netting_agreements_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_netting_agreements(std::move(msg));
-        }));
+        list_netting_agreements_request::nats_subject,
+        netting_agreement_queue_group,
+        [h](ores::nats::message msg) { h->list_netting_agreements(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_netting_agreement_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_netting_agreement(std::move(msg));
-        }));
+        get_netting_agreement_request::nats_subject,
+        netting_agreement_queue_group,
+        [h](ores::nats::message msg) { h->get_netting_agreement(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_netting_agreements_request::nats_subject,
-        queue_group,
+        netting_agreement_queue_group,
         [h](ores::nats::message msg) { h->get_many_netting_agreements(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_netting_agreement_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_netting_agreement(std::move(msg));
-        }));
+        put_netting_agreement_request::nats_subject,
+        netting_agreement_queue_group,
+        [h](ores::nats::message msg) { h->put_netting_agreement(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_netting_agreements_request::nats_subject,
-        queue_group,
+        netting_agreement_queue_group,
         [h](ores::nats::message msg) { h->put_many_netting_agreements(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_netting_agreement_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_netting_agreement(std::move(msg));
-        }));
+        delete_netting_agreement_request::nats_subject,
+        netting_agreement_queue_group,
+        [h](ores::nats::message msg) { h->delete_netting_agreement(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_netting_agreements_request::nats_subject,
-        queue_group,
+        netting_agreement_queue_group,
         [h](ores::nats::message msg) { h->delete_many_netting_agreements(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_counterparty_id_netting_agreements_request::nats_subject,
-                             queue_group,
+                             netting_agreement_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_counterparty_id_netting_agreements(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_netting_agreement_versions_request::nats_subject,
-        queue_group,
+        netting_agreement_queue_group,
         [h](ores::nats::message msg) { h->list_netting_agreement_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_netting_agreement_version_request::nats_subject,
-        queue_group,
+        netting_agreement_queue_group,
         [h](ores::nats::message msg) { h->get_netting_agreement_version(std::move(msg)); }));
     return subs;
 }

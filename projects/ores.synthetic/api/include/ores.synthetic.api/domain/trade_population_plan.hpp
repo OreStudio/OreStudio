@@ -69,6 +69,17 @@ struct currency_pair_reference final {
     std::string quote;
 };
 
+/**
+ * @brief One person who may enter a trade for a party: their account, and the name the rows state.
+ *
+ * The account is what a booking's session is minted for, so the rows the booking writes and the
+ * authorisation request it raises all name that person.
+ */
+struct trade_population_trader final {
+    boost::uuids::uuid account_id;
+    std::string username;
+};
+
 struct trade_generation_scope final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
@@ -134,10 +145,14 @@ struct trade_generation_scope final {
      */
     std::vector<std::pair<boost::uuids::uuid, boost::uuids::uuid>> netting_sets;
     /**
-     * @brief The staff who may trade for the booking party, one username each.
-     * A party with none is refused rather than defaulted to the caller.
+     * @brief The staff who may trade for the booking party.
+     *
+     * Each carries the account as well as the name, because the population is
+     * entered as that person: the trade states them as its author and the
+     * authorisation request the booking raises is theirs. A party with none is
+     * refused rather than defaulted to the caller.
      */
-    std::vector<std::string> trader_usernames;
+    std::vector<trade_population_trader> traders;
     /**
      * @brief The currency the population's books are kept in. A bond's own
      * issue carries no currency: the coupon terms are the leg's, so the unit
@@ -362,7 +377,8 @@ struct trade_population_slot final {
     boost::uuids::uuid book_id;
     boost::uuids::uuid counterparty_id;
     std::optional<boost::uuids::uuid> netting_set_id;
-    std::string trader_username;
+    /// The person the trade is entered as, who then asks for its authorisation.
+    trade_population_trader trader;
     std::string trade_type_code;
     std::string internal_identifier;
     std::chrono::year_month_day trade_date;

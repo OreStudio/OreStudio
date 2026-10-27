@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_analytic_types_response
-    list_analytic_types(const messaging::list_analytic_types_request& request);
-    messaging::get_analytic_type_response
-    get_analytic_type(const messaging::get_analytic_type_request& request);
-    messaging::get_many_analytic_types_response
-    get_many_analytic_types(const messaging::get_many_analytic_types_request& request);
-    messaging::put_analytic_type_response
-    put_analytic_type(const messaging::put_analytic_type_request& request);
-    messaging::put_many_analytic_types_response
-    put_many_analytic_types(const messaging::put_many_analytic_types_request& request);
-    messaging::delete_analytic_type_response
-    delete_analytic_type(const messaging::delete_analytic_type_request& request);
-    messaging::delete_many_analytic_types_response
-    delete_many_analytic_types(const messaging::delete_many_analytic_types_request& request);
-    messaging::list_analytic_type_versions_response
-    list_analytic_type_versions(const messaging::list_analytic_type_versions_request& request);
-    messaging::get_analytic_type_version_response
-    get_analytic_type_version(const messaging::get_analytic_type_version_request& request);
+    ::ores::reporting::messaging::list_analytic_types_response
+    list_analytic_types(const ::ores::reporting::messaging::list_analytic_types_request& request);
+    ::ores::reporting::messaging::get_analytic_type_response
+    get_analytic_type(const ::ores::reporting::messaging::get_analytic_type_request& request);
+    ::ores::reporting::messaging::get_many_analytic_types_response get_many_analytic_types(
+        const ::ores::reporting::messaging::get_many_analytic_types_request& request);
+    ::ores::reporting::messaging::put_analytic_type_response
+    put_analytic_type(const ::ores::reporting::messaging::put_analytic_type_request& request);
+    ::ores::reporting::messaging::put_many_analytic_types_response put_many_analytic_types(
+        const ::ores::reporting::messaging::put_many_analytic_types_request& request);
+    ::ores::reporting::messaging::delete_analytic_type_response
+    delete_analytic_type(const ::ores::reporting::messaging::delete_analytic_type_request& request);
+    ::ores::reporting::messaging::delete_many_analytic_types_response delete_many_analytic_types(
+        const ::ores::reporting::messaging::delete_many_analytic_types_request& request);
+    ::ores::reporting::messaging::list_analytic_type_versions_response list_analytic_type_versions(
+        const ::ores::reporting::messaging::list_analytic_type_versions_request& request);
+    ::ores::reporting::messaging::get_analytic_type_version_response get_analytic_type_version(
+        const ::ores::reporting::messaging::get_analytic_type_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::analytic_type_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::analytic_type& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::reporting::messaging::analytic_type_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::analytic_type& out);
 };
 
 }

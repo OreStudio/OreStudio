@@ -44,6 +44,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -59,13 +60,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("marketdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::marketdata::generators;
 using ores::marketdata::domain::market_data_mapping;
@@ -73,7 +67,7 @@ using ores::marketdata::repository::market_data_mapping_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_market_data_mapping_publishes_an_event", tags) {
+TEST_CASE("write_market_data_mapping_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

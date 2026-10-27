@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::engine_settings> read_one(repository::engine_settings_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::engine_settings_key& key) {
+std::vector<domain::engine_settings>
+engine_settings_read_one(repository::engine_settings_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::engine_settings_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::engine_settings> read_one(repository::engine_settings_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::engine_settings_key key_from(const domain::engine_settings& v) {
+messaging::engine_settings_key engine_settings_key_from(const domain::engine_settings& v) {
     messaging::engine_settings_key key;
     key.name = v.name;
     return key;
@@ -98,7 +99,7 @@ messaging::engine_settings_key key_from(const domain::engine_settings& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::engine_settings to_domain(const messaging::engine_settings_write& write) {
+domain::engine_settings engine_settings_to_domain(const messaging::engine_settings_write& write) {
     domain::engine_settings v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -184,7 +185,7 @@ engine_settings_service::list_by_configuration_id_engine_settings(
 messaging::get_engine_settings_response engine_settings_service::get_engine_settings(
     const messaging::get_engine_settings_request& request) {
     messaging::get_engine_settings_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = engine_settings_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "engine_settings"});
         return response;
@@ -203,7 +204,7 @@ messaging::get_many_engine_settings_response engine_settings_service::get_many_e
     for (const auto& k : request.keys) {
         messaging::engine_settings_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = engine_settings_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.engine_settings = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -219,7 +220,7 @@ messaging::put_engine_settings_response engine_settings_service::put_engine_sett
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = engine_settings_read_one(repo_, ctx_, engine_settings_key_from(value));
     if (!written.empty())
         response.engine_settings = std::move(written.front());
     return response;
@@ -251,7 +252,7 @@ messaging::put_many_engine_settings_response engine_settings_service::put_many_e
     repo_.write(ctx_, batch, claims);
     response.settings.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = engine_settings_read_one(repo_, ctx_, engine_settings_key_from(value));
         response.settings.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -274,7 +275,7 @@ messaging::delete_engine_settings_response engine_settings_service::delete_engin
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = engine_settings_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "engine_settings"});
         return response;
@@ -290,7 +291,7 @@ messaging::delete_engine_settings_response engine_settings_service::delete_engin
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = engine_settings_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "engine_settings",
@@ -332,7 +333,7 @@ engine_settings_service::delete_many_engine_settings(
     std::vector<domain::engine_settings> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = engine_settings_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -359,7 +360,7 @@ engine_settings_service::list_engine_settings_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = engine_settings_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "engine_settings"});
         return response;
@@ -383,7 +384,7 @@ engine_settings_service::get_engine_settings_version(
     messaging::get_engine_settings_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.engine_settings);
+    const auto named = engine_settings_read_one(repo_, ctx_, request.key.engine_settings);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "engine_settings"});
         return response;
@@ -405,8 +406,8 @@ engine_settings_service::prepare_change(const messaging::engine_settings_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = engine_settings_to_domain(change.write);
+    const auto current = engine_settings_read_one(repo_, ctx_, engine_settings_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -495,7 +496,7 @@ engine_settings_service::get_settings_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting engine settings by name: " << name;
     messaging::engine_settings_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = engine_settings_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

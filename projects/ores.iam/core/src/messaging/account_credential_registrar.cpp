@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view account_credential_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription> register_account_credential_handlers(
@@ -50,30 +50,30 @@ std::vector<ores::nats::service::subscription> register_account_credential_handl
     auto h =
         std::make_shared<account_credential_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_account_credentials_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_account_credentials(std::move(msg));
-        }));
+        list_account_credentials_request::nats_subject,
+        account_credential_queue_group,
+        [h](ores::nats::message msg) { h->list_account_credentials(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_account_credential_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_account_credential(std::move(msg));
-        }));
+        get_account_credential_request::nats_subject,
+        account_credential_queue_group,
+        [h](ores::nats::message msg) { h->get_account_credential(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_account_credentials_request::nats_subject,
-        queue_group,
+        account_credential_queue_group,
         [h](ores::nats::message msg) { h->get_many_account_credentials(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_account_id_account_credentials_request::nats_subject,
-                             queue_group,
+                             account_credential_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_account_id_account_credentials(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_account_credential_versions_request::nats_subject,
-        queue_group,
+        account_credential_queue_group,
         [h](ores::nats::message msg) { h->list_account_credential_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_account_credential_version_request::nats_subject,
-        queue_group,
+        account_credential_queue_group,
         [h](ores::nats::message msg) { h->get_account_credential_version(std::move(msg)); }));
     return subs;
 }

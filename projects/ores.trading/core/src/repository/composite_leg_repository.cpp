@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+composite_leg_list_order(const ores::utility::domain::order& order,
+                         std::initializer_list<std::string> default_columns,
+                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!composite_leg_repository::is_sortable(order.field))
@@ -97,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::composite_legs_filter>& filter) {
+composite_leg_filter_condition(const std::optional<messaging::composite_legs_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -277,8 +278,8 @@ std::vector<domain::composite_leg> composite_leg_repository::read_latest_by_trad
     return execute_ordered_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        composite_leg_list_order(order, {"id"}, false),
+        composite_leg_filter_condition(filter),
         [](const auto& entities) { return composite_leg_mapper::map(entities); },
         lg(),
         "Reading latest composite legs by trade_id.");
@@ -297,8 +298,11 @@ std::uint32_t composite_leg_repository::get_total_composite_leg_count_by_trade_i
         sqlgen::read<std::vector<composite_leg_entity>> |
         where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
-    return execute_count_query<composite_leg_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting composite legs by trade_id");
+    return execute_count_query<composite_leg_entity>(ctx,
+                                                     query,
+                                                     composite_leg_filter_condition(filter),
+                                                     lg(),
+                                                     "Counting composite legs by trade_id");
 }
 
 
@@ -351,8 +355,8 @@ composite_leg_repository::read_latest(context ctx,
     return execute_ordered_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        composite_leg_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), composite_leg_filter_condition(filter)),
         [](const auto& entities) { return composite_leg_mapper::map(entities); },
         lg(),
         "Reading latest composite legs with pagination.");
@@ -371,7 +375,7 @@ std::uint32_t composite_leg_repository::get_total_composite_leg_count(
     return execute_count_query<composite_leg_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), composite_leg_filter_condition(filter)),
         lg(),
         "Counting composite legs");
 }

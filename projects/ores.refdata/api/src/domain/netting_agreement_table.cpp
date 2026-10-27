@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string netting_agreement_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<netting_agreement>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& na : v) {
-        table << na.agreement_number << na.agreement_type << opt_str(na.governing_law)
-              << na.modified_by << na.version << fort::endr;
+        table << na.agreement_number << na.agreement_type
+              << netting_agreement_opt_str(na.governing_law) << na.modified_by << na.version
+              << fort::endr;
     }
     return table.to_string();
 }

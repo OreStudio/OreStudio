@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_observation_lineages_response
-    list_observation_lineages(const messaging::list_observation_lineages_request& request);
-    messaging::get_observation_lineage_response
-    get_observation_lineage(const messaging::get_observation_lineage_request& request);
-    messaging::get_many_observation_lineages_response
-    get_many_observation_lineages(const messaging::get_many_observation_lineages_request& request);
-    messaging::put_observation_lineage_response
-    put_observation_lineage(const messaging::put_observation_lineage_request& request);
-    messaging::put_many_observation_lineages_response
-    put_many_observation_lineages(const messaging::put_many_observation_lineages_request& request);
-    messaging::delete_observation_lineage_response
-    delete_observation_lineage(const messaging::delete_observation_lineage_request& request);
-    messaging::delete_many_observation_lineages_response delete_many_observation_lineages(
-        const messaging::delete_many_observation_lineages_request& request);
-    messaging::list_observation_lineage_versions_response list_observation_lineage_versions(
-        const messaging::list_observation_lineage_versions_request& request);
-    messaging::get_observation_lineage_version_response get_observation_lineage_version(
-        const messaging::get_observation_lineage_version_request& request);
+    ::ores::marketdata::messaging::list_observation_lineages_response list_observation_lineages(
+        const ::ores::marketdata::messaging::list_observation_lineages_request& request);
+    ::ores::marketdata::messaging::get_observation_lineage_response get_observation_lineage(
+        const ::ores::marketdata::messaging::get_observation_lineage_request& request);
+    ::ores::marketdata::messaging::get_many_observation_lineages_response
+    get_many_observation_lineages(
+        const ::ores::marketdata::messaging::get_many_observation_lineages_request& request);
+    ::ores::marketdata::messaging::put_observation_lineage_response put_observation_lineage(
+        const ::ores::marketdata::messaging::put_observation_lineage_request& request);
+    ::ores::marketdata::messaging::put_many_observation_lineages_response
+    put_many_observation_lineages(
+        const ::ores::marketdata::messaging::put_many_observation_lineages_request& request);
+    ::ores::marketdata::messaging::delete_observation_lineage_response delete_observation_lineage(
+        const ::ores::marketdata::messaging::delete_observation_lineage_request& request);
+    ::ores::marketdata::messaging::delete_many_observation_lineages_response
+    delete_many_observation_lineages(
+        const ::ores::marketdata::messaging::delete_many_observation_lineages_request& request);
+    ::ores::marketdata::messaging::list_observation_lineage_versions_response
+    list_observation_lineage_versions(
+        const ::ores::marketdata::messaging::list_observation_lineage_versions_request& request);
+    ::ores::marketdata::messaging::get_observation_lineage_version_response
+    get_observation_lineage_version(
+        const ::ores::marketdata::messaging::get_observation_lineage_version_request& request);
     /**@}*/
 
     /**
@@ -195,7 +200,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::observation_lineage_change& change,
+    prepare_change(const ::ores::marketdata::messaging::observation_lineage_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::observation_lineage& out);
 };

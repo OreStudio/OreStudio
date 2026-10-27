@@ -39,7 +39,7 @@
 namespace ores::marketdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.marketdata.service";
+static constexpr std::string_view delivery_count_queue_group = "ores.marketdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_delivery_count_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<delivery_count_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_delivery_counts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_delivery_counts(std::move(msg));
-        }));
+        list_delivery_counts_request::nats_subject,
+        delivery_count_queue_group,
+        [h](ores::nats::message msg) { h->list_delivery_counts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_delivery_count_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_delivery_count(std::move(msg));
-        }));
+        get_delivery_count_request::nats_subject,
+        delivery_count_queue_group,
+        [h](ores::nats::message msg) { h->get_delivery_count(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_delivery_counts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_delivery_counts(std::move(msg));
-        }));
+        get_many_delivery_counts_request::nats_subject,
+        delivery_count_queue_group,
+        [h](ores::nats::message msg) { h->get_many_delivery_counts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_delivery_count_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_delivery_count(std::move(msg));
-        }));
+        put_delivery_count_request::nats_subject,
+        delivery_count_queue_group,
+        [h](ores::nats::message msg) { h->put_delivery_count(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_delivery_counts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_delivery_counts(std::move(msg));
-        }));
+        put_many_delivery_counts_request::nats_subject,
+        delivery_count_queue_group,
+        [h](ores::nats::message msg) { h->put_many_delivery_counts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_delivery_count_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_delivery_count(std::move(msg));
-        }));
+        delete_delivery_count_request::nats_subject,
+        delivery_count_queue_group,
+        [h](ores::nats::message msg) { h->delete_delivery_count(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_delivery_counts_request::nats_subject,
-        queue_group,
+        delivery_count_queue_group,
         [h](ores::nats::message msg) { h->delete_many_delivery_counts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_delivery_count_versions_request::nats_subject,
-        queue_group,
+        delivery_count_queue_group,
         [h](ores::nats::message msg) { h->list_delivery_count_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_delivery_count_version_request::nats_subject,
-        queue_group,
+        delivery_count_queue_group,
         [h](ores::nats::message msg) { h->get_delivery_count_version(std::move(msg)); }));
     return subs;
 }

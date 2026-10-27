@@ -436,3 +436,6 @@
 \ir ./refdata_bundle_imports_notify_trigger_create.sql
 \ir ./refdata_bundle_import_items_create.sql
 \ir ./refdata_bundle_import_items_notify_trigger_create.sql
+
+-- Convention term validation, after every convention table it guards
+\ir ./refdata_convention_terms_validate_create.sql

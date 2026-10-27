@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::batch> read_one(repository::batch_repository& repo,
-                                    const ores::database::context& ctx,
-                                    const messaging::batch_key& key) {
+std::vector<domain::batch> batch_read_one(repository::batch_repository& repo,
+                                          const ores::database::context& ctx,
+                                          const messaging::batch_key& key) {
     return repo.read_latest_by_external_ref(ctx, key.external_ref);
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::batch> read_one(repository::batch_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::batch_key key_from(const domain::batch& v) {
+messaging::batch_key batch_key_from(const domain::batch& v) {
     messaging::batch_key key;
     key.external_ref = v.external_ref;
     return key;
@@ -98,7 +98,7 @@ messaging::batch_key key_from(const domain::batch& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::batch to_domain(const messaging::batch_write& write) {
+domain::batch batch_to_domain(const messaging::batch_write& write) {
     domain::batch v;
     v.id = write.id;
     v.external_ref = write.external_ref;
@@ -160,7 +160,7 @@ batch_service::list_batches(const messaging::list_batches_request& request) {
 messaging::get_batch_response
 batch_service::get_batch(const messaging::get_batch_request& request) {
     messaging::get_batch_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = batch_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "batch"});
         return response;
@@ -179,7 +179,7 @@ batch_service::get_many_batches(const messaging::get_many_batches_request& reque
     for (const auto& k : request.keys) {
         messaging::batch_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = batch_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.batch = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -195,7 +195,7 @@ batch_service::put_batch(const messaging::put_batch_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = batch_read_one(repo_, ctx_, batch_key_from(value));
     if (!written.empty())
         response.batch = std::move(written.front());
     return response;
@@ -227,7 +227,7 @@ batch_service::put_many_batches(const messaging::put_many_batches_request& reque
     repo_.write(ctx_, batch, claims);
     response.batches.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = batch_read_one(repo_, ctx_, batch_key_from(value));
         response.batches.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -250,7 +250,7 @@ batch_service::delete_batch(const messaging::delete_batch_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = batch_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "batch"});
         return response;
@@ -266,7 +266,7 @@ batch_service::delete_batch(const messaging::delete_batch_request& request) {
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = batch_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "batch",
@@ -307,7 +307,7 @@ batch_service::delete_many_batches(const messaging::delete_many_batches_request&
     std::vector<domain::batch> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = batch_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -333,7 +333,7 @@ batch_service::list_batch_versions(const messaging::list_batch_versions_request&
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = batch_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "batch"});
         return response;
@@ -356,7 +356,7 @@ batch_service::get_batch_version(const messaging::get_batch_version_request& req
     messaging::get_batch_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.batch);
+    const auto named = batch_read_one(repo_, ctx_, request.key.batch);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "batch"});
         return response;
@@ -378,8 +378,8 @@ batch_service::prepare_change(const messaging::batch_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = batch_to_domain(change.write);
+    const auto current = batch_read_one(repo_, ctx_, batch_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -449,7 +449,7 @@ batch_service::get_batch_by_external_ref(const std::string& external_ref) {
     BOOST_LOG_SEV(lg(), debug) << "Getting compute batch by external_ref: " << external_ref;
     messaging::batch_key k;
     k.external_ref = external_ref;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = batch_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

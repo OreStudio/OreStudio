@@ -36,8 +36,6 @@
 
 namespace {
 
-const std::string tags("[role_request]");
-
 auto& lg() {
     static auto instance = ores::logging::make_logger("ores.iam.core.tests.role_grant_applier");
     return instance;
@@ -140,7 +138,7 @@ boost::uuids::uuid role_not_held(ores::testing::scoped_database_helper& h,
 
 using ores::iam::service::role_grant_applier;
 
-TEST_CASE("an_approved_role_request_is_granted_once", tags) {
+TEST_CASE("an_approved_role_request_is_granted_once", "[role_request]") {
     ores::testing::scoped_database_helper h(true);
     const auto asker = seed_account(h);
     const auto approver = seed_account(h);
@@ -169,7 +167,7 @@ TEST_CASE("an_approved_role_request_is_granted_once", tags) {
     CHECK(before == after);
 }
 
-TEST_CASE("a_role_already_held_is_not_granted_again", tags) {
+TEST_CASE("a_role_already_held_is_not_granted_again", "[role_request]") {
     ores::testing::scoped_database_helper h(true);
     const auto asker = seed_account(h);
     const auto approver = seed_account(h);
@@ -197,7 +195,7 @@ TEST_CASE("a_role_already_held_is_not_granted_again", tags) {
     CHECK(before == after);
 }
 
-TEST_CASE("a_role_taken_away_after_it_was_applied_is_not_granted_again", tags) {
+TEST_CASE("a_role_taken_away_after_it_was_applied_is_not_granted_again", "[role_request]") {
     ores::testing::scoped_database_helper h(true);
     const auto asker = seed_account(h);
     const auto approver = seed_account(h);

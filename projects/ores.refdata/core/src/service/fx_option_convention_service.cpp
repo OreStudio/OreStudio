@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::fx_option_convention>
-read_one(repository::fx_option_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::fx_option_convention_key& key) {
+fx_option_convention_read_one(repository::fx_option_convention_repository& repo,
+                              const ores::database::context& ctx,
+                              const messaging::fx_option_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::fx_option_convention_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::fx_option_convention_key key_from(const domain::fx_option_convention& v) {
+messaging::fx_option_convention_key
+fx_option_convention_key_from(const domain::fx_option_convention& v) {
     messaging::fx_option_convention_key key;
     key.id = v.id;
     return key;
@@ -95,7 +96,8 @@ messaging::fx_option_convention_key key_from(const domain::fx_option_convention&
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::fx_option_convention to_domain(const messaging::fx_option_convention_write& write) {
+domain::fx_option_convention
+fx_option_convention_to_domain(const messaging::fx_option_convention_write& write) {
     domain::fx_option_convention v;
     v.id = write.id;
     v.fx_convention_id = write.fx_convention_id;
@@ -148,7 +150,7 @@ fx_option_convention_service::list_fx_option_conventions(
 messaging::get_fx_option_convention_response fx_option_convention_service::get_fx_option_convention(
     const messaging::get_fx_option_convention_request& request) {
     messaging::get_fx_option_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = fx_option_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "fx_option_convention"});
         return response;
@@ -168,7 +170,7 @@ fx_option_convention_service::get_many_fx_option_conventions(
     for (const auto& k : request.keys) {
         messaging::fx_option_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = fx_option_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.fx_option_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -184,7 +186,7 @@ messaging::put_fx_option_convention_response fx_option_convention_service::put_f
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(value));
     if (!written.empty())
         response.fx_option_convention = std::move(written.front());
     return response;
@@ -217,7 +219,8 @@ fx_option_convention_service::put_many_fx_option_conventions(
     repo_.write(ctx_, batch, claims);
     response.fx_option_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(value));
         response.fx_option_conventions.push_back(written.empty() ? value :
                                                                    std::move(written.front()));
     }
@@ -252,7 +255,7 @@ fx_option_convention_service::delete_fx_option_convention(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = fx_option_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "fx_option_convention",
@@ -341,8 +344,9 @@ fx_option_convention_service::prepare_change(const messaging::fx_option_conventi
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = fx_option_convention_to_domain(change.write);
+    const auto current =
+        fx_option_convention_read_one(repo_, ctx_, fx_option_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

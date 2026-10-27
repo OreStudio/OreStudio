@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::csa_eligible_currency>
-read_one(repository::csa_eligible_currency_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::csa_eligible_currency_key& key) {
+csa_eligible_currency_read_one(repository::csa_eligible_currency_repository& repo,
+                               const ores::database::context& ctx,
+                               const messaging::csa_eligible_currency_key& key) {
     return repo.read_latest_by_currency_code(ctx, key.currency_code);
 }
 
@@ -86,7 +86,8 @@ read_one(repository::csa_eligible_currency_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::csa_eligible_currency_key key_from(const domain::csa_eligible_currency& v) {
+messaging::csa_eligible_currency_key
+csa_eligible_currency_key_from(const domain::csa_eligible_currency& v) {
     messaging::csa_eligible_currency_key key;
     key.currency_code = v.currency_code;
     return key;
@@ -99,7 +100,8 @@ messaging::csa_eligible_currency_key key_from(const domain::csa_eligible_currenc
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::csa_eligible_currency to_domain(const messaging::csa_eligible_currency_write& write) {
+domain::csa_eligible_currency
+csa_eligible_currency_to_domain(const messaging::csa_eligible_currency_write& write) {
     domain::csa_eligible_currency v;
     v.id = write.id;
     v.csa_id = write.csa_id;
@@ -189,7 +191,7 @@ messaging::get_csa_eligible_currency_response
 csa_eligible_currency_service::get_csa_eligible_currency(
     const messaging::get_csa_eligible_currency_request& request) {
     messaging::get_csa_eligible_currency_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = csa_eligible_currency_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "csa_eligible_currency"});
         return response;
@@ -209,7 +211,7 @@ csa_eligible_currency_service::get_many_csa_eligible_currencies(
     for (const auto& k : request.keys) {
         messaging::csa_eligible_currency_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = csa_eligible_currency_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.csa_eligible_currency = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -226,7 +228,8 @@ csa_eligible_currency_service::put_csa_eligible_currency(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        csa_eligible_currency_read_one(repo_, ctx_, csa_eligible_currency_key_from(value));
     if (!written.empty())
         response.csa_eligible_currency = std::move(written.front());
     return response;
@@ -259,7 +262,8 @@ csa_eligible_currency_service::put_many_csa_eligible_currencies(
     repo_.write(ctx_, batch, claims);
     response.csa_eligible_currencies.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            csa_eligible_currency_read_one(repo_, ctx_, csa_eligible_currency_key_from(value));
         response.csa_eligible_currencies.push_back(written.empty() ? value :
                                                                      std::move(written.front()));
     }
@@ -284,7 +288,7 @@ csa_eligible_currency_service::delete_csa_eligible_currency(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = csa_eligible_currency_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "csa_eligible_currency"});
         return response;
@@ -300,7 +304,7 @@ csa_eligible_currency_service::delete_csa_eligible_currency(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = csa_eligible_currency_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "csa_eligible_currency",
@@ -342,7 +346,7 @@ csa_eligible_currency_service::delete_many_csa_eligible_currencies(
     std::vector<domain::csa_eligible_currency> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = csa_eligible_currency_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -371,7 +375,7 @@ csa_eligible_currency_service::list_csa_eligible_currency_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = csa_eligible_currency_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "csa_eligible_currency"});
         return response;
@@ -395,7 +399,8 @@ csa_eligible_currency_service::get_csa_eligible_currency_version(
     messaging::get_csa_eligible_currency_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.csa_eligible_currency);
+    const auto named =
+        csa_eligible_currency_read_one(repo_, ctx_, request.key.csa_eligible_currency);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "csa_eligible_currency"});
         return response;
@@ -417,8 +422,9 @@ csa_eligible_currency_service::prepare_change(const messaging::csa_eligible_curr
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = csa_eligible_currency_to_domain(change.write);
+    const auto current =
+        csa_eligible_currency_read_one(repo_, ctx_, csa_eligible_currency_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -526,7 +532,7 @@ csa_eligible_currency_service::get_csa_eligible_currency_by_currency_code(
                                << currency_code;
     messaging::csa_eligible_currency_key k;
     k.currency_code = currency_code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = csa_eligible_currency_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

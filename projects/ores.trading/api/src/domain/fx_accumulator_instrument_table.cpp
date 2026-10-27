@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string fx_accumulator_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -52,7 +52,8 @@ std::string convert_to_table(const std::vector<fx_accumulator_instrument>& v) {
     for ([[maybe_unused]] const auto& fxai : v) {
         table << fxai.identity.trade_id << fxai.identity.trade_type_code << fxai.currency
               << fxai.fixing_amount << fxai.strike << fxai.start_date
-              << opt_str(fxai.knock_out_barrier) << fxai.audit.recorded_at << fort::endr;
+              << fx_accumulator_instrument_opt_str(fxai.knock_out_barrier) << fxai.audit.recorded_at
+              << fort::endr;
     }
     return table.to_string();
 }

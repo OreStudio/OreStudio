@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::book_change> read_one(repository::book_change_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::book_change_key& key) {
+std::vector<domain::book_change> book_change_read_one(repository::book_change_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::book_change_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -154,7 +154,7 @@ book_change_service::list_by_request_id_book_changes(
 messaging::get_book_change_response
 book_change_service::get_book_change(const messaging::get_book_change_request& request) {
     messaging::get_book_change_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = book_change_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book_change"});
         return response;
@@ -173,7 +173,7 @@ messaging::get_many_book_changes_response book_change_service::get_many_book_cha
     for (const auto& k : request.keys) {
         messaging::book_change_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = book_change_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.book_change = std::move(found.front());
         response.entries.push_back(std::move(entry));

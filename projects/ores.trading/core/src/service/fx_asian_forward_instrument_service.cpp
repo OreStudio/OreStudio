@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::fx_asian_forward_instrument>
-read_one(repository::fx_asian_forward_instrument_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::fx_asian_forward_instrument_key& key) {
+fx_asian_forward_instrument_read_one(repository::fx_asian_forward_instrument_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::fx_asian_forward_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::fx_asian_forward_instrument_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::fx_asian_forward_instrument_key key_from(const domain::fx_asian_forward_instrument& v) {
+messaging::fx_asian_forward_instrument_key
+fx_asian_forward_instrument_key_from(const domain::fx_asian_forward_instrument& v) {
     messaging::fx_asian_forward_instrument_key key;
     key.trade_id = v.identity.trade_id;
     return key;
@@ -100,7 +101,7 @@ messaging::fx_asian_forward_instrument_key key_from(const domain::fx_asian_forwa
  * database's to state, and are set after this conversion.
  */
 domain::fx_asian_forward_instrument
-to_domain(const messaging::fx_asian_forward_instrument_write& write) {
+fx_asian_forward_instrument_to_domain(const messaging::fx_asian_forward_instrument_write& write) {
     domain::fx_asian_forward_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
@@ -161,7 +162,7 @@ messaging::get_fx_asian_forward_instrument_response
 fx_asian_forward_instrument_service::get_fx_asian_forward_instrument(
     const messaging::get_fx_asian_forward_instrument_request& request) {
     messaging::get_fx_asian_forward_instrument_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = fx_asian_forward_instrument_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "fx_asian_forward_instrument"});
@@ -217,7 +218,8 @@ fx_asian_forward_instrument_service::put_fx_asian_forward_instrument(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = fx_asian_forward_instrument_read_one(
+        repo_, ctx_, fx_asian_forward_instrument_key_from(value));
     if (!written.empty())
         response.fx_asian_forward_instrument = std::move(written.front());
     return response;
@@ -295,7 +297,8 @@ fx_asian_forward_instrument_service::delete_fx_asian_forward_instrument(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                fx_asian_forward_instrument_read_one(repo_, ctx_, request.removal.key);
             response.result =
                 refuse(outcome_code::version_conflict,
                        {.entity = "fx_asian_forward_instrument",
@@ -389,8 +392,9 @@ ores::utility::domain::result fx_asian_forward_instrument_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = fx_asian_forward_instrument_to_domain(change.write);
+    const auto current = fx_asian_forward_instrument_read_one(
+        repo_, ctx_, fx_asian_forward_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

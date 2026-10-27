@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void commodity_instrument_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void commodity_instrument_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -235,7 +235,7 @@ void commodity_instrument_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        commodity_instrument_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -283,7 +283,7 @@ void commodity_instrument_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        commodity_instrument_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -328,7 +328,7 @@ void commodity_instrument_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::commodity_instrument_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            commodity_instrument_read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -373,54 +373,70 @@ void commodity_instrument_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        commodity_instrument_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        commodity_instrument_read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-        read_token(
+        commodity_instrument_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.commodity_code, parsed->positionals[next++], "commodity_code");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.quantity, parsed->positionals[next++], "quantity");
-        read_token(req.change.write.unit, parsed->positionals[next++], "unit");
-        read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
-        read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.fixed_price, parsed->positionals[next++], "fixed_price");
-        read_token(req.change.write.option_type, parsed->positionals[next++], "option_type");
-        read_token(req.change.write.strike_price, parsed->positionals[next++], "strike_price");
-        read_token(req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-        read_token(req.change.write.average_type, parsed->positionals[next++], "average_type");
-        read_token(req.change.write.averaging_start_date,
-                   parsed->positionals[next++],
-                   "averaging_start_date");
-        read_token(
+        commodity_instrument_read_token(
+            req.change.write.commodity_code, parsed->positionals[next++], "commodity_code");
+        commodity_instrument_read_token(
+            req.change.write.currency, parsed->positionals[next++], "currency");
+        commodity_instrument_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
+        commodity_instrument_read_token(req.change.write.unit, parsed->positionals[next++], "unit");
+        commodity_instrument_read_token(
+            req.change.write.start_date, parsed->positionals[next++], "start_date");
+        commodity_instrument_read_token(
+            req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
+        commodity_instrument_read_token(
+            req.change.write.fixed_price, parsed->positionals[next++], "fixed_price");
+        commodity_instrument_read_token(
+            req.change.write.option_type, parsed->positionals[next++], "option_type");
+        commodity_instrument_read_token(
+            req.change.write.strike_price, parsed->positionals[next++], "strike_price");
+        commodity_instrument_read_token(
+            req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+        commodity_instrument_read_token(
+            req.change.write.average_type, parsed->positionals[next++], "average_type");
+        commodity_instrument_read_token(req.change.write.averaging_start_date,
+                                        parsed->positionals[next++],
+                                        "averaging_start_date");
+        commodity_instrument_read_token(
             req.change.write.averaging_end_date, parsed->positionals[next++], "averaging_end_date");
-        read_token(req.change.write.spread_commodity_code,
-                   parsed->positionals[next++],
-                   "spread_commodity_code");
-        read_token(req.change.write.spread_amount, parsed->positionals[next++], "spread_amount");
-        read_token(req.change.write.strip_frequency_code,
-                   parsed->positionals[next++],
-                   "strip_frequency_code");
-        read_token(
+        commodity_instrument_read_token(req.change.write.spread_commodity_code,
+                                        parsed->positionals[next++],
+                                        "spread_commodity_code");
+        commodity_instrument_read_token(
+            req.change.write.spread_amount, parsed->positionals[next++], "spread_amount");
+        commodity_instrument_read_token(req.change.write.strip_frequency_code,
+                                        parsed->positionals[next++],
+                                        "strip_frequency_code");
+        commodity_instrument_read_token(
             req.change.write.variance_strike, parsed->positionals[next++], "variance_strike");
-        read_token(req.change.write.accumulation_amount,
-                   parsed->positionals[next++],
-                   "accumulation_amount");
-        read_token(
+        commodity_instrument_read_token(req.change.write.accumulation_amount,
+                                        parsed->positionals[next++],
+                                        "accumulation_amount");
+        commodity_instrument_read_token(
             req.change.write.knock_out_barrier, parsed->positionals[next++], "knock_out_barrier");
-        read_token(req.change.write.barrier_type, parsed->positionals[next++], "barrier_type");
-        read_token(req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
-        read_token(req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
-        read_token(req.change.write.day_count_fraction_code,
-                   parsed->positionals[next++],
-                   "day_count_fraction_code");
-        read_token(req.change.write.payment_frequency_code,
-                   parsed->positionals[next++],
-                   "payment_frequency_code");
-        read_token(req.change.write.swaption_expiry_date,
-                   parsed->positionals[next++],
-                   "swaption_expiry_date");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        commodity_instrument_read_token(
+            req.change.write.barrier_type, parsed->positionals[next++], "barrier_type");
+        commodity_instrument_read_token(
+            req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
+        commodity_instrument_read_token(
+            req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
+        commodity_instrument_read_token(req.change.write.day_count_fraction_code,
+                                        parsed->positionals[next++],
+                                        "day_count_fraction_code");
+        commodity_instrument_read_token(req.change.write.payment_frequency_code,
+                                        parsed->positionals[next++],
+                                        "payment_frequency_code");
+        commodity_instrument_read_token(req.change.write.swaption_expiry_date,
+                                        parsed->positionals[next++],
+                                        "swaption_expiry_date");
+        commodity_instrument_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -468,54 +484,70 @@ void commodity_instrument_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        commodity_instrument_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        commodity_instrument_read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-        read_token(
+        commodity_instrument_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.commodity_code, parsed->positionals[next++], "commodity_code");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.quantity, parsed->positionals[next++], "quantity");
-        read_token(req.change.write.unit, parsed->positionals[next++], "unit");
-        read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
-        read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-        read_token(req.change.write.fixed_price, parsed->positionals[next++], "fixed_price");
-        read_token(req.change.write.option_type, parsed->positionals[next++], "option_type");
-        read_token(req.change.write.strike_price, parsed->positionals[next++], "strike_price");
-        read_token(req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-        read_token(req.change.write.average_type, parsed->positionals[next++], "average_type");
-        read_token(req.change.write.averaging_start_date,
-                   parsed->positionals[next++],
-                   "averaging_start_date");
-        read_token(
+        commodity_instrument_read_token(
+            req.change.write.commodity_code, parsed->positionals[next++], "commodity_code");
+        commodity_instrument_read_token(
+            req.change.write.currency, parsed->positionals[next++], "currency");
+        commodity_instrument_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
+        commodity_instrument_read_token(req.change.write.unit, parsed->positionals[next++], "unit");
+        commodity_instrument_read_token(
+            req.change.write.start_date, parsed->positionals[next++], "start_date");
+        commodity_instrument_read_token(
+            req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
+        commodity_instrument_read_token(
+            req.change.write.fixed_price, parsed->positionals[next++], "fixed_price");
+        commodity_instrument_read_token(
+            req.change.write.option_type, parsed->positionals[next++], "option_type");
+        commodity_instrument_read_token(
+            req.change.write.strike_price, parsed->positionals[next++], "strike_price");
+        commodity_instrument_read_token(
+            req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+        commodity_instrument_read_token(
+            req.change.write.average_type, parsed->positionals[next++], "average_type");
+        commodity_instrument_read_token(req.change.write.averaging_start_date,
+                                        parsed->positionals[next++],
+                                        "averaging_start_date");
+        commodity_instrument_read_token(
             req.change.write.averaging_end_date, parsed->positionals[next++], "averaging_end_date");
-        read_token(req.change.write.spread_commodity_code,
-                   parsed->positionals[next++],
-                   "spread_commodity_code");
-        read_token(req.change.write.spread_amount, parsed->positionals[next++], "spread_amount");
-        read_token(req.change.write.strip_frequency_code,
-                   parsed->positionals[next++],
-                   "strip_frequency_code");
-        read_token(
+        commodity_instrument_read_token(req.change.write.spread_commodity_code,
+                                        parsed->positionals[next++],
+                                        "spread_commodity_code");
+        commodity_instrument_read_token(
+            req.change.write.spread_amount, parsed->positionals[next++], "spread_amount");
+        commodity_instrument_read_token(req.change.write.strip_frequency_code,
+                                        parsed->positionals[next++],
+                                        "strip_frequency_code");
+        commodity_instrument_read_token(
             req.change.write.variance_strike, parsed->positionals[next++], "variance_strike");
-        read_token(req.change.write.accumulation_amount,
-                   parsed->positionals[next++],
-                   "accumulation_amount");
-        read_token(
+        commodity_instrument_read_token(req.change.write.accumulation_amount,
+                                        parsed->positionals[next++],
+                                        "accumulation_amount");
+        commodity_instrument_read_token(
             req.change.write.knock_out_barrier, parsed->positionals[next++], "knock_out_barrier");
-        read_token(req.change.write.barrier_type, parsed->positionals[next++], "barrier_type");
-        read_token(req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
-        read_token(req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
-        read_token(req.change.write.day_count_fraction_code,
-                   parsed->positionals[next++],
-                   "day_count_fraction_code");
-        read_token(req.change.write.payment_frequency_code,
-                   parsed->positionals[next++],
-                   "payment_frequency_code");
-        read_token(req.change.write.swaption_expiry_date,
-                   parsed->positionals[next++],
-                   "swaption_expiry_date");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        commodity_instrument_read_token(
+            req.change.write.barrier_type, parsed->positionals[next++], "barrier_type");
+        commodity_instrument_read_token(
+            req.change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
+        commodity_instrument_read_token(
+            req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
+        commodity_instrument_read_token(req.change.write.day_count_fraction_code,
+                                        parsed->positionals[next++],
+                                        "day_count_fraction_code");
+        commodity_instrument_read_token(req.change.write.payment_frequency_code,
+                                        parsed->positionals[next++],
+                                        "payment_frequency_code");
+        commodity_instrument_read_token(req.change.write.swaption_expiry_date,
+                                        parsed->positionals[next++],
+                                        "swaption_expiry_date");
+        commodity_instrument_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -577,54 +609,70 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::commodity_instrument_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(
+            commodity_instrument_read_token(
+                change.write.trade_id, parsed->positionals[next++], "trade_id");
+            commodity_instrument_read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-            read_token(
+            commodity_instrument_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(change.write.commodity_code, parsed->positionals[next++], "commodity_code");
-            read_token(change.write.currency, parsed->positionals[next++], "currency");
-            read_token(change.write.quantity, parsed->positionals[next++], "quantity");
-            read_token(change.write.unit, parsed->positionals[next++], "unit");
-            read_token(change.write.start_date, parsed->positionals[next++], "start_date");
-            read_token(change.write.maturity_date, parsed->positionals[next++], "maturity_date");
-            read_token(change.write.fixed_price, parsed->positionals[next++], "fixed_price");
-            read_token(change.write.option_type, parsed->positionals[next++], "option_type");
-            read_token(change.write.strike_price, parsed->positionals[next++], "strike_price");
-            read_token(change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-            read_token(change.write.average_type, parsed->positionals[next++], "average_type");
-            read_token(change.write.averaging_start_date,
-                       parsed->positionals[next++],
-                       "averaging_start_date");
-            read_token(
+            commodity_instrument_read_token(
+                change.write.commodity_code, parsed->positionals[next++], "commodity_code");
+            commodity_instrument_read_token(
+                change.write.currency, parsed->positionals[next++], "currency");
+            commodity_instrument_read_token(
+                change.write.quantity, parsed->positionals[next++], "quantity");
+            commodity_instrument_read_token(change.write.unit, parsed->positionals[next++], "unit");
+            commodity_instrument_read_token(
+                change.write.start_date, parsed->positionals[next++], "start_date");
+            commodity_instrument_read_token(
+                change.write.maturity_date, parsed->positionals[next++], "maturity_date");
+            commodity_instrument_read_token(
+                change.write.fixed_price, parsed->positionals[next++], "fixed_price");
+            commodity_instrument_read_token(
+                change.write.option_type, parsed->positionals[next++], "option_type");
+            commodity_instrument_read_token(
+                change.write.strike_price, parsed->positionals[next++], "strike_price");
+            commodity_instrument_read_token(
+                change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+            commodity_instrument_read_token(
+                change.write.average_type, parsed->positionals[next++], "average_type");
+            commodity_instrument_read_token(change.write.averaging_start_date,
+                                            parsed->positionals[next++],
+                                            "averaging_start_date");
+            commodity_instrument_read_token(
                 change.write.averaging_end_date, parsed->positionals[next++], "averaging_end_date");
-            read_token(change.write.spread_commodity_code,
-                       parsed->positionals[next++],
-                       "spread_commodity_code");
-            read_token(change.write.spread_amount, parsed->positionals[next++], "spread_amount");
-            read_token(change.write.strip_frequency_code,
-                       parsed->positionals[next++],
-                       "strip_frequency_code");
-            read_token(
+            commodity_instrument_read_token(change.write.spread_commodity_code,
+                                            parsed->positionals[next++],
+                                            "spread_commodity_code");
+            commodity_instrument_read_token(
+                change.write.spread_amount, parsed->positionals[next++], "spread_amount");
+            commodity_instrument_read_token(change.write.strip_frequency_code,
+                                            parsed->positionals[next++],
+                                            "strip_frequency_code");
+            commodity_instrument_read_token(
                 change.write.variance_strike, parsed->positionals[next++], "variance_strike");
-            read_token(change.write.accumulation_amount,
-                       parsed->positionals[next++],
-                       "accumulation_amount");
-            read_token(
+            commodity_instrument_read_token(change.write.accumulation_amount,
+                                            parsed->positionals[next++],
+                                            "accumulation_amount");
+            commodity_instrument_read_token(
                 change.write.knock_out_barrier, parsed->positionals[next++], "knock_out_barrier");
-            read_token(change.write.barrier_type, parsed->positionals[next++], "barrier_type");
-            read_token(change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
-            read_token(change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
-            read_token(change.write.day_count_fraction_code,
-                       parsed->positionals[next++],
-                       "day_count_fraction_code");
-            read_token(change.write.payment_frequency_code,
-                       parsed->positionals[next++],
-                       "payment_frequency_code");
-            read_token(change.write.swaption_expiry_date,
-                       parsed->positionals[next++],
-                       "swaption_expiry_date");
-            read_token(change.write.description, parsed->positionals[next++], "description");
+            commodity_instrument_read_token(
+                change.write.barrier_type, parsed->positionals[next++], "barrier_type");
+            commodity_instrument_read_token(
+                change.write.lower_barrier, parsed->positionals[next++], "lower_barrier");
+            commodity_instrument_read_token(
+                change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
+            commodity_instrument_read_token(change.write.day_count_fraction_code,
+                                            parsed->positionals[next++],
+                                            "day_count_fraction_code");
+            commodity_instrument_read_token(change.write.payment_frequency_code,
+                                            parsed->positionals[next++],
+                                            "payment_frequency_code");
+            commodity_instrument_read_token(change.write.swaption_expiry_date,
+                                            parsed->positionals[next++],
+                                            "swaption_expiry_date");
+            commodity_instrument_read_token(
+                change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -674,7 +722,8 @@ void commodity_instrument_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        commodity_instrument_read_token(
+            req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -728,7 +777,8 @@ void commodity_instrument_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::commodity_instrument_key key;
-            read_token(key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
+            commodity_instrument_read_token(
+                key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
             req.removals.push_back(messaging::commodity_instrument_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -780,8 +830,8 @@ void commodity_instrument_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        apply_page(req, *parsed);
+        commodity_instrument_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        commodity_instrument_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -826,7 +876,8 @@ void commodity_instrument_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.commodity_instrument.trade_id, parsed->positionals[next++], "trade_id");
+        commodity_instrument_read_token(
+            req.key.commodity_instrument.trade_id, parsed->positionals[next++], "trade_id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

@@ -73,9 +73,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::trade_additional_field>
-read_one(repository::trade_additional_field_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::trade_additional_field_key& key) {
+trade_additional_field_read_one(repository::trade_additional_field_repository& repo,
+                                const ores::database::context& ctx,
+                                const messaging::trade_additional_field_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
@@ -86,7 +86,8 @@ read_one(repository::trade_additional_field_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::trade_additional_field_key key_from(const domain::trade_additional_field& v) {
+messaging::trade_additional_field_key
+trade_additional_field_key_from(const domain::trade_additional_field& v) {
     messaging::trade_additional_field_key key;
     key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
@@ -100,7 +101,8 @@ messaging::trade_additional_field_key key_from(const domain::trade_additional_fi
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::trade_additional_field to_domain(const messaging::trade_additional_field_write& write) {
+domain::trade_additional_field
+trade_additional_field_to_domain(const messaging::trade_additional_field_write& write) {
     domain::trade_additional_field v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
@@ -181,7 +183,7 @@ messaging::get_trade_additional_field_response
 trade_additional_field_service::get_trade_additional_field(
     const messaging::get_trade_additional_field_request& request) {
     messaging::get_trade_additional_field_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = trade_additional_field_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "trade_additional_field"});
         return response;
@@ -201,7 +203,7 @@ trade_additional_field_service::get_many_trade_additional_fields(
     for (const auto& k : request.keys) {
         messaging::trade_additional_field_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = trade_additional_field_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.trade_additional_field = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -218,7 +220,8 @@ trade_additional_field_service::put_trade_additional_field(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        trade_additional_field_read_one(repo_, ctx_, trade_additional_field_key_from(value));
     if (!written.empty())
         response.trade_additional_field = std::move(written.front());
     return response;
@@ -251,7 +254,8 @@ trade_additional_field_service::put_many_trade_additional_fields(
     repo_.write(ctx_, batch, claims);
     response.trade_additional_fields.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            trade_additional_field_read_one(repo_, ctx_, trade_additional_field_key_from(value));
         response.trade_additional_fields.push_back(written.empty() ? value :
                                                                      std::move(written.front()));
     }
@@ -289,7 +293,7 @@ trade_additional_field_service::delete_trade_additional_field(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = trade_additional_field_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "trade_additional_field",
@@ -388,8 +392,9 @@ ores::utility::domain::result trade_additional_field_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = trade_additional_field_to_domain(change.write);
+    const auto current =
+        trade_additional_field_read_one(repo_, ctx_, trade_additional_field_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

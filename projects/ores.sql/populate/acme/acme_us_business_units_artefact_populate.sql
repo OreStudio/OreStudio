@@ -62,5 +62,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '2075badb-b410-5488-98ea-4c63eca7b475', 0, 'FX Rates New York', '4951bc79-5e32-5677-ad77-77deea521a90', 'acme_us.fx_rates', 'USNY', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'db742acf-6ce8-53ed-bce7-c7c4e2cf1fe3', 0, 'Treasury New York', null, 'acme_us.treasury', 'USNY', 'DIVISION'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '8141f088-c156-5003-8a86-3811f0e7e251', 0, 'Middle Office New York', null, 'acme_us.middle_office', 'USNY', 'COST_CENTRE'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '369a24e9-5568-5903-a163-910ca818e3dd', 0, 'Market Risk New York', null, 'acme_us.market_risk', 'USNY', 'COST_CENTRE');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '369a24e9-5568-5903-a163-910ca818e3dd', 0, 'Market Risk New York', null, 'acme_us.market_risk', 'USNY', 'COST_CENTRE'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b98a9dfe-f2d1-5a1d-b75e-048c3f99353c', 0, 'Financial Control New York', null, 'acme_us.financial_control', 'USNY', 'COST_CENTRE'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cdad5153-84d2-5489-b414-0a7dd8491914', 0, 'Finance New York', null, 'acme_us.finance', 'USNY', 'COST_CENTRE');
 end $$;

@@ -19,19 +19,14 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/generation_options.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.synthetic.tests");
-const std::string tags("[domain][generation_options]");
-
-}
 
 using ores::synthetic::domain::generation_options;
 using namespace ores::logging;
 
-TEST_CASE("default_constructed_generation_options_has_expected_counts", tags) {
+TEST_CASE("default_constructed_generation_options_has_expected_counts",
+          "[domain][generation_options]") {
     auto lg(make_logger(test_suite));
 
     const generation_options sut;
@@ -50,7 +45,7 @@ TEST_CASE("default_constructed_generation_options_has_expected_counts", tags) {
     CHECK(sut.dependencies.empty());
 }
 
-TEST_CASE("generation_options_seed_can_be_set", tags) {
+TEST_CASE("generation_options_seed_can_be_set", "[domain][generation_options]") {
     auto lg(make_logger(test_suite));
 
     generation_options sut;
@@ -61,7 +56,7 @@ TEST_CASE("generation_options_seed_can_be_set", tags) {
     CHECK(*sut.seed == 42ULL);
 }
 
-TEST_CASE("generation_options_counts_can_be_overridden", tags) {
+TEST_CASE("generation_options_counts_can_be_overridden", "[domain][generation_options]") {
     auto lg(make_logger(test_suite));
 
     generation_options sut;
@@ -77,7 +72,7 @@ TEST_CASE("generation_options_counts_can_be_overridden", tags) {
     CHECK(sut.dataset_count == 50);
 }
 
-TEST_CASE("generation_options_dependencies_can_be_set", tags) {
+TEST_CASE("generation_options_dependencies_can_be_set", "[domain][generation_options]") {
     auto lg(make_logger(test_suite));
 
     generation_options sut;

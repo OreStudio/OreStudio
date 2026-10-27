@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view yield_curve_config_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_yield_curve_config_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_yield_curve_config_handl
     auto h =
         std::make_shared<yield_curve_config_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_yield_curve_configs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_yield_curve_configs(std::move(msg));
-        }));
+        list_yield_curve_configs_request::nats_subject,
+        yield_curve_config_queue_group,
+        [h](ores::nats::message msg) { h->list_yield_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_yield_curve_config_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_yield_curve_config(std::move(msg));
-        }));
+        get_yield_curve_config_request::nats_subject,
+        yield_curve_config_queue_group,
+        [h](ores::nats::message msg) { h->get_yield_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_yield_curve_configs_request::nats_subject,
-        queue_group,
+        yield_curve_config_queue_group,
         [h](ores::nats::message msg) { h->get_many_yield_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_yield_curve_config_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_yield_curve_config(std::move(msg));
-        }));
+        put_yield_curve_config_request::nats_subject,
+        yield_curve_config_queue_group,
+        [h](ores::nats::message msg) { h->put_yield_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_yield_curve_configs_request::nats_subject,
-        queue_group,
+        yield_curve_config_queue_group,
         [h](ores::nats::message msg) { h->put_many_yield_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_yield_curve_config_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_yield_curve_config(std::move(msg));
-        }));
+        delete_yield_curve_config_request::nats_subject,
+        yield_curve_config_queue_group,
+        [h](ores::nats::message msg) { h->delete_yield_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_yield_curve_configs_request::nats_subject,
-        queue_group,
+        yield_curve_config_queue_group,
         [h](ores::nats::message msg) { h->delete_many_yield_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_yield_curve_config_versions_request::nats_subject,
-        queue_group,
+        yield_curve_config_queue_group,
         [h](ores::nats::message msg) { h->list_yield_curve_config_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_yield_curve_config_version_request::nats_subject,
-        queue_group,
+        yield_curve_config_queue_group,
         [h](ores::nats::message msg) { h->get_yield_curve_config_version(std::move(msg)); }));
     return subs;
 }

@@ -3751,6 +3751,13 @@ const pt: SourceCatalogue = {
             role: 'Papel',
             party: 'Parte',
             noRoles: 'Nenhum papel foi registado com esta transação.',
+            linkTypesFailed: 'Não foi possível ler os tipos de ligação. {message}',
+            linkPickerTruncated:
+                'A mostrar {shown} de {total} transações; as restantes aguardam um campo de pesquisa.',
+            linkTypesUnreadable:
+                'Os tipos de ligação ainda não são legíveis para este inquilino, por isso não é possível registar ligações aqui.',
+            addLink: 'Registar uma ligação',
+            addLinkSubmit: 'Registar a ligação',
             linksFrom: 'Ligações a partir desta transação',
             linksTo: 'Ligações para esta transação',
             linkType: 'Ligação',
@@ -3966,6 +3973,8 @@ const pt: SourceCatalogue = {
                 'Escreve {file}, o documento ORE, com as {plural} do tenant tal como estão agora.',
             exportNote: 'O servidor escreve o documento; o seu navegador guarda-o. Nada muda aqui.',
             exported: '{file} guardado, {count} registos.',
+            recordExportLead: 'Escreve {file} com {what}.',
+            recordSaved: '{file} guardado, com {what}.',
             importTitle: 'Importar {plural}',
             importLead:
                 'Trazer um documento ORE. O servidor lê-o, você revê a diferença, e nada é escrito antes do último passo.',
@@ -4422,6 +4431,15 @@ const pt: SourceCatalogue = {
                 notFound: 'Esta convenção não existe.',
                 readFailed: 'Não foi possível ler a convenção. {message}',
                 shared: 'Todas as partes leem esta convenção. É detida uma única vez para o inquilino.',
+                otherParty:
+                    'Esta convenção pertence a outra parte. Mude para essa parte para alterá-la.',
+                edit: 'Editar termos',
+                save: 'Salvar',
+                conflict:
+                    'Esta convenção mudou desde que você a abriu. Leia-a de novo antes de alterá-la.',
+                reload: 'Ler de novo',
+                notEditable:
+                    'Os termos deste tipo são detidos em duas partes, por isso esta página ainda não os altera.',
             },
             search: 'Pesquisar tipos',
             assetClass: 'Classe de ativos',
@@ -4598,11 +4616,48 @@ const pt: SourceCatalogue = {
             ratio: 'Rácio de ramificação',
             ratioHelp: 'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um.',
             decay: 'Decaimento, por segundo',
-            decayHelp: 'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
+            decayHelp:
+                'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
-            marketUnknown: 'o separador Regime de mercado ainda não está ligado',
+            marketUnknown: 'o estado do mercado não está legível agora',
             unsaved: 'Alterações por guardar',
             reasonCode: 'system.update',
+        },
+        marketRegime: {
+            title: 'Regime de mercado',
+            lead: 'O estado pelo qual a taxa de cada fluxo é escalada. Pertence à execução, por isso define-se aqui e não num fluxo: o agrupamento próprio de um fluxo está no seu separador Chegadas.',
+            state: 'Estado',
+            states: { calm: 'Calmo', active: 'Ativo' },
+            multiplier: 'Multiplicador',
+            heldBy: 'Definido por',
+            pinned: 'Uma pessoa, e mantém-se até ser devolvido',
+            chain: 'A cadeia, a girar sozinha',
+            force: 'Forçar o estado',
+            forced: 'forçado',
+            set: { auto: 'Auto', calm: 'Calmo', active: 'Ativo' },
+            charts: {
+                title: 'O fator ao longo da janela',
+            },
+            raster: {
+                seen: 'vistos',
+                asked: 'pedido',
+                heat: 'o calor partilhado',
+                rate: 'ticks por segundo, por fluxo',
+                band: 'um mercado ativo',
+                heatParams:
+                    'um evento acrescenta {jump} de calor, que se desvanece a {decay} por segundo',
+                stoppedFeeds: '{count} fluxos que não correm',
+                marked: 'a linha é o momento em que o estado foi definido: {state}',
+                stopped: 'parado',
+                fx: 'FX',
+                ir: 'Taxa de juro',
+                now: 'agora',
+                title: 'Chegadas de ticks de cada fluxo · últimos {seconds} segundos',
+                label: 'Chegadas de ticks de cada fluxo, os fluxos em execução primeiro',
+                none: 'Não há fluxos para desenhar. Um fluxo desenha uma linha quando existe, e a linha diz se corre.',
+                warming:
+                    'Uma linha enche-se à medida que o fluxo marca ticks: a lista começa quando este separador abre.',
+            },
         },
         fxFeeds: {
             add: 'Adicionar',
@@ -4631,7 +4686,7 @@ const pt: SourceCatalogue = {
         synthetic: {
             title: 'Sintético',
             lead: 'Os dados de mercado que a plataforma gera em vez de receber: o que corre por fornecedor, e os feeds de um fornecedor.',
-            tabs: { dashboard: 'Painel', provider: 'Fornecedor' },
+            tabs: { dashboard: 'Painel', provider: 'Fornecedor', regime: 'Regime de mercado' },
             state: { serving: 'A servir', running: 'A correr', stopped: 'Parado' },
             dashboard: {
                 none: 'Ainda não há feeds. Um conjunto de dados de feeds sintéticos publicado para a sua parte preenche este ecrã.',
@@ -5251,6 +5306,7 @@ const pt: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produtos',
         author: {
             next: 'Seguinte',
             steps: {
@@ -5484,6 +5540,24 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            unreadRows: '{count} linhas não puderam ser lidas e não são mostradas.',
+            otherScopes: 'Outros âmbitos',
+            shareTitle: 'Peso de cada livro na execução',
+            shareCaption:
+                'Um todo em poucas partes lê-se em anel. Os números ficam ao lado, porque um anel diz a forma e não o valor.',
+            problemsTitle: 'Os problemas da execução por âmbito',
+            problemsCaption:
+                'Um todo em poucas partes lê-se em anel. Cada problema registado é contado aqui, seja qual for o âmbito.',
+            unscoped: 'Âmbito não indicado',
+            was: 'Execução anterior',
+            compareTo: 'Comparar com',
+            noComparison: 'Sem comparação',
+            change: 'Variação',
+            changePct: 'Variação %',
+            changeAgainst: 'Variação face a essa execução',
+            gone: 'desaparecida',
+            runTagOne: '{count} transação · avaliada em {date}',
+            runTagMany: '{count} transações · avaliadas em {date}',
             oneRowPer: {
                 trade: 'Uma linha por transação',
                 book: 'Uma linha por livro',
@@ -5495,14 +5569,12 @@ const pt: SourceCatalogue = {
                 book: 'Livro',
                 counterparty: 'Contraparte',
             },
-            runTag_one: '{count} transação · avaliada em {date}',
-            runTag_other: '{count} transações · avaliadas em {date}',
             sourceNote:
                 'Esta tabela lê npv.csv do arquivo de saída da execução. Cada linha é uma transação avaliada pelo motor; uma transação que ele não conseguiu construir não escreve linha.',
             aggregateNote:
                 'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
             degraded:
-                'Os livros ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
+                'Os livros, carteiras ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
             selectHint:
                 'Selecione uma linha para ler o resultado dessa transação: o seu VAL, o VAL na moeda base, o notional, a contraparte e qualquer erro registado pela execução.',
             aggregateHint:
@@ -5848,6 +5920,11 @@ const pt: SourceCatalogue = {
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',
         defaultIs: 'O valor por omissão é {text}.',
+        defaultOption: 'Padrão ({value})',
+        changed: 'alterado',
+        noChanges: 'Nenhuma alteração ainda',
+        oneChange: '1 alteração',
+        changes: '{count} alterações',
         schema: {
             xml: 'XML ORE',
             format: 'Formato',

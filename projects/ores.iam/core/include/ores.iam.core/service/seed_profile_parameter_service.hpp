@@ -75,27 +75,33 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_seed_profile_parameters_response
-    list_seed_profile_parameters(const messaging::list_seed_profile_parameters_request& request);
-    messaging::get_seed_profile_parameter_response
-    get_seed_profile_parameter(const messaging::get_seed_profile_parameter_request& request);
-    messaging::get_many_seed_profile_parameters_response get_many_seed_profile_parameters(
-        const messaging::get_many_seed_profile_parameters_request& request);
-    messaging::put_seed_profile_parameter_response
-    put_seed_profile_parameter(const messaging::put_seed_profile_parameter_request& request);
-    messaging::put_many_seed_profile_parameters_response put_many_seed_profile_parameters(
-        const messaging::put_many_seed_profile_parameters_request& request);
-    messaging::delete_seed_profile_parameter_response
-    delete_seed_profile_parameter(const messaging::delete_seed_profile_parameter_request& request);
-    messaging::delete_many_seed_profile_parameters_response delete_many_seed_profile_parameters(
-        const messaging::delete_many_seed_profile_parameters_request& request);
-    messaging::list_by_seed_profile_id_seed_profile_parameters_response
+    ::ores::iam::messaging::list_seed_profile_parameters_response list_seed_profile_parameters(
+        const ::ores::iam::messaging::list_seed_profile_parameters_request& request);
+    ::ores::iam::messaging::get_seed_profile_parameter_response get_seed_profile_parameter(
+        const ::ores::iam::messaging::get_seed_profile_parameter_request& request);
+    ::ores::iam::messaging::get_many_seed_profile_parameters_response
+    get_many_seed_profile_parameters(
+        const ::ores::iam::messaging::get_many_seed_profile_parameters_request& request);
+    ::ores::iam::messaging::put_seed_profile_parameter_response put_seed_profile_parameter(
+        const ::ores::iam::messaging::put_seed_profile_parameter_request& request);
+    ::ores::iam::messaging::put_many_seed_profile_parameters_response
+    put_many_seed_profile_parameters(
+        const ::ores::iam::messaging::put_many_seed_profile_parameters_request& request);
+    ::ores::iam::messaging::delete_seed_profile_parameter_response delete_seed_profile_parameter(
+        const ::ores::iam::messaging::delete_seed_profile_parameter_request& request);
+    ::ores::iam::messaging::delete_many_seed_profile_parameters_response
+    delete_many_seed_profile_parameters(
+        const ::ores::iam::messaging::delete_many_seed_profile_parameters_request& request);
+    ::ores::iam::messaging::list_by_seed_profile_id_seed_profile_parameters_response
     list_by_seed_profile_id_seed_profile_parameters(
-        const messaging::list_by_seed_profile_id_seed_profile_parameters_request& request);
-    messaging::list_seed_profile_parameter_versions_response list_seed_profile_parameter_versions(
-        const messaging::list_seed_profile_parameter_versions_request& request);
-    messaging::get_seed_profile_parameter_version_response get_seed_profile_parameter_version(
-        const messaging::get_seed_profile_parameter_version_request& request);
+        const ::ores::iam::messaging::list_by_seed_profile_id_seed_profile_parameters_request&
+            request);
+    ::ores::iam::messaging::list_seed_profile_parameter_versions_response
+    list_seed_profile_parameter_versions(
+        const ::ores::iam::messaging::list_seed_profile_parameter_versions_request& request);
+    ::ores::iam::messaging::get_seed_profile_parameter_version_response
+    get_seed_profile_parameter_version(
+        const ::ores::iam::messaging::get_seed_profile_parameter_version_request& request);
     /**@}*/
 
     /**
@@ -219,7 +225,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::seed_profile_parameter_change& change,
+    prepare_change(const ::ores::iam::messaging::seed_profile_parameter_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::seed_profile_parameter& out);
 };

@@ -552,11 +552,10 @@ function LeafRow({
     const flag = leaf.sourceKind === 'boolean';
     return (
         <li className="space-y-2 py-3">
-            <ParameterRow
-                label={label}
-                required={leaf.required}
-                {...(leaf.help === '' ? {} : { hint: leaf.help })}
-            >
+            {/* The help is the same sentence the documentation panel gives, because
+                the guide supplies one line for both, so the row states none of it:
+                the documentation is read where it is collapsed. */}
+            <ParameterRow label={label} required={leaf.required}>
                 <div className="flex flex-wrap items-center gap-2">
                     {leaf.value === null ? (
                         <span className="text-sm text-ink-faint">

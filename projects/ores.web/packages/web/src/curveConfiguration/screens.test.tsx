@@ -124,6 +124,7 @@ const CURVE: CurveConfiguration = {
                             {
                                 value: 'Linear',
                                 label: 'Interpolation method',
+                                help: 'How the curve interpolates between its pillars.',
                                 valueSet: 'curve_interpolation_method',
                                 sourceKind: 'enumerated',
                                 choices: [
@@ -254,6 +255,13 @@ describe('the curve configuration page', () => {
         expect(words).toContain('Tolerance');
         expect(words).toContain('0.0001');
         expect(words).toContain('1 without documentation');
+    });
+
+    it("states a curve's documentation once, under the panel it is collapsed in", () => {
+        const words = textOf(page('curves'));
+        expect(words).toContain('Documentation');
+        // The panel is closed, so the sentence it holds is not repeated under the value.
+        expect(words).not.toContain('How the curve interpolates between its pillars.');
     });
 
     it('draws a flag as Yes or No', () => {

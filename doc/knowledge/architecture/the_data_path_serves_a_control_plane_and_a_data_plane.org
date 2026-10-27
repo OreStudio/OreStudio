@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 662D0C1B-319C-4F85-A118-42D830661B40
+:END:
+#+title: The data path serves a control plane and a data plane
+#+description: Two workloads share the services and the database: a control plane of small, isolated, audited transactions, and a data plane of ticks at tens of thousands a second. The design gives each its own path.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:marketdata:scale:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+The services carry two workloads with opposite needs, and each has its own path
+to the store. The control plane is the business data: entities, their versions
+and audit, under tenant and party isolation, at tens to hundreds of small
+transactions a second. The data plane is market data: ticks from up to one
+hundred thousand feeds, about 29,000 source ticks a second in a calm market and
+four times that in an active one, appended and never corrected. The control
+plane goes through the unit of work and typed statements; the data plane goes
+through tick lanes into a store with no row-level security. One machine runs
+ten environments against one PostgreSQL instance, so connections, memory and
+CPU are budgets the environments share.
+
+* Detail
+
+** The two planes
+
+| | Control plane | Data plane |
+|-+---------------+------------|
+| What | Reference data, parties, trades, configurations, identity, the compute ledger, usage intervals | Ticks: ingest, store, republish |
+| Rate | Tens to hundreds of transactions a second | About 29,000 source ticks a second at 100,000 feeds, about 116,000 in an active market |
+| Shape | Bitemporal rows, audit columns, small transactions | Append-only points, idempotent, bulk |
+| Isolation | Row-level security on tenant and party | Entitlement checked when a party reads |
+| Path | [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] and [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]] | [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] into [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] |
+| What matters most | Correctness, isolation, auditability | Throughput, bounded latency, bounded memory and storage |
+
+** The budget
+
+| Quantity | At 100,000 feeds |
+|----------+------------------|
+| Source ticks a second, calm | about 29,000 |
+| Source ticks a second, active market | about 116,000 |
+| Stored rows a second, calm | about 29,000, one per source tick |
+| Environments on one machine | ten |
+| PostgreSQL instances | one, shared by the ten |
+
+The rate follows from the feed population: each feed configures its ticks an
+hour, and the market regime multiplies the arrival rate by four in an active
+market. A path that costs a little per message costs a lot per second, so every
+per-message cost on the data plane is designed out rather than tuned.
+
+** Why two paths
+
+A control-plane transaction needs the session context, the audit trigger and
+the row-level security policy; a tick needs none of them and pays for each one
+it meets. A data-plane write needs batching and a bound on its wait; a
+control-plane write must commit when its handler returns. Putting both through
+one path makes the slower plane set the cost of the faster one.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — completes: the market data the data plane carries, from vendor to party.

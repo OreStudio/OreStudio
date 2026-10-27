@@ -53,9 +53,9 @@ namespace ores::workflow::messaging {
 namespace {
 
 using namespace ores::logging;
-inline static std::string_view logger_name = "ores.workflow.messaging.registrar";
-static auto& lg() {
-    static auto instance = make_logger(logger_name);
+inline static std::string_view registrar_logger_name = "ores.workflow.messaging.registrar";
+static auto& registrar_lg() {
+    static auto instance = make_logger(registrar_logger_name);
     return instance;
 }
 
@@ -216,7 +216,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 ores::nats::default_wire_codec()
                     .decode<telemetry::messaging::service_heartbeat_message>(msg.data);
             if (!decoded) {
-                BOOST_LOG_SEV(lg(), warn)
+                BOOST_LOG_SEV(registrar_lg(), warn)
                     << "Failed to decode a service heartbeat: " << decoded.error().what();
                 return;
             }
@@ -229,14 +229,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     try {
         engine->recover_in_progress();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Workflow recovery failed: " << e.what();
+        BOOST_LOG_SEV(registrar_lg(), error) << "Workflow recovery failed: " << e.what();
     }
 
     // Recovery re-dispatches what silence left behind; the watch is what stops
     // the next silence from lasting for ever.
     engine->start_deadline_watch();
 
-    BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size() << " workflow message handlers.";
+    BOOST_LOG_SEV(registrar_lg(), debug)
+        << "Registered " << subs.size() << " workflow message handlers.";
     return subs;
 }
 

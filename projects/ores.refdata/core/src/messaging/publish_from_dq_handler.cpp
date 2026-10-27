@@ -47,7 +47,7 @@ using ores::service::messaging::workflow_step_context;
 namespace {
 
 inline std::string_view logger_name = "ores.refdata.messaging.publish_from_dq_handler";
-auto& lg() {
+auto& publish_from_dq_handler_lg() {
     static auto instance = make_logger(logger_name);
     return instance;
 }
@@ -108,9 +108,10 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
-                              << " mode=" << cmd.mode << " step=" << wf->step_id << " params="
-                              << (cmd.params_json.empty() ? "(empty)" : cmd.params_json);
+    BOOST_LOG_SEV(publish_from_dq_handler_lg(), info)
+        << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
+        << " mode=" << cmd.mode << " step=" << wf->step_id
+        << " params=" << (cmd.params_json.empty() ? "(empty)" : cmd.params_json);
 
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
@@ -121,7 +122,11 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
         const std::string params_json = cmd.params_json.empty() ? "{}" : cmd.params_json;
 
         auto rows = execute_parameterized_multi_column_query(
-            tenant_ctx, sql, {cmd.dataset_id, cmd.tenant_id, cmd.mode, params_json}, lg(), fn_name);
+            tenant_ctx,
+            sql,
+            {cmd.dataset_id, cmd.tenant_id, cmd.mode, params_json},
+            publish_from_dq_handler_lg(),
+            fn_name);
 
         ores::dq::messaging::publish_from_dq_result result;
         result.success = true;
@@ -139,15 +144,15 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "publish_from_dq complete: fn=" << fn_name
-                                  << " inserted=" << result.records_inserted
-                                  << " updated=" << result.records_updated;
+        BOOST_LOG_SEV(publish_from_dq_handler_lg(), info)
+            << "publish_from_dq complete: fn=" << fn_name << " inserted=" << result.records_inserted
+            << " updated=" << result.records_updated;
 
         wf->complete(rfl::json::write(result));
         ack.accept();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
+        BOOST_LOG_SEV(publish_from_dq_handler_lg(), error)
             << "publish_from_dq failed: fn=" << fn_name << " error=" << e.what();
         wf->fail(e.what());
         // The failure reaches the engine, so the delivery is done with;

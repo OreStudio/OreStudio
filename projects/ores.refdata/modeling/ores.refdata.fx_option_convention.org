@@ -83,10 +83,10 @@ std::string("EUR-USD-FX")
 :nullable:    false
 :END:
 
-How the at-the-money strike is chosen, in ORE's own spelling (e.g. 'Atm', 'AtmDeltaNeutral').
+How the at-the-money strike is chosen, in ORE's own spelling (e.g. 'AtmSpot', 'AtmDeltaNeutral').
 
 #+begin_src cpp :name generator
-std::string("Atm")
+std::string("AtmDeltaNeutral")
 #+end_src
 
 ** delta_type
@@ -125,7 +125,7 @@ std::string("1Y")
 ATM type used beyond the switch tenor.
 
 #+begin_src cpp :name generator
-std::string("Atm")
+std::string("AtmDeltaNeutral")
 #+end_src
 
 ** long_term_delta_type
@@ -256,10 +256,10 @@ std::nullopt
 |-------+-------+--------+------+--------+-------------+-------------|
 | id | Id | idEdit | line_edit | true | true | Enter FX option id |
 | fx convention id | FX Convention | fxConventionIdEdit | line_edit |  |  | e.g. EUR-USD-FX |
-| atm type | ATM Type | atmTypeEdit | line_edit |  | true | e.g. Atm |
+| atm type | ATM Type | atmTypeEdit | line_edit |  | true | e.g. AtmDeltaNeutral |
 | delta type | Delta Type | deltaTypeEdit | line_edit |  | true | e.g. Spot |
 | switch tenor | Switch Tenor | switchTenorEdit | line_edit |  |  | e.g. 1Y |
-| long term atm type | Long Term ATM | longTermAtmTypeEdit | line_edit |  |  | e.g. Atm |
+| long term atm type | Long Term ATM | longTermAtmTypeEdit | line_edit |  |  | e.g. AtmDeltaNeutral |
 | long term delta type | Long Term Delta | longTermDeltaTypeEdit | line_edit |  |  | e.g. Forward |
 | risk reversal in favor of | RR In Favour Of | riskReversalInFavorOfEdit | line_edit |  |  | e.g. Call |
 | butterfly style | Butterfly Style | butterflyStyleEdit | line_edit |  |  | e.g. Broker |

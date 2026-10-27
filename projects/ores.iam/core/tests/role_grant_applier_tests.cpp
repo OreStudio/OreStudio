@@ -29,6 +29,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -41,12 +42,6 @@ auto& lg() {
     return instance;
 }
 
-// The database stamps every row with the account that wrote it, as a signed-in
-// context always names one.
-ores::database::context acting(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), h.db_user());
-}
-
 ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
     auto ctx = ores::testing::make_generation_context(h);
     auto a = ores::iam::generators::generate_synthetic_account(ctx);
@@ -54,12 +49,6 @@ ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h
     ores::iam::repository::account_repository repo;
     repo.write(acting(h), a);
     return a;
-}
-
-void run(ores::testing::scoped_database_helper& h,
-         const std::string& sql,
-         const std::vector<std::string>& params) {
-    ores::database::repository::execute_parameterized_command(acting(h), sql, params, lg(), sql);
 }
 
 /**

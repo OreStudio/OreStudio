@@ -35,7 +35,8 @@
 
 namespace {
 
-ores::scheduler::domain::job_definition make_job(const std::string& command) {
+ores::scheduler::domain::job_definition
+service_sql_action_handler_make_job(const std::string& command) {
     ores::scheduler::domain::job_definition job;
     job.job_name = "action_handler_test_job";
     job.command = command;
@@ -62,7 +63,7 @@ TEST_CASE("sql_action_handler runs the job's command", "[action][sql]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    const auto job = make_job("select 1");
+    const auto job = service_sql_action_handler_make_job("select 1");
     const action_context ctx{job, h.context(), 0};
 
     sql_action_handler handler;
@@ -78,7 +79,7 @@ TEST_CASE("sql_action_handler reports a bad command instead of throwing", "[acti
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    const auto job = make_job("this is not sql");
+    const auto job = service_sql_action_handler_make_job("this is not sql");
     const action_context ctx{job, h.context(), 0};
 
     sql_action_handler handler;

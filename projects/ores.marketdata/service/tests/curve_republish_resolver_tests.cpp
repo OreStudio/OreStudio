@@ -18,6 +18,7 @@
  *
  */
 #include "../src/curve_republish_resolver.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 
@@ -32,7 +33,9 @@ using ores::refdata::domain::ir_curve_bootstrap_pillar;
 using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention_resolution;
 
-tenor make_tenor(const std::string& code, const std::string& unit, int multiplier) {
+tenor curve_republish_resolver_make_tenor(const std::string& code,
+                                          const std::string& unit,
+                                          int multiplier) {
     tenor t;
     t.code = code;
     t.kind = "PERIOD";
@@ -41,15 +44,10 @@ tenor make_tenor(const std::string& code, const std::string& unit, int multiplie
     return t;
 }
 
-tenor_convention_resolution make_resolution(const std::string& tenor_code) {
-    tenor_convention_resolution r;
-    r.convention_code = "RATES_SPOT_FORWARD";
-    r.tenor_code = tenor_code;
-    return r;
-}
-
-ir_curve_bootstrap_pillar
-make_pillar(int seq, const std::string& start, const std::string& end, const std::string& role) {
+ir_curve_bootstrap_pillar curve_republish_resolver_make_pillar(int seq,
+                                                               const std::string& start,
+                                                               const std::string& end,
+                                                               const std::string& role) {
     ir_curve_bootstrap_pillar p;
     p.sequence_index = seq;
     p.start_tenor_code = start;
@@ -59,14 +57,14 @@ make_pillar(int seq, const std::string& start, const std::string& end, const std
 }
 
 // horizon == spot == 2026-01-01 (T+0), same simplification the generation-side resolver uses.
-curve_republish_refdata_context make_context() {
+curve_republish_refdata_context curve_republish_resolver_make_context() {
     curve_republish_refdata_context ctx;
 
-    ctx.tenors_by_code.emplace("SPOT", make_tenor("SPOT", "DAY", 0));
-    ctx.tenors_by_code.emplace("3M", make_tenor("3M", "MONTH", 3));
-    ctx.tenors_by_code.emplace("6M", make_tenor("6M", "MONTH", 6));
-    ctx.tenors_by_code.emplace("1Y", make_tenor("1Y", "YEAR", 1));
-    ctx.tenors_by_code.emplace("2Y", make_tenor("2Y", "YEAR", 2));
+    ctx.tenors_by_code.emplace("SPOT", curve_republish_resolver_make_tenor("SPOT", "DAY", 0));
+    ctx.tenors_by_code.emplace("3M", curve_republish_resolver_make_tenor("3M", "MONTH", 3));
+    ctx.tenors_by_code.emplace("6M", curve_republish_resolver_make_tenor("6M", "MONTH", 6));
+    ctx.tenors_by_code.emplace("1Y", curve_republish_resolver_make_tenor("1Y", "YEAR", 1));
+    ctx.tenors_by_code.emplace("2Y", curve_republish_resolver_make_tenor("2Y", "YEAR", 2));
 
     ctx.convention.code = "RATES_SPOT_FORWARD";
     ctx.convention.measured_from = "SPOT";
@@ -84,8 +82,9 @@ curve_republish_refdata_context make_context() {
 
 TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates and rate",
           "[curve_republish_resolver]") {
-    const auto ctx = make_context();
-    std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
+    const auto ctx = curve_republish_resolver_make_context();
+    std::vector<ir_curve_bootstrap_pillar> pillars{
+        curve_republish_resolver_make_pillar(0, "SPOT", "3M", "DEPOSIT")};
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};
 
     const auto resolved = resolve_bootstrap_pillars(pillars, ctx, raw_rates);
@@ -101,8 +100,9 @@ TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates an
 
 TEST_CASE("resolve_bootstrap_pillars resolves an FRA pillar's start/end from its own tenor codes",
           "[curve_republish_resolver]") {
-    const auto ctx = make_context();
-    std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "3M", "6M", "FRA")};
+    const auto ctx = curve_republish_resolver_make_context();
+    std::vector<ir_curve_bootstrap_pillar> pillars{
+        curve_republish_resolver_make_pillar(0, "3M", "6M", "FRA")};
     std::unordered_map<std::string, double> raw_rates{{"6M", 0.032}};
 
     const auto resolved = resolve_bootstrap_pillars(pillars, ctx, raw_rates);
@@ -115,10 +115,10 @@ TEST_CASE("resolve_bootstrap_pillars resolves an FRA pillar's start/end from its
 
 TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input order",
           "[curve_republish_resolver]") {
-    const auto ctx = make_context();
+    const auto ctx = curve_republish_resolver_make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{
-        make_pillar(1, "3M", "6M", "FRA"),
-        make_pillar(0, "SPOT", "3M", "DEPOSIT"),
+        curve_republish_resolver_make_pillar(1, "3M", "6M", "FRA"),
+        curve_republish_resolver_make_pillar(0, "SPOT", "3M", "DEPOSIT"),
     };
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}, {"6M", 0.032}};
 
@@ -132,10 +132,10 @@ TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input
 TEST_CASE("resolve_bootstrap_pillars builds a SWAP pillar's fixed_leg_dates from every prior "
           "pillar's own end_date plus its own",
           "[curve_republish_resolver]") {
-    const auto ctx = make_context();
+    const auto ctx = curve_republish_resolver_make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{
-        make_pillar(0, "SPOT", "1Y", "DEPOSIT"),
-        make_pillar(1, "SPOT", "2Y", "SWAP"),
+        curve_republish_resolver_make_pillar(0, "SPOT", "1Y", "DEPOSIT"),
+        curve_republish_resolver_make_pillar(1, "SPOT", "2Y", "SWAP"),
     };
     std::unordered_map<std::string, double> raw_rates{{"1Y", 0.03}, {"2Y", 0.035}};
 
@@ -151,8 +151,9 @@ TEST_CASE("resolve_bootstrap_pillars builds a SWAP pillar's fixed_leg_dates from
 
 TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in the raw grid",
           "[curve_republish_resolver]") {
-    const auto ctx = make_context();
-    std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
+    const auto ctx = curve_republish_resolver_make_context();
+    std::vector<ir_curve_bootstrap_pillar> pillars{
+        curve_republish_resolver_make_pillar(0, "SPOT", "3M", "DEPOSIT")};
     // Empty, so 3M is missing.
     std::unordered_map<std::string, double> raw_rates;
 
@@ -160,8 +161,9 @@ TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in t
 }
 
 TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", "[curve_republish_resolver]") {
-    const auto ctx = make_context();
-    std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "9M", "DEPOSIT")};
+    const auto ctx = curve_republish_resolver_make_context();
+    std::vector<ir_curve_bootstrap_pillar> pillars{
+        curve_republish_resolver_make_pillar(0, "SPOT", "9M", "DEPOSIT")};
     std::unordered_map<std::string, double> raw_rates{{"9M", 0.03}};
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
@@ -169,8 +171,9 @@ TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", "[curve_rep
 
 TEST_CASE("resolve_bootstrap_pillars rejects an unrecognised curve_role_code",
           "[curve_republish_resolver]") {
-    const auto ctx = make_context();
-    std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "BOND")};
+    const auto ctx = curve_republish_resolver_make_context();
+    std::vector<ir_curve_bootstrap_pillar> pillars{
+        curve_republish_resolver_make_pillar(0, "SPOT", "3M", "BOND")};
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);

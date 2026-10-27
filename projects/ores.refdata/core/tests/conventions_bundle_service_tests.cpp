@@ -33,6 +33,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -42,24 +43,6 @@
 #include <string>
 #include <vector>
 
-namespace {
-
-// A bundle belongs to a party, so each case writes one and acts for it.
-ores::database::context party_context(ores::testing::scoped_database_helper& h) {
-    auto gen = ores::testing::make_generation_context(h);
-    ores::refdata::repository::party_repository repo;
-    auto party = ores::refdata::generators::generate_synthetic_party(gen);
-    party.change_reason_code = "system.test";
-    for (const auto& e : repo.read_latest(h.context()))
-        if (e.tenant_id == party.tenant_id) {
-            party.parent_party_id = e.id;
-            break;
-        }
-    repo.write(h.context(), party);
-    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-}
-
-}
 
 TEST_CASE("a bundle resolves the identity the party already holds",
           "[refdata][conventions][bundle][database]") {

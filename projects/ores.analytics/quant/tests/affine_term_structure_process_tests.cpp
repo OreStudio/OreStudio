@@ -22,6 +22,7 @@
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/two_factor_gaussian_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
+#include "test_helpers.hpp"
 #include <Eigen/Dense>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -40,14 +41,6 @@ using ores::analytics::quant::service::two_factor_gaussian_process;
 using ores::analytics::quant::service::vasicek_process;
 
 namespace {
-
-Eigen::VectorXd vector(std::initializer_list<double> values) {
-    Eigen::VectorXd result(values.size());
-    std::size_t i = 0;
-    for (const double v : values)
-        result[i++] = v;
-    return result;
-}
 
 Eigen::MatrixXd matrix(std::initializer_list<std::initializer_list<double>> rows) {
     Eigen::MatrixXd result(rows.size(), rows.begin()->size());

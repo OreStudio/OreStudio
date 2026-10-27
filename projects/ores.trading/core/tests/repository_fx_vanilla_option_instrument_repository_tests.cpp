@@ -41,7 +41,8 @@ using namespace ores::logging;
  * via fx_instrument_mapper::forward_fx_option.
  * See tests/test_data/fx_vanilla_option_instrument.json for the full mapping snapshot.
  */
-fx_vanilla_option_instrument make_instrument(database_helper& h) {
+fx_vanilla_option_instrument
+repository_fx_vanilla_option_instrument_repository_make_instrument(database_helper& h) {
     fx_vanilla_option_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
@@ -73,7 +74,7 @@ TEST_CASE("fx_vanilla_option_instrument_write_and_read_latest",
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_vanilla_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "Writing FX vanilla option instrument: " << instr;
 
@@ -100,7 +101,7 @@ TEST_CASE("fx_vanilla_option_instrument_read_nonexistent", "[repository][fx][fx_
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     fx_vanilla_option_instrument_repository repo;
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_vanilla_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     repo.write(ctx, instr);
 
@@ -120,7 +121,7 @@ TEST_CASE("fx_vanilla_option_instrument_remove", "[repository][fx][fx_vanilla_op
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_vanilla_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
 
     fx_vanilla_option_instrument_repository repo;

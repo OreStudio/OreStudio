@@ -1,0 +1,17 @@
+# The evidence script, step 1: the trader raises a publish of the Acme curve.
+#
+# Run from the worktree with:
+#   ./compass.sh shell -l <this file>
+# The curve is the one evidence/acme_curve_config_seed.sql seeds, owned by ACME
+# Corporation US Inc (ACCOUS), and the trader is a Trading persona, because the
+# Trading role holds marketdata::curve_bootstrap:publish.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+
+# The as-of is the instant the seeded quotes are stamped at.
+curve_publish_operations publish-curve ${CONFIG_ID} 2026-10-27T12:00:00Z --reason "Today's USD SOFR curve, built from the two quotes"
+
+approval_operations list-my-approval-requests
+
+logout

@@ -31,6 +31,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "test_helpers.hpp"
 #include "tick_test_support.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -56,10 +57,6 @@ using ores::marketdata::tests::zero_identity;
 using ores::marketdata::tests::zero_uri;
 using ores::testing::database_helper;
 using ores::utility::domain::outcome;
-
-std::chrono::system_clock::time_point now_second() {
-    return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-}
 
 /// A series that the test owns, with the number of its own datum in the tick dictionary.
 struct owned_series {

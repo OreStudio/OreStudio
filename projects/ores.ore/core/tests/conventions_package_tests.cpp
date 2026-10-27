@@ -24,6 +24,7 @@
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_helpers.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -49,17 +50,6 @@ using namespace ores::ore::domain;
 
 std::filesystem::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
-}
-
-std::string read(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    std::ostringstream buffer;
-    buffer << in.rdbuf();
-    return buffer.str();
-}
-
-conventions load(const std::filesystem::path& path) {
-    return conventions_mapper::read(read(path), path.string());
 }
 
 ores::ore::xml::record_reader root_of(const conventions& document) {

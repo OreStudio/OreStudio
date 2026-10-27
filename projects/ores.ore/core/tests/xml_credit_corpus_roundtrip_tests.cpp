@@ -43,6 +43,7 @@
 #include "ores.trading.api/domain/synthetic_cdo_instrument_json_io.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_helpers.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -77,10 +78,6 @@ using ores::trading::domain::instrument_batch;
  * @brief The trade id both imports are stamped with, so the rows compare
  * without the identity the planner would otherwise mint.
  */
-boost::uuids::uuid fixed_trade_id() {
-    return boost::uuids::string_generator()("11111111-2222-3333-4444-555555555555");
-}
-
 /**
  * @brief Every table the credit family writes for a trade, rendered in a fixed
  * order, so two renderings are equal exactly when the family rows are.
@@ -119,21 +116,6 @@ std::string family_rows(const trade_import_item& item) {
 /**
  * @brief Exports one imported trade as a document of its own.
  */
-std::string export_one(const trade_import_item& item) {
-    auto instrument = item.instrument;
-    ores::trading::domain::stamp_ids(instrument, fixed_trade_id());
-
-    ores::trading::messaging::trade_export_item export_item;
-    export_item.anchor = item.anchor;
-    export_item.anchor.id = fixed_trade_id();
-    export_item.ore_id = item.ore_id;
-    export_item.envelope = item.envelope;
-
-    instrument_batch b;
-    ores::trading::domain::append_instrument(b, instrument);
-    return exporter::export_portfolio({export_item}, b);
-}
-
 bool is_credit(const trade_import_item& item) {
     return std::holds_alternative<credit_instrument_data>(item.instrument);
 }
@@ -142,33 +124,12 @@ bool is_credit(const trade_import_item& item) {
  * @brief The first line on which two renderings differ, so a failure names
  * the table and the row instead of dumping both.
  */
-std::string first_difference(const std::string& a, const std::string& b) {
-    std::istringstream sa(a), sb(b);
-    std::string la, lb;
-    while (std::getline(sa, la) && std::getline(sb, lb)) {
-        if (la == lb)
-            continue;
-        std::size_t i = 0;
-        while (i < la.size() && i < lb.size() && la[i] == lb[i])
-            ++i;
-        const auto from = i > 40 ? i - 40 : 0;
-        return la.substr(0, la.find(' ')) + " differs near: first=..." + la.substr(from, 90) +
-               " second=..." + lb.substr(from, 90);
-    }
-    return "the renderings differ in length";
-}
-
 /**
  * @brief Credit trades whose round trip is known to change a row. Each name is
  * a document, and the entry stays until the mapper carries what it loses.
  * The list is closed in both directions: a name that stops differing fails
  * the suite until it leaves the list.
  */
-const std::set<std::string>& known_row_differences() {
-    static const std::set<std::string> differences = {};
-    return differences;
-}
-
 } // namespace
 
 TEST_CASE("every credit trade in the corpus comes back as the same family rows",
@@ -221,7 +182,7 @@ TEST_CASE("every credit trade in the corpus comes back as the same family rows",
             if (before != after) {
                 if (differing.insert(name).second)
                     detail += "\n  " + name + " (" + item.ore_id +
-                              "): " + first_difference(before, after);
+                              "): " + first_differing_line(before, after);
             }
         }
     }

@@ -21,6 +21,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.testing/nats_options_helper.hpp"
+#include "test_helpers.hpp"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -60,13 +61,6 @@ std::vector<std::byte> incompressible_payload() {
     for (auto& b : payload)
         b = static_cast<std::byte>(byte(gen));
     return payload;
-}
-
-std::string unique_suffix() {
-    static std::atomic<unsigned long long> counter{0};
-    const auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-    return std::to_string(static_cast<unsigned long long>(now)) + "_" +
-           std::to_string(counter.fetch_add(1));
 }
 
 long long anonymous_rss_kib() {

@@ -36,7 +36,8 @@ using trading::domain::scripted_instrument;
  * The trading domain keeps the audit beside the product, and every family's
  * reading sets the same four columns.
  */
-auto make_base(std::string_view trade_type_code) -> scripted_instrument {
+auto scripted_instrument_projection_make_base(std::string_view trade_type_code)
+    -> scripted_instrument {
     scripted_instrument r;
     r.identity.trade_type_code = std::string(trade_type_code);
     r.audit.modified_by = "ores";
@@ -46,7 +47,7 @@ auto make_base(std::string_view trade_type_code) -> scripted_instrument {
     return r;
 }
 
-auto json_escape(std::string_view text) -> std::string {
+auto scripted_instrument_projection_json_escape(std::string_view text) -> std::string {
     std::string out;
     for (const char c : text) {
         if (c == '"')
@@ -64,7 +65,7 @@ auto json_array(const std::vector<std::string>& values) -> std::string {
     for (std::size_t i = 0; i < values.size(); ++i) {
         if (i != 0)
             out.push_back(',');
-        out += "\"" + json_escape(values[i]) + "\"";
+        out += "\"" + scripted_instrument_projection_json_escape(values[i]) + "\"";
     }
     out += "]";
     return out;
@@ -179,8 +180,8 @@ auto own_text(const xml::record_reader& record, std::string_view name) -> std::s
     return child->own_text().value_or("");
 }
 
-auto vector_values(const xml::record_reader& record,
-                   std::string_view name) -> std::vector<std::string> {
+auto vector_values(const xml::record_reader& record, std::string_view name)
+    -> std::vector<std::string> {
     const auto child = record.child(name);
     if (!child)
         return {};
@@ -230,7 +231,7 @@ void set_underlying_type(xml::record_writer& underlying,
 auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument> {
     if (trade_type == "ScriptedTrade") {
-        auto r = make_base(trade_type);
+        auto r = scripted_instrument_projection_make_base(trade_type);
         if (const auto named = trade.child("AsianBasketOptionData")) {
             r.script_name = "AsianBasketOption";
             r.underlyings_json = json_array(vector_values(*named, "Underlyings"));
@@ -289,7 +290,7 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
     }
 
     if (trade_type == "DoubleDigitalOption") {
-        auto r = make_base(trade_type);
+        auto r = scripted_instrument_projection_make_base(trade_type);
         r.script_name = "DoubleDigitalOption";
         if (const auto d = trade.child("DoubleDigitalOptionData")) {
             std::vector<std::string> names;
@@ -324,7 +325,7 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
     }
 
     if (trade_type == "PerformanceOption_01") {
-        auto r = make_base(trade_type);
+        auto r = scripted_instrument_projection_make_base(trade_type);
         r.script_name = "PerformanceOption_01";
         if (const auto d = trade.child("PerformanceOption01Data")) {
             std::vector<std::string> names;

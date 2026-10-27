@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -171,7 +172,8 @@ benchmark_rate_service::put_benchmark_rate(const messaging::put_benchmark_rate_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(value));
+    auto written =
+        of_acting_party(benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(value)), ctx_);
     if (!written.empty())
         response.benchmark_rate = std::move(written.front());
     return response;
@@ -203,7 +205,8 @@ messaging::put_many_benchmark_rates_response benchmark_rate_service::put_many_be
     repo_.write(ctx_, batch, claims);
     response.rates.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(value));
+        auto written = of_acting_party(
+            benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(value)), ctx_);
         response.rates.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -330,7 +333,10 @@ benchmark_rate_service::prepare_change(const messaging::benchmark_rate_change& c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = benchmark_rate_to_domain(change.write);
-    const auto current = benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

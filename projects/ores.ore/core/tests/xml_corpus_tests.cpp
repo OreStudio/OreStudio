@@ -33,7 +33,7 @@ using namespace ores::logging;
 using ores::ore::xml::document;
 using ores::ore::xml::token_kind;
 
-auto read_file(const fs::path& path) -> std::string {
+auto xml_corpus_read_file(const fs::path& path) -> std::string {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
@@ -124,7 +124,7 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", "[ore][
         if (!entry.is_regular_file() || entry.path().extension() != ".xml")
             continue;
         ++documents;
-        const auto text = read_file(entry.path());
+        const auto text = xml_corpus_read_file(entry.path());
 
         const auto original = document::read(text);
         if (!original) {
@@ -178,7 +178,7 @@ TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", "[or
     for (const auto& entry : fs::recursive_directory_iterator(root)) {
         if (!entry.is_regular_file() || entry.path().extension() != ".xml")
             continue;
-        const auto parsed = document::read(read_file(entry.path()));
+        const auto parsed = document::read(xml_corpus_read_file(entry.path()));
         if (!parsed)
             continue;
 
@@ -231,7 +231,7 @@ TEST_CASE("every_xml_document_in_the_repository_parses", "[ore][xml][corpus]") {
             if (extension != ".xml" && extension != ".XML")
                 continue;
 
-            const auto text = read_file(entry.path());
+            const auto text = xml_corpus_read_file(entry.path());
             if (text.empty())
                 continue;
             ++documents;

@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -364,7 +365,8 @@ file_type_service::put_file_type(const messaging::put_file_type_request& request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = file_type_read_one(repo_, ctx_, file_type_key_from(value));
+    auto written =
+        of_acting_party(file_type_read_one(repo_, ctx_, file_type_key_from(value)), ctx_);
     if (!written.empty())
         response.file_type = std::move(written.front());
     return response;
@@ -396,7 +398,8 @@ file_type_service::put_many_file_types(const messaging::put_many_file_types_requ
     repo_.write(ctx_, batch, claims);
     response.types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = file_type_read_one(repo_, ctx_, file_type_key_from(value));
+        auto written =
+            of_acting_party(file_type_read_one(repo_, ctx_, file_type_key_from(value)), ctx_);
         response.types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -514,7 +517,10 @@ file_type_service::prepare_change(const messaging::file_type_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = file_type_to_domain(change.write);
-    const auto current = file_type_read_one(repo_, ctx_, file_type_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(file_type_read_one(repo_, ctx_, file_type_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

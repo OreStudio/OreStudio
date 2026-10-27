@@ -46,7 +46,7 @@ using namespace ores::logging;
 
 namespace {
 
-auto& lg() {
+auto& ir_curve_feed_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.api.ir_curve_feed");
     return instance;
 }
@@ -139,13 +139,13 @@ void ir_curve_feed::start() {
         body,
         [this](std::uint64_t n, const std::string& points) {
             if (n == 1 || n % 100 == 0) {
-                BOOST_LOG_SEV(lg(), info)
+                BOOST_LOG_SEV(ir_curve_feed_lg(), info)
                     << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='"
                     << source_name_ << "' batch=" << n << " points=" << points;
             }
         },
         [this](const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error)
+            BOOST_LOG_SEV(ir_curve_feed_lg(), error)
                 << "SYNTHETIC CURVE PUBLISH FAILED: subject='" << nats_subject_ << "' source='"
                 << source_name_ << "': " << ex.what();
         });

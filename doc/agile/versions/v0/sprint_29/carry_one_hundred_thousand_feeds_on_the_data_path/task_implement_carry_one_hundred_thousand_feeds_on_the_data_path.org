@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: E6C74604-A10E-4301-81C9-00895979275D
+:END:
+#+title: Task: Write the target-state architecture of the data path
+#+description: The architecture notes of the target state, and every related note aligned to it.
+#+type: task
+#+level: s1
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path:sprint_29:v0:
+#+owner: marco
+#+branch: feature/carry-one-hundred-thousand-feeds-on-the-data-path
+#+pr: 3881
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the target-state architecture of the data path as atomic notes ordered by a
+structure note, describing only the state the story delivers, and align every
+related note to it so no note states a different target.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- One structure note orders the cluster and argues its order; each atomic note
+  makes one claim, in the present tense, with no current state and no history.
+- Every note the target changes either states the target or links to it.
+- The structure-note, pattern-use and link checks pass.
+
+* Plan
+
+1. Write the structure note [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] and thirteen atomic notes, one claim each.
+2. Reframe the tick storage note as the store-once target.
+3. Read every note on connections, sessions, the tick store, the ingest, the
+   compute claim and ownership, and change each statement that names another
+   target.
+4. Link the pattern pages both ways, add the hub to the knowledge index, and
+   run the structure-note and pattern checks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3881][#3881]] | [doc] Set out the target-state architecture of the data path |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The pipeline note is a design record: present state, measurements, plan, options | =tick_ingest_pipeline.org= | Accept | The target stays in the note; the record moved verbatim to [[id:4E423566-F61B-4D0F-8787-25E4EEB4887C][The tick ingest pipeline design record]]. |
+| 2 | The compute pages carry history: the first design, its failure, the rollout | =compute_job_lifecycle.org=, =how_the_compute_grid_queues_and_claims_work.org= | Accept | The failure is now the argument for not pushing work; the done rollout is removed. |
+| 3 | Time zone set on the connection contradicts the transaction pooler | =a_transaction_sets_its_own_tenant_context.org=, =postgresql_architecture.org= | Accept | UTC is a default of each role, so every pooled server connection starts in it. |
+| 4 | The loop, the COPY note and the pipeline disagree on the delivery order | =feed_ingest_loop.org= | Accept | Deliver comes before Store everywhere; the lane stores in its batch. |
+| 5 | An idle grid both claims on a timeout and sends no claims | =work_is_pushed_to_the_grid.org= | Accept | Retitled: an idle grid costs one claim per wrapper per timeout. |
+| 6 | Two shard words, series and stream | =ticks_reach_the_store_through_sharded_binary_copy.org= | Accept | Stream throughout. |
+| 7 | The bounded-store note makes three claims in its title | =the_tick_store_is_bounded.org= | Accept | Retitled to its one claim; the three means are the body. |
+| 8 | The store-once note joins two claims | =tick_storage_and_entitlement.org= | Decline | Storing once is what moves entitlement to the read; the two halves are one claim. |
+| 9 | Bounded has no number | =the_tick_store_is_bounded.org= | Accept | A week is about 17.5 billion rows, 2.8 TB raw; the target is under 300 GB, about ten to one. |
+| 10 | The republished count and the delivery meter are not told apart | =every_queue_and_session_reports_its_own_numbers.org= | Accept | One sentence says the count is a gauge and the meter bills deliveries. |
+| 11 | The tick lanes' direct connections are not counted with the pool | =a_service_holds_a_few_long_lived_connections.org= | Accept | The lanes are outside the pool; the machine count is the pooler cap plus the lanes. |
+| 12 | The LISTEN rule has no consumer | =the_environments_share_the_database_through_a_transaction_pooler.org= | Accept | Names =postgres_event_source= in =ores.eventing=. |
+| 13 | An open question in a target note | =the_history_call_returns_a_whole_range_in_one_reply.org= | Accept | The question and the note's open questions moved to the design record. |
+| 14 | Present tense hides what is built | =the_data_path.org= | Accept | A status line says the pages state the target and the story's tasks track the build. |
+| 15 | Page 7 depends on page 2, not on page 6 | =the_data_path.org= | Accept | The order says so. |
+| 16 | Stray =# aside= line | =the_data_path.org= | Accept | Removed. |
+| 17 | Current state in pages beside the cluster: PostgreSQL types, tenant ownership, time, ownership plan | =postgresql_architecture.org= and three more | Decline | Outside the cluster; they record the system and its known defects, and this PR changes only their connection and session passages. |
+| 18 | Pooled libpqxx connections, from the sqlgen decision | =projects/ores.database/modeling/component_overview.org= | Accept | libpq, through sqlgen; nothing links libpqxx. |
+
+* Result
+
+The data path cluster is written: the structure note [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] orders thirteen
+notes, from the workload through connections, the transaction context, the unit
+of work, typed statements, error classes and the bounded handler pool, to the
+store-once tick store, its lanes, its bounds, the pooler, the pushed grid and
+the published numbers. The ingest loop, the ingest pipeline, the PostgreSQL,
+time, ownership, history-call, series, bootstrap and compute queue notes now
+state the same target, and the market data and storage structure notes and the
+knowledge index link the cluster.

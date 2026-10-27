@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -193,8 +194,10 @@ tenor_basis_two_swap_convention_service::put_tenor_basis_two_swap_convention(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = tenor_basis_two_swap_convention_read_one(
-        repo_, ctx_, tenor_basis_two_swap_convention_key_from(value));
+    auto written =
+        of_acting_party(tenor_basis_two_swap_convention_read_one(
+                            repo_, ctx_, tenor_basis_two_swap_convention_key_from(value)),
+                        ctx_);
     if (!written.empty())
         response.tenor_basis_two_swap_convention = std::move(written.front());
     return response;
@@ -227,8 +230,10 @@ tenor_basis_two_swap_convention_service::put_many_tenor_basis_two_swap_conventio
     repo_.write(ctx_, batch, claims);
     response.tenor_basis_two_swap_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = tenor_basis_two_swap_convention_read_one(
-            repo_, ctx_, tenor_basis_two_swap_convention_key_from(value));
+        auto written =
+            of_acting_party(tenor_basis_two_swap_convention_read_one(
+                                repo_, ctx_, tenor_basis_two_swap_convention_key_from(value)),
+                            ctx_);
         response.tenor_basis_two_swap_conventions.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -357,8 +362,12 @@ ores::utility::domain::result tenor_basis_two_swap_convention_service::prepare_c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = tenor_basis_two_swap_convention_to_domain(change.write);
-    const auto current = tenor_basis_two_swap_convention_read_one(
-        repo_, ctx_, tenor_basis_two_swap_convention_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(tenor_basis_two_swap_convention_read_one(
+                            repo_, ctx_, tenor_basis_two_swap_convention_key_from(out)),
+                        ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

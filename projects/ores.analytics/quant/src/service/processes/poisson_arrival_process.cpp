@@ -28,7 +28,7 @@ namespace {
 
 // std::exponential_distribution requires a strictly positive rate, so the check
 // runs before the distribution is built, not after.
-double checked_rate(double mean_rate) {
+double poisson_arrival_process_checked_rate(double mean_rate) {
     if (!std::isfinite(mean_rate) || mean_rate <= 0.0)
         throw std::invalid_argument(
             "poisson_arrival_process: mean_rate must be finite and strictly positive");
@@ -38,7 +38,7 @@ double checked_rate(double mean_rate) {
 }
 
 poisson_arrival_process::poisson_arrival_process(double mean_rate, std::uint32_t seed)
-    : mean_rate_(checked_rate(mean_rate))
+    : mean_rate_(poisson_arrival_process_checked_rate(mean_rate))
     , gap_distribution_(mean_rate_)
     , rng_(seed) {}
 

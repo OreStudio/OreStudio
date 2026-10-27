@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:resilience:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-26
 #+pattern_group: resilience
 #+startup: inlineimages
 
@@ -89,6 +89,7 @@ identity to get round it.
 - [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — the retry verb resumes a failed run at its failed step, under the same step identity.
 - [[id:A47C612B-9CAB-4656-B4FC-E9DA1D414F83][Job actions]] — the scheduler deliberately does not retry a failed action; the next occurrence is the next firing.
 - [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] — a lease that ends returns the job to the queue a bounded number of times.
+- [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]] — the store error's class says whether a retry can succeed, and a refused write is never retried.
 
 * Related patterns
 

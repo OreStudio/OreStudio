@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader who owns a curve puts the day's candidate set in front of a second pair of eyes, so that only an approved curve can become the one the system uses.
@@ -21,8 +21,10 @@ each step needs.
 
 "I built today's curve from the market, and I want it to be the curve the desk
 prices from. Somebody else has to say yes first." The journey is done when the
-system holds a raised approval request that names the candidate set, and the
-trader can read it back as waiting.
+system holds a raised approval request that names the curve, the as-of instant
+and the party it authorises, and the trader can read it back as waiting. The
+subject is the request's own detail, so the request authorises that curve at
+that instant and nothing else.
 
 * Actor and trigger
 
@@ -53,10 +55,11 @@ approval record, not of this screen; see /What is missing/.
    reads the day's points as one set, keyed by the identity the points carry.
 3. *See what changed against the last published.* The trader asks for the
    difference between these candidates and the curve the system last published.
-   The system has no published version to compare against; see /What is
-   missing/. Until then the panel shows each point beside a note that no
-   published marker exists, and the trader compares by eye against the previous
-   snapshot they choose.
+   The system knows which set is published and who published it: the snapshot
+   read states the published as-of, the publisher and the request that
+   authorised it. It returns no point-by-point difference; see /What is
+   missing/. Until it does, the panel shows the published as-of beside the
+   candidates and the trader compares by eye against the snapshot it names.
 4. *Read the provenance.* For each derived point the system shows the
    =observation_lineage= row: the derivation config, its version and the source
    as-of the point was built from. Beside it the trader reads the recipe's
@@ -66,9 +69,12 @@ approval record, not of this screen; see /What is missing/.
    candidate-set entity to hang it on yet.
 6. *Raise the request.* The trader chooses *Raise publish request*. The system
    raises an approval request of the kind =marketdata.curve_publish= for the
-   signed-in trader, waiting, and names the curve and the snapshot it is about.
-   The raise is one call of =marketdata.v1.ops.publish_curve= with no approved
-   request named: that call writes the request and publishes nothing.
+   signed-in trader, waiting, and writes its detail: the curve configuration,
+   the as-of instant and the party the configuration belongs to. The raise is
+   one call of =marketdata.v1.ops.publish_curve= with no approved request named,
+   carrying the configuration and the as-of. That call writes the request and
+   its subject and publishes nothing. A call that names no configuration, or no
+   as-of, is refused: a request that names no subject authorises nothing.
 7. *Confirm the separation of duties.* The system does not offer decision
    controls to the person who raised the request, and refuses a decision by the
    asker. The trader reads the request back as waiting, under *My requests*.
@@ -119,11 +125,13 @@ no build step and no session. It argues that a publish is a request, not a save:
 | =approval_kind= | How many approvals the ask needs, and the permission a decider must hold | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
 | =approval_decision= | The decisions others have taken, read back under /My requests/ | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
 | =approval_request_state= | The state the request is in, so the trader reads "waiting" rather than a code | [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] |
+| =curve_publish= | The subject the request authorises: the curve configuration, the as-of and the party; and later the publisher and the instant | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
 
 A market observation is evidence: nobody signs it off. What this journey asks
 for is a decision about a set of those observations, and the decision is the
 =approval_request=, which is why the ask is an =ores.inbox= record and not a
-column on =market_series=.
+column on =market_series=. The subject the decision is about is
+=curve_publish=, the kind's detail row, keyed by the request.
 
 * Operations and messages
 
@@ -138,51 +146,48 @@ column on =market_series=.
 | Read the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.list= | exists |
 | Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
 | Raise the request | Raise the request | =inbox.v1.ops.raise_approval= | exists |
-| Raise the request | Raise the request | =marketdata.v1.ops.publish_curve= with no approved request | exists |
+| Raise the request | Raise the request and write the subject | =marketdata.v1.ops.publish_curve= with no approved request | exists |
+| Raise the request | Read the subject a request names | =marketdata.v1.curve_publishes.list_by_request_id= | exists |
 | Raise the request | Apply the decision when it comes (the kind's owning operation) | =marketdata.v1.ops.publish_curve= with the approved request | exists |
 | Confirm the separation of duties | Read my own requests and their state | =inbox.v1.ops.list_my_approval_requests= | exists |
 | Confirm the separation of duties | Read the decisions on the request | =inbox.v1.approval_decisions.list_by_request_id= | exists |
 
 =inbox.v1.ops.raise_approval= is generic: it is defined in
 [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] and
-takes a =kind_code= and a =reason=. It will raise a market-data ask the day a
-market-data kind exists. The kind's owning operation, which applies an approval,
-does not exist; that is the publish operation the third journey needs.
+takes a =kind_code= and a =reason=, and writes no detail. A market-data ask is
+therefore raised through the kind's own operation, =publish_curve=, which reads
+the subject out of the configuration, raises the request and writes the detail
+in one act. The kind's owning operation applies the approval too, as the third
+journey draws it.
 
 * What is missing
 
-1. *The request does not name the curve it is about.* The kind exists and the
-   request is raised, but a request is a header: the curve and the snapshot live
-   in the kind's own detail table, and no such table exists for a curve publish.
-   Until it does, the publish names the configuration and the as-of itself and
-   the approved request authorises that publish, which is weaker than a request
-   that names its subject.
-2. *There is no candidate set.* A point of the curve is held by
+1. *There is no candidate set.* A point of the curve is held by
    =market_observation=, whose identity is the =oresmd_uri= and which has no
    =point_id= and no tenor column; nothing groups the day's points into the one
    thing a publish is about. The candidate is a set marker, or a detail table
    keyed by the request's id that names the series and the as-of the set was
    built at. Until then the screen lists the points for one as-of and the
    trader names the set in the reason.
-3. *There is no change against the last published.* Nothing marks a series or a
-   build as published, so there is no version to diff against, and no subject
-   returns a delta. The candidate is a published marker on the series or the
-   build, plus a read such as =marketdata.v1.curve_candidates.diff=. Until then
-   the delta column is shown empty, with the reason stated, and the trader
-   compares against a snapshot they choose.
-4. *The apply is the publish operation, and it is not a workflow.*
+2. *There is no change against the last published.* A publish record marks the
+   set that is in use, and it names the as-of the set was built at, but nothing
+   returns a point-by-point difference against it. The candidate is a read such
+   as =marketdata.v1.curve_candidates.diff= that takes the published as-of from
+   the record. Until it exists the change column is shown empty, with the reason
+   stated, and the trader compares against the snapshot the record names.
+3. *The apply is the publish operation, and it is not a workflow.*
    =marketdata.v1.ops.publish_curve= applies an approved request, but nothing
    starts it when the last decider approves: the trader calls it again, as
    *Publish the approved set* draws it. A kind that names an apply workflow
    would apply the set without the trader, and no such workflow exists.
-5. *No permission pair separates maker from checker.* The approval record
+4. *No permission pair separates maker from checker.* The approval record
    refuses a decision by the person who asked, so four-eyes holds at the
    record. Nothing in market data yet splits the raise permission from the
    decide permission, so one account can hold both. The candidate is a pair of
    permission codes on the kind, one to raise and one to decide. Until then the
    screen shows the decide permission as read-only text and cannot warn the
    trader that they hold it.
-6. *Nothing tells the approver that a request waits.* No notification kind
+5. *Nothing tells the approver that a request waits.* No notification kind
    exists for a market-data request, so the queue is the only signal. The
    candidate is an =ores.inbox.notification_kind= such as
    =marketdata.curve_publish_requested=. Until then the screen says the request

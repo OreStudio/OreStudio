@@ -27,6 +27,8 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_run_verdict.hpp"
+#include "ores.ore.core/results/canonical_rows.hpp"
+#include "ores.utility/compression/gzip.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "ores.platform/system/system_info.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -67,6 +69,8 @@ namespace ores::compute::wrapper::app {
 using namespace ores::logging;
 
 namespace {
+
+
 constexpr std::string_view service_name = "ores.compute.wrapper";
 constexpr std::string_view service_version = ORES_VERSION;
 
@@ -456,6 +460,54 @@ std::string read_file_text(const fs::path& path) {
 }
 
 /**
+ * @brief Projects the engine's figures onto the canonical rows and uploads them.
+ *
+ * The reporting service loads what this writes, so a file the projection refuses
+ * is logged with its reason and nothing is uploaded: a partial result reads as a
+ * complete one, and the run's archive still holds the account of what it said.
+ */
+std::string read_file_text(const fs::path& path);
+
+void upload_canonical_rows(auto& lg,
+                           const config::options& cfg,
+                           const compute::messaging::work_assignment_event& evt,
+                           const fs::path& output_dir) {
+    if (evt.results_uri.empty())
+        return;
+    const auto npv_file = output_dir / "npv.csv";
+    if (!fs::is_regular_file(npv_file))
+        return;
+
+    const auto csv = read_file_text(npv_file);
+    const auto outcome = ores::ore::results::marshal_npv_csv(csv, "npv.csv");
+    if (!outcome.refusals.empty()) {
+        for (const auto& refusal : outcome.refusals) {
+            BOOST_LOG_SEV(lg, warn) << "Canonical rows refused for " << evt.result_id << ": "
+                                    << refusal;
+        }
+        return;
+    }
+    if (outcome.rows.empty())
+        return;
+
+    // Storage holds blobs compressed, and the reader decompresses: the rows are
+    // gzipped here so the object's shape is the same whatever wrote it.
+    const auto rows_text = ores::ore::results::canonical_csv(outcome.rows);
+    const auto compressed = ores::utility::compression::gzip_compress(
+        std::span(reinterpret_cast<const char*>(rows_text.data()), rows_text.size()));
+
+    const auto rows_file = output_dir.parent_path() / "results.csv.gz";
+    {
+        std::ofstream out(rows_file, std::ios::binary);
+        out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
+    }
+    BOOST_LOG_SEV(lg, info) << "Uploading " << outcome.rows.size() << " canonical rows for "
+                            << evt.result_id << " (" << compressed.size() << " bytes)";
+    ores::storage::net::http_client::put(
+        make_url(cfg.http_base_url, evt.results_uri), rows_file, evt.storage_token);
+}
+
+/**
  * @brief Make sure the engine package for an app version is unpacked in the cache.
  *
  * The wrappers on one host share the cache directory. A lock file per package
@@ -750,6 +802,11 @@ void process_assignment(ores::nats::service::client& nats,
                                          << " (" << output_bytes << " bytes)";
                 ores::storage::net::http_client::put(
                     make_url(cfg.http_base_url, evt.output_uri), output_archive, evt.storage_token);
+
+                // The rows the engine's figures project onto, uploaded beside the
+                // archive for the reporting service to load. A refusal is stated in
+                // the log and leaves the archive as the record of what the run said.
+                upload_canonical_rows(lg, cfg, evt, output_dir);
 
                 BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
                 // Success.

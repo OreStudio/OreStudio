@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:services:authentication:iam:nats:bootstrap:
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-10-26
 
 * Summary
 
@@ -35,9 +35,9 @@ the first time, worked through end-to-end via IAM's =party_cache=.
 ** Why two phases, and why ordering is safe to reason about
 
 A NATS subscription's callback runs on the NATS client library's own
-dispatch thread (see the =IMPORTANT= comment in
-=ores.nats/src/service/client.cpp='s =on_msg=), *not* on the
-application's =io_ctx=. =nats.subscribe(...)=/=queue_subscribe(...)=
+delivery thread, *not* on the application's =io_ctx=; it decodes the
+message and puts it on the service's queue, and the service's bounded
+worker pool runs the handler ([[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]]). =nats.subscribe(...)=/=queue_subscribe(...)=
 makes a subject live the moment it is called — independent of whether
 the surrounding =register_handlers()= function has returned, and
 independent of whether the calling coroutine has yielded control back

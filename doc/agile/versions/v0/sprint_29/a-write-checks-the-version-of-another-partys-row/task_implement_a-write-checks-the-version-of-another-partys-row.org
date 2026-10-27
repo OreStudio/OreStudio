@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: FCBAD65E-95D6-418D-8ECF-ADD428D3C97B
+:END:
+#+title: Task: Implement A write checks the version of another party's row
+#+description: Initial task for: A write checks the version of another party's row
+#+type: task
+#+level: s1
+#+filetags: :a-write-checks-the-version-of-another-partys-row:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/a-write-checks-the-version-of-another-partys-row
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F80820E4-2608-4B25-92E7-C6BC189024E1][A write checks the version of another party's row]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scope the current-row reads of a generated refdata service's write to the acting party, so the claim is checked against the row the write replaces.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F80820E4-2608-4B25-92E7-C6BC189024E1][A write checks the version of another party's row]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Diagnosis: =prepare_change= in the service template reads =read_one(repo_, ctx_, key_from(out))=, keyed by the model's key (=id=). Under row-level security a parent party sees its subsidiaries, so the read returns several rows and =current.front()= is any of them. =stamp()= then sets =party_id= from the context, so the write lands on the acting party's row, which the check never looked at.
+
+1. Add =of_acting_party()= beside =stamp()= in =handler_helpers.hpp=: keep the rows whose =party_id= is the context's party; a type with no =party_id=, or a context with no party, keeps every row.
+2. Use it in the template's entity half: the claim check in =prepare_change=, the read-back of a put and a put many, and =changed_columns=. The junction half is left alone, because there =party_id= names the association's target.
+3. Tangle the templates, regenerate the services, build, run the service suites.
+4. Prove it live: the convention edit from the Acme login party lands, and a stale version is a conflict.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Service files regenerated | 428 | =git show --stat 8dbcc2f063= | 8dbcc2f063 |
+| Handler helper tests | 18 cases, 43 assertions pass | =ores.service.tests "[handler_helpers]"= | 8dbcc2f063 |
+| Live write from the Acme login party | refused on its term; saved as version 4; stale version a conflict; revert saved | the probe in the session scratchpad, against Acme | 8dbcc2f063 |
+| Other parties' rows of that id | unchanged | a read of the live rows after the probe | 8dbcc2f063 |
+
+* Notes
+
+- *Root cause.* =prepare_change= read the current row by the model's key, which for a convention is its id. Under row-level security a parent party's session sees its subsidiaries' rows of that id, so =current.front()= was any party's row, and the claim was checked against it. =stamp()= then set the acting party, so the write landed on a row the check never read.
+- *Fix.* =of_acting_party()= beside =stamp()= keeps the context party's rows; a type with no =party_id=, or a context with no party, keeps every row, and a row with no party is kept. The template's entity half uses it; the junction half does not, because there =party_id= names the target.
+- *Left.* A delete and an unclaimed write read by key too; see the capture /Scope a delete and an unclaimed write to the acting party/.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A nil or empty party_id counts as another party, so a write may miss a shared row | handler_helpers.hpp | Accept | The compute tables hold an id once per tenant with a nullable party, so a strict filter breaks their amends. The rule now keeps only the acting party's rows when one exists, and otherwise keeps the rows as read. Tests cover nullopt, nil and empty. |
+| 2 | Link the delete and unclaimed write capture from the story | story.org | Accept | The story links the capture by its id. |
+| 3 | The filter runs after the read, which still loads every visible row | handler_helpers.hpp | Defer | The capture records that the read itself must be scoped by party. |
+| 4 | The fx option ATM fix and the feed_seed.hpp entry are unrelated | — | Keep | Separate commits; both were needed for the gate on main. |
+| 5 | Confirm the two ctest failures also fail on main | — | Accept | The gate on the rebased branch fails the same two suites: the vendor catalogue count (lseg 14, demo 71, expects 86) and the tick_clock timing test. The branch changes only the generated services in those components, and neither test reaches them. |
+
+* Result
+
+- From the Acme login party, a convention edit lands against the version it read, and a stale version is still a conflict; other parties' rows of the same id are untouched.
+- A put's reply carries the acting party's row.
+- The build passes; the handler helper suite passes, with four new cases for =of_acting_party()=.

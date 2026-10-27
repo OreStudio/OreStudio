@@ -72,7 +72,7 @@ struct fx_option_convention final {
     std::optional<std::string> fx_convention_id;
 
     /**
-     * @brief How the at-the-money strike is chosen, in ORE's own spelling (e.g. 'Atm',
+     * @brief How the at-the-money strike is chosen, in ORE's own spelling (e.g. 'AtmSpot',
      * 'AtmDeltaNeutral').
      */
     std::string atm_type;

@@ -39,11 +39,12 @@ namespace ores::ore::domain {
 
 namespace {
 
-namespace xg = xml::generated::pricing_engines;
+namespace pricing_engine_projection_xg = xml::generated::pricing_engines;
 
-constexpr std::string_view audit_modified_by = "ores";
-constexpr std::string_view audit_reason_code = "system.external_data_import";
-constexpr std::string_view audit_commentary = "Imported from ORE XML";
+constexpr std::string_view pricing_engine_projection_audit_modified_by = "ores";
+constexpr std::string_view pricing_engine_projection_audit_reason_code =
+    "system.external_data_import";
+constexpr std::string_view pricing_engine_projection_audit_commentary = "Imported from ORE XML";
 
 // The three strings the parameter_scope column holds. A parameter is scoped by
 // the element that carried it, because that is the only thing that says which
@@ -52,17 +53,17 @@ constexpr std::string_view scope_model = "model";
 constexpr std::string_view scope_engine = "engine";
 constexpr std::string_view scope_global = "global";
 
-boost::uuids::uuid new_uuid() {
+boost::uuids::uuid pricing_engine_projection_new_uuid() {
     static thread_local ores::utility::uuid::uuid_v7_generator generator;
     return generator();
 }
 
 template <typename T>
-void set_audit(T& r) {
-    r.modified_by = std::string(audit_modified_by);
-    r.performed_by = std::string(audit_modified_by);
-    r.change_reason_code = std::string(audit_reason_code);
-    r.change_commentary = std::string(audit_commentary);
+void pricing_engine_projection_set_audit(T& r) {
+    r.modified_by = std::string(pricing_engine_projection_audit_modified_by);
+    r.performed_by = std::string(pricing_engine_projection_audit_modified_by);
+    r.change_reason_code = std::string(pricing_engine_projection_audit_reason_code);
+    r.change_commentary = std::string(pricing_engine_projection_audit_commentary);
 }
 
 // The document writes the two parameter lists the same way, and the only thing
@@ -75,14 +76,14 @@ void append_parameters(std::vector<analytics::domain::pricing_model_product_para
     int position = 0;
     for (const auto& parameter : parameters) {
         analytics::domain::pricing_model_product_parameter row;
-        row.id = new_uuid();
+        row.id = pricing_engine_projection_new_uuid();
         row.pricing_model_config_id = config_id;
         row.pricing_model_product_id = product_id;
         row.parameter_scope = std::string(scope);
         row.parameter_name = parameter.name;
         row.parameter_value = parameter.value;
         row.position = position++;
-        set_audit(row);
+        pricing_engine_projection_set_audit(row);
         out.push_back(std::move(row));
     }
 }
@@ -91,7 +92,7 @@ void append_parameters(std::vector<analytics::domain::pricing_model_product_para
 // the tie. That does not recover the order rows were created in, because a
 // UUIDv7 id is random within a millisecond, but it makes the export stable.
 template <typename Row>
-bool by_position(const Row* lhs, const Row* rhs) {
+bool pricing_engine_projection_by_position(const Row* lhs, const Row* rhs) {
     if (lhs->position != rhs->position)
         return lhs->position < rhs->position;
     return lhs->id < rhs->id;
@@ -130,7 +131,7 @@ group_parameters(const ores::analytics::messaging::pricing_engines_document& v) 
         groups[{row.pricing_model_product_id, row.parameter_scope}].push_back(&row);
     }
     for (auto& [key, rows] : groups)
-        std::sort(rows.begin(), rows.end(), by_position<parameter_row>);
+        std::sort(rows.begin(), rows.end(), pricing_engine_projection_by_position<parameter_row>);
     return groups;
 }
 
@@ -141,22 +142,22 @@ pricing_engine_projection::map(const document& v) {
     ores::analytics::messaging::pricing_engines_document mapped;
 
     auto& config = mapped.config;
-    config.id = new_uuid();
+    config.id = pricing_engine_projection_new_uuid();
     config.name = "PricingEngines";
     config.description = "Imported from ORE XML";
     config.config_variant = "";
-    set_audit(config);
+    pricing_engine_projection_set_audit(config);
 
     int product_position = 0;
     for (const auto& source : v.product) {
         analytics::domain::pricing_model_product product;
-        product.id = new_uuid();
+        product.id = pricing_engine_projection_new_uuid();
         product.pricing_model_config_id = config.id;
         product.pricing_engine_type_code = source.type;
         product.model = source.model;
         product.engine = source.engine;
         product.position = product_position++;
-        set_audit(product);
+        pricing_engine_projection_set_audit(product);
         mapped.products.push_back(product);
 
         append_parameters(mapped.parameters,
@@ -171,7 +172,9 @@ pricing_engine_projection::map(const document& v) {
                           source.engine_parameters.parameter);
     }
 
-    if (xml::is_present(*xg::pricing_engines_document().root, &v, "GlobalParameters")) {
+    if (xml::is_present(*pricing_engine_projection_xg::pricing_engines_document().root,
+                        &v,
+                        "GlobalParameters")) {
         append_parameters(mapped.parameters,
                           config.id,
                           std::nullopt,
@@ -185,7 +188,8 @@ pricing_engine_projection::map(const document& v) {
 pricing_engine_projection::document pricing_engine_projection::read(std::string_view text,
                                                                     std::string_view origin) {
     document record;
-    const auto bound = xml::binder::bind(xg::pricing_engines_document(), text, &record);
+    const auto bound =
+        xml::binder::bind(pricing_engine_projection_xg::pricing_engines_document(), text, &record);
     if (!bound) {
         const auto where = origin.empty() ? std::string("pricing engines") : std::string(origin);
         throw std::invalid_argument(
@@ -204,7 +208,7 @@ std::string pricing_engine_projection::write(const document& v) {
 
 pricing_engine_projection::document
 pricing_engine_projection::reverse(const ores::analytics::messaging::pricing_engines_document& v) {
-    const auto* root = xg::pricing_engines_document().root;
+    const auto* root = pricing_engine_projection_xg::pricing_engines_document().root;
     document record;
 
     const auto groups = group_parameters(v);
@@ -222,7 +226,7 @@ pricing_engine_projection::reverse(const ores::analytics::messaging::pricing_eng
     const auto& parameter_type = xml::projection::child(model_parameters_type, "Parameter");
 
     const auto to_parameter = [&parameter_type](const parameter_row& row) {
-        xg::parameter parameter;
+        pricing_engine_projection_xg::parameter parameter;
         parameter.name = row.parameter_name;
         parameter.value = row.parameter_value;
         xml::projection::state(parameter_type, &parameter, "name");
@@ -233,11 +237,12 @@ pricing_engine_projection::reverse(const ores::analytics::messaging::pricing_eng
     std::vector<const analytics::domain::pricing_model_product*> products;
     for (const auto& product : v.products)
         products.push_back(&product);
-    std::sort(
-        products.begin(), products.end(), by_position<analytics::domain::pricing_model_product>);
+    std::sort(products.begin(),
+              products.end(),
+              pricing_engine_projection_by_position<analytics::domain::pricing_model_product>);
 
     for (const auto* product : products) {
-        xg::product source;
+        pricing_engine_projection_xg::product source;
         source.type = product->pricing_engine_type_code;
         source.model = product->model;
         source.engine = product->engine;

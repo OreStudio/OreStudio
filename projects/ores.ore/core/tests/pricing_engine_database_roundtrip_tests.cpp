@@ -28,6 +28,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
@@ -37,13 +38,6 @@
 #include <string_view>
 #include <vector>
 
-namespace {
-
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-}
 
 using ores::analytics::repository::pricing_model_config_repository;
 using ores::ore::domain::pricing_engine_projection;

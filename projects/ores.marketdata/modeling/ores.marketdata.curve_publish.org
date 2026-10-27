@@ -1,0 +1,430 @@
+:PROPERTIES:
+:ID: 9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6
+:END:
+#+title: ores.marketdata.curve_publish
+#+description: Codegen entity model for the marketdata curve_publishes table; the subject a marketdata.curve_publish approval request names, and the publisher and time the apply records on it.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: curve_publish
+#+entity_plural: curve_publishes
+#+entity_title: Curve Publish
+#+brief: The subject an approval request for a curve publish names, and the publisher and time the apply records.
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+The detail row of one =marketdata.curve_publish= approval request: the subject
+the request authorises, and the record of the act once the subject is published.
+
+A request is a header. What it is about lives here, keyed by the request's own
+id, exactly as a proposed book change lives in =ores.refdata.book_change= and is
+keyed by its request. The subject is three facts and no more: the curve
+configuration whose output is published, the as-of instant the bootstrap reads
+the market at, and the party the configuration belongs to (=party_id=). The curve
+is named by its configuration because that is what the publish call names. The
+series the output is written to (=output_series_id=) is carried beside it because
+the reader that serves a published curve starts from a series and not from a
+configuration.
+
+=published_at= and =published_by= are the publication record. Both are empty
+while the request waits, and both are written in one act when the approved
+subject is published: the timestamp is the instant the published set moved, and
+the username is the account that applied it. The row is bitemporal, so the
+applied version is a new version of the same row and the history holds the
+unapplied subject beside it. =request_id= is the natural key, so a request
+authorises one publish and no second apply can find a row to write.
+
+The row is not a client's to write: the raise writes it, the gate reads it, and
+the apply stamps it. A client reads it to decide a request or to audit a curve.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID identifying this publish record.
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The approval request this record is the subject of.
+
+One request, one publish: the row is written when the request is raised and
+stamped when it is applied, so a request that authorised one publish has no
+second row to authorise another.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The party the published configuration belongs to.
+
+The subject names it because the same curve code in two parties is two curves,
+and a publish of one must not authorise the other.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** bootstrap_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The =ir_curve_bootstrap_config= whose output the publish writes.
+
+The publish names the configuration and not a set of points, because the
+configuration is what the bootstrap recomputes from the market.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** output_series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The market series the configuration's output is written to.
+
+Carried beside the configuration so a reader that starts from a series -- the
+snapshot read, a consumer of the curve -- finds the publish record for the
+series it holds without resolving the configuration first.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:sortable: true
+:END:
+
+The instant the bootstrap reads the market at.
+
+The as-of is part of the subject: the same curve published against two market
+instants is two different published sets, and one request authorises one of
+them.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** published_by
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: ""
+:END:
+
+The username of the account that applied the request, or empty while it waits.
+
+The account is the publisher, which is not the decider: the approval records who
+answered, and this records who made the published set move.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** published_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the published set moved, or null while the request waits.
+
+This is the published marker: a series is published when a record for it holds
+an instant here, and the latest such instant is the version in use.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_curve_publishes_tbl
+:rls_tenant_isolation: true
+:END:
+
+The record is tenant-scoped and not party-scoped: the decider of a publish is a
+tenant function -- Market Risk of the tenant -- so hiding the subject behind the
+party a decider does not work in would hide the request's own subject from the
+person who decides it. The subject names its party instead, so a reader always
+knows whose curve it is.
+
+** Checks
+
+| expression                                                   |
+|--------------------------------------------------------------|
+| ("published_at" is null) = ("published_by" = '')             |
+| "as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone  |
+
+** Indexes
+
+| name                             | columns                                        | unique | current_only |
+|----------------------------------+------------------------------------------------+--------+--------------|
+| curve_publishes_series_published | tenant_id, output_series_id, published_at desc | false  | true         |
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the record is the subject of. Its own id is the one the publish call
+names, so a record that names a request the store does not hold authorises
+nothing.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto asker = ores::iam::generators::generate_synthetic_account(ctx);
+        asker.account_type = "service";
+        asker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository asker_repo;
+        asker_repo.write(party_ctx, asker);
+
+        auto request = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+        request.change_reason_code = "system.test";
+        request.requested_by = asker.id;
+
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        const auto kinds =
+            ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(kinds.empty());
+        request.kind_code = kinds.front().code;
+        const auto states =
+            ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(states.empty());
+        request.state_code = states.front().code;
+
+        ores::inbox::repository::approval_request_repository request_repo;
+        request_repo.write(party_ctx, request);
+        v.request_id = request.id;
+    }
+#+end_src
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+** bootstrap_config_id
+:PROPERTIES:
+:table:         ores_refdata_ir_curve_bootstrap_configs_tbl
+:nullable:      false
+:error_message: Invalid bootstrap_config_id: %. No active curve bootstrap configuration found.
+:END:
+
+** output_series_id
+:PROPERTIES:
+:table:         ores_marketdata_market_series_tbl
+:nullable:      false
+:error_message: Invalid output_series_id: %. No active market series found.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve_publish
+:entity_plural_short:   curve_publishes
+:entity_singular_words: curve publish
+:entity_plural_words:   curve publishes
+:END:
+
+*** read_latest_by_request
+:PROPERTIES:
+:ID: 2C6C1B4A-6C0E-4C4B-9C57-1F4C0A6B7D31
+:END:
+
+Reads the record of one request, if the store holds one. The gate asks here:
+the subject the request authorises and whether it has been applied are one row.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::curve_publish>
+read_latest_by_request(context ctx, const std::string& request_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <optional>
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::curve_publish>
+curve_publish_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<curve_publish_entity>> |
+                       where("tenant_id"_c == tid && "request_id"_c == request_id &&
+                             "valid_to"_c == max.value());
+
+    auto rows = execute_read_query<curve_publish_entity, domain::curve_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return curve_publish_mapper::map(entities); },
+        lg(),
+        "Reading the publish record of a request.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+#+end_src
+
+*** read_latest_published_for_series
+:PROPERTIES:
+:ID: 6D9B2E13-8F47-4A52-B0C9-3E7A5D1C8B24
+:END:
+
+Reads the newest applied record of one series, which is the published set the
+readers serve. Empty when the series has never been published.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::curve_publish>
+read_latest_published_for_series(context ctx, const boost::uuids::uuid& series_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <algorithm>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::curve_publish>
+curve_publish_repository::read_latest_published_for_series(
+    context ctx, const boost::uuids::uuid& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the published set of series: " << series_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto query = sqlgen::read<std::vector<curve_publish_entity>> |
+                       where("tenant_id"_c == tid && "output_series_id"_c == sid &&
+                             "valid_to"_c == max.value());
+
+    auto rows = execute_read_query<curve_publish_entity, domain::curve_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return curve_publish_mapper::map(entities); },
+        lg(),
+        "Reading the published set of a series.");
+
+    // The newest applied version wins. A record that holds no instant is a
+    // request that still waits, and a waiting request publishes nothing.
+    rows.erase(std::remove_if(rows.begin(),
+                              rows.end(),
+                              [](const auto& r) { return !r.published_at.has_value(); }),
+               rows.end());
+    if (rows.empty())
+        return std::nullopt;
+    const auto newest =
+        std::max_element(rows.begin(), rows.end(), [](const auto& a, const auto& b) {
+            return *a.published_at < *b.published_at;
+        });
+    return *newest;
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| bootstrap_config_id | Curve        |
+| as_of               | As Of        |
+| published_by        | Published By |
+| published_at        | Published At |
+
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.
+- [[id:ea078e64-15a8-48d1-97d4-400a5bd669ee][ores.marketdata.curve_publish_operations]] — the raise and the gate that read and write this record.
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the header this record is the detail of.
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] — the configuration the subject names.

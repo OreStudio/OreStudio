@@ -77,6 +77,15 @@ public:
     void assemble_bundle(ores::nats::message msg);
     void collect_results(ores::nats::message msg);
     void resolve_prepared_input(ores::nats::message msg);
+    /**
+     * @brief Loads the canonical rows the run's node marshalled into the result table.
+     *
+     * Retrieval answers where the output is; this answers what it says. The rows
+     * are read from the results location the compute result names, checked against
+     * the loader's contract, and written in one statement, so a run's rows arrive
+     * together or not at all.
+     */
+    void post_process_results(ores::nats::message msg);
     void ignore_compute_results(ores::nats::message msg);
     void finalise(ores::nats::message msg);
     void fail(ores::nats::message msg);

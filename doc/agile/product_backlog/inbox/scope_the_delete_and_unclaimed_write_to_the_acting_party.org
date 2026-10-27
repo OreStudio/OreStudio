@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 9605A39E-CAE9-4232-90DF-C42EBE94CB41
+:END:
+#+title: Scope a delete and an unclaimed write to the acting party
+#+description: A generated service's delete and a write with no precondition read the current row by key alone, so from a party that sees other parties they act on another party's row of the same key.
+#+type: capture
+#+level: cross
+#+filetags: :service:codegen:party:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Scope the remaining key reads of a generated service to the acting party, as the hotfix /A write checks the version of another party's row/ did for a write with a claim. Two paths are left. A delete reads =read_latest(ctx, id)= for its version check and then deletes by tenant, id and version, so from a parent party it may check, and close, a subsidiary's row of the same id and version. A write with no precondition (=precondition_kind::any=) takes its version from =read_latest(ctx, id).front()=, which may be another party's row; the store then refuses it as a conflict, so that path fails safe, but with a false conflict.
+
+* Why
+
+Every party of Acme holds the same convention ids, and a parent party's session sees its subsidiaries' rows, so the same key names several rows. The repository template (=read_latest=, =remove=, =apply_claim=) reads by key under row-level security and cannot tell them apart. Found while proving the hotfix live on 2026-10-27.
+
+The hotfix filters after the read: =read_one= loads every visible row of the key, and =of_acting_party()= keeps the acting party's row. A key holds one row for each party that can see it, so the read is small. But the right fix scopes the read itself, so that the repository reads the acting party's row by key and party, and the filter goes away.
+
+* References
+
+- =projects/ores.codegen/library/templates/= the repository template's =remove= and =apply_claim=
+- =of_acting_party()= in =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=
+
+* See also
+
+-

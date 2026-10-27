@@ -145,3 +145,33 @@ def test_a_log_path_relative_to_the_build_directory_is_blamed():
     log = (f"../../../{source}:1:1: error: redefinition of 'helper'\n"
            "../../../projects/ores.none/missing.cpp:2:1: error: redefinition of 'helper'\n")
     assert collisions.blamed(log) == ({source}, set())
+
+
+def test_a_const_member_function_defined_out_of_line_is_not_file_local():
+    text = """
+namespace ores::x {
+const std::vector<double>& process::factors() const { return factors_; }
+}
+"""
+    assert collisions.internal_names(text) == set()
+
+
+def test_a_parameter_on_its_own_line_is_not_a_namespace_scope_constant():
+    text = """
+namespace {
+std::string entry(const std::string& kind,
+const std::string& id,
+int position) { return kind + id; }
+}
+"""
+    assert collisions.internal_names(text) == {("", "entry")}
+
+
+def test_an_unbalanced_parenthesis_on_a_directive_does_not_hide_later_names():
+    text = """
+#define OPEN_CALL(x) f((x)
+namespace {
+int helper() { return 1; }
+}
+"""
+    assert collisions.internal_names(text) == {("", "helper")}

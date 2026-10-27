@@ -1819,3 +1819,7 @@ tangled into the runnable script library
 * Hold Reasons
 
 - [[id:8E8C4562-D97F-5913-8089-EE9689818E7C][How do I run the hold_reasons commands from the shell?]]
+
+* Curve Publishes
+
+- [[id:2B9EFF40-8EFF-5E6B-A18C-63441FB72996][How do I run the curve_publishes commands from the shell?]]

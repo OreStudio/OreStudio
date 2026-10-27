@@ -46,6 +46,7 @@ struct tenor_basis_swap_pay_receive_entity {
     std::string tenant_id;
     int version = 0;
     std::string convention_id;
+
     std::string party_id;
     std::optional<std::string> pay_index;
     std::optional<std::string> pay_frequency;

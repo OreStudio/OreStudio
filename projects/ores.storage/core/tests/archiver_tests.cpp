@@ -21,6 +21,7 @@
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -41,11 +42,6 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     std::filesystem::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary);
     out.write(content.data(), static_cast<std::streamsize>(content.size()));
-}
-
-std::string read_file(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 }
 
 }

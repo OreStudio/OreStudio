@@ -40,10 +40,11 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view logger_name = "ores.marketdata.core.series_slice_reader";
+inline std::string_view series_slice_reader_logger_name =
+    "ores.marketdata.core.series_slice_reader";
 
-[[nodiscard]] auto& lg() {
-    static auto instance = make_logger(logger_name);
+[[nodiscard]] auto& series_slice_reader_lg() {
+    static auto instance = make_logger(series_slice_reader_logger_name);
     return instance;
 }
 
@@ -54,7 +55,7 @@ constexpr std::size_t max_axes = 2;
 using datum::field;
 
 /// A refusal the caller reads, rather than an outcome it must infer.
-messaging::get_series_slice_response refuse(std::string why) {
+messaging::get_series_slice_response series_slice_reader_refuse(std::string why) {
     messaging::get_series_slice_response response;
     response.success = false;
     response.message = std::move(why);
@@ -69,7 +70,7 @@ series_slice_reader::read(ores::database::context ctx,
     using ores::marketdata::datum::name_of;
 
     if (request.from_instant > request.to_instant)
-        return refuse("the range ends before it starts");
+        return series_slice_reader_refuse("the range ends before it starts");
 
     // The object, named the way the resolver names one, so no caller builds an
     // oresmd URI and none matches on one.
@@ -83,45 +84,50 @@ series_slice_reader::read(ores::database::context ctx,
         return response;
     }
     if (series.size() > 1)
-        return refuse("the identity names " + std::to_string(series.size()) +
-                      " series; state the party or the provider so that it names one");
+        return series_slice_reader_refuse(
+            "the identity names " + std::to_string(series.size()) +
+            " series; state the party or the provider so that it names one");
 
     const auto series_id = boost::uuids::to_string(series.front().id);
     const auto declared = read_series_shape(ctx, series_id);
     if (declared.axes.empty())
-        return refuse("the object declares no axis, so it is not a composite object");
+        return series_slice_reader_refuse(
+            "the object declares no axis, so it is not a composite object");
     if (declared.axes.size() > max_axes)
-        return refuse("the object declares " + std::to_string(declared.axes.size()) +
-                      " axes, so its slice is not a term structure");
+        return series_slice_reader_refuse("the object declares " +
+                                          std::to_string(declared.axes.size()) +
+                                          " axes, so its slice is not a term structure");
 
     // Which axis the component fixes and which one its nodes are read along.
     field component_axis{};
     field coordinate_axis{};
     if (declared.axes.size() == 1) {
         if (!request.component_field.empty())
-            return refuse("the object declares one axis, '" +
-                          std::string(name_of(declared.axes.front())) +
-                          "', so its one component takes no component field");
+            return series_slice_reader_refuse("the object declares one axis, '" +
+                                              std::string(name_of(declared.axes.front())) +
+                                              "', so its one component takes no component field");
         coordinate_axis = declared.axes.front();
     } else {
         if (request.component_field.empty())
-            return refuse("the object declares '" + std::string(name_of(declared.axes[0])) +
-                          "' and '" + std::string(name_of(declared.axes[1])) +
-                          "', so the component must name the axis it fixes");
+            return series_slice_reader_refuse("the object declares '" +
+                                              std::string(name_of(declared.axes[0])) + "' and '" +
+                                              std::string(name_of(declared.axes[1])) +
+                                              "', so the component must name the axis it fixes");
         const auto named = ores::marketdata::datum::field_named(request.component_field);
         if (!named || std::ranges::find(declared.axes, *named) == declared.axes.end())
-            return refuse("'" + request.component_field +
-                          "' is not an axis of the object; it "
-                          "declares '" +
-                          std::string(name_of(declared.axes[0])) + "' and '" +
-                          std::string(name_of(declared.axes[1])) + "'");
+            return series_slice_reader_refuse("'" + request.component_field +
+                                              "' is not an axis of the object; it "
+                                              "declares '" +
+                                              std::string(name_of(declared.axes[0])) + "' and '" +
+                                              std::string(name_of(declared.axes[1])) + "'");
         component_axis = *named;
         coordinate_axis = component_axis == declared.axes[0] ? declared.axes[1] : declared.axes[0];
 
         const auto& ladder = declared.values.at(component_axis);
         if (std::ranges::find(ladder, request.component_value) == ladder.end())
-            return refuse("'" + request.component_value + "' is not a value the axis '" +
-                          request.component_field + "' declares");
+            return series_slice_reader_refuse("'" + request.component_value +
+                                              "' is not a value the axis '" +
+                                              request.component_field + "' declares");
     }
 
     messaging::get_series_slice_response response;
@@ -162,10 +168,10 @@ series_slice_reader::read(ores::database::context ctx,
         response.instants.push_back(std::move(row));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read component " << request.component_field << "='"
-                               << request.component_value << "' of series " << series_id << ": "
-                               << response.instants.size() << " instants over "
-                               << response.coordinates.size() << " coordinates";
+    BOOST_LOG_SEV(series_slice_reader_lg(), debug)
+        << "Read component " << request.component_field << "='" << request.component_value
+        << "' of series " << series_id << ": " << response.instants.size() << " instants over "
+        << response.coordinates.size() << " coordinates";
     response.success = true;
     return response;
 }

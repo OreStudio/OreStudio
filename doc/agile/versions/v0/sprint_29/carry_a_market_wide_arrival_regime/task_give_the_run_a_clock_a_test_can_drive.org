@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-run-a-clock-a-test-can-drive
+#+pr: 3920
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,37 @@ Everything that reads or waits on time in the arrival path does it through one c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
 - The interface offers now() and an interruptible wait_until(t).
 - A test of the manual clock wakes a waiter exactly when time is advanced past its deadline, and a stop wakes it at once.
-- A tick's observation time comes from the clock, not from system_clock::now().
+- The clock maps its time to wall time, so a tick can be stamped from it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=service/run_clock.hpp= holds the interface and both clocks. The feeds
+stamp a tick inside their body, in fx_spot_feed and ir_curve_feed, so
+taking the stamp from the clock changes the body signature that
+tick_clock, tick_scheduler and both feeds share. The scheduler task
+rewrites that signature and deletes tick_clock, so the stamp moves there,
+to [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]],
+and the signature changes once.
+
+- =i_run_clock= has now(), wall(t), wait_until(deadline) and interrupt().
+  A wait says whether it reached its deadline or was interrupted.
+- An interrupt with no waiter is kept for the next wait, so a command
+  posted just before the loop waits still wakes it.
+- =steady_run_clock= maps the steady clock to wall time once, at
+  construction, so a stamp does not jump when the system clock moves.
+- =manual_run_clock= moves only on advance(), and await_waiter() lets a
+  test advance past a thread that is already waiting.
 
 * Measurements
 
@@ -57,7 +70,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Clock tests | 7 cases passed in each of 5 runs | =ores.analytics.quant.tests [run_clock]= | 7633300832 |
+| Quant suite | 519 cases passed | =ores.analytics.quant.tests= | 7633300832 |
 
 * Notes
 
@@ -76,12 +90,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3920][#3920]] | [analytics] Give the run a clock a test can drive |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: the not-one-step-early check waits zero time, so an early wake could pass. | run_clock_tests.cpp | Accept | Waits 50 ms now. |
+| 2 | Bot: the steady interrupt test may only take the kept path. | run_clock_tests.cpp | Accept | Sleeps 50 ms before the interrupt, so the mid-wait path runs. |
+| 3 | Bot: say one waiter at a time. | run_clock.hpp | Accept | In the interface doc. |
+| 4 | Bot: advance takes a negative duration. | run_clock.hpp | Accept | It throws. |
+| 5 | Bot: the two clocks repeat the interrupt logic. | run_clock.hpp | Decline | Two clocks; a helper earns its place at a third. |
+| 6 | Bot: the test uses std::pair without utility. | run_clock_tests.cpp | Accept | Included. |
 
 * Result
+
+=service/run_clock.hpp= gives the run one source of time. A test on the
+manual clock wakes a waiter exactly at its deadline, one step after a step
+that leaves it short, and an interrupt wakes it at once without moving time.
+An interrupt sent before a wait is kept for that wait and only that one.
+The steady clock waits for real, gives way to an interrupt, and stamps with
+the wall time. The scheduler moves onto the clock, and the ticks take their
+stamps from it, in
+[[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]].

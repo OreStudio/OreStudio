@@ -37,18 +37,13 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 
-namespace {
-
-constexpr auto unique_violation = "duplicate key value violates unique constraint";
-constexpr auto check_violation = "violates check constraint";
-
-}
 
 using namespace ores::marketdata::generators;
 

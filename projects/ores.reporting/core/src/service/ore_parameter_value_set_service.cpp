@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -189,8 +190,9 @@ ore_parameter_value_set_service::put_ore_parameter_value_set(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        ore_parameter_value_set_read_one(repo_, ctx_, ore_parameter_value_set_key_from(value));
+    auto written = of_acting_party(
+        ore_parameter_value_set_read_one(repo_, ctx_, ore_parameter_value_set_key_from(value)),
+        ctx_);
     if (!written.empty())
         response.ore_parameter_value_set = std::move(written.front());
     return response;
@@ -223,8 +225,9 @@ ore_parameter_value_set_service::put_many_ore_parameter_value_sets(
     repo_.write(ctx_, batch, claims);
     response.sets.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            ore_parameter_value_set_read_one(repo_, ctx_, ore_parameter_value_set_key_from(value));
+        auto written = of_acting_party(
+            ore_parameter_value_set_read_one(repo_, ctx_, ore_parameter_value_set_key_from(value)),
+            ctx_);
         response.sets.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -350,8 +353,10 @@ ores::utility::domain::result ore_parameter_value_set_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = ore_parameter_value_set_to_domain(change.write);
-    const auto current =
-        ore_parameter_value_set_read_one(repo_, ctx_, ore_parameter_value_set_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        ore_parameter_value_set_read_one(repo_, ctx_, ore_parameter_value_set_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

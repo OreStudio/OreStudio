@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:communication:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-26
 #+pattern_group: communication
 #+startup: inlineimages
 
@@ -85,6 +85,7 @@ The convention is in =ores.nats/service/client.hpp=: the queue group is the serv
 
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every service subscribes its subjects in a queue group named for the service.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — worker nodes share a durable, queue-grouped consumer per platform.
+- [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]] — the wrappers of a platform race for each job a notice announces, and the claim's lock decides.
 
 * Related patterns
 

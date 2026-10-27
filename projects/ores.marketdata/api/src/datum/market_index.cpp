@@ -39,7 +39,7 @@ constexpr std::array<std::string_view, index_family_count> family_names{"ibor",
                                                                         "cmb",
                                                                         "generic"};
 
-std::unexpected<std::string> refuse(index_family f, std::string_view what) {
+std::unexpected<std::string> market_index_refuse(index_family f, std::string_view what) {
     return std::unexpected(std::format("{} index: {}", name_of(f), what));
 }
 
@@ -66,13 +66,14 @@ std::expected<market_index, std::string>
 market_index::make(index_family family, std::string subject, std::vector<field_text> fields) {
     const auto& row = index_row_of(family);
     if (subject.empty())
-        return refuse(family, std::format("{} cannot be empty", row.subject));
+        return market_index_refuse(family, std::format("{} cannot be empty", row.subject));
 
     for (const auto& f : fields) {
         const bool known = std::ranges::any_of(
             row.fields, [&](const index_field_spec& s) { return s.name == f.name; });
         if (!known)
-            return refuse(family, std::format("{} is not a field of this family", f.name));
+            return market_index_refuse(family,
+                                       std::format("{} is not a field of this family", f.name));
     }
 
     std::vector<field_text> ordered;
@@ -80,16 +81,16 @@ market_index::make(index_family family, std::string subject, std::vector<field_t
         const auto count =
             std::ranges::count_if(fields, [&](const field_text& f) { return f.name == spec.name; });
         if (count > 1)
-            return refuse(family, std::format("{} is given twice", spec.name));
+            return market_index_refuse(family, std::format("{} is given twice", spec.name));
         const auto it =
             std::ranges::find_if(fields, [&](const field_text& f) { return f.name == spec.name; });
         if (it == fields.end()) {
             if (!spec.optional)
-                return refuse(family, std::format("{} is missing", spec.name));
+                return market_index_refuse(family, std::format("{} is missing", spec.name));
             continue;
         }
         if (it->text.empty())
-            return refuse(family, std::format("{} cannot be empty", spec.name));
+            return market_index_refuse(family, std::format("{} cannot be empty", spec.name));
         ordered.push_back(std::move(*it));
     }
     return market_index(family, std::move(subject), std::move(ordered));

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: CE41E828-18EB-4E88-BB02-6A4930E7B67C
+:END:
+#+title: The data path
+#+description: Structure note for the data path: how a service reaches the database and moves ticks at one hundred thousand feeds, in the order the pieces depend on each other.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:structure_note:database:marketdata:scale:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+The data path is how a service reaches the database and how ticks reach the
+store and the parties, designed to carry one hundred thousand feeds on one
+machine that runs ten environments. A service holds a few long-lived
+connections, a transaction carries its own tenant context, repositories work
+inside an open transaction, statements are typed and prepared once, and every
+store error says whether a retry can succeed. Handlers run on a bounded pool.
+Ticks are stored once for each source, written in bulk by lanes, and kept in a
+bounded, compressed window. The environments share the instance through a
+pooler, the compute grid is woken rather than polled, and every queue and
+session reports its own numbers.
+
+This page orders the cluster. Read it top to bottom when changing how a
+service talks to the store; read one page when changing one piece.
+
+Every page of the cluster states the target, in the present tense: what the
+data path is once it is built. What is built so far is tracked by the tasks of
+[[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]].
+
+* Reading order
+
+The order follows dependency: each page needs the one before it.
+
+1. [[id:662D0C1B-319C-4F85-A118-42D830661B40][The data path serves a control plane and a data plane]] — the workload. It sets the numbers every later page is sized
+   for, and it splits the path in two, which is why the control plane and the
+   data plane read differently from here on.
+2. [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]] — the connections exist before any query does, and their count is
+   the first budget.
+3. [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]] — what makes those connections interchangeable, so a pool and a
+   pooler can share them.
+4. [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — the only way code reaches a connection, built on the two pages
+   before it.
+5. [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]] — what runs inside that transaction when no generated repository
+   fits.
+6. [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]] — what comes back out of it, and what the caller does about it.
+7. [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]] — who runs the handlers, and why their number equals the
+   connections' of page 2. It follows page 6 only because it closes the control plane.
+8. [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the data plane begins: what the store holds, and why a party's
+   entitlement moves to the read.
+9. [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the points get there, given that they hold no tenant.
+10. [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]] — how much of them is kept, given that they carry no row-level
+    security and so compress.
+11. [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — how ten environments share the instance, which needs the
+    stateless connections of page 3 and the prepared statements of page 5.
+12. [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]] — the compute grid, which applies the same rule to its claims: no
+    query runs until there is work.
+13. [[id:7425094C-C5A0-4AF7-8EF4-B8062979A7BD][Every queue and every session reports its own numbers]] — how every page above reports what it costs, so a change shows as
+    a number.
+
+* Pages beside the sequence
+
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — the lane, the ring buffer, the age gate and the overload states of
+  the tick ingest in full. Read it when working on a lane.
+- [[id:4E423566-F61B-4D0F-8787-25E4EEB4887C][The tick ingest pipeline design record]] — the measurements, the practice and the options
+  set aside behind the pipeline.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the conventions of the store itself: schema, roles, bitemporal design.
+  Read it when writing SQL.
+
+* What this cluster does not cover
+
+- The bus, its subjects and its message contract: [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]].
+- The market data model, from vendor to party: [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]].
+- Which store a value belongs in: [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge index]] — where this structure note is listed with the others.

@@ -91,9 +91,10 @@ write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
 /**
  * @brief Writes a definition, scheduled or not, and answers its id.
  */
-boost::uuids::uuid write_definition(const ores::database::context& party_ctx,
-                                    ores::utility::generation::generation_context& gen,
-                                    const std::optional<boost::uuids::uuid>& scheduler_job_id) {
+boost::uuids::uuid
+service_next_fire_write_definition(const ores::database::context& party_ctx,
+                                   ores::utility::generation::generation_context& gen,
+                                   const std::optional<boost::uuids::uuid>& scheduler_job_id) {
     auto definition = ores::reporting::generators::generate_synthetic_report_definition(gen);
     definition.change_reason_code = "system.test";
     definition.party_id = *party_ctx.party_id();
@@ -127,8 +128,8 @@ TEST_CASE("a definition's schedule reads the next fire the scheduler states for 
     // One definition the party scheduled and one it runs on demand. The job id
     // is the definition's own, stated by the test so the join can be read back.
     const auto job_id = gen.generate_uuid();
-    const auto scheduled = write_definition(ctx, gen, job_id);
-    const auto on_demand = write_definition(ctx, gen, std::nullopt);
+    const auto scheduled = service_next_fire_write_definition(ctx, gen, job_id);
+    const auto on_demand = service_next_fire_write_definition(ctx, gen, std::nullopt);
 
     // The definitions are read back the way the read reads them, so the join
     // column is proved to survive the store.
@@ -218,7 +219,8 @@ struct next_fire_fixture {
 
         auto gen = ores::testing::make_generation_context(db);
         const auto party_ctx = write_test_party_and_scope_context(db, gen);
-        const auto definition = write_definition(party_ctx, gen, gen.generate_uuid());
+        const auto definition =
+            service_next_fire_write_definition(party_ctx, gen, gen.generate_uuid());
         definition_id = definition;
 
         reader_token =

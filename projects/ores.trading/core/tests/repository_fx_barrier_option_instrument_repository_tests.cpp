@@ -43,7 +43,8 @@ using namespace ores::logging;
  * Note: settlement and underlying_code are empty — not extracted by the mapper
  * for FxBarrierOption.
  */
-fx_barrier_option_instrument make_instrument(database_helper& h) {
+fx_barrier_option_instrument
+repository_fx_barrier_option_instrument_repository_make_instrument(database_helper& h) {
     fx_barrier_option_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
@@ -74,7 +75,7 @@ TEST_CASE("an_up_style_refuses_a_lower_level", "[repository][fx][fx_barrier_opti
 
     // An Up style engages the upper level, so a row that also fills the lower
     // level states a shape the product cannot hold.
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_barrier_option_instrument_repository_make_instrument(h);
     instr.lower_barrier = ores::utility::decimal::decimal::from_string("1.1").value();
 
     // The refusal names a check constraint, so a different failure cannot pass.
@@ -97,7 +98,7 @@ TEST_CASE("fx_barrier_option_instrument_write_and_read_latest",
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_barrier_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "Writing FX barrier option instrument: " << instr;
 
@@ -126,7 +127,7 @@ TEST_CASE("fx_barrier_option_instrument_read_nonexistent", "[repository][fx][fx_
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     fx_barrier_option_instrument_repository repo;
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_barrier_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     repo.write(ctx, instr);
 
@@ -146,7 +147,7 @@ TEST_CASE("fx_barrier_option_instrument_remove", "[repository][fx][fx_barrier_op
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_barrier_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
 
     fx_barrier_option_instrument_repository repo;
@@ -171,7 +172,7 @@ TEST_CASE("a_double_barrier_refuses_a_single_level", "[repository][fx][fx_barrie
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     // A double barrier states a level per side, so one level is half a row.
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_barrier_option_instrument_repository_make_instrument(h);
     instr.identity.trade_type_code = "FxDoubleBarrierOption";
     instr.barrier_type = "KnockOut";
 

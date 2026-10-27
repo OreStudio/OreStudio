@@ -33,6 +33,7 @@
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "test_helpers.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -116,11 +117,6 @@ struct fixture {
         return r;
     }
 };
-
-std::vector<uuid> sorted(std::vector<uuid> v) {
-    std::ranges::sort(v);
-    return v;
-}
 
 year_month_day ymd(int y, unsigned m, unsigned d) {
     return year{y} / month{m} / d;

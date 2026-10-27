@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 8E4E5F0C-4C0B-4E1B-9A2B-6C7E1F2D3A40
+:END:
+#+title: ores.reporting.report_result_row
+#+description: Codegen entity model for the reporting =report_result_row= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One figure a run produced, for one subject in one measure.
+#+entity_singular: report_result_row
+#+entity_plural: report_result_rows
+#+entity_title: Report result row
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+One figure a run produced, for one subject in one measure, at the run's priced
+date. The row is written once, with the run, and never edited; a correction is a
+new run. =as_of= is the run's priced date, and it is the time column of the
+series. The canonical row's shape and the reason it is narrow are stated in the
+report post processing note.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this result row.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The run that produced the figure.
+
+** report_definition_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:END:
+
+The report the run came from, so a definition's runs are one query.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:natural_key:  true
+:END:
+
+The run's priced date, and the time column of the series.
+
+** subject_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The kind of record the figure is about: =trade=.
+
+** subject_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The engine's own identifier for the record.
+
+** measure
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
+=gamma=. Open, so a new analytic adds a value rather than a column.
+
+** currency
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The currency the figure is stated in, empty when the measure has none.
+
+** figure
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     double
+:END:
+
+The figure, as the engine stated it and never formatted.
+
+** source
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The file and the row the marshal read, for provenance.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                    ores_reporting_report_result_rows_tbl
+:hypertable:                   true
+:hypertable_partition_column:  as_of
+:hypertable_chunk_interval:    30 days
+:append_insert:                true
+:bitemporal_trigger:           soft_update_delete
+:no_audit_columns:             true
+:rls_tenant_isolation:         true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| subject_type | Subject Type |
+| subject_id   | Subject Id   |
+| measure      | Measure      |
+| currency     | Currency     |
+| figure       | Figure       |
+| as_of        | As Of        |

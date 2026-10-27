@@ -37,7 +37,7 @@ vendor_id id(const std::string& external) {
     return vendor_id{"bbg_ticker", external, "PX_LAST"};
 }
 
-universe_check catalogue() {
+universe_check app_adapter_registry_catalogue() {
     return universe_check{.provider_known = [](const std::string& p) { return p == "bloomberg"; },
                           .id_known =
                               [](const std::string&, const vendor_id& v) {
@@ -61,7 +61,7 @@ const auto t0 = std::chrono::system_clock::now();
 TEST_CASE("an_adapter_of_a_known_provider_is_ready_after_its_announce", "[app][adapter_registry]") {
     adapter_registry sut;
 
-    const auto response = sut.announce(announce(), catalogue(), t0);
+    const auto response = sut.announce(announce(), app_adapter_registry_catalogue(), t0);
 
     CHECK(response.success);
     CHECK(response.served_count == 2);
@@ -73,7 +73,7 @@ TEST_CASE("an_adapter_of_a_known_provider_is_ready_after_its_announce", "[app][a
 TEST_CASE("an_adapter_of_an_unknown_provider_is_rejected", "[app][adapter_registry]") {
     adapter_registry sut;
 
-    const auto response = sut.announce(announce("nobody"), catalogue(), t0);
+    const auto response = sut.announce(announce("nobody"), app_adapter_registry_catalogue(), t0);
 
     CHECK_FALSE(response.success);
     CHECK_FALSE(response.message.empty());
@@ -86,14 +86,14 @@ TEST_CASE("an_announce_with_no_adapter_id_is_refused", "[app][adapter_registry]"
     auto request = announce();
     request.adapter_id.clear();
 
-    CHECK_FALSE(sut.announce(request, catalogue(), t0).success);
+    CHECK_FALSE(sut.announce(request, app_adapter_registry_catalogue(), t0).success);
     CHECK(sut.status().empty());
 }
 
 TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_ready",
           "[app][adapter_registry]") {
     adapter_registry sut;
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
 
     adapter_demand_response accepted;
     accepted.accepted = {id("EURUSD Curncy")};
@@ -108,7 +108,7 @@ TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_r
 TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply",
           "[app][adapter_registry]") {
     adapter_registry sut;
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
     adapter_demand_response reply;
     reply.accepted = {id("EURUSD Curncy")};
     reply.rejected = {rejected_id{id("XAUUSD Curncy"), "not_entitled"}};
@@ -128,7 +128,7 @@ TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply",
 
 TEST_CASE("a_missed_heartbeat_makes_an_adapter_stale", "[app][adapter_registry]") {
     adapter_registry sut(15s);
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
     adapter_demand_response accepted;
     accepted.accepted = {id("EURUSD Curncy")};
     sut.demand_replied("bloomberg-sim", 1, accepted);
@@ -145,7 +145,7 @@ TEST_CASE("a_missed_heartbeat_makes_an_adapter_stale", "[app][adapter_registry]"
 
 TEST_CASE("a_heartbeat_keeps_an_adapter_from_going_stale", "[app][adapter_registry]") {
     adapter_registry sut(15s);
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
 
     const auto outcome = sut.heartbeat("bloomberg-sim", 1, t0 + 10s);
 
@@ -158,7 +158,7 @@ TEST_CASE("a_heartbeat_keeps_an_adapter_from_going_stale", "[app][adapter_regist
 TEST_CASE("a_returning_heartbeat_makes_a_stale_adapter_ready_and_asks_for_demand",
           "[app][adapter_registry]") {
     adapter_registry sut(15s);
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
     (void)sut.expire(t0 + 20s);
     REQUIRE(sut.state_of("bloomberg-sim") == adapter_state::stale);
 
@@ -181,7 +181,7 @@ TEST_CASE("a_heartbeat_of_an_unknown_adapter_changes_nothing", "[app][adapter_re
 
 TEST_CASE("a_rejected_adapter_never_goes_stale_or_serves", "[app][adapter_registry]") {
     adapter_registry sut(15s);
-    sut.announce(announce("nobody"), catalogue(), t0);
+    sut.announce(announce("nobody"), app_adapter_registry_catalogue(), t0);
 
     CHECK(sut.expire(t0 + 60s).empty());
     adapter_demand_response accepted;
@@ -193,7 +193,7 @@ TEST_CASE("a_rejected_adapter_never_goes_stale_or_serves", "[app][adapter_regist
 
 TEST_CASE("a_stale_adapter_keeps_its_last_reply", "[app][adapter_registry]") {
     adapter_registry sut(15s);
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
     adapter_demand_response accepted;
     accepted.accepted = {id("EURUSD Curncy")};
     sut.demand_replied("bloomberg-sim", 1, accepted);
@@ -207,12 +207,12 @@ TEST_CASE("a_stale_adapter_keeps_its_last_reply", "[app][adapter_registry]") {
 
 TEST_CASE("a_second_announce_starts_the_adapter_again", "[app][adapter_registry]") {
     adapter_registry sut;
-    sut.announce(announce(), catalogue(), t0);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0);
     adapter_demand_response accepted;
     accepted.accepted = {id("EURUSD Curncy")};
     sut.demand_replied("bloomberg-sim", 1, accepted);
 
-    sut.announce(announce(), catalogue(), t0 + 1s);
+    sut.announce(announce(), app_adapter_registry_catalogue(), t0 + 1s);
 
     CHECK(sut.state_of("bloomberg-sim") == adapter_state::ready);
     CHECK(sut.status().front().accepted.empty());

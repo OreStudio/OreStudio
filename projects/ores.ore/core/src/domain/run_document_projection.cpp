@@ -31,7 +31,7 @@ namespace ores::ore::domain {
 
 namespace {
 
-namespace xg = xml::generated::ore;
+namespace run_document_projection_xg = xml::generated::ore;
 using xml::record_reader;
 using xml::record_writer;
 
@@ -41,12 +41,12 @@ using settings_t = reporting::domain::risk_report_config;
 // projection is a rename table rather than forty branches.
 struct text_binding {
     std::string_view parameter;
-    std::optional<std::string> settings_t::*member;
+    std::optional<std::string> settings_t::* member;
 };
 
 struct required_binding {
     std::string_view parameter;
-    std::string settings_t::*member;
+    std::string settings_t::* member;
 };
 
 const std::array<text_binding, 4> text_bindings = {{
@@ -94,8 +94,8 @@ constexpr std::array<std::string_view, 4> observation_models = {
 
 template <typename Part>
 engine_binding flag_binding(std::string_view parameter,
-                            std::optional<Part> engine_t::*part,
-                            std::optional<bool> Part::*member) {
+                            std::optional<Part> engine_t::* part,
+                            std::optional<bool> Part::* member) {
     return {parameter,
             [=](engine_t& e, const std::string& v) {
                 auto& p = e.*part;
@@ -112,8 +112,8 @@ engine_binding flag_binding(std::string_view parameter,
 
 template <typename Part>
 engine_binding int_binding(std::string_view parameter,
-                           std::optional<Part> engine_t::*part,
-                           std::optional<int> Part::*member) {
+                           std::optional<Part> engine_t::* part,
+                           std::optional<int> Part::* member) {
     return {parameter,
             [=](engine_t& e, const std::string& v) {
                 auto& p = e.*part;
@@ -195,7 +195,7 @@ const std::array<std::string_view, 16> file_parameters = {{
     "iborFallbackConfig",
 }};
 
-std::runtime_error refusal(const std::string& what) {
+std::runtime_error run_document_projection_refusal(const std::string& what) {
     return std::runtime_error("run_document_projection: " + what);
 }
 
@@ -209,7 +209,8 @@ int parse_int(const std::string& name, const std::string& value) {
     const auto* last = value.data() + value.size();
     const auto result = std::from_chars(first, last, out);
     if (result.ec != std::errc() || result.ptr != last)
-        throw refusal("Setup parameter '" + name + "' is not an integer: '" + value + "'");
+        throw run_document_projection_refusal("Setup parameter '" + name +
+                                              "' is not an integer: '" + value + "'");
     return out;
 }
 
@@ -235,7 +236,7 @@ ores::reporting::messaging::run_document run_document_projection::map(const docu
 run_document_projection::document
 run_document_projection::reverse(const ores::reporting::messaging::run_document& v) {
     document out{};
-    auto written = record_writer(*xg::ore_document().root, &out);
+    auto written = record_writer(*run_document_projection_xg::ore_document().root, &out);
     reverse_setup(written.child("Setup"), {v.settings, v.engine_settings, v.files, {}});
     reverse_analytics(written.child("Analytics"), v.analytics);
     if (!v.market_bindings.empty())
@@ -246,10 +247,10 @@ run_document_projection::reverse(const ores::reporting::messaging::run_document&
 mapped_setup run_document_projection::map_setup(const document& v) {
     mapped_setup r;
     auto& settings = r.settings;
-    const auto root = record_reader(*xg::ore_document().root, &v);
+    const auto root = record_reader(*run_document_projection_xg::ore_document().root, &v);
     const auto setup = root.child("Setup");
     if (!setup)
-        throw refusal("the document states no Setup block");
+        throw run_document_projection_refusal("the document states no Setup block");
 
     // A name that appears more than once is read from its last occurrence.
     // Three shipped documents repeat continueOnError, and in all three the
@@ -330,10 +331,10 @@ std::vector<std::string> run_document_projection::dropped_parameter_warnings(con
 std::vector<ores::reporting::messaging::run_analytic>
 run_document_projection::map_analytics(const document& v) {
     std::vector<ores::reporting::messaging::run_analytic> r;
-    const auto root = record_reader(*xg::ore_document().root, &v);
+    const auto root = record_reader(*run_document_projection_xg::ore_document().root, &v);
     const auto analytics = root.child("Analytics");
     if (!analytics)
-        throw refusal("the document states no Analytics block");
+        throw run_document_projection_refusal("the document states no Analytics block");
 
     int order = 0;
     for (const auto& element : analytics->children("Analytic")) {
@@ -361,7 +362,7 @@ run_document_projection::map_analytics(const document& v) {
 std::vector<reporting::domain::configuration_market_binding>
 run_document_projection::map_market_bindings(const document& v) {
     std::vector<reporting::domain::configuration_market_binding> r;
-    const auto root = record_reader(*xg::ore_document().root, &v);
+    const auto root = record_reader(*run_document_projection_xg::ore_document().root, &v);
     const auto markets = root.child("Markets");
     if (!markets)
         return r;
@@ -424,7 +425,7 @@ void run_document_projection::reverse_market_bindings(
 run_document_projection::document run_document_projection::read(std::string_view text,
                                                                 std::string_view origin) {
     document record;
-    const auto bound = xml::binder::bind(xg::ore_document(), text, &record);
+    const auto bound = xml::binder::bind(run_document_projection_xg::ore_document(), text, &record);
     if (!bound) {
         const auto where = origin.empty() ? std::string("run document") : std::string(origin);
         throw std::invalid_argument(
@@ -435,7 +436,7 @@ run_document_projection::document run_document_projection::read(std::string_view
 
 std::string run_document_projection::write(const document& v) {
     std::string out;
-    const auto emitted = xml::emitter::emit(xg::ore_document(), &v, out);
+    const auto emitted = xml::emitter::emit(run_document_projection_xg::ore_document(), &v, out);
     if (!emitted)
         throw std::runtime_error(emitted.error().message);
     return out;

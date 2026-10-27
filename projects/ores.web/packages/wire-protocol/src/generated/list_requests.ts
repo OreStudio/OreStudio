@@ -1243,6 +1243,37 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.curve_publishes.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'party_id',
+            'bootstrap_config_id',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'bootstrap_config_id_one_of',
+        ],
+        rows: ['curve_publishes'],
+    },
+    'marketdata.v1.curve_publishes.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'party_id',
+            'bootstrap_config_id',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'bootstrap_config_id_one_of',
+        ],
+        rows: [],
+    },
+    'marketdata.v1.curve_publishes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.delivery_counts.list': {
         asOf: true,
         filter: [

@@ -29,7 +29,8 @@ namespace {
 using ores::marketdata::service::app::consumer;
 using ores::marketdata::service::app::make_feed_series;
 
-const std::string eur_usd_spot = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
+const std::string app_feed_series_eur_usd_spot =
+    "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
 const std::string service_account = "system.test";
 
 consumer make_owner() {
@@ -50,11 +51,14 @@ TEST_CASE("the ingest creates the series under the provider of the route it stor
     auto owner = make_owner();
     owner.provider_code = "bloomberg";
 
-    const auto series = make_feed_series(
-        owner, boost::uuids::random_generator{}(), eur_usd_spot, "spot", service_account);
+    const auto series = make_feed_series(owner,
+                                         boost::uuids::random_generator{}(),
+                                         app_feed_series_eur_usd_spot,
+                                         "spot",
+                                         service_account);
 
     CHECK(series.provider_code == "bloomberg");
-    CHECK(series.oresmd_uri == eur_usd_spot);
+    CHECK(series.oresmd_uri == app_feed_series_eur_usd_spot);
     CHECK(series.series_subclass == "spot");
     CHECK(series.tenant_id == owner.tenant_id);
     CHECK(series.party_id == owner.party_id);

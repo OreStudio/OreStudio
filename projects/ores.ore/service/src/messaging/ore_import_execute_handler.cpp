@@ -174,7 +174,8 @@ std::vector<std::string> split_numbers(const std::string& text) {
 
 // The canonical write record carries what the caller owns. The imported
 // domain objects carry the server's fields too, so each projects by name.
-ores::refdata::messaging::currency_write to_write(const ores::refdata::domain::currency& c) {
+ores::refdata::messaging::currency_write
+ore_import_execute_handler_to_write(const ores::refdata::domain::currency& c) {
     return {.iso_code = c.iso_code,
             .name = c.name,
             .numeric_code = c.numeric_code,
@@ -192,7 +193,8 @@ ores::refdata::messaging::currency_write to_write(const ores::refdata::domain::c
             .base_precedence = c.base_precedence};
 }
 
-ores::refdata::messaging::portfolio_write to_write(const ores::refdata::domain::portfolio& p) {
+ores::refdata::messaging::portfolio_write
+ore_import_execute_handler_to_write(const ores::refdata::domain::portfolio& p) {
     return {.id = p.id,
             .name = p.name,
             .description = p.description,
@@ -205,7 +207,8 @@ ores::refdata::messaging::portfolio_write to_write(const ores::refdata::domain::
             .status = p.status};
 }
 
-ores::refdata::messaging::book_write to_write(const ores::refdata::domain::book& b) {
+ores::refdata::messaging::book_write
+ore_import_execute_handler_to_write(const ores::refdata::domain::book& b) {
     return {.id = b.id,
             .name = b.name,
             .description = b.description,
@@ -2141,7 +2144,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     for (auto& currency : plan.currencies) {
         const auto iso = currency.iso_code;
         ores::refdata::messaging::put_currency_request save_req{
-            .change = {.write = to_write(currency)},
+            .change = {.write = ore_import_execute_handler_to_write(currency)},
             .intent = ores::utility::domain::change_intent{
                 .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
         std::string err;
@@ -2177,7 +2180,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto pid = boost::uuids::to_string(portfolio.id);
         const auto name = portfolio.name;
         ores::refdata::messaging::put_portfolio_request save_req{
-            .change = {.write = to_write(portfolio)},
+            .change = {.write = ore_import_execute_handler_to_write(portfolio)},
             .intent = ores::utility::domain::change_intent{
                 .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
         std::string err;
@@ -2214,7 +2217,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto bid = boost::uuids::to_string(book.id);
         const auto name = book.name;
         ores::refdata::messaging::put_book_request save_req{
-            .change = {.write = to_write(book)},
+            .change = {.write = ore_import_execute_handler_to_write(book)},
             .intent = ores::utility::domain::change_intent{
                 .reason_code = "system.import", .commentary = "Imported from an ORE directory"}};
         std::string err;

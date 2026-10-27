@@ -28,6 +28,7 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "shared_helpers.hpp"
 #include <cstdint>
 #include <format>
 #include <optional>
@@ -49,9 +50,6 @@ namespace rp = ores::reporting::messaging;
 
 /// The configuration type whose document the export writes.
 constexpr std::string_view configuration_type_code = "pricing_engines";
-
-/// The most rows one page of the file types read asks for.
-constexpr std::uint32_t page = 500;
 
 /**
  * @brief The name the pricing engines document is written under, or nothing

@@ -39,21 +39,21 @@ using ores::testing::database_helper;
 using ores::utility::uuid::tenant_id;
 using std::chrono::seconds;
 
-boost::uuids::uuid random_uuid() {
+boost::uuids::uuid repository_work_ledger_repository_random_uuid() {
     return boost::uuids::random_generator()();
 }
 
 /// The platform a test queues for. The development database may hold real entries, so each
 /// test uses a platform no node has and so claims only what it queued.
 std::string unique_platform() {
-    return "test-" + boost::uuids::to_string(random_uuid());
+    return "test-" + boost::uuids::to_string(repository_work_ledger_repository_random_uuid());
 }
 
 ledger_entry
 entry_for(const std::string& platform, const boost::uuids::uuid& tenant, int priority = 0) {
-    return ledger_entry{.result_id = random_uuid(),
+    return ledger_entry{.result_id = repository_work_ledger_repository_random_uuid(),
                         .work_tenant_id = tenant,
-                        .workunit_id = random_uuid(),
+                        .workunit_id = repository_work_ledger_repository_random_uuid(),
                         .platforms = {platform},
                         .priority = priority};
 }
@@ -99,8 +99,9 @@ TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt",
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
-    const auto host = random_uuid();
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
+    const auto host = repository_work_ledger_repository_random_uuid();
 
     work_ledger_repository ledger;
     const auto claimed = ledger.claim(cleanup.system(), host, platform, seconds(300));
@@ -116,10 +117,13 @@ TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt",
 TEST_CASE("claim_takes_nothing_for_a_platform_with_no_waiting_entry", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
-    cleanup.add(entry_for(unique_platform(), random_uuid()));
+    cleanup.add(entry_for(unique_platform(), repository_work_ledger_repository_random_uuid()));
 
-    const auto claimed = work_ledger_repository().claim(
-        cleanup.system(), random_uuid(), unique_platform(), seconds(300));
+    const auto claimed =
+        work_ledger_repository().claim(cleanup.system(),
+                                       repository_work_ledger_repository_random_uuid(),
+                                       unique_platform(),
+                                       seconds(300));
 
     CHECK(!claimed.has_value());
 }
@@ -128,13 +132,18 @@ TEST_CASE("two_claims_never_take_one_entry", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto first = cleanup.add(entry_for(platform, random_uuid()));
-    const auto second = cleanup.add(entry_for(platform, random_uuid()));
+    const auto first =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
+    const auto second =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
 
     work_ledger_repository ledger;
-    const auto a = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
-    const auto b = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
-    const auto c = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    const auto a = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
+    const auto b = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
+    const auto c = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
 
     REQUIRE(a.has_value());
     REQUIRE(b.has_value());
@@ -147,8 +156,8 @@ TEST_CASE("claim_prefers_the_tenant_with_the_fewest_entries_claimed", "[reposito
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto deep = random_uuid();
-    const auto shallow = random_uuid();
+    const auto deep = repository_work_ledger_repository_random_uuid();
+    const auto shallow = repository_work_ledger_repository_random_uuid();
     // The deep tenant queued first and has three waiting. The shallow tenant has one.
     cleanup.add(entry_for(platform, deep));
     cleanup.add(entry_for(platform, deep));
@@ -156,9 +165,12 @@ TEST_CASE("claim_prefers_the_tenant_with_the_fewest_entries_claimed", "[reposito
     cleanup.add(entry_for(platform, shallow));
 
     work_ledger_repository ledger;
-    const auto first = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
-    const auto second = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
-    const auto third = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    const auto first = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
+    const auto second = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
+    const auto third = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
 
     REQUIRE(first.has_value());
     REQUIRE(second.has_value());
@@ -176,12 +188,12 @@ TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load",
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto tenant = random_uuid();
+    const auto tenant = repository_work_ledger_repository_random_uuid();
     cleanup.add(entry_for(platform, tenant, 0));
     const auto urgent = cleanup.add(entry_for(platform, tenant, 5));
 
-    const auto claimed =
-        work_ledger_repository().claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    const auto claimed = work_ledger_repository().claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
 
     REQUIRE(claimed.has_value());
     CHECK(claimed->result_id == urgent.result_id);
@@ -192,9 +204,10 @@ TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_ba
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
 
     ledger.release(cleanup.system(), queued.result_id);
@@ -213,14 +226,16 @@ TEST_CASE("concurrent_claims_never_take_the_same_entry", "[repository][work_ledg
     const auto platform = unique_platform();
     constexpr int entries = 6;
     for (int i = 0; i < entries; ++i)
-        cleanup.add(entry_for(platform, random_uuid()));
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
 
     // Twelve claims race for six entries. Each entry goes to exactly one claim.
     std::vector<std::future<std::optional<ores::compute::repository::claimed_entry>>> claims;
     for (int i = 0; i < 2 * entries; ++i) {
         claims.push_back(std::async(std::launch::async, [&cleanup, &platform] {
-            return work_ledger_repository().claim(
-                cleanup.system(), random_uuid(), platform, seconds(300));
+            return work_ledger_repository().claim(cleanup.system(),
+                                                  repository_work_ledger_repository_random_uuid(),
+                                                  platform,
+                                                  seconds(300));
         }));
     }
     std::vector<boost::uuids::uuid> taken;
@@ -239,14 +254,21 @@ TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left",
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    REQUIRE(ledger.claim(cleanup.system(), random_uuid(), platform, seconds(0)).has_value());
+    REQUIRE(ledger
+                .claim(cleanup.system(),
+                       repository_work_ledger_repository_random_uuid(),
+                       platform,
+                       seconds(0))
+                .has_value());
 
     CHECK(ledger.requeue_expired(cleanup.system()) >= 1);
 
     CHECK(!ledger.holder(cleanup.system(), queued.result_id).has_value());
-    const auto again = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    const auto again = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
     REQUIRE(again.has_value());
     CHECK(again->result_id == queued.result_id);
     CHECK(again->attempts == 2);
@@ -256,8 +278,9 @@ TEST_CASE("requeue_expired_leaves_a_live_lease_alone", "[repository][work_ledger
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
-    const auto host = random_uuid();
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
+    const auto host = repository_work_ledger_repository_random_uuid();
     work_ledger_repository ledger;
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
 
@@ -271,9 +294,10 @@ TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued"
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
     // One attempt is allowed, and the claim uses it.
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(0)).has_value());
 
@@ -293,8 +317,9 @@ TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", "[repository]
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
-    const auto host = random_uuid();
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
+    const auto host = repository_work_ledger_repository_random_uuid();
     work_ledger_repository ledger;
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(0)).has_value());
     ledger.extend_lease(cleanup.system(), host, queued.result_id, seconds(300));
@@ -306,19 +331,23 @@ TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", "[repository]
 TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
-    const auto tenant = random_uuid();
+    const auto tenant = repository_work_ledger_repository_random_uuid();
     const auto other_platform = unique_platform();
     cleanup.add(entry_for(unique_platform(), tenant));
     cleanup.add(entry_for(unique_platform(), tenant));
     cleanup.add(entry_for(other_platform, tenant));
-    cleanup.add(entry_for(unique_platform(), random_uuid()));
+    cleanup.add(entry_for(unique_platform(), repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
 
     CHECK(ledger.waiting(cleanup.system(), tenant) == 3);
 
     // A claim takes one of the tenant's entries out of the waiting count.
-    REQUIRE(
-        ledger.claim(cleanup.system(), random_uuid(), other_platform, seconds(300)).has_value());
+    REQUIRE(ledger
+                .claim(cleanup.system(),
+                       repository_work_ledger_repository_random_uuid(),
+                       other_platform,
+                       seconds(300))
+                .has_value());
     CHECK(ledger.waiting(cleanup.system(), tenant) == 2);
 }
 
@@ -326,34 +355,42 @@ TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", "[repository][work_led
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
 
     ledger.remove(cleanup.system(), queued.result_id);
 
-    CHECK(!ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300)).has_value());
+    CHECK(!ledger
+               .claim(cleanup.system(),
+                      repository_work_ledger_repository_random_uuid(),
+                      platform,
+                      seconds(300))
+               .has_value());
 }
 
 TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledger",
           "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
-    const auto queued = cleanup.add(entry_for(unique_platform(), random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(unique_platform(), repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
 
     CHECK(!ledger.holder(cleanup.system(), queued.result_id).has_value());
-    CHECK(!ledger.holder(cleanup.system(), random_uuid()).has_value());
+    CHECK(!ledger.holder(cleanup.system(), repository_work_ledger_repository_random_uuid())
+               .has_value());
 }
 
 TEST_CASE("extend_lease_extends_only_the_job_the_host_names", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    cleanup.add(entry_for(platform, random_uuid()));
-    cleanup.add(entry_for(platform, random_uuid()));
+    cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
+    cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
-    const auto stranger = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
+    const auto stranger = repository_work_ledger_repository_random_uuid();
     // The host holds two entries, as it does when the reply to a claim was lost.
     const auto first = ledger.claim(cleanup.system(), host, platform, seconds(0));
     const auto second = ledger.claim(cleanup.system(), host, platform, seconds(0));
@@ -374,15 +411,17 @@ TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts",
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
 
     CHECK(ledger.requeue_held(cleanup.system(), host) == 1);
     CHECK(!ledger.holder(cleanup.system(), queued.result_id).has_value());
     // The next claim counts a second attempt, so the first one was kept.
-    const auto again = ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300));
+    const auto again = ledger.claim(
+        cleanup.system(), repository_work_ledger_repository_random_uuid(), platform, seconds(300));
     REQUIRE(again.has_value());
     CHECK(again->attempts == 2);
 }
@@ -392,11 +431,13 @@ TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto mine = cleanup.add(entry_for(platform, random_uuid()));
-    const auto theirs = cleanup.add(entry_for(platform, random_uuid()));
+    const auto mine =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
+    const auto theirs =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
-    const auto other = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
+    const auto other = repository_work_ledger_repository_random_uuid();
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
     REQUIRE(ledger.claim(cleanup.system(), other, platform, seconds(300)).has_value());
 
@@ -406,16 +447,18 @@ TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_
     CHECK(ledger.holder(cleanup.system(), mine.result_id).has_value());
     CHECK(ledger.holder(cleanup.system(), theirs.result_id).has_value());
     // Another host's entry is never returned by a request for this host.
-    CHECK(ledger.requeue_held(cleanup.system(), random_uuid()) == 0);
+    CHECK(ledger.requeue_held(cleanup.system(), repository_work_ledger_repository_random_uuid()) ==
+          0);
 }
 
 TEST_CASE("enqueue_leaves_an_entry_already_in_the_ledger_as_it_is", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid(), 3));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid(), 3));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
 
     // The dispatcher may queue a result again on a repeated event. A claimed entry is not reset.
@@ -429,14 +472,16 @@ TEST_CASE("a_tenant_session_reads_none_of_the_ledger_and_writes_none_of_it",
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
-    const auto queued = cleanup.add(entry_for(platform, random_uuid()));
+    const auto queued =
+        cleanup.add(entry_for(platform, repository_work_ledger_repository_random_uuid()));
     work_ledger_repository ledger;
-    const auto host = random_uuid();
+    const auto host = repository_work_ledger_repository_random_uuid();
     REQUIRE(ledger.claim(cleanup.system(), host, platform, seconds(300)).has_value());
 
     // The test tenant is not the system tenant, so the policy admits it to no row.
     CHECK(ledger.count(h.context(), "claimed") == 0);
     CHECK(ledger.count(h.context(), "queued") == 0);
     CHECK(!ledger.holder(h.context(), queued.result_id).has_value());
-    CHECK_THROWS(ledger.enqueue(h.context(), entry_for(platform, random_uuid())));
+    CHECK_THROWS(ledger.enqueue(
+        h.context(), entry_for(platform, repository_work_ledger_repository_random_uuid())));
 }

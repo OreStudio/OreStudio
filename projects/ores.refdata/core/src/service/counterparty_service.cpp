@@ -51,6 +51,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -150,7 +151,7 @@ std::vector<std::string> counterparty_columns_changed(const std::vector<domain::
  * request could open the gate for them. They are refused, and the protocol
  * operations are the only way to write.
  */
-[[noreturn]] void refuse_direct_write() {
+[[noreturn]] void counterparty_service_refuse_direct_write() {
     throw std::logic_error(ores::database::domain::describe(outcome_code::approval_required,
                                                             {.entity = "counterparty"}));
 }
@@ -226,7 +227,8 @@ counterparty_service::put_counterparty(const messaging::put_counterparty_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = counterparty_read_one(repo_, ctx_, counterparty_key_from(value));
+    auto written =
+        of_acting_party(counterparty_read_one(repo_, ctx_, counterparty_key_from(value)), ctx_);
     if (!written.empty())
         response.counterparty = std::move(written.front());
     return response;
@@ -258,7 +260,8 @@ messaging::put_many_counterparties_response counterparty_service::put_many_count
     repo_.write(ctx_, batch, claims);
     response.counterparties.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = counterparty_read_one(repo_, ctx_, counterparty_key_from(value));
+        auto written =
+            of_acting_party(counterparty_read_one(repo_, ctx_, counterparty_key_from(value)), ctx_);
         response.counterparties.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -424,7 +427,10 @@ counterparty_service::prepare_change(const messaging::counterparty_change& chang
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = counterparty_to_domain(change.write);
-    const auto current = counterparty_read_one(repo_, ctx_, counterparty_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(counterparty_read_one(repo_, ctx_, counterparty_key_from(out)), ctx_);
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
     if (const auto refused = gate_put(current, out, change.precondition))
@@ -479,7 +485,8 @@ std::vector<std::string>
 counterparty_service::changed_columns(const messaging::counterparty_write& proposed) {
     const auto next = counterparty_to_domain(proposed);
     return counterparty_columns_changed(
-        counterparty_read_one(repo_, ctx_, counterparty_key_from(next)), next);
+        of_acting_party(counterparty_read_one(repo_, ctx_, counterparty_key_from(next)), ctx_),
+        next);
 }
 
 bool counterparty_service::holds_line(const std::string& operation,
@@ -617,7 +624,7 @@ counterparty_service::get_counterparties(const std::vector<std::string>& ids) {
 }
 
 void counterparty_service::save_counterparty(const domain::counterparty& v) {
-    refuse_direct_write();
+    counterparty_service_refuse_direct_write();
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving counterparty. " << "id: " << v.id;
@@ -629,7 +636,7 @@ void counterparty_service::save_counterparty(const domain::counterparty& v) {
 
 void counterparty_service::save_counterparties(
     const std::vector<domain::counterparty>& counterparties) {
-    refuse_direct_write();
+    counterparty_service_refuse_direct_write();
     for (const auto& e : counterparties) {
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty id cannot be empty.");
@@ -643,21 +650,21 @@ void counterparty_service::save_counterparties(
 }
 
 void counterparty_service::delete_counterparty(const boost::uuids::uuid& id) {
-    refuse_direct_write();
+    counterparty_service_refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
 void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {
-    refuse_direct_write();
+    counterparty_service_refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
 void counterparty_service::delete_counterparties(const std::vector<std::string>& ids) {
-    refuse_direct_write();
+    counterparty_service_refuse_direct_write();
     repo_.remove(ctx_, ids);
 }
 

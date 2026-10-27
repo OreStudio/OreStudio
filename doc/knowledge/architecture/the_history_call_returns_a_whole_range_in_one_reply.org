@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:ticks:reads:architecture:
 #+created: 2026-10-23
-#+updated: 2026-10-23
+#+updated: 2026-10-26
 
 * Summary
 
@@ -110,12 +110,14 @@ off the body, because each is a decision about the data. The codes are =party_re
 refused. A span with no end runs to now, so a start ahead of the clock of the service gives
 an empty reply, because nothing has ticked after now. See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
 
-A context with no party gets =party_required= and not an empty reply. The party policy
-of the tick table shows such a context no tick, and an empty reply would look complete.
-The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
+A context with no party gets =party_required= and not an empty reply. Without a party
+there is no series to check entitlement against, so the read would return no tick, and an
+empty reply would look complete. The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
 
-The read uses the tenant-aware pool. The policies of the tick table decide what the
-session sees, and no role skips them.
+The read checks entitlement first, in the party's tenant and under row-level security:
+the party's series must name the stream, and the party must hold a subscription that
+allows the read, or own the derived stream. It then reads the stream's points with the
+service's own role. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
 ** Two tiers behind one reply
 
@@ -135,22 +137,7 @@ store then answers the whole span.
 A datum that no consumer watches keeps only its last tick in the window. A span for it
 comes from the store alone, and the store trails the lane by one batch. A tick that the
 lane took before the client subscribed, and that the store has not yet committed, is in
-neither the reply nor the buffer. How the lane learns that a datum is watched is open on
-the pipeline page. If the subscription tells it, the window fills from the subscription
-on, and the case shrinks to the ticks of one batch.
-
-** Open questions
-
-- Does the first build keep the ceiling of 25,000 ticks? The measurement of reply size and
-  of read time decides.
-- Can a tick fall between the store and the window, as the two tiers section describes?
-  The measurement of the batch delay against the first reply decides whether the call
-  must wait for the commit of the batch in flight.
-- The live subject names a series by the percent-encoded series URI, and this call names
-  it by id. The client reads both from the series catalogue. Should the live subject carry
-  the id instead, so that one name serves both calls?
-- Should the reply carry the =source_id=? This page says no. A client that audits a tick
-  reads the store.
+neither the reply nor the buffer.
 
 * Patterns used
 

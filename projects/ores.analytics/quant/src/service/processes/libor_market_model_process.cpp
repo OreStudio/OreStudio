@@ -47,10 +47,10 @@ namespace {
  * positive log domain is the model's support and is enforced on the
  * initial rates by the process constructor only.
  */
-void validate_grid(const Eigen::VectorXd& forward_rates,
-                   const Eigen::VectorXd& displacements,
-                   const Eigen::VectorXd& tenor_spacings,
-                   const char* prefix) {
+void libor_market_model_process_validate_grid(const Eigen::VectorXd& forward_rates,
+                                              const Eigen::VectorXd& displacements,
+                                              const Eigen::VectorXd& tenor_spacings,
+                                              const char* prefix) {
     const Eigen::Index num_rates = forward_rates.size();
     if (num_rates == 0)
         throw std::invalid_argument(std::string(prefix) + ": forward_rates must not be empty");
@@ -79,7 +79,8 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
                                        const Eigen::VectorXd& displacements,
                                        const Eigen::VectorXd& tenor_spacings,
                                        const Eigen::MatrixXd& covariance) {
-    validate_grid(forward_rates, displacements, tenor_spacings, "lmm_spot_measure_drift");
+    libor_market_model_process_validate_grid(
+        forward_rates, displacements, tenor_spacings, "lmm_spot_measure_drift");
     const Eigen::Index num_rates = forward_rates.size();
     if (covariance.rows() != num_rates || covariance.cols() != num_rates)
         throw std::invalid_argument("lmm_spot_measure_drift: covariance must be square "
@@ -180,7 +181,7 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
                                             std::to_string(i) + ", " + std::to_string(j) + ")");
         }
     }
-    validate_grid(
+    libor_market_model_process_validate_grid(
         initial_forward_rates, displacements, tenor_spacings, "libor_market_model_process");
 
     // The model's support: the volatility applies to L_i + s_i, so the

@@ -26,6 +26,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -46,18 +47,15 @@ using ores::database::context;
 using ores::iam::repository::tenant_repository;
 using ores::utility::domain::order;
 
-std::string unique_marker() {
+std::string repository_tenant_stated_order_unique_marker() {
     auto text = boost::uuids::to_string(boost::uuids::random_generator()());
     text.erase(std::remove(text.begin(), text.end(), '-'), text.end());
     return "ord" + text.substr(0, 10);
 }
 
-context system_context(ores::testing::database_helper& h) {
-    return h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
-}
-
-std::string
-write_tenant(ores::testing::database_helper& h, const std::string& code, const std::string& name) {
+std::string repository_tenant_stated_order_write_tenant(ores::testing::database_helper& h,
+                                                        const std::string& code,
+                                                        const std::string& name) {
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto t = ores::iam::generators::generate_synthetic_tenant(gen_ctx);
     t.code = code;
@@ -104,10 +102,13 @@ using ores::testing::database_helper;
 
 TEST_CASE("tenants read in name order when no order is stated", "[repository][stated_order]") {
     database_helper h;
-    const auto m = unique_marker();
-    const auto b = write_tenant(h, m + "_1", "Order Fixture " + m + " b");
-    const auto a1 = write_tenant(h, m + "_2", "Order Fixture " + m + " a");
-    const auto a2 = write_tenant(h, m + "_3", "Order Fixture " + m + " a");
+    const auto m = repository_tenant_stated_order_unique_marker();
+    const auto b =
+        repository_tenant_stated_order_write_tenant(h, m + "_1", "Order Fixture " + m + " b");
+    const auto a1 =
+        repository_tenant_stated_order_write_tenant(h, m + "_2", "Order Fixture " + m + " a");
+    const auto a2 =
+        repository_tenant_stated_order_write_tenant(h, m + "_3", "Order Fixture " + m + " a");
     const auto tied = by_id(h, {a1, a2});
 
     CHECK(codes_in_order(h, m, {}) == std::vector<std::string>{tied[0], tied[1], b});
@@ -117,10 +118,13 @@ TEST_CASE("tenants read in name order when no order is stated", "[repository][st
 TEST_CASE("a descending order reverses the field and keeps ties in key order",
           "[repository][stated_order]") {
     database_helper h;
-    const auto m = unique_marker();
-    const auto b = write_tenant(h, m + "_1", "Order Fixture " + m + " b");
-    const auto a1 = write_tenant(h, m + "_2", "Order Fixture " + m + " a");
-    const auto a2 = write_tenant(h, m + "_3", "Order Fixture " + m + " a");
+    const auto m = repository_tenant_stated_order_unique_marker();
+    const auto b =
+        repository_tenant_stated_order_write_tenant(h, m + "_1", "Order Fixture " + m + " b");
+    const auto a1 =
+        repository_tenant_stated_order_write_tenant(h, m + "_2", "Order Fixture " + m + " a");
+    const auto a2 =
+        repository_tenant_stated_order_write_tenant(h, m + "_3", "Order Fixture " + m + " a");
     const auto tied = by_id(h, {a1, a2});
 
     CHECK(codes_in_order(h, m, {.field = "name", .descending = true}) ==
@@ -131,9 +135,11 @@ TEST_CASE("a descending order reverses the field and keeps ties in key order",
 
 TEST_CASE("tenants read in code order when code is stated", "[repository][stated_order]") {
     database_helper h;
-    const auto m = unique_marker();
-    const auto c2 = write_tenant(h, m + "_2", "Order Fixture " + m + " a");
-    const auto c1 = write_tenant(h, m + "_1", "Order Fixture " + m + " b");
+    const auto m = repository_tenant_stated_order_unique_marker();
+    const auto c2 =
+        repository_tenant_stated_order_write_tenant(h, m + "_2", "Order Fixture " + m + " a");
+    const auto c1 =
+        repository_tenant_stated_order_write_tenant(h, m + "_1", "Order Fixture " + m + " b");
 
     CHECK(codes_in_order(h, m, {.field = "code"}) == std::vector<std::string>{c1, c2});
     CHECK(codes_in_order(h, m, {.field = "code", .descending = true}) ==

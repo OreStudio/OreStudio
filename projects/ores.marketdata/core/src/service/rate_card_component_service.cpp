@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -200,7 +201,8 @@ messaging::put_rate_card_component_response rate_card_component_service::put_rat
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = rate_card_component_read_one(repo_, ctx_, rate_card_component_key_from(value));
+    auto written = of_acting_party(
+        rate_card_component_read_one(repo_, ctx_, rate_card_component_key_from(value)), ctx_);
     if (!written.empty())
         response.rate_card_component = std::move(written.front());
     return response;
@@ -233,8 +235,8 @@ rate_card_component_service::put_many_rate_card_components(
     repo_.write(ctx_, batch, claims);
     response.rate_card_components.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            rate_card_component_read_one(repo_, ctx_, rate_card_component_key_from(value));
+        auto written = of_acting_party(
+            rate_card_component_read_one(repo_, ctx_, rate_card_component_key_from(value)), ctx_);
         response.rate_card_components.push_back(written.empty() ? value :
                                                                   std::move(written.front()));
     }
@@ -392,8 +394,10 @@ rate_card_component_service::prepare_change(const messaging::rate_card_component
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = rate_card_component_to_domain(change.write);
-    const auto current =
-        rate_card_component_read_one(repo_, ctx_, rate_card_component_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        rate_card_component_read_one(repo_, ctx_, rate_card_component_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

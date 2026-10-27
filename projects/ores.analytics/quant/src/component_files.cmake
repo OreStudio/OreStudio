@@ -20,9 +20,11 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain/arrival_law.cpp"
     "domain/business_day_calendar_set.cpp"
     "domain/calendar_rule.cpp"
     "domain/date_convention.cpp"
+    "domain/operational_clock.cpp"
     "domain/process_parameter_validation.cpp"
     "domain/tenor_resolution.cpp"
     "math/psd_matrix.cpp"
@@ -62,6 +64,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/arrival_law.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/arrival_spec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/business_day_calendar_set.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/calendar_rule.hpp"
@@ -79,6 +82,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/i_yield_curve_process.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/market_link.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/market_regime.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/operational_clock.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/process_parameter_validation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_snapshot.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_status.hpp"
@@ -91,6 +95,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/math/psd_matrix.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/math/rate_tree.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/math/rng_stream.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/ores.analytics.quant.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/calendar_arithmetic.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/calendar_rule_engine.hpp"
@@ -132,6 +137,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/rate_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/rate_reciprocator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/risk_recentering.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/run_clock.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tenor_resolution_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_clock.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_scheduler.hpp"

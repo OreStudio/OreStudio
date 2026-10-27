@@ -42,11 +42,11 @@ namespace {
 using namespace ores::ore::domain;
 namespace fs = std::filesystem;
 
-fs::path corpus_root() {
+fs::path xml_roundtrip_reference_corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-ores::ore::xml::roundtrip_kind conventions_kind() {
+ores::ore::xml::roundtrip_kind xml_roundtrip_reference_conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions, ores::ore::domain::conventions_package>(
         "conventions",
         "conventions",
@@ -60,7 +60,8 @@ ores::ore::xml::roundtrip_kind conventions_kind() {
 }
 
 TEST_CASE("reference_kinds_measurement", "[.][measurement][reference]") {
-    const auto conventions = ores::ore::xml::walk_kind(conventions_kind(), corpus_root());
+    const auto conventions = ores::ore::xml::walk_kind(xml_roundtrip_reference_conventions_kind(),
+                                                       xml_roundtrip_reference_corpus_root());
     WARN("conventions files=" + std::to_string(conventions.files) +
          " passed=" + std::to_string(conventions.passed));
     for (const auto& failure : conventions.failures)

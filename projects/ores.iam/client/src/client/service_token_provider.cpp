@@ -40,7 +40,7 @@ using namespace ores::logging;
 
 inline static std::string_view logger_name = "ores.iam.client.client.service_token_provider";
 
-[[nodiscard]] auto& lg() {
+[[nodiscard]] auto& service_token_provider_lg() {
     static auto instance = make_logger(logger_name);
     return instance;
 }
@@ -62,7 +62,8 @@ struct token_state {
     int access_lifetime_s = 1800;
 
     void authenticate() {
-        BOOST_LOG_SEV(lg(), info) << "Authenticating service account: " << username;
+        BOOST_LOG_SEV(service_token_provider_lg(), info)
+            << "Authenticating service account: " << username;
 
         // Retry with exponential backoff. This handles the startup race where
         // IAM hasn't subscribed to its NATS subjects yet (e.g. the supervisor
@@ -81,7 +82,7 @@ struct token_state {
                 auto resp = codec.decode<ores::iam::messaging::service_login_response>(reply.data);
                 if (!resp || !resp->success || resp->token.empty()) {
                     const auto msg = resp ? resp->message : "parse error";
-                    BOOST_LOG_SEV(lg(), error)
+                    BOOST_LOG_SEV(service_token_provider_lg(), error)
                         << "Service authentication failed for " << username << ": " << msg;
                     throw std::runtime_error("Service authentication failed for " + username +
                                              ": " + msg);
@@ -94,16 +95,17 @@ struct token_state {
                 // Tune proactive refresh margin to 20% of the actual TTL so
                 // the token is renewed at ~80% of its lifetime.
                 refresh_margin = std::chrono::seconds(access_lifetime_s / 5);
-                BOOST_LOG_SEV(lg(), info) << "Service authentication successful for " << username
-                                          << " (lifetime=" << access_lifetime_s << "s"
-                                          << ", refresh_margin=" << refresh_margin.count() << "s)";
+                BOOST_LOG_SEV(service_token_provider_lg(), info)
+                    << "Service authentication successful for " << username
+                    << " (lifetime=" << access_lifetime_s << "s"
+                    << ", refresh_margin=" << refresh_margin.count() << "s)";
                 return;
             } catch (const std::runtime_error& e) {
                 const std::string_view what = e.what();
                 // Credential errors are fatal — retrying won't help.
                 if (what.starts_with("Service authentication failed"))
                     throw;
-                BOOST_LOG_SEV(lg(), warn)
+                BOOST_LOG_SEV(service_token_provider_lg(), warn)
                     << "Authentication attempt " << attempt << " failed: " << e.what()
                     << ". Retrying in " << delay.count() << " ms.";
             }
@@ -113,7 +115,7 @@ struct token_state {
     }
 
     void refresh() {
-        BOOST_LOG_SEV(lg(), debug) << "Refreshing JWT for " << username;
+        BOOST_LOG_SEV(service_token_provider_lg(), debug) << "Refreshing JWT for " << username;
         const std::unordered_map<std::string, std::string> headers{
             {std::string(ores::nats::headers::authorization),
              std::string(ores::nats::headers::bearer_prefix) + jwt}};
@@ -123,7 +125,7 @@ struct token_state {
         auto resp = ores::nats::default_wire_codec().decode<ores::iam::messaging::refresh_response>(
             reply.data);
         if (!resp || !resp->success || resp->token.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            BOOST_LOG_SEV(service_token_provider_lg(), warn)
                 << "Token refresh failed for " << username << ", re-authenticating";
             authenticate();
             return;
@@ -132,7 +134,7 @@ struct token_state {
         jwt = std::move(resp->token);
         access_lifetime_s = resp->access_lifetime_s;
         expires_at = std::chrono::system_clock::now() + std::chrono::seconds(access_lifetime_s);
-        BOOST_LOG_SEV(lg(), debug) << "JWT refreshed for " << username;
+        BOOST_LOG_SEV(service_token_provider_lg(), debug) << "JWT refreshed for " << username;
     }
 
     void refresh_if_needed() {

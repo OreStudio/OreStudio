@@ -53,9 +53,9 @@ using xml::record_writer;
 // ---------------------------------------------------------------------------
 
 /// The actor and reason every imported row states.
-constexpr std::string_view actor = "ores";
-constexpr std::string_view change_reason = "system.external_data_import";
-constexpr std::string_view change_commentary = "Imported from ORE XML";
+constexpr std::string_view fx_instrument_projection_actor = "ores";
+constexpr std::string_view fx_instrument_projection_change_reason = "system.external_data_import";
+constexpr std::string_view fx_instrument_projection_change_commentary = "Imported from ORE XML";
 
 /// The trade types the family states, which are the ones the old dispatcher took.
 constexpr bool is_fx_trade_type(std::string_view type) {
@@ -69,25 +69,25 @@ constexpr bool is_fx_trade_type(std::string_view type) {
 }
 
 template <typename Row>
-void stamp_audit(Row& row) {
-    row.audit.modified_by = std::string(actor);
-    row.audit.performed_by = std::string(actor);
-    row.audit.change_reason_code = std::string(change_reason);
-    row.audit.change_commentary = std::string(change_commentary);
+void fx_instrument_projection_stamp_audit(Row& row) {
+    row.audit.modified_by = std::string(fx_instrument_projection_actor);
+    row.audit.performed_by = std::string(fx_instrument_projection_actor);
+    row.audit.change_reason_code = std::string(fx_instrument_projection_change_reason);
+    row.audit.change_commentary = std::string(fx_instrument_projection_change_commentary);
 }
 
 void stamp_range_bound(range_bound& row) {
-    row.modified_by = std::string(actor);
-    row.performed_by = std::string(actor);
-    row.change_reason_code = std::string(change_reason);
-    row.change_commentary = std::string(change_commentary);
+    row.modified_by = std::string(fx_instrument_projection_actor);
+    row.performed_by = std::string(fx_instrument_projection_actor);
+    row.change_reason_code = std::string(fx_instrument_projection_change_reason);
+    row.change_commentary = std::string(fx_instrument_projection_change_commentary);
 }
 
 template <typename Row>
-auto make_row(std::string_view trade_type_code) -> Row {
+auto fx_instrument_projection_make_row(std::string_view trade_type_code) -> Row {
     Row r;
     r.identity.trade_type_code = std::string(trade_type_code);
-    stamp_audit(r);
+    fx_instrument_projection_stamp_audit(r);
     return r;
 }
 
@@ -95,53 +95,59 @@ auto make_row(std::string_view trade_type_code) -> Row {
 // Reading: the values, dates and spellings a row states
 // ---------------------------------------------------------------------------
 
-auto to_domain_date(const std::string& text) -> std::chrono::year_month_day {
+auto fx_instrument_projection_to_domain_date(const std::string& text)
+    -> std::chrono::year_month_day {
     if (text.empty())
         return {};
     return ores::platform::time::datetime::from_iso8601_date(text);
 }
 
-auto to_optional_domain_date(const std::string& text)
+auto fx_instrument_projection_to_optional_domain_date(const std::string& text)
     -> std::optional<std::chrono::year_month_day> {
     if (text.empty())
         return std::nullopt;
     return ores::platform::time::datetime::from_iso8601_date(text);
 }
 
-auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
+auto fx_instrument_projection_to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto to_ore_date(const std::optional<std::chrono::year_month_day>& d) -> std::string {
+auto fx_instrument_projection_to_ore_date(const std::optional<std::chrono::year_month_day>& d)
+    -> std::string {
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto text_of(const record_reader& r, std::string_view name) -> std::string {
+auto fx_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto spelling_of(const record_reader& r, std::string_view name) -> std::string {
+auto fx_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto decimal_of(const record_reader& r, std::string_view name) -> decimal {
+auto fx_instrument_projection_decimal_of(const record_reader& r, std::string_view name) -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
 }
 
-auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::optional<decimal> {
+auto fx_instrument_projection_optional_decimal_of(const record_reader& r, std::string_view name)
+    -> std::optional<decimal> {
     return r.decimal(name);
 }
 
 /// An absent or empty ORE date maps to an invalid calendar date, which renders
 /// back to an empty string, so a missing date round-trips as missing.
-auto expiry_date_of(const std::optional<record_reader>& option) -> std::chrono::year_month_day {
+auto fx_instrument_projection_expiry_date_of(const std::optional<record_reader>& option)
+    -> std::chrono::year_month_day {
     if (!option)
         return {};
     const auto dates = option->child("ExerciseDates");
@@ -150,13 +156,14 @@ auto expiry_date_of(const std::optional<record_reader>& option) -> std::chrono::
     const auto values = dates->values("ExerciseDate");
     if (values.empty())
         return {};
-    return to_domain_date(values.front());
+    return fx_instrument_projection_to_domain_date(values.front());
 }
 
-auto option_type_of(const std::optional<record_reader>& option) -> std::string {
+auto fx_instrument_projection_option_type_of(const std::optional<record_reader>& option)
+    -> std::string {
     if (!option)
         return {};
-    return text_of(*option, "OptionType");
+    return fx_instrument_projection_text_of(*option, "OptionType");
 }
 
 /**
@@ -183,7 +190,7 @@ void fill_barrier(const record_reader& barrier,
                   std::string& barrier_type,
                   std::optional<decimal>& lower,
                   std::optional<decimal>& upper) {
-    barrier_type = spelling_of(barrier, "Type");
+    barrier_type = fx_instrument_projection_spelling_of(barrier, "Type");
     const auto levels = levels_of(barrier);
     if (levels.size() > 1) {
         lower = levels.front();
@@ -207,7 +214,7 @@ void fill_barrier_pair(const record_reader& barriers,
     const auto rows = barriers.children("BarrierData");
     if (rows.empty())
         return;
-    barrier_type = spelling_of(rows.front(), "Type");
+    barrier_type = fx_instrument_projection_spelling_of(rows.front(), "Type");
     const auto first = levels_of(rows.front());
     if (!first.empty())
         lower = first.front();
@@ -223,7 +230,7 @@ auto underlying_code_of(const record_reader& data) -> std::string {
     if (const auto name = data.text("Name"))
         return *name;
     if (const auto underlying = data.child("Underlying"))
-        return text_of(*underlying, "Name");
+        return fx_instrument_projection_text_of(*underlying, "Name");
     return {};
 }
 
@@ -235,12 +242,14 @@ void read_range_bounds(fx_instrument_data& result, const record_reader& data) {
     for (const auto& rb : bounds->children("RangeBound")) {
         range_bound row;
         row.sequence_number = ++sequence_number;
-        row.start_date = to_optional_domain_date(text_of(rb, "startDate"));
-        row.range_from = optional_decimal_of(rb, "RangeFrom");
-        row.range_to = optional_decimal_of(rb, "RangeTo");
+        row.start_date = fx_instrument_projection_to_optional_domain_date(
+            fx_instrument_projection_text_of(rb, "startDate"));
+        row.range_from = fx_instrument_projection_optional_decimal_of(rb, "RangeFrom");
+        row.range_to = fx_instrument_projection_optional_decimal_of(rb, "RangeTo");
         row.leverage = decimal_as_double(rb, "Leverage");
-        row.strike = optional_decimal_of(rb, "Strike");
-        row.strike_adjustment = optional_decimal_of(rb, "StrikeAdjustment");
+        row.strike = fx_instrument_projection_optional_decimal_of(rb, "Strike");
+        row.strike_adjustment =
+            fx_instrument_projection_optional_decimal_of(rb, "StrikeAdjustment");
         stamp_range_bound(row);
         result.range_bounds.push_back(std::move(row));
     }
@@ -250,51 +259,55 @@ void read_range_bounds(fx_instrument_data& result, const record_reader& data) {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_fx_forward(const record_reader& trade,
-                     std::string_view trade_type) -> fx_forward_instrument {
-    auto r = make_row<fx_forward_instrument>(trade_type);
+auto read_fx_forward(const record_reader& trade, std::string_view trade_type)
+    -> fx_forward_instrument {
+    auto r = fx_instrument_projection_make_row<fx_forward_instrument>(trade_type);
     const auto data = trade.child("FxForwardData");
     if (!data)
         return r;
-    r.value_date = to_domain_date(text_of(*data, "ValueDate"));
-    r.bought_currency = spelling_of(*data, "BoughtCurrency");
-    r.bought_amount = decimal_of(*data, "BoughtAmount");
-    r.sold_currency = spelling_of(*data, "SoldCurrency");
-    r.sold_amount = decimal_of(*data, "SoldAmount");
-    r.settlement = spelling_of(*data, "Settlement");
+    r.value_date = fx_instrument_projection_to_domain_date(
+        fx_instrument_projection_text_of(*data, "ValueDate"));
+    r.bought_currency = fx_instrument_projection_spelling_of(*data, "BoughtCurrency");
+    r.bought_amount = fx_instrument_projection_decimal_of(*data, "BoughtAmount");
+    r.sold_currency = fx_instrument_projection_spelling_of(*data, "SoldCurrency");
+    r.sold_amount = fx_instrument_projection_decimal_of(*data, "SoldAmount");
+    r.settlement = fx_instrument_projection_spelling_of(*data, "Settlement");
     return r;
 }
 
 auto read_fx_swap(const record_reader& trade) -> fx_forward_instrument {
-    auto r = make_row<fx_forward_instrument>("FxSwap");
+    auto r = fx_instrument_projection_make_row<fx_forward_instrument>("FxSwap");
     const auto data = trade.child("FxSwapData");
     if (!data)
         return r;
     // Near leg only; the far leg is the mapper's documented coverage gap.
-    r.value_date = to_domain_date(text_of(*data, "NearDate"));
-    r.bought_currency = spelling_of(*data, "NearBoughtCurrency");
-    r.bought_amount = decimal_of(*data, "NearBoughtAmount");
-    r.sold_currency = spelling_of(*data, "NearSoldCurrency");
-    r.sold_amount = decimal_of(*data, "NearSoldAmount");
-    r.settlement = spelling_of(*data, "Settlement");
+    r.value_date = fx_instrument_projection_to_domain_date(
+        fx_instrument_projection_text_of(*data, "NearDate"));
+    r.bought_currency = fx_instrument_projection_spelling_of(*data, "NearBoughtCurrency");
+    r.bought_amount = fx_instrument_projection_decimal_of(*data, "NearBoughtAmount");
+    r.sold_currency = fx_instrument_projection_spelling_of(*data, "NearSoldCurrency");
+    r.sold_amount = fx_instrument_projection_decimal_of(*data, "NearSoldAmount");
+    r.settlement = fx_instrument_projection_spelling_of(*data, "Settlement");
     return r;
 }
 
 auto read_fx_option(const record_reader& trade) -> fx_vanilla_option_instrument {
-    auto r = make_row<fx_vanilla_option_instrument>("FxOption");
+    auto r = fx_instrument_projection_make_row<fx_vanilla_option_instrument>("FxOption");
     const auto data = trade.child("FxOptionData");
     if (!data)
         return r;
-    r.bought_currency = spelling_of(*data, "BoughtCurrency");
-    r.bought_amount = decimal_of(*data, "BoughtAmount");
-    r.sold_currency = spelling_of(*data, "SoldCurrency");
-    r.sold_amount = optional_decimal_of(*data, "SoldAmount").value_or(decimal{});
+    r.bought_currency = fx_instrument_projection_spelling_of(*data, "BoughtCurrency");
+    r.bought_amount = fx_instrument_projection_decimal_of(*data, "BoughtAmount");
+    r.sold_currency = fx_instrument_projection_spelling_of(*data, "SoldCurrency");
+    r.sold_amount =
+        fx_instrument_projection_optional_decimal_of(*data, "SoldAmount").value_or(decimal{});
 
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
-    r.settlement = option ? spelling_of(*option, "Settlement") : std::string{};
+    r.option_type = fx_instrument_projection_option_type_of(option);
+    r.settlement =
+        option ? fx_instrument_projection_spelling_of(*option, "Settlement") : std::string{};
     r.exercise_style = "European";
-    r.expiry_date = expiry_date_of(option);
+    r.expiry_date = fx_instrument_projection_expiry_date_of(option);
     return r;
 }
 
@@ -303,70 +316,71 @@ auto read_fx_option(const record_reader& trade) -> fx_vanilla_option_instrument 
 auto read_barrier_product(const record_reader& trade,
                           std::string_view element,
                           std::string_view trade_type) -> fx_barrier_option_instrument {
-    auto r = make_row<fx_barrier_option_instrument>(trade_type);
+    auto r = fx_instrument_projection_make_row<fx_barrier_option_instrument>(trade_type);
     const auto data = trade.child(element);
     if (!data)
         return r;
-    r.bought_currency = spelling_of(*data, "BoughtCurrency");
-    r.bought_amount = decimal_of(*data, "BoughtAmount");
-    r.sold_currency = spelling_of(*data, "SoldCurrency");
-    r.sold_amount = decimal_of(*data, "SoldAmount");
+    r.bought_currency = fx_instrument_projection_spelling_of(*data, "BoughtCurrency");
+    r.bought_amount = fx_instrument_projection_decimal_of(*data, "BoughtAmount");
+    r.sold_currency = fx_instrument_projection_spelling_of(*data, "SoldCurrency");
+    r.sold_amount = fx_instrument_projection_decimal_of(*data, "SoldAmount");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
-    r.expiry_date = expiry_date_of(option);
+    r.option_type = fx_instrument_projection_option_type_of(option);
+    r.expiry_date = fx_instrument_projection_expiry_date_of(option);
     if (const auto barrier = data->child("BarrierData"))
         fill_barrier(*barrier, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
 auto read_fx_kiko_barrier_option(const record_reader& trade) -> fx_barrier_option_instrument {
-    auto r = make_row<fx_barrier_option_instrument>("FxKIKOBarrierOption");
+    auto r = fx_instrument_projection_make_row<fx_barrier_option_instrument>("FxKIKOBarrierOption");
     const auto data = trade.child("FxKIKOBarrierOptionData");
     if (!data)
         return r;
-    r.bought_currency = spelling_of(*data, "BoughtCurrency");
-    r.bought_amount = decimal_of(*data, "BoughtAmount");
-    r.sold_currency = spelling_of(*data, "SoldCurrency");
-    r.sold_amount = decimal_of(*data, "SoldAmount");
+    r.bought_currency = fx_instrument_projection_spelling_of(*data, "BoughtCurrency");
+    r.bought_amount = fx_instrument_projection_decimal_of(*data, "BoughtAmount");
+    r.sold_currency = fx_instrument_projection_spelling_of(*data, "SoldCurrency");
+    r.sold_amount = fx_instrument_projection_decimal_of(*data, "SoldAmount");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
-    r.expiry_date = expiry_date_of(option);
+    r.option_type = fx_instrument_projection_option_type_of(option);
+    r.expiry_date = fx_instrument_projection_expiry_date_of(option);
     if (const auto barriers = data->child("Barriers"))
         fill_barrier_pair(*barriers, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
 auto read_fx_generic_barrier_option(const record_reader& trade) -> fx_barrier_option_instrument {
-    auto r = make_row<fx_barrier_option_instrument>("FxGenericBarrierOption");
+    auto r =
+        fx_instrument_projection_make_row<fx_barrier_option_instrument>("FxGenericBarrierOption");
     const auto data = trade.child("FxGenericBarrierOptionData");
     if (!data)
         return r;
     r.underlying_code = underlying_code_of(*data);
-    r.bought_currency = spelling_of(*data, "PayCurrency");
+    r.bought_currency = fx_instrument_projection_spelling_of(*data, "PayCurrency");
     const auto option = data->child("OptionData");
-    r.option_type = option_type_of(option);
-    r.expiry_date = expiry_date_of(option);
+    r.option_type = fx_instrument_projection_option_type_of(option);
+    r.expiry_date = fx_instrument_projection_expiry_date_of(option);
     if (const auto barriers = data->child("Barriers"))
         fill_barrier_pair(*barriers, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
 auto read_fx_digital_fields(const record_reader& data, fx_digital_option_instrument& r) -> void {
-    r.foreign_currency = spelling_of(data, "ForeignCurrency");
-    r.domestic_currency = spelling_of(data, "DomesticCurrency");
+    r.foreign_currency = fx_instrument_projection_spelling_of(data, "ForeignCurrency");
+    r.domestic_currency = fx_instrument_projection_spelling_of(data, "DomesticCurrency");
     // The payoff defaults to the foreign currency, which is the one the schema
     // states it in when the document names none.
     r.payoff_currency = r.foreign_currency;
-    r.strike = decimal_of(data, "Strike");
-    r.payoff_amount = decimal_of(data, "PayoffAmount");
+    r.strike = fx_instrument_projection_decimal_of(data, "Strike");
+    r.payoff_amount = fx_instrument_projection_decimal_of(data, "PayoffAmount");
     const auto option = data.child("OptionData");
-    r.option_type = option_type_of(option);
-    r.expiry_date = expiry_date_of(option);
+    r.option_type = fx_instrument_projection_option_type_of(option);
+    r.expiry_date = fx_instrument_projection_expiry_date_of(option);
 }
 
-auto read_fx_digital_option(const record_reader& trade,
-                            std::string_view trade_type) -> fx_digital_option_instrument {
-    auto r = make_row<fx_digital_option_instrument>(trade_type);
+auto read_fx_digital_option(const record_reader& trade, std::string_view trade_type)
+    -> fx_digital_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
     if (const auto data = trade.child("FxDigitalOptionData"))
         read_fx_digital_fields(*data, r);
@@ -374,7 +388,8 @@ auto read_fx_digital_option(const record_reader& trade,
 }
 
 auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_option_instrument {
-    auto r = make_row<fx_digital_option_instrument>("FxDigitalBarrierOption");
+    auto r =
+        fx_instrument_projection_make_row<fx_digital_option_instrument>("FxDigitalBarrierOption");
     r.long_short = "Long";
     const auto data = trade.child("FxDigitalBarrierOptionData");
     if (!data)
@@ -383,7 +398,7 @@ auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_op
     if (const auto barrier = data->child("BarrierData")) {
         const auto levels = levels_of(*barrier);
         if (!levels.empty()) {
-            r.barrier_type = spelling_of(*barrier, "Type");
+            r.barrier_type = fx_instrument_projection_spelling_of(*barrier, "Type");
             // One level, placed by the style's direction, so the digital table
             // and the barrier table state a level the same way.
             if (is_up_barrier_style(r.barrier_type))
@@ -395,9 +410,9 @@ auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_op
     return r;
 }
 
-auto read_fx_touch_option(const record_reader& trade,
-                          std::string_view trade_type) -> fx_digital_option_instrument {
-    auto r = make_row<fx_digital_option_instrument>(trade_type);
+auto read_fx_touch_option(const record_reader& trade, std::string_view trade_type)
+    -> fx_digital_option_instrument {
+    auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
 
     // The two touch products state the same data under an element each, so the
@@ -407,64 +422,69 @@ auto read_fx_touch_option(const record_reader& trade,
     if (!data)
         return r;
 
-    r.foreign_currency = spelling_of(*data, "ForeignCurrency");
-    r.domestic_currency = spelling_of(*data, "DomesticCurrency");
-    r.payoff_currency = spelling_of(*data, "PayoffCurrency");
-    r.payoff_amount = decimal_of(*data, "PayoffAmount");
-    r.expiry_date = expiry_date_of(data->child("OptionData"));
+    r.foreign_currency = fx_instrument_projection_spelling_of(*data, "ForeignCurrency");
+    r.domestic_currency = fx_instrument_projection_spelling_of(*data, "DomesticCurrency");
+    r.payoff_currency = fx_instrument_projection_spelling_of(*data, "PayoffCurrency");
+    r.payoff_amount = fx_instrument_projection_decimal_of(*data, "PayoffAmount");
+    r.expiry_date = fx_instrument_projection_expiry_date_of(data->child("OptionData"));
     if (const auto barrier = data->child("BarrierData"))
         fill_barrier(*barrier, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
 auto read_fx_variance_swap(const record_reader& trade) -> fx_variance_swap_instrument {
-    auto r = make_row<fx_variance_swap_instrument>("FxVarianceSwap");
+    auto r = fx_instrument_projection_make_row<fx_variance_swap_instrument>("FxVarianceSwap");
     r.long_short = "Long";
     const auto data = trade.child("FxVarianceSwapData");
     if (!data)
         return r;
     r.underlying_code = underlying_code_of(*data);
-    r.start_date = to_domain_date(text_of(*data, "StartDate"));
-    r.end_date = to_domain_date(text_of(*data, "EndDate"));
+    r.start_date = fx_instrument_projection_to_domain_date(
+        fx_instrument_projection_text_of(*data, "StartDate"));
+    r.end_date =
+        fx_instrument_projection_to_domain_date(fx_instrument_projection_text_of(*data, "EndDate"));
     r.strike = decimal_as_double(*data, "Strike").value_or(0.0);
-    r.notional = decimal_of(*data, "Notional");
-    r.currency = spelling_of(*data, "Currency");
+    r.notional = fx_instrument_projection_decimal_of(*data, "Notional");
+    r.currency = fx_instrument_projection_spelling_of(*data, "Currency");
     r.moment_type = "Variance";
     return r;
 }
 
 auto read_fx_average_forward(const record_reader& trade) -> fx_asian_forward_instrument {
-    auto r = make_row<fx_asian_forward_instrument>("FxAverageForward");
+    auto r = fx_instrument_projection_make_row<fx_asian_forward_instrument>("FxAverageForward");
     const auto data = trade.child("FxAverageForwardData");
     if (!data)
         return r;
-    r.payment_date = to_optional_domain_date(text_of(*data, "PaymentDate"));
-    r.reference_currency = spelling_of(*data, "ReferenceCurrency");
-    r.reference_notional = optional_decimal_of(*data, "ReferenceNotional");
-    r.settlement_currency = spelling_of(*data, "SettlementCurrency");
-    r.settlement_notional = optional_decimal_of(*data, "SettlementNotional");
-    r.fx_index = text_of(*data, "FXIndex");
+    r.payment_date = fx_instrument_projection_to_optional_domain_date(
+        fx_instrument_projection_text_of(*data, "PaymentDate"));
+    r.reference_currency = fx_instrument_projection_spelling_of(*data, "ReferenceCurrency");
+    r.reference_notional = fx_instrument_projection_optional_decimal_of(*data, "ReferenceNotional");
+    r.settlement_currency = fx_instrument_projection_spelling_of(*data, "SettlementCurrency");
+    r.settlement_notional =
+        fx_instrument_projection_optional_decimal_of(*data, "SettlementNotional");
+    r.fx_index = fx_instrument_projection_text_of(*data, "FXIndex");
     r.long_short = "Long";
     return r;
 }
 
-auto read_fx_accumulator(fx_instrument_data& result,
-                         const record_reader& trade) -> fx_accumulator_instrument {
-    auto r = make_row<fx_accumulator_instrument>("FxAccumulator");
+auto read_fx_accumulator(fx_instrument_data& result, const record_reader& trade)
+    -> fx_accumulator_instrument {
+    auto r = fx_instrument_projection_make_row<fx_accumulator_instrument>("FxAccumulator");
     r.long_short = "Long";
     const auto data = trade.child("FxAccumulatorData");
     if (!data)
         return r;
-    r.currency = spelling_of(*data, "Currency");
+    r.currency = fx_instrument_projection_spelling_of(*data, "Currency");
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_code = text_of(*underlying, "Name");
-    r.fixing_amount = decimal_of(*data, "FixingAmount");
+        r.underlying_code = fx_instrument_projection_text_of(*underlying, "Name");
+    r.fixing_amount = fx_instrument_projection_decimal_of(*data, "FixingAmount");
     if (const auto strike = data->decimal("Strike"))
         r.strike = *strike;
-    r.start_date = to_domain_date(text_of(*data, "StartDate"));
+    r.start_date = fx_instrument_projection_to_domain_date(
+        fx_instrument_projection_text_of(*data, "StartDate"));
     if (const auto barriers = data->child("Barriers"))
         for (const auto& bd : barriers->children("BarrierData")) {
-            const auto btype = spelling_of(bd, "Type");
+            const auto btype = fx_instrument_projection_spelling_of(bd, "Type");
             if ((btype == "DownAndOut" || btype == "UpAndOut")) {
                 const auto levels = levels_of(bd);
                 if (!levels.empty()) {
@@ -478,20 +498,20 @@ auto read_fx_accumulator(fx_instrument_data& result,
 }
 
 auto read_fx_tarf(const record_reader& trade) -> fx_asian_forward_instrument {
-    auto r = make_row<fx_asian_forward_instrument>("FxTaRF");
+    auto r = fx_instrument_projection_make_row<fx_asian_forward_instrument>("FxTaRF");
     const auto data = trade.child("FxTaRFData");
     if (!data)
         return r;
-    r.currency = spelling_of(*data, "Currency");
+    r.currency = fx_instrument_projection_spelling_of(*data, "Currency");
     if (const auto underlying = data->child("Underlying"))
-        r.fx_index = text_of(*underlying, "Name");
-    r.fixing_amount = optional_decimal_of(*data, "FixingAmount");
+        r.fx_index = fx_instrument_projection_text_of(*underlying, "Name");
+    r.fixing_amount = fx_instrument_projection_optional_decimal_of(*data, "FixingAmount");
     if (const auto option = data->child("OptionData"))
-        r.long_short = text_of(*option, "LongShort");
-    r.strike = optional_decimal_of(*data, "Strike");
+        r.long_short = fx_instrument_projection_text_of(*option, "LongShort");
+    r.strike = fx_instrument_projection_optional_decimal_of(*data, "Strike");
     if (const auto barriers = data->child("Barriers"))
         for (const auto& bd : barriers->children("BarrierData")) {
-            const auto btype = spelling_of(bd, "Type");
+            const auto btype = fx_instrument_projection_spelling_of(bd, "Type");
             if (btype == "CumulatedProfitCap" || btype == "FixingCap") {
                 const auto levels = levels_of(bd);
                 if (!levels.empty()) {
@@ -507,15 +527,16 @@ auto read_fx_tarf(const record_reader& trade) -> fx_asian_forward_instrument {
 // Writing: the shared shapes
 // ---------------------------------------------------------------------------
 
-void write_option_entry(record_writer option,
-                        const std::string& option_type,
-                        const std::chrono::year_month_day& expiry_date,
-                        std::string_view long_short = "Long") {
+void fx_instrument_projection_write_option_entry(record_writer option,
+                                                 const std::string& option_type,
+                                                 const std::chrono::year_month_day& expiry_date,
+                                                 std::string_view long_short = "Long") {
     option.set_text("LongShort", long_short);
     if (!option_type.empty())
         option.set_text("OptionType", option_type);
     if (expiry_date.ok())
-        option.child("ExerciseDates").append_value("ExerciseDate", to_ore_date(expiry_date));
+        option.child("ExerciseDates")
+            .append_value("ExerciseDate", fx_instrument_projection_to_ore_date(expiry_date));
 }
 
 void push_barrier(record_writer barrier, const std::string& type, const decimal& level) {
@@ -562,7 +583,7 @@ void write_settlement(record_writer& option, const std::string& settlement) {
 
 void write_fx_forward(record_writer& trade, const fx_forward_instrument& v) {
     auto data = trade.child("FxForwardData");
-    data.set_text("ValueDate", to_ore_date(v.value_date));
+    data.set_text("ValueDate", fx_instrument_projection_to_ore_date(v.value_date));
     data.set_spelling("BoughtCurrency", v.bought_currency, "currency");
     data.set_decimal("BoughtAmount", v.bought_amount);
     data.set_spelling("SoldCurrency", v.sold_currency, "currency");
@@ -572,7 +593,7 @@ void write_fx_forward(record_writer& trade, const fx_forward_instrument& v) {
 
 void write_fx_swap(record_writer& trade, const fx_forward_instrument& v) {
     auto data = trade.child("FxSwapData");
-    data.set_text("NearDate", to_ore_date(v.value_date));
+    data.set_text("NearDate", fx_instrument_projection_to_ore_date(v.value_date));
     data.set_spelling("NearBoughtCurrency", v.bought_currency, "currency");
     data.set_decimal("NearBoughtAmount", v.bought_amount);
     data.set_spelling("NearSoldCurrency", v.sold_currency, "currency");
@@ -594,7 +615,7 @@ void write_fx_option(record_writer& trade, const fx_vanilla_option_instrument& v
         data.set_decimal("SoldAmount", v.sold_amount);
 
     auto option = data.child("OptionData");
-    write_option_entry(option, v.option_type, v.expiry_date);
+    fx_instrument_projection_write_option_entry(option, v.option_type, v.expiry_date);
     write_settlement(option, v.settlement);
 }
 
@@ -607,7 +628,7 @@ void write_barrier_product(record_writer& trade,
     data.set_spelling("SoldCurrency", v.sold_currency, "currency");
     data.set_decimal("SoldAmount", v.sold_amount);
     auto option = data.child("OptionData");
-    write_option_entry(option, v.option_type, v.expiry_date);
+    fx_instrument_projection_write_option_entry(option, v.option_type, v.expiry_date);
     write_settlement(option, v.settlement);
     if (!v.barrier_type.empty())
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
@@ -619,7 +640,8 @@ void write_fx_kiko_barrier_option(record_writer& trade, const fx_barrier_option_
     data.set_decimal("BoughtAmount", v.bought_amount);
     data.set_spelling("SoldCurrency", v.sold_currency, "currency");
     data.set_decimal("SoldAmount", v.sold_amount);
-    write_option_entry(data.child("OptionData"), v.option_type, v.expiry_date);
+    fx_instrument_projection_write_option_entry(
+        data.child("OptionData"), v.option_type, v.expiry_date);
     write_barrier_pair(data, v);
 }
 
@@ -629,7 +651,8 @@ void write_fx_generic_barrier_option(record_writer& trade, const fx_barrier_opti
         data.set_spelling("PayCurrency", v.bought_currency, "currency");
     if (!v.underlying_code.empty())
         data.set_text("Name", v.underlying_code);
-    write_option_entry(data.child("OptionData"), v.option_type, v.expiry_date);
+    fx_instrument_projection_write_option_entry(
+        data.child("OptionData"), v.option_type, v.expiry_date);
     write_barrier_pair(data, v);
 }
 
@@ -639,7 +662,8 @@ void write_fx_digital_option(record_writer& trade, const fx_digital_option_instr
     data.set_spelling("DomesticCurrency", v.domestic_currency, "currency");
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
     data.set_decimal("PayoffAmount", v.payoff_amount);
-    write_option_entry(data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
+    fx_instrument_projection_write_option_entry(
+        data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
 }
 
 void write_fx_digital_barrier_option(record_writer& trade, const fx_digital_option_instrument& v) {
@@ -648,7 +672,8 @@ void write_fx_digital_barrier_option(record_writer& trade, const fx_digital_opti
     data.set_spelling("DomesticCurrency", v.domestic_currency, "currency");
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
     data.set_decimal("PayoffAmount", v.payoff_amount);
-    write_option_entry(data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
+    fx_instrument_projection_write_option_entry(
+        data.child("OptionData"), v.option_type, v.expiry_date, v.long_short);
     if (!v.barrier_type.empty())
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
 }
@@ -667,15 +692,16 @@ void write_fx_touch_option(record_writer& trade,
     data.set_decimal("PayoffAmount", v.payoff_amount);
     // The schema gives a touch no option type: its direction is the option
     // block's LongShort and its side is the barrier's own style.
-    write_option_entry(data.child("OptionData"), "", v.expiry_date, v.long_short);
+    fx_instrument_projection_write_option_entry(
+        data.child("OptionData"), "", v.expiry_date, v.long_short);
     if (!v.barrier_type.empty())
         write_barrier_group(data, v.barrier_type, v.lower_barrier, v.upper_barrier);
 }
 
 void write_fx_variance_swap(record_writer& trade, const fx_variance_swap_instrument& v) {
     auto data = trade.child("FxVarianceSwapData");
-    data.set_text("StartDate", to_ore_date(v.start_date));
-    data.set_text("EndDate", to_ore_date(v.end_date));
+    data.set_text("StartDate", fx_instrument_projection_to_ore_date(v.start_date));
+    data.set_text("EndDate", fx_instrument_projection_to_ore_date(v.end_date));
     if (!v.currency.empty())
         data.set_spelling("Currency", v.currency, "currency");
     if (!v.underlying_code.empty())
@@ -690,7 +716,7 @@ void write_fx_variance_swap(record_writer& trade, const fx_variance_swap_instrum
 
 void write_fx_average_forward(record_writer& trade, const fx_asian_forward_instrument& v) {
     auto data = trade.child("FxAverageForwardData");
-    data.set_text("PaymentDate", to_ore_date(v.payment_date));
+    data.set_text("PaymentDate", fx_instrument_projection_to_ore_date(v.payment_date));
     if (!v.reference_currency.empty())
         data.set_spelling("ReferenceCurrency", v.reference_currency, "currency");
     data.set_decimal("ReferenceNotional", v.reference_notional.value_or(decimal{}));
@@ -727,9 +753,10 @@ void write_fx_accumulator(record_writer& trade,
     underlying.set_text("Type", "FX");
     data.child("OptionData").set_text("LongShort", v.long_short);
     if (v.start_date.ok())
-        data.set_text("StartDate", to_ore_date(v.start_date));
+        data.set_text("StartDate", fx_instrument_projection_to_ore_date(v.start_date));
 
-    write_schedule_rule(data.child("ObservationDates"), to_ore_date(v.start_date), "1D");
+    write_schedule_rule(
+        data.child("ObservationDates"), fx_instrument_projection_to_ore_date(v.start_date), "1D");
 
     std::vector<const range_bound*> ordered;
     ordered.reserve(rows.size());
@@ -743,7 +770,7 @@ void write_fx_accumulator(record_writer& trade,
     for (const auto* row : ordered) {
         auto writer = bounds.append("RangeBound");
         if (row->start_date)
-            writer.set_text("startDate", to_ore_date(*row->start_date));
+            writer.set_text("startDate", fx_instrument_projection_to_ore_date(*row->start_date));
         if (row->range_from)
             writer.set_decimal("RangeFrom", *row->range_from);
         if (row->range_to)

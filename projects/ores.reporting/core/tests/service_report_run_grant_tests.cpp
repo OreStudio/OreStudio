@@ -113,7 +113,7 @@ using ores::testing::request;
  * The stub is what proves the person's authority travelled: it records the
  * delegated bearer the call carried, and answers the grant IAM would answer.
  */
-struct fixture {
+struct service_report_run_grant_fixture {
     ores::testing::scoped_database_helper db;
     ores::nats::service::client nats;
     ores::testing::handler_test_keys keys;
@@ -232,7 +232,7 @@ struct fixture {
         return rows.front();
     }
 
-    fixture()
+    service_report_run_grant_fixture()
         : nats(test_nats_options()) {
         nats.connect();
         REQUIRE(nats.is_connected());
@@ -255,7 +255,7 @@ struct fixture {
         svc = ores::nats::service::nats_client(nats, [this](bool) { return person_token; });
     }
 
-    ~fixture() {
+    ~service_report_run_grant_fixture() {
         svc = ores::nats::service::nats_client();
         subs.clear();
     }
@@ -267,7 +267,7 @@ TEST_CASE("a definition with no consent is given one, from the person asking",
           "[run_grant][trigger][handler]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    fixture f;
+    service_report_run_grant_fixture f;
     const auto def = f.make_definition();
     REQUIRE_FALSE(def.run_grant_id.has_value());
 
@@ -309,7 +309,7 @@ TEST_CASE("an on-demand run of a never-scheduled definition holds its consent",
           "[run_grant][trigger][handler]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    fixture f;
+    service_report_run_grant_fixture f;
     // A package is what a person asks for by hand, and it is what building a
     // report's ORE packages asks for. A package instance neither waits for a
     // production run nor holds one up, so the run proceeds to admission.

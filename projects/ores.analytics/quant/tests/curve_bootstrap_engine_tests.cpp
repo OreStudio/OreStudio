@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -41,21 +42,15 @@ using namespace std::chrono;
 
 namespace {
 
-constexpr auto A365 = day_count_convention_code::A365;
 constexpr auto LOG_LINEAR_DISCOUNT = interpolation_method_code::LOG_LINEAR_DISCOUNT;
-constexpr auto FLAT_FORWARD_THEN_LOG_LINEAR =
-    interpolation_method_code::FLAT_FORWARD_THEN_LOG_LINEAR;
-constexpr auto DEPOSIT = bootstrap_curve_role_code::DEPOSIT;
 constexpr auto FRA = bootstrap_curve_role_code::FRA;
-constexpr auto SWAP = bootstrap_curve_role_code::SWAP;
-
 // A flat, continuously-compounded 3% curve: ln(df) = -r*t is linear in t,
 // so log-linear interpolation between any two points on it is exact (up to
 // floating point) -- letting round-trip tests assert tight tolerances
 // without conflating bootstrap-formula error with interpolation error.
 constexpr double flat_rate = 0.03;
 
-double true_df(year_month_day value_date, year_month_day d) {
+double curve_bootstrap_engine_true_df(year_month_day value_date, year_month_day d) {
     const double t = day_count_calculator::year_fraction(value_date, d, A365);
     return std::exp(-flat_rate * t);
 }
@@ -70,14 +65,17 @@ std::vector<bootstrap_pillar> make_single_segment_pillars(year_month_day value_d
     // DEPOSIT: value_date -> 3M.
     {
         const double yf = day_count_calculator::year_fraction(value_date, d_3m, A365);
-        const double rate = curve_instrument_pricer::deposit_rate(true_df(value_date, d_3m), yf);
+        const double rate = curve_instrument_pricer::deposit_rate(
+            curve_bootstrap_engine_true_df(value_date, d_3m), yf);
         pillars.push_back({"3M", DEPOSIT, rate, value_date, d_3m, {}});
     }
     // FRA: 3M -> 6M.
     {
         const double yf = day_count_calculator::year_fraction(d_3m, d_6m, A365);
-        const double rate = curve_instrument_pricer::fra_rate(
-            true_df(value_date, d_3m), true_df(value_date, d_6m), yf);
+        const double rate =
+            curve_instrument_pricer::fra_rate(curve_bootstrap_engine_true_df(value_date, d_3m),
+                                              curve_bootstrap_engine_true_df(value_date, d_6m),
+                                              yf);
         pillars.push_back({"6M", FRA, rate, d_3m, d_6m, {}});
     }
     // SWAP: value_date -> 1Y, semi-annual fixed leg aligned to the curve's
@@ -89,12 +87,12 @@ std::vector<bootstrap_pillar> make_single_segment_pillars(year_month_day value_d
         std::vector<double> dfs, accruals;
         auto previous = value_date;
         for (const auto& d : schedule) {
-            dfs.push_back(true_df(value_date, d));
+            dfs.push_back(curve_bootstrap_engine_true_df(value_date, d));
             accruals.push_back(day_count_calculator::year_fraction(previous, d, A365));
             previous = d;
         }
-        const double rate =
-            curve_instrument_pricer::swap_par_rate(1.0, true_df(value_date, d_1y), dfs, accruals);
+        const double rate = curve_instrument_pricer::swap_par_rate(
+            1.0, curve_bootstrap_engine_true_df(value_date, d_1y), dfs, accruals);
         pillars.push_back({"1Y", SWAP, rate, value_date, d_1y, schedule});
     }
     return pillars;
@@ -113,7 +111,7 @@ TEST_CASE("bootstrap recovers the true discount factors of a flat-rate single-se
     REQUIRE(result.size() == 3);
     for (const auto& point : result)
         CHECK(point.discount_factor ==
-              Catch::Approx(true_df(value_date, point.date)).epsilon(1e-9));
+              Catch::Approx(curve_bootstrap_engine_true_df(value_date, point.date)).epsilon(1e-9));
 }
 
 TEST_CASE("bootstrap recovers the true discount factors when the SWAP pillar comes first in a "
@@ -130,7 +128,8 @@ TEST_CASE("bootstrap recovers the true discount factors when the SWAP pillar com
     std::vector<bootstrap_pillar> pillars;
     for (const auto& d : {d_1m, d_2m, d_3m}) {
         const double yf = day_count_calculator::year_fraction(value_date, d, A365);
-        const double rate = curve_instrument_pricer::deposit_rate(true_df(value_date, d), yf);
+        const double rate = curve_instrument_pricer::deposit_rate(
+            curve_bootstrap_engine_true_df(value_date, d), yf);
         pillars.push_back({"", DEPOSIT, rate, value_date, d, {}});
     }
 
@@ -139,7 +138,7 @@ TEST_CASE("bootstrap recovers the true discount factors when the SWAP pillar com
     REQUIRE(result.size() == 3);
     for (const auto& point : result)
         CHECK(point.discount_factor ==
-              Catch::Approx(true_df(value_date, point.date)).epsilon(1e-9));
+              Catch::Approx(curve_bootstrap_engine_true_df(value_date, point.date)).epsilon(1e-9));
 }
 
 TEST_CASE("FLAT_FORWARD_THEN_LOG_LINEAR reproduces the same result as LOG_LINEAR_DISCOUNT "
@@ -170,13 +169,15 @@ TEST_CASE("a Projection-style bootstrap succeeds when the supplied discount curv
     // A single short pillar well within the funding curve's own coverage.
     const auto d_3m = value_date.year() / (unsigned(value_date.month()) + 3) / value_date.day();
     const double yf = day_count_calculator::year_fraction(value_date, d_3m, A365);
-    const double rate = curve_instrument_pricer::deposit_rate(true_df(value_date, d_3m), yf);
+    const double rate =
+        curve_instrument_pricer::deposit_rate(curve_bootstrap_engine_true_df(value_date, d_3m), yf);
     std::vector<bootstrap_pillar> projection_pillars{{"3M", DEPOSIT, rate, value_date, d_3m, {}}};
 
     const auto result = curve_bootstrap_engine::bootstrap(
         value_date, projection_pillars, A365, LOG_LINEAR_DISCOUNT, &funding_curve);
     REQUIRE(result.size() == 1);
-    CHECK(result.front().discount_factor == Catch::Approx(true_df(value_date, d_3m)).epsilon(1e-9));
+    CHECK(result.front().discount_factor ==
+          Catch::Approx(curve_bootstrap_engine_true_df(value_date, d_3m)).epsilon(1e-9));
 }
 
 TEST_CASE("a Projection-style bootstrap fails cleanly when the supplied discount curve does not "
@@ -192,7 +193,8 @@ TEST_CASE("a Projection-style bootstrap fails cleanly when the supplied discount
     // A projection pillar maturing at 1Y -- beyond the funding curve's own coverage.
     const auto d_1y = year(int(value_date.year()) + 1) / value_date.month() / value_date.day();
     const double yf = day_count_calculator::year_fraction(value_date, d_1y, A365);
-    const double rate = curve_instrument_pricer::deposit_rate(true_df(value_date, d_1y), yf);
+    const double rate =
+        curve_instrument_pricer::deposit_rate(curve_bootstrap_engine_true_df(value_date, d_1y), yf);
     std::vector<bootstrap_pillar> projection_pillars{{"1Y", DEPOSIT, rate, value_date, d_1y, {}}};
 
     CHECK_THROWS_AS(
@@ -360,12 +362,12 @@ TEST_CASE("bootstrap of a SWAP-only curve where every fixed-leg date is itself a
         std::vector<double> dfs, accruals;
         auto previous = value_date;
         for (const auto& d : schedule) {
-            dfs.push_back(true_df(value_date, d));
+            dfs.push_back(curve_bootstrap_engine_true_df(value_date, d));
             accruals.push_back(day_count_calculator::year_fraction(previous, d, A365));
             previous = d;
         }
         return curve_instrument_pricer::swap_par_rate(
-            1.0, true_df(value_date, maturity), dfs, accruals);
+            1.0, curve_bootstrap_engine_true_df(value_date, maturity), dfs, accruals);
     };
 
     std::vector<bootstrap_pillar> pillars{
@@ -385,7 +387,7 @@ TEST_CASE("bootstrap of a SWAP-only curve where every fixed-leg date is itself a
     REQUIRE(result.size() == 4);
     for (const auto& point : result)
         CHECK(point.discount_factor ==
-              Catch::Approx(true_df(value_date, point.date)).epsilon(1e-9));
+              Catch::Approx(curve_bootstrap_engine_true_df(value_date, point.date)).epsilon(1e-9));
 }
 
 TEST_CASE("interpolate_discount_factor returns the exact value at a known point",
@@ -416,14 +418,15 @@ TEST_CASE("interpolate_discount_factor interpolates the log of the discount fact
     const auto end_date = 2026y / July / 1d;
     const std::vector<bootstrapped_point> points{
         {"a", value_date, 1.0},
-        {"b", end_date, true_df(value_date, end_date)},
+        {"b", end_date, curve_bootstrap_engine_true_df(value_date, end_date)},
     };
     const double interpolated =
         curve_bootstrap_engine::interpolate_discount_factor(points, mid_date, LOG_LINEAR_DISCOUNT);
     // Both endpoints lie on the same flat continuously-compounded curve, so
     // log-linear interpolation should recover the true discount factor
     // exactly (up to floating point).
-    CHECK(interpolated == Catch::Approx(true_df(value_date, mid_date)).epsilon(1e-9));
+    CHECK(interpolated ==
+          Catch::Approx(curve_bootstrap_engine_true_df(value_date, mid_date)).epsilon(1e-9));
 }
 
 TEST_CASE("interpolate_discount_factor rejects a query date outside the known range",

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/draw-every-random-number-from-a-keyed-stream
+#+pr: 3912
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,25 +26,40 @@ Every random draw a run makes comes from a stream keyed by the run seed, a stabl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
 - The generator reproduces the published Random123 Philox4x32-10 test vectors.
 - Two streams with different keys are independent, and one key gives the same sequence whatever order the streams are made in.
-- No constructor in the arrival or price path takes a defaulted seed.
+- A stable series key is derived from the source name, the same on every platform.
+- The stream drives the standard distributions, so a law can draw a gap from it.
 - Philox is written in-house, with no new vcpkg dependency.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task adds the stream primitive and does not convert its callers. About 400
+construction sites take a defaulted seed. Most of them build arrival processes
+or a market_regime, which the law and market-clock tasks replace, so changing
+them now is work those tasks throw away. The arrival laws and the market clock
+take a stream when they are written. The price processes get their own task,
+[[id:076811A4-F95D-4ABF-B202-55AE0CFAAFFB][Move the price processes onto keyed streams]].
+
+- =math/rng_stream.hpp= is header-only and constexpr: the Philox4x32-10 block
+  function, the FNV-1a 64 series key, the purpose enum, =stream_key= and
+  =rng_stream=.
+- The run seed is the Philox key. The series and the purpose mix through
+  SplitMix64 into the high half of the counter, and the draw index fills the
+  low half. So each stream is a disjoint range of one generator.
+- =rng_stream= returns 64 bits a call, two per block, and counts its draws so a
+  trace can say where a stream is.
+- The known answers are checked at compile time, and a scratch program checked
+  the block function against libstdc++ 16's =std::philox4x32= as well.
 
 * Measurements
 
@@ -58,7 +73,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Distinct values from four streams that differ in one key part | 4000 of 4000; 2000 with the lane fixed at zero; 3000 with the purpose left out of the stream id | scratch mutants of rng_stream.hpp compiled against the distinctness check | 4c79009a20 |
+| Quant suite | 502 cases passed, 6 of them rng_stream | =ores.analytics.quant.tests= | 4c79009a20 |
 
 * Notes
 
@@ -77,12 +93,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3912][#3912]] | [analytics] Draw every random number from a keyed stream |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the header uses std::size_t without including cstddef. | rng_stream.hpp | Accept | Fixed in 4770bbeaf1. |
+| 2 | Local review: main's component lists for marketdata.api and refdata.api miss headers, so cmake-sources fails on any branch. | component_files.cmake | Accept | Regenerated, then dropped on rebase: #3913 made the same change on main. |
+| 3 | Bot: the stream id is a 64-bit hash, so a collision is possible; say so. | rng_stream.hpp | Accept | The class doc called the ranges disjoint; it now gives the 2^-64 chance a pair. |
+| 4 | Bot: no case varies the high word of the run seed. | rng_stream_tests.cpp | Accept | A fifth stream with seed 7 + 2^32; the check now wants 5000 distinct values. |
+| 5 | Bot: the test uses std::size_t without cstddef. | rng_stream_tests.cpp | Accept | Included. |
+| 6 | Bot: operator() has no nodiscard, which is right. | rng_stream.hpp | Decline | A note, not a change; tests discard draws on purpose. |
+| 7 | Bot: a copy replays draws; say to pass by reference. | rng_stream.hpp | Accept | One line in the class doc. |
+| 8 | Gate: the format check failed on both files. | rng_stream.hpp, rng_stream_tests.cpp | Accept | clang-format applied. |
 
 * Result
+
+=math/rng_stream.hpp= gives every later task a keyed stream. The Philox4x32-10
+block function reproduces the three Random123 known answers at compile time,
+and it agrees with libstdc++ 16's =std::philox4x32=. A stream is named by its
+run seed, its series key and its purpose. Its draws do not change when other
+streams are made or drawn between them. The arrival laws and the market clock
+take a stream when those tasks write them. The price processes move in
+[[id:076811A4-F95D-4ABF-B202-55AE0CFAAFFB][Move the price processes onto keyed streams]].

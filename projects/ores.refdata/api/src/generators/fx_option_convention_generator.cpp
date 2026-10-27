@@ -49,10 +49,10 @@ generate_synthetic_fx_option_convention(utility::generation::generation_context&
     r.id = std::string("EUR-USD-FXOPTION") + "-" + std::to_string(idx);
     r.party_id = ctx.generate_uuid();
     r.fx_convention_id = std::string("EUR-USD-FX");
-    r.atm_type = std::string("Atm");
+    r.atm_type = std::string("AtmDeltaNeutral");
     r.delta_type = std::string("Spot");
     r.switch_tenor = std::string("1Y");
-    r.long_term_atm_type = std::string("Atm");
+    r.long_term_atm_type = std::string("AtmDeltaNeutral");
     r.long_term_delta_type = std::string("Forward");
     r.risk_reversal_in_favor_of = std::string("Call");
     r.butterfly_style = std::string("Broker");

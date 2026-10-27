@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 119
+Tables: 120
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3712,6 +3712,37 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
+    entity ores_trading_structure_identifiers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * structure_id : uuid <<PK, FK>>
+        * id_type : text <<PK, FK>>
+        --
+        * version : integer
+        * id_value : text
+          issuing_party_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_identifiers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Identifier Table
+    One identifier a structure is known by under one scheme: the deal reference
+    a desk gives it, or the id an upstream document gave it. Each scheme is a
+    trade id type code, and a structure has at most one value per scheme. The
+    structure's own UUID is its identity and is not repeated here.
+    The row is keyed by the structure and references the structure it names
+    with a database foreign key. A structure holds no party of its own, so
+    nothing is copied from its parent. The issuer is the party or
+    counterparty that issued the value, when it is known.
+    end note
+
     entity ores_trading_structure_kinds_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -4650,6 +4681,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_risk_participation_instruments_tbl :
 ores_trading_trade_activities_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
+ores_trading_structures_tbl ||--o{ ores_trading_structure_identifiers_tbl : "has"
+ores_trading_trade_id_types_tbl ||--o{ ores_trading_structure_identifiers_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_structure_members_tbl : "has"
 ores_trading_structures_tbl ||--o{ ores_trading_structure_members_tbl : "has"
 ores_trading_structure_templates_tbl ||--o{ ores_trading_structure_template_roles_tbl : "has"

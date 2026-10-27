@@ -34,7 +34,7 @@ using namespace ores::logging;
 
 namespace {
 
-constexpr auto service_name = "ores.marketdata.service";
+constexpr auto usage_recorder_service_name = "ores.marketdata.service";
 
 /// The number of waiting counts beyond which a store that is down is reported.
 constexpr std::size_t pending_warning_limit = 100000;
@@ -81,7 +81,7 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
             subscription_plan,
             [this](const domain::subscription_interval& i) {
                 repository::subscription_interval_repository{}.write(
-                    ctx_.with_tenant(i.tenant_id, service_name), i);
+                    ctx_.with_tenant(i.tenant_id, usage_recorder_service_name), i);
             },
             refused);
 
@@ -100,7 +100,7 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
             demand_plan,
             [this](const domain::demand_interval& i) {
                 repository::demand_interval_repository{}.write(
-                    ctx_.with_tenant(i.tenant_id, service_name), i);
+                    ctx_.with_tenant(i.tenant_id, usage_recorder_service_name), i);
             },
             refused);
 
@@ -147,7 +147,8 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
 
     for (auto& [tenant, rows] : by_tenant) {
         try {
-            const auto tenant_ctx = ctx_.with_tenant(rows.front().tenant_id, service_name);
+            const auto tenant_ctx =
+                ctx_.with_tenant(rows.front().tenant_id, usage_recorder_service_name);
             repository::delivery_count_repository{}.write(tenant_ctx, rows);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)

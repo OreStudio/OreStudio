@@ -55,7 +55,7 @@ namespace {
 // test uses a different slice of the fictional currencies/countries
 // lists to avoid interfering with records written by other tests in
 // the same shared tenant database.
-constexpr std::size_t total_slots = 10;
+constexpr std::size_t repository_currency_country_repository_total_slots = 10;
 
 currency_country make_currency_country(scoped_database_helper& h,
                                        const std::string& currency_iso_code,
@@ -83,8 +83,10 @@ TEST_CASE("write_single_currency_country", "[repository][currency_country]") {
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[0]});
     cty_repo.write(h.context(), {countries[0]});
 
@@ -108,8 +110,10 @@ TEST_CASE("write_multiple_currency_countries", "[repository][currency_country]")
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[1]});
     std::vector<ores::refdata::domain::country> test_countries = {countries[1], countries[2]};
     cty_repo.write(h.context(), test_countries);
@@ -143,8 +147,10 @@ TEST_CASE("read_latest_currency_countries_by_currency", "[repository][currency_c
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[3]});
     cty_repo.write(h.context(), {countries[3]});
 
@@ -175,8 +181,10 @@ TEST_CASE("read_latest_currency_countries_by_country", "[repository][currency_co
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[4]});
     cty_repo.write(h.context(), {countries[4]});
 
@@ -200,8 +208,10 @@ TEST_CASE("remove_currency_country", "[repository][currency_country]") {
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[5]});
     cty_repo.write(h.context(), {countries[5], countries[7]});
 
@@ -237,8 +247,10 @@ TEST_CASE("remove_by_currency_currency_country", "[repository][currency_country]
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[6], currencies[7]});
     cty_repo.write(h.context(), {countries[6], countries[8]});
 
@@ -274,8 +286,10 @@ TEST_CASE("read_nonexistent_currency_country", "[repository][currency_country]")
     currency_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    auto currencies = generate_fictional_currencies(total_slots, gctx);
-    auto countries = generate_fictional_countries(total_slots, gctx);
+    auto currencies =
+        generate_fictional_currencies(repository_currency_country_repository_total_slots, gctx);
+    auto countries =
+        generate_fictional_countries(repository_currency_country_repository_total_slots, gctx);
     ccy_repo.write(h.context(), {currencies[8]});
     cty_repo.write(h.context(), {countries[9]});
 

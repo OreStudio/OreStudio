@@ -22,6 +22,7 @@
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "support/loopback_http_server.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -41,18 +42,10 @@ using namespace ores::logging;
 
 namespace {
 
-/// The caller token every transfer carries.
-const std::string test_token("ores-storage-test-token");
-
-void write_file(const std::filesystem::path& path, const std::string& content) {
+void storage_transfer_write_file(const std::filesystem::path& path, const std::string& content) {
     std::filesystem::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary);
     out.write(content.data(), static_cast<std::streamsize>(content.size()));
-}
-
-std::string read_file(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 }
 
 }
@@ -65,7 +58,7 @@ TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", "[net]") {
 
     const std::string content = "package tarball bytes\n";
     scoped_temp_file source;
-    write_file(source.path(), content);
+    storage_transfer_write_file(source.path(), content);
 
     sut.upload("ores", "compute/packages/oscar-1.0/oscar.tar.gz", source.path());
 
@@ -103,7 +96,7 @@ TEST_CASE("upload_returning_response_returns_the_exact_server_body", "[net]") {
     server.set_put_response_body(response);
 
     scoped_temp_file source;
-    write_file(source.path(), "payload");
+    storage_transfer_write_file(source.path(), "payload");
 
     const auto actual = sut.upload_returning_response("bucket", "key", source.path());
 
@@ -120,8 +113,8 @@ TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", "[net]") 
     scoped_temp_directory source;
     const std::string manifest_content = "name=oscar\nversion=1.2.3\n";
     const std::string payload_content = "{\"kind\":\"compute-package\"}\n";
-    write_file(source.path() / "manifest.txt", manifest_content);
-    write_file(source.path() / "nested" / "payload.json", payload_content);
+    storage_transfer_write_file(source.path() / "manifest.txt", manifest_content);
+    storage_transfer_write_file(source.path() / "nested" / "payload.json", payload_content);
 
     sut.pack_and_upload(source.path(), "ores", "compute/packages/tree.tar.gz");
 

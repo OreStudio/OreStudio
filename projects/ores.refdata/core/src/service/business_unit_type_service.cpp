@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -184,7 +185,8 @@ messaging::put_business_unit_type_response business_unit_type_service::put_busin
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = business_unit_type_read_one(repo_, ctx_, business_unit_type_key_from(value));
+    auto written = of_acting_party(
+        business_unit_type_read_one(repo_, ctx_, business_unit_type_key_from(value)), ctx_);
     if (!written.empty())
         response.business_unit_type = std::move(written.front());
     return response;
@@ -217,7 +219,8 @@ business_unit_type_service::put_many_business_unit_types(
     repo_.write(ctx_, batch, claims);
     response.types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = business_unit_type_read_one(repo_, ctx_, business_unit_type_key_from(value));
+        auto written = of_acting_party(
+            business_unit_type_read_one(repo_, ctx_, business_unit_type_key_from(value)), ctx_);
         response.types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -373,7 +376,10 @@ business_unit_type_service::prepare_change(const messaging::business_unit_type_c
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = business_unit_type_to_domain(change.write);
-    const auto current = business_unit_type_read_one(repo_, ctx_, business_unit_type_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        business_unit_type_read_one(repo_, ctx_, business_unit_type_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -46,6 +46,8 @@
 \ir ./marketdata_providers_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql
 \ir ./marketdata_market_fixings_drop.sql
+\ir ./marketdata_curve_publishes_notify_trigger_drop.sql
+\ir ./marketdata_curve_publishes_drop.sql
 \ir ./marketdata_observation_lineages_notify_trigger_drop.sql
 \ir ./marketdata_observation_lineages_drop.sql
 \ir ./marketdata_tick_coords_drop.sql

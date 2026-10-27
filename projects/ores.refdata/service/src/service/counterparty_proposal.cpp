@@ -33,6 +33,7 @@
 #include "ores.refdata.service/service/proposal_support.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "shared_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstdint>
@@ -68,32 +69,12 @@ void open_gate(Service& svc, const std::string& request_id) {
         svc.carry_out_request(request_id);
 }
 
-constexpr auto kind_code = "refdata.counterparty_change";
-constexpr auto savepoint = "counterparty_line";
+constexpr auto counterparty_proposal_kind_code = "refdata.counterparty_change";
+constexpr auto counterparty_proposal_savepoint = "counterparty_line";
 
-auto& log() {
+auto& counterparty_proposal_log() {
     static auto instance = ores::logging::make_logger("ores.refdata.service.counterparty_proposal");
     return instance;
-}
-
-std::string text_of(const boost::uuids::uuid& v) {
-    return boost::uuids::to_string(v);
-}
-
-std::string text_of(const std::optional<boost::uuids::uuid>& v) {
-    return v ? boost::uuids::to_string(*v) : std::string{};
-}
-
-std::string text_of(const std::optional<std::string>& v) {
-    return v ? *v : std::string{};
-}
-
-std::string text_of(bool v) {
-    return v ? "true" : "false";
-}
-
-std::string text_of(const std::string& v) {
-    return v;
 }
 
 /**
@@ -103,11 +84,11 @@ std::string text_of(const std::string& v) {
  * one vocabulary.
  */
 template <typename Row, typename RowMember, typename Line, typename LineMember>
-field_delta delta_of(const char* name,
-                     const std::optional<Row>& live,
-                     RowMember row_member,
-                     const Line& line,
-                     LineMember line_member) {
+field_delta counterparty_proposal_delta_of(const char* name,
+                                           const std::optional<Row>& live,
+                                           RowMember row_member,
+                                           const Line& line,
+                                           LineMember line_member) {
     field_delta d;
     d.name = name;
     d.after = text_of(line.*line_member);
@@ -123,7 +104,7 @@ field_delta delta_of(const char* name,
  * A base version of zero claims the row is new. Any other claims the version the
  * maker read.
  */
-precondition claim_of(int base_version) {
+precondition counterparty_proposal_claim_of(int base_version) {
     if (base_version == 0)
         return precondition{precondition_kind::must_not_exist, std::nullopt};
     return precondition{precondition_kind::must_match_version,
@@ -180,18 +161,18 @@ struct counterparty_kind {
         using R = domain::counterparty;
         using L = domain::counterparty_change;
         return {
-            delta_of("short_code", before, &R::short_code, l, &L::short_code),
-            delta_of("full_name", before, &R::full_name, l, &L::full_name),
-            delta_of(
+            counterparty_proposal_delta_of("short_code", before, &R::short_code, l, &L::short_code),
+            counterparty_proposal_delta_of("full_name", before, &R::full_name, l, &L::full_name),
+            counterparty_proposal_delta_of(
                 "transliterated_name", before, &R::transliterated_name, l, &L::transliterated_name),
-            delta_of("party_type", before, &R::party_type, l, &L::party_type),
-            delta_of("parent_counterparty_id",
-                     before,
-                     &R::parent_counterparty_id,
-                     l,
-                     &L::parent_counterparty_id),
-            delta_of("status", before, &R::status, l, &L::status),
-            delta_of("image_id", before, &R::image_id, l, &L::image_id),
+            counterparty_proposal_delta_of("party_type", before, &R::party_type, l, &L::party_type),
+            counterparty_proposal_delta_of("parent_counterparty_id",
+                                           before,
+                                           &R::parent_counterparty_id,
+                                           l,
+                                           &L::parent_counterparty_id),
+            counterparty_proposal_delta_of("status", before, &R::status, l, &L::status),
+            counterparty_proposal_delta_of("image_id", before, &R::image_id, l, &L::image_id),
         };
     }
 
@@ -203,7 +184,7 @@ struct counterparty_kind {
         counterparty_service svc(ctx);
         open_gate(svc, request_id);
         if (l.operation == "put") {
-            messaging::put_counterparty_request req;
+            ores::refdata::messaging::put_counterparty_request req;
             req.change.write = {.id = l.entity_id,
                                 .short_code = l.short_code,
                                 .full_name = l.full_name,
@@ -212,13 +193,13 @@ struct counterparty_kind {
                                 .parent_counterparty_id = l.parent_counterparty_id,
                                 .status = l.status,
                                 .image_id = l.image_id};
-            req.change.precondition = claim_of(l.base_version);
+            req.change.precondition = counterparty_proposal_claim_of(l.base_version);
             req.intent = intent;
             return refusal_of(svc.put_counterparty(req).result);
         }
         if (!live)
             return "No counterparty with this id to remove.";
-        messaging::delete_counterparty_request req;
+        ores::refdata::messaging::delete_counterparty_request req;
         req.removal.key.short_code = live->short_code;
         if (const auto claim = removal_claim(l.base_version))
             req.removal.precondition = *claim;
@@ -257,11 +238,14 @@ struct identifier_kind {
         using R = domain::counterparty_identifier;
         using L = domain::counterparty_identifier_change;
         return {
-            delta_of("counterparty_id", before, &R::counterparty_id, l, &L::counterparty_id),
-            delta_of("id_scheme", before, &R::id_scheme, l, &L::id_scheme),
-            delta_of("id_value", before, &R::id_value, l, &L::id_value),
-            delta_of("description", before, &R::description, l, &L::description),
-            delta_of("is_authoritative", before, &R::is_authoritative, l, &L::is_authoritative),
+            counterparty_proposal_delta_of(
+                "counterparty_id", before, &R::counterparty_id, l, &L::counterparty_id),
+            counterparty_proposal_delta_of("id_scheme", before, &R::id_scheme, l, &L::id_scheme),
+            counterparty_proposal_delta_of("id_value", before, &R::id_value, l, &L::id_value),
+            counterparty_proposal_delta_of(
+                "description", before, &R::description, l, &L::description),
+            counterparty_proposal_delta_of(
+                "is_authoritative", before, &R::is_authoritative, l, &L::is_authoritative),
         };
     }
 
@@ -273,20 +257,20 @@ struct identifier_kind {
         counterparty_identifier_service svc(ctx);
         open_gate(svc, request_id);
         if (l.operation == "put") {
-            messaging::put_counterparty_identifier_request req;
+            ores::refdata::messaging::put_counterparty_identifier_request req;
             req.change.write = {.id = l.entity_id,
                                 .counterparty_id = l.counterparty_id,
                                 .id_scheme = l.id_scheme,
                                 .id_value = l.id_value,
                                 .description = l.description,
                                 .is_authoritative = l.is_authoritative};
-            req.change.precondition = claim_of(l.base_version);
+            req.change.precondition = counterparty_proposal_claim_of(l.base_version);
             req.intent = intent;
             return refusal_of(svc.put_counterparty_identifier(req).result);
         }
         if (!live)
             return "No identifier with this id to remove.";
-        messaging::delete_counterparty_identifier_request req;
+        ores::refdata::messaging::delete_counterparty_identifier_request req;
         req.removal.key.id_value = live->id_value;
         if (const auto claim = removal_claim(l.base_version))
             req.removal.precondition = *claim;
@@ -314,7 +298,7 @@ struct link_kind {
     }
 
     static std::optional<row> live(const ores::database::context& ctx, const line& l) {
-        messaging::get_party_counterparty_request req;
+        ores::refdata::messaging::get_party_counterparty_request req;
         req.key = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
         return party_counterparty_service(ctx).get_party_counterparty(req).party_counterparty;
     }
@@ -327,8 +311,9 @@ struct link_kind {
         using R = domain::party_counterparty;
         using L = domain::party_counterparty_change;
         return {
-            delta_of("party_id", before, &R::party_id, l, &L::party_id),
-            delta_of("counterparty_id", before, &R::counterparty_id, l, &L::counterparty_id),
+            counterparty_proposal_delta_of("party_id", before, &R::party_id, l, &L::party_id),
+            counterparty_proposal_delta_of(
+                "counterparty_id", before, &R::counterparty_id, l, &L::counterparty_id),
         };
     }
 
@@ -340,15 +325,15 @@ struct link_kind {
         party_counterparty_service svc(ctx);
         open_gate(svc, request_id);
         if (l.operation == "put") {
-            messaging::put_party_counterparty_request req;
+            ores::refdata::messaging::put_party_counterparty_request req;
             req.change.write = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
-            req.change.precondition = claim_of(l.base_version);
+            req.change.precondition = counterparty_proposal_claim_of(l.base_version);
             req.intent = intent;
             return refusal_of(svc.put_party_counterparty(req).result);
         }
         if (!live)
             return "No such link to remove.";
-        messaging::delete_party_counterparty_request req;
+        ores::refdata::messaging::delete_party_counterparty_request req;
         req.removal.key = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
         if (const auto claim = removal_claim(l.base_version))
             req.removal.precondition = *claim;
@@ -361,8 +346,8 @@ struct link_kind {
  * @brief The stored lines of a request of one kind, in line order.
  */
 template <typename Kind>
-std::vector<typename Kind::line> lines_of(const ores::database::context& ctx,
-                                          const std::string& request_id) {
+std::vector<typename Kind::line> counterparty_proposal_lines_of(const ores::database::context& ctx,
+                                                                const std::string& request_id) {
     // One more than the most a request may hold, so a request over the limit is
     // seen as over it and never read as a shorter one. The limit is on the sum over
     // the three kinds, which the caller checks, so a request can read up to three
@@ -408,7 +393,7 @@ void preview_kind(const ores::database::context& ctx,
         if (line.operation == "put")
             out.columns = columns_of(Kind::fields(live, line));
 
-        in_transaction(ctx, std::string("savepoint ") + savepoint);
+        in_transaction(ctx, std::string("savepoint ") + counterparty_proposal_savepoint);
         try {
             out.refusal =
                 Kind::write(ctx, live, line, {line.change_reason_code, line.change_commentary}, {});
@@ -424,7 +409,7 @@ void preview_kind(const ores::database::context& ctx,
         in_transaction(
             ctx,
             std::string(out.refusal.empty() ? "release savepoint " : "rollback to savepoint ") +
-                savepoint);
+                counterparty_proposal_savepoint);
 
         out.part_codes = policy_parts(ctx, Kind::policy, line.operation, out.columns);
         for (const auto& code : out.part_codes) {
@@ -496,7 +481,7 @@ template <typename Kind>
 void deltas_kind(const ores::database::context& ctx,
                  const std::string& request_id,
                  std::vector<counterparty_line_delta>& out) {
-    for (const auto& line : lines_of<Kind>(ctx, request_id)) {
+    for (const auto& line : counterparty_proposal_lines_of<Kind>(ctx, request_id)) {
         counterparty_line_delta d{.line_no = line.line_no,
                                   .entity_type = Kind::type,
                                   .operation = line.operation,
@@ -538,9 +523,9 @@ void write_kind(const ores::database::context& ctx,
 }
 
 counterparty_lines stored_lines(const ores::database::context& ctx, const std::string& request_id) {
-    return {.counterparties = lines_of<counterparty_kind>(ctx, request_id),
-            .identifiers = lines_of<identifier_kind>(ctx, request_id),
-            .links = lines_of<link_kind>(ctx, request_id)};
+    return {.counterparties = counterparty_proposal_lines_of<counterparty_kind>(ctx, request_id),
+            .identifiers = counterparty_proposal_lines_of<identifier_kind>(ctx, request_id),
+            .links = counterparty_proposal_lines_of<link_kind>(ctx, request_id)};
 }
 
 void sort_parts(counterparty_preview& result) {
@@ -652,7 +637,8 @@ counterparty_apply counterparty_proposal_service::apply(const std::string& reque
         out.lines_applied = 0;
         out.refusal = e.what();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(log(), error) << "Applying request " << request_id << " failed: " << e.what();
+        BOOST_LOG_SEV(counterparty_proposal_log(), error)
+            << "Applying request " << request_id << " failed: " << e.what();
         return {.transient = true, .refusal = e.what()};
     }
 
@@ -663,14 +649,14 @@ counterparty_apply counterparty_proposal_service::apply(const std::string& reque
         const auto moved = lifecycle.fail_apply(
             request_id, "Line " + std::to_string(out.failed_line) + ": " + out.refusal);
         if (moved.outcome != "ok") {
-            BOOST_LOG_SEV(log(), warn)
+            BOOST_LOG_SEV(counterparty_proposal_log(), warn)
                 << "Request " << request_id << " was refused but is " << moved.state_code
                 << ", not apply_failed: " << moved.message;
         }
     } catch (const std::exception& e) {
         // Nothing was written and the request is still approved, so the apply may
         // run again and meet the same refusal.
-        BOOST_LOG_SEV(log(), error)
+        BOOST_LOG_SEV(counterparty_proposal_log(), error)
             << "Request " << request_id << " could not be moved to apply_failed: " << e.what();
         return {.transient = true, .refusal = e.what()};
     }
@@ -712,9 +698,10 @@ counterparty_proposal counterparty_proposal_service::raise(const counterparty_li
         db::unit_of_work uow(ctx_);
         const auto& ctx = uow.ctx();
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
-        kind = lifecycle.kind(kind_code);
+        kind = lifecycle.kind(counterparty_proposal_kind_code);
         if (!kind)
-            throw std::runtime_error(std::string("No such kind of request: ") + kind_code);
+            throw std::runtime_error(std::string("No such kind of request: ") +
+                                     counterparty_proposal_kind_code);
         const auto me = lifecycle.actor_account_id();
         if (!me)
             throw std::runtime_error("The signed-in account was not found.");

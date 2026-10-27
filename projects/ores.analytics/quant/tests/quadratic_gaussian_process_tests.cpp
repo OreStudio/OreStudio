@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/affine_term_structure_process.hpp"
 #include "ores.analytics.quant/service/processes/quadratic_gaussian_process.hpp"
+#include "test_helpers.hpp"
 #include <Eigen/Dense>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -36,15 +37,8 @@ using ores::analytics::quant::service::quadratic_gaussian_process;
 
 namespace {
 
-Eigen::VectorXd vector(std::initializer_list<double> values) {
-    Eigen::VectorXd result(values.size());
-    std::size_t i = 0;
-    for (const double v : values)
-        result[i++] = v;
-    return result;
-}
-
-Eigen::MatrixXd matrix(std::initializer_list<std::initializer_list<double>> rows) {
+Eigen::MatrixXd
+quadratic_gaussian_process_matrix(std::initializer_list<std::initializer_list<double>> rows) {
     Eigen::MatrixXd result(rows.size(), rows.begin()->size());
     std::size_t i = 0;
     for (const auto& row : rows) {
@@ -59,7 +53,7 @@ Eigen::MatrixXd matrix(std::initializer_list<std::initializer_list<double>> rows
 /**
  * @brief Welford running mean and variance for scalar samples.
  */
-struct running_mean_variance {
+struct quadratic_gaussian_process_running_mean_variance {
     double mean = 0.0;
     double m2 = 0.0;
     std::size_t count = 0;
@@ -84,11 +78,11 @@ TEST_CASE("quadratic gaussian with zero gamma reduces to affine", "[quadratic_ga
     // recursions reduce to the affine ones exactly -- the same seed
     // must produce the same path and the same discounts.
     const Eigen::VectorXd kappas = vector({0.4, 0.2});
-    const Eigen::MatrixXd sigma = matrix({{0.09, 0.03}, {0.03, 0.04}});
+    const Eigen::MatrixXd sigma = quadratic_gaussian_process_matrix({{0.09, 0.03}, {0.03, 0.04}});
     const Eigen::VectorXd theta = vector({0.05, 0.03});
     const Eigen::VectorXd deltas = vector({1.0, 0.5});
     const Eigen::VectorXd initial_factors = vector({0.04, 0.02});
-    const Eigen::MatrixXd zero_gamma = matrix({{0.0, 0.0}, {0.0, 0.0}});
+    const Eigen::MatrixXd zero_gamma = quadratic_gaussian_process_matrix({{0.0, 0.0}, {0.0, 0.0}});
     for (const double dt : {1.0, 0.25}) {
         affine_term_structure_process affine(
             kappas, sigma, theta, 0.01, deltas, initial_factors, 42, dt);
@@ -114,11 +108,11 @@ TEST_CASE("quadratic gaussian zero-sigma prices the deterministic path",
     // along that path, computed here directly from the closed form of
     // the rate.
     const Eigen::VectorXd kappas = vector({0.3});
-    const Eigen::MatrixXd zero_sigma = matrix({{0.0}});
+    const Eigen::MatrixXd zero_sigma = quadratic_gaussian_process_matrix({{0.0}});
     const Eigen::VectorXd theta = vector({0.03});
     const double delta_0 = 0.01;
     const Eigen::VectorXd deltas = vector({0.5});
-    const Eigen::MatrixXd gamma = matrix({{1.5}});
+    const Eigen::MatrixXd gamma = quadratic_gaussian_process_matrix({{1.5}});
     const Eigen::VectorXd initial_factors = vector({0.02});
     const double dt = 0.25;
 
@@ -159,11 +153,12 @@ TEST_CASE("quadratic gaussian bond price matches the brute-force expectation",
     // below.
     const std::size_t paths = 300000;
     const Eigen::VectorXd kappas = vector({0.4});
-    const Eigen::MatrixXd sigma = matrix({{0.0625}}); // instantaneous variance sigma^2
+    const Eigen::MatrixXd sigma =
+        quadratic_gaussian_process_matrix({{0.0625}}); // instantaneous variance sigma^2
     const Eigen::VectorXd theta = vector({0.03});
     const double delta_0 = 0.005;
     const Eigen::VectorXd deltas = vector({1.0});
-    const Eigen::MatrixXd gamma = matrix({{2.0}});
+    const Eigen::MatrixXd gamma = quadratic_gaussian_process_matrix({{2.0}});
     const Eigen::VectorXd initial_factors = vector({0.02});
     const double dt = 0.25;
     const std::size_t ticks = 5;
@@ -179,7 +174,7 @@ TEST_CASE("quadratic gaussian bond price matches the brute-force expectation",
         sigma(0, 0) * (1.0 - std::exp(-2.0 * kappas[0] * dt)) / (2.0 * kappas[0]);
     const double sqrt_variance = std::sqrt(variance);
 
-    std::vector<running_mean_variance> discounts(ticks);
+    std::vector<quadratic_gaussian_process_running_mean_variance> discounts(ticks);
     for (std::size_t i = 0; i < paths; ++i) {
         double x = initial_factors[0];
         double pathwise = 1.0;
@@ -208,15 +203,15 @@ TEST_CASE("quadratic gaussian first-tick moments match the closed forms",
     // X_0 = 0.02, delta_0 = 0.005, deltas = 1, gamma = 2, dt = 0.25.
     const std::size_t paths = 500000;
     const Eigen::VectorXd kappas = vector({0.4});
-    const Eigen::MatrixXd sigma = matrix({{0.0625}});
+    const Eigen::MatrixXd sigma = quadratic_gaussian_process_matrix({{0.0625}});
     const Eigen::VectorXd theta = vector({0.03});
     const double delta_0 = 0.005;
     const Eigen::VectorXd deltas = vector({1.0});
-    const Eigen::MatrixXd gamma = matrix({{2.0}});
+    const Eigen::MatrixXd gamma = quadratic_gaussian_process_matrix({{2.0}});
     const Eigen::VectorXd initial_factors = vector({0.02});
     const double dt = 0.25;
 
-    running_mean_variance rate_moments;
+    quadratic_gaussian_process_running_mean_variance rate_moments;
     for (std::size_t i = 0; i < paths; ++i) {
         quadratic_gaussian_process p(kappas,
                                      sigma,
@@ -248,11 +243,11 @@ TEST_CASE("quadratic gaussian rate stays positive under positive-semidefinite ga
     // pathwise: the quadratic term dominates at large |X|, which is the
     // model's reason for being.
     quadratic_gaussian_process p(vector({0.5, 0.3}),
-                                 matrix({{0.04, 0.01}, {0.01, 0.03}}),
+                                 quadratic_gaussian_process_matrix({{0.04, 0.01}, {0.01, 0.03}}),
                                  vector({0.02, 0.01}),
                                  0.01,
                                  vector({0.0, 0.0}),
-                                 matrix({{1.5, 0.0}, {0.0, 0.8}}),
+                                 quadratic_gaussian_process_matrix({{1.5, 0.0}, {0.0, 0.8}}),
                                  vector({0.0, 0.0}),
                                  42,
                                  0.25);
@@ -264,11 +259,11 @@ TEST_CASE("quadratic gaussian discounts are monotone", "[quadratic_gaussian_proc
     // Positive rates (delta_0 > 0, zero linear term, PSD gamma) imply
     // strictly decreasing bond prices in the horizon.
     quadratic_gaussian_process p(vector({0.5, 0.3}),
-                                 matrix({{0.04, 0.01}, {0.01, 0.03}}),
+                                 quadratic_gaussian_process_matrix({{0.04, 0.01}, {0.01, 0.03}}),
                                  vector({0.02, 0.01}),
                                  0.01,
                                  vector({0.0, 0.0}),
-                                 matrix({{1.5, 0.0}, {0.0, 0.8}}),
+                                 quadratic_gaussian_process_matrix({{1.5, 0.0}, {0.0, 0.8}}),
                                  vector({0.0, 0.0}),
                                  42,
                                  0.25);
@@ -286,23 +281,24 @@ TEST_CASE("quadratic gaussian params struct equals scalar construction",
           "[quadratic_gaussian_process]") {
     quadratic_gaussian_params params;
     params.kappas = vector({0.4, 0.2});
-    params.sigma = matrix({{0.09, 0.03}, {0.03, 0.04}});
+    params.sigma = quadratic_gaussian_process_matrix({{0.09, 0.03}, {0.03, 0.04}});
     params.theta = vector({0.05, 0.03});
     params.delta_0 = 0.01;
     params.deltas = vector({1.0, 0.5});
-    params.gamma = matrix({{0.5, 0.2}, {0.2, 0.3}});
+    params.gamma = quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}});
     params.initial_factors = vector({0.04, 0.02});
 
     quadratic_gaussian_process from_params(params, 99, 0.25);
-    quadratic_gaussian_process from_scalars(vector({0.4, 0.2}),
-                                            matrix({{0.09, 0.03}, {0.03, 0.04}}),
-                                            vector({0.05, 0.03}),
-                                            0.01,
-                                            vector({1.0, 0.5}),
-                                            matrix({{0.5, 0.2}, {0.2, 0.3}}),
-                                            vector({0.04, 0.02}),
-                                            99,
-                                            0.25);
+    quadratic_gaussian_process from_scalars(
+        vector({0.4, 0.2}),
+        quadratic_gaussian_process_matrix({{0.09, 0.03}, {0.03, 0.04}}),
+        vector({0.05, 0.03}),
+        0.01,
+        vector({1.0, 0.5}),
+        quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}}),
+        vector({0.04, 0.02}),
+        99,
+        0.25);
     for (std::size_t t = 0; t < 6; ++t) {
         REQUIRE(from_params.next() == from_scalars.next());
         REQUIRE(from_params.discount_factor(3) == from_scalars.discount_factor(3));
@@ -311,15 +307,16 @@ TEST_CASE("quadratic gaussian params struct equals scalar construction",
 
 TEST_CASE("quadratic gaussian seeds determine the path", "[quadratic_gaussian_process]") {
     const auto path = [](std::uint32_t seed) {
-        quadratic_gaussian_process p(vector({0.4, 0.2}),
-                                     matrix({{0.09, 0.03}, {0.03, 0.04}}),
-                                     vector({0.05, 0.03}),
-                                     0.0,
-                                     vector({1.0, 1.0}),
-                                     matrix({{0.5, 0.2}, {0.2, 0.3}}),
-                                     vector({0.04, 0.02}),
-                                     seed,
-                                     1.0);
+        quadratic_gaussian_process p(
+            vector({0.4, 0.2}),
+            quadratic_gaussian_process_matrix({{0.09, 0.03}, {0.03, 0.04}}),
+            vector({0.05, 0.03}),
+            0.0,
+            vector({1.0, 1.0}),
+            quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}}),
+            vector({0.04, 0.02}),
+            seed,
+            1.0);
         std::vector<double> rates;
         for (std::size_t t = 0; t < 5; ++t)
             rates.push_back(p.next());
@@ -331,10 +328,11 @@ TEST_CASE("quadratic gaussian seeds determine the path", "[quadratic_gaussian_pr
 
 TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_process]") {
     const Eigen::VectorXd two_kappas = vector({0.4, 0.2});
-    const Eigen::MatrixXd valid_sigma = matrix({{0.09, 0.03}, {0.03, 0.04}});
+    const Eigen::MatrixXd valid_sigma =
+        quadratic_gaussian_process_matrix({{0.09, 0.03}, {0.03, 0.04}});
     const Eigen::VectorXd two_theta = vector({0.05, 0.03});
     const Eigen::VectorXd two_deltas = vector({1.0, 1.0});
-    const Eigen::MatrixXd valid_gamma = matrix({{0.5, 0.2}, {0.2, 0.3}});
+    const Eigen::MatrixXd valid_gamma = quadratic_gaussian_process_matrix({{0.5, 0.2}, {0.2, 0.3}});
     const Eigen::VectorXd two_factors = vector({0.04, 0.02});
 
     // Valid constructions as the baseline for the single-invalid-input
@@ -342,24 +340,26 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
     // gamma == 0 and the rank-one gamma matrix.
     REQUIRE_NOTHROW(quadratic_gaussian_process(
         two_kappas, valid_sigma, two_theta, 0.0, two_deltas, valid_gamma, two_factors, 42, 1.0));
-    REQUIRE_NOTHROW(quadratic_gaussian_process(two_kappas,
-                                               valid_sigma,
-                                               two_theta,
-                                               0.0,
-                                               two_deltas,
-                                               matrix({{0.0, 0.0}, {0.0, 0.0}}),
-                                               two_factors,
-                                               42,
-                                               1.0));
-    REQUIRE_NOTHROW(quadratic_gaussian_process(two_kappas,
-                                               valid_sigma,
-                                               two_theta,
-                                               0.0,
-                                               two_deltas,
-                                               matrix({{1.0, 1.0}, {1.0, 1.0}}),
-                                               two_factors,
-                                               42,
-                                               1.0));
+    REQUIRE_NOTHROW(
+        quadratic_gaussian_process(two_kappas,
+                                   valid_sigma,
+                                   two_theta,
+                                   0.0,
+                                   two_deltas,
+                                   quadratic_gaussian_process_matrix({{0.0, 0.0}, {0.0, 0.0}}),
+                                   two_factors,
+                                   42,
+                                   1.0));
+    REQUIRE_NOTHROW(
+        quadratic_gaussian_process(two_kappas,
+                                   valid_sigma,
+                                   two_theta,
+                                   0.0,
+                                   two_deltas,
+                                   quadratic_gaussian_process_matrix({{1.0, 1.0}, {1.0, 1.0}}),
+                                   two_factors,
+                                   42,
+                                   1.0));
 
     REQUIRE_THROWS_AS(quadratic_gaussian_process(Eigen::VectorXd(),
                                                  valid_sigma,
@@ -402,7 +402,8 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  1.0),
                       std::invalid_argument); // initial_factors size mismatch
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 matrix({{0.09, 0.03, 0.01}, {0.03, 0.04, 0.01}}),
+                                                 quadratic_gaussian_process_matrix(
+                                                     {{0.09, 0.03, 0.01}, {0.03, 0.04, 0.01}}),
                                                  two_theta,
                                                  0.0,
                                                  two_deltas,
@@ -412,7 +413,7 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  1.0),
                       std::invalid_argument); // sigma not square
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 matrix({{0.09}}),
+                                                 quadratic_gaussian_process_matrix({{0.09}}),
                                                  two_theta,
                                                  0.0,
                                                  two_deltas,
@@ -421,22 +422,23 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                                  42,
                                                  1.0),
                       std::invalid_argument); // sigma wrong size
-    REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 valid_sigma,
-                                                 two_theta,
-                                                 0.0,
-                                                 two_deltas,
-                                                 matrix({{0.5, 0.2, 0.1}, {0.2, 0.3, 0.1}}),
-                                                 two_factors,
-                                                 42,
-                                                 1.0),
+    REQUIRE_THROWS_AS(quadratic_gaussian_process(
+                          two_kappas,
+                          valid_sigma,
+                          two_theta,
+                          0.0,
+                          two_deltas,
+                          quadratic_gaussian_process_matrix({{0.5, 0.2, 0.1}, {0.2, 0.3, 0.1}}),
+                          two_factors,
+                          42,
+                          1.0),
                       std::invalid_argument); // gamma not square
     REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
                                                  valid_sigma,
                                                  two_theta,
                                                  0.0,
                                                  two_deltas,
-                                                 matrix({{0.5}}),
+                                                 quadratic_gaussian_process_matrix({{0.5}}),
                                                  two_factors,
                                                  42,
                                                  1.0),
@@ -462,53 +464,58 @@ TEST_CASE("quadratic gaussian rejects invalid parameters", "[quadratic_gaussian_
                                    42,
                                    1.0),
         std::invalid_argument); // NaN kappa
-    REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 matrix({{0.09, 0.02}, {0.03, 0.04}}),
-                                                 two_theta,
-                                                 0.0,
-                                                 two_deltas,
-                                                 valid_gamma,
-                                                 two_factors,
-                                                 42,
-                                                 1.0),
-                      std::invalid_argument); // asymmetric sigma
-    REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 matrix({{1.0, 2.0}, {2.0, 1.0}}),
-                                                 two_theta,
-                                                 0.0,
-                                                 two_deltas,
-                                                 valid_gamma,
-                                                 two_factors,
-                                                 42,
-                                                 1.0),
-                      std::invalid_argument); // indefinite sigma
-    REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 valid_sigma,
-                                                 two_theta,
-                                                 0.0,
-                                                 two_deltas,
-                                                 matrix({{0.5, 0.1}, {0.2, 0.3}}),
-                                                 two_factors,
-                                                 42,
-                                                 1.0),
-                      std::invalid_argument); // asymmetric gamma
-    REQUIRE_THROWS_AS(quadratic_gaussian_process(two_kappas,
-                                                 valid_sigma,
-                                                 two_theta,
-                                                 0.0,
-                                                 two_deltas,
-                                                 matrix({{1.0, 1.5}, {1.5, 1.0}}),
-                                                 two_factors,
-                                                 42,
-                                                 1.0),
-                      std::invalid_argument); // indefinite gamma
+    REQUIRE_THROWS_AS(
+        quadratic_gaussian_process(two_kappas,
+                                   quadratic_gaussian_process_matrix({{0.09, 0.02}, {0.03, 0.04}}),
+                                   two_theta,
+                                   0.0,
+                                   two_deltas,
+                                   valid_gamma,
+                                   two_factors,
+                                   42,
+                                   1.0),
+        std::invalid_argument); // asymmetric sigma
+    REQUIRE_THROWS_AS(
+        quadratic_gaussian_process(two_kappas,
+                                   quadratic_gaussian_process_matrix({{1.0, 2.0}, {2.0, 1.0}}),
+                                   two_theta,
+                                   0.0,
+                                   two_deltas,
+                                   valid_gamma,
+                                   two_factors,
+                                   42,
+                                   1.0),
+        std::invalid_argument); // indefinite sigma
+    REQUIRE_THROWS_AS(
+        quadratic_gaussian_process(two_kappas,
+                                   valid_sigma,
+                                   two_theta,
+                                   0.0,
+                                   two_deltas,
+                                   quadratic_gaussian_process_matrix({{0.5, 0.1}, {0.2, 0.3}}),
+                                   two_factors,
+                                   42,
+                                   1.0),
+        std::invalid_argument); // asymmetric gamma
+    REQUIRE_THROWS_AS(
+        quadratic_gaussian_process(two_kappas,
+                                   valid_sigma,
+                                   two_theta,
+                                   0.0,
+                                   two_deltas,
+                                   quadratic_gaussian_process_matrix({{1.0, 1.5}, {1.5, 1.0}}),
+                                   two_factors,
+                                   42,
+                                   1.0),
+        std::invalid_argument); // indefinite gamma
     REQUIRE_THROWS_AS(quadratic_gaussian_process(
                           two_kappas,
                           valid_sigma,
                           two_theta,
                           0.0,
                           two_deltas,
-                          matrix({{std::numeric_limits<double>::quiet_NaN(), 0.2}, {0.2, 0.3}}),
+                          quadratic_gaussian_process_matrix(
+                              {{std::numeric_limits<double>::quiet_NaN(), 0.2}, {0.2, 0.3}}),
                           two_factors,
                           42,
                           1.0),

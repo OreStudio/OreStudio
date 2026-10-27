@@ -34,6 +34,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -61,7 +62,6 @@ using ores::utility::generation::generation_context;
 using Catch::Matchers::ContainsSubstring;
 using namespace ores::logging;
 
-const std::string granted_code("iam::accounts:read");
 const std::string exchange_code("iam::run_grants:exchange");
 const std::string reporting_service("ReportingService");
 const std::string compute_service("ComputeService");
@@ -72,10 +72,10 @@ ores::security::jwt::jwt_authenticator signer_for_tests() {
     return ores::security::jwt::jwt_authenticator::create_hs256("ores-iam-run-token-tests");
 }
 
-account write_account(database_helper& h,
-                      generation_context& gen,
-                      const std::string& status,
-                      const std::string& type = "user") {
+account service_run_grant_exchange_write_account(database_helper& h,
+                                                 generation_context& gen,
+                                                 const std::string& status,
+                                                 const std::string& type = "user") {
     ores::iam::repository::account_repository repo;
     auto value = ores::iam::generators::generate_synthetic_account(gen);
     value.account_status = status;
@@ -147,15 +147,6 @@ create_run_grant_request grant_request(const role& r, const std::string& resourc
     return req;
 }
 
-std::string resource_name() {
-    return "reporting.report_definition/" +
-           boost::uuids::to_string(boost::uuids::random_generator()());
-}
-
-boost::uuids::uuid id_of(const std::string& s) {
-    return boost::uuids::string_generator()(s);
-}
-
 exchange_run_grant_request exchange_request(const std::string& grant_id,
                                             const std::string& tenant_id,
                                             const std::string& run_id) {
@@ -194,8 +185,8 @@ struct exchange_fixture {
         , gen(ores::testing::make_generation_context(h))
         , party(boost::uuids::random_generator()())
         , tenant_id(h.tenant_id().to_string()) {
-        grantor = write_account(h, gen, grantor_status);
-        service_account = write_account(h, gen, "active", "service");
+        grantor = service_run_grant_exchange_write_account(h, gen, grantor_status);
+        service_account = service_run_grant_exchange_write_account(h, gen, "active", "service");
         grantor_role = existing_or_new_role(h, gen, "ReportRunViewer", granted_code);
         service_role = existing_or_new_role(h, gen, reporting_service, granted_code);
 
@@ -286,7 +277,7 @@ TEST_CASE("exchange_run_grant_refuses_a_caller_without_the_exchange_permission",
 TEST_CASE("exchange_run_grant_refuses_an_account_that_holds_no_service_role",
           "[service][run_grant][exchange]") {
     exchange_fixture f;
-    const auto plain = write_account(f.h, f.gen, "active");
+    const auto plain = service_run_grant_exchange_write_account(f.h, f.gen, "active");
     const auto resp =
         run_grant_operations_service(service_context(f.h, plain, f.party), signer_for_tests())
             .exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-1"));
@@ -298,7 +289,7 @@ TEST_CASE("exchange_run_grant_refuses_a_service_outside_the_audience",
           "[service][run_grant][exchange]") {
     exchange_fixture f;
     const auto other_role = existing_or_new_role(f.h, f.gen, compute_service, granted_code);
-    const auto other = write_account(f.h, f.gen, "active");
+    const auto other = service_run_grant_exchange_write_account(f.h, f.gen, "active");
     authorization_service(f.h.context())
         .assign_role(other.id, other_role.id, f.h.db_user(), "Synthetic test data", "system.test");
     // The grant's audience names ReportingService and OreService alone, so the

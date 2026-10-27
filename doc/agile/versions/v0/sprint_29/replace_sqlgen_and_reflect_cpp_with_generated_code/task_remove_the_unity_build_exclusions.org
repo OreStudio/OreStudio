@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-the-unity-build-exclusions
+#+pr: 3923
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ After step 1, at any time. Every source builds in the unity build, and cmake/uni
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,20 @@ After step 1, at any time. Every source builds in the unity build, and cmake/uni
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Classify each group the collision scan finds: identical definitions to
+   share, different definitions under one name to rename.
+2. Rename with clang-refactor, so a rename follows the compiler and not the
+   text: every file but the first of a group names its helper after itself.
+   A call inside a template body that depends on a template argument is not
+   resolved by clang-refactor, and a script finishes those.
+3. Move each shared group into one header per target, in the files' common
+   directory, inline and in the helper's own namespace.
+4. Empty the exclusion record and build the whole tree with =-k 0=. Apply
+   the compiler's fully qualified suggestions where a merged unit made a
+   relative name such as =messaging::= resolve elsewhere, and rename every
+   redefinition it reports in the file that redefines it.
+5. Repeat until the tree builds, then prune each shared header to the
+   includes it compiles without.
 
 * Measurements
 
@@ -58,9 +69,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Recorded exclusions | 0, from 207 | =build/scripts/check_unity_collisions.py= | e6f969ee1f |
+| Unity build of the whole tree, no exclusions | Green | =cmake --build build/output/linux-clang-release-ninja -- -k 0= | e6f969ee1f |
+| Shared helper headers | 22 | =git ls-files '*test_helpers.hpp' '*shared_helpers.hpp'= | e6f969ee1f |
+| Includes in the shared headers after pruning | 1 to 11 each, from up to 108 | =prune_includes.py=, in the session scratchpad | e6f969ee1f |
+| Helpers renamed with clang-refactor | about 250 | =rename_groups.py= and =rename_redefinitions.py=, in the session scratchpad | e6f969ee1f |
 
 * Notes
+
+** Where this departs from the acceptance
+
+- Renamed helpers are named for the file that owns them, such as
+  =fx_instrument_projection_to_ore_date=, not for what each does. A name per
+  owner is exact and mechanical over about 250 helpers; naming each for what
+  it does is a reading of each one, left for the code that the generated
+  codecs and statements replace.
+- File-local loggers are renamed per file, such as =tenant_lookups_lg=, not
+  moved into the class they log for. Many log for free functions, which have
+  no class.
+
+** What text identity got wrong
+
+Two copies with identical text are not always the same helper. A logger
+=lg()= reads its own file's =logger_name=, and a helper in =ores.ore= calls
+its own file's =to_domain_date=. Sharing those changed which logger or which
+conversion a file used, so they were renamed instead. =ores.ore/core/src= is
+renamed throughout for that reason.
 
 * Test Scenarios
 
@@ -77,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3923][#3923]] | [build] Bring every excluded source back into the unity build |
 
 * Review
 
@@ -86,3 +120,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every hand-written source is back in the unity build and the exclusion
+record is empty. Identical helpers live once in 22 shared headers; other
+clashing helpers, types and namespace aliases are renamed for the file that
+owns them; relative names a merged unit made ambiguous are fully qualified.
+The collision scan no longer reads a qualified member definition or a
+parameter line as a file-local name, and two new tests pin that.

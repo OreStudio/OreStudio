@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_economic_digest.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -34,14 +35,6 @@ namespace {
 
 using ores::trading::domain::trade;
 using ores::trading::domain::trade_economic_digest;
-
-ores::utility::uuid::tenant_id tenant_of(std::string_view text) {
-    return ores::utility::uuid::tenant_id::from_string(text).value();
-}
-
-boost::uuids::uuid uuid_of(std::string_view text) {
-    return boost::uuids::string_generator()(text.begin(), text.end());
-}
 
 trade make_trade() {
     trade t;

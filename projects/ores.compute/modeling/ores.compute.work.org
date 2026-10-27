@@ -166,6 +166,20 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+*** results_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Pre-assigned upload location for the canonical result rows (HTTP PUT).
+ *
+ * Beside the archive and granted to the same claim. Empty when the job produces
+ * no rows.
+ */
+#+end_src
+
 *** storage_token
 :PROPERTIES:
 :cpp_type: std::string
@@ -455,6 +469,21 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+*** results_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Pre-assigned upload location for the canonical result rows.
+ *
+ * Beside the archive and granted to the same claim: the node writes the rows it
+ * marshalled from the engine's output here, and the reporting service reads them
+ * to load its result table. An empty value means the job produces no rows.
+ */
+#+end_src
+
 *** storage_token
 :PROPERTIES:
 :cpp_type: std::string
@@ -462,7 +491,8 @@ result. No person types them, and nothing in the shell sends them.
 
 #+begin_src cpp :name comment
 /**
- * @brief A capability for exactly the package, the input and the output of this job, minted at the claim.
+ * @brief A capability for exactly the package, the input, the output and the canonical rows of
+ * this job, minted at the claim.
  */
 #+end_src
 

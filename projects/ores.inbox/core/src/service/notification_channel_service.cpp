@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -181,7 +182,8 @@ messaging::put_notification_channel_response notification_channel_service::put_n
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = notification_channel_read_one(repo_, ctx_, notification_channel_key_from(value));
+    auto written = of_acting_party(
+        notification_channel_read_one(repo_, ctx_, notification_channel_key_from(value)), ctx_);
     if (!written.empty())
         response.notification_channel = std::move(written.front());
     return response;
@@ -214,8 +216,8 @@ notification_channel_service::put_many_notification_channels(
     repo_.write(ctx_, batch, claims);
     response.channels.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            notification_channel_read_one(repo_, ctx_, notification_channel_key_from(value));
+        auto written = of_acting_party(
+            notification_channel_read_one(repo_, ctx_, notification_channel_key_from(value)), ctx_);
         response.channels.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -339,8 +341,10 @@ notification_channel_service::prepare_change(const messaging::notification_chann
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = notification_channel_to_domain(change.write);
-    const auto current =
-        notification_channel_read_one(repo_, ctx_, notification_channel_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        notification_channel_read_one(repo_, ctx_, notification_channel_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -33,14 +33,14 @@ using ores::marketdata::service::app::demand_policy;
 const std::string eur_usd = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
 const std::string gbp_usd = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
 
-struct world {
+struct app_demand_calculator_world {
     demand_catalogue c;
     boost::uuids::random_generator gen;
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     ores::marketdata::domain::market_data_source sim;
     ores::marketdata::domain::market_data_source live;
 
-    world() {
+    app_demand_calculator_world() {
         sim.id = gen();
         sim.name = "bloomberg-sim";
         sim.provider_code = "bloomberg";
@@ -96,7 +96,7 @@ struct world {
 
 TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider",
           "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
 
     const auto result = compute_demand(w.c, w.now);
@@ -110,7 +110,7 @@ TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider",
 }
 
 TEST_CASE("the_demand_holds_no_id_of_another_provider", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
 
     const auto result = compute_demand(w.c, w.now);
@@ -121,7 +121,7 @@ TEST_CASE("the_demand_holds_no_id_of_another_provider", "[app][demand_calculator
 
 TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice",
           "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     w.party_routed_to(w.sim);
 
@@ -131,7 +131,7 @@ TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice",
 }
 
 TEST_CASE("parties_of_two_sources_give_each_adapter_its_own_set", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     w.party_routed_to(w.live);
 
@@ -146,7 +146,7 @@ TEST_CASE("parties_of_two_sources_give_each_adapter_its_own_set", "[app][demand_
 }
 
 TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     const auto party = w.party_routed_to(w.sim, false);
 
     const auto result = compute_demand(w.c, w.now);
@@ -161,7 +161,7 @@ TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", "[app][de
 
 TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party",
           "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim, true, true);
 
     const auto result = compute_demand(w.c, w.now);
@@ -171,7 +171,7 @@ TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party",
 }
 
 TEST_CASE("a_subscription_with_no_right_does_not_entitle_a_party", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     w.c.subscriptions.front().display = false;
 
@@ -181,7 +181,7 @@ TEST_CASE("a_subscription_with_no_right_does_not_entitle_a_party", "[app][demand
 }
 
 TEST_CASE("a_mapping_that_does_not_hold_now_adds_no_id", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     w.c.mappings.front().effective_to = w.now - 1h;
 
@@ -192,7 +192,7 @@ TEST_CASE("a_mapping_that_does_not_hold_now_adds_no_id", "[app][demand_calculato
 }
 
 TEST_CASE("a_party_restricted_to_an_item_demands_only_its_ids", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     demand_policy policy;
     policy.requirements = [](const auto&, const auto&) {
@@ -206,7 +206,7 @@ TEST_CASE("a_party_restricted_to_an_item_demands_only_its_ids", "[app][demand_ca
 }
 
 TEST_CASE("the_inputs_of_a_composite_join_the_demand", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     demand_policy policy;
     policy.requirements = [](const auto&, const auto&) {
@@ -223,7 +223,7 @@ TEST_CASE("the_inputs_of_a_composite_join_the_demand", "[app][demand_calculator]
 }
 
 TEST_CASE("a_route_to_a_source_the_catalogue_lacks_adds_nothing", "[app][demand_calculator]") {
-    world w;
+    app_demand_calculator_world w;
     w.party_routed_to(w.sim);
     w.c.routes.front().source_id = w.gen();
 

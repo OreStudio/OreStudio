@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 Decided: store one tick for each source, owned by the system tenant, and
 check the subscription at read time. The page is
-[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
 On the provisioned Acme tenant the per-party copy is five identical copies of
 26 series: 3,427,320 rows and 369.7 MB, where one copy for each source is

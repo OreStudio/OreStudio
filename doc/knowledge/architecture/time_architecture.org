@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :time:bitemporality:database:architecture:knowledge:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-10-26
 
 Time is a first-class concern in ORE Studio. Every persisted entity
 carries a full audit trail, the database schema is bitemporal, and all
@@ -68,8 +68,8 @@ The =stamp()= helper in =handler_helpers.hpp= fills =modified_by=,
 
 *All timestamps in ORE Studio are UTC, everywhere.*
 
-- PostgreSQL: every connection runs =SET TIME ZONE 'UTC'= on acquire
-  (=tenant_aware_pool::acquire()=).  PostgreSQL therefore returns all
+- PostgreSQL: every connection runs =SET TIME ZONE 'UTC'= when it opens,
+  the one setting a connection keeps for its life ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]).  PostgreSQL therefore returns all
   =TIMESTAMPTZ= values as ="YYYY-MM-DD HH:MM:SS.ffffff+00"=.
 - C++ domain layer: =std::chrono::system_clock::time_point= is UTC by
   definition (C++20).

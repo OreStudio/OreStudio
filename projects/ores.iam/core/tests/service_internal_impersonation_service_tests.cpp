@@ -20,16 +20,12 @@
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
-
-const std::string test_secret("super-secret-key-for-testing-purposes-only-32bytes!");
-
-}
 
 using namespace ores::logging;
 using ores::testing::scoped_database_helper;

@@ -22,6 +22,7 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_approx.hpp>
@@ -57,13 +58,6 @@ tenor make_tenor(const std::string& code, const std::string& unit, int multiplie
     t.unit = unit;
     t.multiplier = multiplier;
     return t;
-}
-
-tenor_convention_resolution make_resolution(const std::string& tenor_code) {
-    tenor_convention_resolution r;
-    r.convention_code = "RATES_SPOT_FORWARD";
-    r.tenor_code = tenor_code;
-    return r;
 }
 
 // A spot anchor and two period tenors on the calendar axis: enough for a

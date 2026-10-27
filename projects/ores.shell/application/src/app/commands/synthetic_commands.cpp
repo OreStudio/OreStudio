@@ -830,7 +830,8 @@ void synthetic_commands::process_regime_get(std::ostream& out,
         << "pace: " << response->pace << "\n"
         << "tau: " << response->tau << "\n"
         << "enrolled rate: " << response->population_rate << " a second\n"
-        << "run seed: " << response->run_seed << std::endl;
+        << "run seed: " << response->run_seed << "\n"
+        << "market speed: " << response->speed << " simulated seconds a unit of tau" << std::endl;
 }
 
 void synthetic_commands::process_regime_trace(std::ostream& out,

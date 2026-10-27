@@ -499,6 +499,8 @@ const marketRegimeSchema = z.object({
     /** Jump over decay; the heat settles while it is below one. */
     loopGain: z.number().default(0),
     runSeed: z.number().default(0),
+    /** The simulated seconds one unit of market time spans: how fast the simulated world runs. */
+    speed: z.number().default(1),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;

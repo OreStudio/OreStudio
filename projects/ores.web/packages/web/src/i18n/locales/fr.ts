@@ -4833,6 +4833,8 @@ const fr: SourceCatalogue = {
             pace: 'Allure',
             loopGain: 'Gain de boucle de la chaleur',
             loopGainValue: '{gain} sur 1',
+            speed: 'Vitesse du marché',
+            speedValue: '{speed} secondes simulées par unité de temps de marché',
             runSeed: 'Graine du run',
             ticksPerSecond: 'Ticks par seconde',
             heapSize: 'Taille du tas',

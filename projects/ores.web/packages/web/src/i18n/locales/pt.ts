@@ -4800,6 +4800,8 @@ const pt: SourceCatalogue = {
             pace: 'Ritmo',
             loopGain: 'Ganho de ciclo do calor',
             loopGainValue: '{gain} de 1',
+            speed: 'Velocidade do mercado',
+            speedValue: '{speed} segundos simulados por unidade de tempo de mercado',
             runSeed: 'Semente da execução',
             ticksPerSecond: 'Ticks por segundo',
             heapSize: 'Tamanho do heap',

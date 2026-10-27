@@ -169,6 +169,20 @@ private:
 };
 
 /**
+ * @brief The simulated years one tick of a curve covers: the market speed over the
+ * curve's rate.
+ *
+ * The rate decides how often a curve publishes and not how fast its calendar runs, so
+ * a curve and the spot feeds beside it live in one simulated time. At the default speed
+ * of 1440, a curve at one tick a minute steps a calendar day, as it always has.
+ */
+constexpr double curve_step_years(double market_speed, double ticks_per_hour) {
+    constexpr double seconds_per_year = 365.0 * 24.0 * 60.0 * 60.0;
+    return ticks_per_hour > 0.0 ? market_speed / (ticks_per_hour / 3600.0) / seconds_per_year :
+                                  ir_curve_feed_dt;
+}
+
+/**
  * @brief Resolves a config's Curve Template entries and constructs its ir_curve_feed, ready to
  * start() on its own thread. Shared by auto-start and the on-demand start control-plane so the
  * two paths can never drift (e.g. one lowercasing process_type and the other not) -- including

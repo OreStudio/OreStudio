@@ -68,7 +68,10 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     od.add_options()("run-seed",
                      boost::program_options::value<std::uint64_t>()->default_value(42),
                      "Seed every random stream of the run is keyed by. One seed reproduces a "
-                     "run.");
+                     "run.")("market-speed",
+                             boost::program_options::value<double>()->default_value(1440.0),
+                             "Simulated seconds one unit of market time spans: how fast the "
+                             "simulated world runs. Every feed's prices step by it.");
     const auto vm(standard_service_options::parse(od, arguments, "SYNTHETIC_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -87,6 +90,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.nats = std_opts.nats;
     r.database = std_opts.database;
     r.run_seed = vm["run-seed"].as<std::uint64_t>();
+    r.market_speed = vm["market-speed"].as<double>();
     return r;
 }
 

@@ -52,6 +52,14 @@ struct options final {
      * One seed reproduces a run: the same feeds tick at the same times.
      */
     std::uint64_t run_seed = 42;
+
+    /**
+     * @brief The simulated seconds one unit of market time spans.
+     *
+     * One number for the run: every feed's prices step by it, so spot and curve feeds live in
+     * one simulated world. The default steps a curve at one tick a minute by a calendar day.
+     */
+    double market_speed = 1440.0;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

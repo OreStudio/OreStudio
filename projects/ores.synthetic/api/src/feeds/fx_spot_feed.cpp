@@ -219,10 +219,12 @@ void fx_spot_feed::start() {
 std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_context& context) {
     const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
 
-    // An unusable gap still publishes a tick, so it advances the process by one
-    // nominal tick, as it always did.
+    // Simulated time, not wall time: the run's market speed says how many simulated seconds a
+    // unit of market time spans, so the feed's rate decides how often it looks and not how fast
+    // its world runs, and a busy market brings ticks sooner without moving the price further. An
+    // unusable gap still publishes a tick, so it advances the process by one nominal tick.
     const auto elapsed_ticks =
-        context.elapsed_seconds > 0.0 ? context.elapsed_seconds * ticks_per_second_ : 1.0;
+        context.simulated_seconds > 0.0 ? context.simulated_seconds * ticks_per_second_ : 1.0;
     const auto value = std::format("{}", process_->next(elapsed_ticks));
     if (n == 1 || n % 100 == 0) {
         BOOST_LOG_SEV(lg(), ores::logging::info)

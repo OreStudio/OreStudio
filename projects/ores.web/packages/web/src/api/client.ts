@@ -788,14 +788,9 @@ export interface ReportBookRow {
 }
 
 /** Why a report shows no rows, as the server stated it. */
-export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
+export type ResultReason = '' | 'no-run' | 'no-rows' | 'no-figures';
 
-const RESULT_REASONS: readonly ResultReason[] = [
-    'no-run',
-    'no-output',
-    'no-result-file',
-    'no-figures',
-];
+const RESULT_REASONS: readonly ResultReason[] = ['no-run', 'no-rows', 'no-figures'];
 
 /** The reason the server named, or nothing when it named one this client does not know. */
 function resultReasonOf(value: string | undefined): ResultReason {

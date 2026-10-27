@@ -62,8 +62,8 @@ interface RowsAnswer {
 /*
  * The results a run wrote, at the level a reader asks for.
  *
- * The engine writes one row per trade into npv.csv, and nothing else reads that
- * file. The BFF reads it here, joins the trades to their books and names their
+ * The engine's figures are loaded into the result table by the post-processor,
+ * and the BFF reads them from there: it joins the trades to their books and names their
  * counterparties, and rolls the figures up when the reader asks for a book or a
  * counterparty view. The browser receives rows rather than four lists to join.
  *
@@ -125,7 +125,7 @@ export interface AggregateRow {
 }
 
 /** Why a report has no rows to show. */
-export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
+export type ResultReason = '' | 'no-run' | 'no-rows' | 'no-figures';
 
 interface TradeAnswer {
     readonly level: 'trade';
@@ -181,7 +181,7 @@ interface TradeRecords {
 }
 
 /**
- * The names and books behind the ids npv.csv writes.
+ * The names and books behind the ids the run's rows carry.
  *
  * A read that fails leaves the names empty rather than failing the figures. A
  * trade with no booking keeps an empty book, which the book level shows as
@@ -703,7 +703,7 @@ async function rowsOfRun(session: LiveSession, runId: string): Promise<RowsAnswe
     if (reply.report_result_rows.length === 0) {
         return {
             rows: [],
-            reason: 'no-result-file',
+            reason: 'no-rows',
             recordsComplete: true,
             counterpartyParent: new Map(),
             counterpartyName: new Map(),

@@ -56,6 +56,7 @@ import { useTabs } from '../ui/Tabs.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath, reportRunPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
+import { Button } from '../ui/Primitives.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Detail, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
@@ -321,16 +322,13 @@ function ReportBody(): ReactNode {
                 own={
                     <>
                         {mayRun && (
-                            <button
-                                type="button"
-                                className="btn"
-                                disabled={startRun.isPending}
+                            <Button
+                                pending={startRun.isPending}
+                                pendingLabel={t('reporting.run.starting')}
                                 onClick={() => startRun.mutate(definition.id)}
                             >
-                                {startRun.isPending
-                                    ? t('reporting.run.starting')
-                                    : t('reporting.run.start')}
-                            </button>
+                                {t('reporting.run.start')}
+                            </Button>
                         )}
                         <RefreshButton onClick={reload} load={load} news={news} />
                     </>

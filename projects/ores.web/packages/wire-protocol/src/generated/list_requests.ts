@@ -197,7 +197,7 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'analytics.v1.sensitivity_templates.list': {
         asOf: true,
-        filter: ['code_one_of'],
+        filter: ['code_one_of', 'search'],
         rows: ['templates'],
     },
     'analytics.v1.sensitivity_templates_versions.list': {

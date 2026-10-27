@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 651922B3-E3D0-413B-AC0E-ED713324AC71
+:END:
+#+title: Story: Report when a database's timescaledb version is not on disk
+#+description: An apt upgrade replaces the version-named timescaledb library while every database keeps the version it recorded, so a database fails on its first query with could not access file. compass db status reported the schema and said nothing about the extension, so the failure read as an unreachable database rather than a one-line fix.
+#+type: story
+#+level: s2
+#+filetags: :sql:postgresql:timescaledb:tooling:sprint_29:v0:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+compass db status names the timescaledb version a database records, the versions whose library is on disk, and the statement that reconciles them, so the apt-upgrade failure is read once and fixed in one line.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-27                               |
+
+* Acceptance
+
+- compass db status prints the recorded timescaledb version and whether its library is on disk.
+- A mismatch names both versions and the alter extension statement that fixes it.
+- A database without the extension is not reported as a fault.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9BAA6DF8-5FBD-460F-828E-4250CFECC1C3][Scaffold story: Report when a database's timescaledb version is not on disk]] | STARTED | 2026-10-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:81E4BE20-2012-4F9E-AB31-A64C23AC5AA1][Report the recorded and installed timescaledb versions]] | BACKLOG | | | Initial task for: Report when a database's timescaledb version is not on disk |
+
+* Decisions
+
+* Out of scope
+
+-

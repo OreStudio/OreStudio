@@ -26,11 +26,11 @@ The convention family's invariants are enforced in the schema, its long and shor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | Three of the four snags are done; the browser smoke needs a provisioned tenant. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, then smoke the page once the fleet is up. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -119,9 +119,11 @@ from 53 to 48.
 is in the inbox, with the anti-pattern, the package shape, the precedent not to
 copy and the nightly failure it removes.
 
-** The browser smoke, not done
+** The browser smoke, carried to the inbox
 
-The fleet is stopped and the database was just recreated, so no tenant is
-provisioned and there is no session to open the page with. That is the one
-acceptance bullet this branch does not meet. The BFF's own suite covers the zip
-that the page reads, with the fixture in the shape the server sends.
+The fleet is stopped and the database was recreated, so no tenant is
+provisioned and there is no session to open the page with. That acceptance
+bullet is not met here; it is filed as
+[[file:doc/agile/product_backlog/inbox/smoke-the-convention-record-page.org][Smoke the convention record page on a live fleet]],
+with the three forms to look at. The BFF's own suite covers the zip the page
+reads, with the fixture in the shape the server sends.

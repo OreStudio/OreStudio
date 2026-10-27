@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: FE4D6DCF-A127-4CE8-BC06-2459E8B6EC90
+:END:
+#+title: Smoke the convention record page on a live fleet
+#+description: No one has looked at the convention record page since the parts were grouped and their payloads nested. The BFF zip is covered by its own suite, but the page itself has not been opened on a provisioned tenant.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Open a tenor basis swap convention on the record page of a running fleet and
+confirm the terms of both leg forms read as terms: the paying and receiving
+form's nine, the long and short form's seven, and the central row's Id.
+
+* Why
+
+The parts were grouped onto field groups and their payloads now nest one level.
+The BFF zip flattens them, and its suite feeds the nested shape, so the logic
+is covered. What is not covered is the page: the leaf renderer, the two leg
+forms drawn from one central row, and whether the long and short terms read
+with their new documentation.
+
+* Acceptance
+
+- A tenor basis swap convention draws its terms on the record page, each with
+  its label and its documentation.
+- The long and short form's five newly documented terms show text rather than a
+  bare label.
+- A convention with one form shows no terms of the other.
+
+* References
+
+- PR #3908, which grouped the parts.
+- PR #3919, which taught the BFF zip to flatten them.
+- `doc/knowledge/ui/ore_element_and_leaf_screen_standard.org` — what the page
+  must show.
+
+

@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/remove-the-unity-build-exclusions
-#+pr:
+#+pr: 3923
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3923][#3923]] | [build] Bring every excluded source back into the unity build |
 
 * Review
 

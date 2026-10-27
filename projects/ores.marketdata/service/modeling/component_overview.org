@@ -72,7 +72,9 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         ores.eventing.core.lib
         ores.iam.client.lib
-        ores.analytics.quant.lib)
+        ores.analytics.quant.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies
@@ -82,6 +84,10 @@ target_link_libraries(${tests_target_name}
         ores.utility.lib
         ores.testing.lib
         ores.logging.lib
+        ores.iam.api.lib
+        ores.iam.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)

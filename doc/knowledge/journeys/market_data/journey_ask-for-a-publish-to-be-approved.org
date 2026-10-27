@@ -65,9 +65,10 @@ approval record, not of this screen; see /What is missing/.
    their own words. The system keeps the reason on the request; there is no
    candidate-set entity to hang it on yet.
 6. *Raise the request.* The trader chooses *Raise publish request*. The system
-   raises an approval request for the signed-in trader, waiting, with the kind
-   the request names. No market-data kind is seeded today; see /What is
-   missing/.
+   raises an approval request of the kind =marketdata.curve_publish= for the
+   signed-in trader, waiting, and names the curve and the snapshot it is about.
+   The raise is one call of =marketdata.v1.ops.publish_curve= with no approved
+   request named: that call writes the request and publishes nothing.
 7. *Confirm the separation of duties.* The system does not offer decision
    controls to the person who raised the request, and refuses a decision by the
    asker. The trader reads the request back as waiting, under *My requests*.
@@ -89,8 +90,9 @@ are asking about above the act of asking.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_ask-for-a-publish-to-be-approved.png]]
 
-The raise control is disabled while no market-data kind exists, and the panel
-says why, so an empty action is never mistaken for a broken one.
+The raise control offers the ask, and the panel states the kind the request
+will be raised with, so the trader reads what the decider answers before they
+ask.
 
 * Prototype
 
@@ -136,7 +138,8 @@ column on =market_series=.
 | Read the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.list= | exists |
 | Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
 | Raise the request | Raise the request | =inbox.v1.ops.raise_approval= | exists |
-| Raise the request | Apply the decision when it comes (the kind's owning operation) | =marketdata.v1.curve_bootstrap.publish= | missing |
+| Raise the request | Raise the request | =marketdata.v1.ops.publish_curve= with no approved request | exists |
+| Raise the request | Apply the decision when it comes (the kind's owning operation) | =marketdata.v1.ops.publish_curve= with the approved request | exists |
 | Confirm the separation of duties | Read my own requests and their state | =inbox.v1.ops.list_my_approval_requests= | exists |
 | Confirm the separation of duties | Read the decisions on the request | =inbox.v1.approval_decisions.list_by_request_id= | exists |
 
@@ -148,13 +151,12 @@ does not exist; that is the publish operation the third journey needs.
 
 * What is missing
 
-1. *There is no market-data approval kind.* One kind is seeded today,
-   =iam.role_grant=, and nothing registers a kind for a curve publish. The
-   candidate is a kind, =marketdata.curve_publish=, with its own
-   =decide_permission_code=, its =comment_on_approve= rule and its
-   =approvals_required= count, seeded beside the IAM kind. Until then the raise
-   cannot be given a kind, so *Raise publish request* is disabled and the panel
-   says a market-data approval kind is missing.
+1. *The request does not name the curve it is about.* The kind exists and the
+   request is raised, but a request is a header: the curve and the snapshot live
+   in the kind's own detail table, and no such table exists for a curve publish.
+   Until it does, the publish names the configuration and the as-of itself and
+   the approved request authorises that publish, which is weaker than a request
+   that names its subject.
 2. *There is no candidate set.* A point of the curve is held by
    =market_observation=, whose identity is the =oresmd_uri= and which has no
    =point_id= and no tenor column; nothing groups the day's points into the one
@@ -168,12 +170,11 @@ does not exist; that is the publish operation the third journey needs.
    build, plus a read such as =marketdata.v1.curve_candidates.diff=. Until then
    the delta column is shown empty, with the reason stated, and the trader
    compares against a snapshot they choose.
-4. *The approval has nothing to apply it.* The decision is generic, but the
-   component that owns the kind applies it through an operation of its own, and
-   no publish operation exists. The candidate is
-   =marketdata.v1.curve_bootstrap.publish=. Until then a market-data request
-   could be decided and still nothing would change, which is why the kind
-   cannot be seeded before the operation is.
+4. *The apply is the publish operation, and it is not a workflow.*
+   =marketdata.v1.ops.publish_curve= applies an approved request, but nothing
+   starts it when the last decider approves: the trader calls it again, as
+   *Publish the approved set* draws it. A kind that names an apply workflow
+   would apply the set without the trader, and no such workflow exists.
 5. *No permission pair separates maker from checker.* The approval record
    refuses a decision by the person who asked, so four-eyes holds at the
    record. Nothing in market data yet splits the raise permission from the

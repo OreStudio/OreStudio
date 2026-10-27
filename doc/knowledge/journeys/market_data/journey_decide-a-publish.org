@@ -57,8 +57,10 @@ says who decided.
    approver sees only the kinds they may decide.
 2. *Open one request.* The approver opens a request. The system reads its
    header — who asked, when, and why — and the kind's detail that names what is
-   asked. No market-data kind exists yet, so a curve publish never appears in
-   the queue; see /What is missing/.
+   asked. The kind =marketdata.curve_publish= is seeded, so a curve publish
+   appears in the queue of a person holding
+   =inbox::approvals:decide_market_risk=, which in Acme is the Market Risk
+   function: the head of market risk of each office.
 3. *Read the delta against the last published.* The approver reads the
    candidate points beside the curve the system last published, point by point,
    so the decision is about a change and not about a number. Nothing marks a
@@ -139,6 +141,7 @@ request's id; see /What is missing/.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Open the queue | List the requests this approver may decide | =inbox.v1.ops.list_approval_queue= | exists |
+| Decide | Read the reasons a hold may name | =inbox.v1.hold_reasons.list= | exists |
 | Open one request | Read the request header | =inbox.v1.approval_requests.get= | exists |
 | Open one request | Read the requests of one kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
 | Read the delta | Show the change against the published version | =marketdata.v1.curve_candidates.diff= | missing |
@@ -156,13 +159,12 @@ kind exists to filter by.
 
 * What is missing
 
-1. *There is no market-data approval kind.* The queue can only show kinds that
-   exist, and only =iam.role_grant= is seeded. The candidate is a kind,
-   =marketdata.curve_publish=, whose =decide_permission_code= is a market-data
-   publish permission and whose =approvals_required= is the tenant's chosen
-   count. Until then the queue lists no curve publish, and the screen says a
-   market-data approval kind is missing rather than showing an empty queue for
-   no reason.
+1. *The queue shows a curve publish but not the curve.* The kind is seeded with
+   =inbox::approvals:decide_market_risk= as its decide permission, one approval,
+   a hold allowed and a two-week window, so a Market Risk decider finds the
+   request. What the request is about is still missing: a request is a header,
+   and the kind's detail table that would name the curve and the as-of does not
+   exist, so the row shows the kind, the reason and the state and no curve.
 2. *There is no delta against the last published.* Nothing marks a curve
    published, so there is no baseline and no subject returns the difference.
    The candidate is a published marker on the series or the build, plus a read
@@ -187,10 +189,11 @@ kind exists to filter by.
    screen cannot say "Market data approvers" from the model. The candidate is a
    group named by the kind, or a permission bound to a group. Until then the
    screen shows the permission code and does not claim a group name.
-6. *A hold has no reason list.* The approval design puts hold reasons in a
-   lookup keyed from the kind's detail table, and the only seeded kind does not
-   hold. The candidate is the kind's hold reason lookup, seeded when the kind
-   allows holding. Until then a hold takes only the free-text comment.
+6. *A hold names a reason from a lookup.* A curve publish allows a hold,
+   because the approver's third answer is "not yet", so the hold takes a reason
+   code from the hold reason lookup and never free text alone. The lookup is one
+   list of the reasons the operational authorisation queue names, and a code it
+   does not hold is refused with the codes it does.
 
 * Related journeys
 

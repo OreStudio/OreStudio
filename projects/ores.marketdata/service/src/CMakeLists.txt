@@ -63,7 +63,9 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         ores.eventing.core.lib
         ores.iam.client.lib
-        ores.analytics.quant.lib)
+        ores.analytics.quant.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

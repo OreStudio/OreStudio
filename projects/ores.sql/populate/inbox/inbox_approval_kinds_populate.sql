@@ -33,6 +33,14 @@
  * An operational authorisation request does not expire: an unreleased trade is
  * a risk that a timeout must not hide. It allows a hold and asks for a comment
  * on every decision, as the operational authorisation queue does.
+ *
+ * A curve publish is decided by Market Risk, one person, inside a two-week
+ * window: a candidate curve that nobody answers leaves the desk pricing from
+ * the published one, which is the safe failure. It allows a hold, because the
+ * approver's third answer is "not yet" and the journey asks for it, and it asks
+ * for no comment on an approval, because a refusal already carries the one the
+ * asker reads. It names no apply workflow: the trader applies an approved
+ * request through marketdata.v1.ops.publish_curve, as the third journey draws it.
  */
 
 \echo '--- Approval Kinds ---'
@@ -55,6 +63,11 @@ insert into ores_inbox_approval_kinds_tbl (
      'A person proposes changes to counterparties, their identifiers and the parties that may trade with them',
      'inbox::approvals:decide_operations',
      false, false, 14, 'counterparty_apply_workflow', 24, 1, 30,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'marketdata.curve_publish', 0, 'Curve publish',
+     'A trader asks for a candidate curve to become the one the desk prices from',
+     'inbox::approvals:decide_market_risk',
+     true, false, 14, null, null, 1, 50,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'trading.operational_authorisation', 0, 'Operational authorisation',
      'Operations is asked to release a live trade',

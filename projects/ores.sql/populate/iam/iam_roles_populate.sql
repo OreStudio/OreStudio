@@ -344,6 +344,11 @@ BEGIN
     -- *Adjust a curve or surface by hand*: the trader is the maker, and the
     -- correction is the write the journey makes.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:write');
+    -- *Ask for a publish to be approved*: the trader who owns the curve is the
+    -- maker, so the desk asks and the Market Risk decider answers. The decide
+    -- code is not here, and that is what makes the publish four eyes: the
+    -- Operations role holds inbox::approvals:decide_market_risk.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_bootstrap:publish');
 
     -- Assign permissions to Sales role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'refdata::currencies:read');

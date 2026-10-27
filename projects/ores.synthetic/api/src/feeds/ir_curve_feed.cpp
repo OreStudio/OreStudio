@@ -135,14 +135,17 @@ void ir_curve_feed::start() {
 
 std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_context& context) {
     const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
-    const double elapsed_seconds = context.elapsed_seconds;
+    // A nominal tick of the curve is the market speed over its rate in simulated seconds, the
+    // step the process was built with, so the simulated time a tick covers is that many of them.
+    const double nominal = scheduler_.market_speed() / ticks_per_second_;
+    const double elapsed_ticks =
+        context.simulated_seconds > 0.0 ? context.simulated_seconds / nominal : 1.0;
 
-    // The clock decides when a curve publishes, and the model steps one tick of its own time,
-    // which the template resolver defines as one calendar day. A process whose law is written for
-    // an arbitrary step takes the gap instead, so a curve that ticks less often than its rate
-    // still advances the time it skipped.
+    // The scheduler decides when a curve publishes, and the model steps one tick of its own time.
+    // A process whose law is written for an arbitrary step takes the simulated time instead, so
+    // a curve that ticks later than its rate still advances the time it skipped.
     if (process_->supports_variable_step())
-        process_->next(elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0);
+        process_->next(elapsed_ticks);
     else
         process_->next();
     const auto now = context.observed_at;
@@ -330,12 +333,27 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         }
     }
 
+    const double step_years =
+        curve_step_years(scheduler.market_speed(), static_cast<double>(cfg.ticks_per_hour));
+
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
         cfg.process_type,
         definitions,
         cfg_values,
         price_stream_for(scheduler.run_seed(), cfg.source_name),
-        ir_curve_feed_dt);
+        step_years);
+
+    // A scheme that only approximates its law states the largest step it can carry. A rate so
+    // low that the step would exceed it is refused here, by name, rather than producing a path
+    // the scheme was never calibrated for.
+    if (step_years > process->max_step()) {
+        throw std::invalid_argument(
+            "make_ir_curve_feed: " + cfg.source_name + " at " + std::to_string(cfg.ticks_per_hour) +
+            " ticks an hour asks the " + cfg.process_type + " scheme for a step of " +
+            std::to_string(step_years * 365.0) + " days, and the largest it can take is " +
+            std::to_string(process->max_step() * 365.0) +
+            " days: raise the rate or lower the market speed");
+    }
 
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather

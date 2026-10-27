@@ -4769,6 +4769,8 @@ export const en: SourceCatalogue = {
             pace: 'Pace',
             loopGain: 'Heat loop gain',
             loopGainValue: '{gain} of 1',
+            speed: 'Market speed',
+            speedValue: '{speed} simulated seconds a unit of market time',
             runSeed: 'Run seed',
             ticksPerSecond: 'Ticks a second',
             heapSize: 'Heap size',

@@ -250,6 +250,7 @@ private:
         response.population_rate = market.population_rate;
         response.loop_gain = market.loop_gain;
         response.run_seed = scheduler_.run_seed();
+        response.speed = market.speed;
         constexpr auto window = std::chrono::minutes(2);
         const auto from = std::chrono::system_clock::now() - window;
         for (const auto& reading : scheduler_.readings_since(from)) {

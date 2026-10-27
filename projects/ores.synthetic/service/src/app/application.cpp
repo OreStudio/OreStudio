@@ -297,8 +297,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                .calm_rate = 1.0 / 300.0,
                                                                .active_multiplier = 2.0,
                                                                .jump = 0.5,
-                                                               .decay = 20.0};
-    BOOST_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed;
+                                                               .decay = 20.0,
+                                                               .speed = cfg.market_speed};
+    BOOST_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed
+                              << ", MARKET SPEED: " << cfg.market_speed;
     ores::analytics::quant::service::tick_scheduler scheduler(run_clock, market, cfg.run_seed);
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [](const std::exception& ex) {

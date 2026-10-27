@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: 5AEEAC8B-5435-46FD-B9C4-250F634682D3
-#+blocked_since: 2026-10-27
+#+branch: feature/make-a-rate-change-change-sampling-only
+#+pr: 3894
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-27
 #+environment: prime_origin
@@ -28,11 +28,11 @@ gets twice the samples of the same path, not twice the realized volatility.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]]: the price step must come from the time the scheduler hands each feed. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -72,7 +72,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant suite | 507 cases passed | =ores.analytics.quant.tests= | ffde6fc5a5 |
+| Synthetic suites | api, core and service passed | =compass test run -- -R ores.synthetic...= | 8ba1af3278 |
+| Full tree | builds | =compass build= | e227e2e734 |
+| Live run | 43,390 ticks, every adapter accepting every row; market speed 1440 read back from the shell | =compass smoke ticks= and =synthetic regime get= | 8ba1af3278 |
 
 * Notes
 
@@ -91,12 +94,110 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3894][#3894]] | [agile] Record what the rate change actually moves |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1r | Bot, second pass: an FX tick moves 1440 times as far at the default. | market_volatility_channel.org | Accept | Intended, as the first pass's note said; the rewrite had dropped the line, which is back. |
+| 2r | Bot, second pass: --market-speed is not checked at the CLI. | parser.cpp | Accept | A speed that is not positive is refused with a message. |
+| 3r | Bot, second pass: the protocol's speed defaults to 1. | market_regime_protocol.hpp | Accept | Zero, meaning not reported, in the protocol, the BFF and the client. |
+| 4r | Bot, second pass: the curve tick divides by its rate. | ir_curve_feed.cpp | Decline | The constructor refuses a rate of zero or less. |
+| 5r | Bot, second pass: a refused curve could abort auto-start. | generator_runner.hpp | Decline | The runner skips a feed whose generator cannot be built; its test says so. |
 
 * Result
+
+A run now has one simulated clock, and it runs on the market's tau. A tick
+steps its price by the simulated time since its feed last ticked, the market
+speed times the market time that passed, so a feed's rate and its sensitivity
+change how often it is sampled and not how far its world moves, and a spot feed
+and a curve beside it share one calendar. A curve's step is the speed over its
+rate, which at the default of 1440 and one tick a minute is a calendar day, as
+before, and a curve whose step an Euler or tree scheme cannot carry is refused
+by name. The speed is set for the run, logged at start, and shown in the
+shell and on the Market regime tab. On Acme every feed priced at the default,
+with no failed tick and no refused curve. The branch also mends three breaks
+main carried: a stale use of the retired acting party filter, a test writer
+missing three methods, and a test target missing the iam and inbox libraries.
+
+* Finding, before any code
+
+The task was raised against the claim that a rate change moves time. Measuring the
+class first shows the claim is half wrong, and the half that is wrong is the half
+this task would have spent effort on.
+
+- *Spot feeds are already time-scaled.* The three processes that take a gap are
+  the Gaussian mixture, the arithmetic mixture and the Ornstein–Uhlenbeck process,
+  and those are exactly what the three FX engines build: "geometric" is the
+  mixture, "arithmetic" the variant, "ornstein_uhlenbeck" the mean-reverting one.
+  A rate change on a spot feed already changes sampling only.
+- *Every other price process is a curve engine*, and all of them answer
+  =supports_variable_step() == false=. A curve feed steps one **simulated calendar
+  day per tick** by design, so its rate is a calendar speed — one a minute means
+  one simulated day a minute — and not a sampling rate at all.
+
+So the two feed classes use one word for two quantities. That is a real problem,
+but it is a naming and a decision problem, not a bug in the spot path, and a
+volatility loading — which belongs to the price law — is unaffected by it.
+
+Measured at =4b49b4ef2e=: 13 price processes, 3 time-scaled (the FX engines), 10
+one-tick (the curve engines).
+
+* Proposed re-scope
+
+Replace this task with one that decides and states the curve convention, in the
+model, the config and the screen: either a curve keeps a calendar-speed rate and
+both surfaces say "one simulated day per tick", or curves move to sampling like
+spot feeds, which changes what a curve's configuration means and needs its own
+migration story for existing rows. Until that is decided, no code changes here,
+and the story's second task (the volatility loading) proceeds on its own because
+it applies to spot feeds.
+
+* Decision
+
+=v=, the simulated seconds per wall second, belongs to the **market factor**: one
+number for the run, beside the state and the heat, visible on the dashboard and on
+the Market regime tab. A feed's rate is pure sampling, and a feed derives
+=Delta = v / r= for its process.
+
+The default =v= is the one that keeps a curve at one tick a minute producing what
+it produces today (=v = 1440=). Spot feeds deliberately move to the run's =v=,
+which is the inconsistency the task exists to remove: today they run at real
+speed while the curves beside them run fourteen hundred times faster.
+
+* Acceptance, as decided
+
+Rewritten on 2026-10-27 for the operational clock: simulated time runs on the
+market's tau, which every feed shares, and not on the wall clock.
+
+- The run carries =v= (=--market-speed=, logged at start), publishes it with the
+  regime, and shows it on the Market regime tab.
+- Every tick steps its price by the simulated time since the feed last ticked,
+  =v * Delta tau=; a curve's step is =v / r=, so the =1 / 365= constant is gone
+  from the feed.
+- The default =v= reproduces today's curve step at one tick a minute, with a
+  test that pins it.
+- Each process states the largest step its scheme can take, and a feed refuses a
+  rate whose step would exceed it, naming the bound.
+- The same seed at two rates gives the same path statistics per unit of
+  simulated time.
+- The note states =r=, =Delta= and =v=, and records that a step is calendar time.
+
+* Plan, as decided
+
+Rebuilt on 2026-10-27 on the operational clock. The first pass put =v= on the
+old market_regime, which the scheduler work deleted; its code was reset and its
+design carried onto tau, with the step bounds kept as they were.
+
+1. =market_config= carries =v= (=speed=), fixed for the run by the service's
+   =--market-speed= and logged at start. The scheduler tells each tick the
+   simulated time it covers, =v * Delta tau= since its series last ticked.
+2. The FX feed steps by that simulated time. A curve's step is =v / r= in
+   years (=curve_step_years=), so the =1 / 365= constant is gone from the feed,
+   and a variable-step curve counts its nominal ticks from the simulated time.
+3. Each approximate scheme states its step bound; a curve refuses a rate whose
+   step would exceed it, naming the bound.
+4. The regime read, the pin reply, the shell and the Market regime tab show =v=.
+5. The tests: the curve step pinned at the default, a tick's simulated time at
+   =v * Delta tau= whatever the pace, and the step bounds.

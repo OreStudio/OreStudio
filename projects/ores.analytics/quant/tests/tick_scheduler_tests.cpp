@@ -374,3 +374,29 @@ TEST_CASE("the heap drops the marks of removed series", "[tick_scheduler]") {
     for (int i = 0; i < 10; ++i)
         CHECK(scheduler.step()->id == kept);
 }
+
+TEST_CASE("a body is told the simulated time its tick covers, at the market's speed",
+          "[tick_scheduler]") {
+    // A periodic series at one a second ticks every unit of tau, so at a speed of ten each
+    // tick after the first covers ten simulated seconds, whatever the pace: a busy market
+    // brings the ticks sooner and leaves the step alone.
+    auto fast = no_heat;
+    fast.speed = 10.0;
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, fast, 1);
+    scheduler.pin(market_state::active);
+    std::vector<double> simulated;
+    scheduler.add({.series = 1, .arrival = per_second("periodic", 1.0)},
+                  [&](const tick_context& c) {
+                      simulated.push_back(c.simulated_seconds);
+                      return std::string{};
+                  });
+    for (int i = 0; i < 4; ++i)
+        scheduler.step();
+
+    REQUIRE(simulated.size() == 4);
+    for (std::size_t i = 1; i < simulated.size(); ++i)
+        CHECK(simulated[i] == Catch::Approx(10.0));
+    CHECK(scheduler.snapshot().speed == 10.0);
+    CHECK(scheduler.market_speed() == 10.0);
+}

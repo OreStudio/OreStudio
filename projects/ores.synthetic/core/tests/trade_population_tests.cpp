@@ -31,6 +31,7 @@
 #include <sstream>
 #include <string>
 #include <variant>
+#include <vector>
 
 // The generator's whole point is that a second provision states the same
 // population: no trade duplicated and no version advanced. These cases drive
@@ -167,6 +168,23 @@ struct recording_writer final : trade_population_writer {
         ++bookings;
         versions[slot.trade_id] = 1;
     }
+
+    bool structure_exists(const boost::uuids::uuid& structure_id) override {
+        return structures.contains(structure_id);
+    }
+
+    void write_structure(const domain::trade_population_structure& structure,
+                         const domain::trade_generation_scope&) override {
+        structures[structure.structure_id];
+    }
+
+    void write_structure_member(const boost::uuids::uuid& structure_id,
+                                const domain::trade_population_slot& slot) override {
+        structures[structure_id].push_back(slot.trade_id);
+    }
+
+    /// The structures a run grouped, with the trades it added to each.
+    std::map<boost::uuids::uuid, std::vector<boost::uuids::uuid>> structures;
 };
 
 /**

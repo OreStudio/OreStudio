@@ -28,7 +28,8 @@ using ores::synthetic::feed::children_with_counts;
 using ores::synthetic::feed::folder_feed_count;
 using ores::synthetic::messaging::feed_folder;
 
-feed_folder folder(std::string id, std::string parent, std::string name, std::string kind) {
+feed_folder
+feed_overview_folder(std::string id, std::string parent, std::string name, std::string kind) {
     feed_folder f;
     f.id = std::move(id);
     f.parent_id = std::move(parent);
@@ -38,12 +39,13 @@ feed_folder folder(std::string id, std::string parent, std::string name, std::st
 }
 
 // Synthetic > { Bloomberg > { FX > (2 fx, 1 running), IR > (3 ir) }, Generic > FX > (1 fx) }
-const std::vector<feed_folder> hierarchy{folder("root", "", "Synthetic", "root"),
-                                         folder("g", "root", "Generic", "collection"),
-                                         folder("b", "root", "Bloomberg", "collection"),
-                                         folder("b-fx", "b", "FX", "asset_class"),
-                                         folder("b-ir", "b", "IR", "asset_class"),
-                                         folder("g-fx", "g", "FX", "asset_class")};
+const std::vector<feed_folder> hierarchy{
+    feed_overview_folder("root", "", "Synthetic", "root"),
+    feed_overview_folder("g", "root", "Generic", "collection"),
+    feed_overview_folder("b", "root", "Bloomberg", "collection"),
+    feed_overview_folder("b-fx", "b", "FX", "asset_class"),
+    feed_overview_folder("b-ir", "b", "IR", "asset_class"),
+    feed_overview_folder("g-fx", "g", "FX", "asset_class")};
 
 const std::vector<folder_feed_count> counts{
     {"b-fx", 2, 0, 1}, {"b-ir", 0, 3, 0}, {"g-fx", 1, 0, 0}};
@@ -81,8 +83,8 @@ TEST_CASE("feed_overview says which children have folders of their own", "[feed_
 }
 
 TEST_CASE("feed_overview puts the children in name order, then by id", "[feed_overview]") {
-    const std::vector<feed_folder> same{folder("2", "", "Same", "root"),
-                                        folder("1", "", "Same", "root")};
+    const std::vector<feed_folder> same{feed_overview_folder("2", "", "Same", "root"),
+                                        feed_overview_folder("1", "", "Same", "root")};
     const auto roots = children_with_counts(same, {}, "");
     REQUIRE(roots.size() == 2);
     CHECK(roots[0].id == "1");
@@ -103,9 +105,9 @@ TEST_CASE("feed_overview has no children for a folder that is not there", "[feed
 }
 
 TEST_CASE("feed_overview orders the names without regard to case", "[feed_overview]") {
-    const std::vector<feed_folder> mixed{folder("1", "", "beta", "root"),
-                                         folder("2", "", "Alpha", "root"),
-                                         folder("3", "", "Gamma", "root")};
+    const std::vector<feed_folder> mixed{feed_overview_folder("1", "", "beta", "root"),
+                                         feed_overview_folder("2", "", "Alpha", "root"),
+                                         feed_overview_folder("3", "", "Gamma", "root")};
     const auto roots = children_with_counts(mixed, {}, "");
     REQUIRE(roots.size() == 3);
     CHECK(roots[0].name == "Alpha");

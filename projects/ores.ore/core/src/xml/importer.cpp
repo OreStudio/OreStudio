@@ -54,7 +54,7 @@ constexpr std::string_view audit_commentary = "Imported from ORE XML";
  * message, what a date means, and the audit columns an external import
  * states.
  */
-auto project(const xg::newcalendar& v) -> refdata::messaging::calendar_adjustment {
+auto importer_project(const xg::newcalendar& v) -> refdata::messaging::calendar_adjustment {
     const auto& type = projection::calendar_type();
     refdata::messaging::calendar_adjustment r;
     r.calendar_name = v.name;
@@ -202,7 +202,7 @@ importer::import_calendar_adjustments_text(std::string_view text) {
 
     std::vector<refdata::messaging::calendar_adjustment> r;
     r.reserve(record.calendar.size());
-    std::ranges::transform(record.calendar, std::back_inserter(r), project);
+    std::ranges::transform(record.calendar, std::back_inserter(r), importer_project);
 
     for (auto& ca : r) {
         ca.modified_by = std::string(audit_modified_by);

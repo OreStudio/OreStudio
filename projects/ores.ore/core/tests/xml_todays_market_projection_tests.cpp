@@ -47,7 +47,7 @@
 namespace {
 
 using ores::ore::domain::todays_market_projection;
-namespace xg = ores::ore::xml::generated::todays_market;
+namespace xml_todays_market_projection_xg = ores::ore::xml::generated::todays_market;
 
 // The collection kinds the schema declares, read from the children of its
 // todaysmarket type apart from Configuration. The seeded collection kind
@@ -172,12 +172,15 @@ std::string every_collection() {
     return d;
 }
 
-std::optional<ores::ore::xml::record_difference> difference(const xg::todaysmarket& lhs,
-                                                            const xg::todaysmarket& rhs) {
-    return ores::ore::xml::compare_records(*xg::todays_market_document().root, &lhs, &rhs);
+std::optional<ores::ore::xml::record_difference>
+xml_todays_market_projection_difference(const xml_todays_market_projection_xg::todaysmarket& lhs,
+                                        const xml_todays_market_projection_xg::todaysmarket& rhs) {
+    return ores::ore::xml::compare_records(
+        *xml_todays_market_projection_xg::todays_market_document().root, &lhs, &rhs);
 }
 
-xg::todaysmarket round_trip(const xg::todaysmarket& original) {
+xml_todays_market_projection_xg::todaysmarket xml_todays_market_projection_round_trip(
+    const xml_todays_market_projection_xg::todaysmarket& original) {
     const auto mapped = todays_market_projection::map(original);
     return todays_market_projection::read(
         todays_market_projection::write(todays_market_projection::reverse(mapped)));
@@ -204,7 +207,8 @@ TEST_CASE("every today's market document in the corpus round trips",
                                   std::istreambuf_iterator<char>());
 
         const auto original = todays_market_projection::read(content);
-        const auto difference_found = difference(original, round_trip(original));
+        const auto difference_found = xml_todays_market_projection_difference(
+            original, xml_todays_market_projection_round_trip(original));
         if (difference_found)
             INFO(difference_found->path << ": " << difference_found->detail);
         CHECK_FALSE(difference_found);
@@ -228,7 +232,8 @@ TEST_CASE("a document with every collection and every binding round trips",
     CHECK(bindings == collections);
     CHECK(collections == schema_collection_kinds());
 
-    const auto found = difference(original, round_trip(original));
+    const auto found = xml_todays_market_projection_difference(
+        original, xml_todays_market_projection_round_trip(original));
     if (found)
         INFO(found->path << ": " << found->detail);
     CHECK_FALSE(found);

@@ -37,12 +37,12 @@ const std::string blend = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=r
 const std::string bbg_eur = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
 const std::string lseg_eur = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=GBP";
 
-struct world {
+struct app_composite_engine_world {
     boost::uuids::random_generator gen;
     ores::marketdata::domain::composite composite;
     std::vector<ores::marketdata::domain::composite_input> inputs;
 
-    world() {
+    app_composite_engine_world() {
         composite.id = gen();
         composite.name = "eurusd-blend";
         composite.provider_code = "composite";
@@ -95,9 +95,9 @@ TEST_CASE("a_code_that_names_no_rule_makes_no_rule", "[app][composite_engine]") 
 
 TEST_CASE("a_composite_takes_its_value_from_its_inputs_when_the_party_holds_the_rights",
           "[app][composite_engine]") {
-    world w;
-    const std::vector subscriptions{world::subscription("bloomberg", true),
-                                    world::subscription("lseg", true)};
+    app_composite_engine_world w;
+    const std::vector subscriptions{app_composite_engine_world::subscription("bloomberg", true),
+                                    app_composite_engine_world::subscription("lseg", true)};
     const input_values latest{{{"bloomberg", bbg_eur}, 1.08}, {{"lseg", lseg_eur}, 1.10}};
 
     const auto out = evaluate_composite(w.composite, w.inputs, subscriptions, latest);
@@ -109,9 +109,9 @@ TEST_CASE("a_composite_takes_its_value_from_its_inputs_when_the_party_holds_the_
 
 TEST_CASE("a_composite_with_a_missing_right_gets_no_value_and_shows_the_reason",
           "[app][composite_engine]") {
-    world w;
-    const std::vector subscriptions{world::subscription("bloomberg", true),
-                                    world::subscription("lseg", false)};
+    app_composite_engine_world w;
+    const std::vector subscriptions{app_composite_engine_world::subscription("bloomberg", true),
+                                    app_composite_engine_world::subscription("lseg", false)};
     const input_values latest{{{"bloomberg", bbg_eur}, 1.08}, {{"lseg", lseg_eur}, 1.10}};
 
     const auto out = evaluate_composite(w.composite, w.inputs, subscriptions, latest);
@@ -123,7 +123,7 @@ TEST_CASE("a_composite_with_a_missing_right_gets_no_value_and_shows_the_reason",
 
 TEST_CASE("a_party_with_no_subscription_lacks_the_right_on_every_provider",
           "[app][composite_engine]") {
-    world w;
+    app_composite_engine_world w;
 
     const auto missing = missing_derived_rights(w.inputs, {});
 
@@ -133,17 +133,17 @@ TEST_CASE("a_party_with_no_subscription_lacks_the_right_on_every_provider",
 }
 
 TEST_CASE("the_display_right_alone_does_not_license_a_composite", "[app][composite_engine]") {
-    world w;
-    const std::vector subscriptions{world::subscription("bloomberg", false),
-                                    world::subscription("lseg", false)};
+    app_composite_engine_world w;
+    const std::vector subscriptions{app_composite_engine_world::subscription("bloomberg", false),
+                                    app_composite_engine_world::subscription("lseg", false)};
 
     CHECK(missing_derived_rights(w.inputs, subscriptions).size() == 2);
 }
 
 TEST_CASE("a_composite_with_no_input_value_shows_that_reason", "[app][composite_engine]") {
-    world w;
-    const std::vector subscriptions{world::subscription("bloomberg", true),
-                                    world::subscription("lseg", true)};
+    app_composite_engine_world w;
+    const std::vector subscriptions{app_composite_engine_world::subscription("bloomberg", true),
+                                    app_composite_engine_world::subscription("lseg", true)};
 
     const auto out = evaluate_composite(w.composite, w.inputs, subscriptions, {});
 
@@ -153,10 +153,10 @@ TEST_CASE("a_composite_with_no_input_value_shows_that_reason", "[app][composite_
 
 TEST_CASE("a_composite_uses_the_inputs_that_have_a_value_in_the_order_of_their_positions",
           "[app][composite_engine]") {
-    world w;
+    app_composite_engine_world w;
     w.composite.rule_code = "pass_through";
-    const std::vector subscriptions{world::subscription("bloomberg", true),
-                                    world::subscription("lseg", true)};
+    const std::vector subscriptions{app_composite_engine_world::subscription("bloomberg", true),
+                                    app_composite_engine_world::subscription("lseg", true)};
 
     const auto only_second =
         evaluate_composite(w.composite, w.inputs, subscriptions, {{{"lseg", lseg_eur}, 1.10}});
@@ -173,7 +173,7 @@ TEST_CASE("a_composite_uses_the_inputs_that_have_a_value_in_the_order_of_their_p
 }
 
 TEST_CASE("a_composite_with_an_unknown_rule_shows_that_reason", "[app][composite_engine]") {
-    world w;
+    app_composite_engine_world w;
     w.composite.rule_code = "waterfall";
 
     const auto out = evaluate_composite(w.composite, w.inputs, {}, {});
@@ -183,7 +183,7 @@ TEST_CASE("a_composite_with_an_unknown_rule_shows_that_reason", "[app][composite
 }
 
 TEST_CASE("the_resolver_gives_the_inputs_of_a_composite_in_order", "[app][composite_engine]") {
-    world w;
+    app_composite_engine_world w;
     const auto resolve = composite_input_resolver({w.composite}, w.inputs);
 
     const auto items = resolve(blend);
@@ -196,7 +196,7 @@ TEST_CASE("the_resolver_gives_the_inputs_of_a_composite_in_order", "[app][compos
 
 TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
           "[app][composite_engine]") {
-    world w;
+    app_composite_engine_world w;
     boost::uuids::random_generator gen;
     const auto now = std::chrono::system_clock::now();
 
@@ -261,9 +261,9 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs",
 }
 
 TEST_CASE("an_input_value_that_is_not_a_number_is_no_value", "[app][composite_engine]") {
-    world w;
-    const std::vector subscriptions{world::subscription("bloomberg", true),
-                                    world::subscription("lseg", true)};
+    app_composite_engine_world w;
+    const std::vector subscriptions{app_composite_engine_world::subscription("bloomberg", true),
+                                    app_composite_engine_world::subscription("lseg", true)};
     const double nan = std::numeric_limits<double>::quiet_NaN();
     const double inf = std::numeric_limits<double>::infinity();
 

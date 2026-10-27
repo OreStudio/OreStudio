@@ -45,7 +45,7 @@ using namespace ores::logging;
 using ores::ore::domain::credit_simulation_projection;
 using ores::ore::domain::mapped_credit_simulation;
 
-std::string read_file(const std::filesystem::path& path) {
+std::string xml_creditsimulation_projection_read_file(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
@@ -186,8 +186,8 @@ TEST_CASE("every_credit_simulation_in_the_corpus_round_trips",
             ores::ore::xml::document_kind::credit_simulation)
             continue;
         ++files;
-        const auto first = credit_simulation_projection::map(
-            credit_simulation_projection::read(read_file(entry.path())));
+        const auto first = credit_simulation_projection::map(credit_simulation_projection::read(
+            xml_creditsimulation_projection_read_file(entry.path())));
         const auto written =
             credit_simulation_projection::write(credit_simulation_projection::reverse(first));
         const auto second =

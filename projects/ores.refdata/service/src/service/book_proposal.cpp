@@ -28,6 +28,7 @@
 #include "ores.refdata.service/service/proposal_support.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "shared_helpers.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <exception>
@@ -60,7 +61,7 @@ auto& log() {
     return instance;
 }
 
-messaging::book_write to_write(const domain::book_change& l) {
+ores::refdata::messaging::book_write to_write(const domain::book_change& l) {
     return {.id = l.entity_id,
             .party_id = l.party_id,
             .name = l.name,
@@ -100,7 +101,7 @@ std::string run_write(book_service& svc,
                       const domain::book_change& line,
                       const ores::utility::domain::change_intent& intent) {
     if (line.operation == "put") {
-        messaging::put_book_request req;
+        ores::refdata::messaging::put_book_request req;
         req.change.write = to_write(line);
         req.change.precondition = claim_of(line);
         req.intent = intent;
@@ -109,7 +110,7 @@ std::string run_write(book_service& svc,
     if (line.operation == "delete") {
         if (!live)
             return "No book with this id to remove.";
-        messaging::delete_book_request req;
+        ores::refdata::messaging::delete_book_request req;
         req.removal.key.name = live->name;
         if (line.base_version != 0) {
             req.removal.precondition = precondition{precondition_kind::must_match_version,
@@ -182,8 +183,7 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
         // own a column, because the controller's check is of the opening and
         // not of any field the opening writes.
         if (line.operation == "put" && !live) {
-            for (const auto& code :
-                 policy_parts(ctx, entity_type, create_operation, out.columns)) {
+            for (const auto& code : policy_parts(ctx, entity_type, create_operation, out.columns)) {
                 if (std::ranges::find(out.part_codes, code) == out.part_codes.end())
                     out.part_codes.push_back(code);
             }
@@ -224,22 +224,6 @@ std::vector<domain::book_change> lines_of(const ores::database::context& ctx,
 }
 
 namespace {
-
-std::string text_of(const boost::uuids::uuid& v) {
-    return boost::uuids::to_string(v);
-}
-
-std::string text_of(const std::optional<boost::uuids::uuid>& v) {
-    return v ? boost::uuids::to_string(*v) : std::string{};
-}
-
-std::string text_of(bool v) {
-    return v ? "true" : "false";
-}
-
-std::string text_of(const std::string& v) {
-    return v;
-}
 
 /**
  * @brief A column of the book beside the same column of a line, as text.

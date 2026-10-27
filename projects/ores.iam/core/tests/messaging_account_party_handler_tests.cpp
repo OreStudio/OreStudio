@@ -28,6 +28,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,19 +40,6 @@ using ores::iam::domain::account_party;
 using ores::testing::database_helper;
 using ores::refdata::repository::party_repository;
 
-namespace {
-
-boost::uuids::uuid find_system_party_id(party_repository& repo,
-                                        ores::database::context ctx,
-                                        const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest(ctx);
-    for (const auto& p : parties)
-        if (p.tenant_id == tid && p.party_category == "System")
-            return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid.to_string());
-}
-
-}
 
 /**
  * Regression test for the bug where the generic

@@ -41,9 +41,11 @@ using xml::record_reader;
 using xml::record_writer;
 
 /// The actor and reason every imported row states.
-constexpr std::string_view actor = "ores";
-constexpr std::string_view change_reason = "system.external_data_import";
-constexpr std::string_view change_commentary = "Imported from ORE XML";
+constexpr std::string_view commodity_instrument_projection_actor = "ores";
+constexpr std::string_view commodity_instrument_projection_change_reason =
+    "system.external_data_import";
+constexpr std::string_view commodity_instrument_projection_change_commentary =
+    "Imported from ORE XML";
 
 /// The trade types the family states, which are the ones the old dispatcher took.
 constexpr bool is_commodity_trade_type(std::string_view type) {
@@ -56,58 +58,64 @@ constexpr bool is_commodity_trade_type(std::string_view type) {
 auto make_row(std::string_view trade_type_code) -> commodity_instrument {
     commodity_instrument r;
     r.identity.trade_type_code = std::string(trade_type_code);
-    r.audit.modified_by = std::string(actor);
-    r.audit.performed_by = std::string(actor);
-    r.audit.change_reason_code = std::string(change_reason);
-    r.audit.change_commentary = std::string(change_commentary);
+    r.audit.modified_by = std::string(commodity_instrument_projection_actor);
+    r.audit.performed_by = std::string(commodity_instrument_projection_actor);
+    r.audit.change_reason_code = std::string(commodity_instrument_projection_change_reason);
+    r.audit.change_commentary = std::string(commodity_instrument_projection_change_commentary);
     return r;
 }
 
 void stamp_columns(commodity_basket_constituent& row) {
-    row.modified_by = std::string(actor);
-    row.performed_by = std::string(actor);
-    row.change_reason_code = std::string(change_reason);
-    row.change_commentary = std::string(change_commentary);
+    row.modified_by = std::string(commodity_instrument_projection_actor);
+    row.performed_by = std::string(commodity_instrument_projection_actor);
+    row.change_reason_code = std::string(commodity_instrument_projection_change_reason);
+    row.change_commentary = std::string(commodity_instrument_projection_change_commentary);
 }
 
 // ---------------------------------------------------------------------------
 // Reading: the values, dates and spellings a row states
 // ---------------------------------------------------------------------------
 
-auto to_domain_date(const std::string& text) -> std::optional<std::chrono::year_month_day> {
+auto commodity_instrument_projection_to_domain_date(const std::string& text)
+    -> std::optional<std::chrono::year_month_day> {
     if (text.empty())
         return std::nullopt;
     return ores::platform::time::datetime::from_iso8601_date(text);
 }
 
-auto to_ore_date(const std::optional<std::chrono::year_month_day>& d) -> std::string {
+auto commodity_instrument_projection_to_ore_date(
+    const std::optional<std::chrono::year_month_day>& d) -> std::string {
     if (!d || !d->ok())
         return {};
     return ores::platform::time::datetime::to_iso8601_date(*d);
 }
 
-auto text_of(const record_reader& r, std::string_view name) -> std::string {
+auto commodity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto spelling_of(const record_reader& r, std::string_view name) -> std::string {
+auto commodity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
-auto optional_date_of(const record_reader& r,
-                      std::string_view name) -> std::optional<std::chrono::year_month_day> {
-    return to_domain_date(text_of(r, name));
+auto optional_date_of(const record_reader& r, std::string_view name)
+    -> std::optional<std::chrono::year_month_day> {
+    return commodity_instrument_projection_to_domain_date(
+        commodity_instrument_projection_text_of(r, name));
 }
 
 auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::optional<decimal> {
     return r.decimal(name);
 }
 
-auto decimal_of(const record_reader& r, std::string_view name) -> decimal {
+auto commodity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -125,13 +133,13 @@ auto own_decimal_as_double(const record_reader& r) -> double {
 auto option_type_of(const std::optional<record_reader>& option) -> std::string {
     if (!option)
         return {};
-    return text_of(*option, "OptionType");
+    return commodity_instrument_projection_text_of(*option, "OptionType");
 }
 
 auto exercise_style_of(const std::optional<record_reader>& option) -> std::string {
     if (!option)
         return {};
-    return text_of(*option, "Style");
+    return commodity_instrument_projection_text_of(*option, "Style");
 }
 
 auto first_exercise_date_of(const std::optional<record_reader>& option)
@@ -144,7 +152,7 @@ auto first_exercise_date_of(const std::optional<record_reader>& option)
     const auto values = dates->values("ExerciseDate");
     if (values.empty())
         return std::nullopt;
-    return to_domain_date(values.front());
+    return commodity_instrument_projection_to_domain_date(values.front());
 }
 
 /// The underlying a variance swap names, either itself or through a basket.
@@ -152,7 +160,7 @@ auto underlying_name_of(const record_reader& data) -> std::string {
     if (const auto name = data.text("Name"))
         return *name;
     if (const auto underlying = data.child("Underlying"))
-        return text_of(*underlying, "Name");
+        return commodity_instrument_projection_text_of(*underlying, "Name");
     return {};
 }
 
@@ -196,7 +204,7 @@ auto floating_leg_terms(const std::vector<record_reader>& legs) -> leg_terms {
         const auto floating = leg.child("CommodityFloatingLegData");
         if (!floating)
             continue;
-        terms.commodity_code = text_of(*floating, "Name");
+        terms.commodity_code = commodity_instrument_projection_text_of(*floating, "Name");
         terms.quantity = quantity_of(*floating);
         if (const auto currency = leg.text("Currency"))
             terms.currency = *currency;
@@ -219,8 +227,8 @@ auto floating_leg_terms(const std::vector<record_reader>& legs) -> leg_terms {
         const auto values = inner->values("Date");
         if (values.empty())
             break;
-        terms.start_date = to_domain_date(values.front());
-        terms.maturity_date = to_domain_date(values.back());
+        terms.start_date = commodity_instrument_projection_to_domain_date(values.front());
+        terms.maturity_date = commodity_instrument_projection_to_domain_date(values.back());
         break;
     }
     return terms;
@@ -252,10 +260,10 @@ auto read_commodity_forward(const record_reader& trade) -> commodity_instrument 
     const auto data = trade.child("CommodityForwardData");
     if (!data)
         return r;
-    r.commodity_code = text_of(*data, "Name");
-    r.currency = spelling_of(*data, "Currency");
+    r.commodity_code = commodity_instrument_projection_text_of(*data, "Name");
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
-    r.fixed_price = decimal_of(*data, "Strike");
+    r.fixed_price = commodity_instrument_projection_decimal_of(*data, "Strike");
     r.maturity_date = optional_date_of(*data, "Maturity");
     return r;
 }
@@ -265,8 +273,8 @@ auto read_commodity_option(const record_reader& trade) -> commodity_instrument {
     const auto data = trade.child("CommodityOptionData");
     if (!data)
         return r;
-    r.commodity_code = text_of(*data, "Name");
-    r.currency = spelling_of(*data, "Currency");
+    r.commodity_code = commodity_instrument_projection_text_of(*data, "Name");
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
     r.strike_price = optional_strike_of(*data);
     r.option_type = option_type_of(data->child("OptionData"));
@@ -312,7 +320,7 @@ auto read_commodity_variance_swap(const record_reader& trade) -> commodity_instr
     if (!data)
         return r;
     r.commodity_code = underlying_name_of(*data);
-    r.currency = spelling_of(*data, "Currency");
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.start_date = optional_date_of(*data, "StartDate");
     r.maturity_date = optional_date_of(*data, "EndDate");
     r.variance_strike = decimal_as_double(*data, "Strike").value_or(0.0);
@@ -325,10 +333,10 @@ auto read_commodity_average_price_option(const record_reader& trade) -> commodit
     const auto data = trade.child("CommodityAveragePriceOptionData");
     if (!data)
         return r;
-    r.commodity_code = text_of(*data, "Name");
-    r.currency = spelling_of(*data, "Currency");
+    r.commodity_code = commodity_instrument_projection_text_of(*data, "Name");
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
-    r.strike_price = decimal_of(*data, "Strike");
+    r.strike_price = commodity_instrument_projection_decimal_of(*data, "Strike");
     r.option_type = option_type_of(data->child("OptionData"));
     r.exercise_type = exercise_style_of(data->child("OptionData"));
     r.maturity_date = first_exercise_date_of(data->child("OptionData"));
@@ -346,7 +354,7 @@ auto read_commodity_option_strip(const record_reader& trade) -> commodity_instru
     if (!leg)
         return r;
     if (const auto floating = leg->child("CommodityFloatingLegData")) {
-        r.commodity_code = text_of(*floating, "Name");
+        r.commodity_code = commodity_instrument_projection_text_of(*floating, "Name");
         r.quantity = quantity_of(*floating);
     }
     if (const auto currency = leg->text("Currency"))
@@ -354,7 +362,8 @@ auto read_commodity_option_strip(const record_reader& trade) -> commodity_instru
     if (const auto schedule = leg->child("ScheduleData")) {
         const auto rules = schedule->children("Rules");
         if (!rules.empty())
-            r.strip_frequency_code = text_of(rules.front(), "Tenor");
+            r.strip_frequency_code =
+                commodity_instrument_projection_text_of(rules.front(), "Tenor");
     }
     return r;
 }
@@ -364,7 +373,7 @@ auto read_commodity_basket_option(const record_reader& trade) -> commodity_instr
     std::vector<commodity_basket_constituent> constituents;
     const auto data = trade.child("CommodityBasketOptionData");
     if (data) {
-        inst.currency = spelling_of(*data, "Currency");
+        inst.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
         inst.quantity = decimal_as_double(*data, "Notional").value_or(0.0);
         inst.strike_price = optional_decimal_of(*data, "Strike");
         inst.option_type = option_type_of(data->child("OptionData"));
@@ -375,13 +384,13 @@ auto read_commodity_basket_option(const record_reader& trade) -> commodity_instr
         if (const auto underlyings = data->child("Underlyings"))
             rows = underlyings->children("Underlying");
         if (!rows.empty())
-            inst.commodity_code = text_of(rows.front(), "Name");
+            inst.commodity_code = commodity_instrument_projection_text_of(rows.front(), "Name");
 
         int sequence_number = 1;
         for (const auto& underlying : rows) {
             commodity_basket_constituent row;
             row.sequence_number = sequence_number++;
-            row.underlying_code = text_of(underlying, "Name");
+            row.underlying_code = commodity_instrument_projection_text_of(underlying, "Name");
             row.weight = decimal_as_double(underlying, "Weight");
             stamp_columns(row);
             constituents.push_back(std::move(row));
@@ -394,7 +403,7 @@ auto read_commodity_basket_option(const record_reader& trade) -> commodity_instr
 // Writing: the shared shapes
 // ---------------------------------------------------------------------------
 
-auto flag_text(bool value) -> std::string_view {
+auto commodity_instrument_projection_flag_text(bool value) -> std::string_view {
     return value ? "true" : "false";
 }
 
@@ -407,7 +416,9 @@ void write_option_terms(record_writer option, const commodity_instrument& v) {
     if (!v.exercise_type.empty())
         option.set_text("Style", v.exercise_type);
     if (v.maturity_date)
-        option.child("ExerciseDates").append_value("ExerciseDate", to_ore_date(v.maturity_date));
+        option.child("ExerciseDates")
+            .append_value("ExerciseDate",
+                          commodity_instrument_projection_to_ore_date(v.maturity_date));
 }
 
 void write_quantity(record_writer quantities, double value) {
@@ -419,7 +430,7 @@ void write_commodity_leg_header(record_writer leg,
                                 bool payer,
                                 const commodity_instrument& v) {
     leg.set_spelling("LegType", leg_type, "leg type");
-    leg.set_text("Payer", flag_text(payer));
+    leg.set_text("Payer", commodity_instrument_projection_flag_text(payer));
     if (!v.currency.empty())
         leg.set_text("Currency", v.currency);
 }
@@ -431,7 +442,7 @@ void write_commodity_leg_header(record_writer leg,
 void write_commodity_forward(record_writer& trade, const commodity_instrument& v) {
     auto data = trade.child("CommodityForwardData");
     data.set_spelling("Position", "Long", "position");
-    data.set_text("Maturity", to_ore_date(v.maturity_date));
+    data.set_text("Maturity", commodity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_text("Name", v.commodity_code);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Strike", v.fixed_price.value_or(decimal{}));
@@ -455,7 +466,8 @@ void write_commodity_swaption(record_writer& trade, const commodity_instrument& 
     option.set_text("LongShort", "Long");
     if (v.swaption_expiry_date)
         option.child("ExerciseDates")
-            .append_value("ExerciseDate", to_ore_date(v.swaption_expiry_date));
+            .append_value("ExerciseDate",
+                          commodity_instrument_projection_to_ore_date(v.swaption_expiry_date));
 
     auto fixed_leg = data.append("LegData");
     write_commodity_leg_header(fixed_leg, "CommodityFixed", true, v);
@@ -488,17 +500,18 @@ void write_commodity_swap(record_writer& trade, const commodity_instrument& v) {
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
     if (v.start_date) {
-        auto rule = write_schedule_rule(
-            floating_leg.child("ScheduleData"), to_ore_date(v.start_date), "1M");
+        auto rule = write_schedule_rule(floating_leg.child("ScheduleData"),
+                                        commodity_instrument_projection_to_ore_date(v.start_date),
+                                        "1M");
         if (v.maturity_date)
-            rule.set_text("EndDate", to_ore_date(v.maturity_date));
+            rule.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.maturity_date));
     }
 }
 
 void write_commodity_variance_swap(record_writer& trade, const commodity_instrument& v) {
     auto data = trade.child("CommodityVarianceSwapData");
-    data.set_text("StartDate", to_ore_date(v.start_date));
-    data.set_text("EndDate", to_ore_date(v.maturity_date));
+    data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.start_date));
+    data.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_spelling("Currency", v.currency, "currency");
     data.set_text("Name", v.commodity_code);
     data.set_text("LongShort", "Long");
@@ -517,8 +530,8 @@ void write_commodity_average_price_option(record_writer& trade, const commodity_
     set_decimal_from_double(data, "Quantity", v.quantity);
     set_decimal_from_double(data, "Strike", v.strike_price.value_or(decimal{}).to_double());
     data.set_spelling("PriceType", "FutureSettlement", "price type");
-    data.set_text("StartDate", to_ore_date(v.averaging_start_date));
-    data.set_text("EndDate", to_ore_date(v.averaging_end_date));
+    data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.averaging_start_date));
+    data.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.averaging_end_date));
     data.set_text("PaymentCalendar", "US-NYSE");
     data.set_text("PaymentLag", "5");
     data.set_spelling("PaymentConvention", "Following", "payment convention");
@@ -534,8 +547,9 @@ void write_commodity_option_strip(record_writer& trade, const commodity_instrume
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
     if (!v.strip_frequency_code.empty())
-        write_schedule_rule(
-            leg.child("ScheduleData"), to_ore_date(v.start_date), v.strip_frequency_code);
+        write_schedule_rule(leg.child("ScheduleData"),
+                            commodity_instrument_projection_to_ore_date(v.start_date),
+                            v.strip_frequency_code);
 }
 
 void write_commodity_basket_option(record_writer& trade,

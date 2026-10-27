@@ -94,25 +94,27 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // The market-wide arrival factor: one read and one pin, both for the run.
     BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
         << "SUBSCRIBE: "
-        << nats.make_subject(std::string(messaging::get_market_regime_request::nats_subject))
+        << nats.make_subject(
+               std::string(ores::synthetic::messaging::get_market_regime_request::nats_subject))
         << " and "
-        << nats.make_subject(std::string(messaging::pin_market_regime_request::nats_subject))
+        << nats.make_subject(
+               std::string(ores::synthetic::messaging::pin_market_regime_request::nats_subject))
         << " for the market regime.";
-    subs.push_back(
-        nats.queue_subscribe(std::string(messaging::get_market_regime_request::nats_subject),
-                             queue,
-                             [&nats, market, intensity, ctx, verifier](ores::nats::message msg) {
-                                 market_regime_handler h(nats, *market, *intensity, ctx, verifier);
-                                 h.get(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::get_market_regime_request::nats_subject),
+        queue,
+        [&nats, market, intensity, ctx, verifier](ores::nats::message msg) {
+            market_regime_handler h(nats, *market, *intensity, ctx, verifier);
+            h.get(std::move(msg));
+        }));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(messaging::pin_market_regime_request::nats_subject),
-                             queue,
-                             [&nats, market, intensity, ctx, verifier](ores::nats::message msg) {
-                                 market_regime_handler h(nats, *market, *intensity, ctx, verifier);
-                                 h.pin(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::pin_market_regime_request::nats_subject),
+        queue,
+        [&nats, market, intensity, ctx, verifier](ores::nats::message msg) {
+            market_regime_handler h(nats, *market, *intensity, ctx, verifier);
+            h.pin(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(std::string(set_faults_request::nats_subject),
                                         queue,

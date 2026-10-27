@@ -29,9 +29,10 @@ namespace ores::iam::service {
 
 namespace {
 using namespace ores::logging;
-inline static std::string_view logger_name = "ores.iam.service.internal_request_client";
-auto& lg() {
-    static auto instance = make_logger(logger_name);
+inline static std::string_view internal_request_client_logger_name =
+    "ores.iam.service.internal_request_client";
+auto& internal_request_client_lg() {
+    static auto instance = make_logger(internal_request_client_logger_name);
     return instance;
 }
 
@@ -55,8 +56,9 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
     std::chrono::seconds timeout,
     std::size_t expected_steps,
     const std::function<void(const std::string&)>& on_progress) {
-    BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
-                              << " (timeout: " << timeout.count() << "s)";
+    BOOST_LOG_SEV(internal_request_client_lg(), info)
+        << "Waiting for workflow instance: " << instance_id << " (timeout: " << timeout.count()
+        << "s)";
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     std::map<int, std::string> last_status;
@@ -84,7 +86,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             // an expired internal impersonation token). That will not
             // change on retry -- unlike a transient transport hiccup, so
             // fail fast instead of burning the rest of the timeout.
-            BOOST_LOG_SEV(lg(), error)
+            BOOST_LOG_SEV(internal_request_client_lg(), error)
                 << "Aborting wait for workflow instance " << instance_id << ": " << e.what();
             return {false, std::string(e.what())};
         } catch (const std::exception& e) {
@@ -100,8 +102,9 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             // the deadline below is the only backstop.
             ++poll_failures;
             last_poll_failure = result.message;
-            BOOST_LOG_SEV(lg(), warn) << "Poll " << poll_failures << " failed for " << instance_id
-                                      << ": " << result.message;
+            BOOST_LOG_SEV(internal_request_client_lg(), warn)
+                << "Poll " << poll_failures << " failed for " << instance_id << ": "
+                << result.message;
         } else {
             poll_failures = 0;
             last_poll_failure.clear();
@@ -123,7 +126,8 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             if (result.status == "failed") {
                 const auto msg = result.error.empty() ? std::string("workflow failed") :
                                                         "workflow failed: " + result.error;
-                BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id << ": " << msg;
+                BOOST_LOG_SEV(internal_request_client_lg(), error)
+                    << "Workflow instance " << instance_id << ": " << msg;
                 return {false, msg};
             }
 
@@ -134,7 +138,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
                     const auto msg = "workflow failed at step " +
                                      std::to_string(step.step_index + 1) + " (" + step.name +
                                      "): " + step.error;
-                    BOOST_LOG_SEV(lg(), error)
+                    BOOST_LOG_SEV(internal_request_client_lg(), error)
                         << "Workflow instance " << instance_id << ": " << msg;
                     return {false, msg};
                 }
@@ -145,8 +149,9 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             }
             last_completed = completed;
             if (total > 0 && completed == total && total >= expected_steps) {
-                BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id << " completed ("
-                                          << total << " step(s)).";
+                BOOST_LOG_SEV(internal_request_client_lg(), info)
+                    << "Workflow instance " << instance_id << " completed (" << total
+                    << " step(s)).";
                 return {true, {}};
             }
         }
@@ -170,7 +175,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             } else {
                 detail = "timed out after " + std::to_string(timeout.count()) + "s";
             }
-            BOOST_LOG_SEV(lg(), error)
+            BOOST_LOG_SEV(internal_request_client_lg(), error)
                 << "Timed out waiting for workflow instance " << instance_id << ": " << detail;
             return {false, detail};
         }

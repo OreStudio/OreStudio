@@ -35,7 +35,7 @@ using ores::platform::time::time_utils;
  * Uses timegm so the result is always UTC regardless of the process timezone.
  */
 std::chrono::system_clock::time_point
-make_utc(int year, int mon, int mday, int hour, int min, int sec) {
+time_utils_make_utc(int year, int mon, int mday, int hour, int min, int sec) {
     std::tm tm = {};
     tm.tm_year = year - 1900;
     tm.tm_mon = mon - 1;
@@ -84,7 +84,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", "[time][time_ut
 
     // A fixed UTC time that falls within a DST period in European timezones.
     // 2026-03-30 11:55:00 UTC = 12:55:00 BST / 13:55:00 CEST / 11:55:00 UTC.
-    const auto expected = make_utc(2026, 3, 30, 11, 55, 0);
+    const auto expected = time_utils_make_utc(2026, 3, 30, 11, 55, 0);
 
     // Simulate the string that rfl::Timestamp would receive: local wall-clock
     // time with the timezone suffix already stripped by strptime.
@@ -111,7 +111,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", "[time][
 
     // A fixed UTC time in winter (no DST in European zones) as a control case.
     // 2026-01-15 14:30:00 UTC = 14:30:00 GMT / 15:30:00 CET / 14:30:00 UTC.
-    const auto expected = make_utc(2026, 1, 15, 14, 30, 0);
+    const auto expected = time_utils_make_utc(2026, 1, 15, 14, 30, 0);
 
     const auto local_str = utc_to_local_string(expected);
     BOOST_LOG_SEV(lg, ores::logging::info)
@@ -128,7 +128,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", "[time][
 TEST_CASE("to_time_point_utc_roundtrips", "[time][time_utils]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const auto expected = make_utc(2026, 3, 30, 11, 55, 0);
+    const auto expected = time_utils_make_utc(2026, 3, 30, 11, 55, 0);
 
     // Round-trip: utc → tm fields → back to time_point via to_time_point_utc.
     const auto t = std::chrono::system_clock::to_time_t(expected);

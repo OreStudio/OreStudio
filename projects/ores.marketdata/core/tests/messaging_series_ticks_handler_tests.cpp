@@ -34,6 +34,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "test_helpers.hpp"
 #include "tick_handler_support.hpp"
 #include "tick_test_support.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -68,10 +69,6 @@ using ores::marketdata::tests::test_audience;
 using ores::marketdata::tests::test_issuer;
 using ores::marketdata::tests::test_secret;
 using ores::utility::domain::outcome;
-
-std::chrono::system_clock::time_point now_second() {
-    return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-}
 
 /// The handler runs on the NATS worker thread, as the registrar runs it in the service: one
 /// instance for each inbound message, with the real database context.

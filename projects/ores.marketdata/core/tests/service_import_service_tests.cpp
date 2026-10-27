@@ -33,6 +33,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -54,15 +55,6 @@ series_with_uri(ores::marketdata::repository::market_series_repository& repo,
                 ores::database::context ctx,
                 const std::string& oresmd_uri) {
     return repo.read_latest_by_key(ctx, oresmd_uri, "ore");
-}
-
-// A curve id no earlier run used. The test tenant is shared and nothing clears it
-// between runs, so a fixed id would leave the series already created on a second
-// run and the import would declare no shape for it.
-std::string fresh_curve_id() {
-    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
-    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
-    return tag;
 }
 
 // The series a ZERO key names, as the import files it.

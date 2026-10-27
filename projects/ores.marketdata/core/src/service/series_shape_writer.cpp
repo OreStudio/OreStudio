@@ -41,10 +41,11 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view logger_name = "ores.marketdata.core.series_shape_writer";
+inline std::string_view series_shape_writer_logger_name =
+    "ores.marketdata.core.series_shape_writer";
 
-[[nodiscard]] auto& lg() {
-    static auto instance = make_logger(logger_name);
+[[nodiscard]] auto& series_shape_writer_lg() {
+    static auto instance = make_logger(series_shape_writer_logger_name);
     return instance;
 }
 
@@ -179,9 +180,9 @@ void series_shape_writer::declare(ores::database::context ctx,
         value_repo.write(ctx, value_rows);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Declared shape of series " << series_uri << ": "
-                              << axis_rows.size() << " axes, " << value_rows.size()
-                              << " new values";
+    BOOST_LOG_SEV(series_shape_writer_lg(), info)
+        << "Declared shape of series " << series_uri << ": " << axis_rows.size() << " axes, "
+        << value_rows.size() << " new values";
 }
 
 }

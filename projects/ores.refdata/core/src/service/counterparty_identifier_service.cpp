@@ -149,7 +149,7 @@ counterparty_identifier_columns_changed(const std::vector<domain::counterparty_i
  * request could open the gate for them. They are refused, and the protocol
  * operations are the only way to write.
  */
-[[noreturn]] void refuse_direct_write() {
+[[noreturn]] void counterparty_identifier_service_refuse_direct_write() {
     throw std::logic_error(ores::database::domain::describe(outcome_code::approval_required,
                                                             {.entity = "counterparty_identifier"}));
 }
@@ -734,7 +734,7 @@ counterparty_identifier_service::get_counterparty_identifiers(const std::vector<
 
 void counterparty_identifier_service::save_counterparty_identifier(
     const domain::counterparty_identifier& v) {
-    refuse_direct_write();
+    counterparty_identifier_service_refuse_direct_write();
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty Identifier id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving counterparty identifier. " << "id: " << v.id;
@@ -746,7 +746,7 @@ void counterparty_identifier_service::save_counterparty_identifier(
 
 void counterparty_identifier_service::save_counterparty_identifiers(
     const std::vector<domain::counterparty_identifier>& counterparty_identifiers) {
-    refuse_direct_write();
+    counterparty_identifier_service_refuse_direct_write();
     for (const auto& e : counterparty_identifiers) {
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty Identifier id cannot be empty.");
@@ -761,14 +761,14 @@ void counterparty_identifier_service::save_counterparty_identifiers(
 }
 
 void counterparty_identifier_service::delete_counterparty_identifier(const boost::uuids::uuid& id) {
-    refuse_direct_write();
+    counterparty_identifier_service_refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty identifier. " << "id: " << id;
 }
 
 void counterparty_identifier_service::remove_counterparty_identifier(const boost::uuids::uuid& id) {
-    refuse_direct_write();
+    counterparty_identifier_service_refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty identifier. " << "id: " << id;
@@ -776,7 +776,7 @@ void counterparty_identifier_service::remove_counterparty_identifier(const boost
 
 void counterparty_identifier_service::delete_counterparty_identifiers(
     const std::vector<std::string>& ids) {
-    refuse_direct_write();
+    counterparty_identifier_service_refuse_direct_write();
     repo_.remove(ctx_, ids);
 }
 

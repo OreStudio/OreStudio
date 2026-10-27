@@ -31,6 +31,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -45,19 +46,6 @@ using ores::iam::repository::account_party_repository;
 using ores::iam::repository::account_repository;
 using ores::refdata::repository::party_repository;
 
-namespace {
-
-boost::uuids::uuid find_system_party_id(party_repository& repo,
-                                        ores::database::context ctx,
-                                        const ores::utility::uuid::tenant_id& tid) {
-    auto parties = repo.read_latest(ctx);
-    for (const auto& p : parties)
-        if (p.tenant_id == tid && p.party_category == "System")
-            return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid.to_string());
-}
-
-}
 
 TEST_CASE("write_single_account_party", "[repository]") {
     auto lg(make_logger(test_suite));

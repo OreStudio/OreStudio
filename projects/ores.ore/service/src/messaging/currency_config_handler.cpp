@@ -28,6 +28,7 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "shared_helpers.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
@@ -52,8 +53,6 @@ namespace {
 
 constexpr std::string_view document_name = "currencyconfig.xml";
 constexpr std::string_view root_element = "CurrencyConfig";
-constexpr std::uint32_t page = 500;
-
 // The name of the first element of a document, past the prolog, a comment or a
 // document type declaration. The real parse follows, so this only has to be
 // right enough to name the kind of file in a refusal.

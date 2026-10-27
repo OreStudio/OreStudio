@@ -66,7 +66,7 @@ double named(const std::map<std::string, double>& parameters, const std::string&
     return found->second;
 }
 
-bool close(double a, double b) {
+bool ir_parameter_conversion_close(double a, double b) {
     return std::abs(a - b) <= 1e-6 * std::max({1.0, std::abs(a), std::abs(b)});
 }
 
@@ -166,9 +166,11 @@ ir_simple_reading ir_simple_from_parameters(const std::string& process_type,
             break;
         case engine::two_factor_gaussian: {
             const double sigma_x = named(parameters, "sigma_x");
-            if (!close(named(parameters, "kappa_y"), kappa * second_speed_ratio) ||
-                !close(named(parameters, "sigma_y"), sigma_x * second_volatility_ratio) ||
-                !close(named(parameters, "rho"), 0.0))
+            if (!ir_parameter_conversion_close(named(parameters, "kappa_y"),
+                                               kappa * second_speed_ratio) ||
+                !ir_parameter_conversion_close(named(parameters, "sigma_y"),
+                                               sigma_x * second_volatility_ratio) ||
+                !ir_parameter_conversion_close(named(parameters, "rho"), 0.0))
                 out.reason = "The second factor and the correlation are set by hand.";
             view.long_run_rate = theta;
             view.yearly_move_bp = sigma_x * two_factor_spread / basis_point;

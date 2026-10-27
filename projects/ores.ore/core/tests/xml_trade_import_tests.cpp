@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -29,18 +30,6 @@
 #include <filesystem>
 #include <fstream>
 
-namespace {
-
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
-                                                filename);
-}
-
-}
 
 using ores::ore::xml::importer;
 using ores::ore::xml::trade_import_item;

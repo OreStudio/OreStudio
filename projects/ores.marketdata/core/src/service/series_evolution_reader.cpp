@@ -38,10 +38,11 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view logger_name = "ores.marketdata.core.series_evolution_reader";
+inline std::string_view series_evolution_reader_logger_name =
+    "ores.marketdata.core.series_evolution_reader";
 
-[[nodiscard]] auto& lg() {
-    static auto instance = make_logger(logger_name);
+[[nodiscard]] auto& series_evolution_reader_lg() {
+    static auto instance = make_logger(series_evolution_reader_logger_name);
     return instance;
 }
 
@@ -155,9 +156,9 @@ series_evolution_reader::read(ores::database::context ctx,
             status = status_intermittent;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read the evolution of series " << series_id << ": "
-                               << response.instants.size() << " instants by " << node_count
-                               << " nodes over " << declared.axes.size() << " axes";
+    BOOST_LOG_SEV(series_evolution_reader_lg(), debug)
+        << "Read the evolution of series " << series_id << ": " << response.instants.size()
+        << " instants by " << node_count << " nodes over " << declared.axes.size() << " axes";
     response.success = true;
     return response;
 }

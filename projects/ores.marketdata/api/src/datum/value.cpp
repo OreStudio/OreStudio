@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.api/datum/value.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
+#include "shared_helpers.hpp"
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -35,14 +36,6 @@ bool is_digit(char c) {
 
 bool all_digits(std::string_view s) {
     return !s.empty() && std::ranges::all_of(s, is_digit);
-}
-
-// ASCII only, so the result does not depend on the program's locale.
-std::string upper(std::string_view s) {
-    std::string out(s);
-    std::ranges::transform(
-        out, out.begin(), [](char c) { return c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c; });
-    return out;
 }
 
 int to_int(std::string_view s) {
@@ -119,10 +112,10 @@ bool is_one_of(std::string_view s, const std::array<std::string_view, N>& vocabu
 constexpr std::array<std::string_view, 7> atm_types{
     "AtmNull", "AtmSpot", "AtmFwd", "AtmDeltaNeutral", "AtmVegaMax", "AtmGammaMax", "AtmPutCall50"};
 constexpr std::array<std::string_view, 4> delta_types{"Spot", "Fwd", "PaSpot", "PaFwd"};
-constexpr std::array<std::string_view, 2> option_types{"Call", "Put"};
+constexpr std::array<std::string_view, 2> value_option_types{"Call", "Put"};
 constexpr std::array<std::string_view, 2> moneyness_types{"Spot", "Fwd"};
 
-std::unexpected<std::string> refuse(std::string_view what, std::string_view text) {
+std::unexpected<std::string> value_refuse(std::string_view what, std::string_view text) {
     return std::unexpected(std::format("'{}' is not {}", text, what));
 }
 
@@ -154,7 +147,7 @@ std::expected<term, std::string> term::parse(std::string_view text) {
         return term(kind::date, std::string(text));
     if (is_period(text))
         return term(kind::period, std::string(text));
-    return refuse("a period, a date, ON, TN, SN or a continuation", text);
+    return value_refuse("a period, a date, ON, TN, SN or a continuation", text);
 }
 
 decimal::decimal(std::string text)
@@ -164,7 +157,7 @@ std::expected<decimal, std::string> decimal::parse(std::string_view text) {
     // The estate's one definition of a number: locale-free, and no
     // hexadecimal, inf or nan. The text is kept; the value is only checked.
     if (!ores::platform::numeric::parse_double(text))
-        return refuse("a number", text);
+        return value_refuse("a number", text);
     return decimal(std::string(text));
 }
 
@@ -173,7 +166,7 @@ code::code(std::string text)
 
 std::expected<code, std::string> code::parse(std::string_view text) {
     if (text.empty() || text.find('/') != std::string_view::npos)
-        return refuse("a code", text);
+        return value_refuse("a code", text);
     return code(std::string(text));
 }
 
@@ -191,36 +184,36 @@ std::expected<strike, std::string> strike::parse(std::string_view text) {
             return strike(atm_strike{"AtmFwd", std::nullopt, true});
         auto level = decimal::parse(head);
         if (!level)
-            return refuse("a strike", text);
+            return value_refuse("a strike", text);
         return strike(absolute_strike{std::move(*level)});
     }
 
     if (head == "DEL" && parts.size() == 4) {
         auto delta = decimal::parse(parts[3]);
-        if (!is_one_of(parts[1], delta_types) || !is_one_of(parts[2], option_types) || !delta)
-            return refuse("a delta strike", text);
+        if (!is_one_of(parts[1], delta_types) || !is_one_of(parts[2], value_option_types) || !delta)
+            return value_refuse("a delta strike", text);
         return strike(
             delta_strike{std::string(parts[1]), std::string(parts[2]), std::move(*delta)});
     }
 
     if (head == "ATM" && (parts.size() == 2 || parts.size() == 4)) {
         if (!is_one_of(parts[1], atm_types))
-            return refuse("an ATM strike", text);
+            return value_refuse("an ATM strike", text);
         if (parts.size() == 2)
             return strike(atm_strike{std::string(parts[1]), std::nullopt, false});
         if (parts[2] != "DEL" || !is_one_of(parts[3], delta_types))
-            return refuse("an ATM strike", text);
+            return value_refuse("an ATM strike", text);
         return strike(atm_strike{std::string(parts[1]), std::string(parts[3]), false});
     }
 
     if (head == "MNY" && parts.size() == 3) {
         auto moneyness = decimal::parse(parts[2]);
         if (!is_one_of(parts[1], moneyness_types) || !moneyness)
-            return refuse("a moneyness strike", text);
+            return value_refuse("a moneyness strike", text);
         return strike(moneyness_strike{std::string(parts[1]), std::move(*moneyness)});
     }
 
-    return refuse("a strike", text);
+    return value_refuse("a strike", text);
 }
 
 std::string strike::text() const {
@@ -252,7 +245,7 @@ strike_label::strike_label(form f, std::string number)
 
 std::expected<strike_label, std::string> strike_label::parse(std::string_view text) {
     if (text.empty())
-        return refuse("a strike label", text);
+        return value_refuse("a strike label", text);
     if (upper(text) == "ATM")
         return strike_label(form::at_the_money, {});
 
@@ -272,13 +265,13 @@ std::expected<strike_label, std::string> strike_label::parse(std::string_view te
             continue;
         const auto number = decimal::parse(text.substr(0, text.size() - suffix.token.size()));
         if (!number)
-            return refuse("a strike label", text);
+            return value_refuse("a strike label", text);
         return strike_label(suffix.kind, canonical_number(number->text()));
     }
 
     const auto level = decimal::parse(text);
     if (!level)
-        return refuse("a strike label", text);
+        return value_refuse("a strike label", text);
     return strike_label(form::level, canonical_number(level->text()));
 }
 

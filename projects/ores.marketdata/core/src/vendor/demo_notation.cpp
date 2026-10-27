@@ -25,7 +25,7 @@ namespace ores::marketdata::vendor {
 
 namespace {
 
-constexpr std::string_view scheme = "demo_key";
+constexpr std::string_view demo_notation_scheme = "demo_key";
 constexpr std::string_view only_field = "value";
 
 }
@@ -35,7 +35,7 @@ std::string_view demo_notation::provider() const {
 }
 
 std::string_view demo_notation::id_scheme() const {
-    return scheme;
+    return demo_notation_scheme;
 }
 
 price_side demo_notation::primary_side() const {
@@ -46,7 +46,7 @@ std::expected<quote_description, notation_error>
 demo_notation::read(const messaging::vendor_id& id) const {
     namespace x3 = detail::x3;
     using detail::fail;
-    if (id.id_scheme != scheme)
+    if (id.id_scheme != demo_notation_scheme)
         return fail(notation_error::kind::wrong_scheme,
                     "Demo ids use the scheme demo_key, not '" + id.id_scheme + "'.");
 
@@ -93,7 +93,7 @@ demo_notation::write(const quote_description& description) const {
     if (const auto* pillar = std::get_if<ir_curve_pillar>(&description)) {
         if (const auto ok = detail::check_pillar(*pillar); !ok)
             return std::unexpected(ok.error());
-        return messaging::vendor_id{.id_scheme = std::string(scheme),
+        return messaging::vendor_id{.id_scheme = std::string(demo_notation_scheme),
                                     .external_id = pillar->currency + "/" + pillar->index_family +
                                                    "/" + pillar->instrument_code + "/" +
                                                    pillar->start_tenor + "/" + pillar->end_tenor,
@@ -107,7 +107,7 @@ demo_notation::write(const quote_description& description) const {
     if (fx->side != price_side::last)
         return fail(notation_error::kind::not_representable,
                     "Demo has one price for a pair, which it reads as the last price.");
-    return messaging::vendor_id{.id_scheme = std::string(scheme),
+    return messaging::vendor_id{.id_scheme = std::string(demo_notation_scheme),
                                 .external_id = fx->base + "/" + fx->quote,
                                 .field = std::string(only_field)};
 }

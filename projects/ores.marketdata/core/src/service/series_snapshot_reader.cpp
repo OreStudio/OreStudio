@@ -41,15 +41,15 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view logger_name = "ores.marketdata.core.series_snapshot_reader";
+inline std::string_view series_snapshot_reader_logger_name = "ores.marketdata.core.series_snapshot_reader";
 
-[[nodiscard]] auto& lg() {
-    static auto instance = make_logger(logger_name);
+[[nodiscard]] auto& series_snapshot_reader_lg() {
+    static auto instance = make_logger(series_snapshot_reader_logger_name);
     return instance;
 }
 
 /// A refusal the caller reads, rather than an outcome it must infer.
-messaging::get_curve_snapshot_response refuse(std::string why) {
+messaging::get_curve_snapshot_response series_snapshot_reader_refuse(std::string why) {
     messaging::get_curve_snapshot_response response;
     response.success = false;
     response.message = std::move(why);
@@ -123,13 +123,13 @@ series_snapshot_reader::read(ores::database::context ctx,
         return response;
     }
     if (series.size() > 1)
-        return refuse("the identity names " + std::to_string(series.size()) +
+        return series_snapshot_reader_refuse("the identity names " + std::to_string(series.size()) +
                       " series; state the party or the provider so that it names one");
 
     const auto series_id = boost::uuids::to_string(series.front().id);
     const auto declared = read_series_shape(ctx, series_id);
     if (declared.axes.empty())
-        return refuse("the object declares no axis, so it is not a composite object");
+        return series_snapshot_reader_refuse("the object declares no axis, so it is not a composite object");
 
     const series_grid grid(declared);
     response.coordinate_fields.reserve(declared.axes.size());
@@ -186,7 +186,7 @@ series_snapshot_reader::read(ores::database::context ctx,
         response.approval_request_id = boost::uuids::to_string(published->request_id);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read the snapshot of series " << series_id << ": "
+    BOOST_LOG_SEV(series_snapshot_reader_lg(), debug) << "Read the snapshot of series " << series_id << ": "
                                << placed.size() << " points over " << grid.size() << " nodes";
     response.success = true;
     return response;

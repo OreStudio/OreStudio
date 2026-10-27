@@ -22,6 +22,7 @@
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/service/convention_service.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "shared_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <limits>
@@ -33,11 +34,6 @@ namespace ores::refdata::service {
 using namespace ores::refdata::repository;
 
 namespace {
-
-boost::uuids::uuid new_uuid() {
-    static thread_local ores::utility::uuid::uuid_v7_generator generator;
-    return generator();
-}
 
 // Closes every live row one part table holds for a convention.
 template <typename Repository>
@@ -61,11 +57,9 @@ tenor_basis_swap_forms_of(const std::vector<domain::convention>& central,
         if (c.identity.kind_code == tenor_basis_swap_kind)
             forms.central.push_back(c.identity.id);
     for (const auto& p : pay_receive)
-        forms.pay_receive.insert(
-            boost::uuids::to_string(row_identity(p).convention_id));
+        forms.pay_receive.insert(boost::uuids::to_string(row_identity(p).convention_id));
     for (const auto& l : long_short)
-        forms.long_short.insert(
-            boost::uuids::to_string(row_identity(l).convention_id));
+        forms.long_short.insert(boost::uuids::to_string(row_identity(l).convention_id));
     return forms;
 }
 
@@ -90,8 +84,7 @@ void resolve_tenor_basis_swap_identity(
 
     const auto relink = [&](auto& parts, auto repo) {
         for (auto& p : parts) {
-            const auto it = resolved.find(
-                boost::uuids::to_string(row_identity(p).convention_id));
+            const auto it = resolved.find(boost::uuids::to_string(row_identity(p).convention_id));
             if (it == resolved.end())
                 continue;
             row_identity(p).convention_id = it->second;
@@ -102,8 +95,7 @@ void resolve_tenor_basis_swap_identity(
                                                   std::numeric_limits<std::uint32_t>::max(),
                                                   {},
                                                   std::nullopt);
-            row_identity(p).id =
-                held.empty() ? new_uuid() : row_identity(held.front()).id;
+            row_identity(p).id = held.empty() ? new_uuid() : row_identity(held.front()).id;
         }
     };
     relink(pay_receive, tenor_basis_swap_pay_receive_repository());

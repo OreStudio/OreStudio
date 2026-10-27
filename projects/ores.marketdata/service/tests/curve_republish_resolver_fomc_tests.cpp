@@ -79,10 +79,10 @@ std::vector<year_month_day> fomc_2026_meeting_dates() {
             2026y / December / 9d};
 }
 
-tenor make_tenor(const std::string& code,
-                 const std::string& kind,
-                 const std::string& unit,
-                 int multiplier) {
+tenor curve_republish_resolver_fomc_make_tenor(const std::string& code,
+                                               const std::string& kind,
+                                               const std::string& unit,
+                                               int multiplier) {
     tenor t;
     t.code = code;
     t.kind = kind;
@@ -147,11 +147,14 @@ curve_republish_refdata_context make_fomc_context() {
     const auto meetings = fomc_2026_meeting_dates();
     // Already ascending, as the walk requires.
     ctx.schedule_dates = meetings;
-    ctx.tenors_by_code.emplace("SPOT", make_tenor("SPOT", "PERIOD", "DAY", 0));
-    ctx.tenors_by_code.emplace(split_code, make_tenor(split_code, "PERIOD", "YEAR", 1));
+    ctx.tenors_by_code.emplace(
+        "SPOT", curve_republish_resolver_fomc_make_tenor("SPOT", "PERIOD", "DAY", 0));
+    ctx.tenors_by_code.emplace(
+        split_code, curve_republish_resolver_fomc_make_tenor(split_code, "PERIOD", "YEAR", 1));
     for (int n = 1; n <= meeting_count; ++n) {
         const auto code = std::to_string(n) + "F";
-        ctx.tenors_by_code.emplace(code, make_tenor(code, "SPECIAL", "NONE", n));
+        ctx.tenors_by_code.emplace(
+            code, curve_republish_resolver_fomc_make_tenor(code, "SPECIAL", "NONE", n));
         ctx.resolutions_by_tenor.emplace(code, make_fomc_resolution(code, n));
     }
     // The split tenor is a membership-only row: the calendar-axis fallback

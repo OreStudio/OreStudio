@@ -36,17 +36,17 @@ using namespace ores::database::repository;
 
 namespace {
 
-inline static std::string_view logger_name = "ores.iam.repository.tenant_lookups";
+inline static std::string_view tenant_lookups_logger_name = "ores.iam.repository.tenant_lookups";
 
-static auto& lg() {
-    static auto instance = make_logger(logger_name);
+static auto& tenant_lookups_lg() {
+    static auto instance = make_logger(tenant_lookups_logger_name);
     return instance;
 }
 
 } // namespace
 
 std::vector<domain::tenant> read_all_active_tenants(const ores::database::context& ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
                        where("valid_to"_c == max.value()) | order_by("name"_c);
 
@@ -54,15 +54,15 @@ std::vector<domain::tenant> read_all_active_tenants(const ores::database::contex
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
-        lg(),
+        tenant_lookups_lg(),
         "Reading latest tenants");
 }
 
 std::vector<domain::tenant> read_active_tenant_by_id(const ores::database::context& ctx,
                                                      const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant. ID: " << id;
+    BOOST_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant. ID: " << id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
                        where("id"_c == id_str && "valid_to"_c == max.value());
@@ -71,15 +71,15 @@ std::vector<domain::tenant> read_active_tenant_by_id(const ores::database::conte
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
-        lg(),
+        tenant_lookups_lg(),
         "Reading latest tenant by ID.");
 }
 
 std::vector<domain::tenant> read_active_tenant_by_hostname(const ores::database::context& ctx,
                                                            const std::string& hostname) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant by hostname: " << hostname;
+    BOOST_LOG_SEV(tenant_lookups_lg(), debug) << "Reading latest tenant by hostname: " << hostname;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
                        where("hostname"_c == hostname && "valid_to"_c == max.value());
 
@@ -87,12 +87,12 @@ std::vector<domain::tenant> read_active_tenant_by_hostname(const ores::database:
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
-        lg(),
+        tenant_lookups_lg(),
         "Reading latest tenant by hostname.");
 }
 
 std::vector<domain::tenant> read_registration_default_tenant(const ores::database::context& ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, tenant_lookups_lg()));
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
                        where("is_registration_default"_c == true && "valid_to"_c == max.value()) |
                        limit(1);
@@ -101,7 +101,7 @@ std::vector<domain::tenant> read_registration_default_tenant(const ores::databas
         ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
-        lg(),
+        tenant_lookups_lg(),
         "Reading the registration default tenant.");
 }
 

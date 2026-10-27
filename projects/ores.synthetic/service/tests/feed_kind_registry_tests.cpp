@@ -41,6 +41,7 @@
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -65,10 +66,7 @@
 
 namespace {
 
-const std::string test_secret("feed-kind-registry-test-secret");
-const std::string test_issuer("ores.iam.test");
-const std::string test_audience("ores.synthetic.service");
-
+const std::string feed_kind_registry_test_secret("feed-kind-registry-test-secret");
 const std::string stub_kind_name("stub");
 const std::string stub_permission("synthetic::stub_generation_configs:read");
 const std::string stub_container("11111111-1111-1111-1111-111111111111");
@@ -265,9 +263,9 @@ make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
     return registry;
 }
 
-std::string mint_token(const std::vector<std::string>& roles) {
+std::string feed_kind_registry_mint_token(const std::vector<std::string>& roles) {
     auto signer = ores::security::jwt::jwt_authenticator::create_hs256(
-        test_secret, test_issuer, test_audience);
+        feed_kind_registry_test_secret, test_issuer, test_audience);
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.subject = "feed-kind-registry-test";
     claims.issuer = test_issuer;
@@ -316,15 +314,15 @@ struct stub_fixture {
     ores::database::context ctx;
     ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
-    std::string token =
-        mint_token({stub_permission, std::string(ores::synthetic::service::run_permission)});
+    std::string token = feed_kind_registry_mint_token(
+        {stub_permission, std::string(ores::synthetic::service::run_permission)});
 
     stub_fixture()
         : nats(ores::testing::make_nats_options())
         , auth_nats(nats, [](bool) { return std::string(); })
         , ctx(make_test_context()) {
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
-            test_secret, test_issuer, test_audience);
+            feed_kind_registry_test_secret, test_issuer, test_audience);
     }
 };
 
@@ -384,12 +382,15 @@ TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations",
     registry.register_kind(stub_kind(stub_permission));
 
     const auto verifier = ores::security::jwt::jwt_authenticator::create_hs256(
-        test_secret, test_issuer, test_audience);
+        feed_kind_registry_test_secret, test_issuer, test_audience);
     const auto ctx_with = ores::service::service::make_request_context(
-        f.ctx, request_message(list_feeds_request{}, mint_token({stub_permission})), verifier);
+        f.ctx,
+        request_message(list_feeds_request{}, feed_kind_registry_mint_token({stub_permission})),
+        verifier);
     const auto ctx_without = ores::service::service::make_request_context(
         f.ctx,
-        request_message(list_feeds_request{}, mint_token({"synthetic::other:read"})),
+        request_message(list_feeds_request{},
+                        feed_kind_registry_mint_token({"synthetic::other:read"})),
         verifier);
     REQUIRE(ctx_with.has_value());
     REQUIRE(ctx_without.has_value());

@@ -21,6 +21,7 @@
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/logging_options_validator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -28,16 +29,8 @@
 #include <string>
 #include <string_view>
 
-namespace {
 
-ores::logging::logging_options make_console_only_options() {
-    ores::logging::logging_options r;
-    r.severity = "info";
-    r.output_to_console = true;
-    return r;
-}
-
-}
+using ores::logging::tests::make_console_only_options;
 
 using ores::logging::logging_exception;
 using ores::logging::logging_options;

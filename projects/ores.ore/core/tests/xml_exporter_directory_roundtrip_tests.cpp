@@ -45,7 +45,7 @@ namespace {
 
 namespace fs = std::filesystem;
 
-fs::path examples_dir(const std::string& relative) {
+fs::path xml_exporter_directory_roundtrip_examples_dir(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/examples/" + relative);
 }
 
@@ -121,7 +121,7 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus",
           "[ore][xml][roundtrip][exporter][external]") {
     using ores::platform::filesystem::file;
 
-    const auto input = examples_dir("Products/Example_Trades");
+    const auto input = xml_exporter_directory_roundtrip_examples_dir("Products/Example_Trades");
     REQUIRE(fs::exists(input));
 
     scratch_dir out("ores_ore_directory_roundtrip");
@@ -185,7 +185,7 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus",
 
 TEST_CASE("roundtrip classifies a mixed ORE input directory",
           "[ore][xml][roundtrip][exporter][external]") {
-    const auto input = examples_dir("Input");
+    const auto input = xml_exporter_directory_roundtrip_examples_dir("Input");
     REQUIRE(fs::exists(input));
 
     scratch_dir out("ores_ore_directory_roundtrip_mixed");

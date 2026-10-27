@@ -44,7 +44,7 @@
 
 namespace {
 
-namespace xg = ores::ore::xml::generated::pricing_engines;
+namespace xml_pricing_engine_projection_xg = ores::ore::xml::generated::pricing_engines;
 using namespace ores::logging;
 
 /**
@@ -66,7 +66,7 @@ void state(const ores::ore::xml::record_type& type, void* record, const std::str
 const tables& table() {
     using namespace ores::ore::xml;
     static const tables found = [] {
-        const auto& root = *xg::pricing_engines_document().root;
+        const auto& root = *xml_pricing_engine_projection_xg::pricing_engines_document().root;
         const auto& product = *find_child_type(root, "Product");
         const auto& parameter =
             *find_child_type(*find_child_type(product, "ModelParameters"), "Parameter");
@@ -75,8 +75,9 @@ const tables& table() {
     return found;
 }
 
-xg::parameter make_parameter(const std::string& name, const std::string& value) {
-    xg::parameter p;
+xml_pricing_engine_projection_xg::parameter make_parameter(const std::string& name,
+                                                           const std::string& value) {
+    xml_pricing_engine_projection_xg::parameter p;
     p.name = name;
     p.value = value;
     state(table().parameter, &p, "name");
@@ -84,9 +85,9 @@ xg::parameter make_parameter(const std::string& name, const std::string& value) 
     return p;
 }
 
-xg::product
+xml_pricing_engine_projection_xg::product
 make_product(const std::string& type, const std::string& model, const std::string& engine) {
-    xg::product p;
+    xml_pricing_engine_projection_xg::product p;
     p.type = type;
     p.model = model;
     p.engine = engine;
@@ -102,7 +103,7 @@ TEST_CASE("a_repeated_product_type_keeps_the_order_the_document_wrote",
           "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
-    xg::pricingengines document;
+    xml_pricing_engine_projection_xg::pricingengines document;
     document.product.push_back(make_product("CommodityForward", "First", "One"));
     document.product.push_back(make_product("CommodityForward", "Second", "Two"));
     state(table().root, &document, "Product");
@@ -126,7 +127,7 @@ TEST_CASE("a_repeated_parameter_name_in_one_scope_keeps_its_order",
     product.engine_parameters.parameter.push_back(make_parameter("Interactive", "true"));
     state(table().product, &product, "EngineParameters");
 
-    xg::pricingengines document;
+    xml_pricing_engine_projection_xg::pricingengines document;
     document.product.push_back(product);
     state(table().root, &document, "Product");
 
@@ -147,7 +148,7 @@ TEST_CASE("a_global_parameter_belongs_to_no_product_and_comes_back",
           "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
-    xg::pricingengines document;
+    xml_pricing_engine_projection_xg::pricingengines document;
     document.product.push_back(make_product("Swap", "Discounted", "Discounted"));
     state(table().root, &document, "Product");
 
@@ -213,7 +214,7 @@ TEST_CASE("rows_that_share_a_position_are_ordered_by_id", "[ore][xml][roundtrip]
 TEST_CASE("a_document_without_a_global_list_writes_none", "[ore][xml][roundtrip][pricingengines]") {
     auto lg(make_logger(test_suite));
 
-    xg::pricingengines document;
+    xml_pricing_engine_projection_xg::pricingengines document;
     document.product.push_back(make_product("Swap", "Discounted", "Discounted"));
     state(table().root, &document, "Product");
 

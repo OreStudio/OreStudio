@@ -43,6 +43,7 @@
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "test_helpers.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -66,7 +67,7 @@ using ores::trading::repository::trade_summary_repository;
 using uuid = boost::uuids::uuid;
 using namespace std::chrono;
 
-struct fixture {
+struct repository_trade_summary_fixture {
     ores::testing::database_helper h;
     ores::database::context ctx = ores::trading::tests::write_parent_party(h);
     uuid counterparty = write_counterparty();
@@ -176,11 +177,12 @@ struct fixture {
     }
 };
 
-trade_summaries_filter on(const uuid& counterparty) {
+trade_summaries_filter repository_trade_summary_on(const uuid& counterparty) {
     return {.counterparty_id = std::optional<uuid>{counterparty}};
 }
 
-std::vector<uuid> ids(const std::vector<ores::trading::domain::trade_summary>& rows) {
+std::vector<uuid>
+repository_trade_summary_ids(const std::vector<ores::trading::domain::trade_summary>& rows) {
     std::vector<uuid> r;
     for (const auto& s : rows)
         r.push_back(s.id);
@@ -188,30 +190,27 @@ std::vector<uuid> ids(const std::vector<ores::trading::domain::trade_summary>& r
     return r;
 }
 
-std::vector<uuid> sorted(std::vector<uuid> v) {
-    std::ranges::sort(v);
-    return v;
-}
-
 }
 
 TEST_CASE("a counterparty narrows the trade summary, and the total follows",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
     f.write("Swap", f.other_counterparty);
 
-    CHECK(ids(f.read(on(f.counterparty))) == sorted({a, b}));
-    CHECK(trade_summary_repository().get_total_trade_summary_count(f.ctx, on(f.counterparty)) == 2);
+    CHECK(repository_trade_summary_ids(f.read(repository_trade_summary_on(f.counterparty))) ==
+          sorted({a, b}));
+    CHECK(trade_summary_repository().get_total_trade_summary_count(
+              f.ctx, repository_trade_summary_on(f.counterparty)) == 2);
 }
 
 TEST_CASE("a row of a trade names its kind and its instrument type",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
 
-    const auto rows = f.read(on(f.counterparty));
+    const auto rows = f.read(repository_trade_summary_on(f.counterparty));
     REQUIRE(rows.size() == 1);
     CHECK(rows[0].id == a);
     CHECK(rows[0].row_kind == "trade");
@@ -220,13 +219,13 @@ TEST_CASE("a row of a trade names its kind and its instrument type",
 }
 
 TEST_CASE("an instrument type narrows the summary", "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.instrument_type = "Swap";
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{a});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{a});
 
     filter.instrument_type_one_of = std::vector<std::string>{};
     CHECK(f.read(filter).empty());
@@ -234,57 +233,57 @@ TEST_CASE("an instrument type narrows the summary", "[repository][list_filter][t
 
 TEST_CASE("a book and a trade date narrow the summary through the booking",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
     f.write_booking(a, year_month_day{year{2025} / 1 / 15});
     f.write_booking(b, year_month_day{year{2025} / 3 / 20});
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.book_id = std::optional<uuid>{f.book};
-    CHECK(ids(f.read(filter)) == sorted({a, b}));
+    CHECK(repository_trade_summary_ids(f.read(filter)) == sorted({a, b}));
 
     filter.trade_date_from = "2025-03-01";
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{b});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{b});
 
     filter.trade_date_from = std::nullopt;
     filter.trade_date_to = "2025-02-01";
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{a});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{a});
 }
 
 TEST_CASE("a trade with no booking has no book", "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     f.write("Swap", f.counterparty);
 
-    const auto rows = f.read(on(f.counterparty));
+    const auto rows = f.read(repository_trade_summary_on(f.counterparty));
     REQUIRE(rows.size() == 1);
     CHECK_FALSE(rows[0].book_id.has_value());
 }
 
 TEST_CASE("the authorisation status of an actual trade with no request is not requested",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto actual = f.write("Swap", f.counterparty);
     const auto test = f.write("Swap", f.counterparty, ores::trading::domain::booking_nature::test);
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.authorisation_status = "not_requested";
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{actual});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{actual});
 
     filter.authorisation_status = "not_required";
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{test});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{test});
 }
 
 TEST_CASE("a search matches an identifier of the trade, ignoring case, and literally",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
     f.write_identifier(b, "UTI", "ZX-Needle-77");
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.search = "zx-needle";
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{b});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{b});
 
     filter.search = "%";
     CHECK(f.read(filter).empty());
@@ -294,48 +293,50 @@ TEST_CASE("a search matches an identifier of the trade, ignoring case, and liter
 }
 
 TEST_CASE("a search matches the id of the trade", "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.search = boost::uuids::to_string(b);
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{b});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{b});
 }
 
 TEST_CASE("the summary pages in the service", "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
     f.write("CapFloor", f.counterparty);
 
     const auto page = trade_summary_repository().read_latest(
-        f.ctx, 1, 1, {.field = "instrument_type"}, on(f.counterparty));
+        f.ctx, 1, 1, {.field = "instrument_type"}, repository_trade_summary_on(f.counterparty));
     REQUIRE(page.size() == 1);
     CHECK(page[0].instrument_type == "FxForward");
 }
 
 TEST_CASE("only the listed columns sort the summary", "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto swap = f.write("Swap", f.counterparty);
     const auto forward = f.write("FxForward", f.counterparty);
 
-    const auto up = f.read(on(f.counterparty), {.field = "instrument_type"});
+    const auto up =
+        f.read(repository_trade_summary_on(f.counterparty), {.field = "instrument_type"});
     REQUIRE(up.size() == 2);
     CHECK(up[0].id == forward);
     CHECK(up[1].id == swap);
 
-    CHECK_THROWS_AS(f.read(on(f.counterparty), {.field = "search_text"}), std::invalid_argument);
+    CHECK_THROWS_AS(f.read(repository_trade_summary_on(f.counterparty), {.field = "search_text"}),
+                    std::invalid_argument);
 }
 
 TEST_CASE("a structure is a row of the same list, with the count of its trades",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
     const auto package = f.write_package({a, b});
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.row_kind = "structure";
     const auto rows = f.read(filter);
 
@@ -346,30 +347,31 @@ TEST_CASE("a structure is a row of the same list, with the count of its trades",
     CHECK_FALSE(rows[0].status.has_value());
     CHECK_FALSE(rows[0].book_id.has_value());
 
-    CHECK(ids(f.read(on(f.counterparty))) == sorted({a, b, package}));
+    CHECK(repository_trade_summary_ids(f.read(repository_trade_summary_on(f.counterparty))) ==
+          sorted({a, b, package}));
 }
 
 TEST_CASE("a search finds a structure through an identifier of one of its trades",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
     f.write_identifier(a, "UTI", "QQ-Member-9");
     const auto package = f.write_package({a, b});
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.search = "qq-member";
-    CHECK(ids(f.read(filter)) == sorted({a, package}));
+    CHECK(repository_trade_summary_ids(f.read(filter)) == sorted({a, package}));
 }
 
 TEST_CASE("a filter on a column only a trade has leaves the structure out",
           "[repository][list_filter][trade_summary]") {
-    fixture f;
+    repository_trade_summary_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write_booking(a, year_month_day{year{2025} / 1 / 15});
     f.write_package({a});
 
-    auto filter = on(f.counterparty);
+    auto filter = repository_trade_summary_on(f.counterparty);
     filter.book_id = std::optional<uuid>{f.book};
-    CHECK(ids(f.read(filter)) == std::vector<uuid>{a});
+    CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{a});
 }

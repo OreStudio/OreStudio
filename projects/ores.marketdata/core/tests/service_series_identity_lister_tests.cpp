@@ -29,6 +29,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -50,13 +51,6 @@ using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::service::series_identity_lister;
 using ores::testing::database_helper;
 using ores::testing::scoped_database_helper;
-
-/// A curve id no earlier run used, so the series is this test's alone.
-std::string fresh_curve_id() {
-    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
-    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
-    return tag;
-}
 
 ores::marketdata::domain::market_series series_at(const ores::utility::uuid::tenant_id& tenant,
                                                   const std::string& user,
@@ -85,11 +79,6 @@ series_at(database_helper& h, const boost::uuids::uuid& party, const std::string
     return series_at(h.tenant_id(), h.db_user(), party, uri);
 }
 
-std::string zero_uri(const std::string& curve_id) {
-    return "oresmd://ir/EUR?type=series&instrument=zero&quote=rate&curve_id=" + curve_id +
-           "&day_counter=A365";
-}
-
 /// The listed series whose curve id is @p curve_id, whoever owns them.
 std::vector<listed_series> with_curve(const std::vector<listed_series>& all,
                                       const std::string& curve_id) {
@@ -105,39 +94,6 @@ std::vector<listed_series> with_curve(const std::vector<listed_series>& all,
 
 /// Two operational parties of the test tenant, and a context for each. Row level
 /// security shows a session only the rows of the parties it may see.
-struct two_parties {
-    boost::uuids::uuid a;
-    boost::uuids::uuid b;
-    ores::database::context a_context;
-    ores::database::context b_context;
-};
-
-two_parties make_two_parties(scoped_database_helper& h) {
-    auto& ctx = h.context();
-    const auto tenant = h.tenant_id();
-    ores::refdata::repository::party_repository repo;
-
-    boost::uuids::uuid system_party{};
-    for (const auto& p : repo.read_latest(ctx)) {
-        if (p.tenant_id == tenant && p.party_category == "System")
-            system_party = p.id;
-    }
-    REQUIRE(system_party != boost::uuids::uuid{});
-
-    auto generation = ores::testing::make_generation_context(h);
-    const auto make_party = [&] {
-        auto party = ores::refdata::generators::generate_synthetic_party(generation);
-        party.party_category = "Operational";
-        party.parent_party_id = system_party;
-        party.change_reason_code = "system.test";
-        repo.write(ctx, party);
-        return party.id;
-    };
-    const auto a = make_party();
-    const auto b = make_party();
-    return {a, b, ctx.with_party(tenant, a, {a}, ""), ctx.with_party(tenant, b, {b}, "")};
-}
-
 }
 
 TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for",

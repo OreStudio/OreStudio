@@ -70,13 +70,15 @@ namespace ores::ore::domain {
 
 namespace {
 
-namespace xg = xml::generated::curve_configuration;
+namespace curve_configuration_projection_xg = xml::generated::curve_configuration;
 using xml::record_reader;
 using xml::record_writer;
 
-constexpr std::string_view audit_modified_by = "ores";
-constexpr std::string_view audit_reason_code = "system.external_data_import";
-constexpr std::string_view audit_commentary = "Imported from ORE XML";
+constexpr std::string_view curve_configuration_projection_audit_modified_by = "ores";
+constexpr std::string_view curve_configuration_projection_audit_reason_code =
+    "system.external_data_import";
+constexpr std::string_view curve_configuration_projection_audit_commentary =
+    "Imported from ORE XML";
 
 constexpr std::string_view yield_curves_section = "YieldCurves";
 constexpr std::string_view equity_curves_section = "EquityCurves";
@@ -125,17 +127,17 @@ bool is_modelled(std::string_view section) {
            section == fx_spots_section || section == intraday_power_curves_section;
 }
 
-boost::uuids::uuid new_uuid() {
+boost::uuids::uuid curve_configuration_projection_new_uuid() {
     static thread_local ores::utility::uuid::uuid_v7_generator generator;
     return generator();
 }
 
 template <typename T>
-void set_audit(T& r) {
-    r.modified_by = std::string(audit_modified_by);
-    r.performed_by = std::string(audit_modified_by);
-    r.change_reason_code = std::string(audit_reason_code);
-    r.change_commentary = std::string(audit_commentary);
+void curve_configuration_projection_set_audit(T& r) {
+    r.modified_by = std::string(curve_configuration_projection_audit_modified_by);
+    r.performed_by = std::string(curve_configuration_projection_audit_modified_by);
+    r.change_reason_code = std::string(curve_configuration_projection_audit_reason_code);
+    r.change_commentary = std::string(curve_configuration_projection_audit_commentary);
 }
 
 std::runtime_error refusal(const std::string& what) {
@@ -204,7 +206,8 @@ void set_boolean_text(record_writer w, std::string_view name, const std::optiona
 // The strike factor is a schema decimal and a column of the reference data
 // holds it as a double, so the boundary converts here rather than storing one
 // shape in the other.
-std::optional<double> decimal_as_double(const record_reader& v, std::string_view name) {
+std::optional<double> curve_configuration_projection_decimal_as_double(const record_reader& v,
+                                                                       std::string_view name) {
     const auto value = v.decimal(name);
     if (!value)
         return std::nullopt;
@@ -311,11 +314,11 @@ struct import_context {
 
     refdata::domain::curve_segment& segment(const std::string& type, int position) {
         refdata::domain::curve_segment s;
-        s.id = new_uuid();
+        s.id = curve_configuration_projection_new_uuid();
         s.curve_definition_id = definition_id;
         s.segment_type = type;
         s.position = position;
-        set_audit(s);
+        curve_configuration_projection_set_audit(s);
         out.segments.push_back(std::move(s));
         return out.segments.back();
     }
@@ -328,13 +331,13 @@ struct import_context {
         int position = 0;
         for (const auto& q : v.children("CompositeQuote")) {
             refdata::domain::curve_quote r;
-            r.id = new_uuid();
+            r.id = curve_configuration_projection_new_uuid();
             r.curve_definition_id = definition_id;
             r.curve_segment_id = segment_id;
             r.rate_quote = q.text("RateQuote");
             r.spread_quote = q.text("SpreadQuote");
             r.position = position++;
-            set_audit(r);
+            curve_configuration_projection_set_audit(r);
             out.quotes.push_back(std::move(r));
         }
     }
@@ -346,14 +349,14 @@ struct import_context {
                std::optional<double> weight,
                int position) {
         refdata::domain::curve_segment_curve r;
-        r.id = new_uuid();
+        r.id = curve_configuration_projection_new_uuid();
         r.curve_segment_id = segment_id;
         r.role = std::string(role);
         r.curve = curve_id;
         r.index_name = std::move(index_name);
         r.weight = weight;
         r.position = position;
-        set_audit(r);
+        curve_configuration_projection_set_audit(r);
         out.segment_curves.push_back(std::move(r));
     }
 };
@@ -369,7 +372,7 @@ void import_quotes(ores::refdata::messaging::curve_configuration_document& out,
     int position = 0;
     for (const auto& q : quotes->children("Quote")) {
         refdata::domain::curve_quote r;
-        r.id = new_uuid();
+        r.id = curve_configuration_projection_new_uuid();
         r.curve_definition_id = definition_id;
         r.curve_segment_id = segment_id;
         r.default_curve_configuration_id = configuration_id;
@@ -378,7 +381,7 @@ void import_quotes(ores::refdata::messaging::curve_configuration_document& out,
         r.quote_text = q.own_text().value_or("");
         r.optional_flag = q.text("optional");
         r.position = position++;
-        set_audit(r);
+        curve_configuration_projection_set_audit(r);
         out.quotes.push_back(std::move(r));
     }
 }
@@ -570,13 +573,13 @@ add_definition(ores::refdata::messaging::curve_configuration_document& out,
                const std::string& description,
                int position) {
     refdata::domain::curve_definition d;
-    d.id = new_uuid();
+    d.id = curve_configuration_projection_new_uuid();
     d.curve_configuration_id = out.config.id;
     d.section_code = std::string(section);
     d.curve_id = curve_id;
     d.description = description;
     d.position = position;
-    set_audit(d);
+    curve_configuration_projection_set_audit(d);
     out.definitions.push_back(std::move(d));
     return out.definitions.back();
 }
@@ -586,7 +589,7 @@ void import_bootstrap(ores::refdata::messaging::curve_configuration_document& ou
                       const boost::uuids::uuid& configuration_id,
                       const record_reader& b) {
     refdata::domain::curve_bootstrap_config c;
-    c.id = new_uuid();
+    c.id = curve_configuration_projection_new_uuid();
     c.curve_definition_id = definition_id;
     c.default_curve_configuration_id = configuration_id;
     c.accuracy = b.real("Accuracy");
@@ -598,7 +601,7 @@ void import_bootstrap(ores::refdata::messaging::curve_configuration_document& ou
     c.dont_throw_steps = optional_int(b, "DontThrowSteps");
     c.global = boolean_text(b, "Global");
     c.smoothness_lambda = b.real("SmoothnessLambda");
-    set_audit(c);
+    curve_configuration_projection_set_audit(c);
     out.bootstrap_configs.push_back(std::move(c));
 }
 
@@ -616,7 +619,7 @@ void import_yield_curve(ores::refdata::messaging::curve_configuration_document& 
                                   position);
 
     refdata::domain::yield_curve_config y;
-    y.id = new_uuid();
+    y.id = curve_configuration_projection_new_uuid();
     y.curve_definition_id = d.id;
     y.currency = required_spelling(v, "Currency");
     y.discount_curve = required_text(v, "DiscountCurve");
@@ -631,7 +634,7 @@ void import_yield_curve(ores::refdata::messaging::curve_configuration_document& 
     y.has_report = v.has("Report");
     if (const auto report = v.child("Report"); report)
         y.report_pillar_dates = report->text("PillarDates");
-    set_audit(y);
+    curve_configuration_projection_set_audit(y);
     out.yield_curves.push_back(std::move(y));
 
     if (const auto bootstrap = v.child("BootstrapConfig"); bootstrap)
@@ -652,7 +655,7 @@ void import_equity_curve(ores::refdata::messaging::curve_configuration_document&
                                   position);
 
     refdata::domain::equity_curve_config e;
-    e.id = new_uuid();
+    e.id = curve_configuration_projection_new_uuid();
     e.curve_definition_id = d.id;
     e.currency = required_text(v, "Currency");
     e.calendar = v.text("Calendar");
@@ -669,7 +672,7 @@ void import_equity_curve(ores::refdata::messaging::curve_configuration_document&
     }
     e.dividend_extrapolation = v.spelling("DividendExtrapolation");
     e.extrapolation = v.spelling("Extrapolation");
-    set_audit(e);
+    curve_configuration_projection_set_audit(e);
     out.equity_curves.push_back(std::move(e));
 
     if (const auto quotes = v.child("Quotes"); quotes) {
@@ -691,7 +694,7 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
                       " writes Segments, which are not modelled yet");
 
     refdata::domain::inflation_curve_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.nominal_term_structure = required_text(v, "NominalTermStructure");
     r.inflation_type = required_spelling(v, "Type");
@@ -712,18 +715,18 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
         if (const auto factors = seasonality->child("Factors"); factors)
             for (const auto& f : factors->values("Factor")) {
                 refdata::domain::inflation_seasonality_factor sf;
-                sf.id = new_uuid();
+                sf.id = curve_configuration_projection_new_uuid();
                 sf.curve_definition_id = d.id;
                 sf.factor = f;
                 sf.position = factor_position++;
-                set_audit(sf);
+                curve_configuration_projection_set_audit(sf);
                 out.seasonality_factors.push_back(std::move(sf));
             }
     }
     r.use_last_fixing_date = v.spelling("UseLastFixingDate");
     r.interpolation_variable = v.text("InterpolationVariable");
     r.interpolation_method = v.text("InterpolationMethod");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.inflation_curves.push_back(std::move(r));
 
     if (const auto quotes = v.child("Quotes"); quotes) {
@@ -778,18 +781,18 @@ void import_default_curve(ores::refdata::messaging::curve_configuration_document
                                   position);
 
     refdata::domain::default_curve_config c;
-    c.id = new_uuid();
+    c.id = curve_configuration_projection_new_uuid();
     c.curve_definition_id = d.id;
     c.currency = required_spelling(v, "Currency");
-    set_audit(c);
+    curve_configuration_projection_set_audit(c);
     out.default_curves.push_back(std::move(c));
 
     const auto add = [&](int at) -> refdata::domain::default_curve_configuration {
         refdata::domain::default_curve_configuration r;
-        r.id = new_uuid();
+        r.id = curve_configuration_projection_new_uuid();
         r.curve_definition_id = d.id;
         r.position = at;
-        set_audit(r);
+        curve_configuration_projection_set_audit(r);
         return r;
     };
 
@@ -828,7 +831,7 @@ void import_commodity_quotes(ores::refdata::messaging::curve_configuration_docum
     int position = 0;
     for (const auto& q : v.children("Quote")) {
         refdata::domain::curve_quote r;
-        r.id = new_uuid();
+        r.id = curve_configuration_projection_new_uuid();
         r.curve_definition_id = definition_id;
         r.commodity_price_segment_id = price_segment_id;
         if (list)
@@ -836,7 +839,7 @@ void import_commodity_quotes(ores::refdata::messaging::curve_configuration_docum
         r.quote_text = q.own_text().value_or("");
         r.optional_flag = q.text("optional");
         r.position = position++;
-        set_audit(r);
+        curve_configuration_projection_set_audit(r);
         out.quotes.push_back(std::move(r));
     }
 }
@@ -880,10 +883,10 @@ void import_report(ores::refdata::messaging::curve_configuration_document& out,
                    const boost::uuids::uuid& definition_id,
                    const record_reader& v) {
     refdata::domain::curve_report_configuration r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = definition_id;
     fill_report(r, v);
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.report_configurations.push_back(std::move(r));
 }
 
@@ -891,7 +894,7 @@ void import_parametric_smile(ores::refdata::messaging::curve_configuration_docum
                              const boost::uuids::uuid& definition_id,
                              const record_reader& v) {
     refdata::domain::curve_parametric_smile r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = definition_id;
     if (const auto calibration = v.child("Calibration"); calibration) {
         r.max_calibration_attempts = required_int(*calibration, "MaxCalibrationAttempts");
@@ -900,20 +903,20 @@ void import_parametric_smile(ores::refdata::messaging::curve_configuration_docum
     }
     if (const auto correction = v.child("ResidualCorrection"); correction)
         r.residual_correction_dimension = correction->spelling("Dimension");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.parametric_smiles.push_back(std::move(r));
 
     int parameter_position = 0;
     if (const auto parameters = v.child("Parameters"); parameters)
         for (const auto& p : parameters->children("Parameter")) {
             refdata::domain::curve_parametric_smile_parameter parameter;
-            parameter.id = new_uuid();
+            parameter.id = curve_configuration_projection_new_uuid();
             parameter.curve_definition_id = definition_id;
             parameter.name = required_text(p, "Name");
             parameter.initial_value = p.text("InitialValue");
             parameter.calibration = required_spelling(p, "Calibration");
             parameter.position = parameter_position++;
-            set_audit(parameter);
+            curve_configuration_projection_set_audit(parameter);
             out.parametric_smile_parameters.push_back(std::move(parameter));
         }
 }
@@ -956,7 +959,7 @@ void import_commodity_curve(ores::refdata::messaging::curve_configuration_docume
     const boost::uuids::uuid none{};
 
     refdata::domain::commodity_curve_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.currency = required_spelling(v, "Currency");
     r.base_price_curve = v.text("BasePriceCurve");
@@ -987,7 +990,7 @@ void import_commodity_curve(ores::refdata::messaging::curve_configuration_docume
         int at = 0;
         for (const auto& g : segments->children("PriceSegment")) {
             refdata::domain::commodity_price_segment p;
-            p.id = new_uuid();
+            p.id = curve_configuration_projection_new_uuid();
             p.curve_definition_id = d.id;
             p.segment_type = required_spelling(g, "Type");
             p.priority = optional_int(g, "Priority");
@@ -997,7 +1000,7 @@ void import_commodity_curve(ores::refdata::messaging::curve_configuration_docume
             p.peak_price_calendar = g.text("PeakPriceCalendar");
             p.has_off_peak_daily = g.has("OffPeakDaily");
             p.position = at++;
-            set_audit(p);
+            curve_configuration_projection_set_audit(p);
             if (const auto quotes = g.child("Quotes"); quotes)
                 import_commodity_quotes(out, d.id, p.id, std::nullopt, *quotes);
             if (const auto daily = g.child("OffPeakDaily"); daily) {
@@ -1009,7 +1012,7 @@ void import_commodity_curve(ores::refdata::messaging::curve_configuration_docume
             out.commodity_price_segments.push_back(std::move(p));
         }
     }
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.commodity_curves.push_back(std::move(r));
 
     if (const auto quotes = v.child("Quotes"); quotes)
@@ -1028,7 +1031,7 @@ void import_fx_volatility(ores::refdata::messaging::curve_configuration_document
                                   position);
 
     refdata::domain::fx_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.dimension = required_spelling(v, "Dimension");
     r.smile_type = v.spelling("SmileType");
@@ -1049,7 +1052,7 @@ void import_fx_volatility(ores::refdata::messaging::curve_configuration_document
     r.time_interpolation = v.text("TimeInterpolation");
     r.time_weighting = v.text("TimeWeighting");
     r.butterfly_error_tolerance = v.real("ButterflyErrorTolerance");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.fx_volatilities.push_back(std::move(r));
     if (const auto smile = v.child("ParametricSmileConfiguration"); smile)
         import_parametric_smile(out, d.id, *smile);
@@ -1067,7 +1070,7 @@ void import_yield_volatility(ores::refdata::messaging::curve_configuration_docum
                                   position);
 
     refdata::domain::yield_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.qualifier = required_text(v, "Qualifier");
     r.dimension = v.spelling("Dimension");
@@ -1078,7 +1081,7 @@ void import_yield_volatility(ores::refdata::messaging::curve_configuration_docum
     r.business_day_convention = required_spelling(v, "BusinessDayConvention");
     r.option_tenors = required_text(v, "OptionTenors");
     r.bond_tenors = required_text(v, "BondTenors");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.yield_volatilities.push_back(std::move(r));
     if (const auto report = v.child("Report"); report)
         import_report(out, d.id, *report);
@@ -1098,7 +1101,7 @@ void import_base_correlation(ores::refdata::messaging::curve_configuration_docum
                       "modelled yet");
 
     refdata::domain::base_correlation_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.terms = required_text(v, "Terms");
     r.detachment_points = required_text(v, "DetachmentPoints");
@@ -1116,7 +1119,7 @@ void import_base_correlation(ores::refdata::messaging::curve_configuration_docum
     r.currency = v.text("Currency");
     r.calibrate_constituents_to_index_spread = v.spelling("CalibrateConstituentsToIndexSpread");
     r.use_assumed_recovery = v.spelling("UseAssumedRecovery");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.base_correlations.push_back(std::move(r));
 }
 
@@ -1129,7 +1132,7 @@ void import_strike_surface(ores::refdata::messaging::curve_configuration_documen
         throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
                       "modelled yet");
     refdata::domain::curve_volatility_config c;
-    c.id = new_uuid();
+    c.id = curve_configuration_projection_new_uuid();
     c.curve_definition_id = definition_id;
     c.kind = std::string(strike_surface_kind);
     c.is_wrapped = wrapped;
@@ -1147,7 +1150,7 @@ void import_strike_surface(ores::refdata::messaging::curve_configuration_documen
     c.strike_extrapolation = required_spelling(v, "StrikeExtrapolation");
     c.calendar = v.text("Calendar");
     c.position = position;
-    set_audit(c);
+    curve_configuration_projection_set_audit(c);
     out.volatility_configs.push_back(std::move(c));
 }
 
@@ -1171,12 +1174,12 @@ void export_strike_surface(record_writer v, const refdata::domain::curve_volatil
 refdata::domain::curve_volatility_config new_volatility_config(
     const boost::uuids::uuid& definition_id, std::string_view kind, bool wrapped, int position) {
     refdata::domain::curve_volatility_config c;
-    c.id = new_uuid();
+    c.id = curve_configuration_projection_new_uuid();
     c.curve_definition_id = definition_id;
     c.kind = std::string(kind);
     c.is_wrapped = wrapped;
     c.position = position;
-    set_audit(c);
+    curve_configuration_projection_set_audit(c);
     return c;
 }
 
@@ -1419,7 +1422,7 @@ void import_equity_volatility(ores::refdata::messaging::curve_configuration_docu
                       " writes a OneDimSolverConfig, which is not modelled yet");
 
     refdata::domain::equity_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.equity_id = v.text("EquityId");
     r.currency = required_text(v, "Currency");
@@ -1432,7 +1435,7 @@ void import_equity_volatility(ores::refdata::messaging::curve_configuration_docu
     r.calendar = v.text("Calendar");
     r.prefer_out_of_the_money = v.spelling("PreferOutOfTheMoney");
     r.has_volatility_config = v.has("VolatilityConfig");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.equity_volatilities.push_back(std::move(r));
 
     import_volatility_configs(out, d.id, d.curve_id, v, false);
@@ -1455,7 +1458,7 @@ void import_commodity_volatility(ores::refdata::messaging::curve_configuration_d
                       " writes a OneDimSolverConfig, which is not modelled yet");
 
     refdata::domain::commodity_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.currency = required_spelling(v, "Currency");
     r.instrument_type = v.text("InstrumentType");
@@ -1470,7 +1473,7 @@ void import_commodity_volatility(ores::refdata::messaging::curve_configuration_d
     r.quote_suffix = v.spelling("QuoteSuffix");
     r.prefer_out_of_the_money = v.spelling("PreferOutOfTheMoney");
     r.has_volatility_config = v.has("VolatilityConfig");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.commodity_volatilities.push_back(std::move(r));
 
     import_volatility_configs(out, d.id, d.curve_id, v, false);
@@ -1493,18 +1496,18 @@ void import_bond_future_volatility(ores::refdata::messaging::curve_configuration
                       " writes a OneDimSolverConfig, which is not modelled yet");
 
     refdata::domain::bond_future_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.contract_name = required_text(v, "ContractName");
     r.day_counter = v.spelling("DayCounter");
     r.calendar = v.text("Calendar");
     r.yield_curve_id = v.text("YieldCurveId");
-    r.strike_factor = decimal_as_double(v, "StrikeFactor");
+    r.strike_factor = curve_configuration_projection_decimal_as_double(v, "StrikeFactor");
     r.use_only_put_call = v.spelling("UseOnlyPutCall");
     r.prefer_out_of_the_money = v.spelling("PreferOutOfTheMoney");
     r.treat_as_european = v.spelling("TreatAsEuropean");
     r.has_volatility_config = v.has("VolatilityConfig");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.bond_future_volatilities.push_back(std::move(r));
 
     import_volatility_configs(out, d.id, d.curve_id, v, false);
@@ -1530,28 +1533,28 @@ void import_cds_volatility(ores::refdata::messaging::curve_configuration_documen
         throw refusal("CDS volatility " + d.curve_id + " writes an empty Terms element");
 
     refdata::domain::cds_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.expiries = v.text("Expiries");
     r.day_counter = v.spelling("DayCounter");
     r.calendar = v.text("Calendar");
     r.strike_type = v.text("StrikeType");
     r.quote_name = v.text("QuoteName");
-    r.strike_factor = decimal_as_double(v, "StrikeFactor");
-    set_audit(r);
+    r.strike_factor = curve_configuration_projection_decimal_as_double(v, "StrikeFactor");
+    curve_configuration_projection_set_audit(r);
     out.cds_volatilities.push_back(std::move(r));
 
     if (const auto terms = v.child("Terms"); terms) {
         int term_position = 0;
         for (const auto& t : terms->children("Term")) {
             refdata::domain::cds_volatility_term term;
-            term.id = new_uuid();
+            term.id = curve_configuration_projection_new_uuid();
             term.curve_definition_id = d.id;
             term.label = required_text(t, "Label");
             term.curve = required_text(t, "Curve");
             term.maturity = t.text("Maturity");
             term.position = term_position++;
-            set_audit(term);
+            curve_configuration_projection_set_audit(term);
             out.cds_volatility_terms.push_back(std::move(term));
         }
     }
@@ -1570,7 +1573,7 @@ void import_inflation_cap_floor_volatility(
                                   position);
 
     refdata::domain::inflation_cap_floor_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.inflation_type = required_spelling(v, "Type");
     r.quote_type = required_text(v, "QuoteType");
@@ -1591,7 +1594,7 @@ void import_inflation_cap_floor_volatility(
     r.yield_term_structure = required_text(v, "YieldTermStructure");
     r.quote_index = v.text("QuoteIndex");
     r.conventions = v.text("Conventions");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.inflation_cap_floor_volatilities.push_back(std::move(r));
     if (const auto report = v.child("Report"); report)
         import_report(out, d.id, *report);
@@ -1609,7 +1612,7 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
                                   position);
 
     refdata::domain::swaption_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.dimension = v.spelling("Dimension");
     r.volatility_type = v.spelling("VolatilityType");
@@ -1641,7 +1644,7 @@ void import_swaption_volatility(ores::refdata::messaging::curve_configuration_do
             r.proxy_target_swap_index_base = required_text(*target, "SwapIndexBase");
         }
     }
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.swaption_volatilities.push_back(std::move(r));
     if (const auto smile = v.child("ParametricSmileConfiguration"); smile)
         import_parametric_smile(out, d.id, *smile);
@@ -1659,7 +1662,7 @@ void import_cap_floor_volatility(ores::refdata::messaging::curve_configuration_d
                                   position);
 
     refdata::domain::cap_floor_volatility_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.volatility_type = v.spelling("VolatilityType");
     r.output_volatility_type = v.spelling("OutputVolatilityType");
@@ -1703,7 +1706,7 @@ void import_cap_floor_volatility(ores::refdata::messaging::curve_configuration_d
         }
         r.proxy_scaling_factor = proxy->real("ScalingFactor");
     }
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.cap_floor_volatilities.push_back(std::move(r));
     if (const auto smile = v.child("ParametricSmileConfiguration"); smile)
         import_parametric_smile(out, d.id, *smile);
@@ -1723,7 +1726,7 @@ void import_correlation(ores::refdata::messaging::curve_configuration_document& 
                                   position);
 
     refdata::domain::curve_correlation_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.correlation_type = required_spelling(v, "CorrelationType");
     r.index_1 = v.text("Index1");
@@ -1739,7 +1742,7 @@ void import_correlation(ores::refdata::messaging::curve_configuration_document& 
     r.calendar = v.text("Calendar");
     r.business_day_convention = v.spelling("BusinessDayConvention");
     r.option_tenors = v.text("OptionTenors");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.correlations.push_back(std::move(r));
 }
 
@@ -1753,14 +1756,14 @@ void import_security(ores::refdata::messaging::curve_configuration_document& out
                                   position);
 
     refdata::domain::curve_security_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.spread_quote = v.text("SpreadQuote");
     r.recovery_rate_quote = v.text("RecoveryRateQuote");
     r.cpr_quote = v.text("CPRQuote");
     r.price_quote = v.text("PriceQuote");
     r.conversion_factor = v.text("ConversionFactor");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.securities.push_back(std::move(r));
 }
 
@@ -1784,13 +1787,13 @@ void import_intraday_power_curve(ores::refdata::messaging::curve_configuration_d
                                   position);
 
     refdata::domain::intraday_power_curve_config r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_definition_id = d.id;
     r.currency = required_spelling(v, "Currency");
     r.daily_average_price_curve = required_text(v, "DailyAveragePriceCurve");
     r.shape_quote_name = required_text(v, "ShapeQuoteName");
     r.convention = required_text(v, "Convention");
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     out.intraday_power_curves.push_back(std::move(r));
 }
 template <typename Row>
@@ -2735,12 +2738,12 @@ refdata::domain::curve_global_report new_global_report(const boost::uuids::uuid&
                                                        bool has_report,
                                                        int position) {
     refdata::domain::curve_global_report r;
-    r.id = new_uuid();
+    r.id = curve_configuration_projection_new_uuid();
     r.curve_configuration_id = configuration_id;
     r.family = std::string(family);
     r.has_report = has_report;
     r.position = position;
-    set_audit(r);
+    curve_configuration_projection_set_audit(r);
     return r;
 }
 
@@ -2823,12 +2826,13 @@ curve_configuration_projection::map(const document& v) {
     ores::refdata::messaging::curve_configuration_document mapped;
 
     auto& config = mapped.config;
-    config.id = new_uuid();
+    config.id = curve_configuration_projection_new_uuid();
     config.name = "CurveConfiguration";
-    config.description = std::string(audit_commentary);
-    set_audit(config);
+    config.description = std::string(curve_configuration_projection_audit_commentary);
+    curve_configuration_projection_set_audit(config);
 
-    const record_reader root(*xg::curve_configuration_document().root, &v);
+    const record_reader root(
+        *curve_configuration_projection_xg::curve_configuration_document().root, &v);
 
     if (const auto report = root.child("ReportConfiguration"); report)
         import_global_report(mapped, config.id, *report);
@@ -2842,10 +2846,10 @@ curve_configuration_projection::map(const document& v) {
             throw refusal("section " + std::string(s.code) + " holds " + std::to_string(entries) +
                           " entries, which are not modelled yet");
         refdata::domain::curve_configuration_section row;
-        row.id = new_uuid();
+        row.id = curve_configuration_projection_new_uuid();
         row.curve_configuration_id = config.id;
         row.section_code = std::string(s.code);
-        set_audit(row);
+        curve_configuration_projection_set_audit(row);
         mapped.sections.push_back(std::move(row));
     }
 
@@ -2903,7 +2907,8 @@ curve_configuration_projection::map(const document& v) {
 curve_configuration_projection::document curve_configuration_projection::reverse(
     const ores::refdata::messaging::curve_configuration_document& v) {
     document out{};
-    auto written = record_writer(*xg::curve_configuration_document().root, &out);
+    auto written = record_writer(
+        *curve_configuration_projection_xg::curve_configuration_document().root, &out);
 
     std::map<std::string, const section_access*, std::less<>> by_code;
     for (const auto& s : sections())
@@ -3207,7 +3212,8 @@ curve_configuration_projection::document curve_configuration_projection::reverse
 curve_configuration_projection::document
 curve_configuration_projection::read(std::string_view text, std::string_view origin) {
     document record;
-    const auto bound = xml::binder::bind(xg::curve_configuration_document(), text, &record);
+    const auto bound = xml::binder::bind(
+        curve_configuration_projection_xg::curve_configuration_document(), text, &record);
     if (!bound) {
         const auto where =
             origin.empty() ? std::string("curve configuration") : std::string(origin);
@@ -3219,7 +3225,8 @@ curve_configuration_projection::read(std::string_view text, std::string_view ori
 
 std::string curve_configuration_projection::write(const document& v) {
     std::string out;
-    const auto emitted = xml::emitter::emit(xg::curve_configuration_document(), &v, out);
+    const auto emitted = xml::emitter::emit(
+        curve_configuration_projection_xg::curve_configuration_document(), &v, out);
     if (!emitted)
         throw std::runtime_error(emitted.error().message);
     return out;

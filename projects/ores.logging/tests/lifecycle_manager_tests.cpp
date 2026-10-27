@@ -20,6 +20,7 @@
 #include "ores.logging/lifecycle_manager.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/log/core.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -27,14 +28,9 @@
 #include <string>
 #include <string_view>
 
-namespace {
+using ores::logging::tests::make_console_only_options;
 
-ores::logging::logging_options make_console_only_options() {
-    ores::logging::logging_options r;
-    r.severity = "info";
-    r.output_to_console = true;
-    return r;
-}
+namespace {
 
 bool core_logging_enabled() {
     return boost::log::core::get()->get_logging_enabled();

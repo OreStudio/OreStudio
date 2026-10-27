@@ -51,9 +51,8 @@ using ores::testing::scoped_database_helper;
  * A report instance and the errors against it are party-scoped, so the
  * session-level app.current_party_id has to be set before either is written.
  */
-ores::database::context
-write_test_party_and_scope_context(scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& gen) {
+ores::database::context service_report_error_recorder_write_test_party_and_scope_context(
+    scoped_database_helper& h, ores::utility::generation::generation_context& gen) {
     using ores::refdata::repository::party_repository;
     party_repository parties;
     auto party = ores::refdata::generators::generate_synthetic_party(gen);
@@ -143,7 +142,7 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -201,7 +200,7 @@ TEST_CASE("an error about a trade carries the version the run read and the date 
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto priced_at =
         ores::platform::time::datetime::from_db_string("2026-05-05 00:00:00.000000");
     const auto instance_id = write_instance(ctx, h.db_user(), gen, priced_at);
@@ -234,7 +233,7 @@ TEST_CASE("an error about a trade the manifest does not name is recorded with no
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(
         ctx,
         h.db_user(),
@@ -266,7 +265,7 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -291,7 +290,7 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
 TEST_CASE("a run that succeeded records no error at all", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -304,7 +303,7 @@ TEST_CASE("an error whose scope the vocabulary does not hold costs its own row o
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -346,7 +345,7 @@ TEST_CASE("the run's failure row points at the reasons when they are there",
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -374,7 +373,7 @@ TEST_CASE("the run's failure row carries the whole reason when it is the only ac
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -392,7 +391,7 @@ TEST_CASE("the run's failure row carries the whole reason when it is the only ac
 TEST_CASE("the run-level failure is stored beside the engine's own errors", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -424,7 +423,7 @@ TEST_CASE("a batch whose scopes were all unplaceable does not block the next one
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -455,7 +454,7 @@ TEST_CASE("a run's errors are stored once however often its output is read",
           "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
@@ -483,8 +482,9 @@ TEST_CASE("an error carries the party of its run and not the party of the caller
     // are visible to it. The recorder writes the run's own party rather than
     // stamping the session's, so an error the run's own party cannot read is
     // never written, which is the leak the party policy exists to close.
-    const auto run_ctx = write_test_party_and_scope_context(h, gen);
-    const auto caller_ctx = write_test_party_and_scope_context(h, gen);
+    const auto run_ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
+    const auto caller_ctx =
+        service_report_error_recorder_write_test_party_and_scope_context(h, gen);
     const auto run_party_id = *run_ctx.party_id();
     const auto caller_party_id = *caller_ctx.party_id();
     REQUIRE(run_party_id != caller_party_id);

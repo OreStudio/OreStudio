@@ -208,7 +208,7 @@ std::optional<quote_type> quote_from_token(std::string_view t) {
     return quote;
 }
 
-std::vector<std::string_view> split(std::string_view key) {
+std::vector<std::string_view> ore_key_codec_split(std::string_view key) {
     std::vector<std::string_view> parts;
     std::size_t start = 0;
     while (true) {
@@ -284,7 +284,7 @@ market_datum dispatch(instrument_type t, quote_type q, detail::tokens rest) {
 }
 
 std::expected<market_datum, std::string> ore_key_codec::read(std::string_view key) {
-    const auto parts = split(key);
+    const auto parts = ore_key_codec_split(key);
     if (parts.size() < 3)
         return std::unexpected(
             std::format("'{}' needs at least an instrument type, a quote type and one field", key));

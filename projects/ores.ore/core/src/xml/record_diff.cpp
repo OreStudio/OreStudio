@@ -26,16 +26,16 @@ namespace ores::ore::xml {
 
 namespace {
 
-auto present(const void* record, const field& f) -> bool {
+auto record_diff_present(const void* record, const field& f) -> bool {
     return bit_is_set(record, f);
 }
 
-auto slot_of(const void* record, const field& f) -> const void* {
+auto record_diff_slot_of(const void* record, const field& f) -> const void* {
     return static_cast<const std::byte*>(record) + f.offset;
 }
 
 /// The columns struct a record keeps for the type member `f` holds, or null.
-auto columns_held(const void* record, const field& f) -> const void* {
+auto record_diff_columns_held(const void* record, const field& f) -> const void* {
     if (f.columns_offset == no_arena)
         return nullptr;
     return static_cast<const std::byte*>(record) + f.columns_offset;
@@ -53,10 +53,8 @@ auto describe_number(const T& value) -> std::string {
 /**
  * @brief Compares one leaf value, which the row names the type of.
  */
-auto compare_value(std::string& path,
-                   const field& f,
-                   const void* left,
-                   const void* right) -> std::optional<record_difference> {
+auto compare_value(std::string& path, const field& f, const void* left, const void* right)
+    -> std::optional<record_difference> {
     switch (f.kind) {
         case field_kind::text: {
             const auto& lhs = *static_cast<const std::string*>(left);
@@ -172,8 +170,8 @@ auto compare_record(std::string& path,
                     const void* right_columns) -> std::optional<record_difference> {
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
-        const bool here = present(left, f);
-        if (here != present(right, f))
+        const bool here = record_diff_present(left, f);
+        if (here != record_diff_present(right, f))
             return record_difference{path,
                                      std::string(f.name) + (here ? " was lost" : " was added")};
         if (!here)
@@ -190,20 +188,20 @@ auto compare_record(std::string& path,
             case field_kind::nested:
                 if (const auto found = compare_record(member,
                                                       *f.type,
-                                                      slot_of(left, f),
-                                                      slot_of(right, f),
-                                                      columns_held(left, f),
-                                                      columns_held(right, f)))
+                                                      record_diff_slot_of(left, f),
+                                                      record_diff_slot_of(right, f),
+                                                      record_diff_columns_held(left, f),
+                                                      record_diff_columns_held(right, f)))
                     return found;
                 break;
             case field_kind::repeated_leaf:
             case field_kind::repeated_nested:
                 if (const auto found = compare_repeated(member,
                                                         f,
-                                                        slot_of(left, f),
-                                                        slot_of(right, f),
-                                                        columns_held(left, f),
-                                                        columns_held(right, f)))
+                                                        record_diff_slot_of(left, f),
+                                                        record_diff_slot_of(right, f),
+                                                        record_diff_columns_held(left, f),
+                                                        record_diff_columns_held(right, f)))
                     return found;
                 break;
             case field_kind::column_nested: {
@@ -217,8 +215,10 @@ auto compare_record(std::string& path,
                     static_cast<const std::byte*>(left_columns) + f.arena_offset;
                 const auto* right_rows =
                     static_cast<const std::byte*>(right_columns) + f.arena_offset;
-                const auto lhs_index = *static_cast<const std::uint32_t*>(slot_of(left, f));
-                const auto rhs_index = *static_cast<const std::uint32_t*>(slot_of(right, f));
+                const auto lhs_index =
+                    *static_cast<const std::uint32_t*>(record_diff_slot_of(left, f));
+                const auto rhs_index =
+                    *static_cast<const std::uint32_t*>(record_diff_slot_of(right, f));
                 if (lhs_index >= f.repeated->count(left_rows) ||
                     rhs_index >= f.repeated->count(right_rows))
                     return record_difference{member,
@@ -239,9 +239,9 @@ auto compare_record(std::string& path,
                     return record_difference{member,
                                              "the table names no arena for an indexed member"};
                 const auto& left_indices =
-                    *static_cast<const std::vector<std::uint32_t>*>(slot_of(left, f));
+                    *static_cast<const std::vector<std::uint32_t>*>(record_diff_slot_of(left, f));
                 const auto& right_indices =
-                    *static_cast<const std::vector<std::uint32_t>*>(slot_of(right, f));
+                    *static_cast<const std::vector<std::uint32_t>*>(record_diff_slot_of(right, f));
                 if (left_indices.size() != right_indices.size())
                     return record_difference{member,
                                              std::to_string(left_indices.size()) + " rows became " +
@@ -261,17 +261,17 @@ auto compare_record(std::string& path,
                                                           *f.type,
                                                           f.repeated->at(left_arena, lhs_index),
                                                           f.repeated->at(right_arena, rhs_index),
-                                                          columns_held(left, f),
-                                                          columns_held(right, f)))
+                                                          record_diff_columns_held(left, f),
+                                                          record_diff_columns_held(right, f)))
                         return found;
                 }
                 break;
             }
             case field_kind::residual: {
-                const auto& lhs =
-                    *static_cast<const std::vector<residual_element>*>(slot_of(left, f));
-                const auto& rhs =
-                    *static_cast<const std::vector<residual_element>*>(slot_of(right, f));
+                const auto& lhs = *static_cast<const std::vector<residual_element>*>(
+                    record_diff_slot_of(left, f));
+                const auto& rhs = *static_cast<const std::vector<residual_element>*>(
+                    record_diff_slot_of(right, f));
                 if (lhs.size() != rhs.size())
                     return record_difference{member,
                                              std::to_string(lhs.size()) +
@@ -287,8 +287,8 @@ auto compare_record(std::string& path,
                 break;
             }
             default:
-                if (const auto found =
-                        compare_value(member, f, slot_of(left, f), slot_of(right, f)))
+                if (const auto found = compare_value(
+                        member, f, record_diff_slot_of(left, f), record_diff_slot_of(right, f)))
                     return found;
                 break;
         }
@@ -298,9 +298,8 @@ auto compare_record(std::string& path,
 
 }
 
-auto compare_records(const record_type& type,
-                     const void* left,
-                     const void* right) -> std::optional<record_difference> {
+auto compare_records(const record_type& type, const void* left, const void* right)
+    -> std::optional<record_difference> {
     std::string path(type.name);
     return compare_record(path, type, left, right, nullptr, nullptr);
 }

@@ -30,7 +30,7 @@ using ores::security::jwt::storage_grant;
 
 namespace {
 
-auto& lg() {
+auto& storage_capability_minter_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.client.storage_capability_minter");
     return instance;
 }
@@ -49,15 +49,16 @@ storage_capability_minter make_storage_capability_minter(ores::nats::service::na
                 messaging::mint_storage_capability_request::nats_subject, codec.encode(request));
             auto response = codec.decode<messaging::mint_storage_capability_response>(reply.data);
             if (!response || !response->success || response->token.empty()) {
-                BOOST_LOG_SEV(lg(), warn)
+                BOOST_LOG_SEV(storage_capability_minter_lg(), warn)
                     << "No storage capability for tenant " << tenant_id << ": "
                     << (response ? response->message : "the answer could not be read");
                 return std::nullopt;
             }
             return response->token;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "No storage capability for tenant " << tenant_id
-                                      << ": the mint failed: " << e.what();
+            BOOST_LOG_SEV(storage_capability_minter_lg(), warn)
+                << "No storage capability for tenant " << tenant_id
+                << ": the mint failed: " << e.what();
             return std::nullopt;
         }
     };

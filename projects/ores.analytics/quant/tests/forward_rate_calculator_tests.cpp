@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/forward_rate_calculator.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -29,8 +30,6 @@ using ores::analytics::quant::service::forward_rate_calculator;
 using namespace std::chrono;
 
 namespace {
-
-constexpr auto A365 = day_count_convention_code::A365;
 
 bootstrapped_point make_point(const std::string& id, year_month_day date, double df) {
     return {id, date, df};

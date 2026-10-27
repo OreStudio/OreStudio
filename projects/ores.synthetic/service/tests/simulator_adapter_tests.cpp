@@ -31,6 +31,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -174,15 +175,6 @@ std::vector<generator_offer> curve_offers(const std::string& group,
                            return std::make_shared<idle_generator>(counters);
                        }});
     return out;
-}
-
-bool eventually(const std::function<bool()>& done) {
-    for (int i = 0; i < 400; ++i) {
-        if (done())
-            return true;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    return done();
 }
 
 class flat_process final : public ores::analytics::quant::domain::i_stochastic_process {

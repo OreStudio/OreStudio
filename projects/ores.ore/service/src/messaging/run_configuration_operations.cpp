@@ -59,11 +59,12 @@ using ores::ore::messaging::saved_document;
 
 namespace {
 
-inline std::string_view logger_name = "ores.ore.service.messaging.run_configuration_operations";
+inline std::string_view run_configuration_operations_logger_name =
+    "ores.ore.service.messaging.run_configuration_operations";
 
 auto& run_configuration_operations_lg() {
     using namespace ores::logging;
-    static auto instance = make_logger(logger_name);
+    static auto instance = make_logger(run_configuration_operations_logger_name);
     return instance;
 }
 
@@ -111,7 +112,7 @@ const document_kind* find_kind(const std::vector<document_kind>& kinds, std::str
 
 // Sends a request and returns its response, or throws with the owner's reason.
 template <typename Req>
-typename Req::response_type call(nats_client& owners, const Req& req) {
+typename Req::response_type run_configuration_operations_call(nats_client& owners, const Req& req) {
     std::string error;
     auto resp = nats_call(owners, req, error);
     if (!resp || !error.empty())
@@ -211,11 +212,12 @@ void stage_conventions(nats_client& owners,
                        const boost::uuids::uuid& import_id,
                        const domain::conventions_package& package) {
     for (const auto& row : package.bundle.rows) {
-        const auto staged = call(owners,
-                                 rd::stage_bundle_family_request{.import_id = import_id,
-                                                                 .family = row.family,
-                                                                 .sequence = row.sequence,
-                                                                 .payload = row.payload});
+        const auto staged = run_configuration_operations_call(
+            owners,
+            rd::stage_bundle_family_request{.import_id = import_id,
+                                            .family = row.family,
+                                            .sequence = row.sequence,
+                                            .payload = row.payload});
         if (!staged.success)
             throw std::runtime_error(staged.message);
     }
@@ -225,11 +227,13 @@ void stage_conventions(nats_client& owners,
 rd::commit_bundle_import_response save_conventions(nats_client& owners,
                                                    const domain::conventions_package& package) {
     const auto import_id = boost::uuids::random_generator()();
-    const auto begun = call(owners, rd::begin_bundle_import_request{.id = import_id});
+    const auto begun =
+        run_configuration_operations_call(owners, rd::begin_bundle_import_request{.id = import_id});
     if (!begun.success)
         throw std::runtime_error(begun.message);
     stage_conventions(owners, import_id, package);
-    auto committed = call(owners, rd::commit_bundle_import_request{.import_id = import_id});
+    auto committed = run_configuration_operations_call(
+        owners, rd::commit_bundle_import_request{.import_id = import_id});
     if (!committed.success)
         throw std::runtime_error(committed.message);
     return committed;
@@ -255,7 +259,8 @@ std::vector<document_kind> document_kinds_of(nats_client& owners) {
     filter.analytic_type_code = std::optional<std::string>{};
     filter.configuration_type_code_one_of =
         std::vector<std::string>(std::begin(imported_types), std::end(imported_types));
-    const auto reply = call(owners, rp::list_file_types_request{.limit = 100, .filter = filter});
+    const auto reply = run_configuration_operations_call(
+        owners, rp::list_file_types_request{.limit = 100, .filter = filter});
 
     std::vector<document_kind> kinds;
     for (const auto code : imported_types) {
@@ -282,10 +287,10 @@ struct parsed_documents {
     std::optional<an::pricing_engines_document> engines;
 };
 
-void parse_document(std::string_view code,
-                    const std::string& file,
-                    const std::string& content,
-                    parsed_documents& d) {
+void run_configuration_operations_parse_document(std::string_view code,
+                                                 const std::string& file,
+                                                 const std::string& content,
+                                                 parsed_documents& d) {
     using namespace ores::ore::domain;
     if (code == "conventions")
         d.conventions = split_conventions(conventions_mapper::read(content, file));
@@ -319,13 +324,15 @@ void store_document(nats_client& owners,
         return;
     }
     if (code == "curve_configuration")
-        call(owners,
-             rd::save_curve_configuration_document_request{.document = with_header(*d.curves)});
+        run_configuration_operations_call(
+            owners,
+            rd::save_curve_configuration_document_request{.document = with_header(*d.curves)});
     else if (code == "todays_market")
-        call(owners, an::save_todays_market_document_request{.document = with_header(*d.market)});
+        run_configuration_operations_call(
+            owners, an::save_todays_market_document_request{.document = with_header(*d.market)});
     else if (code == "pricing_engines")
-        call(owners,
-             an::save_pricing_engines_document_request{.document = with_header(*d.engines)});
+        run_configuration_operations_call(
+            owners, an::save_pricing_engines_document_request{.document = with_header(*d.engines)});
     r.saved_documents.push_back(saved_document{.configuration_type_code = std::string(code),
                                                .configuration_id = configuration_id});
 }
@@ -359,16 +366,17 @@ run_configuration_import_execute_result import_run(nats_client& owners,
                 "The run document names {} as its {} file, which the input does not hold.",
                 *file,
                 kind.code));
-        parse_document(kind.code, *file, content->second, parsed);
+        run_configuration_operations_parse_document(kind.code, *file, content->second, parsed);
     }
 
     run_configuration_import_execute_result r;
     r.report_definition_id = report_definition_id;
     r.warnings = ores::ore::domain::run_document_projection::dropped_parameter_warnings(run);
     try {
-        call(owners,
-             rp::save_run_document_request{.report_definition_id = report_definition_id,
-                                           .document = document});
+        run_configuration_operations_call(
+            owners,
+            rp::save_run_document_request{.report_definition_id = report_definition_id,
+                                          .document = document});
         r.run_document_saved = true;
         r.stored.push_back(std::string(run_document_file));
         for (const auto& kind : kinds) {
@@ -377,11 +385,12 @@ run_configuration_import_execute_result import_run(nats_client& owners,
                 continue;
             const auto configuration_name = name + "/" + *file;
             try {
-                const auto bound = call(owners,
-                                        rp::bind_configuration_request{
-                                            .report_definition_id = report_definition_id,
-                                            .configuration_type_code = std::string(kind.code),
-                                            .name = configuration_name});
+                const auto bound = run_configuration_operations_call(
+                    owners,
+                    rp::bind_configuration_request{.report_definition_id = report_definition_id,
+                                                   .configuration_type_code =
+                                                       std::string(kind.code),
+                                                   .name = configuration_name});
                 store_document(
                     owners, kind.code, parsed, bound.configuration_id, configuration_name, r);
             } catch (const std::exception& e) {
@@ -418,23 +427,27 @@ void undo_import(nats_client& owners,
         const auto& code = it->configuration_type_code;
         const auto& id = it->configuration_id;
         if (code == "curve_configuration")
-            call(owners, rd::delete_curve_configuration_document_request{.configuration_id = id});
+            run_configuration_operations_call(
+                owners, rd::delete_curve_configuration_document_request{.configuration_id = id});
         else if (code == "todays_market")
-            call(owners, an::delete_todays_market_document_request{.configuration_id = id});
+            run_configuration_operations_call(
+                owners, an::delete_todays_market_document_request{.configuration_id = id});
         else if (code == "pricing_engines")
-            call(owners, an::delete_pricing_engines_document_request{.configuration_id = id});
+            run_configuration_operations_call(
+                owners, an::delete_pricing_engines_document_request{.configuration_id = id});
     }
     // Deleting the run document also deletes every binding and the
     // configuration row it names, including a binding whose document never
     // stored, so a failed store leaves no orphan.
     if (run_document_saved)
-        call(owners, rp::delete_run_document_request{.report_definition_id = report_definition_id});
+        run_configuration_operations_call(
+            owners, rp::delete_run_document_request{.report_definition_id = report_definition_id});
 }
 
 input_files export_run(nats_client& owners, const std::string& report_definition_id) {
     using namespace ores::ore::domain;
-    const auto run =
-        call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
+    const auto run = run_configuration_operations_call(
+        owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
     const auto kinds = document_kinds_of(owners);
     const auto document = run_document_projection::reverse(run.document);
@@ -466,21 +479,24 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         else if (code == "curve_configuration")
             files[*file] =
                 curve_configuration_projection::write(curve_configuration_projection::reverse(
-                    call(owners,
-                         rd::get_curve_configuration_document_request{
-                             .configuration_id = configuration, .party_id = run.party_id})
+                    run_configuration_operations_call(
+                        owners,
+                        rd::get_curve_configuration_document_request{
+                            .configuration_id = configuration, .party_id = run.party_id})
                         .document));
         else if (code == "todays_market")
             files[*file] = todays_market_projection::write(todays_market_projection::reverse(
-                call(owners,
-                     an::get_todays_market_document_request{.configuration_id = configuration,
-                                                            .party_id = run.party_id})
+                run_configuration_operations_call(
+                    owners,
+                    an::get_todays_market_document_request{.configuration_id = configuration,
+                                                           .party_id = run.party_id})
                     .document));
         else if (code == "pricing_engines")
             files[*file] = pricing_engine_projection::write(pricing_engine_projection::reverse(
-                call(owners,
-                     an::get_pricing_engines_document_request{.configuration_id = configuration,
-                                                              .party_id = run.party_id})
+                run_configuration_operations_call(
+                    owners,
+                    an::get_pricing_engines_document_request{.configuration_id = configuration,
+                                                             .party_id = run.party_id})
                     .document));
     }
     return files;
@@ -488,8 +504,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
 
 ores::ore::service::messaging::reference_curve_names
 reference_curve_names_of(nats_client& owners, const std::string& report_definition_id) {
-    const auto run =
-        call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
+    const auto run = run_configuration_operations_call(
+        owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
     /*
      * The run's own two documents. The curve configuration says which curves the
@@ -508,9 +524,10 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
         const auto& code = b.configuration_type_code;
         if (code == "curve_configuration") {
             const auto document =
-                call(owners,
-                     rd::get_curve_configuration_document_request{.configuration_id = configuration,
-                                                                  .party_id = run.party_id})
+                run_configuration_operations_call(
+                    owners,
+                    rd::get_curve_configuration_document_request{.configuration_id = configuration,
+                                                                 .party_id = run.party_id})
                     .document;
 
             std::unordered_map<std::string, std::string> currency_of_definition;
@@ -535,9 +552,10 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
                                 *y.day_counter);
             }
         } else if (code == "todays_market") {
-            market = call(owners,
-                          an::get_todays_market_document_request{.configuration_id = configuration,
-                                                                 .party_id = run.party_id})
+            market = run_configuration_operations_call(
+                         owners,
+                         an::get_todays_market_document_request{.configuration_id = configuration,
+                                                                .party_id = run.party_id})
                          .document;
         }
     }

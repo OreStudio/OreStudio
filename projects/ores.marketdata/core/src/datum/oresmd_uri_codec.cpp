@@ -57,7 +57,7 @@ std::string upper(std::string_view s) {
     return out;
 }
 
-std::unexpected<std::string> refuse(std::string_view uri, std::string_view why) {
+std::unexpected<std::string> oresmd_uri_codec_refuse(std::string_view uri, std::string_view why) {
     return std::unexpected(std::format("'{}': {}", uri, why));
 }
 
@@ -89,25 +89,26 @@ struct parsed_uri {
 std::expected<parsed_uri, std::string> parse(std::string_view uri) {
     const auto parsed = boost::urls::parse_uri(uri);
     if (!parsed)
-        return refuse(uri, "not a URI");
+        return oresmd_uri_codec_refuse(uri, "not a URI");
     const auto& u = *parsed;
     if (u.scheme() != scheme)
-        return refuse(uri, std::format("the scheme is not {}", scheme));
+        return oresmd_uri_codec_refuse(uri, std::format("the scheme is not {}", scheme));
     if (u.has_userinfo() || u.has_port() || u.has_fragment())
-        return refuse(uri, "an oresmd URI has no user, port or fragment");
+        return oresmd_uri_codec_refuse(uri, "an oresmd URI has no user, port or fragment");
 
     const auto segments = u.segments();
     if (!u.is_path_absolute() || segments.size() != 1 || segments.front().empty())
-        return refuse(uri, "the path must be one segment, the subject");
+        return oresmd_uri_codec_refuse(uri, "the path must be one segment, the subject");
 
     parsed_uri result{std::string(u.host()), *segments.begin(), {}};
     for (const auto& param : u.params(query_encoding())) {
         if (param.key.empty() || !param.has_value || param.value.empty())
-            return refuse(uri, std::format("the query key '{}' has no value", param.key));
+            return oresmd_uri_codec_refuse(
+                uri, std::format("the query key '{}' has no value", param.key));
         const bool repeated = std::ranges::any_of(
             result.entries, [&](const query_entry& e) { return e.key == param.key; });
         if (repeated)
-            return refuse(uri, std::format("the query repeats '{}'", param.key));
+            return oresmd_uri_codec_refuse(uri, std::format("the query repeats '{}'", param.key));
         result.entries.push_back({param.key, param.value});
     }
     return result;
@@ -182,25 +183,28 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
     const auto instrument_text = take("instrument");
     const auto quote_text = take("quote");
     if (!type_text || !instrument_text || !quote_text)
-        return refuse(uri, "the query needs type, instrument and quote");
+        return oresmd_uri_codec_refuse(uri, "the query needs type, instrument and quote");
     if (*type_text != quote_type_value && *type_text != series_type_value)
-        return refuse(uri, std::format("type is quote or series, not '{}'", *type_text));
+        return oresmd_uri_codec_refuse(
+            uri, std::format("type is quote or series, not '{}'", *type_text));
     const bool series = *type_text == series_type_value;
 
     const auto instrument = instrument_type_named(upper(*instrument_text));
     if (!instrument || oresmd_uri_codec::instrument_spelling(*instrument) != *instrument_text)
-        return refuse(uri, std::format("'{}' is not an ORE instrument type", *instrument_text));
+        return oresmd_uri_codec_refuse(
+            uri, std::format("'{}' is not an ORE instrument type", *instrument_text));
     const auto quote = quote_type_named(upper(*quote_text));
     if (!quote || oresmd_uri_codec::quote_spelling(*quote) != *quote_text)
-        return refuse(uri, std::format("'{}' is not an ORE quote type", *quote_text));
+        return oresmd_uri_codec_refuse(uri,
+                                       std::format("'{}' is not an ORE quote type", *quote_text));
 
     const auto& row = schema_of(*instrument);
     if (parts->host != name_of(row.asset))
-        return refuse(uri,
-                      std::format("a {} belongs to the asset class {}, not {}",
-                                  *instrument_text,
-                                  name_of(row.asset),
-                                  parts->host));
+        return oresmd_uri_codec_refuse(uri,
+                                       std::format("a {} belongs to the asset class {}, not {}",
+                                                   *instrument_text,
+                                                   name_of(row.asset),
+                                                   parts->host));
 
     std::vector<field_value> fields;
     for (const auto& spec : row.fields) {
@@ -209,24 +213,24 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
         const auto name = name_of(spec.name);
         if (spec.name == row.subject) {
             if (take(name))
-                return refuse(uri,
-                              std::format("'{}' is the path; the query must not repeat it", name));
+                return oresmd_uri_codec_refuse(
+                    uri, std::format("'{}' is the path; the query must not repeat it", name));
             auto held = parse_value(spec.name, subject_text);
             if (!held)
-                return refuse(uri, std::format("the path: {}", held.error()));
+                return oresmd_uri_codec_refuse(uri, std::format("the path: {}", held.error()));
             fields.push_back({spec.name, std::move(*held)});
             continue;
         }
         const auto text = take(name);
         if (!text) {
             if (!spec.may_be_none)
-                return refuse(uri, std::format("the query needs '{}'", name));
+                return oresmd_uri_codec_refuse(uri, std::format("the query needs '{}'", name));
             fields.push_back({spec.name, none});
             continue;
         }
         auto held = parse_value(spec.name, *text);
         if (!held)
-            return refuse(uri, std::format("'{}': {}", name, held.error()));
+            return oresmd_uri_codec_refuse(uri, std::format("'{}': {}", name, held.error()));
         fields.push_back({spec.name, std::move(*held)});
     }
     if (!entries.empty()) {
@@ -236,23 +240,25 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
                                     return s.name == *f && s.role == field_role::coordinate;
                                 });
         if (series && coordinate)
-            return refuse(uri,
-                          std::format("a series has no coordinate, but the query has '{}'", key));
-        return refuse(uri, std::format("a {} has no field '{}'", *instrument_text, key));
+            return oresmd_uri_codec_refuse(
+                uri, std::format("a series has no coordinate, but the query has '{}'", key));
+        return oresmd_uri_codec_refuse(
+            uri, std::format("a {} has no field '{}'", *instrument_text, key));
     }
 
     auto datum = series ? market_datum::make_series(*instrument, *quote, std::move(fields)) :
                           market_datum::make(*instrument, *quote, std::move(fields));
     if (!datum)
-        return refuse(uri, datum.error());
+        return oresmd_uri_codec_refuse(uri, datum.error());
     if (!series) {
         if (const auto key = ore_key_codec::write(*datum); !key)
-            return refuse(uri, std::format("no ORE key names this datum: {}", key.error()));
+            return oresmd_uri_codec_refuse(
+                uri, std::format("no ORE key names this datum: {}", key.error()));
     }
     // One datum has one spelling, so a stored URI can be compared as text: a
     // reordered query or an encoding the writer would not use is refused.
     if (const auto spelling = spelling_of(*datum); spelling != uri)
-        return refuse(uri, std::format("the datum is written {}", spelling));
+        return oresmd_uri_codec_refuse(uri, std::format("the datum is written {}", spelling));
     return std::move(*datum);
 }
 
@@ -271,37 +277,41 @@ std::expected<market_index, std::string> oresmd_uri_codec::read_index(std::strin
     const auto type_text = parts->take("type");
     const auto family_text = parts->take("index");
     if (!type_text || !family_text)
-        return refuse(uri, "the query needs type and index");
+        return oresmd_uri_codec_refuse(uri, "the query needs type and index");
     if (*type_text != fixing_type_value)
-        return refuse(uri, std::format("an index is type fixing, not '{}'", *type_text));
+        return oresmd_uri_codec_refuse(
+            uri, std::format("an index is type fixing, not '{}'", *type_text));
     const auto family = index_family_named(*family_text);
     if (!family)
-        return refuse(uri, std::format("'{}' is not an index family", *family_text));
+        return oresmd_uri_codec_refuse(uri,
+                                       std::format("'{}' is not an index family", *family_text));
 
     const auto& row = index_row_of(*family);
     if (parts->host != name_of(row.asset))
-        return refuse(uri,
-                      std::format("a {} index belongs to the asset class {}, not {}",
-                                  *family_text,
-                                  name_of(row.asset),
-                                  parts->host));
+        return oresmd_uri_codec_refuse(
+            uri,
+            std::format("a {} index belongs to the asset class {}, not {}",
+                        *family_text,
+                        name_of(row.asset),
+                        parts->host));
     std::vector<market_index::field_text> fields;
     for (const auto& spec : row.fields) {
         if (auto text = parts->take(spec.name))
             fields.push_back({std::string(spec.name), std::move(*text)});
     }
     if (!parts->entries.empty())
-        return refuse(
+        return oresmd_uri_codec_refuse(
             uri,
             std::format("a {} index has no field '{}'", *family_text, parts->entries.front().key));
 
     auto index = market_index::make(*family, parts->subject, std::move(fields));
     if (!index)
-        return refuse(uri, index.error());
+        return oresmd_uri_codec_refuse(uri, index.error());
     if (const auto why = no_ore_name(*index))
-        return refuse(uri, std::format("no ORE index name names this index: {}", *why));
+        return oresmd_uri_codec_refuse(uri,
+                                       std::format("no ORE index name names this index: {}", *why));
     if (const auto spelling = spelling_of(*index); spelling != uri)
-        return refuse(uri, std::format("the index is written {}", spelling));
+        return oresmd_uri_codec_refuse(uri, std::format("the index is written {}", spelling));
     return std::move(*index);
 }
 

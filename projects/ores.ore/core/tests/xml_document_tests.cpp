@@ -33,7 +33,7 @@ auto read_ok(const std::string& text) -> document {
     return *parsed;
 }
 
-auto round_trip(const std::string& text) -> std::string {
+auto xml_document_round_trip(const std::string& text) -> std::string {
     std::string out;
     read_ok(text).write(out);
     return out;
@@ -46,7 +46,7 @@ TEST_CASE("an_element_with_text_survives_a_round_trip", "[ore][xml][document]") 
 
     const std::string original = "<CurrencyConfig><Currency><ISOCode>USD</ISOCode></Currency>"
                                  "</CurrencyConfig>";
-    const auto written = round_trip(original);
+    const auto written = xml_document_round_trip(original);
 
     CHECK(written == "<CurrencyConfig>\n  <Currency>\n    <ISOCode>USD</ISOCode>\n"
                      "  </Currency>\n</CurrencyConfig>\n");
@@ -56,7 +56,7 @@ TEST_CASE("an_element_with_text_survives_a_round_trip", "[ore][xml][document]") 
 TEST_CASE("an_empty_element_is_written_self_closing_and_still_reads_back", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a><b></b></a>");
+    const auto written = xml_document_round_trip("<a><b></b></a>");
 
     CHECK(written == "<a>\n  <b/>\n</a>\n");
     CHECK(read_ok("<a><b></b></a>") == read_ok(written));
@@ -65,7 +65,7 @@ TEST_CASE("an_empty_element_is_written_self_closing_and_still_reads_back", "[ore
 TEST_CASE("whitespace_between_elements_is_formatting_and_is_dropped", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a>\n\n   <b/>\t</a>");
+    const auto written = xml_document_round_trip("<a>\n\n   <b/>\t</a>");
 
     CHECK(written == "<a>\n  <b/>\n</a>\n");
     CHECK(read_ok("<a><b/></a>") == read_ok(written));
@@ -74,7 +74,7 @@ TEST_CASE("whitespace_between_elements_is_formatting_and_is_dropped", "[ore][xml
 TEST_CASE("whitespace_that_is_the_content_of_an_element_is_kept", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a><b> </b></a>");
+    const auto written = xml_document_round_trip("<a><b> </b></a>");
 
     CHECK(written.contains("<b> </b>"));
     CHECK(read_ok("<a><b> </b></a>") == read_ok(written));
@@ -83,7 +83,7 @@ TEST_CASE("whitespace_that_is_the_content_of_an_element_is_kept", "[ore][xml][do
 TEST_CASE("markup_characters_in_text_are_escaped_and_read_back", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a>x &lt; y &amp; z</a>");
+    const auto written = xml_document_round_trip("<a>x &lt; y &amp; z</a>");
 
     CHECK(written.contains("x &lt; y &amp; z"));
     CHECK(read_ok("<a>x &lt; y &amp; z</a>") == read_ok(written));
@@ -92,7 +92,7 @@ TEST_CASE("markup_characters_in_text_are_escaped_and_read_back", "[ore][xml][doc
 TEST_CASE("an_attribute_keeps_a_quote_that_was_a_character_reference", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a x=\"1&quot;2\"/>");
+    const auto written = xml_document_round_trip("<a x=\"1&quot;2\"/>");
 
     CHECK(written.contains("x=\"1&quot;2\""));
     CHECK(read_ok("<a x=\"1&quot;2\"/>") == read_ok(written));
@@ -104,7 +104,7 @@ TEST_CASE("a_tab_in_an_attribute_is_normalised_to_a_space", "[ore][xml][document
     // A literal tab is a space once the document is normalised, so a tab can
     // only reach the tape through a character reference. Writing the space
     // back raw is what keeps the two sides agreeing.
-    const auto written = round_trip("<a x=\"p\tq\"/>");
+    const auto written = xml_document_round_trip("<a x=\"p\tq\"/>");
 
     CHECK(written == "<a x=\"p q\"/>\n");
     CHECK(read_ok(written) == read_ok("<a x=\"p q\"/>"));
@@ -113,7 +113,7 @@ TEST_CASE("a_tab_in_an_attribute_is_normalised_to_a_space", "[ore][xml][document
 TEST_CASE("a_tab_written_as_a_character_reference_survives", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a x=\"p&#9;q\"/>");
+    const auto written = xml_document_round_trip("<a x=\"p&#9;q\"/>");
 
     CHECK(written.contains("&#9;"));
     CHECK(read_ok(written) == read_ok("<a x=\"p&#9;q\"/>"));
@@ -124,8 +124,8 @@ TEST_CASE("a_carriage_return_is_normalised_and_can_be_written_back", "[ore][xml]
 
     // A literal carriage return is a line feed after normalisation, so only a
     // reference can carry one, and the writer must write it as a reference.
-    CHECK(round_trip("<a>p\rq</a>") == "<a>p\nq</a>\n");
-    const auto written = round_trip("<a>p&#13;q</a>");
+    CHECK(xml_document_round_trip("<a>p\rq</a>") == "<a>p\nq</a>\n");
+    const auto written = xml_document_round_trip("<a>p&#13;q</a>");
     CHECK(written.contains("&#13;"));
     CHECK(read_ok(written) == read_ok("<a>p&#13;q</a>"));
 }
@@ -140,7 +140,7 @@ TEST_CASE("a_numeric_character_reference_is_read_as_its_character", "[ore][xml][
 TEST_CASE("mixed_content_is_not_indented", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
-    const auto written = round_trip("<a>before<b>inner</b>after</a>");
+    const auto written = xml_document_round_trip("<a>before<b>inner</b>after</a>");
 
     CHECK(written == "<a>before<b>inner</b>after</a>\n");
     CHECK(read_ok("<a>before<b>inner</b>after</a>") == read_ok(written));
@@ -150,7 +150,7 @@ TEST_CASE("a_cdata_section_survives_the_trip_as_escaped_text", "[ore][xml][docum
     auto lg(make_logger(test_suite));
 
     const std::string original = "<a><![CDATA[if (x < 1 && y > 2) {}]]></a>";
-    const auto written = round_trip(original);
+    const auto written = xml_document_round_trip(original);
 
     CHECK(written.contains("if (x &lt; 1 &amp;&amp; y &gt; 2) {}"));
     CHECK(read_ok(original) == read_ok(written));
@@ -164,7 +164,7 @@ TEST_CASE("a_number_keeps_every_digit_it_arrived_with", "[ore][xml][document]") 
                                     "-12345.678901234567",
                                     "7342.8000000000002",
                                     "0.000054"}) {
-        const auto written = round_trip("<a>" + value + "</a>");
+        const auto written = xml_document_round_trip("<a>" + value + "</a>");
         CHECK(written.contains(">" + value + "<"));
         CHECK(read_ok("<a>" + value + "</a>") == read_ok(written));
     }

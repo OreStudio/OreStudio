@@ -25,6 +25,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
+#include "shared_helpers.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>

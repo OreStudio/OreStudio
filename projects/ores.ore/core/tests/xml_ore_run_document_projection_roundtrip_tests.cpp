@@ -45,11 +45,11 @@ using namespace ores::ore::domain;
 
 namespace fs = std::filesystem;
 
-fs::path corpus_root() {
+fs::path xml_ore_run_document_projection_roundtrip_corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-std::string read_file(const fs::path& path) {
+std::string xml_ore_run_document_projection_roundtrip_read_file(const fs::path& path) {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
@@ -121,7 +121,8 @@ std::vector<std::string> analytics_of(const xg::ore& d) {
 /// The Setup parameters are compared by name and value rather than by position:
 /// the projection writes them in a fixed order, which is what the mapping has
 /// always done, because the entity is a row of columns with no order of its own.
-std::string round_trip(const std::string& text, const std::string& path) {
+std::string xml_ore_run_document_projection_roundtrip_round_trip(const std::string& text,
+                                                                 const std::string& path) {
     try {
         const auto original = run_document_projection::read(text, path);
         const auto mapped = run_document_projection::map(original);
@@ -154,13 +155,16 @@ TEST_CASE("every_run_document_in_the_corpus_round_trips",
 
     std::size_t documents = 0;
     std::string failures;
-    for (const auto& entry : fs::recursive_directory_iterator(corpus_root())) {
+    for (const auto& entry : fs::recursive_directory_iterator(
+             xml_ore_run_document_projection_roundtrip_corpus_root())) {
         if (!entry.is_regular_file() || entry.path().extension() != ".xml")
             continue;
         if (ores::ore::xml::read_root_element(entry.path()) != "ORE")
             continue;
         ++documents;
-        const auto detail = round_trip(read_file(entry.path()), entry.path().string());
+        const auto detail = xml_ore_run_document_projection_roundtrip_round_trip(
+            xml_ore_run_document_projection_roundtrip_read_file(entry.path()),
+            entry.path().string());
         if (!detail.empty())
             failures += detail + "\n";
     }

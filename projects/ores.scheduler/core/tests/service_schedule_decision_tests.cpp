@@ -31,7 +31,8 @@ namespace {
 
 using clock = std::chrono::system_clock;
 
-domain::job_definition make_job(std::string_view expression, bool active = true) {
+domain::job_definition service_schedule_decision_make_job(std::string_view expression,
+                                                          bool active = true) {
     const auto parsed = domain::cron_expression::from_string(expression);
     REQUIRE(parsed.has_value());
 
@@ -46,7 +47,7 @@ domain::job_definition make_job(std::string_view expression, bool active = true)
 
 TEST_CASE("A job is due when its next occurrence is at or before now", "[schedule_decision]") {
     const auto now = clock::from_time_t(1'700'000'040); // 00:00:40 past the minute
-    const auto job = make_job("*/5 * * * *");
+    const auto job = service_schedule_decision_make_job("*/5 * * * *");
 
     // Last ran at the previous 5-minute mark, so the next occurrence is 00:05:00.
     const auto last = clock::from_time_t(1'700'000'000);
@@ -60,14 +61,16 @@ TEST_CASE("A job never run is treated as having run a minute ago", "[schedule_de
     // Every minute is due; the five-minute schedule is not yet due one minute
     // after the implicit previous run.
     const auto now = clock::from_time_t(1'700'000'040);
-    REQUIRE(service::is_due(make_job("* * * * *"), std::nullopt, now));
-    REQUIRE_FALSE(service::is_due(make_job("*/5 * * * *"), std::nullopt, now));
+    REQUIRE(service::is_due(service_schedule_decision_make_job("* * * * *"), std::nullopt, now));
+    REQUIRE_FALSE(
+        service::is_due(service_schedule_decision_make_job("*/5 * * * *"), std::nullopt, now));
 }
 
 TEST_CASE("An inactive job is never due", "[schedule_decision]") {
     const auto now = clock::from_time_t(1'700'000'300);
     const auto last = clock::from_time_t(1'700'000'000);
-    REQUIRE_FALSE(service::is_due(make_job("* * * * *", false), last, now));
+    REQUIRE_FALSE(
+        service::is_due(service_schedule_decision_make_job("* * * * *", false), last, now));
 }
 
 TEST_CASE("The next minute boundary is strictly after the given instant", "[schedule_decision]") {

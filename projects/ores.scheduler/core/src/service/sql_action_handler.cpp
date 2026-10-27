@@ -28,7 +28,7 @@ using namespace ores::database::repository;
 
 namespace {
 
-auto& lg() {
+auto& sql_action_handler_lg() {
     static auto instance = make_logger("ores.scheduler.service.sql_action_handler");
     return instance;
 }
@@ -37,14 +37,16 @@ auto& lg() {
 
 boost::asio::awaitable<std::expected<void, std::string>>
 sql_action_handler::execute(const action_context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Executing SQL action for job: " << ctx.job.job_name;
+    BOOST_LOG_SEV(sql_action_handler_lg(), debug)
+        << "Executing SQL action for job: " << ctx.job.job_name;
     try {
         execute_parameterized_command(
-            ctx.db_ctx, ctx.job.command, {}, lg(), "executing scheduled SQL");
-        BOOST_LOG_SEV(lg(), info) << "SQL action succeeded for job: " << ctx.job.job_name;
+            ctx.db_ctx, ctx.job.command, {}, sql_action_handler_lg(), "executing scheduled SQL");
+        BOOST_LOG_SEV(sql_action_handler_lg(), info)
+            << "SQL action succeeded for job: " << ctx.job.job_name;
         co_return std::expected<void, std::string>{};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
+        BOOST_LOG_SEV(sql_action_handler_lg(), error)
             << "SQL action failed for job: " << ctx.job.job_name << ": " << e.what();
         co_return std::unexpected(std::string(e.what()));
     }

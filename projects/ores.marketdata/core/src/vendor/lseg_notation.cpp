@@ -26,7 +26,7 @@ namespace ores::marketdata::vendor {
 
 namespace {
 
-constexpr std::string_view scheme = "ric";
+constexpr std::string_view lseg_notation_scheme = "ric";
 
 // The currencies the market quotes as the base against USD, so that EUR/USD is written "EUR=".
 // Every other currency is quoted as the quote of USD, so that USD/JPY is written "JPY=".
@@ -36,7 +36,7 @@ bool is_base_against_usd(std::string_view code) {
     return std::ranges::find(base_against_usd, code) != base_against_usd.end();
 }
 
-std::string_view field_of(price_side side) {
+std::string_view lseg_notation_field_of(price_side side) {
     switch (side) {
         case price_side::bid:
             return "BID";
@@ -50,7 +50,7 @@ std::string_view field_of(price_side side) {
     return {};
 }
 
-std::optional<price_side> side_of(std::string_view field) {
+std::optional<price_side> lseg_notation_side_of(std::string_view field) {
     if (field == "BID")
         return price_side::bid;
     if (field == "ASK")
@@ -67,7 +67,7 @@ std::string_view lseg_notation::provider() const {
 }
 
 std::string_view lseg_notation::id_scheme() const {
-    return scheme;
+    return lseg_notation_scheme;
 }
 
 price_side lseg_notation::primary_side() const {
@@ -78,7 +78,7 @@ std::expected<quote_description, notation_error>
 lseg_notation::read(const messaging::vendor_id& id) const {
     namespace x3 = detail::x3;
     using detail::fail;
-    if (id.id_scheme != scheme)
+    if (id.id_scheme != lseg_notation_scheme)
         return fail(notation_error::kind::wrong_scheme,
                     "LSEG ids use the scheme ric, not '" + id.id_scheme + "'.");
 
@@ -95,7 +95,7 @@ lseg_notation::read(const messaging::vendor_id& id) const {
             detail::start_tenor[detail::assign_to(pillar.start_tenor)] >> x3::lit('.') >>
             detail::period_tenor[detail::assign_to(pillar.end_tenor)] >> x3::lit('=');
         if (detail::parse_all(id.external_id, curve_ric)) {
-            if (id.field != field_of(primary_side()))
+            if (id.field != lseg_notation_field_of(primary_side()))
                 return fail(notation_error::kind::wrong_field,
                             "An LSEG curve pillar carries the bid price: '" + id.field + "'.");
             pillar.index_family = detail::lower_case(std::move(family));
@@ -137,7 +137,7 @@ lseg_notation::read(const messaging::vendor_id& id) const {
                     "Not an LSEG currency RIC: '" + id.external_id + "'.");
     }
 
-    const auto side = side_of(id.field);
+    const auto side = lseg_notation_side_of(id.field);
     if (!side)
         return fail(notation_error::kind::wrong_field,
                     "Not an LSEG price field: '" + id.field + "'.");
@@ -152,18 +152,18 @@ lseg_notation::write(const quote_description& description) const {
         if (const auto ok = detail::check_pillar(*pillar); !ok)
             return std::unexpected(ok.error());
         return messaging::vendor_id{
-            .id_scheme = std::string(scheme),
+            .id_scheme = std::string(lseg_notation_scheme),
             .external_id = pillar->currency + detail::upper_case(pillar->index_family) + "." +
                            pillar->instrument_code + "." + pillar->start_tenor + "." +
                            pillar->end_tenor + "=",
-            .field = std::string(field_of(primary_side()))};
+            .field = std::string(lseg_notation_field_of(primary_side()))};
     }
     const auto fx = detail::fx_spot_of(description);
     if (!fx)
         return std::unexpected(fx.error());
     if (const auto ok = detail::check_pair(*fx); !ok)
         return std::unexpected(ok.error());
-    const auto field = field_of(fx->side);
+    const auto field = lseg_notation_field_of(fx->side);
     if (field.empty())
         return fail(notation_error::kind::not_representable, "LSEG has no field for a mid price.");
 
@@ -178,8 +178,9 @@ lseg_notation::write(const quote_description& description) const {
                         " would read back as the other order of the pair.");
     else
         ric = fx->base + fx->quote + "=";
-    return messaging::vendor_id{
-        .id_scheme = std::string(scheme), .external_id = ric, .field = std::string(field)};
+    return messaging::vendor_id{.id_scheme = std::string(lseg_notation_scheme),
+                                .external_id = ric,
+                                .field = std::string(field)};
 }
 
 }

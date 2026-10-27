@@ -78,7 +78,7 @@ public:
             return;
         }
 
-        messaging::get_market_regime_response response;
+        ores::synthetic::messaging::get_market_regime_response response;
         response.success = true;
         fill(response);
         fill_heat(response);
@@ -114,7 +114,8 @@ public:
         }
 
         const auto decoded =
-            ores::nats::default_wire_codec().decode<messaging::pin_market_regime_request>(msg.data);
+            ores::nats::default_wire_codec()
+                .decode<ores::synthetic::messaging::pin_market_regime_request>(msg.data);
         if (!decoded) {
             BOOST_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting pin_market_regime request: the payload did not decode.";
@@ -137,7 +138,7 @@ public:
         BOOST_LOG_SEV(market_regime_handler_lg(), info)
             << "The market regime was set to '" << mode << "'.";
 
-        messaging::pin_market_regime_response response;
+        ores::synthetic::messaging::pin_market_regime_response response;
         response.success = true;
         fill(response);
         reply(nats_, msg, response);

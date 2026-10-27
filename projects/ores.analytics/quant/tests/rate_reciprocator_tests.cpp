@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/domain/derived_rate.hpp"
 #include "ores.analytics.quant/domain/rate_status.hpp"
 #include "ores.analytics.quant/service/rate_reciprocator.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
@@ -28,13 +29,6 @@ using ores::analytics::quant::domain::derived_rate;
 using ores::analytics::quant::domain::rate_status;
 using ores::analytics::quant::service::rate_reciprocator;
 
-namespace {
-
-auto epoch(int seconds) {
-    return std::chrono::system_clock::time_point{} + std::chrono::seconds(seconds);
-}
-
-} // namespace
 
 TEST_CASE("a direct entry is returned unchanged, not reciprocal", "[rate_reciprocator]") {
     const std::vector<derived_rate> rates = {

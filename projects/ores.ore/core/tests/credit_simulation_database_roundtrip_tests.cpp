@@ -29,6 +29,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -38,13 +39,6 @@
 #include <filesystem>
 #include <string>
 
-namespace {
-
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-}
 
 using ores::analytics::domain::credit_simulation_matrix_row_config;
 using ores::analytics::repository::credit_simulation_config_repository;

@@ -46,11 +46,11 @@ using namespace ores::ore::domain;
 
 namespace fs = std::filesystem;
 
-fs::path corpus_root() {
+fs::path xml_curve_configuration_projection_roundtrip_corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-std::string read_file(const fs::path& path) {
+std::string xml_curve_configuration_projection_roundtrip_read_file(const fs::path& path) {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
@@ -94,14 +94,17 @@ TEST_CASE("every_curve_configuration_in_the_corpus_round_trips",
 
     std::size_t documents = 0;
     std::string failures;
-    for (const auto& entry : fs::recursive_directory_iterator(corpus_root())) {
+    for (const auto& entry : fs::recursive_directory_iterator(
+             xml_curve_configuration_projection_roundtrip_corpus_root())) {
         if (!entry.is_regular_file())
             continue;
         const auto name = entry.path().filename().string();
         if (!name.starts_with("curveconfig") || !name.ends_with(".xml"))
             continue;
         ++documents;
-        const auto detail = round_trip(read_file(entry.path()), entry.path().string());
+        const auto detail =
+            round_trip(xml_curve_configuration_projection_roundtrip_read_file(entry.path()),
+                       entry.path().string());
         if (!detail.empty())
             failures += detail + "\n";
     }

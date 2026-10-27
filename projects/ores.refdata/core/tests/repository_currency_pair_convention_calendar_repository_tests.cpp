@@ -68,7 +68,7 @@ namespace {
 // records. Each test uses a different slice of the synthetic
 // conventions/calendars lists to avoid interfering with records
 // written by other tests in the same shared tenant database.
-constexpr std::size_t total_slots = 10;
+constexpr std::size_t repository_currency_pair_convention_calendar_repository_total_slots = 10;
 
 currency_pair_convention_calendar make_pair_convention_calendar(scoped_database_helper& h,
                                                                 const std::string& pair_code,
@@ -88,8 +88,8 @@ currency_pair_convention_calendar make_pair_convention_calendar(scoped_database_
 // (calendar_generator.cpp), and the calendars table's insert trigger
 // validates country_code against the countries table -- so the ZZ row
 // must exist before any calendar can be written.
-void write_zz_country_sentinel(scoped_database_helper& h,
-                               ores::utility::generation::generation_context& gctx) {
+void repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(
+    scoped_database_helper& h, ores::utility::generation::generation_context& gctx) {
     country_repository cty_repo;
     cty_repo.write(h.context(), {generate_country_sentinel(gctx)});
 }
@@ -159,9 +159,11 @@ TEST_CASE("write_single_currency_pair_convention_calendar",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[0].pair_code);
     conv_repo.write(h.context(), {conventions[0]});
     cal_repo.write(h.context(), {calendars[0]});
@@ -186,9 +188,11 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[1].pair_code);
     conv_repo.write(h.context(), {conventions[1]});
     std::vector<ores::refdata::domain::calendar> test_calendars = {calendars[1], calendars[2]};
@@ -224,9 +228,11 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[3].pair_code);
     conv_repo.write(h.context(), {conventions[3]});
     cal_repo.write(h.context(), {calendars[3]});
@@ -264,9 +270,11 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_p
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[7].pair_code);
     conv_repo.write(h.context(), {conventions[7]});
     std::vector<ores::refdata::domain::calendar> test_calendars = {calendars[7], calendars[8]};
@@ -303,9 +311,11 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[4].pair_code);
     conv_repo.write(h.context(), {conventions[4]});
     cal_repo.write(h.context(), {calendars[4]});
@@ -331,9 +341,11 @@ TEST_CASE("remove_currency_pair_convention_calendar",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[5].pair_code);
     conv_repo.write(h.context(), {conventions[5]});
     cal_repo.write(h.context(), {calendars[5], calendars[9]});
@@ -369,9 +381,11 @@ TEST_CASE("remove_by_pair_currency_pair_convention_calendar",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[6].pair_code);
     write_synthetic_pair(h, gctx, conventions[9].pair_code);
     conv_repo.write(h.context(), {conventions[6], conventions[9]});
@@ -406,9 +420,11 @@ TEST_CASE("read_nonexistent_currency_pair_convention_calendar",
     currency_pair_convention_calendar_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
-    write_zz_country_sentinel(h, gctx);
-    auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    repository_currency_pair_convention_calendar_repository_write_zz_country_sentinel(h, gctx);
+    auto conventions = generate_synthetic_currency_pair_conventions(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
+    auto calendars = generate_synthetic_calendars(
+        repository_currency_pair_convention_calendar_repository_total_slots, gctx);
     write_synthetic_pair(h, gctx, conventions[9].pair_code);
     conv_repo.write(h.context(), {conventions[9]});
     cal_repo.write(h.context(), {calendars[9]});

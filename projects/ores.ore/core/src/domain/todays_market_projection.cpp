@@ -37,7 +37,7 @@ namespace ores::ore::domain {
 
 namespace {
 
-namespace xg = xml::generated::todays_market;
+namespace todays_market_projection_xg = xml::generated::todays_market;
 
 using analytics::domain::todays_market_collection;
 using analytics::domain::todays_market_configuration;
@@ -49,25 +49,26 @@ using xml::projection::state;
 
 using entities = analytics::messaging::todays_market_document;
 
-constexpr std::string_view audit_modified_by = "ores";
-constexpr std::string_view audit_reason_code = "system.external_data_import";
-constexpr std::string_view audit_commentary = "Imported from ORE XML";
+constexpr std::string_view todays_market_projection_audit_modified_by = "ores";
+constexpr std::string_view todays_market_projection_audit_reason_code =
+    "system.external_data_import";
+constexpr std::string_view todays_market_projection_audit_commentary = "Imported from ORE XML";
 
-boost::uuids::uuid new_uuid() {
+boost::uuids::uuid todays_market_projection_new_uuid() {
     static thread_local ores::utility::uuid::uuid_v7_generator generator;
     return generator();
 }
 
 template <typename T>
-void set_audit(T& r) {
-    r.modified_by = std::string(audit_modified_by);
-    r.performed_by = std::string(audit_modified_by);
-    r.change_reason_code = std::string(audit_reason_code);
-    r.change_commentary = std::string(audit_commentary);
+void todays_market_projection_set_audit(T& r) {
+    r.modified_by = std::string(todays_market_projection_audit_modified_by);
+    r.performed_by = std::string(todays_market_projection_audit_modified_by);
+    r.change_reason_code = std::string(todays_market_projection_audit_reason_code);
+    r.change_commentary = std::string(todays_market_projection_audit_commentary);
 }
 
 template <typename Row>
-bool by_position(const Row* lhs, const Row* rhs) {
+bool todays_market_projection_by_position(const Row* lhs, const Row* rhs) {
     return lhs->position < rhs->position;
 }
 
@@ -96,8 +97,8 @@ struct reading {
 // collection row and its entries.
 struct collection_codec {
     std::string_view name;
-    std::function<void(reading&, const xg::todaysmarket&)> read;
-    std::function<void(xg::todaysmarket&,
+    std::function<void(reading&, const todays_market_projection_xg::todaysmarket&)> read;
+    std::function<void(todays_market_projection_xg::todaysmarket&,
                        const todays_market_collection&,
                        const std::vector<const todays_market_entry*>&)>
         write;
@@ -106,42 +107,42 @@ struct collection_codec {
 template <typename Wrapper, typename Entry, typename ReadEntry, typename WriteEntry>
 collection_codec codec(std::string_view name,
                        std::string_view entry_name,
-                       std::vector<Wrapper> xg::todaysmarket::*member,
-                       std::vector<Entry> Wrapper::*entries,
+                       std::vector<Wrapper> todays_market_projection_xg::todaysmarket::* member,
+                       std::vector<Entry> Wrapper::* entries,
                        ReadEntry read_entry,
                        WriteEntry write_entry) {
-    const auto read = [=](reading& in, const xg::todaysmarket& doc) {
-        const auto& root = *xg::todays_market_document().root;
+    const auto read = [=](reading& in, const todays_market_projection_xg::todaysmarket& doc) {
+        const auto& root = *todays_market_projection_xg::todays_market_document().root;
         const auto& wrapper_type = child(root, name);
         const auto& entry_type = child(wrapper_type, entry_name);
         for (const auto& w : doc.*member) {
             todays_market_collection c;
-            c.id = new_uuid();
+            c.id = todays_market_projection_new_uuid();
             c.todays_market_config_id = in.config_id;
             c.collection = std::string(name);
             c.collection_id = attribute_of(wrapper_type, w, "id", w.id);
             c.position = in.collection_position++;
-            set_audit(c);
+            todays_market_projection_set_audit(c);
             in.out.collections.push_back(c);
 
             int position = 0;
             for (const auto& e : w.*entries) {
                 todays_market_entry row;
-                row.id = new_uuid();
+                row.id = todays_market_projection_new_uuid();
                 row.todays_market_config_id = in.config_id;
                 row.todays_market_collection_id = c.id;
                 read_entry(entry_type, e, row);
                 row.position = position++;
-                set_audit(row);
+                todays_market_projection_set_audit(row);
                 in.out.entries.push_back(std::move(row));
             }
         }
     };
 
-    const auto write = [=](xg::todaysmarket& doc,
+    const auto write = [=](todays_market_projection_xg::todaysmarket& doc,
                            const todays_market_collection& c,
                            const std::vector<const todays_market_entry*>& rows) {
-        const auto& root = *xg::todays_market_document().root;
+        const auto& root = *todays_market_projection_xg::todays_market_document().root;
         const auto& wrapper_type = child(root, name);
         const auto& entry_type = child(wrapper_type, entry_name);
         Wrapper w;
@@ -190,10 +191,10 @@ const std::string& required_key(const todays_market_entry& r) {
 template <typename Wrapper, typename Entry>
 collection_codec keyed(std::string_view name,
                        std::string_view entry_name,
-                       std::vector<Wrapper> xg::todaysmarket::*member,
-                       std::vector<Entry> Wrapper::*entries,
+                       std::vector<Wrapper> todays_market_projection_xg::todaysmarket::* member,
+                       std::vector<Entry> Wrapper::* entries,
                        std::string_view key_name,
-                       std::string Entry::*key) {
+                       std::string Entry::* key) {
     return codec(
         name,
         entry_name,
@@ -213,10 +214,11 @@ collection_codec keyed(std::string_view name,
 // The two collections whose entry carries an optional =key= and an optional
 // =currency=, either of which the document may leave out.
 template <typename Wrapper, typename Entry>
-collection_codec optionally_keyed(std::string_view name,
-                                  std::string_view entry_name,
-                                  std::vector<Wrapper> xg::todaysmarket::*member,
-                                  std::vector<Entry> Wrapper::*entries) {
+collection_codec
+optionally_keyed(std::string_view name,
+                 std::string_view entry_name,
+                 std::vector<Wrapper> todays_market_projection_xg::todaysmarket::* member,
+                 std::vector<Entry> Wrapper::* entries) {
     return codec(
         name,
         entry_name,
@@ -246,14 +248,18 @@ collection_codec swap_index_curves() {
     return codec(
         "SwapIndexCurves",
         "SwapIndex",
-        &xg::todaysmarket::swap_index_curves,
-        &xg::swap_index_curves_type::swap_index,
-        [](const record_type& type, const xg::swap_index& e, todays_market_entry& row) {
+        &todays_market_projection_xg::todaysmarket::swap_index_curves,
+        &todays_market_projection_xg::swap_index_curves_type::swap_index,
+        [](const record_type& type,
+           const todays_market_projection_xg::swap_index& e,
+           todays_market_entry& row) {
             row.key_value = attribute_of(type, e, "name", e.name);
             row.target = "";
             row.discounting = e.discounting;
         },
-        [](const record_type& type, const todays_market_entry& row, xg::swap_index& e) {
+        [](const record_type& type,
+           const todays_market_entry& row,
+           todays_market_projection_xg::swap_index& e) {
             e.name = required_key(row);
             state(type, &e, "name");
             e.discounting = row.discounting.value_or("");
@@ -264,145 +270,152 @@ collection_codec swap_index_curves() {
 // The collections in the order they are read, which is the order their
 // positions are numbered in.
 const std::vector<collection_codec>& collections() {
-    using doc = xg::todaysmarket;
+    using doc = todays_market_projection_xg::todaysmarket;
     static const std::vector<collection_codec> all = [] {
         std::vector<collection_codec> c;
         c.push_back(keyed("YieldCurves",
                           "YieldCurve",
                           &doc::yield_curves,
-                          &xg::yield_curves_type::yield_curve,
+                          &todays_market_projection_xg::yield_curves_type::yield_curve,
                           "name",
-                          &xg::yield_curve::name));
+                          &todays_market_projection_xg::yield_curve::name));
         c.push_back(keyed("IndexForwardingCurves",
                           "Index",
                           &doc::index_forwarding_curves,
-                          &xg::index_forwarding_curves_type::index,
+                          &todays_market_projection_xg::index_forwarding_curves_type::index,
                           "name",
-                          &xg::index::name));
+                          &todays_market_projection_xg::index::name));
         c.push_back(keyed("ZeroInflationIndexCurves",
                           "ZeroInflationIndexCurve",
                           &doc::zero_inflation_index_curves,
-                          &xg::zero_inflation_index_curves_type::zero_inflation_index_curve,
+                          &todays_market_projection_xg::zero_inflation_index_curves_type::
+                              zero_inflation_index_curve,
                           "name",
-                          &xg::zero_inflation_index_curve::name));
-        c.push_back(keyed("YYInflationIndexCurves",
-                          "YYInflationIndexCurve",
-                          &doc::yy_inflation_index_curves,
-                          &xg::yy_inflation_index_curves_type::yy_inflation_index_curve,
-                          "name",
-                          &xg::yy_inflation_index_curve::name));
+                          &todays_market_projection_xg::zero_inflation_index_curve::name));
+        c.push_back(keyed(
+            "YYInflationIndexCurves",
+            "YYInflationIndexCurve",
+            &doc::yy_inflation_index_curves,
+            &todays_market_projection_xg::yy_inflation_index_curves_type::yy_inflation_index_curve,
+            "name",
+            &todays_market_projection_xg::yy_inflation_index_curve::name));
         c.push_back(keyed("YieldVolatilities",
                           "YieldVolatility",
                           &doc::yield_volatilities,
-                          &xg::yield_volatilities_type::yield_volatility,
+                          &todays_market_projection_xg::yield_volatilities_type::yield_volatility,
                           "name",
-                          &xg::yield_volatility::name));
+                          &todays_market_projection_xg::yield_volatility::name));
         c.push_back(keyed("CDSVolatilities",
                           "CDSVolatility",
                           &doc::cds_volatilities,
-                          &xg::cds_volatilities_type::cds_volatility,
+                          &todays_market_projection_xg::cds_volatilities_type::cds_volatility,
                           "name",
-                          &xg::cds_volatility::name));
+                          &todays_market_projection_xg::cds_volatility::name));
         c.push_back(keyed("DefaultCurves",
                           "DefaultCurve",
                           &doc::default_curves,
-                          &xg::default_curves_type::default_curve,
+                          &todays_market_projection_xg::default_curves_type::default_curve,
                           "name",
-                          &xg::default_curve::name));
+                          &todays_market_projection_xg::default_curve::name));
         c.push_back(keyed("EquityCurves",
                           "EquityCurve",
                           &doc::equity_curves,
-                          &xg::equity_curves_type::equity_curve,
+                          &todays_market_projection_xg::equity_curves_type::equity_curve,
                           "name",
-                          &xg::equity_curve::name));
+                          &todays_market_projection_xg::equity_curve::name));
         c.push_back(keyed("EquityVolatilities",
                           "EquityVolatility",
                           &doc::equity_volatilities,
-                          &xg::equity_volatilities_type::equity_volatility,
+                          &todays_market_projection_xg::equity_volatilities_type::equity_volatility,
                           "name",
-                          &xg::equity_volatility::name));
+                          &todays_market_projection_xg::equity_volatility::name));
         c.push_back(keyed("Securities",
                           "Security",
                           &doc::securities,
-                          &xg::securities_type::security,
+                          &todays_market_projection_xg::securities_type::security,
                           "name",
-                          &xg::security::name));
+                          &todays_market_projection_xg::security::name));
         c.push_back(keyed("BaseCorrelations",
                           "BaseCorrelation",
                           &doc::base_correlations,
-                          &xg::base_correlations_type::base_correlation,
+                          &todays_market_projection_xg::base_correlations_type::base_correlation,
                           "name",
-                          &xg::base_correlation::name));
+                          &todays_market_projection_xg::base_correlation::name));
         c.push_back(keyed("CommodityCurves",
                           "CommodityCurve",
                           &doc::commodity_curves,
-                          &xg::commodity_curves_type::commodity_curve,
+                          &todays_market_projection_xg::commodity_curves_type::commodity_curve,
                           "name",
-                          &xg::commodity_curve::name));
-        c.push_back(keyed("CommodityVolatilities",
-                          "CommodityVolatility",
-                          &doc::commodity_volatilities,
-                          &xg::commodity_volatilities_type::commodity_volatility,
-                          "name",
-                          &xg::commodity_volatility::name));
+                          &todays_market_projection_xg::commodity_curve::name));
+        c.push_back(
+            keyed("CommodityVolatilities",
+                  "CommodityVolatility",
+                  &doc::commodity_volatilities,
+                  &todays_market_projection_xg::commodity_volatilities_type::commodity_volatility,
+                  "name",
+                  &todays_market_projection_xg::commodity_volatility::name));
         c.push_back(keyed("Correlations",
                           "Correlation",
                           &doc::correlations,
-                          &xg::correlations_type::correlation,
+                          &todays_market_projection_xg::correlations_type::correlation,
                           "name",
-                          &xg::correlation::name));
-        c.push_back(keyed("BondFutureVolatilities",
-                          "BondFutureVolatility",
-                          &doc::bond_future_volatilities,
-                          &xg::bond_future_volatilities_type::bond_future_volatility,
-                          "name",
-                          &xg::bond_future_volatility::name));
+                          &todays_market_projection_xg::correlation::name));
+        c.push_back(keyed(
+            "BondFutureVolatilities",
+            "BondFutureVolatility",
+            &doc::bond_future_volatilities,
+            &todays_market_projection_xg::bond_future_volatilities_type::bond_future_volatility,
+            "name",
+            &todays_market_projection_xg::bond_future_volatility::name));
         c.push_back(keyed("IntradayPowerPriceCurves",
                           "IntradayPowerPriceCurve",
                           &doc::intraday_power_price_curves,
-                          &xg::intraday_power_price_curves_type::intraday_power_price_curve,
+                          &todays_market_projection_xg::intraday_power_price_curves_type::
+                              intraday_power_price_curve,
                           "name",
-                          &xg::intraday_power_price_curve::name));
+                          &todays_market_projection_xg::intraday_power_price_curve::name));
         c.push_back(keyed("DiscountingCurves",
                           "DiscountingCurve",
                           &doc::discounting_curves,
-                          &xg::discount_curves_type::discounting_curve,
+                          &todays_market_projection_xg::discount_curves_type::discounting_curve,
                           "currency",
-                          &xg::discounting_curve::currency));
+                          &todays_market_projection_xg::discounting_curve::currency));
         c.push_back(keyed("FxSpots",
                           "FxSpot",
                           &doc::fx_spots,
-                          &xg::fx_spots_type::fx_spot,
+                          &todays_market_projection_xg::fx_spots_type::fx_spot,
                           "pair",
-                          &xg::fx_spot::pair));
+                          &todays_market_projection_xg::fx_spot::pair));
         c.push_back(keyed("FxVolatilities",
                           "FxVolatility",
                           &doc::fx_volatilities,
-                          &xg::fx_volatilities_type::fx_volatility,
+                          &todays_market_projection_xg::fx_volatilities_type::fx_volatility,
                           "pair",
-                          &xg::fx_volatility::pair));
-        c.push_back(optionally_keyed("SwaptionVolatilities",
-                                     "SwaptionVolatility",
-                                     &doc::swaption_volatilities,
-                                     &xg::swaption_volatilities_type::swaption_volatility));
-        c.push_back(optionally_keyed("CapFloorVolatilities",
-                                     "CapFloorVolatility",
-                                     &doc::cap_floor_volatilities,
-                                     &xg::cap_floor_volatilities_type::cap_floor_volatility));
-        c.push_back(keyed(
-            "ZeroInflationCapFloorVolatilities",
-            "ZeroInflationCapFloorVolatility",
-            &doc::zero_inflation_cap_floor_volatilities,
-            &xg::zero_inflation_cap_floor_volatilities_type::zero_inflation_cap_floor_volatility,
-            "name",
-            &xg::zero_inflation_cap_floor_volatility::name));
-        c.push_back(
-            keyed("YYInflationCapFloorVolatilities",
-                  "YYInflationCapFloorVolatility",
-                  &doc::yy_inflation_cap_floor_volatilities,
-                  &xg::yy_inflation_cap_floor_volatilities_type::yy_inflation_cap_floor_volatility,
-                  "name",
-                  &xg::yy_inflation_cap_floor_volatility::name));
+                          &todays_market_projection_xg::fx_volatility::pair));
+        c.push_back(optionally_keyed(
+            "SwaptionVolatilities",
+            "SwaptionVolatility",
+            &doc::swaption_volatilities,
+            &todays_market_projection_xg::swaption_volatilities_type::swaption_volatility));
+        c.push_back(optionally_keyed(
+            "CapFloorVolatilities",
+            "CapFloorVolatility",
+            &doc::cap_floor_volatilities,
+            &todays_market_projection_xg::cap_floor_volatilities_type::cap_floor_volatility));
+        c.push_back(keyed("ZeroInflationCapFloorVolatilities",
+                          "ZeroInflationCapFloorVolatility",
+                          &doc::zero_inflation_cap_floor_volatilities,
+                          &todays_market_projection_xg::zero_inflation_cap_floor_volatilities_type::
+                              zero_inflation_cap_floor_volatility,
+                          "name",
+                          &todays_market_projection_xg::zero_inflation_cap_floor_volatility::name));
+        c.push_back(keyed("YYInflationCapFloorVolatilities",
+                          "YYInflationCapFloorVolatility",
+                          &doc::yy_inflation_cap_floor_volatilities,
+                          &todays_market_projection_xg::yy_inflation_cap_floor_volatilities_type::
+                              yy_inflation_cap_floor_volatility,
+                          "name",
+                          &todays_market_projection_xg::yy_inflation_cap_floor_volatility::name));
         c.push_back(swap_index_curves());
         return c;
     }();
@@ -414,11 +427,11 @@ const std::vector<collection_codec>& collections() {
 struct binding_attribute {
     std::string_view collection;
     std::string_view attribute;
-    std::string xg::configuration_type::*member;
+    std::string todays_market_projection_xg::configuration_type::* member;
 };
 
 const std::vector<binding_attribute>& binding_attributes() {
-    using c = xg::configuration_type;
+    using c = todays_market_projection_xg::configuration_type;
     static const std::vector<binding_attribute> all = {
         {"YieldCurves", "YieldCurvesId", &c::yield_curves_id},
         {"DiscountingCurves", "DiscountingCurvesId", &c::discounting_curves_id},
@@ -463,21 +476,22 @@ todays_market_projection::map(const document& v) {
     entities mapped;
 
     auto& config = mapped.config;
-    config.id = new_uuid();
+    config.id = todays_market_projection_new_uuid();
     config.name = "TodaysMarket";
     config.description = "Imported from ORE XML";
     config.config_variant = "";
-    set_audit(config);
+    todays_market_projection_set_audit(config);
 
-    const auto& configuration_type = child(*xg::todays_market_document().root, "Configuration");
+    const auto& configuration_type =
+        child(*todays_market_projection_xg::todays_market_document().root, "Configuration");
     int configuration_position = 0;
     for (const auto& c : v.configuration) {
         todays_market_configuration row;
-        row.id = new_uuid();
+        row.id = todays_market_projection_new_uuid();
         row.todays_market_config_id = config.id;
         row.configuration_id = c.id;
         row.position = configuration_position++;
-        set_audit(row);
+        todays_market_projection_set_audit(row);
         mapped.configurations.push_back(row);
 
         int binding_position = 0;
@@ -485,12 +499,12 @@ todays_market_projection::map(const document& v) {
             if (!xml::is_present(configuration_type, &c, binding.attribute))
                 continue;
             todays_market_configuration_binding b;
-            b.id = new_uuid();
+            b.id = todays_market_projection_new_uuid();
             b.todays_market_configuration_id = row.id;
             b.collection = std::string(binding.collection);
             b.reference = c.*binding.member;
             b.position = binding_position++;
-            set_audit(b);
+            todays_market_projection_set_audit(b);
             mapped.bindings.push_back(b);
         }
     }
@@ -503,13 +517,15 @@ todays_market_projection::map(const document& v) {
 
 todays_market_projection::document
 todays_market_projection::reverse(const ores::analytics::messaging::todays_market_document& v) {
-    const auto* root = xg::todays_market_document().root;
+    const auto* root = todays_market_projection_xg::todays_market_document().root;
     document doc;
 
     std::vector<const todays_market_collection*> ordered;
     for (const auto& c : v.collections)
         ordered.push_back(&c);
-    std::stable_sort(ordered.begin(), ordered.end(), by_position<todays_market_collection>);
+    std::stable_sort(ordered.begin(),
+                     ordered.end(),
+                     todays_market_projection_by_position<todays_market_collection>);
 
     for (const auto* c : ordered) {
         const auto found = std::ranges::find_if(
@@ -523,19 +539,21 @@ todays_market_projection::reverse(const ores::analytics::messaging::todays_marke
             if (r.todays_market_collection_id == c->id)
                 rows.push_back(&r);
         }
-        std::stable_sort(rows.begin(), rows.end(), by_position<todays_market_entry>);
+        std::stable_sort(
+            rows.begin(), rows.end(), todays_market_projection_by_position<todays_market_entry>);
         found->write(doc, *c, rows);
     }
 
     std::vector<const todays_market_configuration*> configurations;
     for (const auto& c : v.configurations)
         configurations.push_back(&c);
-    std::stable_sort(
-        configurations.begin(), configurations.end(), by_position<todays_market_configuration>);
+    std::stable_sort(configurations.begin(),
+                     configurations.end(),
+                     todays_market_projection_by_position<todays_market_configuration>);
 
     const auto& configuration_type = child(*root, "Configuration");
     for (const auto* c : configurations) {
-        xg::configuration_type el;
+        todays_market_projection_xg::configuration_type el;
         el.id = c->configuration_id;
         state(configuration_type, &el, "id");
 
@@ -544,8 +562,9 @@ todays_market_projection::reverse(const ores::analytics::messaging::todays_marke
             if (b.todays_market_configuration_id == c->id)
                 bindings.push_back(&b);
         }
-        std::stable_sort(
-            bindings.begin(), bindings.end(), by_position<todays_market_configuration_binding>);
+        std::stable_sort(bindings.begin(),
+                         bindings.end(),
+                         todays_market_projection_by_position<todays_market_configuration_binding>);
         for (const auto* b : bindings) {
             const auto found =
                 std::ranges::find_if(binding_attributes(), [&](const binding_attribute& a) {
@@ -566,7 +585,8 @@ todays_market_projection::reverse(const ores::analytics::messaging::todays_marke
 todays_market_projection::document todays_market_projection::read(std::string_view text,
                                                                   std::string_view origin) {
     document record;
-    const auto bound = xml::binder::bind(xg::todays_market_document(), text, &record);
+    const auto bound =
+        xml::binder::bind(todays_market_projection_xg::todays_market_document(), text, &record);
     if (!bound) {
         const auto where = origin.empty() ? std::string("today's market") : std::string(origin);
         throw std::invalid_argument(
@@ -577,7 +597,8 @@ todays_market_projection::document todays_market_projection::read(std::string_vi
 
 std::string todays_market_projection::write(const document& v) {
     std::string out;
-    const auto emitted = xml::emitter::emit(xg::todays_market_document(), &v, out);
+    const auto emitted =
+        xml::emitter::emit(todays_market_projection_xg::todays_market_document(), &v, out);
     if (!emitted)
         throw std::runtime_error(emitted.error().message);
     return out;

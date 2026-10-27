@@ -48,7 +48,8 @@ using ores::utility::domain::outcome;
 namespace domain = ores::refdata::domain;
 namespace messaging = ores::refdata::messaging;
 
-messaging::put_counterparty_request put_of(const domain::counterparty_change& l) {
+messaging::put_counterparty_request
+service_counterparty_gate_put_of(const domain::counterparty_change& l) {
     messaging::put_counterparty_request req;
     req.change.write = {.id = l.entity_id,
                         .short_code = l.short_code,
@@ -64,7 +65,7 @@ messaging::put_counterparty_request put_of(const domain::counterparty_change& l)
 }
 
 messaging::put_counterparty_identifier_request
-put_of(const domain::counterparty_identifier_change& l) {
+service_counterparty_gate_put_of(const domain::counterparty_identifier_change& l) {
     messaging::put_counterparty_identifier_request req;
     req.change.write = {.id = l.entity_id,
                         .counterparty_id = l.counterparty_id,
@@ -77,7 +78,8 @@ put_of(const domain::counterparty_identifier_change& l) {
     return req;
 }
 
-messaging::put_party_counterparty_request put_of(const domain::party_counterparty_change& l) {
+messaging::put_party_counterparty_request
+service_counterparty_gate_put_of(const domain::party_counterparty_change& l) {
     messaging::put_party_counterparty_request req;
     req.change.write = {.party_id = l.party_id, .counterparty_id = l.counterparty_id};
     req.change.precondition = creates();
@@ -109,7 +111,8 @@ TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approva
     const auto w = seed_world(h);
     const auto line = new_counterparty_line(h);
 
-    const auto response = counterparty_service(w.ctx).put_counterparty(put_of(line));
+    const auto response =
+        counterparty_service(w.ctx).put_counterparty(service_counterparty_gate_put_of(line));
 
     CHECK(response.result.outcome == outcome::denied);
     CHECK(response.result.code == "approval_required");
@@ -123,8 +126,8 @@ TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval
     const auto owner = make_live(w, new_counterparty_line(h));
     const auto line = new_identifier_line(h, owner.id);
 
-    const auto response =
-        counterparty_identifier_service(w.ctx).put_counterparty_identifier(put_of(line));
+    const auto response = counterparty_identifier_service(w.ctx).put_counterparty_identifier(
+        service_counterparty_gate_put_of(line));
 
     CHECK(response.result.code == "approval_required");
     CHECK_FALSE(counterparty_identifier_service(w.ctx)
@@ -139,7 +142,8 @@ TEST_CASE("a_link_put_and_a_link_removal_with_no_request_write_nothing", "[count
     const auto line = new_link_line(h, w.party_id, live.id);
     party_counterparty_service svc(w.ctx);
 
-    CHECK(svc.put_party_counterparty(put_of(line)).result.code == "approval_required");
+    CHECK(svc.put_party_counterparty(service_counterparty_gate_put_of(line)).result.code ==
+          "approval_required");
     CHECK_FALSE(linked(w, line));
 
     link_live(w, w.party_id, live.id);
@@ -157,7 +161,8 @@ TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", "[counterparty_gat
     counterparty_service svc(w.ctx);
     svc.carry_out_request(boost::uuids::to_string(proposal.request->id));
 
-    const auto response = svc.put_counterparty(put_of(lines.counterparties.front()));
+    const auto response =
+        svc.put_counterparty(service_counterparty_gate_put_of(lines.counterparties.front()));
 
     CHECK(response.result.code == "approval_required");
     CHECK_FALSE(exists(w, lines.counterparties.front().entity_id));
@@ -175,9 +180,11 @@ TEST_CASE("an_approved_request_opens_the_gate_only_for_the_lines_it_holds", "[co
     counterparty_service svc(w.ctx);
     svc.carry_out_request(boost::uuids::to_string(proposal.request->id));
 
-    CHECK(svc.put_counterparty(put_of(lines.counterparties.front())).result.outcome == outcome::ok);
+    CHECK(svc.put_counterparty(service_counterparty_gate_put_of(lines.counterparties.front()))
+              .result.outcome == outcome::ok);
     CHECK(exists(w, lines.counterparties.front().entity_id));
-    CHECK(svc.put_counterparty(put_of(other)).result.code == "approval_required");
+    CHECK(svc.put_counterparty(service_counterparty_gate_put_of(other)).result.code ==
+          "approval_required");
     CHECK_FALSE(exists(w, other.entity_id));
 }
 
@@ -193,7 +200,8 @@ TEST_CASE("an_approved_request_opens_a_link_put_and_a_link_removal", "[counterpa
     party_counterparty_service svc(w.ctx);
     svc.carry_out_request(boost::uuids::to_string(proposal.request->id));
 
-    CHECK(svc.put_party_counterparty(put_of(lines.links.front())).result.outcome == outcome::ok);
+    CHECK(svc.put_party_counterparty(service_counterparty_gate_put_of(lines.links.front()))
+              .result.outcome == outcome::ok);
     CHECK(linked(w, lines.links.front()));
 }
 
@@ -276,6 +284,6 @@ TEST_CASE("a_link_line_opens_the_gate_once", "[counterparty_gate]") {
     party_counterparty_service svc(w.ctx);
     svc.carry_out_request(id);
 
-    CHECK(svc.put_party_counterparty(put_of(lines.links.front())).result.code ==
-          "approval_required");
+    CHECK(svc.put_party_counterparty(service_counterparty_gate_put_of(lines.links.front()))
+              .result.code == "approval_required");
 }

@@ -27,6 +27,7 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -84,14 +85,6 @@ economic_fields_of(std::type_identity<declared_against_its_names>) {
 
 ores::utility::decimal::decimal decimal_of(std::string_view text) {
     return ores::utility::decimal::decimal::from_string(text).value();
-}
-
-ores::utility::uuid::tenant_id tenant_of(std::string_view text) {
-    return ores::utility::uuid::tenant_id::from_string(text).value();
-}
-
-boost::uuids::uuid uuid_of(std::string_view text) {
-    return boost::uuids::string_generator()(text.begin(), text.end());
 }
 
 bond_instrument make_bond_instrument(std::string_view notional) {

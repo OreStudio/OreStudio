@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/domain/calendar_ruleset.hpp"
 #include "ores.analytics.quant/service/calendar_rule_engine.hpp"
 #include "ores.analytics.quant/service/quantlib_calendar_rulesets.hpp"
+#include "test_helpers.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 
@@ -33,18 +34,6 @@ using ores::analytics::quant::domain::observance_shift;
 using ores::analytics::quant::service::calendar_rule_engine;
 using ores::analytics::quant::service::quantlib_calendar_rulesets;
 
-namespace {
-
-std::vector<year_month_day> dates_for(std::size_t calendar_index,
-                                      const std::vector<instantiated_holiday>& all) {
-    std::vector<year_month_day> result;
-    for (const auto& h : all)
-        if (h.calendar_index == calendar_index)
-            result.push_back(h.date);
-    return result;
-}
-
-} // namespace
 
 TEST_CASE("easter_sunday matches known reference dates", "[calendar_rule_engine]") {
     // Cross-checked against QuantLib's Date::easterMonday table (Easter

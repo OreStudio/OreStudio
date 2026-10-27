@@ -8,7 +8,7 @@
 #+filetags: :scope_a_delete_and_unclaimed_write_to_the_acting_party:sprint_29:v0:
 #+owner: marco
 #+branch: feature/scope-a-delete-and-unclaimed-write-to-the-acting-party
-#+pr:
+#+pr: 3927
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3927][#3927]] | [codegen] Scope a party-keyed repository's read and removal to the acting party |
 
 * Review
 

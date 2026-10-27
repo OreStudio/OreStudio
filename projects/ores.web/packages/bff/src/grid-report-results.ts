@@ -500,7 +500,7 @@ export function comparedWith(
     return rows;
 }
 
-/** A group row summing its children, stated at a depth. */
+/** A group row that sums its children, at the given depth. */
 function nodeOf(
     key: string,
     name: string,
@@ -558,9 +558,6 @@ export function withPortfolioTree(
             }
             nodeIds.add(parent);
             parent = portfolioParent.get(parent) ?? '';
-        }
-        if (parent !== '' && (portfolioName.get(parent) ?? '') !== '') {
-            nodeIds.add(parent);
         }
     }
     const childrenOf = new Map<string, string[]>();

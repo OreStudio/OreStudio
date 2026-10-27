@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SHELL_APP_COMMANDS_SUBSCRIPTION_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_SUBSCRIPTION_COMMANDS_HPP
+#ifndef ORES_SHELL_APP_COMMANDS_EVENT_CHANNEL_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_EVENT_CHANNEL_COMMANDS_HPP
 
 #include "ores.nats/service/nats_client.hpp"
 #include <string>
@@ -41,7 +41,7 @@ namespace ores::shell::app::commands {
  * - subscriptions: List active subscriptions
  * - notifications: Display pending notifications
  */
-class subscription_commands {
+class event_channel_commands {
 public:
     /**
      * @brief Register subscription management commands.

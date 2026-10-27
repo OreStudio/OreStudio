@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.shell/app/commands/subscription_commands.hpp"
+#include "ores.shell/app/commands/event_channel_commands.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <functional>
@@ -27,7 +27,7 @@ namespace ores::shell::app::commands {
 
 using ores::nats::service::nats_client;
 
-void subscription_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+void event_channel_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto events_menu = std::make_unique<cli::Menu>("events");
 
     events_menu->Insert(
@@ -62,31 +62,31 @@ void subscription_commands::register_commands(cli::Menu& root_menu, nats_client&
     ores::shell::app::insert_menu(root_menu, std::move(events_menu));
 }
 
-void subscription_commands::process_channels(std::ostream& out, nats_client& /*session*/) {
+void event_channel_commands::process_channels(std::ostream& out, nats_client& /*session*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
-void subscription_commands::process_listen(std::ostream& out,
+void event_channel_commands::process_listen(std::ostream& out,
                                            nats_client& /*session*/,
                                            std::string /*event_type*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
-void subscription_commands::process_unlisten(std::ostream& out,
+void event_channel_commands::process_unlisten(std::ostream& out,
                                              nats_client& /*session*/,
                                              std::string /*event_type*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
-void subscription_commands::process_subscriptions(std::ostream& out, nats_client& /*session*/) {
+void event_channel_commands::process_subscriptions(std::ostream& out, nats_client& /*session*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
-void subscription_commands::process_notifications(std::ostream& out, nats_client& /*session*/) {
+void event_channel_commands::process_notifications(std::ostream& out, nats_client& /*session*/) {
     out << "No pending notifications." << std::endl;
 }
 
-std::size_t subscription_commands::display_pending_notifications(std::ostream& /*out*/,
+std::size_t event_channel_commands::display_pending_notifications(std::ostream& /*out*/,
                                                                  nats_client& /*session*/) {
     return 0;
 }

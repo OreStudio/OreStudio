@@ -10,7 +10,9 @@
 #include <string>
 #include <string_view>
 #include <vector>
+{{^repository_on_libpq}}
 #include <sqlgen/postgres.hpp>
+{{/repository_on_libpq}}
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -358,7 +360,9 @@ private:
 #include <optional>
 #include <string>
 #include <vector>
+{{^repository_on_libpq}}
 #include <sqlgen/postgres.hpp>
+{{/repository_on_libpq}}
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_left_or_right}}

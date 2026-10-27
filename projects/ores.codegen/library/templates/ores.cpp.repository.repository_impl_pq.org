@@ -1,0 +1,1805 @@
+:PROPERTIES:
+:ID: 42F146B8-C9D1-4B47-85BD-6D6830984606
+:END:
+#+title: ores.cpp.repository.repository_impl_pq
+#+description: The repository source of a component on the libpq layer: the sqlgen archetype's queries, run through the ores.database query builder. =repository= profile.
+#+type: archetype
+#+output: projects/{component_core_dir}/src/repository/{entity}_repository.cpp
+#+facet: ores.cpp.repository
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+The repository source for a component whose overview states
+=#+repository_backend: libpq=. It is the [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]] archetype with
+its queries run through =ores::database::q= on the libpq layer instead of
+through sqlgen. The query builder keeps sqlgen's names and writes the SQL
+sqlgen wrote, with every value a text parameter, so a component's
+repositories move without a change to their behaviour. The two archetypes
+live side by side while the components move, and the sqlgen one goes when the
+last component has moved.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_domain_type_repository.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_domain_type_repository_pq.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.repository.repository_impl_pq.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
+
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+{{#domain_entity.has_filter_record}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{/domain_entity.has_filter_record}}
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/q/execute.hpp"
+{{#domain_entity.has_as_of_lookup}}
+{{/domain_entity.has_as_of_lookup}}
+{{#domain_entity.has_filter_record}}
+{{/domain_entity.has_filter_record}}
+{{#domain_entity.has_range_filter}}
+#include "ores.database/repository/range_bound.hpp"
+{{/domain_entity.has_range_filter}}
+#include "ores.logging/boost_severity.hpp"
+{{#system_tenant_visible}}
+#include "ores.database/service/tenant_context.hpp"
+{{/system_tenant_visible}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
+{{#domain_entity.sql.has_list_by_as_of}}
+#include "ores.platform/time/datetime.hpp"
+{{/domain_entity.sql.has_list_by_as_of}}
+{{#primary_key.has_timestamp_key}}
+#include "ores.platform/time/datetime.hpp"
+{{/primary_key.has_timestamp_key}}
+{{#has_parent_id}}
+#include "ores.utility/domain/hierarchy.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+{{/has_parent_id}}
+{{#repository_uses_uuid_io}}
+#include <boost/uuid/uuid_io.hpp>
+{{/repository_uses_uuid_io}}
+{{#domain_entity.sortable_recorded_at}}
+#include <utility>
+{{/domain_entity.sortable_recorded_at}}
+#include <boost/log/sources/severity_feature.hpp>
+{{#domain_entity.has_filter_record}}
+{{/domain_entity.has_filter_record}}
+{{#current_state}}
+{{/current_state}}
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+{{#repository_uses_utility}}
+#include <utility>
+{{/repository_uses_utility}}
+#include <vector>
+{{#domain_entity.sql.has_list_by_as_of}}
+#include <chrono>
+{{/domain_entity.sql.has_list_by_as_of}}
+{{#primary_key.is_compound}}
+#include <set>
+#include <tuple>
+{{/primary_key.is_compound}}
+<<paste:6141050C-0ED4-4680-B387-7DDDA3A69806>>
+
+namespace ores::{{component}}::repository {
+
+namespace q = ores::database::q;
+using namespace ores::database::q;
+using namespace ores::database::q::literals;
+using namespace ores::logging;
+{{^component_is_database}}
+using namespace ores::database::repository;
+{{/component_is_database}}
+
+std::string {{entity_singular}}_repository::sql() {
+    return q::generate_create_table_sql<{{entity_singular}}_entity>(lg());
+}
+
+bool {{entity_singular}}_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {
+{{#domain_entity.sortable_fields}}
+        "{{name}}",
+{{/domain_entity.sortable_fields}}
+    };
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+{{#domain_entity.sortable_recorded_at}}
+/*
+ * The stored column behind a sortable field. A field is named as the wire
+ * names it, which is the column itself except for the recording time.
+ */
+std::string {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_sort_column(std::string_view field) {
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
+{{#domain_entity.sortable_fields}}
+        {"{{name}}", "{{column}}"},
+{{/domain_entity.sortable_fields}}
+    };
+    for (const auto& [name, column] : columns) {
+        if (name == field)
+            return std::string(column);
+    }
+    return std::string(field);
+}
+
+{{/domain_entity.sortable_recorded_at}}
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+q::order {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending,
+                          {{{domain_entity.order_key_columns}}});
+    if (!{{entity_singular}}_repository::is_sortable(order.field))
+        throw std::invalid_argument(
+            "A list of {{entity_plural_words}} cannot be ordered by " + order.field + ".");
+{{#domain_entity.sortable_recorded_at}}
+    return make_order({ {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_sort_column(order.field)}, order.descending,
+                      {{{domain_entity.order_key_columns}}});
+{{/domain_entity.sortable_recorded_at}}
+{{^domain_entity.sortable_recorded_at}}
+    return make_order({order.field}, order.descending, {{{domain_entity.order_key_columns}}});
+{{/domain_entity.sortable_recorded_at}}
+}
+{{#domain_entity.has_filter_record}}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<q::condition>
+{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(const std::optional<{{domain_entity.filter_type}}>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<q::condition> r;
+{{#domain_entity.filter_members}}
+{{#is_equals}}
+{{#is_nullable}}
+    if (filter->{{member}})
+        r.push_back(*filter->{{member}} ? equals("{{column}}", filter_value(**filter->{{member}}))
+                                        : is_null("{{column}}"));
+{{/is_nullable}}
+{{^is_nullable}}
+    if (filter->{{member}})
+        r.push_back(equals("{{column}}", filter_value(*filter->{{member}})));
+{{/is_nullable}}
+{{/is_equals}}
+{{#is_one_of}}
+    if (filter->{{member}}) {
+        std::vector<q::value> values;
+        for (const auto& v : *filter->{{member}})
+            values.push_back(filter_value(v));
+        r.push_back(one_of("{{column}}", std::move(values)));
+    }
+{{/is_one_of}}
+{{#is_range}}
+    if (filter->{{member}}) {
+        const auto bound = range_bound(*filter->{{member}}, range_end::{{#is_from}}from{{/is_from}}{{#is_to}}to{{/is_to}}, {{#is_timestamp}}true{{/is_timestamp}}{{^is_timestamp}}false{{/is_timestamp}});
+        if (!bound)
+            throw std::invalid_argument("The bound " + *filter->{{member}} + " of {{member}} is not a valid date or time.");
+        r.push_back({{#is_from}}at_least{{/is_from}}{{#is_to}}at_most{{/is_to}}("{{column}}", filter_value(*bound)));
+    }
+{{/is_range}}
+{{/domain_entity.filter_members}}
+{{#domain_entity.has_search}}
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({{{domain_entity.search_columns}}}, *filter->search));
+{{/domain_entity.has_search}}
+    return all_of(std::move(r));
+}
+{{/domain_entity.has_filter_record}}
+
+}
+
+ores::utility::domain::precondition
+{{entity_singular}}_repository::replace_claim(context ctx,
+                                             const domain::{{entity_singular}}& v) {
+    const auto current = read_latest(ctx, {{{primary_key.v_args}}});
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+{{#has_audit_columns}}
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version)};
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+    // No version column to state, so a replace names no claim at all; the
+    // store replaces the row as it stands. A create over a live row is refused
+    // by the read in apply_claim.
+    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+{{/has_audit_columns}}
+}
+
+domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
+    context ctx,
+    const domain::{{entity_singular}}& v,
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+{{#has_audit_columns}}
+    switch (claim.kind) {
+    case precondition_kind::must_not_exist:
+        // Zero states that no current row exists, which is the one meaning the
+        // store gives a zero version.
+        t.{{domain_entity.scaffold_prefix}}version = 0;
+        break;
+    case precondition_kind::must_match_version:
+        t.{{domain_entity.scaffold_prefix}}version = claim.version ? static_cast<int>(*claim.version) : 0;
+        break;
+    case precondition_kind::any: {
+        // A caller that claims nothing still has to say what it replaces, so
+        // the row is read and its version stated. A row that moved on between
+        // this read and the write is a conflict the trigger raises, never a
+        // silent overwrite.
+        const auto current = read_latest(ctx, {{{primary_key.v_args}}});
+        t.{{domain_entity.scaffold_prefix}}version = current.empty() ? 0 : current.front().{{domain_entity.scaffold_prefix}}version;
+        break;
+    }
+    }
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+    // No version column to state, so the claim is honoured by the read alone.
+    if (claim.kind == precondition_kind::must_match_version)
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::write: this table keeps no version to match");
+    if (claim.kind == precondition_kind::must_not_exist
+        && !read_latest(ctx, {{{primary_key.v_args}}}).empty())
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::write: a current row already exists");
+{{/has_audit_columns}}
+    return t;
+}
+
+void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v) {
+    write(ctx, v, replace_claim(ctx, v));
+}
+{{#append_insert}}
+
+void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_singular}}& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+<<paste:A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04>>
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+        lg(), "Inserting {{entity_singular_words}} into database.");
+}
+
+void {{entity_singular}}_repository::insert(
+    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_plural_words}}. Count: " << v.size();
+<<paste:B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15>>
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+        lg(), "Inserting {{entity_plural_words}} into database.");
+}
+{{/append_insert}}
+
+void {{entity_singular}}_repository::write(
+    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(v.size());
+    for (const auto& item : v)
+        claims.push_back(replace_claim(ctx, item));
+    write(ctx, v, claims);
+}
+
+void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v,
+                                          const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+{{#current_state}}
+    const auto t = apply_claim(ctx, v, claim);
+{{#immutable}}
+    execute_write_op(ctx, q::insert({{entity_singular}}_mapper::map(t)),
+        lg(), "Writing {{entity_singular_words}} to database.");
+{{/immutable}}
+{{^immutable}}
+    execute_write_op(ctx, q::insert_or_replace({{entity_singular}}_mapper::map(t)),
+        lg(), "Writing {{entity_singular_words}} to database.");
+{{/immutable}}
+{{/current_state}}
+{{^current_state}}
+    const auto t = apply_claim(ctx, v, claim);
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
+        lg(), "Writing {{entity_singular_words}} to database.");
+{{/current_state}}
+<<paste:2C8F029A-9D8A-44E0-A06E-F9EA637ED581>>
+}
+
+void {{entity_singular}}_repository::write(
+    context ctx, const std::vector<domain::{{entity_singular}}>& v,
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
+    std::vector<domain::{{entity_singular}}> batch;
+    batch.reserve(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i)
+        batch.push_back(apply_claim(ctx, v[i], claims[i]));
+{{#current_state}}
+{{#immutable}}
+    execute_write_op(ctx, q::insert({{entity_singular}}_mapper::map(batch)),
+        lg(), "Writing {{entity_plural_words}} to database.");
+{{/immutable}}
+{{^immutable}}
+    execute_write_op(ctx, q::insert_or_replace({{entity_singular}}_mapper::map(batch)),
+        lg(), "Writing {{entity_plural_words}} to database.");
+{{/immutable}}
+{{/current_state}}
+{{^current_state}}
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(batch),
+        lg(), "Writing {{entity_plural_words}} to database.");
+{{/current_state}}
+<<paste:40393605-A998-4295-B69F-9FB035FFBC92>>
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest(context ctx) {
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
+        order_by({{{primary_key.order_by_cols}}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+{{^current_state}}
+        where("valid_to"_c == max.value()) |
+{{/current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}}");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest(context ctx, {{{primary_key.params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+
+{{#primary_key.party_sql_key}}
+    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
+    // The store keys the row by its party too, and a session sees the rows of
+    // every party below its own, so one key can name several rows. The acting
+    // party's row is the one the caller means when it holds one; otherwise
+    // every row stays, so another party's row can still be found by its key,
+    // ordered by party so the first row is the same on every read.
+    const auto party = ctx.party_id();
+    const auto acting = [&](const auto& row) { return row.{{primary_key.party_member}} == *party; };
+    if (party.has_value() && std::ranges::any_of(found, acting))
+        std::erase_if(found, [&](const auto& row) { return !acting(row); });
+    else
+        std::sort(found.begin(), found.end(), [](const auto& a, const auto& b) {
+            return a.{{primary_key.party_member}} < b.{{primary_key.party_member}};
+        });
+    return found;
+{{/primary_key.party_sql_key}}
+{{^primary_key.party_sql_key}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
+{{/primary_key.party_sql_key}}
+}
+
+{{#key_finders}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest_by_{{suffix}}(context ctx, {{{params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}} by {{log_label}}: "
+                               << {{{log_fields}}};
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && {{{where_and}}}{{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{where_and}}}{{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+
+{{#domain_entity.has_party_column}}
+{{#parent_column}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
+{{/parent_column}}
+{{^parent_column}}
+    // A key names a row of one party: another party can hold the same key, so
+    // the lookup keeps the rows of the session's party when it has one. A
+    // finder with a parent column is pinned to its parent's party already.
+    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) {
+{{#domain_entity.party_column_optional}}
+            return row.party_id.has_value() && *row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+{{^domain_entity.party_column_optional}}
+            return row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+        });
+    return found;
+{{/parent_column}}
+{{/domain_entity.has_party_column}}
+{{^domain_entity.has_party_column}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
+{{/domain_entity.has_party_column}}
+}
+{{/key_finders}}
+{{^current_state}}
+{{#key_resolvers}}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_any_by_{{suffix}}(context ctx,
+    const std::string& {{column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any {{entity_singular_words}} by {{column}}: " << {{column}};
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{column}}"_c == {{column}}) |
+        order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
+        q::limit(1){{/domain_entity.has_party_column}};
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{column}}"_c == {{column}}) |
+        order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
+        q::limit(1){{/domain_entity.has_party_column}};
+{{/read_tenant_filtered}}
+
+{{^domain_entity.has_party_column}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading any {{entity_singular_words}} by {{column}}.");
+{{/domain_entity.has_party_column}}
+{{#domain_entity.has_party_column}}
+    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading any {{entity_singular_words}} by {{column}}.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken because the party column may be
+    // null, and a null party means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) {
+{{#domain_entity.party_column_optional}}
+            return row.party_id.has_value() && *row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+{{^domain_entity.party_column_optional}}
+            return row.party_id != *party;
+{{/domain_entity.party_column_optional}}
+        });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
+{{/domain_entity.has_party_column}}
+}
+{{/key_resolvers}}
+{{/current_state}}
+
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_all(context ctx, {{{primary_key.params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. " << {{{primary_key.log_fields}}};
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && {{{primary_key.where_and}}}) |
+{{^current_state}}
+{{#has_audit_columns}}
+        order_by("version"_c.desc(), "valid_from"_c.desc());
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        order_by("valid_from"_c.desc());
+{{/has_audit_columns}}
+{{/current_state}}
+{{#current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/current_state}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{primary_key.where_and}}}) |
+{{^current_state}}
+{{#has_audit_columns}}
+        order_by("version"_c.desc(), "valid_from"_c.desc());
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        order_by("valid_from"_c.desc());
+{{/has_audit_columns}}
+{{/current_state}}
+{{#current_state}}
+        order_by({{{primary_key.order_by_cols}}});
+{{/current_state}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading all {{entity_singular_words}} versions by {{primary_key.column}}.");
+}
+
+{{#has_audit_columns}}
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_at_version(context ctx, {{{primary_key.params}}},
+                                                std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at version. " << {{{primary_key.log_fields}}}
+                               << " version: " << version;
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && {{{primary_key.where_and}}} && "version"_c == version) |
+        q::limit(1);
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{primary_key.where_and}}} && "version"_c == version) |
+        q::limit(1);
+{{/read_tenant_filtered}}
+
+    const auto entities = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_singular_words}} at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+{{/has_audit_columns}}
+
+{{#foreign_keys}}
+{{#list_by}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest_by_{{column}}(context ctx, const std::string& {{column}},
+                                                          std::uint32_t offset, std::uint32_t limit,
+                                                          const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}}. {{column}}: " << {{column}}
+                               << " offset: " << offset << " limit: " << limit;
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
+        q::offset(offset) | q::limit(limit);
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+{{^current_state}}
+        where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+{{/current_state}}
+{{#current_state}}
+        where("{{column}}"_c == {{column}}) |
+{{/current_state}}
+        q::offset(offset) | q::limit(limit);
+{{/read_tenant_filtered}}
+
+    return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(order, {{{list_by_default_columns}}}, {{list_by_default_desc}}),
+        {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}} by {{column}}.");
+}
+
+std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count_by_{{column}}(
+    context ctx, const std::string& {{column}}{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_plural_words}} count. {{column}}: " << {{column}};
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+{{^current_state}}
+                       where("{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+{{/current_state}}
+{{#current_state}}
+                       where("{{column}}"_c == {{column}});
+{{/current_state}}
+{{/read_tenant_filtered}}
+
+    return execute_count_query<{{entity_singular}}_entity>(
+        ctx, query, {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}} by {{column}}");
+}
+{{/list_by}}
+
+
+{{#list_by_as_of}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_by_{{column}}_as_of(
+    context ctx, const std::string& {{column}},
+    std::chrono::system_clock::time_point valid_from_bound,
+    std::chrono::system_clock::time_point valid_to_bound) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} as of window. {{column}}: " << {{column}};
+
+    const auto vf(make_timestamp(ores::platform::time::datetime::to_db_string(valid_from_bound), lg()));
+    const auto vt(make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{column}}"_c == {{column}} &&
+              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+        order_by({{{primary_key.order_by_cols}}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{column}}"_c == {{column}} &&
+              "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
+        order_by({{{primary_key.order_by_cols}}});
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_plural_words}} as of window by {{column}}.");
+}
+{{/list_by_as_of}}
+
+{{/foreign_keys}}
+{{entity_singular}}_repository::remove_status
+{{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}},
+                                      std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
+{{^has_audit_columns}}
+    // The store keeps no version column, so a caller that stated a version
+    // asked a question this table cannot answer.
+    if (version)
+        return remove_status::unsupported;
+{{/has_audit_columns}}
+    const auto current = read_latest(ctx, {{{primary_key.args}}});
+    if (current.empty())
+        return remove_status::missing;
+{{#has_audit_columns}}
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version) != *version)
+        return remove_status::conflicting;
+{{/has_audit_columns}}
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#has_audit_columns}}
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected =
+        version ? static_cast<int>(*version) : current.front().{{domain_entity.scaffold_prefix}}version;
+{{/has_audit_columns}}
+{{#primary_key.party_sql_key}}
+    // The row checked above is one party's row of the key, and the removal
+    // closes that row only, not every visible party's row of the same key.
+    const auto party = boost::uuids::to_string(current.front().{{primary_key.party_member}});
+{{/primary_key.party_sql_key}}
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = q::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::delete_from<{{entity_singular}}_entity> |
+        where({{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
+{{/has_tenant_id}}
+
+    execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
+{{#has_audit_columns}}
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+{{#primary_key.party_sql_key}}
+    // Another party's row of the key stays open by design, so only a row of
+    // the party removed counts.
+    const auto removed_party = current.front().{{primary_key.party_member}};
+    if (std::ranges::any_of(read_latest(ctx, {{{primary_key.args}}}),
+                            [&](const auto& row) { return row.{{primary_key.party_member}} == removed_party; }))
+        return remove_status::conflicting;
+{{/primary_key.party_sql_key}}
+{{^primary_key.party_sql_key}}
+    if (!read_latest(ctx, {{{primary_key.args}}}).empty())
+        return remove_status::conflicting;
+{{/primary_key.party_sql_key}}
+{{/has_audit_columns}}
+    return remove_status::removed;
+}
+
+void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}}) {
+    static_cast<void>(remove(ctx, {{{primary_key.args}}}, std::nullopt));
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
+    const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
+    const std::optional<std::string>& as_of{{/domain_entity.has_as_of_lookup}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} with offset: " << offset
+                               << " and limit: " << limit;
+{{^current_state}}
+{{^domain_entity.has_as_of_lookup}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/domain_entity.has_as_of_lookup}}
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}}{{domain_entity.list_temporal_filter}}) |
+                       q::offset(offset) | q::limit(limit);
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+{{^domain_entity.current_state}}
+{{^domain_entity.has_as_of_lookup}}
+                       where("valid_to"_c == max.value()) |
+{{/domain_entity.has_as_of_lookup}}
+{{/domain_entity.current_state}}
+                       q::offset(offset) | q::limit(limit);
+{{/read_tenant_filtered}}
+
+    return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
+        {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}},
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}} with pagination.");
+}
+{{#domain_entity.has_newest_read}}
+
+std::optional<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_newest(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading newest {{entity_singular_words}}";
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}}) |
+                       order_by("{{domain_entity.sql.newest_by}}"_c.desc()) | q::limit(1);
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+                       order_by("{{domain_entity.sql.newest_by}}"_c.desc()) | q::limit(1);
+{{/read_tenant_filtered}}
+    const auto rows = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading newest {{entity_singular_words}}.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+{{/domain_entity.has_newest_read}}
+
+std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
+    const std::optional<std::string>& as_of{{/domain_entity.has_as_of_lookup}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
+{{^current_state}}
+{{^domain_entity.has_as_of_lookup}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/domain_entity.has_as_of_lookup}}
+{{/current_state}}
+
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}}{{domain_entity.list_temporal_filter}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{^domain_entity.current_state}}
+{{^domain_entity.has_as_of_lookup}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+                       where("valid_to"_c == max.value());
+{{/domain_entity.has_as_of_lookup}}
+{{#domain_entity.has_as_of_lookup}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>>;
+{{/domain_entity.has_as_of_lookup}}
+{{/domain_entity.current_state}}
+{{#domain_entity.current_state}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>>;
+{{/domain_entity.current_state}}
+{{/read_tenant_filtered}}
+
+    return execute_count_query<{{entity_singular}}_entity>(
+        ctx, query, {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}}, lg(), "Counting {{entity_plural_words}}");
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest(
+    context ctx, {{{primary_key.batch_params}}}) {
+    if ({{{primary_key.batch_empty_check}}}) return {};
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{tenant_where}}} && {{{primary_key.batch_in_and}}}
+             {{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+    const auto query = q::read<std::vector<{{entity_singular}}_entity>> |
+        where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
+{{/read_tenant_filtered}}
+    auto result = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}} by ids.");
+{{#primary_key.is_compound}}
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if ({{{primary_key.batch_size_mismatch_check}}})
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<{{{primary_key.batch_tuple_type}}}>> requested;
+    for (std::size_t i = 0; i < {{primary_key.batch_requested_size_check}}; ++i)
+        {{{primary_key.batch_requested_insert}}}
+    std::vector<domain::{{entity_singular}}> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(std::make_tuple({{{primary_key.batch_tuple_from_item}}})))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
+{{/primary_key.is_compound}}
+{{^primary_key.is_compound}}
+    return result;
+{{/primary_key.is_compound}}
+}
+
+void {{entity_singular}}_repository::remove(
+    context ctx, {{{primary_key.batch_params}}}) {
+{{#primary_key.is_compound}}
+    // Compound key: a per-column .in() DELETE would be a cross-product
+    // over-delete (rows outside the requested tuples), and a DELETE can't
+    // be filtered after the fact like a read -- remove one tuple at a time.
+    if ({{{primary_key.batch_size_mismatch_check}}})
+        throw std::invalid_argument(
+            "{{entity_singular}}_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < {{primary_key.batch_requested_size_check}}; ++i)
+        remove(ctx, {{{primary_key.batch_loop_args}}});
+{{/primary_key.is_compound}}
+{{^primary_key.is_compound}}
+    // A batch of nothing addresses no row, so there is nothing to delete. The
+    // query builder renders an empty key list as an empty IN (), which the
+    // server refuses as a syntax error; the read overloads answer the empty
+    // case the same way. The compound branch above is left alone: it loops, so
+    // it already removes nothing, and its length check still refuses an
+    // asymmetric pair.
+    if ({{{primary_key.batch_empty_check}}}) return;
+{{^current_state}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/current_state}}
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = q::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && {{{primary_key.batch_in_and}}}
+             {{domain_entity.temporal_filter}});
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::delete_from<{{entity_singular}}_entity> |
+        where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
+{{/has_tenant_id}}
+    execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
+{{/primary_key.is_compound}}
+}
+
+{{#has_parent_id}}
+std::vector<ores::utility::domain::hierarchy_flat_row>
+{{entity_singular}}_repository::get_hierarchy(context ctx,
+                                       const boost::uuids::uuid& root_id,
+                                       bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular}} hierarchy. Root: " << root_id
+                               << " from_root: " << from_root;
+
+    const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
+    const auto root_str = boost::uuids::to_string(root_id);
+    const std::string sql = "SELECT * FROM {{sql_name_base}}_hierarchy_fn('" +
+                            tenant_str + "'::uuid, '" + root_str + "'::uuid, " +
+                            (from_root ? "true" : "false") + ")";
+
+    const auto rows =
+        execute_raw_multi_column_query(ctx, sql, lg(), "Reading {{entity_singular}} hierarchy");
+
+    std::vector<ores::utility::domain::hierarchy_flat_row> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() >= 3 && row[0]) {
+            ores::utility::domain::hierarchy_flat_row r;
+            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            if (row[1])
+                r.parent_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
+            if (row[2])
+                r.name = *row[2];
+            result.push_back(std::move(r));
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " {{entity_singular}} hierarchy rows.";
+    return result;
+}
+
+{{/has_parent_id}}
+
+<<paste:F2EB1914-5E94-42CA-9C77-46BDB364BF9E>>
+
+}
+{{/domain_entity}}
+{{#junction}}
+{{#repository_uses_datetime}}
+#include "ores.platform/time/datetime.hpp"
+{{/repository_uses_datetime}}
+{{#repository_uses_chrono}}
+#include <chrono>
+{{/repository_uses_chrono}}
+#include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
+
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+{{#system_tenant_visible}}
+#include "ores.database/service/tenant_context.hpp"
+{{/system_tenant_visible}}
+{{^read_only}}
+#include <cstddef>
+#include <optional>
+#include <stdexcept>
+#include "ores.utility/domain/protocol.hpp"
+{{/read_only}}
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+#include <boost/log/sources/severity_feature.hpp>
+{{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_left_or_right}}
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/q/execute.hpp"
+{{#history}}
+#include "ores.database/repository/mapper_helpers.hpp"
+{{/history}}
+#include "ores.logging/boost_severity.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
+#include "ores.{{component_core}}/repository/{{name_singular}}_mapper.hpp"
+{{#left.enrich_code}}
+#include <unordered_map>
+{{/left.enrich_code}}
+{{#right.enrich_code}}
+#include <unordered_map>
+{{/right.enrich_code}}
+
+namespace ores::{{component}}::repository {
+
+namespace q = ores::database::q;
+using namespace ores::database::q;
+using namespace ores::database::q::literals;
+using namespace ores::logging;
+{{^component_is_database}}
+using namespace ores::database::repository;
+{{/component_is_database}}
+
+std::string {{name_singular}}_repository::sql() {
+    return q::generate_create_table_sql<{{name_singular}}_entity>(lg());
+}
+
+{{name_singular}}_repository::{{name_singular}}_repository(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+{{^read_only}}
+ores::utility::domain::precondition
+{{name_singular}}_repository::replace_claim(const domain::{{name_singular}}& v) {
+    const auto current = read_latest(v.{{left.column}}, v.{{right.column}});
+    if (current.empty())
+        return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version)};
+}
+
+domain::{{name_singular}} {{name_singular}}_repository::apply_claim(
+    const domain::{{name_singular}}& v,
+    const ores::utility::domain::precondition& claim) {
+    using ores::utility::domain::precondition_kind;
+    auto t = v;
+    switch (claim.kind) {
+    case precondition_kind::must_not_exist:
+        // Zero states that no current row exists, which is the one meaning the
+        // store gives a zero version.
+        t.{{domain_entity.scaffold_prefix}}version = 0;
+        break;
+    case precondition_kind::must_match_version:
+        t.{{domain_entity.scaffold_prefix}}version = claim.version ? static_cast<int>(*claim.version) : 0;
+        break;
+    case precondition_kind::any: {
+        // A caller that claims nothing still has to say what it replaces, so
+        // the row is read and its version stated. A row that moved on between
+        // this read and the write is a conflict the trigger raises, never a
+        // silent overwrite.
+        const auto current = read_latest(v.{{left.column}}, v.{{right.column}});
+        t.{{domain_entity.scaffold_prefix}}version = current.empty() ? 0 : current.front().{{domain_entity.scaffold_prefix}}version;
+        break;
+    }
+    }
+    return t;
+}
+
+void {{name_singular}}_repository::write(
+    const domain::{{name_singular}}& {{name_singular_short}}) {
+    write({{name_singular_short}}, replace_claim({{name_singular_short}}));
+}
+
+void {{name_singular}}_repository::write(
+    const std::vector<domain::{{name_singular}}>& {{name_short}}) {
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve({{name_short}}.size());
+    for (const auto& item : {{name_short}})
+        claims.push_back(replace_claim(item));
+    write({{name_short}}, claims);
+}
+
+void {{name_singular}}_repository::write(
+    const domain::{{name_singular}}& {{name_singular_short}},
+    const ores::utility::domain::precondition& claim) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{name_singular_words}} to database: "
+                               << {{name_singular_short}}.{{left.column}} << "/" << {{name_singular_short}}.{{right.column}};
+    const auto t = apply_claim({{name_singular_short}}, claim);
+    execute_write_query(ctx_, {{name_singular}}_mapper::map(t),
+        lg(), "writing {{name_singular_words}} to database");
+}
+
+void {{name_singular}}_repository::write(
+    const std::vector<domain::{{name_singular}}>& {{name_short}},
+    const std::vector<ores::utility::domain::precondition>& claims) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing {{name_words}} to database. Count: "
+                               << {{name_short}}.size();
+    std::vector<domain::{{name_singular}}> batch;
+    batch.reserve({{name_short}}.size());
+    for (std::size_t i = 0; i < {{name_short}}.size(); ++i)
+        batch.push_back(apply_claim({{name_short}}[i], claims[i]));
+    execute_write_query(ctx_, {{name_singular}}_mapper::map(batch),
+        lg(), "writing {{name_words}} to database");
+}
+
+{{/read_only}}
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest() {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c, "{{order_column}}"_c);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c, "{{order_column}}"_c);
+{{/has_tenant_id}}
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}}");
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}} with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c, "{{order_column}}"_c) |
+        q::offset(offset) | q::limit(limit);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("{{left.column}}"_c, "{{order_column}}"_c) |
+        q::offset(offset) | q::limit(limit);
+{{/has_tenant_id}}
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} (paginated).");
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest(
+    const {{left.cpp_type}}& {{left.column}},
+    const {{right.cpp_type}}& {{right.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_singular_words}}. "
+                               << {{left.column}} << "/" << {{right.column}};
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} &&
+{{#left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}} &&
+{{/left.query_needs_str}}
+{{#right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+              "valid_to"_c == max.value());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where(
+{{#left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}} &&
+{{/left.query_needs_str}}
+{{#right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+              "valid_to"_c == max.value());
+{{/has_tenant_id}}
+
+    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_singular_words}} by key.");
+}
+
+std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+                       where({{{tenant_where}}} && "valid_to"_c == max.value());
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+                       where("valid_to"_c == max.value());
+{{/has_tenant_id}}
+
+    const auto count = execute_count_query<{{name_singular}}_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting {{name_words}}");
+    BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count: " << count;
+    return count;
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{left.column_short}}(
+    const {{left.cpp_type}}& {{left.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
+                               << {{left.column}};
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#left.query_needs_str}}
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{/left.query_needs_str}}
+        order_by("{{order_column}}"_c);
+
+    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{left.column_short}}.");
+
+{{#right.enrich_code}}
+    if (!rows.empty()) {
+        std::unordered_map<std::string, std::string> code_by_id;
+        std::string ids = "{";
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            if (i > 0)
+                ids += ",";
+            ids += boost::uuids::to_string(rows[i].{{right.column}});
+        }
+        ids += "}";
+        const auto codes = execute_parameterized_multi_column_query(
+            ctx_,
+            "SELECT \"id\"::text, \"{{right.code_column}}\"::text"
+            "  FROM {{right.references}}"
+            " WHERE \"valid_to\" = ores_utility_infinity_timestamp_fn()"
+            "   AND \"id\" = ANY($1::uuid[])",
+            {ids},
+            lg(), "Reading {{right.column_title_lower}} codes for {{name_words}}");
+        code_by_id.reserve(codes.size());
+        for (const auto& code_row : codes) {
+            if (code_row[0] && code_row[1])
+                code_by_id.emplace(*code_row[0], *code_row[1]);
+        }
+        for (auto& row : rows) {
+            if (const auto it = code_by_id.find(boost::uuids::to_string(row.{{right.column}}));
+                it != code_by_id.end())
+                row.{{right.column_short}}_code = it->second;
+        }
+    }
+{{/right.enrich_code}}
+    return rows;
+}
+
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{right.column_short}}(
+    const {{right.cpp_type}}& {{right.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
+                               << {{right.column}};
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#right.query_needs_str}}
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/has_tenant_id}}
+{{/right.query_needs_str}}
+        order_by("{{left.column}}"_c);
+
+    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{right.column_short}}.");
+
+{{#left.enrich_code}}
+    if (!rows.empty()) {
+        std::unordered_map<std::string, std::string> code_by_id;
+        std::string ids = "{";
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            if (i > 0)
+                ids += ",";
+            ids += boost::uuids::to_string(rows[i].{{left.column}});
+        }
+        ids += "}";
+        const auto codes = execute_parameterized_multi_column_query(
+            ctx_,
+            "SELECT \"id\"::text, \"{{left.code_column}}\"::text"
+            "  FROM {{left.references}}"
+            " WHERE \"valid_to\" = ores_utility_infinity_timestamp_fn()"
+            "   AND \"id\" = ANY($1::uuid[])",
+            {ids},
+            lg(), "Reading {{left.column_title_lower}} codes for {{name_words}}");
+        code_by_id.reserve(codes.size());
+        for (const auto& code_row : codes) {
+            if (code_row[0] && code_row[1])
+                code_by_id.emplace(*code_row[0], *code_row[1]);
+        }
+        for (auto& row : rows) {
+            if (const auto it = code_by_id.find(boost::uuids::to_string(row.{{left.column}}));
+                it != code_by_id.end())
+                row.{{left.column_short}}_code = it->second;
+        }
+    }
+{{/left.enrich_code}}
+    return rows;
+}
+
+{{#left.list_by}}
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{left.column_short}}(
+{{#left.query_needs_str}}
+    const {{left.cpp_type}}& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+    const std::string& {{left.column}}, std::uint32_t offset, std::uint32_t limit) {
+{{/left.query_needs_str}}
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{left.column_title}}: "
+                               << {{left.column}} << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#left.query_needs_str}}
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.query_needs_str}}
+        order_by("{{order_column}}"_c) | q::offset(offset) | q::limit(limit);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#left.query_needs_str}}
+        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+{{/left.query_needs_str}}
+        order_by("{{order_column}}"_c) | q::offset(offset) | q::limit(limit);
+{{/has_tenant_id}}
+
+    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{left.column_short}} (paginated).");
+
+{{#right.enrich_code}}
+    if (!rows.empty()) {
+        std::unordered_map<std::string, std::string> code_by_id;
+        std::string ids = "{";
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            if (i > 0)
+                ids += ",";
+            ids += boost::uuids::to_string(rows[i].{{right.column}});
+        }
+        ids += "}";
+        const auto codes = execute_parameterized_multi_column_query(
+            ctx_,
+            "SELECT \"id\"::text, \"{{right.code_column}}\"::text"
+            "  FROM {{right.references}}"
+            " WHERE \"valid_to\" = ores_utility_infinity_timestamp_fn()"
+            "   AND \"id\" = ANY($1::uuid[])",
+            {ids},
+            lg(), "Reading {{right.column_title_lower}} codes for {{name_words}}");
+        code_by_id.reserve(codes.size());
+        for (const auto& code_row : codes) {
+            if (code_row[0] && code_row[1])
+                code_by_id.emplace(*code_row[0], *code_row[1]);
+        }
+        for (auto& row : rows) {
+            if (const auto it = code_by_id.find(boost::uuids::to_string(row.{{right.column}}));
+                it != code_by_id.end())
+                row.{{right.column_short}}_code = it->second;
+        }
+    }
+{{/right.enrich_code}}
+    return rows;
+}
+
+{{/left.list_by}}
+std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count_by_{{left.column_short}}(
+{{#left.query_needs_str}}
+    const {{left.cpp_type}}& {{left.column}}) {
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+    const std::string& {{left.column}}) {
+{{/left.query_needs_str}}
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{left.column_title}}: " << {{left.column}};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#left.query_needs_str}}
+                       where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value());
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+                       where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value());
+{{/left.query_needs_str}}
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#left.query_needs_str}}
+                       where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value());
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+                       where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value());
+{{/left.query_needs_str}}
+{{/has_tenant_id}}
+
+    const auto count = execute_count_query<{{name_singular}}_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting {{name_words}}");
+    BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{left.column_short}}: " << count;
+    return count;
+}
+
+{{#right.list_by}}
+std::vector<domain::{{name_singular}}>
+{{name_singular}}_repository::read_latest_by_{{right.column_short}}(
+{{#right.query_needs_str}}
+    const {{right.cpp_type}}& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+    const std::string& {{right.column}}, std::uint32_t offset, std::uint32_t limit) {
+{{/right.query_needs_str}}
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{name_words}}. {{right.column_title}}: "
+                               << {{right.column}} << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#right.query_needs_str}}
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.query_needs_str}}
+        order_by("{{left.column}}"_c) | q::offset(offset) | q::limit(limit);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#right.query_needs_str}}
+        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+{{/right.query_needs_str}}
+        order_by("{{left.column}}"_c) | q::offset(offset) | q::limit(limit);
+{{/has_tenant_id}}
+
+    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+        ctx_, query,
+        [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{name_words}} by {{right.column_short}} (paginated).");
+
+{{#left.enrich_code}}
+    if (!rows.empty()) {
+        std::unordered_map<std::string, std::string> code_by_id;
+        std::string ids = "{";
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            if (i > 0)
+                ids += ",";
+            ids += boost::uuids::to_string(rows[i].{{left.column}});
+        }
+        ids += "}";
+        const auto codes = execute_parameterized_multi_column_query(
+            ctx_,
+            "SELECT \"id\"::text, \"{{left.code_column}}\"::text"
+            "  FROM {{left.references}}"
+            " WHERE \"valid_to\" = ores_utility_infinity_timestamp_fn()"
+            "   AND \"id\" = ANY($1::uuid[])",
+            {ids},
+            lg(), "Reading {{left.column_title_lower}} codes for {{name_words}}");
+        code_by_id.reserve(codes.size());
+        for (const auto& code_row : codes) {
+            if (code_row[0] && code_row[1])
+                code_by_id.emplace(*code_row[0], *code_row[1]);
+        }
+        for (auto& row : rows) {
+            if (const auto it = code_by_id.find(boost::uuids::to_string(row.{{left.column}}));
+                it != code_by_id.end())
+                row.{{left.column_short}}_code = it->second;
+        }
+    }
+{{/left.enrich_code}}
+    return rows;
+}
+
+{{/right.list_by}}
+std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_count_by_{{right.column_short}}(
+{{#right.query_needs_str}}
+    const {{right.cpp_type}}& {{right.column}}) {
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+    const std::string& {{right.column}}) {
+{{/right.query_needs_str}}
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{right.column_title}}: " << {{right.column}};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#right.query_needs_str}}
+                       where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value());
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+                       where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value());
+{{/right.query_needs_str}}
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+{{#right.query_needs_str}}
+                       where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value());
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+                       where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value());
+{{/right.query_needs_str}}
+{{/has_tenant_id}}
+
+    const auto count = execute_count_query<{{name_singular}}_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting {{name_words}}");
+    BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{right.column_short}}: " << count;
+    return count;
+}
+{{#history}}
+
+std::vector<{{name_singular}}_history_row>
+{{name_singular}}_repository::read_all_by_{{history_parent.column_short}}(
+    const {{history_parent.cpp_type}}& {{history_parent.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the {{name_words}}. {{history_parent.column_title}}: "
+                               << {{history_parent.column}};
+
+{{#history_parent.query_needs_str}}
+    const auto {{history_parent.column}}_str = {{#history_parent.is_uuid}}boost::uuids::to_string({{history_parent.column}}){{/history_parent.is_uuid}}{{#history_parent.is_date}}ores::platform::time::datetime::to_iso8601_date({{history_parent.column}}){{/history_parent.is_date}}{{#history_parent.is_timestamp}}ores::platform::time::datetime::to_iso8601({{history_parent.column}}){{/history_parent.is_timestamp}};
+{{/history_parent.query_needs_str}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where({{{tenant_where}}} && "{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::read<std::vector<{{name_singular}}_entity>> |
+        where("{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
+{{/has_tenant_id}}
+        order_by("{{history_child.column}}"_c, "valid_from"_c.desc());
+
+    return execute_read_query<{{name_singular}}_entity, {{name_singular}}_history_row>(
+        ctx_, query,
+        [](const auto& entities) {
+            std::vector<{{name_singular}}_history_row> rows;
+            rows.reserve(entities.size());
+            for (const auto& entity : entities) {
+                {{name_singular}}_history_row row;
+                row.link = {{name_singular}}_mapper::map(entity);
+                row.modified_by = row.link.modified_by;
+                row.recorded_at = row.link.recorded_at;
+                // A version ends when a later version replaces it, which is not
+                // a closing, or when the link is closed. The rows of one link run
+                // newest first, so the row before this one, when it is the same
+                // link, is the next newer version, and it replaced this one only
+                // if it carries the next version number. A link opened again
+                // after a closing starts its numbering over.
+                const bool replaced =
+                    !rows.empty() &&
+                    rows.back().link.{{history_child.column}} == row.link.{{history_child.column}} &&
+                    rows.back().link.version == row.link.version + 1;
+                if (!replaced) {
+                    row.closed_at = validity_end(entity.valid_to);
+                    if (row.closed_at)
+                        row.closed_by = entity.closed_by.value_or("");
+                }
+                rows.push_back(std::move(row));
+            }
+            return rows;
+        },
+        lg(), "Reading every version of the {{name_words}} by {{history_parent.column_short}}.");
+}
+{{/history}}
+
+{{^read_only}}
+void {{name_singular}}_repository::remove(
+    const {{left.cpp_type}}& {{left.column}},
+    const {{right.cpp_type}}& {{right.column}}) {
+    static_cast<void>(remove({{left.column}}, {{right.column}}, std::nullopt));
+}
+
+{{name_singular}}_repository::remove_status
+{{name_singular}}_repository::remove(
+    const {{left.cpp_type}}& {{left.column}},
+    const {{right.cpp_type}}& {{right.column}},
+    std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing {{name_singular_words}} from database: "
+                               << {{left.column}} << "/" << {{right.column}};
+
+    const auto current = read_latest({{left.column}}, {{right.column}});
+    if (current.empty())
+        return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().{{domain_entity.scaffold_prefix}}version) != *version)
+        return remove_status::conflicting;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().{{domain_entity.scaffold_prefix}}version;
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+    const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+{{/has_tenant_id}}
+    const auto query = q::delete_from<{{name_singular}}_entity> |
+{{#has_tenant_id}}
+        where("tenant_id"_c == tid &&
+{{#left.query_needs_str}}
+{{#right.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+{{#right.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+              "{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+              "valid_to"_c == max.value() &&
+              "version"_c == expected);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+{{#left.query_needs_str}}
+{{#right.query_needs_str}}
+        where("{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+        where("{{left.column}}"_c == {{left.column}}_str &&
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+{{#right.query_needs_str}}
+        where("{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}}_str &&
+{{/right.query_needs_str}}
+{{^right.query_needs_str}}
+        where("{{left.column}}"_c == {{left.column}} &&
+              "{{right.column}}"_c == {{right.column}} &&
+{{/right.query_needs_str}}
+{{/left.query_needs_str}}
+              "valid_to"_c == max.value() &&
+              "version"_c == expected);
+{{/has_tenant_id}}
+
+    execute_delete_query(ctx_, query, lg(),
+        "removing {{name_singular_words}} from database");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest({{left.column}}, {{right.column}}).empty())
+        return remove_status::conflicting;
+    return remove_status::removed;
+}
+
+void {{name_singular}}_repository::remove(
+    const std::vector<{{left.cpp_type}}>& {{left.column}}s,
+    const std::vector<{{right.cpp_type}}>& {{right.column}}s) {
+    // A junction's key is the pair of columns, and a per-column .in() DELETE
+    // would be a cross-product over-delete (rows outside the requested pairs),
+    // so each pair is removed on its own.
+    if ({{left.column}}s.size() != {{right.column}}s.size())
+        throw std::invalid_argument(
+            "{{name_singular}}_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < {{left.column}}s.size(); ++i)
+        static_cast<void>(remove({{left.column}}s[i], {{right.column}}s[i], std::nullopt));
+}
+
+void {{name_singular}}_repository::remove_by_{{left.column_short}}(
+    const {{left.cpp_type}}& {{left.column}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing all {{name_words}} from database: "
+                               << {{left.column}};
+
+{{#left.query_needs_str}}
+    const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = q::delete_from<{{name_singular}}_entity> |
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str);
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::delete_from<{{name_singular}}_entity> |
+        where("{{left.column}}"_c == {{left.column}}_str);
+{{/has_tenant_id}}
+{{/left.query_needs_str}}
+{{^left.query_needs_str}}
+{{#has_tenant_id}}
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = q::delete_from<{{name_singular}}_entity> |
+        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}});
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+    const auto query = q::delete_from<{{name_singular}}_entity> |
+        where("{{left.column}}"_c == {{left.column}});
+{{/has_tenant_id}}
+{{/left.query_needs_str}}
+
+    execute_delete_query(ctx_, query, lg(),
+        "removing all {{name_words}} from database");
+}
+
+
+
+{{/read_only}}
+}
+{{/junction}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -79,16 +79,16 @@ domain::{{entity_singular}}
 {{/has_tenant_id}}
 {{#primary_key.columns}}
 {{#is_text}}
-    r.{{{group_prefix}}}{{column}} = v.{{column}}.value();
+    r.{{{group_prefix}}}{{column}} = v.{{column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}};
 {{/is_text}}
 {{#is_uuid}}
-    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
+    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}});
 {{/is_uuid}}
 {{#is_int}}
-    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
+    r.{{{group_prefix}}}{{column}} = boost::lexical_cast<int>(v.{{column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}});
 {{/is_int}}
 {{#is_timestamp}}
-    r.{{{group_prefix}}}{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}.value()});
+    r.{{{group_prefix}}}{{column}} = timestamp_to_timepoint(std::string_view{v.{{column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}}});
 {{/is_timestamp}}
 {{/primary_key.columns}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
@@ -476,14 +476,14 @@ domain::{{name_singular}}
     r.tenant_id = v.tenant_id;
 {{/has_tenant_id}}
 {{#left.is_uuid}}
-    r.{{left.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{left.column}}.value());
+    r.{{left.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{left.column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}});
 {{/left.is_uuid}}
 {{^left.is_uuid}}
 {{#left.is_date}}
-    r.{{left.column}} = ores::platform::time::datetime::from_iso8601_date(v.{{left.column}}.value());
+    r.{{left.column}} = ores::platform::time::datetime::from_iso8601_date(v.{{left.column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}});
 {{/left.is_date}}
 {{^left.is_date}}
-    r.{{left.column}} = v.{{left.column}}.value();
+    r.{{left.column}} = v.{{left.column}}{{^repository_on_libpq}}.value(){{/repository_on_libpq}};
 {{/left.is_date}}
 {{/left.is_uuid}}
 {{#right.is_uuid}}

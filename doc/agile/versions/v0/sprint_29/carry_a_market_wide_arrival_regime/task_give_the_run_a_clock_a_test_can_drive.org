@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-run-a-clock-a-test-can-drive
-#+pr:
+#+pr: 3920
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3920][#3920]] | [analytics] Give the run a clock a test can drive |
 
 * Review
 

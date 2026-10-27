@@ -243,7 +243,8 @@ TEST_CASE("a market data step reads its provider", "[provision_step]") {
     CHECK(arguments.source == "bloomberg-a");
 }
 
-TEST_CASE("a market data step reads the provider and source it names for each party", "[provision_step]") {
+TEST_CASE("a market data step reads the provider and source it names for each party",
+          "[provision_step]") {
     // The demonstration's entities take their data from different vendors, so the step states one
     // provider and source for each; a party it names in part takes the step's own for the rest.
     const auto arguments = parse_market_data_arguments(R"({
@@ -262,7 +263,8 @@ TEST_CASE("a market data step reads the provider and source it names for each pa
     CHECK(arguments.parties[1].source.empty());
 }
 
-TEST_CASE("a market data step that names no parties gives every party its own provider", "[provision_step]") {
+TEST_CASE("a market data step that names no parties gives every party its own provider",
+          "[provision_step]") {
     const auto arguments =
         parse_market_data_arguments(R"({"provider": "bloomberg", "source": "bloomberg-a"})");
 

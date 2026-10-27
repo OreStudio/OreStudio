@@ -60,6 +60,17 @@ inline constexpr std::string_view input_direction = "input";
  * row names the document through its =name_pattern=, which is the name an
  * export writes the file under.
  */
+/**
+ * Whether a row states the name of a file.
+ *
+ * A row states the name with its pattern, and for an input document the pattern
+ * is the literal file name ORE is given. A row that names nothing does not
+ * answer.
+ */
+inline bool names_a_file(const std::string& pattern) {
+    return pattern.find_first_not_of(" \t\r\n") != std::string::npos;
+}
+
 inline const file_type* input_document_file_type_of(const std::vector<file_type>& types,
                                                     std::string_view configuration_type_code) {
     const file_type* found = nullptr;
@@ -67,6 +78,8 @@ inline const file_type* input_document_file_type_of(const std::vector<file_type>
         if (type.kind != input_document_kind || type.direction != input_direction)
             continue;
         if (type.configuration_type_code != configuration_type_code)
+            continue;
+        if (!names_a_file(type.name_pattern))
             continue;
         if (type.is_default)
             return &type;

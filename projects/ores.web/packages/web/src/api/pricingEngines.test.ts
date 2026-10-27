@@ -58,6 +58,12 @@ describe('the name a response offers its file under', () => {
         expect(fileNameOf('attachment; filename="pricingengine.xml"')).toBe('pricingengine.xml');
     });
 
+    it('reads a name the simple form cannot carry', () => {
+        expect(
+            fileNameOf('attachment; filename="document"; filename*=UTF-8\'\'pricing%20engine.xml'),
+        ).toBe('pricing engine.xml');
+    });
+
     it('states nothing when the server states no name', () => {
         expect(fileNameOf(null)).toBe('');
         expect(fileNameOf('attachment')).toBe('');

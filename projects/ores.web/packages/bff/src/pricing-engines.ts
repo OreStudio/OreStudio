@@ -43,7 +43,7 @@ import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generat
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { subjects as orePricingSubjects } from '@ores/wire-protocol/generated/ore/protocol/pricing_engines_protocol';
-import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { HttpFailure, invalidRequest, notFound, notPermitted, unexpectedReply } from './errors.js';
 import { input, intentSchema, readAll, refusal, resultSchema, text } from './refdata-calls.js';
 import { readValueSets, type ValueFields } from './ore-value-sets.js';
 import type { LiveSession } from './sessions.js';
@@ -796,7 +796,16 @@ async function documentHistory(
  * value, and nothing else about it is rewritten.
  */
 export function attachmentOf(name: string): string {
-    return `attachment; filename="${name.replace(/["\\\r\n]/g, '')}"`;
+    const safe = name.replace(/[\u0000-\u001f\u007f"\\/]/g, '');
+    const ascii = safe.replace(/[^\x20-\x7e]/g, '');
+    if (safe !== '' && safe === ascii) {
+        return `attachment; filename="${safe}"`;
+    }
+    const encoded = encodeURIComponent(name).replace(
+        /['()*!]/g,
+        (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+    );
+    return `attachment; filename="${ascii === '' ? 'document' : ascii}"; filename*=UTF-8''${encoded}`;
 }
 
 export function registerPricingEngineRoutes(
@@ -897,7 +906,7 @@ export function registerPricingEngineRoutes(
             );
         }
         if (others.length > 0) {
-            return { ...exported };
+            throw unexpectedReply('The export answered more than one file.');
         }
         void reply.header('content-disposition', attachmentOf(file.name)).type('application/xml');
         return file.content;

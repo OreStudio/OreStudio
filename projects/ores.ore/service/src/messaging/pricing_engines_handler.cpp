@@ -63,6 +63,8 @@ constexpr std::uint32_t page = 500;
  * invented by the code (RS-ORE-01).
  */
 std::optional<std::string> document_name_of(ores::nats::service::nats_client& owners) {
+    // The reporting service applies the filter, so the page holds this kind's
+    // rows and its limit cannot push the document's row out of the page.
     rp::file_types_filter filter;
     filter.configuration_type_code = std::string(configuration_type_code);
     std::string error;

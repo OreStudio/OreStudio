@@ -112,6 +112,31 @@ TEST_CASE("the_default_row_answers_when_a_type_names_several", tags) {
     CHECK(type->name_pattern == "default.xml");
 }
 
+TEST_CASE("a_row_that_names_no_file_does_not_answer", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::vector<file_type> types{
+        make_file_type("setup.pricingEnginesFile",
+                       std::string("pricing_engines"),
+                       "input_document",
+                       "input",
+                       "   ",
+                       true),
+        make_file_type("setup.pricingEnginesFile.again",
+                       std::string("pricing_engines"),
+                       "input_document",
+                       "input",
+                       "pricingengine.xml"),
+    };
+
+    const auto* type = input_document_file_type_of(types, "pricing_engines");
+    REQUIRE(type != nullptr);
+    CHECK(type->name_pattern == "pricingengine.xml");
+
+    const std::vector<file_type> nameless{types[0]};
+    CHECK(input_document_file_type_of(nameless, "pricing_engines") == nullptr);
+}
+
 TEST_CASE("no_row_states_no_name", tags) {
     auto lg(make_logger(test_suite));
 

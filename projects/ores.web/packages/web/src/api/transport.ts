@@ -149,13 +149,21 @@ export interface ServedFile {
  * none.
  *
  * The value is the one the server stated, so a screen saves the file under the
- * name the tables gave it rather than a name of its own. Only the simple form of
- * the header is read: the RFC 5987 form carries the same name escaped, and no
- * route here sends it alone.
+ * name the tables gave it rather than a name of its own. The simple form is read
+ * first, and the RFC 5987 form otherwise, because a name the simple form cannot
+ * carry is escaped there.
  */
 export function fileNameOf(disposition: string | null): string {
     if (disposition === null) {
         return '';
+    }
+    const extended = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+    if (extended) {
+        try {
+            return decodeURIComponent(extended[1] ?? '');
+        } catch {
+            return '';
+        }
     }
     const match = /filename="([^"]*)"/.exec(disposition);
     return match?.[1] ?? '';

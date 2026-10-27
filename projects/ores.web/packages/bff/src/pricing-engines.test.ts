@@ -1045,11 +1045,39 @@ describe('pricing engine routes', () => {
             expect(response.statusCode).toBe(404);
         });
 
+        it('answers a reply of several files as a failure, not as a file', async () => {
+            const { server, sessionId } = buildTestServer({
+                ...reads,
+                'ore.v1.ops.export_pricing_engines': {
+                    success: true,
+                    message: 'Exported 2 files.',
+                    count: 2,
+                    files: [
+                        { name: 'a.xml', content: '<A/>' },
+                        { name: 'b.xml', content: '<B/>' },
+                    ],
+                    problems: [],
+                },
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'GET',
+                `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
+            );
+            expect(response.statusCode).toBe(502);
+            expect(response.json()).toMatchObject({ code: 'internal' });
+        });
+
         it('names a file safely, whatever the service called it', () => {
             expect(attachmentOf('pricingengine.xml')).toBe(
                 'attachment; filename="pricingengine.xml"',
             );
             expect(attachmentOf('a"b\r\nc.xml')).toBe('attachment; filename="abc.xml"');
+            expect(attachmentOf('../a/b.xml')).toBe('attachment; filename="..ab.xml"');
+            expect(attachmentOf('pri\u00e7ing.xml')).toBe(
+                'attachment; filename="priing.xml"; filename*=UTF-8\'\'pri%C3%A7ing.xml',
+            );
         });
     });
 });

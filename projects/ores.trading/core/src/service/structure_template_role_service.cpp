@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -180,8 +181,9 @@ structure_template_role_service::put_structure_template_role(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(value));
+    auto written = of_acting_party(
+        structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(value)),
+        ctx_);
     if (!written.empty())
         response.structure_template_role = std::move(written.front());
     return response;
@@ -214,8 +216,9 @@ structure_template_role_service::put_many_structure_template_roles(
     repo_.write(ctx_, batch, claims);
     response.template_roles.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(value));
+        auto written = of_acting_party(
+            structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(value)),
+            ctx_);
         response.template_roles.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -348,8 +351,10 @@ ores::utility::domain::result structure_template_role_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = structure_template_role_to_domain(change.write);
-    const auto current =
-        structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

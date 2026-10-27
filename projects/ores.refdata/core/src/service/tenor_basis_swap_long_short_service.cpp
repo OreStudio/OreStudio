@@ -48,6 +48,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -235,8 +236,9 @@ tenor_basis_swap_long_short_service::put_tenor_basis_swap_long_short(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = tenor_basis_swap_long_short_read_one(
-        repo_, ctx_, tenor_basis_swap_long_short_key_from(value));
+    auto written = of_acting_party(tenor_basis_swap_long_short_read_one(
+                                       repo_, ctx_, tenor_basis_swap_long_short_key_from(value)),
+                                   ctx_);
     if (!written.empty())
         response.tenor_basis_swap_long_short = std::move(written.front());
     return response;
@@ -269,8 +271,10 @@ tenor_basis_swap_long_short_service::put_many_tenor_basis_swap_long_shorts(
     repo_.write(ctx_, batch, claims);
     response.tenor_basis_swap_long_shorts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = tenor_basis_swap_long_short_read_one(
-            repo_, ctx_, tenor_basis_swap_long_short_key_from(value));
+        auto written =
+            of_acting_party(tenor_basis_swap_long_short_read_one(
+                                repo_, ctx_, tenor_basis_swap_long_short_key_from(value)),
+                            ctx_);
         response.tenor_basis_swap_long_shorts.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -402,8 +406,12 @@ ores::utility::domain::result tenor_basis_swap_long_short_service::prepare_chang
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = tenor_basis_swap_long_short_to_domain(change.write);
-    const auto current = tenor_basis_swap_long_short_read_one(
-        repo_, ctx_, tenor_basis_swap_long_short_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(tenor_basis_swap_long_short_read_one(
+                            repo_, ctx_, tenor_basis_swap_long_short_key_from(out)),
+                        ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

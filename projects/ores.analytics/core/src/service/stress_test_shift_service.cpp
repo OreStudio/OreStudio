@@ -47,6 +47,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -188,7 +189,8 @@ messaging::put_stress_test_shift_response stress_test_shift_service::put_stress_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = stress_test_shift_read_one(repo_, ctx_, stress_test_shift_key_from(value));
+    auto written = of_acting_party(
+        stress_test_shift_read_one(repo_, ctx_, stress_test_shift_key_from(value)), ctx_);
     if (!written.empty())
         response.stress_test_shift = std::move(written.front());
     return response;
@@ -221,7 +223,8 @@ stress_test_shift_service::put_many_stress_test_shifts(
     repo_.write(ctx_, batch, claims);
     response.stress_test_shifts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = stress_test_shift_read_one(repo_, ctx_, stress_test_shift_key_from(value));
+        auto written = of_acting_party(
+            stress_test_shift_read_one(repo_, ctx_, stress_test_shift_key_from(value)), ctx_);
         response.stress_test_shifts.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -344,7 +347,10 @@ stress_test_shift_service::prepare_change(const messaging::stress_test_shift_cha
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = stress_test_shift_to_domain(change.write);
-    const auto current = stress_test_shift_read_one(repo_, ctx_, stress_test_shift_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        stress_test_shift_read_one(repo_, ctx_, stress_test_shift_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

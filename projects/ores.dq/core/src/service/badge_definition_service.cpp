@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -182,7 +183,8 @@ messaging::put_badge_definition_response badge_definition_service::put_badge_def
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value));
+    auto written = of_acting_party(
+        badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value)), ctx_);
     if (!written.empty())
         response.badge_definition = std::move(written.front());
     return response;
@@ -214,7 +216,8 @@ messaging::put_many_badge_definitions_response badge_definition_service::put_man
     repo_.write(ctx_, batch, claims);
     response.definitions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value));
+        auto written = of_acting_party(
+            badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value)), ctx_);
         response.definitions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -337,7 +340,10 @@ badge_definition_service::prepare_change(const messaging::badge_definition_chang
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = badge_definition_to_domain(change.write);
-    const auto current = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        badge_definition_read_one(repo_, ctx_, badge_definition_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

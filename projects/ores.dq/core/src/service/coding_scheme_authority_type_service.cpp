@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -184,8 +185,9 @@ coding_scheme_authority_type_service::put_coding_scheme_authority_type(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = coding_scheme_authority_type_read_one(
-        repo_, ctx_, coding_scheme_authority_type_key_from(value));
+    auto written = of_acting_party(coding_scheme_authority_type_read_one(
+                                       repo_, ctx_, coding_scheme_authority_type_key_from(value)),
+                                   ctx_);
     if (!written.empty())
         response.coding_scheme_authority_type = std::move(written.front());
     return response;
@@ -218,8 +220,10 @@ coding_scheme_authority_type_service::put_many_coding_scheme_authority_types(
     repo_.write(ctx_, batch, claims);
     response.authority_types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = coding_scheme_authority_type_read_one(
-            repo_, ctx_, coding_scheme_authority_type_key_from(value));
+        auto written =
+            of_acting_party(coding_scheme_authority_type_read_one(
+                                repo_, ctx_, coding_scheme_authority_type_key_from(value)),
+                            ctx_);
         response.authority_types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -347,8 +351,12 @@ ores::utility::domain::result coding_scheme_authority_type_service::prepare_chan
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = coding_scheme_authority_type_to_domain(change.write);
-    const auto current = coding_scheme_authority_type_read_one(
-        repo_, ctx_, coding_scheme_authority_type_key_from(out));
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current =
+        of_acting_party(coding_scheme_authority_type_read_one(
+                            repo_, ctx_, coding_scheme_authority_type_key_from(out)),
+                        ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

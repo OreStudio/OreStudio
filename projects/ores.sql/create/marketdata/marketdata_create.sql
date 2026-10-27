@@ -38,6 +38,11 @@
 \ir ./marketdata_tick_coords_create.sql
 \ir ./marketdata_observation_lineages_create.sql
 \ir ./marketdata_observation_lineages_notify_trigger_create.sql
+-- The subject of an approved curve publish: a request's detail row, keyed by
+-- its request id (the inbox table is created after marketdata, so the check
+-- runs at write time).
+\ir ./marketdata_curve_publishes_create.sql
+\ir ./marketdata_curve_publishes_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_series_classification_rules_create.sql

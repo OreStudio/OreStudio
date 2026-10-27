@@ -1,0 +1,24 @@
+🐚 /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/output/linux-clang-release-ninja/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_eager_maxwell/doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/live_flow_1_raise.ores
+📝 Progress log: /tmp/ores_eager_maxwell_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:21405
+✓ Logged in as: tenant_admin
+  Tenant: Acme Corporation (35479084-80b9-4362-8fc6-e108b2b7985a)
+  Party: Acme Corporation Plc
+ORE Studio Shell REPL v0.0.29
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_eager_maxwell/doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/live_flow_1_raise.ores
+> connect nats://localhost:21405
+✓ Connected to nats://localhost:21405
+> login henry.jones@acme_corporation Secure-Password-123
+✓ Login successful!
+  User: henry.jones
+  Tenant: Acme Corporation (35479084-80b9-4362-8fc6-e108b2b7985a)
+> curve_publish_operations publish-curve d0e1f2a3-b4c5-4d6e-7f80-91a2b3c4d5e6 2026-10-27T12:00:00Z --reason "Today's USD SOFR curve, built from the two quotes"
+{"success":true,"message":"Raised. The publish waits on the decision.","approval_request_id":"01a17e25-7039-7e1e-995b-e224a0dd8136","state_code":"waiting","published_by":""}
+> approval_operations list-my-approval-requests
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"requests":[{"version":1,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17e25-7039-7e1e-995b-e224a0dd8136","kind_code":"marketdata.curve_publish","state_code":"waiting","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 16:15:45.209822Z","reason":"Today's USD SOFR curve, built from the two quotes","expires_at":"2026-11-10 16:15:45.000000Z","modified_by":"henry.jones","performed_by":"ores_eager_maxwell_marketdata_service","change_reason_code":"system.new_record","change_commentary":"","recorded_at":"2026-10-27 16:15:45.000000Z"},{"version":2,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17e25-328e-7b2a-92dc-7080e48d2f61","kind_code":"marketdata.curve_publish","state_code":"approved","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 16:15:29.422916Z","reason":"Today's USD SOFR curve, built from the two quotes","expires_at":"2026-11-10 16:15:29.000000Z","modified_by":"mark.reid","performed_by":"ores_eager_maxwell_inbox_service","change_reason_code":"system.update","change_commentary":"Decision: approve","recorded_at":"2026-10-27 16:15:32.000000Z"},{"version":2,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17e06-7a48-7c6f-84a4-86ad0da342b6","kind_code":"marketdata.curve_publish","state_code":"approved","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 15:41:56.168188Z","reason":"Today's USD SOFR curve, built from the two quotes","expires_at":"2026-11-10 15:41:56.000000Z","modified_by":"mark.reid","performed_by":"ores_eager_maxwell_inbox_service","change_reason_code":"system.update","change_commentary":"Decision: approve","recorded_at":"2026-10-27 16:06:52.000000Z"},{"version":1,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17e05-18dc-7876-8384-6c67ca56384d","kind_code":"marketdata.curve_publish","state_code":"waiting","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 15:40:25.692888Z","reason":"Today's USD SOFR curve, built from the two quotes","expires_at":"2026-11-10 15:40:25.000000Z","modified_by":"henry.jones","performed_by":"ores_eager_maxwell_marketdata_service","change_reason_code":"system.new_record","change_commentary":"","recorded_at":"2026-10-27 15:40:25.000000Z"},{"version":1,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17d73-80d2-7d54-ac26-5c762ad93d40","kind_code":"trading.operational_authorisation","state_code":"waiting","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 13:01:24.050650Z","reason":"A live trade awaits operational authorisation.","modified_by":"henry.jones","performed_by":"ores_eager_maxwell_trading_service","change_reason_code":"system.new_record","change_commentary":"","recorded_at":"2026-10-27 13:01:24.000000Z"}],"total":5}
+> logout
+✓ Logged out successfully.
+Script complete: 5 commands executed.
+ores-shell> Bye!

@@ -22,6 +22,7 @@
 set(files
     "composite_commands_tests.cpp"
     "composite_input_commands_tests.cpp"
+    "curve_publish_commands_tests.cpp"
     "curve_publish_operations_operations_commands_tests.cpp"
     "delivery_count_commands_tests.cpp"
     "demand_interval_commands_tests.cpp"

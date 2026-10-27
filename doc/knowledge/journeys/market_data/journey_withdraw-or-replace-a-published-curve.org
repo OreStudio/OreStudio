@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader undoes or supersedes a published curve after an error, with the reason kept and the approver's decision where the kind asks for one.
@@ -46,12 +46,13 @@ approval is reversed rather than edited, as for every kind.
 
 1. *Find the published curve.* The trader opens the curve by its =oresmd_uri= or
    finds it in the curve list. The system shows the series and its latest
-   points. Nothing marks which version is published, so there is no "published"
-   filter to find it by; see /What is missing/.
+   points. The read that serves the curve states whether it is published, and
+   an unpublished curve is the one to look at twice. No read lists the tenant's
+   published curves; see /What is missing/.
 2. *Read what is published.* The trader reads the points the system is using.
-   The snapshot read returns the latest observations; it does not say whether
-   they are published, and nothing shows the act or the person that published
-   them.
+   The snapshot read states the instant a person published the set, the account
+   that published it, the as-of the set was built at, and the request that
+   authorised it, so the trader reads the act and not only the values.
 3. *Read the trail.* The trader opens the curve's history and reads every
    version with the field-level difference from the one before, so the error
    and the version that introduced it are both visible.
@@ -122,8 +123,10 @@ no build step and no session. It argues that a wrong publish is undone as an act
 | =notification_kind= | What kind of notice a withdrawal sends to consumers | [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] |
 | =notification= | The notice itself: who it is for and where it points | [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] |
 
-No entity holds the published state a withdrawal would change. There is no
-=published_at=, no =published_by= and no superseded link; see /What is missing/.
+The published state a withdrawal would change is the =curve_publish= detail
+row of the request that authorised the publish: it holds =published_at=,
+=published_by=, the as-of the set was built at and the request. What it does not
+hold is a superseded link or a withdrawn marker; see /What is missing/.
 
 * Operations and messages
 
@@ -157,12 +160,13 @@ changed".
    controls are disabled, and the only write,
    =marketdata.v1.ops.republish_curve=, would silently write a new set
    with nothing withdrawn and nothing linked.
-2. *There is no published state to withdraw.* Nothing marks a version
-   published, so there is nothing to change on withdrawal and nothing to find
-   the published curve by. The candidate is a published state — =published_at=,
-   =published_by= and the as-of — or a publish record, on the series or the
-   build. Until then the screen shows the latest observations and states that
-   it cannot say which version is live.
+2. *There is no withdrawn state.* A publish records the instant, the publisher,
+   the as-of and the request, so a reader knows which set is live. Nothing marks
+   a set withdrawn or superseded, so a withdrawal has no column to write and
+   there is no read that excludes a withdrawn set. The candidate is a withdrawn
+   instant and actor on the publish record, or a withdrawing record of its own.
+   Until it exists a withdrawal would be a new publish, and the record would
+   read as two live sets rather than one replaced by the other.
 3. *There is no market-data withdrawal kind.* One kind is seeded,
    =iam.role_grant=, and it does not withdraw a curve. The candidate is a kind,
    =marketdata.curve_withdrawal=, with =decide_permission_code=,

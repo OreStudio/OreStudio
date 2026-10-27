@@ -30,7 +30,10 @@
  * approval request of the kind marketdata.curve_publish, somebody else
  * decided it, and this names the approved request. A call that names no
  * approved request publishes nothing, and the answer states the kind the
- * request must be of.
+ * request must be of. A call whose curve, as-of or party is not the subject the
+ * request names publishes nothing either, and the answer names both subjects.
+ * The request publishes once: a request that already moved the set is refused,
+ * and the answer says who applied it and when.
  */
 export interface PublishCurveRequest {
     /**
@@ -44,8 +47,10 @@ export interface PublishCurveRequest {
     /**
      * @brief The approved request that permits this publish, or empty.
      *
-     * Empty is the ask: the request is raised and nothing is published. Naming an
-     * approved request applies it.
+     * Empty is the ask: the request is raised for the curve configuration and the
+     * as-of this call names, and nothing is published. Naming an approved request
+     * applies it, and the configuration and as-of must be the ones that request was
+     * raised for.
      */
     approval_request_id: string;
     /**
@@ -74,6 +79,19 @@ export interface PublishCurveResponse {
      * rather than guessing.
      */
     state_code: string;
+    /**
+     * @brief The instant the published set moved, when this call moved it.
+     *
+     * Absent when the call raised a request or was refused, because neither moved
+     * anything. The instant is the publication record's, not the caller's clock.
+     */
+    published_at: string | null;
+    /**
+     * @brief The account that applied the request, when this call applied it.
+     *
+     * Empty when the call raised a request or was refused.
+     */
+    published_by: string;
 }
 
 export const subjects = {

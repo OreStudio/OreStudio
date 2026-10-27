@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:approval:four-eyes:acme:demo:
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 #+startup: inlineimages
 
 * Summary
@@ -135,12 +135,15 @@ seed alone:
 | the head of financial control | open a book change from the notice, then approve the controller part | approved; the request stays waiting for the other parts |
 | the group finance director | approve the finance part | approved |
 | the head of market risk | approve the market risk part | approved |
+| a trader holding the curve | raise a publish request naming the curve configuration and the as-of | raised, waiting; the subject is recorded against the request |
+| the same trader | publish the approved curve as of another instant | refused: the message names the approved subject and the attempted one |
+| the same trader | publish the approved subject, then publish it again | the first publish records the publisher and the instant; the second is refused and names both |
 | the tenant administrator | read the queue | 63 waiting requests, including the role request a member raised |
 
 ** What a person still cannot do, and what that leaves undecided
 
-The journeys and the seeds disagree in four places. One is now closed by the
-policy model, and this page records the choice it took.
+The journeys and the seeds disagreed in four places. Each is now closed, and
+this page records the choice it took for each.
 
 - *The controller part is asked for by an operation, not by a field.* The
   approval policies routed a changed field to Finance, Market Risk or
@@ -156,14 +159,20 @@ policy model, and this page records the choice it took.
   controller. The controller keeps answer order 1, so it answers first and the
   other three wait for it.
 
-- *A market data publish is now a request.* The kind =marketdata.curve_publish=
-  is seeded with the Market Risk decide permission, one approval, a hold and a
-  two-week window, and the publish is gated: =marketdata.v1.ops.publish_curve=
-  raises the request when it is called with none, and publishes only when it is
-  called with an approved one. A published set that moves is therefore a set a
-  Market Risk decider approved, and a refusal leaves the curve as it was. What
-  the request does not yet name is the curve: a request is a header, and the
-  kind's detail table is still missing.
+- *A market data publish is a request that names its subject.* The kind
+  =marketdata.curve_publish= is seeded with the Market Risk decide permission,
+  one approval, a hold and a two-week window, and the publish is gated:
+  =marketdata.v1.ops.publish_curve= raises the request when it is called with
+  none, and publishes only when it is called with an approved one. The request
+  also names its subject, as the kind's detail row: the curve configuration, the
+  as-of instant the bootstrap reads the market at, and the party the
+  configuration belongs to. The gate compares the publish with that subject, so
+  a publish of another curve, another as-of or another party is refused with a
+  message that names both. The approved subject is published once: the apply
+  stamps the same row with the publisher and the instant, so a second attempt is
+  refused with the words that name who moved the set and when. What the request
+  and its record are, what they hold, and why they are one row rather than two
+  is [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]].
 - *A tenant-wide change is decided by the tenant's Market Risk.* *Decide a
   convention change* named Market Risk as the decider of a tenant kind and did
   not say which party's Market Risk answers for the whole tenant. The rule, now

@@ -22,12 +22,11 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
-#include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.marketdata.api/domain/curve_publish.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -37,97 +36,109 @@ namespace ores::marketdata::service::app {
  * @brief The kind of approval request that permits a curve publish.
  *
  * A publish is a request and not a save: the trader who owns the curve asks,
- * a person holding the kind's decider permission — Market Risk — answers, and
+ * a person holding the kind's decider permission -- Market Risk -- answers, and
  * only an approved request publishes. The kind is seeded in
  * projects/ores.sql/populate/inbox/inbox_approval_kinds_populate.sql.
  */
 inline constexpr std::string_view curve_publish_kind_code = "marketdata.curve_publish";
 
 /**
+ * @brief What a publish call asks to publish, read from the configuration itself.
+ *
+ * The caller states the configuration and the as-of; the party and the series
+ * are the configuration's to say, so a caller cannot publish one party's curve
+ * under another's name.
+ */
+struct publish_subject {
+    boost::uuids::uuid party_id{};
+    boost::uuids::uuid bootstrap_config_id{};
+    boost::uuids::uuid output_series_id{};
+    std::chrono::system_clock::time_point as_of{};
+};
+
+/**
  * @brief What the approval record says about one publish.
  *
  * approved says the publish may go ahead. state_code is the request's state as
  * the record holds it, so a caller reads waiting or refused rather than
- * guessing, and it is empty when no request was named at all. message says why
+ * guessing, and it is empty when no request was named at all. record is the
+ * subject the request names, present as soon as one was found. message says why
  * a publish may not go ahead, in the words the person reads.
  */
 struct publish_verdict {
     bool approved = false;
     std::string state_code;
     std::string message;
+    std::optional<ores::marketdata::domain::curve_publish> record;
 };
+
+/**
+ * @brief Reads the subject a publish call names out of the configuration.
+ *
+ * The configuration states the party it belongs to and the series its output is
+ * written to, so both are read rather than trusted from the caller. An empty
+ * identifier, an unknown configuration, or an as-of at the epoch is refused with
+ * the reason: a publish that names no subject authorises nothing.
+ *
+ * @throws std::invalid_argument when the call names no subject.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT publish_subject
+resolve_publish_subject(const ores::database::context& ctx,
+                        const std::string& bootstrap_config_id,
+                        std::chrono::system_clock::time_point as_of);
+
+/**
+ * @brief Raises the request a publish waits on, and writes the subject it names.
+ *
+ * The request is raised for the signed-in person, so four-eyes holds at the
+ * record: whoever decides it must be somebody else. The subject is written as
+ * the kind's detail row in the same act, so a request that names nothing cannot
+ * exist, and the request identifier is that row's natural key, so a request
+ * authorises one publish and no second row can name it.
+ *
+ * @throws std::invalid_argument when the kind, the account or the subject is
+ * missing.
+ * @throws std::runtime_error when the store refuses the detail row.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request
+raise_publish_request(const ores::database::context& ctx,
+                      const publish_subject& subject,
+                      const std::string& reason);
 
 /**
  * @brief Asks the approval record whether a publish may go ahead.
  *
  * The request must be a @c marketdata.curve_publish request of the caller's
- * tenant, and it must be approved. Everything else is a refusal that names the
- * state the request is in, or the kind it is of, so a person who names the
- * wrong request is told which one to name.
+ * tenant, it must be approved, the subject it names must be the subject the
+ * caller is publishing, and it must not have been applied before. Everything
+ * else is a refusal that names both subjects, or the state the request is in, so
+ * a person who names the wrong request or publishes another curve is told which
+ * curve the request is about.
  */
-inline publish_verdict verdict_on_publish(const ores::database::context& ctx,
-                                          const std::string& request_id) {
-    if (request_id.empty()) {
-        return {.approved = false,
-                .state_code = {},
-                .message = "A publish needs an approved request of the kind " +
-                           std::string(curve_publish_kind_code) +
-                           ". Raise one, have it decided, then publish with its id."};
-    }
-
-    std::optional<ores::inbox::domain::approval_request> request;
-    try {
-        ores::inbox::service::approval_lifecycle lifecycle(ctx);
-        request = lifecycle.request(request_id);
-    } catch (const std::exception&) {
-        // An id that is not a uuid is not a request. The person named
-        // something the record cannot hold, which is a refusal and not a
-        // failure of the service.
-        request = std::nullopt;
-    }
-
-    if (!request) {
-        return {.approved = false,
-                .state_code = {},
-                .message = "No approval request has the id " + request_id + "."};
-    }
-
-    if (request->kind_code != curve_publish_kind_code) {
-        return {.approved = false,
-                .state_code = request->state_code,
-                .message = "The request is a " + request->kind_code +
-                           " request, and a publish is permitted by a " +
-                           std::string(curve_publish_kind_code) + " request."};
-    }
-
-    if (request->state_code != "approved") {
-        return {.approved = false,
-                .state_code = request->state_code,
-                .message = "The request is " + request->state_code +
-                           ", and a publish waits until it is approved."};
-    }
-
-    return {.approved = true, .state_code = request->state_code, .message = {}};
-}
+ORES_MARKETDATA_SERVICE_EXPORT publish_verdict
+verdict_on_publish(const ores::database::context& ctx,
+                   const std::string& request_id,
+                   const publish_subject& attempted);
 
 /**
- * @brief Raises the request that a publish waits on, for the signed-in person.
+ * @brief Records the act: the request that authorised it, the publisher and the time.
  *
- * The person asking to publish is the person the record names as the asker, so
- * four-eyes holds at the record: whoever decides it must be somebody else.
+ * The row is written with the version it was read at, so a second apply of the
+ * same request -- by this caller or another -- is refused by the store rather
+ * than by a check that could race. The history keeps the unapplied subject
+ * beside the applied one, and the request identifier on every version is what
+ * says which decision authorised the published set.
+ *
+ * @param record The subject, as the verdict read it.
+ * @param publisher The username of the account that applied the request.
+ * @return The record as written, so the caller answers with the instant and the
+ * account the store holds rather than with its own clock.
+ * @throws std::invalid_argument when no publisher is named.
  */
-inline ores::inbox::domain::approval_request
-raise_publish_request(const ores::database::context& ctx, const std::string& reason) {
-    ores::inbox::service::approval_lifecycle lifecycle(ctx);
-    const auto kind = lifecycle.kind(std::string(curve_publish_kind_code));
-    if (!kind)
-        throw std::runtime_error("No such kind of request: " +
-                                 std::string(curve_publish_kind_code) + ".");
-    const auto me = lifecycle.actor_account_id();
-    if (!me)
-        throw std::runtime_error("The signed-in account was not found.");
-    return lifecycle.raise(*kind, reason, *me);
-}
+ORES_MARKETDATA_SERVICE_EXPORT ores::marketdata::domain::curve_publish
+record_publication(const ores::database::context& ctx,
+                   ores::marketdata::domain::curve_publish record,
+                   const std::string& publisher);
 
 }
 

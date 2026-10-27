@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An approver holding the kind's decide permission reads a curve-publish request, weighs the change and the checks, and approves, refuses or holds it with a comment.
@@ -57,14 +57,18 @@ says who decided.
    approver sees only the kinds they may decide.
 2. *Open one request.* The approver opens a request. The system reads its
    header — who asked, when, and why — and the kind's detail that names what is
-   asked. The kind =marketdata.curve_publish= is seeded, so a curve publish
-   appears in the queue of a person holding
+   asked: the curve configuration, the as-of instant and the party the request
+   authorises, read by the request's id. The kind =marketdata.curve_publish= is
+   seeded, so a curve publish appears in the queue of a person holding
    =inbox::approvals:decide_market_risk=, which in Acme is the Market Risk
    function: the head of market risk of each office.
 3. *Read the delta against the last published.* The approver reads the
    candidate points beside the curve the system last published, point by point,
-   so the decision is about a change and not about a number. Nothing marks a
-   curve published, so there is no delta to read; see /What is missing/.
+   so the decision is about a change and not about a number. The published set
+   is known — the snapshot read states its as-of, its publisher and the request
+   that authorised it — but no read returns the difference against it; see /What
+   is missing/. Until one does, the panel names the published as-of and leaves
+   the delta empty.
 4. *Read the QA and validation checks.* The approver reads the checks that were
    run over the candidates — all pillars priced, discount factors monotonic, no
    arbitrage — with each result. No operation returns these; see /What is
@@ -130,10 +134,14 @@ no build step and no session. It argues that the checker decides from the delta 
 | =market_series= | The curve the request is about, and how it was derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
 | =market_observation= | The candidate points and the published points the delta compares | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
 | =observation_lineage= | The recipe and source as-of behind each derived point, so the approver sees where the change came from | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =curve_publish= | The subject the request authorises: the curve configuration, the as-of and the party | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
 
-The request's own detail — which curve, which candidate set — does not exist
-yet. The kind's detail table is what would name the subject, keyed by the
-request's id; see /What is missing/.
+The subject the request is about is the kind's detail row, keyed by the
+request's id: a =curve_publish= names the curve configuration, the series its
+output is written to, the as-of instant, and the party the configuration
+belongs to. Once a person applies the approved request, the same row names the
+publisher and the instant, so the decider reads what a published set stands on
+afterwards as well as before.
 
 * Operations and messages
 
@@ -144,6 +152,7 @@ request's id; see /What is missing/.
 | Decide | Read the reasons a hold may name | =inbox.v1.hold_reasons.list= | exists |
 | Open one request | Read the request header | =inbox.v1.approval_requests.get= | exists |
 | Open one request | Read the requests of one kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
+| Open one request | Read the subject the request authorises | =marketdata.v1.curve_publishes.list_by_request_id= | exists |
 | Read the delta | Show the change against the published version | =marketdata.v1.curve_candidates.diff= | missing |
 | Read the checks | Run and return the QA checks over the candidates | =marketdata.v1.curve_bootstrap.validate= | missing |
 | Read the rule | Read how many approvals and who decides | =inbox.v1.approval_kinds.list= | exists |
@@ -154,36 +163,39 @@ request's id; see /What is missing/.
 
 The queue, the read and the decision are generic: they are defined in
 [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]]. A
-kind is what the queue and the decision are filtered by, and no market-data
-kind exists to filter by.
+kind is what the queue and the decision are filtered by, and the subject a
+decider reads is the kind's own read, in the component that owns the kind.
 
 * What is missing
 
-1. *The queue shows a curve publish but not the curve.* The kind is seeded with
+1. *The queue row shows no curve.* The kind is seeded with
    =inbox::approvals:decide_market_risk= as its decide permission, one approval,
    a hold allowed and a two-week window, so a Market Risk decider finds the
-   request. What the request is about is still missing: a request is a header,
-   and the kind's detail table that would name the curve and the as-of does not
-   exist, so the row shows the kind, the reason and the state and no curve.
-2. *There is no delta against the last published.* Nothing marks a curve
-   published, so there is no baseline and no subject returns the difference.
-   The candidate is a published marker on the series or the build, plus a read
-   such as =marketdata.v1.curve_candidates.diff=. Until then the delta panel is
-   shown empty, with the reason stated, and the approver cannot see what the
-   request would change.
+   request. The queue is one generic read over the shared header, and a header
+   carries no subject, so the row shows the kind, the reason and the state. A
+   decider who opens the request reads its subject on the kind's own read; the
+   queue does not join to it. The candidate is a queue read that carries each
+   kind's subject columns, which the model states as the kind's detail table.
+2. *There is no delta against the last published.* A publish record marks the
+   set in use and names the as-of it was built at, but no read returns the
+   difference between it and the candidates. The candidate is a read such as
+   =marketdata.v1.curve_candidates.diff=, taking the published as-of from the
+   record. Until then the delta panel is shown empty, with the reason stated,
+   and the approver reads the published as-of beside the candidates rather than
+   a change.
 3. *There is no QA or validation check operation.* No subject runs the checks
    over a candidate set and returns the results; the fit checks the desk
    speaks of are not an operation. The candidate is
    =marketdata.v1.curve_bootstrap.validate=, returning one row per check. Until
    then the panel names the checks and marks each result unknown, so the
    approver reads it as "not checked" and not as "passed".
-4. *No kind's detail names the subject.* An approval request is a header; the
-   kind keeps its detail in a table of its own, keyed by the request's id, in
-   the component that owns the kind. No such table exists for a curve publish,
-   so the queue row has no curve to show. The candidate is a detail table in
-   =ores.marketdata= keyed by =request_id=, naming the series and the candidate
-   set's as-of. Until then the queue shows the kind and the state and no
-   subject.
+4. *The queue does not read any kind's detail.* An approval request is a
+   header; the kind keeps its detail in a table of its own, keyed by the
+   request's id, in the component that owns the kind. A curve publish's detail
+   exists — =curve_publish=, keyed by =request_id= — and the decider reads it by
+   request when they open one. What no read does is join a page of the queue to
+   each kind's detail, so the queue row has no curve in it. The candidate is a
+   queue read that takes its subject columns from the kind's own detail table.
 5. *The deciding group is not a field.* =approval_kind= names a permission code,
    not a group; which people may decide follows from who holds the code. The
    screen cannot say "Market data approvers" from the model. The candidate is a

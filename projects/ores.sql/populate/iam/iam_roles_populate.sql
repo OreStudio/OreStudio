@@ -349,6 +349,9 @@ BEGIN
     -- code is not here, and that is what makes the publish four eyes: the
     -- Operations role holds inbox::approvals:decide_market_risk.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_bootstrap:publish');
+    -- The subject the request authorises, which the maker reads back under
+    -- *My requests* and the published record read shows once it moved.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_publishes:read');
 
     -- Assign permissions to Sales role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'refdata::currencies:read');
@@ -679,6 +682,10 @@ BEGIN
     -- code. The wildcard was the only holder, so no seeded person could
     -- decide and every request raised waited for a tenant administrator.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approvals:decide_market_risk');
+    -- A decider decides from the subject: which curve, at which as-of, for
+    -- which party. The queue row carries no subject, so the decider reads the
+    -- kind's own record, and this is the code that read takes.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::curve_publishes:read');
     -- The operations decision the other three kinds carry: an operational
     -- authorisation, a book change and a counterparty change all name this
     -- code. *Operational Authorisation* says Operations, the Middle Office,

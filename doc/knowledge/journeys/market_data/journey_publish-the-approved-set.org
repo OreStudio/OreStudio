@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader applies an approved candidate set so that the curve the system uses becomes the new one, and pricing and reporting see it from that moment.
@@ -52,19 +52,28 @@ count is n, the publish applies only once n distinct approvals stand.
    points the approval covers: each =oresmd_uri=, its value and its source as
    the derivation wrote them. The trader reads exactly what is about to become
    live.
-4. *Apply the approved set.* The trader chooses *Publish approved set*. The
-   system asks the approval record whether the request permits the publish, and
-   refuses with the request's state when it does not; when it does, the system
-   records the act, marked with the signed-in trader and the time, and makes this
-   version the published curve. A refusal leaves the curve as it was, so the
-   published set moves only once approved.
+4. *Apply the approved set.* The trader chooses *Publish approved set*, naming
+   the approved request, the curve configuration and the as-of. The system asks
+   the approval record whether the request permits the publish, and refuses with
+   the request's state when it does not. It also compares the subject: the
+   request authorises one curve configuration at one as-of for one party, and a
+   publish of another curve, another as-of or another party is refused with a
+   message that names both subjects. When the subject matches and the request is
+   approved, the system writes the published set and then records the act on the
+   request's own detail row: the request that authorised it, the account that
+   applied it, and the time. One request publishes once, so a second attempt is
+   refused with the publisher and the instant the first one moved the set. A
+   refusal leaves the curve as it was, so the published set moves only once
+   approved.
 5. *Watch the moment it becomes visible.* The published version becomes the one
-   pricing and reporting read, from the published time. Nothing marks a curve
-   published, so a reader cannot tell a candidate from the live curve; see
-   /What is missing/.
-6. *Record who published.* The act carries the publisher's name and the time.
-   The approval record already names who decided; the publish does not yet name
-   who applied it.
+   pricing and reporting read, from the published time. The read that serves a
+   curve states whether anybody has published it, when, by whom, and under which
+   request, so a reader can tell the live set from a candidate that nobody has
+   approved.
+6. *Record who published.* The act carries the publisher's name and the time,
+   written on the same detail row that names the subject. The approval records
+   who decided; the row records who applied the decision. The two are different
+   people, and both are readable afterwards.
 7. *Publish immediately when no approval is needed.* When the kind's
    =approvals_required= is zero, the raise is the publish and the set becomes
    live at once. No path applies a zero-approval request today; see /What is
@@ -76,9 +85,9 @@ count is n, the publish applies only once n distinct approvals stand.
    version.
 
 Step 4 is the moment. Before it, the candidate set is evidence the market or
-the recipe produced; after it, it is what the system uses. Nothing in the data
-distinguishes the two states yet, which is the gap this journey and the two
-before it exist to close.
+the recipe produced; after it, it is what the system uses. The publish record is
+what tells the two apart: a set with a published instant and a publisher is the
+one in use, and its request says which decision it stands on.
 
 * Screens and wireframes
 
@@ -115,11 +124,14 @@ no build step and no session. It argues that publishing is the moment the candid
 | =market_series= | The curve that becomes the published one, and how it was derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
 | =market_observation= | The points the approval covers, and the rows the published version is read from | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
 | =observation_lineage= | The recipe and source as-of the published points were built from | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =curve_publish= | The subject the request authorises, and the publication record: the request, the publisher and the instant | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
 | =notification_kind= | What kind of notice a publish sends, so consumers are told | [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] |
 | =notification= | The notice itself: who it is for and where it points | [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] |
 
-There is no entity for a published curve. The candidate set has no identity of
-its own, and the published marker has no field; see /What is missing/.
+A published curve has one entity: the =curve_publish= detail row of the
+request that authorised it. The row names the subject from the raise, and the
+apply stamps the publisher and the instant on that same row, so the published
+set and the decision behind it are one record.
 
 * Operations and messages
 
@@ -131,14 +143,20 @@ its own, and the published marker has no field; see /What is missing/.
 | Read the points | Read the candidates and the latest snapshot | =marketdata.v1.market_observations.list_by_series_id=, =marketdata.v1.curve_snapshot.get= | exists |
 | Apply the approved set | Publish the approved set as the curve the system uses | =marketdata.v1.ops.publish_curve= | exists |
 | Apply the approved set | Write the derived observations unconditionally | =marketdata.v1.ops.republish_curve= | partial |
-| Watch the moment | Read the published version a consumer sees | =marketdata.v1.curve_snapshot.get= | partial |
-| Record who published | Name the publisher and the time on the published version | a field on the published record | missing |
+| Watch the moment | Read the published version a consumer sees, with its publisher and as-of | =marketdata.v1.curve_snapshot.get= | exists |
+| Record who published | Name the publisher and the time on the publication record | =marketdata.v1.ops.publish_curve= | exists |
+| Record who published | Read the publication record of a request | =marketdata.v1.curve_publishes.list_by_request_id= | exists |
 | Publish with zero approvals | Raise a request that is approved at once, then apply it | =inbox.v1.ops.raise_approval= with =approvals_required= 0 | missing |
 | Tell the consumers | Raise a publish notice to the consumers | =inbox.v1.ops.raise_notification= | partial |
 
 =marketdata.v1.ops.publish_curve= exists and carries the decision: a call that
 names no approved =marketdata.curve_publish= request raises one and publishes
-nothing, and a call that names an approved one writes the output.
+nothing, and a call that names an approved one writes the output. The call also
+carries the subject. It reads the curve configuration and the as-of out of the
+call, and the party out of the configuration, and refuses a publish that names
+another curve, another as-of or another party than the request authorised. The
+answer states the published instant and the publisher when it published, so the
+caller reads what the record holds rather than its own clock.
 =marketdata.v1.ops.republish_curve= still writes the derived observations with
 no gate at all, and its own contract says so. It stays as the internal write the
 gated operation calls, and is =partial= because a caller can still bypass the
@@ -148,39 +166,26 @@ notification kind tells it what a publish notice is.
 
 * What is missing
 
-1. *The publish names no publisher on the curve.*
-   =marketdata.v1.ops.publish_curve= applies an approved request: it refuses a
-   request that is not approved or not of the kind, and otherwise writes the
-   bootstrapped output. The name of the person who applied it is on the
-   approval's decisions and on the observation lineage's actor, and not on a
-   published marker, because no published marker exists.
-2. *There is no published marker on a series or a build.* Nothing says which
-   candidate set is the live one, so a reader cannot tell a candidate from the
-   curve in use, and no delta or withdrawal has a baseline. The candidate is a
-   published state on =market_series= — =published_at=, =published_by= and the
-   as-of published — or a publish record of its own. Until then the publish
-   control is disabled and the screen shows the latest observations without
-   claiming they are published.
-3. *There is no notification kind for a publish.* Consumers are not told a new
+1. *There is no read of every published curve.* A reader finds the published
+   set of one series, and no read lists the tenant's published curves with
+   their publishers. The candidate is a list over the publication records. Until
+   then the screen reads one curve at a time through the snapshot read.
+2. *There is no notification kind for a publish.* Consumers are not told a new
    version is live. The candidate is an =ores.inbox.notification_kind= such as
    =marketdata.curve_published=, with =message_key= and =mail_optional=, seeded
    beside the kind that raises it. Until then the consumers panel states that
    nobody is told.
-4. *Zero approvals have no path.* =approvals_required= is a count the kind
+3. *Zero approvals have no path.* =approvals_required= is a count the kind
    carries, including zero, but nothing moves a zero-approval request to
    approved without a person. The candidate is the rule in the inbox service
    that a raise with =approvals_required= 0 closes the request approved at
    once, which then lets the owning publish apply it. Until then a kind that
    publishes immediately cannot be expressed.
-5. *The act names no publisher.* The approval records who decided, and this
-   journey promises the person who publishes is named too. Nothing carries that
-   name. The candidate is a =published_by= field beside the published marker.
-   Until then the screen reads the name from the signed-in account and says it
-   is not yet stored.
-6. *There is no candidate set to publish.* The thing published would be a set
+4. *There is no candidate set to publish.* The thing published would be a set
    of points with one as-of, and no entity holds it. The candidate is the
-   candidate set of the first journey. Until then the publish has to name the
-   series and the as-of and take whatever the derivation wrote under it.
+   candidate set of the first journey. Until then the publish names the curve
+   configuration and the as-of, takes whatever the derivation wrote under them,
+   and the record names that pair rather than a set identifier.
 
 * Related journeys
 

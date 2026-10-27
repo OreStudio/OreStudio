@@ -35,12 +35,18 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
 
 * Acceptance
 
-- An extractor reads the ORE source and records every curve section, its entry element and each leaf ORE reads, with the source file and line of each fact.
-- Every extracted leaf has an ore_parameter row keyed by curveconfig.xsd and its XPath, with label, description, format, default and release where the source gives them.
-- Every row carries a value set: a flag, a closed list, a number, a text, or a catalogue of refdata data such as a currency, a calendar or a day counter.
+- An extractor reads the ORE source and records every curve section, its entry element and each leaf ORE reads, with the source file and line of each fact, and names any block it cannot resolve.
+- Every extracted leaf that the guide or a curation describes has an ore_parameter row keyed by curveconfig.xsd and its XPath, with label, description, format, default and release where the source gives them.
 - The generator's check mode passes and reports the coverage counts, and the counts are recorded on the task with the command and the commit.
 - The [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] defines /Parameter/ broadly enough for this kind, since the story decided a curve configuration's leaf is a parameter.
 - No screen or web change is made by this task.
+
+The value set each leaf's values belong to is the next task,
+[[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][Give the curve configuration leaves their value sets]]. This task was
+scaffolded with that work inside it, which was wrong for two reasons: the derive
+needs the parse function behind each leaf, which the extractor does not yet
+record, and the conventions precedent carried it as a task of its own so that a
+documented leaf and a controlled leaf are judged separately.
 
 * Plan
 

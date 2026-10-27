@@ -125,11 +125,11 @@ std::optional<sqlgen::dynamic::Condition> tenor_basis_swap_pay_receive_filter_co
 
 ores::utility::domain::precondition tenor_basis_swap_pay_receive_repository::replace_claim(
     context ctx, const domain::tenor_basis_swap_pay_receive& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
-            static_cast<std::uint32_t>(current.front().version)};
+            static_cast<std::uint32_t>(current.front().identity.version)};
 }
 
 domain::tenor_basis_swap_pay_receive tenor_basis_swap_pay_receive_repository::apply_claim(
@@ -142,18 +142,18 @@ domain::tenor_basis_swap_pay_receive tenor_basis_swap_pay_receive_repository::ap
         case precondition_kind::must_not_exist:
             // Zero states that no current row exists, which is the one meaning the
             // store gives a zero version.
-            t.version = 0;
+            t.identity.version = 0;
             break;
         case precondition_kind::must_match_version:
-            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
         case precondition_kind::any: {
             // A caller that claims nothing still has to say what it replaces, so
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
-            t.version = current.empty() ? 0 : current.front().version;
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+            t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
         }
     }
@@ -178,7 +178,8 @@ void tenor_basis_swap_pay_receive_repository::write(
     context ctx,
     const domain::tenor_basis_swap_pay_receive& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receive. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receive. "
+                               << "id: " << v.identity.id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
                         tenor_basis_swap_pay_receive_mapper::map(t),
@@ -368,13 +369,13 @@ tenor_basis_swap_pay_receive_repository::remove(context ctx,
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
     // int, so the comparison states the conversion rather than relying on one.
-    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+    if (version && static_cast<std::uint32_t>(current.front().identity.version) != *version)
         return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
-    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<tenor_basis_swap_pay_receive_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&

@@ -43,23 +43,23 @@ domain::convention convention_mapper::map(const convention_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::convention r;
-    r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.version = v.version;
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
 
-    r.kind_code = v.kind_code;
+    r.identity.kind_code = v.kind_code;
 
 
-    r.name = v.name;
+    r.payload.name = v.name;
 
-    r.oresmd_uri = v.oresmd_uri;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.payload.oresmd_uri = v.oresmd_uri;
+    r.audit.modified_by = v.modified_by;
+    r.audit.performed_by = v.performed_by;
+    r.audit.change_reason_code = v.change_reason_code;
+    r.audit.change_commentary = v.change_commentary;
+    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -69,22 +69,22 @@ convention_entity convention_mapper::map(const domain::convention& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     convention_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.id = boost::uuids::to_string(v.identity.id);
+    r.tenant_id = v.identity.tenant_id.to_string();
+    r.version = v.identity.version;
+    r.party_id = boost::uuids::to_string(v.identity.party_id);
 
 
-    r.kind_code = v.kind_code;
+    r.kind_code = v.identity.kind_code;
 
 
-    r.name = v.name;
+    r.name = v.payload.name;
 
-    r.oresmd_uri = v.oresmd_uri;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
+    r.oresmd_uri = v.payload.oresmd_uri;
+    r.modified_by = v.audit.modified_by;
+    r.performed_by = v.audit.performed_by;
+    r.change_reason_code = v.audit.change_reason_code;
+    r.change_commentary = v.audit.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

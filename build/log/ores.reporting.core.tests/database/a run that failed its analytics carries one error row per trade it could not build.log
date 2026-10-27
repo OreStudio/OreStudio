@@ -1,0 +1,125 @@
+2026-10-16 18:34:43.564954 [INFO] [catch2] Test case starting: a run that failed its analytics carries one error row per trade it could not build
+2026-10-16 18:34:43.565053 [DEBUG] [catch2]   Tags: database service 
+2026-10-16 18:34:43.565065 [DEBUG] [catch2] Section starting: a run that failed its analytics carries one error row per trade it could not build
+2026-10-16 18:34:43.565108 [DEBUG] [ores.utility.database.context_factory] Creating context. Configuration: {"database_options":{"user":"ores_bright_faraday_test_dml_user","host":"localhost","database":"ores_dev_bright_faraday","port":5432,"tenant":"67af68e2-48b6-4cb5-8c1b-c21013ac6699","pool_size":2,"pool_backoff":"exponential"},"pool_size":4,"num_attempts":10,"wait_time_in_seconds":1,"service_account":"ores_bright_faraday_test_dml_user"}
+2026-10-16 18:34:43.603051 [DEBUG] [ores.utility.database.context_factory] Reading the database schema fingerprint. SQL: select schema_fingerprint, git_commit, git_date from ores_database_info_tbl order by created_at desc limit 1
+2026-10-16 18:34:43.613467 [DEBUG] [ores.utility.database.context_factory] Set tenant context to: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.614774 [DEBUG] [ores.utility.database.context_factory] Reading the database schema fingerprint. Total rows: 1
+2026-10-16 18:34:43.614870 [INFO] [ores.utility.database.context_factory] Schema fingerprint expected by this build: 4db3a94013e6ee59
+2026-10-16 18:34:43.614879 [INFO] [ores.utility.database.context_factory] Schema fingerprint recorded in database ores_dev_bright_faraday: 4db3a94013e6ee59 (database was built from commit 896e20863e-dirty at 2026/10/16 17:04:10)
+2026-10-16 18:34:43.614884 [INFO] [ores.utility.database.context_factory] Schema fingerprint check passed.
+2026-10-16 18:34:43.614887 [DEBUG] [ores.utility.database.context_factory] Finished creating context.
+2026-10-16 18:34:43.614892 [INFO] [ores.testing.test_database_manager] Database context created successfully
+2026-10-16 18:34:43.614903 [INFO] [ores.testing.database_helper] Using test tenant: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.614910 [DEBUG] [ores.database.service.tenant_context] Creating context with tenant: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.614915 [DEBUG] [ores.database.service.tenant_context] Looking up tenant name by ID: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.614919 [DEBUG] [ores.database.service.tenant_context] Looking up tenant name by ID. SQL: SELECT ores_iam_tenant_name_by_id_fn($1::uuid) with 1 parameters
+2026-10-16 18:34:43.625589 [DEBUG] [ores.database.service.tenant_context] Set tenant context to: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.627703 [DEBUG] [ores.database.service.tenant_context] Looking up tenant name by ID. Total: 1
+2026-10-16 18:34:43.627813 [DEBUG] [ores.database.service.tenant_context] Resolved tenant ID '67af68e2-48b6-4cb5-8c1b-c21013ac6699' to name: ores_reporting_core_tests_20261016_183443_3_2223
+2026-10-16 18:34:43.627824 [DEBUG] [ores.database.service.tenant_context] Using tenant ID directly: 67af68e2-48b6-4cb5-8c1b-c21013ac6699 [ores_reporting_core_tests_20261016_183443_3_2223]
+2026-10-16 18:34:43.629077 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.629380 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party= visible_parties=0 actor= service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.629393 [INFO] [ores.database.service.tenant_context] Tenant context set to: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.629400 [INFO] [ores.testing.database_helper] Successfully set tenant context
+2026-10-16 18:34:43.629562 [DEBUG] [ores.refdata.repository.party_repository] Reading latest parties.
+2026-10-16 18:34:43.629652 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.629766 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party= visible_parties=0 actor= service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.632578 [DEBUG] [ores.refdata.repository.party_repository] Reading latest parties. Total: 1
+2026-10-16 18:34:43.632607 [DEBUG] [ores.refdata.repository.party_mapper] Mapping db entities. Total: 1
+2026-10-16 18:34:43.632659 [DEBUG] [ores.refdata.repository.party_mapper] Mapped db entities.
+2026-10-16 18:34:43.632671 [DEBUG] [ores.refdata.repository.party_repository] Reading latest party. id: 01a145c7-c9ad-7373-86a9-5f95cbb89add
+2026-10-16 18:34:43.632685 [DEBUG] [ores.refdata.repository.party_repository] Reading latest party by id..
+2026-10-16 18:34:43.632745 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.632850 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party= visible_parties=0 actor= service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.633546 [DEBUG] [ores.refdata.repository.party_repository] Reading latest party by id.. Total: 0
+2026-10-16 18:34:43.633559 [DEBUG] [ores.refdata.repository.party_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.633563 [DEBUG] [ores.refdata.repository.party_mapper] Mapped db entities.
+2026-10-16 18:34:43.633569 [DEBUG] [ores.refdata.repository.party_repository] Writing party. id: 01a145c7-c9ad-7373-86a9-5f95cbb89add
+2026-10-16 18:34:43.633583 [DEBUG] [ores.refdata.repository.party_repository] Writing party to database..
+2026-10-16 18:34:43.633659 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.633765 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party= visible_parties=0 actor= service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.645285 [DEBUG] [ores.refdata.repository.party_repository] Finished Writing party to database..
+2026-10-16 18:34:43.645484 [DEBUG] [ores.reporting.repository.report_instance_kind_repository] Reading latest report instance kinds.
+2026-10-16 18:34:43.645629 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.645803 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=ffffffff-ffff-ffff-ffff-ffffffffffff party= visible_parties=0 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.646897 [DEBUG] [ores.reporting.repository.report_instance_kind_repository] Reading latest report instance kinds. Total: 2
+2026-10-16 18:34:43.646913 [DEBUG] [ores.reporting.repository.report_instance_kind_mapper] Mapping db entities. Total: 2
+2026-10-16 18:34:43.646938 [DEBUG] [ores.reporting.repository.report_instance_kind_mapper] Mapped db entities.
+2026-10-16 18:34:43.646974 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Reading latest report trigger event. id: 01a145c7-c9bd-7dd2-849c-d4db6ac883c5
+2026-10-16 18:34:43.646989 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Reading latest report trigger event by id..
+2026-10-16 18:34:43.647104 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.647229 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.647951 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Reading latest report trigger event by id.. Total: 0
+2026-10-16 18:34:43.647968 [DEBUG] [ores.reporting.repository.report_trigger_event_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.647973 [DEBUG] [ores.reporting.repository.report_trigger_event_mapper] Mapped db entities.
+2026-10-16 18:34:43.647978 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Writing report trigger event. id: 01a145c7-c9bd-7dd2-849c-d4db6ac883c5
+2026-10-16 18:34:43.647984 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Reading latest report trigger event. id: 01a145c7-c9bd-7dd2-849c-d4db6ac883c5
+2026-10-16 18:34:43.647995 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Reading latest report trigger event by id..
+2026-10-16 18:34:43.648074 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.648207 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.648601 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Reading latest report trigger event by id.. Total: 0
+2026-10-16 18:34:43.648616 [DEBUG] [ores.reporting.repository.report_trigger_event_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.648621 [DEBUG] [ores.reporting.repository.report_trigger_event_mapper] Mapped db entities.
+2026-10-16 18:34:43.648648 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Writing report trigger event to database..
+2026-10-16 18:34:43.648726 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.648858 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.652052 [DEBUG] [ores.reporting.repository.report_trigger_event_repository] Finished Writing report trigger event to database..
+2026-10-16 18:34:43.652088 [DEBUG] [ores.reporting.repository.report_instance_repository] Reading latest report instance. id: 01a145c7-c9bd-7dd2-849c-d4db6ac883c5
+2026-10-16 18:34:43.652103 [DEBUG] [ores.reporting.repository.report_instance_repository] Reading latest report instance by id..
+2026-10-16 18:34:43.652663 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.652796 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.653795 [DEBUG] [ores.reporting.repository.report_instance_repository] Reading latest report instance by id.. Total: 0
+2026-10-16 18:34:43.653815 [DEBUG] [ores.reporting.repository.report_instance_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.653820 [DEBUG] [ores.reporting.repository.report_instance_mapper] Mapped db entities.
+2026-10-16 18:34:43.653826 [DEBUG] [ores.reporting.repository.report_instance_repository] Writing report instance. id: 01a145c7-c9bd-7dd2-849c-d4db6ac883c5
+2026-10-16 18:34:43.653838 [DEBUG] [ores.reporting.repository.report_instance_repository] Writing report instance to database..
+2026-10-16 18:34:43.653941 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.654138 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.658125 [DEBUG] [ores.reporting.repository.report_instance_repository] Finished Writing report instance to database..
+2026-10-16 18:34:43.658276 [DEBUG] [ores.reporting.service.report_error_service] Saving 4 report errors
+2026-10-16 18:34:43.658294 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error. id: 12dc543d-217f-40f0-99b4-203b2affe747
+2026-10-16 18:34:43.658301 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id..
+2026-10-16 18:34:43.658479 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.658625 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.659558 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id.. Total: 0
+2026-10-16 18:34:43.659577 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.659582 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapped db entities.
+2026-10-16 18:34:43.659588 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error. id: 91b60ae7-8363-4bbd-83ca-1f892ab08244
+2026-10-16 18:34:43.659594 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id..
+2026-10-16 18:34:43.659657 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.659763 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.660263 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id.. Total: 0
+2026-10-16 18:34:43.660277 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.660282 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapped db entities.
+2026-10-16 18:34:43.660288 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error. id: 89d5df74-96f4-43d0-bd18-2ab81876f5a8
+2026-10-16 18:34:43.660294 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id..
+2026-10-16 18:34:43.660389 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.660523 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.661051 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id.. Total: 0
+2026-10-16 18:34:43.661066 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.661071 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapped db entities.
+2026-10-16 18:34:43.661077 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error. id: 44e835b4-bb83-41f9-b2ae-5c16715cba86
+2026-10-16 18:34:43.661083 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id..
+2026-10-16 18:34:43.661150 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.661259 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.661668 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report error by id.. Total: 0
+2026-10-16 18:34:43.661682 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapping db entities. Total: 0
+2026-10-16 18:34:43.661687 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapped db entities.
+2026-10-16 18:34:43.661694 [DEBUG] [ores.reporting.repository.report_error_repository] Writing report errors. Count: 4
+2026-10-16 18:34:43.661703 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapping domain entities. Total: 4
+2026-10-16 18:34:43.661716 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapped domain entities.
+2026-10-16 18:34:43.661728 [DEBUG] [ores.reporting.repository.report_error_repository] Writing report errors to database..
+2026-10-16 18:34:43.661789 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.661899 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.670361 [DEBUG] [ores.reporting.repository.report_error_repository] Finished Writing report errors to database..
+2026-10-16 18:34:43.670416 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report errors. report_instance_id: 01a145c7-c9bd-7dd2-849c-d4db6ac883c5 offset: 0 limit: 100
+2026-10-16 18:34:43.670431 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report errors by report_instance_id..
+2026-10-16 18:34:43.670534 [DEBUG] [ores.utility.database.postgres] WARNING:  there is no transaction in progress
+2026-10-16 18:34:43.670657 [DEBUG] [ores.database.domain.tenant_aware_pool] Set session context | tenant=67af68e2-48b6-4cb5-8c1b-c21013ac6699 party=01a145c7-c9ad-7373-86a9-5f95cbb89add visible_parties=1 actor=ores_bright_faraday_test_dml_user service=ores_bright_faraday_test_dml_user
+2026-10-16 18:34:43.671315 [DEBUG] [ores.reporting.repository.report_error_repository] Reading latest report errors by report_instance_id.. Total: 4
+2026-10-16 18:34:43.671336 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapping db entities. Total: 4
+2026-10-16 18:34:43.671380 [DEBUG] [ores.reporting.repository.report_error_mapper] Mapped db entities.
+2026-10-16 18:34:43.671645 [DEBUG] [catch2] Section ended: a run that failed its analytics carries one error row per trade it could not build (assertions: 12)
+2026-10-16 18:34:43.671670 [INFO] [catch2] Test case ended: a run that failed its analytics carries one error row per trade it could not build - PASSED
+2026-10-16 18:34:43.671674 [INFO] [catch2]   Assertions: 12 passed, 0 failed, 12 total

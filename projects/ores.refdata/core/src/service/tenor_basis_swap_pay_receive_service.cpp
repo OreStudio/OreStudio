@@ -90,7 +90,7 @@ tenor_basis_swap_pay_receive_read_one(repository::tenor_basis_swap_pay_receive_r
 messaging::tenor_basis_swap_pay_receive_key
 tenor_basis_swap_pay_receive_key_from(const domain::tenor_basis_swap_pay_receive& v) {
     messaging::tenor_basis_swap_pay_receive_key key;
-    key.id = v.id;
+    key.id = v.identity.id;
     return key;
 }
 
@@ -104,17 +104,17 @@ tenor_basis_swap_pay_receive_key_from(const domain::tenor_basis_swap_pay_receive
 domain::tenor_basis_swap_pay_receive
 tenor_basis_swap_pay_receive_to_domain(const messaging::tenor_basis_swap_pay_receive_write& write) {
     domain::tenor_basis_swap_pay_receive v;
-    v.id = write.id;
-    v.convention_id = write.convention_id;
-    v.pay_index = write.pay_index;
-    v.pay_frequency = write.pay_frequency;
-    v.receive_index = write.receive_index;
-    v.receive_frequency = write.receive_frequency;
-    v.spread_on_rec = write.spread_on_rec;
-    v.include_spread = write.include_spread;
-    v.sub_periods_coupon_type = write.sub_periods_coupon_type;
-    v.pay_is_averaged = write.pay_is_averaged;
-    v.rec_is_averaged = write.rec_is_averaged;
+    v.identity.id = write.id;
+    v.identity.convention_id = write.convention_id;
+    v.pay_leg.pay_index = write.pay_index;
+    v.pay_leg.pay_frequency = write.pay_frequency;
+    v.rec_leg.receive_index = write.receive_index;
+    v.rec_leg.receive_frequency = write.receive_frequency;
+    v.coupon.spread_on_rec = write.spread_on_rec;
+    v.coupon.include_spread = write.include_spread;
+    v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
+    v.pay_leg.pay_is_averaged = write.pay_is_averaged;
+    v.rec_leg.rec_is_averaged = write.rec_is_averaged;
     return v;
 }
 
@@ -311,12 +311,13 @@ tenor_basis_swap_pay_receive_service::delete_tenor_basis_swap_pay_receive(
             // on the refusal path.
             const auto live =
                 tenor_basis_swap_pay_receive_read_one(repo_, ctx_, request.removal.key);
-            response.result = refuse(
-                outcome_code::version_conflict,
-                {.entity = "tenor_basis_swap_pay_receive",
-                 .field = "id",
-                 .expected = expected ? std::to_string(*expected) : std::string{},
-                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
+            response.result =
+                refuse(outcome_code::version_conflict,
+                       {.entity = "tenor_basis_swap_pay_receive",
+                        .field = "id",
+                        .expected = expected ? std::to_string(*expected) : std::string{},
+                        .current = live.empty() ? std::string{} :
+                                                  std::to_string(live.front().identity.version)});
             break;
         }
         case repository::tenor_basis_swap_pay_receive_repository::remove_status::unsupported:
@@ -418,7 +419,7 @@ ores::utility::domain::result tenor_basis_swap_pay_receive_service::prepare_chan
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
+                static_cast<std::uint32_t>(current.front().identity.version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "tenor_basis_swap_pay_receive",
@@ -426,7 +427,7 @@ ores::utility::domain::result tenor_basis_swap_pay_receive_service::prepare_chan
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().version)});
+                               .current = std::to_string(current.front().identity.version)});
             }
             break;
         case precondition_kind::any:
@@ -435,12 +436,20 @@ ores::utility::domain::result tenor_basis_swap_pay_receive_service::prepare_chan
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
-    stamp(out,
+    // The audit reaches the row through whichever member carries it, so a
+    // grouped entity is stamped member by member; stamping it whole would
+    // find no audit column and leave the row without one.
+    stamp(out.identity,
           ctx_,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.change_commentary = intent.commentary;
+    stamp(out.audit,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.audit.change_commentary = intent.commentary;
     return result;
 }
 
@@ -529,26 +538,29 @@ tenor_basis_swap_pay_receive_service::get_tenor_basis_swap_pay_receives(
 
 void tenor_basis_swap_pay_receive_service::save_tenor_basis_swap_pay_receive(
     const domain::tenor_basis_swap_pay_receive& v) {
-    if (v.id.is_nil())
+    if (v.identity.id.is_nil())
         throw std::invalid_argument("Tenor Basis Swap Pay Receive id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor basis swap pay receive. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor basis swap pay receive. "
+                               << "id: " << v.identity.id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor basis swap pay receive. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor basis swap pay receive. " << "id: " << v.identity.id;
 }
 
 void tenor_basis_swap_pay_receive_service::save_tenor_basis_swap_pay_receives(
     const std::vector<domain::tenor_basis_swap_pay_receive>& tenor_basis_swap_pay_receives) {
     for (const auto& e : tenor_basis_swap_pay_receives) {
-        if (e.id.is_nil())
+        if (e.identity.id.is_nil())
             throw std::invalid_argument("Tenor Basis Swap Pay Receive id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << tenor_basis_swap_pay_receives.size()
                                << " tenor basis swap pay receives";
     auto ts = tenor_basis_swap_pay_receives;
     for (auto& e : ts) {
-        stamp(e, ctx_);
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
     }
     repo_.write(ctx_, ts);
 }

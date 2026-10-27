@@ -1,0 +1,170 @@
+On feature/give-at-least-once-its-structure: check-run generator output before the rebase
+HAS_UNTRACKED
+diff --git a/doc/recipes/shell/trade_generation_configs/trade_generation_config.org b/doc/recipes/shell/trade_generation_configs/trade_generation_config.org
+index 8eeb199d97..bd420195a5 100644
+--- a/doc/recipes/shell/trade_generation_configs/trade_generation_config.org
++++ b/doc/recipes/shell/trade_generation_configs/trade_generation_config.org
+@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
+ The command is shaped like this:
+ 
+ #+begin_example
+-trade_generation_configs add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reason> <commentary>
++trade_generation_configs add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary>
+ #+end_example
+ 
+ It is addressed at =synthetic.v1.trade_generation_configs.put=.
+ 
+ #+name: trade_generation_configs-add
+ #+begin_src ores-shell :tangle trade_generation_configs-add.ores :exports none
+-trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false system.new_record generated_script
++trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+ #+end_src
+ 
+ ** =set=
+@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
+ The command is shaped like this:
+ 
+ #+begin_example
+-trade_generation_configs set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reason> <commentary> [--version <n>]
++trade_generation_configs set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary> [--version <n>]
+ #+end_example
+ 
+ It is addressed at =synthetic.v1.trade_generation_configs.put=.
+ 
+ #+name: trade_generation_configs-set
+ #+begin_src ores-shell :tangle trade_generation_configs-set.ores :exports none
+-trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false system.new_record generated_script
++trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+ #+end_src
+ 
+ ** =put-many=
+@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
+ The command is shaped like this:
+ 
+ #+begin_example
+-trade_generation_configs put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reason> <commentary>
++trade_generation_configs put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary>
+ #+end_example
+ 
+ It is addressed at =synthetic.v1.trade_generation_configs.put_many=.
+ 
+ #+name: trade_generation_configs-put-many
+ #+begin_src ores-shell :tangle trade_generation_configs-put-many.ores :exports none
+-trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false system.new_record generated_script
++trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+ #+end_src
+ 
+ ** =delete=
+diff --git a/projects/ores.codegen/library/templates/cpp_nats_integration_test.cpp.mustache b/projects/ores.codegen/library/templates/cpp_nats_integration_test.cpp.mustache
+index 69022d96c2..80dfc642fe 100644
+--- a/projects/ores.codegen/library/templates/cpp_nats_integration_test.cpp.mustache
++++ b/projects/ores.codegen/library/templates/cpp_nats_integration_test.cpp.mustache
+@@ -283,9 +283,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
+     // the insert trigger's existence check rejects a synthetic key that
+     // matches no active row, so the parent must be written first.
+     auto {{column}}_parent = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
+-{{#parent_has_audit_group}}
+     {{column}}_parent.{{{parent_audit_prefix}}}change_reason_code = "system.test";
+-{{/parent_has_audit_group}}
+ {{#parent_supplies_party}}
+     // The {{entity_singular}} derives its own party from this
+     // {{parent_entity_singular}}, so the {{parent_entity_singular}} carries the
+@@ -348,9 +346,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
+ {{#parent_required_fks}}
+ {{^use_system_tenant}}
+     auto {{var}} = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
+-{{#parent_has_audit_group}}
+     {{var}}.{{{audit_prefix}}}change_reason_code = "system.test";
+-{{/parent_has_audit_group}}
+ {{/use_system_tenant}}
+ {{/parent_required_fks}}
+ {{#parent_required_fks}}
+diff --git a/projects/ores.reporting/core/tests/report_error_eventing_integration_tests.cpp b/projects/ores.reporting/core/tests/report_error_eventing_integration_tests.cpp
+index 12feee6eae..c22a74f4aa 100644
+--- a/projects/ores.reporting/core/tests/report_error_eventing_integration_tests.cpp
++++ b/projects/ores.reporting/core/tests/report_error_eventing_integration_tests.cpp
+@@ -156,8 +156,10 @@ TEST_CASE("write_report_error_publishes_an_event", tags) {
+     // matches no active row, so the parent must be written first.
+     auto report_instance_id_parent =
+         ores::reporting::generators::generate_synthetic_report_instance(ctx);
++    report_instance_id_parent.change_reason_code = "system.test";
+     auto report_instance_id_parent_report_trigger_event_parent =
+         ores::reporting::generators::generate_synthetic_report_trigger_event(ctx);
++    report_instance_id_parent_report_trigger_event_parent.change_reason_code = "system.test";
+     // report_instance_kind is system-tenant reference data: reference a
+     // seeded catalogue row instead of creating one, as the direct-parent
+     // system-tenant branch does.
+diff --git a/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-add.ores b/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-add.ores
+index 6e619b69f8..bc6c607bc5 100644
+--- a/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-add.ores
++++ b/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-add.ores
+@@ -3,4 +3,4 @@
+ # GENERATED from doc/recipes/shell/trade_generation_configs/trade_generation_config.org — do not edit by hand.
+ # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+ #
+-trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false system.new_record generated_script
++trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+diff --git a/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-put-many.ores b/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-put-many.ores
+index 78e7af04a8..a4c80e746a 100644
+--- a/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-put-many.ores
++++ b/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-put-many.ores
+@@ -3,4 +3,4 @@
+ # GENERATED from doc/recipes/shell/trade_generation_configs/trade_generation_config.org — do not edit by hand.
+ # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+ #
+-trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false system.new_record generated_script
++trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+diff --git a/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-set.ores b/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-set.ores
+index 992d46464f..09bb19cddb 100644
+--- a/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-set.ores
++++ b/projects/ores.shell/scripts/library/trade_generation_configs/trade_generation_configs-set.ores
+@@ -3,4 +3,4 @@
+ # GENERATED from doc/recipes/shell/trade_generation_configs/trade_generation_config.org — do not edit by hand.
+ # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+ #
+-trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false system.new_record generated_script
++trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+diff --git a/projects/ores.web/packages/wire-protocol/src/generated/synthetic/domain/trade_generation_config.ts b/projects/ores.web/packages/wire-protocol/src/generated/synthetic/domain/trade_generation_config.ts
+index f9751b0abb..ca829c2d41 100644
+--- a/projects/ores.web/packages/wire-protocol/src/generated/synthetic/domain/trade_generation_config.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/synthetic/domain/trade_generation_config.ts
+@@ -45,6 +45,7 @@ export interface TradeGenerationConfig {
+     as_of_date: string;
+     seed: number;
+     enabled: boolean;
++    reference_curve_id: string;
+     modified_by: string;
+     performed_by: string;
+     change_reason_code: string;
+diff --git a/projects/ores.web/packages/wire-protocol/src/generated/synthetic/protocol/trade_generation_config_protocol.ts b/projects/ores.web/packages/wire-protocol/src/generated/synthetic/protocol/trade_generation_config_protocol.ts
+index 57bbed2618..fbee536e1f 100644
+--- a/projects/ores.web/packages/wire-protocol/src/generated/synthetic/protocol/trade_generation_config_protocol.ts
++++ b/projects/ores.web/packages/wire-protocol/src/generated/synthetic/protocol/trade_generation_config_protocol.ts
+@@ -44,6 +44,7 @@ export interface TradeGenerationConfigWrite {
+     as_of_date: string;
+     seed: number;
+     enabled: boolean;
++    reference_curve_id: string;
+ }
+ 
+ export interface TradeGenerationConfigChange {
+diff --git a/projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp b/projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp
+index b5205e1a22..cd87113f28 100644
+--- a/projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp
++++ b/projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp
+@@ -129,14 +129,7 @@ struct workflow_instance final {
+     std::optional<std::chrono::system_clock::time_point> completed_at;
+ 
+     /**
+-     * @brief Timestamp of the most recent thing that happened to the run.
+-     *
+-     * Every transition of the run moves it, and so does the work between two of
+-     * them: a start that dispatches its first steps, a step command a recovery
+-     * re-dispatches, and the rollback of a failed run. A reader watching it for
+-     * silence is what tells a live run from an abandoned one -- nothing else
+-     * does, because a run left in progress by a fleet that never came back
+-     * looks exactly like one that is working.
++     * @brief Timestamp of the most recent step-completed event processed.
+      */
+     std::optional<std::chrono::system_clock::time_point> last_event_at;
+ 

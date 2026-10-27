@@ -173,8 +173,8 @@ TEST_CASE("a_payload_from_a_family_no_element_carries_is_refused", "[ore][conven
 TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap",
           "[ore][conventions][package]") {
     ores::refdata::domain::convention c;
-    c.kind_code = "SWAP";
-    c.name = "not a tenor basis swap";
+    c.identity.kind_code = "SWAP";
+    c.payload.name = "not a tenor basis swap";
 
     conventions_package package;
     package.bundle.rows.push_back({"convention", 0, rfl::json::write(c)});

@@ -1,0 +1,35 @@
+<ORE>
+  <Setup>
+    <Parameter name="asofDate">2026-10-15</Parameter>
+    <Parameter name="inputPath">Input</Parameter>
+    <Parameter name="outputPath">Output</Parameter>
+    <Parameter name="logFile">log.txt</Parameter>
+    <Parameter name="observationModel">Disable</Parameter>
+    <Parameter name="baseCurrency">GBP</Parameter>
+    <Parameter name="continueOnError">false</Parameter>
+    <Parameter name="implyTodaysFixings">N</Parameter>
+    <Parameter name="logMask">31</Parameter>
+    <Parameter name="nThreads">1</Parameter>
+    <Parameter name="curveConfigFile">curveconfig.xml</Parameter>
+    <Parameter name="pricingEnginesFile">pricingengine.xml</Parameter>
+    <Parameter name="conventionsFile">conventions.xml</Parameter>
+    <Parameter name="marketConfigFile">todaysmarket.xml</Parameter>
+    <Parameter name="fixingDataFile">fixings.txt</Parameter>
+    <Parameter name="marketDataFile">market.txt</Parameter>
+    <Parameter name="portfolioFile">portfolio.xml</Parameter>
+  </Setup>
+  <Markets>
+    <Parameter name="pricing">default</Parameter>
+  </Markets>
+  <Analytics>
+    <Analytic type="npv">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="baseCurrency">GBP</Parameter>
+      <Parameter name="outputFileName">npv.csv</Parameter>
+    </Analytic>
+    <Analytic type="saccr">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="simmVersion">2.1</Parameter>
+    </Analytic>
+  </Analytics>
+</ORE>

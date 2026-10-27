@@ -311,13 +311,19 @@ table must carry the same payload.
 :entity_plural_words:   tenor basis swap pay receives
 :END:
 
-** Domain includes
+** Domain groups
 
-#+begin_src cpp :name includes
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#+end_src
+The struct carries five concerns at once, so it is its member list rather
+than one flat block: the identity of the part, the paying leg, the receiving
+leg, the coupon treatment, and the change audit that =ores.dq= owns.
+
+| member   | field_group                                      |
+|----------+--------------------------------------------------|
+| identity | ores.refdata.tenor_basis_swap_part_identity      |
+| pay_leg  | ores.refdata.tenor_basis_swap_pay_leg            |
+| rec_leg  | ores.refdata.tenor_basis_swap_receive_leg        |
+| coupon   | ores.refdata.tenor_basis_swap_pay_receive_coupon |
+| audit    | ores.dq.audit_record                             |
 
 ** Entity includes
 

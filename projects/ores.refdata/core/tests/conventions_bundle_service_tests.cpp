@@ -72,16 +72,16 @@ TEST_CASE("a bundle resolves the identity the party already holds",
     const std::string name = "GBP-LIBOR-3M-6M-BASIS-CONVENTIONS";
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = name;
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = name;
+    central.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_pay_receive part;
-    part.convention_id = central.id;
-    part.pay_index = std::string("GBP-LIBOR-6M");
-    part.receive_index = std::string("GBP-LIBOR-3M");
-    part.change_reason_code = "system.test";
+    part.identity.convention_id = central.identity.id;
+    part.pay_leg.pay_index = std::string("GBP-LIBOR-6M");
+    part.rec_leg.receive_index = std::string("GBP-LIBOR-3M");
+    part.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle first;
     first.rows.push_back(
@@ -94,7 +94,7 @@ TEST_CASE("a bundle resolves the identity the party already holds",
     ores::refdata::repository::convention_repository conventions;
     const auto after_first = conventions.read_latest(ctx);
     REQUIRE(after_first.size() == 1);
-    const auto resolved_id = after_first.front().id;
+    const auto resolved_id = after_first.front().identity.id;
     const auto resolved_part = [&] {
         ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
         const auto held = parts.read_latest(ctx);
@@ -106,10 +106,10 @@ TEST_CASE("a bundle resolves the identity the party already holds",
     // own. The identity resolves to the row the party holds, so the bundle
     // replaces it rather than adding a second convention or a second part.
     auto second_central = central;
-    second_central.id = uuid();
+    second_central.identity.id = uuid();
     auto second_part = part;
-    second_part.id = uuid();
-    second_part.convention_id = second_central.id;
+    second_part.identity.id = uuid();
+    second_part.identity.convention_id = second_central.identity.id;
 
     ores::refdata::service::conventions_bundle second;
     second.rows.push_back(
@@ -121,17 +121,17 @@ TEST_CASE("a bundle resolves the identity the party already holds",
 
     const auto held = conventions.read_latest(ctx);
     REQUIRE(held.size() == 1);
-    CHECK(held.front().id == resolved_id);
+    CHECK(held.front().identity.id == resolved_id);
     // A second bundle that resolved to the first row replaced it, rather than
     // adding another version of a row it minted itself.
-    CHECK(held.front().version > after_first.front().version);
+    CHECK(held.front().identity.version > after_first.front().identity.version);
 
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
     const auto held_parts = parts.read_latest(ctx);
     REQUIRE(held_parts.size() == 1);
-    CHECK(held_parts.front().id == resolved_part.id);
-    CHECK(held_parts.front().convention_id == resolved_id);
-    CHECK(held_parts.front().version > resolved_part.version);
+    CHECK(held_parts.front().identity.id == resolved_part.identity.id);
+    CHECK(held_parts.front().identity.convention_id == resolved_id);
+    CHECK(held_parts.front().identity.version > resolved_part.identity.version);
 }
 
 TEST_CASE("a bundle that changes leg form closes the other form",
@@ -142,15 +142,15 @@ TEST_CASE("a bundle that changes leg form closes the other form",
 
     const std::string name = "EUR-3M-6M-BASIS";
     ores::refdata::domain::convention central;
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = name;
-    central.change_reason_code = "system.test";
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = name;
+    central.audit.change_reason_code = "system.test";
 
     // The first bundle carries the paying and receiving form.
     ores::refdata::domain::tenor_basis_swap_pay_receive pay_receive;
-    pay_receive.pay_index = std::string("EUR-LIBOR-6M");
-    pay_receive.receive_index = std::string("EUR-LIBOR-3M");
-    pay_receive.change_reason_code = "system.test";
+    pay_receive.pay_leg.pay_index = std::string("EUR-LIBOR-6M");
+    pay_receive.rec_leg.receive_index = std::string("EUR-LIBOR-3M");
+    pay_receive.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle first;
     first.rows.push_back(
@@ -163,9 +163,9 @@ TEST_CASE("a bundle that changes leg form closes the other form",
     // The second carries the long and short form for the same convention. A
     // convention fills one form, so the first form is closed.
     ores::refdata::domain::tenor_basis_swap_long_short long_short;
-    long_short.long_index = std::string("EUR-LIBOR-6M");
-    long_short.short_index = std::string("EUR-LIBOR-3M");
-    long_short.change_reason_code = "system.test";
+    long_short.long_leg.long_index = std::string("EUR-LIBOR-6M");
+    long_short.short_leg.short_index = std::string("EUR-LIBOR-3M");
+    long_short.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle second;
     second.rows.push_back(
@@ -184,7 +184,7 @@ TEST_CASE("a bundle that changes leg form closes the other form",
     ores::refdata::repository::convention_repository conventions;
     const auto held_conventions = conventions.read_latest(ctx);
     REQUIRE(held_conventions.size() == 1);
-    CHECK(held_long_shorts.front().convention_id == held_conventions.front().id);
+    CHECK(held_long_shorts.front().identity.convention_id == held_conventions.front().identity.id);
 }
 
 TEST_CASE("applying a party's convention again replaces it",
@@ -266,16 +266,16 @@ TEST_CASE("a bundle whose part comes first still writes the central row first",
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "JPY-3M-6M-BASIS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "JPY-3M-6M-BASIS";
+    central.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_long_short long_short;
-    long_short.convention_id = central.id;
-    long_short.long_index = std::string("JPY-LIBOR-6M");
-    long_short.short_index = std::string("JPY-LIBOR-3M");
-    long_short.change_reason_code = "system.test";
+    long_short.identity.convention_id = central.identity.id;
+    long_short.long_leg.long_index = std::string("JPY-LIBOR-6M");
+    long_short.short_leg.short_index = std::string("JPY-LIBOR-3M");
+    long_short.audit.change_reason_code = "system.test";
 
     // The bundle carries the part before the central row. The writer owns the
     // order for this family, so the foreign key holds anyway.
@@ -294,7 +294,7 @@ TEST_CASE("a bundle whose part comes first still writes the central row first",
     ores::refdata::repository::tenor_basis_swap_long_short_repository parts;
     const auto held_parts = parts.read_latest(ctx);
     REQUIRE(held_parts.size() == 1);
-    CHECK(held_parts.front().convention_id == held.front().id);
+    CHECK(held_parts.front().identity.convention_id == held.front().identity.id);
 }
 
 TEST_CASE("a bundle reads back the rows an apply wrote",
@@ -304,16 +304,16 @@ TEST_CASE("a bundle reads back the rows an apply wrote",
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "CHF-3M-6M-BASIS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "CHF-3M-6M-BASIS";
+    central.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_pay_receive part;
-    part.convention_id = central.id;
-    part.pay_index = std::string("CHF-LIBOR-6M");
-    part.receive_index = std::string("CHF-LIBOR-3M");
-    part.change_reason_code = "system.test";
+    part.identity.convention_id = central.identity.id;
+    part.pay_leg.pay_index = std::string("CHF-LIBOR-6M");
+    part.rec_leg.receive_index = std::string("CHF-LIBOR-3M");
+    part.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
@@ -345,13 +345,13 @@ TEST_CASE("a bundle reads back the rows an apply wrote",
     const auto read_central =
         rfl::json::read<ores::refdata::domain::convention>(central_row.payload);
     REQUIRE(read_central.has_value());
-    CHECK(read_central->name == "CHF-3M-6M-BASIS");
+    CHECK(read_central->payload.name == "CHF-3M-6M-BASIS");
 
     const auto read_part =
         rfl::json::read<ores::refdata::domain::tenor_basis_swap_pay_receive>(part_row.payload);
     REQUIRE(read_part.has_value());
-    CHECK(read_part->convention_id == read_central->id);
-    CHECK(read_part->pay_index == std::optional<std::string>("CHF-LIBOR-6M"));
+    CHECK(read_part->identity.convention_id == read_central->identity.id);
+    CHECK(read_part->pay_leg.pay_index == std::optional<std::string>("CHF-LIBOR-6M"));
 }
 
 TEST_CASE("the shared convention family reads back only the kind the bundle covers",
@@ -361,16 +361,16 @@ TEST_CASE("the shared convention family reads back only the kind the bundle cove
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention covered;
-    covered.id = uuid();
-    covered.kind_code = "TENOR_BASIS_SWAP";
-    covered.name = "NOK-3M-6M-BASIS";
-    covered.change_reason_code = "system.test";
+    covered.identity.id = uuid();
+    covered.identity.kind_code = "TENOR_BASIS_SWAP";
+    covered.payload.name = "NOK-3M-6M-BASIS";
+    covered.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::convention other;
-    other.id = uuid();
-    other.kind_code = "DEPOSIT";
-    other.name = "NOK-DEPOSIT";
-    other.change_reason_code = "system.test";
+    other.identity.id = uuid();
+    other.identity.kind_code = "DEPOSIT";
+    other.payload.name = "NOK-DEPOSIT";
+    other.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
@@ -380,7 +380,7 @@ TEST_CASE("the shared convention family reads back only the kind the bundle cove
     // The shared table carries every kind, so a row of another kind is written
     // straight to it and must not appear in the bundle's read.
     ores::refdata::repository::convention_repository conventions;
-    ores::service::messaging::stamp(other, ctx);
+    ores::service::messaging::stamp_document(other, ctx);
     conventions.write(ctx, other);
 
     const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
@@ -390,7 +390,7 @@ TEST_CASE("the shared convention family reads back only the kind the bundle cove
             continue;
         const auto decoded = rfl::json::read<ores::refdata::domain::convention>(row.payload);
         REQUIRE(decoded.has_value());
-        central_names.push_back(decoded->name);
+        central_names.push_back(decoded->payload.name);
     }
     // One central row, and it is the kind the bundle covers.
     REQUIRE(central_names.size() == 1);
@@ -405,16 +405,16 @@ TEST_CASE("a read bundle applies into another party unchanged",
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "SEK-3M-6M-BASIS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "SEK-3M-6M-BASIS";
+    central.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_pay_receive part;
-    part.convention_id = central.id;
-    part.pay_index = std::string("SEK-LIBOR-6M");
-    part.receive_index = std::string("SEK-LIBOR-3M");
-    part.change_reason_code = "system.test";
+    part.identity.convention_id = central.identity.id;
+    part.pay_leg.pay_index = std::string("SEK-LIBOR-6M");
+    part.rec_leg.receive_index = std::string("SEK-LIBOR-3M");
+    part.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
@@ -451,14 +451,14 @@ TEST_CASE("a read bundle applies into another party unchanged",
     const auto copied_central =
         rfl::json::read<ores::refdata::domain::convention>(copied_rows.front().payload);
     REQUIRE(copied_central.has_value());
-    CHECK(copied_central->name == "SEK-3M-6M-BASIS");
+    CHECK(copied_central->payload.name == "SEK-3M-6M-BASIS");
 
     const auto copied_part = rfl::json::read<ores::refdata::domain::tenor_basis_swap_pay_receive>(
         copied_rows.back().payload);
     REQUIRE(copied_part.has_value());
-    CHECK(copied_part->pay_index == std::optional<std::string>("SEK-LIBOR-6M"));
-    CHECK(copied_part->receive_index == std::optional<std::string>("SEK-LIBOR-3M"));
-    CHECK(copied_part->convention_id == copied_central->id);
+    CHECK(copied_part->pay_leg.pay_index == std::optional<std::string>("SEK-LIBOR-6M"));
+    CHECK(copied_part->rec_leg.receive_index == std::optional<std::string>("SEK-LIBOR-3M"));
+    CHECK(copied_part->identity.convention_id == copied_central->identity.id);
 }
 
 TEST_CASE("a bundle read carries a row for every family an apply wrote",
@@ -468,16 +468,16 @@ TEST_CASE("a bundle read carries a row for every family an apply wrote",
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "AUD-3M-6M-BASIS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "AUD-3M-6M-BASIS";
+    central.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_pay_receive part;
-    part.convention_id = central.id;
-    part.pay_index = std::string("AUD-LIBOR-6M");
-    part.receive_index = std::string("AUD-LIBOR-3M");
-    part.change_reason_code = "system.test";
+    part.identity.convention_id = central.identity.id;
+    part.pay_leg.pay_index = std::string("AUD-LIBOR-6M");
+    part.rec_leg.receive_index = std::string("AUD-LIBOR-3M");
+    part.audit.change_reason_code = "system.test";
 
     // One family of each write mode, so each way a family reaches its table is
     // read back with a row in it rather than with nothing.
@@ -527,38 +527,38 @@ TEST_CASE("the bundle read drops a part whose central row it does not carry",
     // read keeps neither, because the part belongs to a convention this bundle
     // does not carry.
     ores::refdata::domain::convention other;
-    other.id = uuid();
-    other.kind_code = "DEPOSIT";
-    other.name = "AUD-DEPOSIT";
-    other.change_reason_code = "system.test";
-    ores::service::messaging::stamp(other, ctx);
+    other.identity.id = uuid();
+    other.identity.kind_code = "DEPOSIT";
+    other.payload.name = "AUD-DEPOSIT";
+    other.audit.change_reason_code = "system.test";
+    ores::service::messaging::stamp_document(other, ctx);
     ores::refdata::repository::convention_repository conventions;
     conventions.write(ctx, other);
 
     ores::refdata::domain::tenor_basis_swap_pay_receive orphan;
-    orphan.id = uuid();
-    orphan.convention_id = other.id;
-    orphan.pay_index = std::string("AUD-LIBOR-6M");
-    orphan.receive_index = std::string("AUD-LIBOR-3M");
-    orphan.change_reason_code = "system.test";
-    ores::service::messaging::stamp(orphan, ctx);
+    orphan.identity.id = uuid();
+    orphan.identity.convention_id = other.identity.id;
+    orphan.pay_leg.pay_index = std::string("AUD-LIBOR-6M");
+    orphan.rec_leg.receive_index = std::string("AUD-LIBOR-3M");
+    orphan.audit.change_reason_code = "system.test";
+    ores::service::messaging::stamp_document(orphan, ctx);
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
     parts.write(ctx, orphan);
 
     // A convention of the kind the bundle covers, with a part that names it.
     // That part survives, and the orphan does not.
     ores::refdata::domain::convention covered;
-    covered.id = uuid();
-    covered.kind_code = "TENOR_BASIS_SWAP";
-    covered.name = "AUD-3M-6M-BASIS";
-    covered.change_reason_code = "system.test";
+    covered.identity.id = uuid();
+    covered.identity.kind_code = "TENOR_BASIS_SWAP";
+    covered.payload.name = "AUD-3M-6M-BASIS";
+    covered.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_pay_receive attached;
-    attached.id = uuid();
-    attached.convention_id = covered.id;
-    attached.pay_index = std::string("AUD-LIBOR-6M");
-    attached.receive_index = std::string("AUD-LIBOR-3M");
-    attached.change_reason_code = "system.test";
+    attached.identity.id = uuid();
+    attached.identity.convention_id = covered.identity.id;
+    attached.pay_leg.pay_index = std::string("AUD-LIBOR-6M");
+    attached.rec_leg.receive_index = std::string("AUD-LIBOR-3M");
+    attached.audit.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(

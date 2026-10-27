@@ -8,12 +8,12 @@
 #+filetags: :refdata:codegen:dod:fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/remodel-the-tenor-basis-swap-convention-onto-field-groups
-#+pr:
+#+pr: 3908
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
-#+updated: 2026-10-24
-#+environment:
+#+updated: 2026-10-27
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ tenor_basis_swap_convention is generated from field-group models: its identity a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-14                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
 
 * Acceptance
 
@@ -40,11 +40,170 @@ tenor_basis_swap_convention is generated from field-group models: its identity a
 - The SQL columns, the database entity and the conventions mapper are unchanged in shape, and the refdata and ORE convention suites pass.
 - The generated JSON becomes nested; the document protocol and every consumer are regenerated in the same PR, and no external consumer exists.
 
+** The acceptance, read against the atomised model
+
+Two bullets were written before the atomisation and name shapes that no longer
+exist, so they are read as follows until the owner rewrites them:
+
+- The "market-data annex" is =oresmd_uri=, which the atomisation left on the
+  central row. It is grouped with the name into =payload= rather than given a
+  group of its own: two members do not make a concern worth a struct.
+- "Exactly one of the two leg forms is filled" is now structural. The forms
+  are separate tables, and a convention carries one row in one of them.
+
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Follow the ORE parameter contract the engine settings and conventions already share
+
+The work is one application of a standard that landed on main on 2026-10-25
+and 2026-10-26, not a modelling idea of its own.
+
+- Every value ORE reads from a document is a /leaf/, and every leaf has one
+  documentation entry in the ORE parameter contract
+  (=ores.reporting.ore_parameter=: schema, XPath, label, help, description,
+  default, format, value domain). A screen restates none of it.
+- The element type a leaf belongs to is data, not code.
+  =ores.reporting.engine_settings_group= with
+  =engine_settings_group_setting= is the engine settings' shape, and
+  =ores.refdata.convention_kind= with =convention_kind_term= is the
+  conventions' shape: the owner decided on 2026-10-25 that a convention kind
+  is modelled as the engine run settings model their groups.
+- A term names its leaf by schema and XPath. The row for the tenor basis swap
+  is already seeded: seventeen =TENOR_BASIS_SWAP= terms spanning
+  =convention.name=, =tenor_basis_swap_pay_receive.*= and
+  =tenor_basis_swap_long_short.*=, each with its position, in
+  =refdata_convention_kind_terms_populate.sql=.
+- Screens draw a leaf by =doc/knowledge/ui/ore_element_and_leaf_screen_standard.org=
+  (rules =OL-*=), applied first to conventions.
+
+** What this means for the field groups
+
+- The field groups are a *reflection-width* change, not a schema change. The
+  table names, the column names and the seventeen term rows stay as they are,
+  so the contract keeps matching the tree. Grouping must preserve every column
+  name and its entity.
+- The groups attach inside the entities main already has: the central
+  =convention= row (identity and audit), =tenor_basis_swap_pay_receive= and
+  =tenor_basis_swap_long_short= (each form's own members). Nothing is
+  restated in a codegen model that the contract already carries, so a group
+  contributes columns only: no label, help, default or value set.
+- The precedent in the tree is the bond family's field groups
+  (=ores.trading.bond_*=_field_group.org=), which is what the codegen support
+  this branch keeps was written for.
+
+** Order of work
+
+1. Group the central row's identity and audit, then each part's members, and
+   regenerate.
+2. Prove the contract still matches: every =convention_kind_term= row's
+   (entity, column) must still name a column that exists.
+3. Run the refdata and ORE convention suites, and the drift check.
+4. Leave the screen work to the story that owns it
+   ([[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]]),
+   which already draws a convention's terms with the shared leaf parts.
+
+* Notes
+
+** 2026-10-26: the family service refuses a grouped member
+
+The grouping was attempted on =tenor_basis_swap_pay_receive= first, with four
+field groups -- identity, legs, coupon, and the =ores.dq.audit_record= tail --
+and the refdata regeneration refused it before writing any C++:
+
+#+begin_example
+ValueError: tenor_basis_swap_convention: the part 'pay_receive'
+'tenor_basis_swap_pay_receive' is a grouped entity; the composite family
+service writes flat domain objects
+#+end_example
+
+The refusal is deliberate and sits in =_family_entity_view()= in
+=projects/ores.codegen/src/codegen/core.py=. The family service addresses a
+row by one key column, builds flat domain objects from the write records and
+reads a part by its parent, so a nested domain object is outside the shape it
+can generate. It refuses the central row as well as a part, so no member of a
+convention family can be grouped without teaching the family service to build
+and read grouped domain objects.
+
+Measured on main at =dd4af2b9ca=, from the generated headers:
+
+| Struct                            | Members |
+|-----------------------------------+---------|
+| =convention=                      |      13 |
+| =tenor_basis_swap_pay_receive=    |      20 |
+| =tenor_basis_swap_long_short=     |      18 |
+
+The atomisation of 2026-10-15 already cut the one 24-member literal into
+three, and made each leg form a table of its own. What remains is the width of
+each part, and the family protocol that carries the central row and a part in
+one message.
+
+Three ways forward, and the choice is the owner's:
+
+1. Teach the family service to build and read grouped domain objects, then
+   group the parts. It is the shape the acceptance asks for. It touches the
+   family service template, and the family protocol's JSON becomes nested,
+   which is a contract change -- the decomposition section of
+   =data_oriented_design.org= warns that grouping is not a wire decision.
+2. Leave the family flat and treat the atomisation as the decomposition the
+   page asks for: the per-literal width is now 20 at its widest, and the
+   question left is the accumulation path, which is the sibling task "Split the
+   configuration document protocol by document family".
+3. Group only where a member is not part of a family, which does not apply to
+   this convention.
+
+** 2026-10-26: the family service now writes grouped members
+
+The three ways forward recorded above were put to the owner, who chose the
+first: teach the family service to build and read grouped domain objects.
+That is done, and the remodel is applied.
+
+- The family view resolves a member's domain groups before it is built and
+  gives every column the prefix of the member that carries it, so the key,
+  the party, the version and the commentary are named by their path. The
+  generator, the repository mapper, the history field mapper and the table
+  display were the templates that still wrote a flat path.
+- The central row is grouped into identity, payload and the
+  =ores.dq.audit_record= tail. Each part is grouped into the identity it
+  shares with its sibling, one group per leg, its coupon treatment and the
+  same tail. Every group holds at most five members: identity five, the
+  paying and receiving legs three each, the long leg two, the short leg
+  three, the coupon groups three and two, the audit tail five.
+- The tables, the columns and the seventeen =TENOR_BASIS_SWAP= term rows are
+  unchanged. The write records and the wire shape stayed flat: only the
+  domain struct nests, so the contract still names a real column.
+- =ores.dq.api= is now a public dependency of =ores.refdata.api=, declared in
+  the component's own =component_overview.org= rather than in the generated
+  CMakeLists, because the generated headers include the audit record.
+
+Measured on this branch:
+
+| What | Result | Command |
+|------+--------+---------|
+| Members per group | 2 to 5 | read from the generated headers |
+| Groups per struct | 3 for the central row, 5 for each part | read from the generated headers |
+| Codegen suite | 1624 passed | =pytest projects/ores.codegen/tests= |
+| Drift sweep | clean | =check_component_drift.py --sweep --dry-run= |
+| SQL | unchanged | =git status projects/ores.sql= |
+| Refdata core suite | 466 cases, 5595 assertions, all passed | =ores.refdata.core.tests= |
+| ORE core suite | 394 cases, 475486 assertions, all passed | =ores.ore.core.tests= |
+| Build | refdata api, core, service, tests and ores.ore core and tests | =compass build ...= |
+
+The database suites ran after two machine repairs: PostgreSQL could not load
+=timescaledb-2.30.1= (2.30.2 was installed), fixed with
+=alter extension timescaledb update=, and this environment's schema was
+rebuilt at the branch tip because it was 68 hours out of date.
+
+** 2026-10-26: the stamp walks into a grouped row's members
+
+A grouped row carries =tenant_id= and =party_id= inside its identity member,
+and the write refuses a row whose party is the nil uuid. =stamp_document()=
+only stamped a row that had =modified_by= on the struct itself, so it walked
+past a grouped row's identity and the party stayed nil: the first database
+run of the convention bundle tests failed with "Invalid party_id".
+
+Stamp every member of an aggregate as well as walking into it. =stamp()= is
+guarded field by field, so it does nothing for a member that carries none of
+the security fields.
 
 * Measurements
 
@@ -62,6 +221,32 @@ task and name that file in the Command column.
 
 * Notes
 
+** Rebased onto main 2026-10-24, and the premise of the acceptance moved
+
+The branch is rebased onto main at =e622e7fd0b= and carries the codegen
+support the remodel needs. The remodel itself is not re-applied, because
+the tree it was written against no longer exists.
+
+- =761c859fef= (2026-10-15) atomised the convention into a central row and
+  the two part tables =tenor_basis_swap_pay_receive= and
+  =tenor_basis_swap_long_short=, and dropped
+  =refdata_tenor_basis_swap_conventions=. The "24 flat members in one
+  table" this task describes are therefore gone.
+- The acceptance says "its SQL schema and database entity are unchanged".
+  Against main that is no longer true, so re-applying the branch as it
+  stood would revert the atomisation.
+- What survives and is kept: the codegen support (cross-component field
+  group resolution, and stamping only the members that carry a stampable
+  field), with its tests. Codegen suite: 1590 passed.
+- Parked with the pre-rebase branch: the field-group models, the
+  regenerated domain and JSON, the conventions mapper, the
+  =ores.dq.api= public dependency and the aggregate =stamp_document= walk.
+
+To resume: re-scope this task against the atomised model, following the
+standard the price engine settings establish, and say whether the field
+groups attach to the central row, to the parts, or to both.
+
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,7 +262,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3908][#3908]] | [refdata] Remodel the tenor basis swap convention onto field groups |
 
 * Review
 
@@ -86,3 +271,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The convention family is grouped onto field groups and the generated family
+service writes and reads a grouped member.
+
+- The central row is identity, payload and the =ores.dq.audit_record= tail;
+  each part is a shared identity, one group per leg, its coupon treatment and
+  the same tail. Nine field-group models, every group two to five members.
+- The family view resolves a member's domain groups and names each column
+  through the group that carries it, which the composite family service had
+  refused before. Four templates follow the same path.
+- A grouped row is stamped through its members; without that the party stayed
+  nil and the database refused every write.
+- The tables, the columns, the write records and the wire shape are unchanged.
+  The seventeen seeded =TENOR_BASIS_SWAP= kind terms still name a real column.
+- =ores.dq.api= is a public dependency of =ores.refdata.api=, declared in the
+  component's own overview because the generated CMakeLists overwrites a hand
+  edit.
+
+Evidence at =2a7b6a303a=: codegen 1624 passed; drift sweep clean; refdata core
+466 cases and 5595 assertions; ORE core 394 cases and 475486 assertions; SQL
+unchanged. The Windows MSVC build has not been run.

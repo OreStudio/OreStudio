@@ -51,11 +51,22 @@ constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
 constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
+// A grouped row keeps its audit columns in the group that carries them; a flat
+// row is its own. The two differ only in the path, so the fields are named once.
+template <typename Row>
+auto& audit_of(Row& r) {
+    if constexpr (requires { r.audit; })
+        return r.audit;
+    else
+        return r;
+}
+
 template <typename T>
 void set_audit(T& r) {
-    r.modified_by = std::string(audit_modified_by);
-    r.change_reason_code = std::string(audit_reason_code);
-    r.change_commentary = std::string(audit_commentary);
+    auto& audit = audit_of(r);
+    audit.modified_by = std::string(audit_modified_by);
+    audit.change_reason_code = std::string(audit_reason_code);
+    audit.change_commentary = std::string(audit_commentary);
 }
 
 // Assigns to a member that is a value or an optional, only when the document

@@ -25,12 +25,13 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_HPP
 #define ORES_REFDATA_API_DOMAIN_CONVENTION_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.refdata.api/domain/convention_identity.hpp"
+#include "ores.refdata.api/domain/convention_payload.hpp"
 #include <chrono>
-#include <optional>
-#include <string>
+#include <span>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::refdata::domain {
 
@@ -52,94 +53,9 @@ namespace ores::refdata::domain {
  * this row by its key. The central row carries no kind-specific column.
  */
 struct convention final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief The surrogate key of this convention. It is the key a part reaches this row by, and it
-     * is the key the family addresses the convention by.
-     */
-    boost::uuids::uuid id;
-
-    /**
-     * @brief The party that owns this convention. Set from the session that writes the document,
-     * and enforced by row level security, so a party sees only its own configuration.
-     *
-     * It is part of the convention's identity, so two parties may each hold a convention of one
-     * kind under one name.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief The kind of convention this row is, a code from the convention_kind lookup. It selects
-the family whose parts the row carries.
-     *
-     * It is part of the convention's identity.
-
-It is filterable, because a screen that reads one family's conventions lists the central rows by
-this column; the parts are aligned with the page the list returns, so the screen zips the family
-read onto it rather than joining two result sets in the client.
-     */
-    std::string kind_code;
-
-    /**
-     * @brief The name the convention carries in the source document, its <Id> element. Kept so a
-     * round trip through the ORE XML is lossless.
-     *
-     * It is part of the convention's identity: with the party and the kind it makes the convention
-     * the one a caller means.
-     */
-    std::string name;
-
-    /**
-     * @brief The oresmd URI of the market data this convention needs, when the kind names one
-     * index. The column holds the address as a value, so refdata depends on the oresmd format as a
-     * contract only and never on the marketdata library or its tables.
-     *
-     * Nullable, because no convention is required to state its address yet.
-     */
-    std::optional<std::string> oresmd_uri;
-
-    /**
-     * @brief Username of the person who last modified this convention.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     *
-     * The transaction-time window's start, which the store sets from its own
-     * clock. It travels with the audit members because it is only ever read
-     * with them: the history builder takes a version type that carries an
-     * actor *and* this timestamp, so an entity without the actor has no use
-     * for the timestamp either.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-
+    convention_identity identity;
+    convention_payload payload;
+    ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
      *
@@ -152,6 +68,17 @@ read onto it rather than joining two result sets in the client.
      */
     friend bool operator==(const convention&, const convention&) = default;
 };
+
+/**
+ * @brief Names the members of convention that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<convention>) {
+    return {};
+}
 
 /**
  * @brief Dispatch-key identifier for convention, e.g. for the

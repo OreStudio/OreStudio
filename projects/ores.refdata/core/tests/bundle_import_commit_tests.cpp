@@ -78,16 +78,16 @@ TEST_CASE("a part staged before its central row still commits into one row each"
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "GBP-LIBOR-3M-6M-BASIS-CONVENTIONS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "GBP-LIBOR-3M-6M-BASIS-CONVENTIONS";
+    central.audit.change_reason_code = "system.test";
 
     ores::refdata::domain::tenor_basis_swap_pay_receive part;
-    part.convention_id = central.id;
-    part.pay_index = std::string("GBP-LIBOR-6M");
-    part.receive_index = std::string("GBP-LIBOR-3M");
-    part.change_reason_code = "system.test";
+    part.identity.convention_id = central.identity.id;
+    part.pay_leg.pay_index = std::string("GBP-LIBOR-6M");
+    part.rec_leg.receive_index = std::string("GBP-LIBOR-3M");
+    part.audit.change_reason_code = "system.test";
 
     // The part is staged first on purpose. The apply writes the central family
     // before the families that name it, so stage order must not decide this.
@@ -107,7 +107,7 @@ TEST_CASE("a part staged before its central row still commits into one row each"
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
     const auto held_parts = parts.read_latest(ctx);
     REQUIRE(held_parts.size() == 1);
-    CHECK(held_parts.front().convention_id == held.front().id);
+    CHECK(held_parts.front().identity.convention_id == held.front().identity.id);
 }
 
 TEST_CASE("a commit that cannot decode a family leaves the import staging",
@@ -117,10 +117,10 @@ TEST_CASE("a commit that cannot decode a family leaves the import staging",
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "EUR-3M-6M-BASIS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "EUR-3M-6M-BASIS";
+    central.audit.change_reason_code = "system.test";
 
     // An array cannot decode into a deposit convention, so the commit reaches a
     // family it cannot apply and rolls the whole import back.
@@ -146,10 +146,10 @@ TEST_CASE("a second commit of the same import applies nothing", "[bundle_import]
     boost::uuids::random_generator uuid;
 
     ores::refdata::domain::convention central;
-    central.id = uuid();
-    central.kind_code = "TENOR_BASIS_SWAP";
-    central.name = "USD-3M-6M-BASIS";
-    central.change_reason_code = "system.test";
+    central.identity.id = uuid();
+    central.identity.kind_code = "TENOR_BASIS_SWAP";
+    central.payload.name = "USD-3M-6M-BASIS";
+    central.audit.change_reason_code = "system.test";
 
     const auto import_id = begin_import(ctx, uuid());
     stage(ctx, import_id, "convention", 0, rfl::json::write(central));
@@ -165,5 +165,5 @@ TEST_CASE("a second commit of the same import applies nothing", "[bundle_import]
 
     const auto after_second = conventions.read_latest(ctx);
     REQUIRE(after_second.size() == 1);
-    CHECK(after_second.front().version == after_first.front().version);
+    CHECK(after_second.front().identity.version == after_first.front().identity.version);
 }

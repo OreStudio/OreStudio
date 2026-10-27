@@ -50,13 +50,13 @@ std::string convert_to_table(const std::vector<tenor_basis_swap_long_short>& v) 
           << "Include Spread" << "Sub Periods Type" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ls : v) {
-        table << tenor_basis_swap_long_short_opt_str(ls.long_index)
-              << tenor_basis_swap_long_short_opt_str(ls.short_index)
-              << tenor_basis_swap_long_short_opt_str(ls.long_pay_tenor)
-              << tenor_basis_swap_long_short_opt_str(ls.short_pay_tenor)
-              << tenor_basis_swap_long_short_opt_str(ls.include_spread)
-              << tenor_basis_swap_long_short_opt_str(ls.sub_periods_coupon_type) << ls.modified_by
-              << ls.version << fort::endr;
+        table << tenor_basis_swap_long_short_opt_str(ls.long_leg.long_index)
+              << tenor_basis_swap_long_short_opt_str(ls.short_leg.short_index)
+              << tenor_basis_swap_long_short_opt_str(ls.long_leg.long_pay_tenor)
+              << tenor_basis_swap_long_short_opt_str(ls.short_leg.short_pay_tenor)
+              << tenor_basis_swap_long_short_opt_str(ls.coupon.include_spread)
+              << tenor_basis_swap_long_short_opt_str(ls.coupon.sub_periods_coupon_type)
+              << ls.audit.modified_by << ls.identity.version << fort::endr;
     }
     return table.to_string();
 }

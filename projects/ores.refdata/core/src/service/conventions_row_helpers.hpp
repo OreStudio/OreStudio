@@ -26,6 +26,25 @@
 
 namespace ores::refdata::service {
 
+// A row reaches its key through the member that carries it: a grouped row
+// keeps it in its identity member, a flat row is its own. The two cases differ
+// only in the path, so the helpers below name the key once.
+template <typename Row>
+auto& row_identity(Row& r) {
+    if constexpr (requires { r.identity; })
+        return r.identity;
+    else
+        return r;
+}
+
+template <typename Row>
+const auto& row_identity(const Row& r) {
+    if constexpr (requires { r.identity; })
+        return r.identity;
+    else
+        return r;
+}
+
 // One definition of how a convention family reaches its table. The generated
 // dispatch and the document service both write rows through these, so the two
 // paths cannot disagree about the claim.
@@ -37,10 +56,10 @@ void replace_party_rows(const ores::database::context& ctx,
         return;
     std::map<std::pair<std::string, boost::uuids::uuid>, int> held;
     for (const auto& r : repo.read_latest(ctx))
-        held[{r.id, r.party_id}] = r.version;
+        held[{row_identity(r).id, row_identity(r).party_id}] = row_identity(r).version;
     for (auto& r : rows) {
-        const auto it = held.find({r.id, r.party_id});
-        r.version = it == held.end() ? 0 : it->second;
+        const auto it = held.find({row_identity(r).id, row_identity(r).party_id});
+        row_identity(r).version = it == held.end() ? 0 : it->second;
     }
     repo.write(ctx, rows);
 }
@@ -57,10 +76,10 @@ void replace_rows_by_id(const ores::database::context& ctx,
         return;
     std::map<std::string, int> held;
     for (const auto& r : repo.read_latest(ctx))
-        held[boost::uuids::to_string(r.id)] = r.version;
+        held[boost::uuids::to_string(row_identity(r).id)] = row_identity(r).version;
     for (auto& r : rows) {
-        const auto it = held.find(boost::uuids::to_string(r.id));
-        r.version = it == held.end() ? 0 : it->second;
+        const auto it = held.find(boost::uuids::to_string(row_identity(r).id));
+        row_identity(r).version = it == held.end() ? 0 : it->second;
     }
     repo.write(ctx, rows);
 }

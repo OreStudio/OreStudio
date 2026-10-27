@@ -398,21 +398,21 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][con
         for (std::size_t i = 0; i < swaps.size(); ++i) {
             const auto& in = swaps[i];
             const auto& central = centrals[i];
-            CHECK(central.kind_code == "TENOR_BASIS_SWAP");
-            CHECK(central.name == in.text("Id").value_or(std::string()));
+            CHECK(central.identity.kind_code == "TENOR_BASIS_SWAP");
+            CHECK(central.payload.name == in.text("Id").value_or(std::string()));
 
             const auto pay_receive = std::ranges::find_if(
-                pay_receives, [&](const auto& p) { return p.convention_id == central.id; });
+                pay_receives, [&](const auto& p) { return p.identity.convention_id == central.identity.id; });
             const auto long_short = std::ranges::find_if(
-                long_shorts, [&](const auto& l) { return l.convention_id == central.id; });
+                long_shorts, [&](const auto& l) { return l.identity.convention_id == central.identity.id; });
             if (in.has("PayIndex"))
-                CHECK(pay_receive->pay_index == in.text("PayIndex"));
+                CHECK(pay_receive->pay_leg.pay_index == in.text("PayIndex"));
             if (in.has("ReceiveIndex"))
-                CHECK(pay_receive->receive_index == in.text("ReceiveIndex"));
+                CHECK(pay_receive->rec_leg.receive_index == in.text("ReceiveIndex"));
             if (in.has("LongIndex"))
-                CHECK(long_short->long_index == in.text("LongIndex"));
+                CHECK(long_short->long_leg.long_index == in.text("LongIndex"));
             if (in.has("ShortIndex"))
-                CHECK(long_short->short_index == in.text("ShortIndex"));
+                CHECK(long_short->short_leg.short_index == in.text("ShortIndex"));
         }
 
         const std::string exported = conventions_mapper::write(join_conventions(mapped));

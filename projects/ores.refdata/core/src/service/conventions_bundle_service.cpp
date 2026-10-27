@@ -94,7 +94,10 @@ std::vector<Row> decode_family(const conventions_bundle& bundle,
             throw std::runtime_error("Bundle payload for family \"" + std::string(family) +
                                      "\" does not decode.");
         auto value = std::move(*decoded);
-        ores::service::messaging::stamp(value, ctx);
+        // A grouped row keeps its security fields in a member, so the stamp
+        // has to walk into it; stamp_document does, and does nothing extra
+        // to a flat row.
+        ores::service::messaging::stamp_document(value, ctx);
         rows.push_back(std::move(value));
     }
     return rows;
@@ -120,20 +123,23 @@ conventions_bundle conventions_bundle_service::read() {
             // covers one of them.
             if (family == central_family) {
                 const auto decoded = rfl::json::read<domain::convention>(payload);
-                if (!decoded || decoded->kind_code != tenor_basis_swap_kind)
+                if (!decoded ||
+                    decoded->identity.kind_code != tenor_basis_swap_kind)
                     continue;
-                covered_central.insert(boost::uuids::to_string(decoded->id));
+                covered_central.insert(boost::uuids::to_string(decoded->identity.id));
             }
             if (family == pay_receive_family) {
                 const auto decoded = rfl::json::read<domain::tenor_basis_swap_pay_receive>(payload);
                 if (!decoded ||
-                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    !covered_central.contains(
+                        boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             if (family == long_short_family) {
                 const auto decoded = rfl::json::read<domain::tenor_basis_swap_long_short>(payload);
                 if (!decoded ||
-                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    !covered_central.contains(
+                        boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             bundle.rows.push_back(conventions_bundle_row{

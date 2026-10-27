@@ -103,29 +103,29 @@ std::map<std::string, std::string> tenor_basis_swap_facts(const conventions_pack
         if (row.family != "convention")
             continue;
         const auto c = decode<refdata::domain::convention>(row);
-        if (c.kind_code != conventions_family::tenor_basis_swap_kind)
+        if (c.identity.kind_code != conventions_family::tenor_basis_swap_kind)
             continue;
         refdata::messaging::tenor_basis_swap_convention_item item;
         auto central = c;
-        central.id = boost::uuids::uuid{};
+        central.identity.id = boost::uuids::uuid{};
         item.convention = central;
         for (const auto& part : pay_receives) {
-            if (part.convention_id != c.id)
+            if (part.identity.convention_id != c.identity.id)
                 continue;
             auto copy = part;
-            copy.id = boost::uuids::uuid{};
-            copy.convention_id = boost::uuids::uuid{};
+            copy.identity.id = boost::uuids::uuid{};
+            copy.identity.convention_id = boost::uuids::uuid{};
             item.pay_receive.push_back(copy);
         }
         for (const auto& part : long_shorts) {
-            if (part.convention_id != c.id)
+            if (part.identity.convention_id != c.identity.id)
                 continue;
             auto copy = part;
-            copy.id = boost::uuids::uuid{};
-            copy.convention_id = boost::uuids::uuid{};
+            copy.identity.id = boost::uuids::uuid{};
+            copy.identity.convention_id = boost::uuids::uuid{};
             item.long_short.push_back(copy);
         }
-        out[c.kind_code + "\x1f" + c.name] = rfl::json::write(item);
+        out[c.identity.kind_code + "\x1f" + c.payload.name] = rfl::json::write(item);
     }
     return out;
 }

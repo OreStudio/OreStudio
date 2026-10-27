@@ -71,7 +71,7 @@ read_convention(repository::convention_repository& repo,
 messaging::tenor_basis_swap_convention_key
 tenor_basis_swap_convention_key_from(const domain::convention& v) {
     messaging::tenor_basis_swap_convention_key key;
-    key.id = v.id;
+    key.id = v.identity.id;
     return key;
 }
 
@@ -84,10 +84,10 @@ tenor_basis_swap_convention_key_from(const domain::convention& v) {
  */
 domain::convention tenor_basis_swap_convention_to_domain(const messaging::convention_write& write) {
     domain::convention v;
-    v.id = write.id;
-    v.kind_code = write.kind_code;
-    v.name = write.name;
-    v.oresmd_uri = write.oresmd_uri;
+    v.identity.id = write.id;
+    v.identity.kind_code = write.kind_code;
+    v.payload.name = write.name;
+    v.payload.oresmd_uri = write.oresmd_uri;
     return v;
 }
 
@@ -99,7 +99,7 @@ read_pay_receive(repository::tenor_basis_swap_pay_receive_repository& repo,
                  const ores::database::context& ctx,
                  const domain::convention& central) {
     return repo.read_latest_by_convention_id(ctx,
-                                             boost::uuids::to_string(central.id),
+                                             boost::uuids::to_string(central.identity.id),
                                              0,
                                              std::numeric_limits<std::uint32_t>::max(),
                                              {},
@@ -112,17 +112,17 @@ read_pay_receive(repository::tenor_basis_swap_pay_receive_repository& repo,
 domain::tenor_basis_swap_pay_receive
 to_domain_pay_receive(const messaging::tenor_basis_swap_pay_receive_write& write) {
     domain::tenor_basis_swap_pay_receive v;
-    v.id = write.id;
-    v.convention_id = write.convention_id;
-    v.pay_index = write.pay_index;
-    v.pay_frequency = write.pay_frequency;
-    v.receive_index = write.receive_index;
-    v.receive_frequency = write.receive_frequency;
-    v.spread_on_rec = write.spread_on_rec;
-    v.include_spread = write.include_spread;
-    v.sub_periods_coupon_type = write.sub_periods_coupon_type;
-    v.pay_is_averaged = write.pay_is_averaged;
-    v.rec_is_averaged = write.rec_is_averaged;
+    v.identity.id = write.id;
+    v.identity.convention_id = write.convention_id;
+    v.pay_leg.pay_index = write.pay_index;
+    v.pay_leg.pay_frequency = write.pay_frequency;
+    v.rec_leg.receive_index = write.receive_index;
+    v.rec_leg.receive_frequency = write.receive_frequency;
+    v.coupon.spread_on_rec = write.spread_on_rec;
+    v.coupon.include_spread = write.include_spread;
+    v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
+    v.pay_leg.pay_is_averaged = write.pay_is_averaged;
+    v.rec_leg.rec_is_averaged = write.rec_is_averaged;
     return v;
 }
 
@@ -132,7 +132,7 @@ to_domain_pay_receive(const messaging::tenor_basis_swap_pay_receive_write& write
 messaging::tenor_basis_swap_pay_receive_key
 key_from_pay_receive(const domain::tenor_basis_swap_pay_receive& v) {
     messaging::tenor_basis_swap_pay_receive_key key;
-    key.id = v.id;
+    key.id = v.identity.id;
     return key;
 }
 
@@ -144,7 +144,7 @@ read_long_short(repository::tenor_basis_swap_long_short_repository& repo,
                 const ores::database::context& ctx,
                 const domain::convention& central) {
     return repo.read_latest_by_convention_id(ctx,
-                                             boost::uuids::to_string(central.id),
+                                             boost::uuids::to_string(central.identity.id),
                                              0,
                                              std::numeric_limits<std::uint32_t>::max(),
                                              {},
@@ -157,15 +157,15 @@ read_long_short(repository::tenor_basis_swap_long_short_repository& repo,
 domain::tenor_basis_swap_long_short
 to_domain_long_short(const messaging::tenor_basis_swap_long_short_write& write) {
     domain::tenor_basis_swap_long_short v;
-    v.id = write.id;
-    v.convention_id = write.convention_id;
-    v.long_index = write.long_index;
-    v.long_pay_tenor = write.long_pay_tenor;
-    v.short_index = write.short_index;
-    v.short_pay_tenor = write.short_pay_tenor;
-    v.spread_on_short = write.spread_on_short;
-    v.include_spread = write.include_spread;
-    v.sub_periods_coupon_type = write.sub_periods_coupon_type;
+    v.identity.id = write.id;
+    v.identity.convention_id = write.convention_id;
+    v.long_leg.long_index = write.long_index;
+    v.long_leg.long_pay_tenor = write.long_pay_tenor;
+    v.short_leg.short_index = write.short_index;
+    v.short_leg.short_pay_tenor = write.short_pay_tenor;
+    v.short_leg.spread_on_short = write.spread_on_short;
+    v.coupon.include_spread = write.include_spread;
+    v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
     return v;
 }
 
@@ -175,7 +175,7 @@ to_domain_long_short(const messaging::tenor_basis_swap_long_short_write& write) 
 messaging::tenor_basis_swap_long_short_key
 key_from_long_short(const domain::tenor_basis_swap_long_short& v) {
     messaging::tenor_basis_swap_long_short_key key;
-    key.id = v.id;
+    key.id = v.identity.id;
     return key;
 }
 
@@ -326,14 +326,14 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_conve
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
+                static_cast<std::uint32_t>(current.front().identity.version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "convention",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().version)});
+                               .current = std::to_string(current.front().identity.version)});
             }
             break;
         case precondition_kind::any:
@@ -347,7 +347,7 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_conve
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.change_commentary = intent.commentary;
+    out.audit.change_commentary = intent.commentary;
     return result;
 }
 
@@ -372,14 +372,14 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_pay_r
             if (current.empty())
                 return refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_pay_receive"});
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
+                static_cast<std::uint32_t>(current.front().identity.version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "tenor_basis_swap_pay_receive",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().version)});
+                               .current = std::to_string(current.front().identity.version)});
             }
             break;
         case precondition_kind::any:
@@ -390,7 +390,7 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_pay_r
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.change_commentary = intent.commentary;
+    out.audit.change_commentary = intent.commentary;
     return result;
 }
 
@@ -411,12 +411,12 @@ ores::utility::domain::result tenor_basis_swap_convention_service::reconcile_pay
         const auto result = prepare_pay_receive(change, intent, ctx, row);
         if (result.outcome != outcome::ok)
             return result;
-        row.convention_id = central.id;
+        row.identity.convention_id = central.identity.id;
         // A part that carries the owning party takes it from the central row,
         // which is the row the session stamped. The part table's own policy
         // reads that column, so it must agree with the central row even when
         // the session has no party of its own.
-        row.party_id = central.party_id;
+        row.identity.party_id = central.identity.party_id;
         wanted.push_back(std::move(row));
         claims.push_back(change.precondition);
     }
@@ -426,10 +426,10 @@ ores::utility::domain::result tenor_basis_swap_convention_service::reconcile_pay
     // own trigger, so the C++ never touches it.
     const auto live = read_pay_receive(pay_receive_repo_, ctx, central);
     for (const auto& row : live) {
-        const bool present =
-            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        const bool present = std::ranges::any_of(
+            wanted, [&](const auto& w) { return w.identity.id == row.identity.id; });
         if (!present)
-            pay_receive_repo_.remove(ctx, boost::uuids::to_string(row.id));
+            pay_receive_repo_.remove(ctx, boost::uuids::to_string(row.identity.id));
     }
     // One statement, so the requested set for this part lands together. The
     // store checks each row's claim inside it.
@@ -459,14 +459,14 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_long_
             if (current.empty())
                 return refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_long_short"});
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
+                static_cast<std::uint32_t>(current.front().identity.version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "tenor_basis_swap_long_short",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().version)});
+                               .current = std::to_string(current.front().identity.version)});
             }
             break;
         case precondition_kind::any:
@@ -477,7 +477,7 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_long_
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.change_commentary = intent.commentary;
+    out.audit.change_commentary = intent.commentary;
     return result;
 }
 
@@ -498,12 +498,12 @@ ores::utility::domain::result tenor_basis_swap_convention_service::reconcile_lon
         const auto result = prepare_long_short(change, intent, ctx, row);
         if (result.outcome != outcome::ok)
             return result;
-        row.convention_id = central.id;
+        row.identity.convention_id = central.identity.id;
         // A part that carries the owning party takes it from the central row,
         // which is the row the session stamped. The part table's own policy
         // reads that column, so it must agree with the central row even when
         // the session has no party of its own.
-        row.party_id = central.party_id;
+        row.identity.party_id = central.identity.party_id;
         wanted.push_back(std::move(row));
         claims.push_back(change.precondition);
     }
@@ -513,10 +513,10 @@ ores::utility::domain::result tenor_basis_swap_convention_service::reconcile_lon
     // own trigger, so the C++ never touches it.
     const auto live = read_long_short(long_short_repo_, ctx, central);
     for (const auto& row : live) {
-        const bool present =
-            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        const bool present = std::ranges::any_of(
+            wanted, [&](const auto& w) { return w.identity.id == row.identity.id; });
         if (!present)
-            long_short_repo_.remove(ctx, boost::uuids::to_string(row.id));
+            long_short_repo_.remove(ctx, boost::uuids::to_string(row.identity.id));
     }
     // One statement, so the requested set for this part lands together. The
     // store checks each row's claim inside it.

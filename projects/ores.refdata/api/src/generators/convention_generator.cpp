@@ -41,20 +41,20 @@ domain::convention generate_synthetic_convention(utility::generation::generation
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::convention r;
-    r.version = 0;
-    r.tenant_id =
+    r.identity.version = 0;
+    r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.id = ctx.generate_uuid();
+    r.identity.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.party_id = ctx.generate_uuid();
-    r.kind_code = std::string("TENOR_BASIS_SWAP");
-    r.name = std::string("EUR-3M-6M-BASIS") + "-" + std::to_string(idx);
-    r.oresmd_uri = std::nullopt;
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.identity.party_id = ctx.generate_uuid();
+    r.identity.kind_code = std::string("TENOR_BASIS_SWAP");
+    r.payload.name = std::string("EUR-3M-6M-BASIS") + "-" + std::to_string(idx);
+    r.payload.oresmd_uri = std::nullopt;
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

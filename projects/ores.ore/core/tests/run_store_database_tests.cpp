@@ -285,8 +285,8 @@ TEST_CASE("a run import installs the conventions the sample names", "[ore][store
     const auto central = conventions.read_latest(parties.a_context);
     CHECK(central.size() == 1);
     REQUIRE_FALSE(central.empty());
-    CHECK(central.front().kind_code == "TENOR_BASIS_SWAP");
-    CHECK(central.front().party_id == parties.a);
+    CHECK(central.front().identity.kind_code == "TENOR_BASIS_SWAP");
+    CHECK(central.front().identity.party_id == parties.a);
 
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository pay_receive;
     ores::refdata::repository::tenor_basis_swap_long_short_repository long_short;
@@ -296,10 +296,10 @@ TEST_CASE("a run import installs the conventions the sample names", "[ore][store
     // row, and that row names the central row the identity resolved to.
     CHECK(pay.size() + receive.size() == 1);
     if (!pay.empty())
-        CHECK(pay.front().convention_id == central.front().id);
+        CHECK(pay.front().identity.convention_id == central.front().identity.id);
     else {
         REQUIRE_FALSE(receive.empty());
-        CHECK(receive.front().convention_id == central.front().id);
+        CHECK(receive.front().identity.convention_id == central.front().identity.id);
     }
 
     ores::refdata::repository::deposit_convention_repository deposits;

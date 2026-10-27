@@ -22,6 +22,12 @@
  * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { TenorBasisSwapPartIdentity } from './tenor_basis_swap_part_identity.js';
+import type { TenorBasisSwapLongLeg } from './tenor_basis_swap_long_leg.js';
+import type { TenorBasisSwapShortLeg } from './tenor_basis_swap_short_leg.js';
+import type { TenorBasisSwapLongShortCoupon } from './tenor_basis_swap_long_short_coupon.js';
+import type { AuditRecord } from '../../dq/domain/audit_record.js';
+
 /**
  * The tenor basis swap long short wire shape.
  *
@@ -31,21 +37,9 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface TenorBasisSwapLongShort {
-    version: number;
-    tenant_id: string;
-    id: string;
-    convention_id: string;
-    party_id: string;
-    long_index: string | null;
-    long_pay_tenor: string | null;
-    short_index: string | null;
-    short_pay_tenor: string | null;
-    spread_on_short: boolean | null;
-    include_spread: boolean | null;
-    sub_periods_coupon_type: string | null;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+    identity: TenorBasisSwapPartIdentity;
+    long_leg: TenorBasisSwapLongLeg;
+    short_leg: TenorBasisSwapShortLeg;
+    coupon: TenorBasisSwapLongShortCoupon;
+    audit: AuditRecord;
 }

@@ -36,6 +36,56 @@ import systemd_generate
 from compass_db import check_schema_in_sync, load_env, validate_env_version
 
 
+PUBLISH_MIXED_FIX = "run: compass build"
+
+
+def publish_library_versions(lib_dir) -> dict:
+    """Map each versioned shared library link in lib_dir to its version.
+
+    A library is recorded under the version in the file its `.so.0` link
+    resolves to: `libores.iam.core.so.0 -> ...so.0.0.29` reads as
+    `"0.0.29"`.
+    """
+    versions = {}
+    for link in sorted(Path(lib_dir).glob("*.so.0")):
+        resolved = link.resolve().name
+        if resolved.count(".so.") != 1:
+            continue
+        versions[link.name] = resolved.split(".so.")[1]
+    return versions
+
+
+def _version_key(version):
+    return tuple(int(part) for part in version.split(".") if part.isdigit())
+
+
+def publish_verdict(versions: dict):
+    """(label, level) judging whether publish/lib holds one build.
+
+    A build stopped between two link steps leaves some libraries at an
+    older version than their peers. The units then load two builds' worth
+    of struct definitions at once, so a member read through the wrong
+    layout corrupts the heap; the resulting `free(): invalid pointer` in
+    an unrelated destructor reads like a code bug and is not one. Nothing
+    else in the toolchain notices, because every file individually is a
+    valid library.
+    """
+    if not versions:
+        return "no libraries found", "critical"
+
+    distinct = sorted(set(versions.values()), key=_version_key)
+    if len(distinct) == 1:
+        return distinct[0], "ok"
+
+    newest = distinct[-1]
+    behind = sorted(name for name, v in versions.items() if v != newest)
+    sample = ", ".join(name.removesuffix(".so.0") for name in behind[:3])
+    more = f" (+{len(behind) - 3} more)" if len(behind) > 3 else ""
+    return (f"MIXED {', '.join(distinct)} — {len(behind)} of "
+            f"{len(versions)} libraries are behind {newest}: {sample}{more}; "
+            f"{PUBLISH_MIXED_FIX}", "critical")
+
+
 class _Tee:
     """Minimal stdout/stderr-like object writing to several streams at once."""
 
@@ -746,6 +796,9 @@ def cmd_status(ctx, args):
                                      for s in SERVICE_STATES))
     if nats is not None:
         print(f"nats    : {nats}")
+    label, _ = publish_verdict(publish_library_versions(
+        ctx.build_dir / "publish/lib"))
+    print(f"publish : {label}")
     print("\nJournal: journalctl --user -u <service>-" + ctx.env_name
           + ".service   (or: journalctl --user -u 'ores*-" + ctx.env_name + "*')")
     return 0

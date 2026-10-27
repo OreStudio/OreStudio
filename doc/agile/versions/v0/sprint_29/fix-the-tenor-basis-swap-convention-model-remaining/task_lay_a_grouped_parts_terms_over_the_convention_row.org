@@ -8,7 +8,7 @@
 #+filetags: :fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/lay-a-grouped-parts-terms-over-the-convention-row
-#+pr:
+#+pr: 3919
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3919][#3919]] | [web] Lay a grouped part's terms over the convention row |
 
 * Review
 

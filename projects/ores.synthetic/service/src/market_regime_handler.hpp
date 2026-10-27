@@ -116,6 +116,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        // The market is the installation's: every system feed runs on it for every tenant, so
+        // only the system tenant sets it, as only the system tenant starts a system feed.
+        if (!feed_kind_registry::is_system_caller(*ctx)) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting pin_market_regime request: only the system tenant sets the market.";
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         const auto decoded =
             ores::nats::default_wire_codec()

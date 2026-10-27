@@ -30,6 +30,8 @@ export const PASSWORD = 'Secure-Password-123';
 export interface Person {
     readonly username: string;
     readonly role: 'administrator' | 'member';
+    /** Signs in to the system tenant, whose principals carry no tenant hostname. */
+    readonly system?: true;
 }
 
 /** The tenant administrator, who may read and write every reference data kind. */
@@ -38,6 +40,9 @@ export const TENANT_ADMIN: Person = { username: 'tenant_admin', role: 'administr
 /** A seeded member of the London office, who reads reference data and writes none. */
 export const ADRIAN_VANCE: Person = { username: 'adrian.vance', role: 'member' };
 
+/** The system administrator, who runs the installation's feeds and sets its market. */
+export const SUPER_ADMIN: Person = { username: 'super_admin', role: 'administrator', system: true };
+
 export function principal(person: Person): string {
-    return `${person.username}@${TENANT_HOSTNAME}`;
+    return person.system ? person.username : `${person.username}@${TENANT_HOSTNAME}`;
 }

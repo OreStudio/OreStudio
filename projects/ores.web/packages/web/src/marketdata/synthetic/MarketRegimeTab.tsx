@@ -32,6 +32,7 @@ import {
     type TraceFeed,
 } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
+import { useSession } from '../../session/SessionProvider.js';
 import { Button, Fact, Notice, Tag } from '../../ui/Primitives.js';
 import { assetClassColour } from '../assetClassColour.js';
 import {
@@ -93,6 +94,11 @@ export function MarketRegimeTab(): ReactNode {
         readonly at: number;
         readonly state: MarketState;
     } | null>(null);
+    const session = useSession();
+    // The market is the installation's, so only a system session sets it; a tenant reads it.
+    const mayPin =
+        session.state.status === 'authenticated' &&
+        session.state.session.mode === 'system-administration';
     const regime = useMarketRegimeQuery();
     const states = useStateTrace(regime.dataUpdatedAt, regime.data?.state);
     const trace = useMarketTrace();
@@ -127,6 +133,7 @@ export function MarketRegimeTab(): ReactNode {
             marked={marked}
             states={states}
             trace={trace.data}
+            mayPin={mayPin}
             onPin={(mode) => pin.mutate(mode)}
         />
     );
@@ -146,6 +153,7 @@ export function MarketRegimePanel({
     marked,
     states,
     trace,
+    mayPin = true,
     onPin,
 }: {
     readonly regime: MarketRegime;
@@ -159,6 +167,8 @@ export function MarketRegimePanel({
     readonly states: readonly StateSample[];
     /** The scheduler's own record, which the pace, the bands, the fit and the log are drawn from. */
     readonly trace?: MarketTrace | undefined;
+    /** Whether this session may set the market: the system tenant's, and no other. */
+    readonly mayPin?: boolean;
     readonly onPin: (mode: RegimeMode) => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -205,24 +215,28 @@ export function MarketRegimePanel({
 
             {error === null ? null : <Notice tone="error">{error}</Notice>}
 
-            <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs uppercase tracking-wide text-ink-faint">
-                    {t('marketdata.marketRegime.force')}
-                </span>
-                {REGIME_MODES.map((mode) => (
-                    <Button
-                        key={mode}
-                        variant={forced === mode ? 'primary' : 'secondary'}
-                        size="sm"
-                        aria-pressed={forced === mode}
-                        pending={pending === mode}
-                        disabled={pending !== undefined}
-                        onClick={() => onPin(mode)}
-                    >
-                        {t(`marketdata.marketRegime.set.${mode}`)}
-                    </Button>
-                ))}
-            </div>
+            {mayPin ? (
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs uppercase tracking-wide text-ink-faint">
+                        {t('marketdata.marketRegime.force')}
+                    </span>
+                    {REGIME_MODES.map((mode) => (
+                        <Button
+                            key={mode}
+                            variant={forced === mode ? 'primary' : 'secondary'}
+                            size="sm"
+                            aria-pressed={forced === mode}
+                            pending={pending === mode}
+                            disabled={pending !== undefined}
+                            onClick={() => onPin(mode)}
+                        >
+                            {t(`marketdata.marketRegime.set.${mode}`)}
+                        </Button>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-xs text-ink-faint">{t('marketdata.marketRegime.readOnly')}</p>
+            )}
 
             <FactorCharts
                 feeds={raster?.feeds ?? []}

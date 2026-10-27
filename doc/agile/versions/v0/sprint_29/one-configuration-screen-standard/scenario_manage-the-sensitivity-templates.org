@@ -32,7 +32,7 @@ These are yours to run before the tester opens the browser.
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Sensitivity templates, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | PENDING                                  |
+| State         | FAILED |
 
 * Steps
 
@@ -46,7 +46,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the list
 
@@ -60,7 +60,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Search on the server
 
@@ -72,7 +72,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read one key
 
@@ -86,7 +86,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the trade-level key
 
@@ -98,7 +98,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Create a key
 
@@ -113,7 +113,8 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | created but got; ; A request did not finish; ; The server refused the request (bad_request). (PUT /api/analytics/sensitivity-templates/SensiTrade, request 248f1191) |
 
 ** A key the tenant holds is refused
 
@@ -124,7 +125,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** The trade-level method names no class
 
@@ -136,7 +137,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Correct the key
 
@@ -150,7 +151,7 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Remove the key
 
@@ -162,14 +163,14 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |   |
+| Status        | FAILED |
+| Completed at  | 2026-10-27T19:04:10Z |
 | Branch        |   |
 | Commit        |   |
 | Worktree      |   |

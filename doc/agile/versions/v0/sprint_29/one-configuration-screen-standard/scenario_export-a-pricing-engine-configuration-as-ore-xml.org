@@ -32,7 +32,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Product pricing → XVA Overnight, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | PENDING                                  |
+| State         | PASSED |
 
 * Steps
 
@@ -46,7 +46,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open the configuration to export
 
@@ -58,7 +58,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read what the Export press will write
 
@@ -70,7 +70,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Save the file the server names
 
@@ -82,7 +82,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the file as ORE reads it
 
@@ -97,7 +97,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Get the same bytes from the shell
 
@@ -109,14 +109,14 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |   |
+| Status        | PASSED |
+| Completed at  | 2026-10-27T19:08:42Z |
 | Branch        |   |
 | Commit        |   |
 | Worktree      |   |

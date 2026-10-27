@@ -34,7 +34,7 @@ The session already did the following. Confirm the system is in this state; do n
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Product pricing (=/reporting/pricing-engines=) and one configuration, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | PENDING                                  |
+| State         | FAILED |
 
 * Steps
 
@@ -49,7 +49,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Filter the list by party
 
@@ -63,7 +63,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open a product pricing configuration
 
@@ -75,7 +75,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Check the five tabs in order
 
@@ -87,7 +87,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the details of the configuration
 
@@ -99,7 +99,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the product tree by asset class
 
@@ -114,7 +114,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the workbench for one product
 
@@ -128,7 +128,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read a parameter's documentation
 
@@ -141,7 +141,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Switch between Simple and Advanced
 
@@ -153,7 +153,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Change a product setting
 
@@ -168,7 +168,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Add a product with its model and engine
 
@@ -182,7 +182,8 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | Repository error: Executing INSERT failed: ERROR: duplicate key value violates unique constraint "pricing_model_configs_party_id_name_uniq_idx"; ; A request did not finish; ; Dismiss all; Repository error: Executing INSERT failed: ERROR: duplicate key value violates unique constraint "pricing_model_configs_party_id_name_uniq_idx" (PUT /api/reporting/pricing-engines/a591e980-de9b-365a-d8ec-74e3a6ef98fa, request 3aafa269); ; Dismiss; Repository error: Executing INSERT failed: ERROR: duplicate key value violates unique constraint "pricing_model_configs_party_id_name_uniq_idx" (PUT /api/reporting/pricing-engines/a591e980-de9b-365a-d8ec-74e3a6ef98fa, request ebcb6e76) |
 
 ** Discard a draft on a product switch
 
@@ -195,7 +196,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Change the model and see the engine
 
@@ -209,7 +210,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Edit and save a global parameter
 
@@ -224,7 +225,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the reports that bind it
 
@@ -237,7 +238,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the history of the configuration
 
@@ -249,7 +250,7 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Follow the engine run settings link
 
@@ -262,14 +263,14 @@ The session already did the following. Confirm the system is in this state; do n
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |   |
+| Status        | FAILED |
+| Completed at  | 2026-10-27T19:12:35Z |
 | Branch        |   |
 | Commit        |   |
 | Worktree      |   |

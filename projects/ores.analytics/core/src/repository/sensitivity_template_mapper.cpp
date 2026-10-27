@@ -29,6 +29,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::analytics::repository {
@@ -44,9 +45,8 @@ sensitivity_template_mapper::map(const sensitivity_template_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
-    r.asset_class = v.asset_class;
-    r.method = v.method;
     r.method_code = v.method_code;
+    r.asset_class_code = v.asset_class_code.value_or("");
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -66,9 +66,9 @@ sensitivity_template_mapper::map(const domain::sensitivity_template& v) {
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.asset_class = v.asset_class;
-    r.method = v.method;
     r.method_code = v.method_code;
+    r.asset_class_code =
+        v.asset_class_code.empty() ? std::nullopt : std::optional(v.asset_class_code);
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

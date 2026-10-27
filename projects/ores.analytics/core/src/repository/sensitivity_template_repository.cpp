@@ -71,8 +71,6 @@ std::string sensitivity_template_repository::sql() {
 bool sensitivity_template_repository::is_sortable(std::string_view field) {
     const std::initializer_list<std::string_view> sortable = {
         "code",
-        "asset_class",
-        "method",
         "description",
     };
     return std::ranges::find(sortable, field) != sortable.end();

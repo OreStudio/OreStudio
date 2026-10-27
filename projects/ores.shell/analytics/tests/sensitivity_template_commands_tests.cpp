@@ -157,7 +157,7 @@ TEST_CASE("sensitivity_template_commands_process_add_requires_a_session", "[comm
     std::ostringstream out;
 
     command_feedback::reset();
-    sensitivity_template_commands::process_add(out, session, sensitivity_template_tokens(5));
+    sensitivity_template_commands::process_add(out, session, sensitivity_template_tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -191,7 +191,7 @@ TEST_CASE("sensitivity_template_commands_process_set_requires_a_session", "[comm
     std::ostringstream out;
 
     command_feedback::reset();
-    sensitivity_template_commands::process_set(out, session, sensitivity_template_tokens(5));
+    sensitivity_template_commands::process_set(out, session, sensitivity_template_tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -225,7 +225,7 @@ TEST_CASE("sensitivity_template_commands_process_put_many_requires_a_session", "
     std::ostringstream out;
 
     command_feedback::reset();
-    sensitivity_template_commands::process_put_many(out, session, sensitivity_template_tokens(5));
+    sensitivity_template_commands::process_put_many(out, session, sensitivity_template_tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

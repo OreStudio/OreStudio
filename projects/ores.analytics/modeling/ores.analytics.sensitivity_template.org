@@ -13,9 +13,28 @@
 #+created: 2026-10-21
 #+updated: 2026-10-27
 
-A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
+A sensitivity template is a key. The pricing engine configuration puts it on a
+product with the setting SensitivityTemplate, and the sensitivity configuration
+gives shift sizes and shift schemes to the products that carry the key. So the
+row states the class of product the key belongs to and the method it is priced
+by, and both are lookups: the class is the reference data's asset class, and the
+method is one of the five ORE defines.
 
-The key's spelling is the tenant's. ORE resolves a template key by looking up the key the sensitivity configuration states, and a configuration may state a key that ORE's own list does not hold, so a tenant can add a key of its own. The table therefore holds every row to the metadata it states and does not hold the key to a shape built out of it.
+The class is the product's class and not a claim about which market keys the
+shifts reach. A key may set shifts on keys outside its own class, which is the
+sensitivity configuration's business and not this table's, so nothing here links
+a template to the keys it reaches.
+
+The method is the token a key spells -- =FD= in =IR_FD= -- and its name is the
+words a person reads. Four of the five methods price a class of product and
+state it; the trade-level method is the one ORE defines without a class, so a
+template that states it states no class, and the table checks that.
+
+The key's spelling is the tenant's. ORE resolves a template key by looking up the
+key the sensitivity configuration states, and a configuration may state a key
+that ORE's own list does not hold, so a tenant can add a key of its own. The
+table therefore holds every row to the metadata it states and does not hold the
+key to a shape built out of =asset_class_code= and =method_code=.
 
 * Flags
 :PROPERTIES:
@@ -41,39 +60,6 @@ Unique template key as ORE writes it.
 
 Examples: 'IR_Analytical', 'EQ_MC'.
 
-** asset_class
-:PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:nullable:     false
-:sortable:     true
-:END:
-
-The asset class of the products that carry the template: IR, FX, EQ, COMM, CR or ALL.
-
-#+begin_src cpp :name generator
-std::string("IR")
-#+end_src
-
-** method
-:PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:nullable:     false
-:sortable:     true
-:END:
-
-How the products with this template are priced: Analytical, Semianalytical, Finite difference, Monte Carlo or Trade level. It is the words a person reads; =method_code= is the token ORE puts in the key.
-
-#+begin_src cpp :name generator
-[idx]{
-    static constexpr std::string_view methods[] = {
-        "Analytical", "Semianalytical", "Finite difference", "Monte Carlo",
-        "Trade level"};
-    return std::string(methods[static_cast<std::size_t>(idx) % std::size(methods)]);
-}()
-#+end_src
-
 ** method_code
 :PROPERTIES:
 :type:         text
@@ -82,19 +68,50 @@ How the products with this template are priced: Analytical, Semianalytical, Fini
 :END:
 
 The method as ORE spells it in a template key: Analytical, Semianalytical,
-FD, MC or Trade. The generated key encodes it, as in =IR_FD=, and so does the
-key a tenant writes. It says which shift scheme ORE applies, so a screen can
-read it without reading the English of =method=.
+FD, MC or Trade. It says which shift scheme ORE applies, and it is the row of
+=ores_analytics_sensitivity_methods_tbl= whose =name= a screen reads beside it.
+
+Soft FK to ores_analytics_sensitivity_methods_tbl.
 
 #+begin_src cpp :name generator
-[&r]{
-    if (r.method == "Finite difference")
-        return std::string("FD");
-    if (r.method == "Monte Carlo")
-        return std::string("MC");
-    if (r.method == "Trade level")
-        return std::string("Trade");
-    return r.method;
+[idx]{
+    static constexpr std::string_view codes[] = {
+        "Analytical", "Semianalytical", "FD", "MC", "Trade"};
+    return std::string(codes[static_cast<std::size_t>(idx) % std::size(codes)]);
+}()
+#+end_src
+
+** asset_class_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The class of the products that carry the template, as the reference data spells
+it: 'interest_rates', 'fx', 'equity', 'commodity' or 'credit'. It is the row of
+=ores_analytics_sensitivity_asset_classes_tbl= whose =template_prefix= the key
+spells and whose =name= a screen reads.
+
+Null on a trade-level template, which is the one method ORE defines without a
+class.
+
+Soft FK to ores_refdata_asset_class_codes_tbl, through
+=ores_analytics_validate_sensitivity_asset_class_code_fn=, which holds a null to
+be no class and validates anything else against the reference data.
+
+#+begin_src cpp :name generator
+[&r] -> std::optional<std::string> {
+    if (r.method_code == "Trade")
+        return std::nullopt;
+    static constexpr std::string_view method_codes[] = {
+        "Analytical", "Semianalytical", "FD", "MC"};
+    static constexpr std::string_view classes[] = {
+        "interest_rates", "equity", "commodity", "credit"};
+    for (std::size_t i = 0; i < std::size(method_codes); ++i)
+        if (r.method_code == method_codes[i])
+            return std::string(classes[i]);
+    return std::string("interest_rates");
 }()
 #+end_src
 
@@ -127,24 +144,36 @@ checks the template emits on its own. A text key column already rejects the
 empty string, so the template emits the code's own check and no row here
 repeats it.
 
-The pair of =method= and =method_code= is checked, and nothing else is: the
-key is not held to =asset_class || '_' || method_code=. ORE resolves a
+The key is not held to =asset_class_code || '_' || method_code=. ORE resolves a
 template key by looking up the key the sensitivity configuration states, so a
-tenant may register a key ORE's own examples do not hold. What must be valid
-is the metadata each row states, not the spelling of a key a tenant chose.
+tenant may register a key ORE's own examples do not hold. What must be valid is
+the metadata each row states, not the spelling of a key a tenant chose.
+
+The one rule across two columns is the pair, and it states which methods have no
+class. A template states a class exactly when its method needs one, and the
+trade-level method is the one ORE defines without a class. The sentence names
+=Trade= because a check cannot read another table; a screen asks
+=ores_analytics_sensitivity_methods_tbl.needs_asset_class= rather than repeating
+the exception, and a method added there with =needs_asset_class= false needs this
+line widened before its templates are held to it.
 
 | expression |
 |------------|
-| "asset_class" in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL') |
-| "method_code" in ('Analytical', 'Semianalytical', 'FD', 'MC', 'Trade') |
-| (method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('Finite difference', 'FD'), ('Monte Carlo', 'MC'), ('Trade level', 'Trade')) |
+| ("asset_class_code" is null) = ("method_code" = 'Trade') |
 
 * Insert trigger
 ** Validations
 
-| column               | validation_function                                       |
-|----------------------+-----------------------------------------------------------|
-| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+Each column that names another table is checked by a function that says what a
+bad value is, because both may be absent from the table that holds them while a
+database is being built. The method must exist. The class may be null, which is
+no class, and is otherwise checked against the reference data's catalogue.
+
+| column             | validation_function                                     |
+|--------------------+---------------------------------------------------------|
+| method_code        | ores_analytics_validate_sensitivity_method_code_fn       |
+| asset_class_code   | ores_analytics_validate_sensitivity_asset_class_code_fn  |
+| change_reason_code | ores_dq_validate_change_reason_fn                        |
 
 * C++
 
@@ -165,6 +194,7 @@ is the metadata each row states, not the spelling of a key a tenant chose.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 
@@ -175,14 +205,14 @@ is the metadata each row states, not the spelling of a key a tenant chose.
 
 ** Table display
 
-| column      | header      |
-|-------------+-------------|
-| code | Code |
-| asset_class | Asset class |
-| method | Method |
-| method_code | Method code |
-| modified_by | Modified By |
-| version     | Version     |
+| column            | header      |
+|-------------------+-------------|
+| code              | Code        |
+| asset_class_code  | Asset class |
+| method_code       | Method      |
+| description       | Description |
+| modified_by       | Modified By |
+| version           | Version     |
 
 ** Presentation
 :PROPERTIES:
@@ -192,23 +222,21 @@ is the metadata each row states, not the spelling of a key a tenant chose.
 
 *** Detail fields
 
-| field       | label       | widget         | type      | is_key | is_required | placeholder |
-|-------------+-------------+----------------+-----------+--------+-------------+-------------|
-| code        | Code        | codeEdit       | line_edit | true   | true        | Enter the template key |
-| asset_class | Asset class | assetClassEdit | line_edit |        | true        | IR, FX, EQ, COMM, CR or ALL |
-| method      | Method      | methodEdit     | line_edit |        | true        | Enter the method |
-| method_code | Method code | methodCodeEdit | line_edit |        | true        | Analytical, Semianalytical, FD, MC or Trade |
-| description | Description | descriptionEdit | text_edit |        | true        | Enter a description |
+| field             | label       | widget          | type      | is_key | is_required | placeholder |
+|-------------------+-------------+-----------------+-----------+--------+-------------+-------------|
+| code              | Code        | codeEdit        | line_edit | true   | true        | Enter the template key |
+| method_code       | Method      | methodCodeEdit  | line_edit |        | true        | Analytical, Semianalytical, FD, MC or Trade |
+| asset_class_code  | Asset class | assetClassEdit  | line_edit |        |             | The reference data's asset class code, or none for a trade-level template |
+| description       | Description | descriptionEdit | text_edit |        | true        | Enter a description |
 
 *** Columns
 
-| enum_name  | field       | header      | type      | width |
-|------------+-------------+-------------+-----------+-------|
-| Code       | code        | Code        | string    | 180   |
-| AssetClass | asset_class | Asset class | string    | 90    |
-| Method     | method      | Method      | string    | 140   |
-| MethodCode | method_code | Method code | string    | 110   |
-| Description | description | Description | string   | 380   |
+| enum_name   | field            | header      | type    | width |
+|-------------+------------------+-------------+---------+-------|
+| Code        | code             | Code        | string  | 180   |
+| AssetClass  | asset_class_code | Asset class | string  | 150   |
+| MethodCode  | method_code      | Method      | string  | 140   |
+| Description | description      | Description | string  | 380   |
 | Version    | version     | Version     | int       | 70    |
 | ModifiedBy | modified_by | Modified By | string    | 120   |
 | RecordedAt | recorded_at | Recorded At | timestamp | 150   |

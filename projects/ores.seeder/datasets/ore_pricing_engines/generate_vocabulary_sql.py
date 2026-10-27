@@ -58,16 +58,30 @@ TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_analytics_service', 'system.initial_load'"
 SEED = "Seed pricing engine vocabulary"
 
-# The token ORE puts in a template key for each method, as the model
-# projects/ores.analytics/modeling/ores.analytics.sensitivity_template.org states it. The
-# method is the words a person reads; the key carries the token. A method the table
-# does not name is a fail, not a guess: the table checks the pair.
+# The two lookups a sensitivity template names, as the tables hold them. The
+# curation states the codes, and the seed writes them: the words a person reads
+# live in the method and asset class tables, so a template states no English.
+#
+#   - the method is one of the five ORE defines, and its token is what a key
+#     spells (FD in IR_FD);
+#   - the class is the reference data's asset class code, and it is null on a
+#     trade-level template, which is the one method ORE defines without a class.
+#
+# A code the tables do not hold is a fail here, not a guess.
 METHOD_CODES = {
     "Analytical": "Analytical",
     "Semianalytical": "Semianalytical",
     "Finite difference": "FD",
     "Monte Carlo": "MC",
     "Trade level": "Trade",
+}
+
+ASSET_CLASS_CODES = {
+    "IR": "interest_rates",
+    "FX": "fx",
+    "EQ": "equity",
+    "COMM": "commodity",
+    "CR": "credit",
 }
 
 
@@ -131,16 +145,26 @@ def write_templates():
     """
     rows = []
     for code, entry in CURATED.templates.items():
-        method_code = METHOD_CODES.get(entry["method"])
-        if method_code is None:
-            sys.exit(f"curation/templates.json: {code} states the method "
-                     f"{entry['method']!r}, which has no key token")
-        rows.append([q(code), TENANT, "0", q(entry["asset_class"]), q(entry["method"]),
-                     q(method_code), q(entry["description"]), ACTOR, q(SEED)])
+        method_code = entry["method_code"]
+        if method_code not in METHOD_CODES.values():
+            sys.exit(f"curation/templates.json: {code} states the method code "
+                     f"{method_code!r}, which the methods table does not hold")
+        asset_class_code = entry["asset_class_code"]
+        if asset_class_code is not None and asset_class_code not in ASSET_CLASS_CODES.values():
+            sys.exit(f"curation/templates.json: {code} states the asset class code "
+                     f"{asset_class_code!r}, which the bridge table does not hold")
+        # The table checks that a class is stated exactly when the method needs
+        # one, and the trade-level method is the one that does not.
+        if (asset_class_code is None) != (method_code == "Trade"):
+            sys.exit(f"curation/templates.json: {code} states the class "
+                     f"{asset_class_code!r} with the method {method_code!r}, and the "
+                     "table holds a class to be absent exactly on a trade-level template")
+        rows.append([q(code), TENANT, "0", q(asset_class_code), q(method_code),
+                     q(entry["description"]), ACTOR, q(SEED)])
     write("analytics_sensitivity_templates_populate.sql",
           "Sensitivity Templates Population Script\n *\n * The sensitivity template keys that ORE examples put on products.",
           "ores_analytics_sensitivity_templates_tbl",
-          "asset_class, method, method_code, description", rows, "Sensitivity Templates")
+          "asset_class_code, method_code, description", rows, "Sensitivity Templates")
 
 
 def main(ore):

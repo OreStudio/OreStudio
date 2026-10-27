@@ -305,6 +305,12 @@ BEGIN
     -- refusal while the screen that leads to it was offered to them.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_groups:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_group_settings:read');
+    -- A sensitivity template names two lookups, and the screen that manages the
+    -- templates offers both as choices: the five methods a key may spell, and the
+    -- asset classes ORE presents a template prefix for. The templates themselves
+    -- are read by the pricing engine vocabulary, which Member already reads.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'analytics::sensitivity_methods:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'analytics::sensitivity_asset_classes:read');
 
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');

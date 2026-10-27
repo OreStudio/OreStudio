@@ -34,9 +34,8 @@ export interface SensitivityTemplateKey {
 
 export interface SensitivityTemplateWrite {
     code: string;
-    asset_class: string;
-    method: string;
     method_code: string;
+    asset_class_code: string;
     description: string;
 }
 

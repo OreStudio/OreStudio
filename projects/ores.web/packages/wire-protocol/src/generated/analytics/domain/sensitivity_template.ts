@@ -34,9 +34,8 @@ export interface SensitivityTemplate {
     version: number;
     tenant_id: string;
     code: string;
-    asset_class: string;
-    method: string;
     method_code: string;
+    asset_class_code: string;
     description: string;
     modified_by: string;
     performed_by: string;

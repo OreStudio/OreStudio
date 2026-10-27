@@ -45,10 +45,28 @@ select pair_code as value, pair_code as label, true as is_active
 from ores_refdata_currency_pairs_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+-- A template's value is the key a configuration states, and its label is the two
+-- words a person chooses by: the class the products belong to, and the method they
+-- are priced by. A trade-level template names no class, so its label is the method
+-- alone and no separator stands where the class would be. The lookups are the
+-- system tenant's and hold one current row per code, so the join finds one label.
 create or replace view ores_analytics_sensitivity_template_catalogue_v as
-select code as value, code as label, true as is_active
-from ores_analytics_sensitivity_templates_tbl
-where valid_to = ores_utility_infinity_timestamp_fn();
+select t.code as value,
+       case
+           when t.asset_class_code is null then m.name
+           else a.name || ' · ' || m.name
+       end as label,
+       true as is_active
+from ores_analytics_sensitivity_templates_tbl t
+join ores_analytics_sensitivity_methods_tbl m
+  on m.tenant_id = ores_utility_system_tenant_id_fn()
+ and m.code = t.method_code
+ and m.valid_to = ores_utility_infinity_timestamp_fn()
+left join ores_analytics_sensitivity_asset_classes_tbl a
+  on a.tenant_id = ores_utility_system_tenant_id_fn()
+ and a.asset_class_code = t.asset_class_code
+ and a.valid_to = ores_utility_infinity_timestamp_fn()
+where t.valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace view ores_refdata_instrument_code_catalogue_v as
 select code as value, name as label, true as is_active

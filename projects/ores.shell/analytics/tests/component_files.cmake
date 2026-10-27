@@ -34,6 +34,8 @@ set(files
     "pricing_model_product_commands_tests.cpp"
     "pricing_model_product_parameter_commands_tests.cpp"
     "pricing_pair_setting_commands_tests.cpp"
+    "sensitivity_asset_class_commands_tests.cpp"
+    "sensitivity_method_commands_tests.cpp"
     "sensitivity_template_commands_tests.cpp"
     "shift_type_commands_tests.cpp"
     "stress_shift_family_commands_tests.cpp"

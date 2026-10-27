@@ -41,9 +41,8 @@ struct sensitivity_template_key {
 
 struct sensitivity_template_write {
     std::string code;
-    std::string asset_class;
-    std::string method;
     std::string method_code;
+    std::string asset_class_code;
     std::string description;
 };
 

@@ -37,9 +37,8 @@ render_sensitivity_template_fields(const domain::sensitivity_template& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Code", .value = v.code});
-    fields.push_back({.name = "Asset Class", .value = v.asset_class});
-    fields.push_back({.name = "Method", .value = v.method});
     fields.push_back({.name = "Method Code", .value = v.method_code});
+    fields.push_back({.name = "Asset Class Code", .value = v.asset_class_code});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

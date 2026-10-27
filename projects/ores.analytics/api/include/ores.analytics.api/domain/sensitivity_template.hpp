@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -35,16 +36,28 @@ namespace ores::analytics::domain {
 /**
  * @brief A key that a product carries so the sensitivity configuration can set its own shifts.
  *
- * A sensitivity template is a key. The pricing engine configuration puts it on a product with the
- * setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to
- * the products that carry the key. The key names an asset class and a method, for example IR_FD,
- * and the row states both of them in the two forms ORE uses: the token a key carries, and the words
- * a person reads.
+ * A sensitivity template is a key. The pricing engine configuration puts it on a
+ * product with the setting SensitivityTemplate, and the sensitivity configuration
+ * gives shift sizes and shift schemes to the products that carry the key. So the
+ * row states the class of product the key belongs to and the method it is priced
+ * by, and both are lookups: the class is the reference data's asset class, and the
+ * method is one of the five ORE defines.
  *
- * The key's spelling is the tenant's. ORE resolves a template key by looking up the key the
- * sensitivity configuration states, and a configuration may state a key that ORE's own list does
- * not hold, so a tenant can add a key of its own. The table therefore holds every row to the
- * metadata it states and does not hold the key to a shape built out of it.
+ * The class is the product's class and not a claim about which market keys the
+ * shifts reach. A key may set shifts on keys outside its own class, which is the
+ * sensitivity configuration's business and not this table's, so nothing here links
+ * a template to the keys it reaches.
+ *
+ * The method is the token a key spells -- FD in IR_FD -- and its name is the
+ * words a person reads. Four of the five methods price a class of product and
+ * state it; the trade-level method is the one ORE defines without a class, so a
+ * template that states it states no class, and the table checks that.
+ *
+ * The key's spelling is the tenant's. ORE resolves a template key by looking up the
+ * key the sensitivity configuration states, and a configuration may state a key
+ * that ORE's own list does not hold, so a tenant can add a key of its own. The
+ * table therefore holds every row to the metadata it states and does not hold the
+ * key to a shape built out of asset_class_code and method_code.
  */
 struct sensitivity_template final {
     /**
@@ -65,24 +78,27 @@ struct sensitivity_template final {
     std::string code;
 
     /**
-     * @brief The asset class of the products that carry the template: IR, FX, EQ, COMM, CR or ALL.
-     */
-    std::string asset_class;
-
-    /**
-     * @brief How the products with this template are priced: Analytical, Semianalytical, Finite
-     * difference, Monte Carlo or Trade level. It is the words a person reads; method_code is the
-     * token ORE puts in the key.
-     */
-    std::string method;
-
-    /**
      * @brief The method as ORE spells it in a template key: Analytical, Semianalytical, FD, MC or
-     * Trade. The generated key encodes it, as in IR_FD, and so does the key a tenant writes. It
-     * says which shift scheme ORE applies, so a screen can read it without reading the English of
-     * method.
+     * Trade. It says which shift scheme ORE applies, and it is the row of
+     * ores_analytics_sensitivity_methods_tbl whose name a screen reads beside it.
+     *
+     * Soft FK to ores_analytics_sensitivity_methods_tbl.
      */
     std::string method_code;
+
+    /**
+     * @brief The class of the products that carry the template, as the reference data spells it:
+     * 'interest_rates', 'fx', 'equity', 'commodity' or 'credit'. It is the row of
+     * ores_analytics_sensitivity_asset_classes_tbl whose template_prefix the key spells and whose
+     * name a screen reads.
+     *
+     * Null on a trade-level template, which is the one method ORE defines without a class.
+     *
+     * Soft FK to ores_refdata_asset_class_codes_tbl, through
+     * ores_analytics_validate_sensitivity_asset_class_code_fn, which holds a null to be no class
+     * and validates anything else against the reference data.
+     */
+    std::string asset_class_code;
 
     /**
      * @brief What the template stands for.

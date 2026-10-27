@@ -1,0 +1,231 @@
+:PROPERTIES:
+:ID: 8A1F3C6D-2B47-4E09-9F15-7D3B8E2A4C51
+:END:
+#+title: ores.analytics.sensitivity_asset_class
+#+description: Codegen entity model for the analytics =sensitivity_asset_class= table. The asset classes ORE presents a sensitivity template prefix for, with the words a person reads.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: The asset classes a sensitivity template belongs to, the prefix ORE presents each with, and the words a person reads.
+#+entity_singular: sensitivity_asset_class
+#+entity_plural: sensitivity_asset_classes
+#+entity_title: Sensitivity Asset Class
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+A sensitivity template key names an asset class, and the class is the reference
+data's: =interest_rates=, =fx=, =equity=, =commodity= or =credit=. The key spells
+that class as a short prefix a person recognises -- =IR=, =FX=, =EQ=, =COMM=,
+=CR= -- and the two spellings are not the same, because ORE's template keys grew
+their own vocabulary (it spells commodity =COMM= where the rest of ORE spells it
+=COM=).
+
+So this table is the bridge. It holds one row per class ORE presents a template
+prefix for: the reference data code the template points at, the prefix the key
+spells, and the words a person reads. Bond and inflation are asset classes of the
+reference data with no row here, because ORE's examples present no template prefix
+for them; a tenant that needs one adds the row.
+
+The prefix is a presentation and never the identity: a key's spelling is the
+tenant's, ORE resolves the key a configuration states, and the template's
+=asset_class_code= is what the table checks. A screen that shows the class shows
+the name from here, and the prefix stands beside it as what the key spells.
+
+The rows are seeded for the system tenant and read by every tenant.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** asset_class_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The reference data's asset class code: 'interest_rates', 'fx', 'equity',
+'commodity' or 'credit'.
+
+Soft FK to ores_refdata_asset_class_codes_tbl.
+
+#+begin_src cpp :name generator
+[idx]{
+    static constexpr std::string_view codes[] = {
+        "interest_rates", "fx", "equity", "commodity", "credit"};
+    return std::string(codes[static_cast<std::size_t>(idx) % std::size(codes)]);
+}()
+#+end_src
+
+** template_prefix
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The prefix ORE spells in a template key for this class: 'IR', 'FX', 'EQ', 'COMM'
+or 'CR'.
+
+#+begin_src cpp :name generator
+[&r]{
+    static constexpr std::string_view codes[] = {
+        "interest_rates", "fx", "equity", "commodity", "credit"};
+    static constexpr std::string_view prefixes[] = {"IR", "FX", "EQ", "COMM", "CR"};
+    for (std::size_t i = 0; i < std::size(codes); ++i)
+        if (r.asset_class_code == codes[i])
+            return std::string(prefixes[i]);
+    return std::string("IR");
+}()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The class in the words a person reads: 'Interest rate', 'Foreign exchange',
+'Equity', 'Commodity' or 'Credit'.
+
+#+begin_src cpp :name generator
+[&r]{
+    static constexpr std::string_view codes[] = {
+        "interest_rates", "fx", "equity", "commodity", "credit"};
+    static constexpr std::string_view names[] = {
+        "Interest rate", "Foreign exchange", "Equity", "Commodity", "Credit"};
+    for (std::size_t i = 0; i < std::size(codes); ++i)
+        if (r.asset_class_code == codes[i])
+            return std::string(names[i]);
+    return std::string("Interest rate");
+}()
+#+end_src
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What the class means, in one line, for a reader who does not know ORE.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:default:      0
+:END:
+
+The order the classes are offered in, which is the order ORE's own documentation
+lists them in.
+
+#+begin_src cpp :name generator
+static_cast<int>(idx)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_sensitivity_asset_classes_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+The class is checked against the reference data's catalogue by the function the
+market data screens' series already use, so a bridge row that names a class ORE
+Studio does not hold is refused. The check is the function alone and not the
+generated foreign-key block, because that block compares the row's own tenant and
+the reference data's rows are the system tenant's.
+
+| column             | validation_function                       |
+|--------------------+-------------------------------------------|
+| asset_class_code   | ores_refdata_validate_asset_class_code_fn |
+| change_reason_code | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: asset_class
+:entity_plural_short:   asset_classes
+:entity_singular_words: sensitivity asset class
+:entity_plural_words:   sensitivity asset classes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sac
+:END:
+
+** Table display
+
+| column            | header          |
+|-------------------+-----------------|
+| asset_class_code  | Asset class     |
+| template_prefix   | Prefix          |
+| name              | Name            |
+| description       | Description     |
+| display_order     | Order           |
+| modified_by       | Modified By     |
+| version           | Version         |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  asset_classes
+:key_field:        asset_class_code
+:END:
+
+*** Detail fields
+
+| field             | label          | widget            | type      | is_key | is_required | placeholder                          |
+|-------------------+----------------+-------------------+-----------+--------+-------------+--------------------------------------|
+| asset_class_code  | Asset class    | codeEdit          | line_edit | true   | true        | The reference data's asset class code |
+| template_prefix   | Prefix         | templatePrefixEdit | line_edit |       | true        | The prefix the key spells, such as IR |
+| name              | Name           | nameEdit          | line_edit |        | true        | Enter the words a person reads       |
+| description       | Description    | descriptionEdit   | text_edit |        | true        | Enter a description                  |
+| display_order     | Order          | displayOrderEdit  | spin_box  |        | true        |                                      |
+
+*** Columns
+
+| enum_name      | field            | header       | type   | width |
+|----------------+------------------+--------------+--------+-------|
+| AssetClassCode | asset_class_code | Asset class  | string | 160   |
+| TemplatePrefix | template_prefix  | Prefix       | string | 90    |
+| Name           | name             | Name         | string | 180   |
+| Description    | description      | Description  | string | 320   |
+| DisplayOrder   | display_order    | Order        | int    | 70    |
+| ModifiedBy     | modified_by      | Modified By  | string | 120   |
+| RecordedAt     | recorded_at      | Recorded At  | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

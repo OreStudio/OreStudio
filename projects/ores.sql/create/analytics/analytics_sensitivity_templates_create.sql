@@ -24,18 +24,36 @@
  *
  * Sensitivity Template Table
  *
- * A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
+ * A sensitivity template is a key. The pricing engine configuration puts it on a
+ * product with the setting SensitivityTemplate, and the sensitivity configuration
+ * gives shift sizes and shift schemes to the products that carry the key. So the
+ * row states the class of product the key belongs to and the method it is priced
+ * by, and both are lookups: the class is the reference data's asset class, and the
+ * method is one of the five ORE defines.
  *
- * The key's spelling is the tenant's. ORE resolves a template key by looking up the key the sensitivity configuration states, and a configuration may state a key that ORE's own list does not hold, so a tenant can add a key of its own. The table therefore holds every row to the metadata it states and does not hold the key to a shape built out of it.
+ * The class is the product's class and not a claim about which market keys the
+ * shifts reach. A key may set shifts on keys outside its own class, which is the
+ * sensitivity configuration's business and not this table's, so nothing here links
+ * a template to the keys it reaches.
+ *
+ * The method is the token a key spells -- FD in IR_FD -- and its name is the
+ * words a person reads. Four of the five methods price a class of product and
+ * state it; the trade-level method is the one ORE defines without a class, so a
+ * template that states it states no class, and the table checks that.
+ *
+ * The key's spelling is the tenant's. ORE resolves a template key by looking up the
+ * key the sensitivity configuration states, and a configuration may state a key
+ * that ORE's own list does not hold, so a tenant can add a key of its own. The
+ * table therefore holds every row to the metadata it states and does not hold the
+ * key to a shape built out of asset_class_code and method_code.
  */
 
 create table if not exists "ores_analytics_sensitivity_templates_tbl" (
     "code" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "asset_class" text not null,
-    "method" text not null,
     "method_code" text not null,
+    "asset_class_code" text null,
     "description" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -51,9 +69,7 @@ create table if not exists "ores_analytics_sensitivity_templates_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("asset_class" in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL')),
-    check ("method_code" in ('Analytical', 'Semianalytical', 'FD', 'MC', 'Trade')),
-    check ((method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('Finite difference', 'FD'), ('Monte Carlo', 'MC'), ('Trade level', 'Trade')))
+    check (("asset_class_code" is null) = ("method_code" = 'Trade'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -76,6 +92,14 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate method_code
+    NEW.method_code := ores_analytics_validate_sensitivity_method_code_fn(NEW.tenant_id, NEW.method_code);
+
+    -- Validate asset_class_code (optional field -- skip validation when null)
+    if NEW.asset_class_code is not null then
+        NEW.asset_class_code := ores_analytics_validate_sensitivity_asset_class_code_fn(NEW.tenant_id, NEW.asset_class_code);
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

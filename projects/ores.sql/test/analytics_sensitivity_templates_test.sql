@@ -21,33 +21,40 @@
 /**
  * pgTAP tests for the metadata a sensitivity template row states.
  *
- * A template key names an asset class and a method, and ORE resolves the key a
- * sensitivity configuration states. The row must therefore hold a valid asset
- * class, a valid method code and one of ORE's pairs, while the spelling of the
- * key itself stays the tenant's.
+ * A template key names the class of product it belongs to and the method that
+ * product is priced by, and both are lookups: the class is the reference data's
+ * asset class code, and the method is one of the five ORE defines. The key's own
+ * spelling stays the tenant's, because ORE resolves the key a sensitivity
+ * configuration states.
+ *
+ * The class is absent exactly on a trade-level template, which is the one method
+ * ORE defines without a class.
  *
  * Tests cover:
- * - Every seeded row states a class, a code and a pair the table allows
- * - A key that does not spell the pair is accepted, because a tenant may add one
- * - An asset class that is not ORE's is refused
- * - A method code that is not ORE's is refused
- * - A pair that ORE does not have is refused
- * - A blank key is refused
+ * - The seed holds nineteen keys, each stating a method and a class the lookups hold
+ * - No template states an ALL class, which the reference data does not have
+ * - Every seeded class is stated exactly when its method needs one
+ * - A tenant key that does not spell its class and method is accepted
+ * - A trade-level key states no class
+ * - An asset class the reference data does not hold is refused
+ * - A method code the methods table does not hold is refused
+ * - A class on a trade-level template is refused
+ * - A method that needs a class without one is refused
  *
  * Run with: pg_prove -d <database> test/analytics_sensitivity_templates_test.sql
  */
 
 begin;
 
-select plan(7);
+select plan(9);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.current_actor', 'super_admin', true);
 
--- Writes a row by copying a seeded one, so the test states only the four
+-- Writes a row by copying a seeded one, so the test states only the three
 -- columns it is about.
-create or replace function pg_temp.write_template(p_code text, p_asset_class text,
-                                                  p_method text, p_method_code text)
+create or replace function pg_temp.write_template(p_code text, p_asset_class_code text,
+                                                  p_method_code text)
 returns void as $$
 declare
     r ores_analytics_sensitivity_templates_tbl;
@@ -57,8 +64,7 @@ begin
       and code = 'IR_Analytical'
       and valid_to = ores_utility_infinity_timestamp_fn();
     r.code := p_code;
-    r.asset_class := p_asset_class;
-    r.method := p_method;
+    r.asset_class_code := p_asset_class_code;
     r.method_code := p_method_code;
     r.version := 0;
     r.modified_by := 'super_admin';
@@ -79,45 +85,74 @@ select is(
     'the seed holds the nineteen template keys ORE examples use');
 
 select is(
+    (select count(*) from ores_analytics_sensitivity_templates_tbl t
+     where t.tenant_id = ores_utility_system_tenant_id_fn()
+       and t.valid_to = ores_utility_infinity_timestamp_fn()
+       and (t.code = ''
+            or not exists (
+                select 1 from ores_analytics_sensitivity_methods_tbl m
+                where m.tenant_id = ores_utility_system_tenant_id_fn()
+                  and m.code = t.method_code
+                  and m.valid_to = ores_utility_infinity_timestamp_fn())
+            or (t.asset_class_code is not null and not exists (
+                select 1 from ores_analytics_sensitivity_asset_classes_tbl a
+                where a.tenant_id = ores_utility_system_tenant_id_fn()
+                  and a.asset_class_code = t.asset_class_code
+                  and a.valid_to = ores_utility_infinity_timestamp_fn())))),
+    0::bigint,
+    'every seeded row states a key, a method and a class the lookups hold');
+
+select is(
     (select count(*) from ores_analytics_sensitivity_templates_tbl
      where tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()
-       and (asset_class not in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL')
-            or code = ''
-            or (method, method_code) not in (
-                ('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'),
-                ('Finite difference', 'FD'), ('Monte Carlo', 'MC'),
-                ('Trade level', 'Trade')))),
+       and asset_class_code = 'ALL'),
     0::bigint,
-    'every seeded row states a class, a key and a pair the table allows');
+    'no template states an ALL asset class, because the reference data has none');
+
+select is(
+    (select count(*) from ores_analytics_sensitivity_templates_tbl t
+     join ores_analytics_sensitivity_methods_tbl m
+       on m.tenant_id = ores_utility_system_tenant_id_fn()
+      and m.code = t.method_code
+      and m.valid_to = ores_utility_infinity_timestamp_fn()
+     where t.tenant_id = ores_utility_system_tenant_id_fn()
+       and t.valid_to = ores_utility_infinity_timestamp_fn()
+       and m.needs_asset_class <> (t.asset_class_code is not null)),
+    0::bigint,
+    'every seeded row states a class exactly when its method needs one');
 
 -- =============================================================================
 -- The key's spelling is the tenant's
 -- =============================================================================
 
 select lives_ok(
-    $$select pg_temp.write_template('ACME_Grid', 'IR', 'Finite difference', 'FD')$$,
+    $$select pg_temp.write_template('ACME_Grid', 'interest_rates', 'FD')$$,
     'a tenant adds a key that does not spell its class and method');
+
+select lives_ok(
+    $$select pg_temp.write_template('ACME_Trade', null, 'Trade')$$,
+    'a tenant adds a trade-level key, which states no class');
 
 -- =============================================================================
 -- The metadata is not
 -- =============================================================================
 
 select throws_ok(
-    $$select pg_temp.write_template('IR_BadClass', 'RATES', 'Analytical', 'Analytical')$$,
-    '23514', null, 'the table refuses an asset class ORE does not have');
+    $$select pg_temp.write_template('IR_BadClass', 'rates', 'Analytical')$$,
+    '23503', null, 'the reference data refuses an asset class code it does not hold');
 
 select throws_ok(
-    $$select pg_temp.write_template('IR_BadCode', 'IR', 'Analytical', 'Closed form')$$,
-    '23514', null, 'the table refuses a method code ORE does not have');
+    $$select pg_temp.write_template('IR_BadCode', 'interest_rates', 'Closed form')$$,
+    '23503', null, 'the methods table refuses a method code it does not hold');
 
 select throws_ok(
-    $$select pg_temp.write_template('IR_Mismatched', 'IR', 'Finite difference', 'Analytical')$$,
-    '23514', null, 'the table refuses a method its code does not state');
+    $$select pg_temp.write_template('IR_TradeWithClass', 'interest_rates', 'Trade')$$,
+    '23514', null, 'the table refuses a class on a trade-level template');
 
 select throws_ok(
-    $$select pg_temp.write_template('', 'IR', 'Analytical', 'Analytical')$$,
-    '23514', null, 'the table refuses a blank key');
+    $$select pg_temp.write_template('IR_NoClass', null, 'Analytical')$$,
+    '23514', null, 'the table refuses a method that needs a class without one');
 
 select * from finish();
 

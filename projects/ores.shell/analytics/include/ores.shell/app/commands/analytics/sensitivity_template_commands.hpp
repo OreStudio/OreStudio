@@ -87,14 +87,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <asset_class> <method> <method_code> <description> <reason> <commentary>
+     * @brief add <code> <method_code> <asset_class_code> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <asset_class> <method> <method_code> <description> <reason> <commentary>
+     * @brief set <code> <method_code> <asset_class_code> <description> <reason> <commentary>
      * [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -102,8 +102,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <code> <asset_class> <method> <method_code> <description>
-     * <reason> <commentary>
+     * @brief put-many --count <n> <code> <method_code> <asset_class_code> <description> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

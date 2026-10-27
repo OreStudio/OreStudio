@@ -1,7 +1,7 @@
 {
   "IR_Analytical": {
-    "asset_class": "IR",
-    "method": "Analytical",
+    "asset_class_code": "interest_rates",
+    "method_code": "Analytical",
     "description": "Interest rate products priced by a closed formula.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -10,8 +10,8 @@
     "date": "2026-10-25"
   },
   "IR_Semianalytical": {
-    "asset_class": "IR",
-    "method": "Semianalytical",
+    "asset_class_code": "interest_rates",
+    "method_code": "Semianalytical",
     "description": "Interest rate products priced by a formula that needs a numerical step, such as CMS replication.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -20,8 +20,8 @@
     "date": "2026-10-25"
   },
   "IR_FD": {
-    "asset_class": "IR",
-    "method": "Finite difference",
+    "asset_class_code": "interest_rates",
+    "method_code": "FD",
     "description": "Interest rate products priced on a finite difference grid, such as Bermudan swaptions.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -30,8 +30,8 @@
     "date": "2026-10-25"
   },
   "IR_MC": {
-    "asset_class": "IR",
-    "method": "Monte Carlo",
+    "asset_class_code": "interest_rates",
+    "method_code": "MC",
     "description": "Interest rate products priced by Monte Carlo.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -40,8 +40,8 @@
     "date": "2026-10-25"
   },
   "FX_Analytical": {
-    "asset_class": "FX",
-    "method": "Analytical",
+    "asset_class_code": "fx",
+    "method_code": "Analytical",
     "description": "FX products priced by a closed formula.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -50,8 +50,8 @@
     "date": "2026-10-25"
   },
   "FX_Semianalytical": {
-    "asset_class": "FX",
-    "method": "Semianalytical",
+    "asset_class_code": "fx",
+    "method_code": "Semianalytical",
     "description": "FX products priced by a formula with a numerical step.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -60,8 +60,8 @@
     "date": "2026-10-25"
   },
   "FX_FD": {
-    "asset_class": "FX",
-    "method": "Finite difference",
+    "asset_class_code": "fx",
+    "method_code": "FD",
     "description": "FX products priced on a finite difference grid.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -70,8 +70,8 @@
     "date": "2026-10-25"
   },
   "FX_MC": {
-    "asset_class": "FX",
-    "method": "Monte Carlo",
+    "asset_class_code": "fx",
+    "method_code": "MC",
     "description": "FX products priced by Monte Carlo.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -80,8 +80,8 @@
     "date": "2026-10-25"
   },
   "EQ_Analytical": {
-    "asset_class": "EQ",
-    "method": "Analytical",
+    "asset_class_code": "equity",
+    "method_code": "Analytical",
     "description": "Equity products priced by a closed formula.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -90,8 +90,8 @@
     "date": "2026-10-25"
   },
   "EQ_Semianalytical": {
-    "asset_class": "EQ",
-    "method": "Semianalytical",
+    "asset_class_code": "equity",
+    "method_code": "Semianalytical",
     "description": "Equity products priced by a formula with a numerical step.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -100,8 +100,8 @@
     "date": "2026-10-25"
   },
   "EQ_FD": {
-    "asset_class": "EQ",
-    "method": "Finite difference",
+    "asset_class_code": "equity",
+    "method_code": "FD",
     "description": "Equity products priced on a finite difference grid, such as American options.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -110,8 +110,8 @@
     "date": "2026-10-25"
   },
   "EQ_MC": {
-    "asset_class": "EQ",
-    "method": "Monte Carlo",
+    "asset_class_code": "equity",
+    "method_code": "MC",
     "description": "Equity products priced by Monte Carlo, such as Asian options.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -120,8 +120,8 @@
     "date": "2026-10-25"
   },
   "COMM_Analytical": {
-    "asset_class": "COMM",
-    "method": "Analytical",
+    "asset_class_code": "commodity",
+    "method_code": "Analytical",
     "description": "Commodity products priced by a closed formula.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -130,8 +130,8 @@
     "date": "2026-10-25"
   },
   "COMM_Semianalytical": {
-    "asset_class": "COMM",
-    "method": "Semianalytical",
+    "asset_class_code": "commodity",
+    "method_code": "Semianalytical",
     "description": "Commodity products priced by a formula with a numerical step.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -140,8 +140,8 @@
     "date": "2026-10-25"
   },
   "COMM_FD": {
-    "asset_class": "COMM",
-    "method": "Finite difference",
+    "asset_class_code": "commodity",
+    "method_code": "FD",
     "description": "Commodity products priced on a finite difference grid.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -150,8 +150,8 @@
     "date": "2026-10-25"
   },
   "COMM_MC": {
-    "asset_class": "COMM",
-    "method": "Monte Carlo",
+    "asset_class_code": "commodity",
+    "method_code": "MC",
     "description": "Commodity products priced by Monte Carlo.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -160,8 +160,8 @@
     "date": "2026-10-25"
   },
   "CR_Semianalytical": {
-    "asset_class": "CR",
-    "method": "Semianalytical",
+    "asset_class_code": "credit",
+    "method_code": "Semianalytical",
     "description": "Credit products priced by a formula with a numerical step.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -170,8 +170,8 @@
     "date": "2026-10-25"
   },
   "CR_MC": {
-    "asset_class": "CR",
-    "method": "Monte Carlo",
+    "asset_class_code": "credit",
+    "method_code": "MC",
     "description": "Credit products priced by Monte Carlo.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",
@@ -180,8 +180,8 @@
     "date": "2026-10-25"
   },
   "SensiTrade": {
-    "asset_class": "ALL",
-    "method": "Trade level",
+    "asset_class_code": null,
+    "method_code": "Trade",
     "description": "Products whose sensitivities the trade computes on its own, not by shifting the market.",
     "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
     "source": "authored",

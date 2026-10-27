@@ -52,6 +52,10 @@
 \ir ./analytics_pricing_models_drop.sql
 \ir ./analytics_pricing_methods_drop.sql
 \ir ./analytics_sensitivity_templates_drop.sql
+\ir ./analytics_sensitivity_methods_notify_trigger_drop.sql
+\ir ./analytics_sensitivity_asset_classes_notify_trigger_drop.sql
+\ir ./analytics_sensitivity_methods_drop.sql
+\ir ./analytics_sensitivity_asset_classes_drop.sql
 \ir ./analytics_pricing_engine_types_notify_trigger_drop.sql
 \ir ./analytics_pricing_engine_types_drop.sql
 

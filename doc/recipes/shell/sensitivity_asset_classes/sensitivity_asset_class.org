@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 2140A203-7219-50CF-A60C-64EB05885CD8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the sensitivity_asset_classes commands from the shell?
+#+description: Every command the sensitivity_asset_classes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:sensitivity_asset_classes:
+
+This file documents the sensitivity_asset_classes resource at the shell, one section per command. Every command is a subcommand of =sensitivity_asset_classes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: CF21115F-AD12-5B6B-B5BD-A3C145651A7F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.list=.
+
+#+name: sensitivity_asset_classes-list
+#+begin_src ores-shell :tangle sensitivity_asset_classes-list.ores :exports none
+sensitivity_asset_classes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 54C31B5A-D0D3-5B0A-9934-6A62B9E0E126
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes get <asset_class_code>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.get=.
+
+#+name: sensitivity_asset_classes-get
+#+begin_src ores-shell :tangle sensitivity_asset_classes-get.ores :exports none
+sensitivity_asset_classes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 424C1F75-50C6-5D26-9DC5-B7653A3094C8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes get-many <asset_class_code>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.get_many=.
+
+#+name: sensitivity_asset_classes-get-many
+#+begin_src ores-shell :tangle sensitivity_asset_classes-get-many.ores :exports none
+sensitivity_asset_classes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 77B31E7E-1EEE-5212-8FD7-B950A189A494
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes add <asset_class_code> <template_prefix> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.put=.
+
+#+name: sensitivity_asset_classes-add
+#+begin_src ores-shell :tangle sensitivity_asset_classes-add.ores :exports none
+sensitivity_asset_classes add __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D4AECC0F-3DF3-57CA-99C5-8524ACE75145
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes set <asset_class_code> <template_prefix> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.put=.
+
+#+name: sensitivity_asset_classes-set
+#+begin_src ores-shell :tangle sensitivity_asset_classes-set.ores :exports none
+sensitivity_asset_classes set __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 8387FA56-0BAC-5695-9AC1-E2F22459BC0D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes put-many --count <n> <asset_class_code> <template_prefix> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.put_many=.
+
+#+name: sensitivity_asset_classes-put-many
+#+begin_src ores-shell :tangle sensitivity_asset_classes-put-many.ores :exports none
+sensitivity_asset_classes put-many --count 1 __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 96205E49-D195-5B96-B6E2-D445B4DC6E51
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes delete <asset_class_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.delete=.
+
+#+name: sensitivity_asset_classes-delete
+#+begin_src ores-shell :tangle sensitivity_asset_classes-delete.ores :exports none
+sensitivity_asset_classes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 299AAB07-D5E2-55B2-8604-811C15436FD9
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes delete-many <asset_class_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes.delete_many=.
+
+#+name: sensitivity_asset_classes-delete-many
+#+begin_src ores-shell :tangle sensitivity_asset_classes-delete-many.ores :exports none
+sensitivity_asset_classes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: B074450B-9189-5F04-BF50-0C213FFD399D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes versions <asset_class_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes_versions.list=.
+
+#+name: sensitivity_asset_classes-versions
+#+begin_src ores-shell :tangle sensitivity_asset_classes-versions.ores :exports none
+sensitivity_asset_classes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4B5EC2E9-FC2E-5CD5-A67D-26547682851B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sensitivity_asset_classes version <asset_class_code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.sensitivity_asset_classes_versions.get=.
+
+#+name: sensitivity_asset_classes-version
+#+begin_src ores-shell :tangle sensitivity_asset_classes-version.ores :exports none
+sensitivity_asset_classes version __none__ --version 1
+#+end_src
+

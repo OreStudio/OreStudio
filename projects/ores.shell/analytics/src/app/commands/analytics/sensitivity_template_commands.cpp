@@ -141,14 +141,14 @@ void sensitivity_template_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <asset_class> <method> <method_code> <description> <reason> <commentary>");
+        "add <code> <method_code> <asset_class_code> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <asset_class> <method> <method_code> <description> <reason> <commentary> "
+        "set <code> <method_code> <asset_class_code> <description> <reason> <commentary> "
         "[--version <n>]");
 
     menu->Insert(
@@ -156,7 +156,7 @@ void sensitivity_template_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <asset_class> <method> <method_code> <description> <reason> "
+        "put-many --count <n> <code> <method_code> <asset_class_code> <description> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -352,18 +352,16 @@ void sensitivity_template_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         sensitivity_template_read_token(req.change.write.code, parsed->positionals[next++], "code");
         sensitivity_template_read_token(
-            req.change.write.asset_class, parsed->positionals[next++], "asset_class");
-        sensitivity_template_read_token(
-            req.change.write.method, parsed->positionals[next++], "method");
-        sensitivity_template_read_token(
             req.change.write.method_code, parsed->positionals[next++], "method_code");
+        sensitivity_template_read_token(
+            req.change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
         sensitivity_template_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -408,18 +406,16 @@ void sensitivity_template_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         sensitivity_template_read_token(req.change.write.code, parsed->positionals[next++], "code");
         sensitivity_template_read_token(
-            req.change.write.asset_class, parsed->positionals[next++], "asset_class");
-        sensitivity_template_read_token(
-            req.change.write.method, parsed->positionals[next++], "method");
-        sensitivity_template_read_token(
             req.change.write.method_code, parsed->positionals[next++], "method_code");
+        sensitivity_template_read_token(
+            req.change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
         sensitivity_template_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -476,8 +472,8 @@ void sensitivity_template_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 4 + 2) {
+            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -485,11 +481,9 @@ void sensitivity_template_commands::process_put_many(std::ostream& out,
             messaging::sensitivity_template_change change;
             sensitivity_template_read_token(change.write.code, parsed->positionals[next++], "code");
             sensitivity_template_read_token(
-                change.write.asset_class, parsed->positionals[next++], "asset_class");
-            sensitivity_template_read_token(
-                change.write.method, parsed->positionals[next++], "method");
-            sensitivity_template_read_token(
                 change.write.method_code, parsed->positionals[next++], "method_code");
+            sensitivity_template_read_token(
+                change.write.asset_class_code, parsed->positionals[next++], "asset_class_code");
             sensitivity_template_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

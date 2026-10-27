@@ -37,6 +37,10 @@
 #include "ores.analytics.core/messaging/pricing_pair_setting_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_pair_setting_registrar.hpp"
 #include "ores.analytics.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.analytics.core/messaging/sensitivity_asset_class_history_provider_registrar.hpp"
+#include "ores.analytics.core/messaging/sensitivity_asset_class_registrar.hpp"
+#include "ores.analytics.core/messaging/sensitivity_method_history_provider_registrar.hpp"
+#include "ores.analytics.core/messaging/sensitivity_method_registrar.hpp"
 #include "ores.analytics.core/messaging/sensitivity_template_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/sensitivity_template_registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
@@ -72,6 +76,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(subs, register_pricing_pair_setting_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_handlers(nats, ctx, verifier));
     append(subs, register_pricing_method_handlers(nats, ctx, verifier));
+    append(subs, register_sensitivity_method_handlers(nats, ctx, verifier));
+    append(subs, register_sensitivity_asset_class_handlers(nats, ctx, verifier));
     append(subs, register_sensitivity_template_handlers(nats, ctx, verifier));
     append(subs, register_configuration_document_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_config_handlers(nats, ctx, verifier));
@@ -105,6 +111,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_pricing_pair_setting_history_provider(hist_registry);
         register_pricing_model_history_provider(hist_registry);
         register_pricing_method_history_provider(hist_registry);
+        register_sensitivity_method_history_provider(hist_registry);
+        register_sensitivity_asset_class_history_provider(hist_registry);
         register_sensitivity_template_history_provider(hist_registry);
         register_pricing_model_config_history_provider(hist_registry);
         register_pricing_model_product_history_provider(hist_registry);

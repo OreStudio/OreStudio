@@ -53,6 +53,7 @@ set(files
     "risk_recentering_tests.cpp"
     "rng_stream_tests.cpp"
     "run_clock_tests.cpp"
+    "scheduler_trace_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
     "tick_scheduler_tests.cpp"

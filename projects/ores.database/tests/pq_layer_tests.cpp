@@ -102,7 +102,10 @@ TEST_CASE("a sqlstate's class says whether a retry can succeed", "[pq]") {
     CHECK(classify("40001") == error_kind::retryable);
     CHECK(classify("40P01") == error_kind::retryable);
     CHECK(classify("53300") == error_kind::retryable);
-    CHECK(classify("57014") == error_kind::retryable);
+    CHECK(classify("57P01") == error_kind::retryable);
+    CHECK(classify("25006") == error_kind::retryable);
+    CHECK(classify("57014") == error_kind::refused);
+    CHECK(classify("53100") == error_kind::refused);
     CHECK(classify("55P03") == error_kind::retryable);
     CHECK(classify("55000") == error_kind::refused);
     CHECK(classify("23505") == error_kind::refused);
@@ -137,6 +140,8 @@ TEST_CASE("every codec carries its value through the server unchanged", "[pq]") 
           year_month_day(year{2026} / October / 27));
 
     for (const auto text : {"0",
+                            "0.00000000000000000001",
+                            "1000000000000000000000000000000",
                             "1",
                             "-1.5",
                             "10000",
@@ -298,4 +303,39 @@ TEST_CASE("a pool that stays busy refuses with a retryable error", "[pq]") {
     } catch (const store_error& e) {
         CHECK(e.retryable());
     }
+}
+
+TEST_CASE("a connection given back inside a transaction is reset before its next lease", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    {
+        const auto lease = p.acquire();
+        const result begun(PQexec(lease.get().native(), "begin"));
+        REQUIRE(begun.status() == PGRES_COMMAND_OK);
+        REQUIRE_FALSE(lease.get().idle());
+    }
+    const auto lease = p.acquire();
+    CHECK(lease.get().idle());
+}
+
+TEST_CASE("a statement that fails to prepare reports its own error, not the abort after it",
+          "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    const auto ctx = context_of(h);
+    const statement<std::tuple<std::int32_t>> broken{"pq_broken", "selec 1"};
+    const statement<std::tuple<std::int32_t>> fine{"pq_fine", "select 1"};
+    try {
+        transact(p, ctx, [&](transaction& tx) {
+            transaction::batch b;
+            b.add(broken).add(fine);
+            tx.run(b);
+        });
+        FAIL("the broken statement did not throw");
+    } catch (const store_error& e) {
+        CHECK(e.sqlstate() == "42601");
+        CHECK_FALSE(e.retryable());
+    }
+    CHECK(transact(p, ctx, [&](transaction& tx) { return std::get<0>(tx.query(fine).at(0)); }) ==
+          1);
 }

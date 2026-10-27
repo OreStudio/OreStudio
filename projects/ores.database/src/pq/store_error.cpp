@@ -24,7 +24,12 @@ error_kind classify(std::string_view sqlstate) {
     if (sqlstate.size() != 5)
         return error_kind::refused;
     const auto cls = sqlstate.substr(0, 2);
-    if (cls == "08" || cls == "40" || cls == "53" || cls == "57" || sqlstate == "55P03")
+    if (cls == "08" || cls == "40")
+        return error_kind::retryable;
+    if (cls == "53")
+        return sqlstate == "53100" ? error_kind::refused : error_kind::retryable;
+    if (sqlstate == "57P01" || sqlstate == "57P02" || sqlstate == "57P03" || sqlstate == "55P03" ||
+        sqlstate == "25006")
         return error_kind::retryable;
     return error_kind::refused;
 }

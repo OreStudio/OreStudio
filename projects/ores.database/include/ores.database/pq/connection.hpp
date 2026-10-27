@@ -20,6 +20,7 @@
 #define ORES_DATABASE_PQ_CONNECTION_HPP
 
 #include "ores.database/export.hpp"
+#include <chrono>
 #include <cstdint>
 #include <libpq-fe.h>
 #include <memory>
@@ -40,6 +41,7 @@ struct connection_options final {
     std::string user;
     std::string password;
     std::string application_name;
+    std::chrono::seconds connect_timeout{10};
 
     /**
      * @brief The keyword/value connection string, each value quoted.
@@ -105,6 +107,12 @@ public:
     }
 
     [[nodiscard]] bool healthy() const noexcept;
+
+    /**
+     * @brief Whether the connection is outside any transaction, as a
+     * connection in the pool must be.
+     */
+    [[nodiscard]] bool idle() const noexcept;
 
     /**
      * @brief Reconnects a broken connection. A new server session holds no

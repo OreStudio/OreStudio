@@ -40,8 +40,11 @@ enum class error_kind { retryable, refused };
  * @brief The class of a SQLSTATE.
  *
  * Connection exceptions (08), transaction rollbacks (40), insufficient
- * resources (53), operator intervention (57) and lock not available (55P03)
- * are retryable. Every other state, and an empty one, is refused.
+ * resources (53) other than a full disk (53100), a server that is shutting
+ * down or starting (57P01, 57P02, 57P03), lock not available (55P03) and a
+ * read-only transaction after a failover (25006) are retryable. A cancelled
+ * or timed-out statement (57014) is refused: the same statement times out
+ * again. Every other state, and an empty one, is refused.
  */
 ORES_DATABASE_EXPORT error_kind classify(std::string_view sqlstate);
 

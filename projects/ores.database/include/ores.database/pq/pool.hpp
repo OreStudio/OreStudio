@@ -35,8 +35,12 @@ namespace ores::database::pq {
  *
  * Every connection opens when the pool is made and lives as long as the pool,
  * so no query pays for a lookup, a login and a teardown. A lease takes one
- * connection and gives it back on every path. A connection that broke is
- * reconnected when it is next leased.
+ * connection and gives it back on every path. A connection that broke, or
+ * that comes back still inside a transaction because a rollback or a copy
+ * failed, is reset when it is next leased, so no caller inherits another's
+ * transaction or settings.
+ *
+ * A lease must not outlive its pool.
  */
 class ORES_DATABASE_EXPORT pool final {
 public:

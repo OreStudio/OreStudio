@@ -19,6 +19,7 @@
 #include "ores.database/pq/transaction.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <unordered_set>
 
 namespace ores::database::pq {
@@ -54,9 +55,13 @@ struct sent_command {
 };
 
 [[noreturn]] void lost(const connection& c, std::string_view what) {
-    throw store_error(
-        std::string(what) + ": " + PQerrorMessage(c.native()), "08006", error_kind::retryable);
+    const bool broken = !c.healthy();
+    throw store_error(std::string(what) + ": " + PQerrorMessage(c.native()),
+                      broken ? "08006" : "",
+                      broken ? error_kind::retryable : error_kind::refused);
 }
+
+constexpr std::size_t copy_chunk = 1 << 20;
 
 }
 
@@ -201,9 +206,13 @@ transaction::copy_data(std::string_view table, std::string_view columns, const s
         check(connection_, start, "copy");
         lost(connection_, "Copy did not start");
     }
-    if (PQputCopyData(c, data.data(), static_cast<int>(data.size())) != 1 ||
-        PQputCopyEnd(c, nullptr) != 1)
-        lost(connection_, "Could not send the copy data");
+    for (std::size_t at = 0; at < data.size(); at += copy_chunk) {
+        const auto n = std::min(copy_chunk, data.size() - at);
+        if (PQputCopyData(c, data.data() + at, static_cast<int>(n)) != 1)
+            lost(connection_, "Could not send the copy data");
+    }
+    if (PQputCopyEnd(c, nullptr) != 1)
+        lost(connection_, "Could not end the copy");
     const result end(PQgetResult(c));
     check(connection_, end, "copy");
     const auto written = end.affected();

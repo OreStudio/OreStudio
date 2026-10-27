@@ -39,8 +39,16 @@ pool::pool(connection_options options, std::size_t size, std::chrono::millisecon
     , size_(size)
     , acquire_timeout_(acquire_timeout) {
     idle_.reserve(size_);
-    for (std::size_t i = 0; i < size_; ++i)
-        idle_.push_back(std::make_unique<connection>(options_));
+    for (std::size_t i = 0; i < size_; ++i) {
+        try {
+            idle_.push_back(std::make_unique<connection>(options_));
+        } catch (const store_error& e) {
+            throw store_error("Connection " + std::to_string(i + 1) + " of " +
+                                  std::to_string(size_) + ": " + e.what(),
+                              e.sqlstate(),
+                              e.kind());
+        }
+    }
 }
 
 pool::lease pool::acquire() {
@@ -55,7 +63,7 @@ pool::lease pool::acquire() {
         idle_.pop_back();
     }
     lease l(*this, std::move(c));
-    if (!l.get().healthy())
+    if (!l.get().healthy() || !l.get().idle())
         l.get().reset();
     return l;
 }

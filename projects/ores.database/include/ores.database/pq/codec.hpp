@@ -203,6 +203,11 @@ struct codec<utility::uuid::tenant_id> {
 /**
  * @brief timestamptz: microseconds since 2000-01-01 UTC. The infinities map
  * to the time point's minimum and maximum.
+ *
+ * A time point counts nanoseconds and stops in 2262. Its maximum is the
+ * bitemporal never, and encodes as the database's 9999-12-31 23:59:59; every
+ * value read at or past the clock's end decodes as that maximum, so a real
+ * timestamp after 2262 cannot be told from never.
  */
 template <>
 struct codec<std::chrono::system_clock::time_point> {

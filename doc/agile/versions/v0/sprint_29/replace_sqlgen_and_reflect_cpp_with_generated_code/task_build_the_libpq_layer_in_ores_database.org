@@ -113,7 +113,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Layer test cases against the database | 9 of 9 pass | =ctest --preset linux-clang-release-ninja -R ores.database.tests= | this branch |
+| Layer test cases against the database | 11 of 11 pass | =ctest --preset linux-clang-release-ninja -R ores.database.tests= | this branch |
 | Write 1,000 rows in one pipeline, on the layer | median 26.2 ms (19.2–34.4), 20 runs, load average 25 | =ores.database.tests "[.benchmark]"= | this branch |
 | Read all 1,000, on the layer | median 3.95 ms (2.90–10.0) | same | this branch |
 | 1,000 point reads, one round trip each, on the layer | median 84.3 ms (70.2–179) | same | this branch |
@@ -162,7 +162,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed rollback or copy can return a connection to the pool inside a transaction | =pool.cpp= | Accept | =acquire= resets a connection that is not idle; a test hands one back mid-transaction, and fails without the check. |
+| 2 | All of class 57 is retryable, so a statement timeout loops | =store_error.cpp= | Accept | Only 57P01-57P03 retry; 57014 and 53100 are refused; 25006 retries. |
+| 3 | COPY writes one buffer with an int length | =transaction.cpp= | Accept | Written in 1 MiB chunks; the header already says table and columns are code. |
+| 4 | A failed send is always retryable | =transaction.cpp= | Accept | Retryable only when the connection is broken. |
+| 5 | No connect timeout | =connection.hpp= | Accept | =connect_timeout= of 10 s by default. |
+| 6 | A pool's open failure does not say which connection | =pool.cpp= | Accept | The error names the connection and the pool size. |
+| 7 | A pool's lifetime against its leases is undocumented | =pool.hpp= | Accept | Documented: a lease must not outlive its pool. |
+| 8 | No test pins the prepare error over the abort | =pq_layer_tests.cpp= | Accept | A broken statement in a batch reports 42601. |
+| 9 | Decimal extremes are untested | =pq_layer_tests.cpp= | Accept | 1e-20 and 1e30 round-trip. |
+| 10 | A real timestamp after 2262 reads as never | =codec.hpp= | Accept | Documented on the codec. |
+| 11 | Re-run the benchmark on a quiet machine | — | Defer | Needs a quiet machine, as the full-build measurement does. |
 
 * Result
 

@@ -58,6 +58,7 @@ std::string connection_options::conninfo() const {
     append(out, "user", user);
     append(out, "password", password);
     append(out, "application_name", application_name);
+    append(out, "connect_timeout", std::to_string(connect_timeout.count()));
     return out;
 }
 
@@ -99,6 +100,10 @@ connection::connection(const connection_options& options)
 
 bool connection::healthy() const noexcept {
     return PQstatus(handle_.get()) == CONNECTION_OK;
+}
+
+bool connection::idle() const noexcept {
+    return PQtransactionStatus(handle_.get()) == PQTRANS_IDLE;
 }
 
 void connection::reset() {

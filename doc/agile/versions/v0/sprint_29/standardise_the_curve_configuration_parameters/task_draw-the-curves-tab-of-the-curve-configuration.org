@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/draw-the-curves-tab-of-the-curve-configuration
-#+pr:
+#+pr: 3950
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3950][#3950]] | [web] Draw the curves tab in the products shape |
 
 * Review
 

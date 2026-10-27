@@ -100,7 +100,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Columns replaced by rows | 5 | =grep -c "_json" projects/ores.trading/modeling/ores.trading.equity_*_instrument.org= | 124692ba7d |
+| Corpus documents that round trip | 132 of 132, failed=0 | =ores.ore.core.tests= | 124692ba7d |
+| ORE suite | 475,515 assertions, 394 cases | =ores.ore.core.tests= | 124692ba7d |
+| Trading suite | 1,416 assertions, 221 cases | =ores.trading.core.tests= | 124692ba7d |
+| Synthetic suite | 1,640 assertions, 74 cases | =ores.synthetic.core.tests= | 124692ba7d |
+| Build targets | 8,010 of 8,010 | =compass build= | 124692ba7d |
 
 * Notes
 
@@ -128,3 +133,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Five columns that held JSON became rows, and each one is now something the
+store can answer a question about.
+
+| Column | Became | Why there |
+|--------+--------+-----------|
+| =basket_json= | =equity_basket_constituent= rows | one row per underlying, in the document's order |
+| =initial_prices_json= | =equity_basket_constituent.initial_price= | the document states one price per underlying |
+| =knock_out_levels_json= | =equity_swap_period.knock_out_level= | the document states one level per determination date |
+| =fixed_trigger_levels_json= | =equity_swap_period.fixed_trigger_level= | the same list, observed on the same dates |
+| =range_bounds_json= | =range_bound= rows | the shared table the FX accumulator already writes |
+
+The corpus decided the shape. =InitialPrices= carries one entry per underlying
+and the two level lists carry one per date, so a basket of two names over four
+dates states two prices and four levels. Folding all four into the constituent
+would have been wrong and would have failed on the first real basket.
+
+Three things the work cost that a reader should know:
+
+- The instrument batch is generated from =ores.trading.trade_type_catalogue.org=.
+  Editing the header directly is reverted by the next regeneration, and the
+  array only exists once the catalogue names the type.
+- =as_equity= built the wrapper without its children twice: first without the
+  basket, then without the period rows, and each time a round trip kept the
+  first row and lost the rest.
+- A leaf must be read with the accessor its schema type deserves. Reading
+  =Leverage= as text threw, the whole mapping was caught, and the accumulator
+  imported with no instrument at all rather than with a wrong one.

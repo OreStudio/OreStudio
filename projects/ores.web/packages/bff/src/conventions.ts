@@ -156,7 +156,36 @@ const PART_LINK_FIELDS = new Set([
     'recorded_at',
 ]);
 
-const centralRow = z.looseObject({ id: z.string(), version: z.int() });
+/**
+ * The central row's columns under their own names.
+ *
+ * The central row is grouped onto field groups too — =identity=, =payload=,
+ * =audit= — so the wire nests its columns one level, exactly as a part's are.
+ * Nothing is dropped here: the =id=, =version= and =party_id= this row carries
+ * are its own, not links to a parent, so the rule that drops a part's link
+ * fields does not apply. A row the service sends flat passes through unchanged.
+ */
+function flattenCentral(row: Readonly<Record<string, unknown>>): Record<string, unknown> {
+    const flat: Record<string, unknown> = {};
+    for (const [field, value] of Object.entries(row)) {
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+            Object.assign(flat, value);
+            continue;
+        }
+        flat[field] = value;
+    }
+    return flat;
+}
+
+/**
+ * A row the screen can address, whatever shape the service sends it in: the
+ * groups are flattened first, then the key the list and the record page both
+ * read is required to be there.
+ */
+const centralRow = z
+    .looseObject({})
+    .transform((row) => flattenCentral(row))
+    .pipe(z.looseObject({ id: z.string(), version: z.int() }));
 const compositeItem = z.looseObject({ key: z.looseObject({ id: z.string() }) });
 
 /**
@@ -235,20 +264,27 @@ function oneOf<Row extends Readonly<Record<string, unknown>>>(
  * One convention of a family by its key, the composite's parts laid over its
  * central row. Every row of the key is read, a page at a time, so the party
  * asked for is found however many parties hold the id.
+ *
+ * The entities the row actually holds come back with it: a composite kind has
+ * one part per form, and a convention may carry only one of them. The terms of
+ * a form the row does not hold are not the convention's terms.
  */
 async function readConvention(
     session: LiveSession,
     family: ConventionFamily,
     id: string,
     party: string | undefined,
-): Promise<Readonly<Record<string, unknown>> | undefined> {
+): Promise<
+    { readonly row: Readonly<Record<string, unknown>>; readonly held: ReadonlySet<string> } | undefined
+> {
     const composite = COMPOSITE_FAMILIES[family.key];
     if (composite === undefined) {
         const rows = await readAll(session, `refdata.v1.${family.prefix}.list`, family.prefix, {
             filter: { id_one_of: [id] },
             as_of: null,
         });
-        return oneOf(rows, party);
+        const row = oneOf(rows, party);
+        return row === undefined ? undefined : { row, held: new Set() };
     }
     const rows = await readAll(
         session,
@@ -259,7 +295,10 @@ async function readConvention(
             as_of: null,
         },
     );
-    const found = oneOf(rows, party);
+    // The party that holds the row is part of its grouped identity, and the
+    // party is how one row among several is chosen, so the groups come off
+    // before the choice is made.
+    const found = oneOf(rows.map((row) => flattenCentral(row)), party);
     const central = found === undefined ? undefined : centralRow.parse(found);
     if (central === undefined) {
         return undefined;
@@ -273,7 +312,24 @@ async function readConvention(
         throw invalidRequest(parts.result.message);
     }
     const item = parts.items[0];
-    return item === undefined ? central : zipParts(central, item);
+    if (item === undefined) {
+        return { row: central, held: new Set() };
+    }
+    /*
+     * A part is populated exactly when its array holds a row. An entity that
+     * names one of those parts is held only when the part is; an entity that
+     * names none of them is the centre, which every row holds. The registry
+     * keys already say which entities the composite stands for, so the forms
+     * are told apart without a second table that could drift from them.
+     */
+    const partEntries = Object.entries(item).filter(([, value]) => Array.isArray(value));
+    const held = new Set(
+        composite.registryKeys.filter((entity) => {
+            const part = partEntries.find(([name]) => entity.endsWith(name));
+            return part === undefined || (part[1] as unknown[]).length > 0;
+        }),
+    );
+    return { row: zipParts(central, item), held };
 }
 
 /**
@@ -338,8 +394,30 @@ async function termsOf(
         });
 }
 
-const MAX_ROWS = 500;
+/**
+ * The terms of the form this row actually holds.
+ *
+ * A kind's terms are declared once for the kind, but they live on its parts: a
+ * tenor basis swap holds either the pay/receive form or the long and short one,
+ * and two of the terms are named the same on both. The terms of the form the
+ * row does not hold are not its terms, and drawing them would tell a person
+ * that fields they have never had are defaulted. A family with no parts, or a
+ * row that holds none, keeps every term the kind declares.
+ */
+async function termsOfHeldForm(
+    session: LiveSession,
+    kindCode: string,
+    row: Readonly<Record<string, unknown>>,
+    held: ReadonlySet<string>,
+): Promise<readonly Readonly<Record<string, unknown>>[]> {
+    const terms = await termsOf(session, kindCode, row);
+    if (held.size === 0) {
+        return terms;
+    }
+    return terms.filter((term) => held.has(text(term['entity'])));
+}
 
+const MAX_ROWS = 500;
 const pageQuerySchema = z.object({
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(MAX_ROWS).default(MAX_ROWS),
@@ -544,10 +622,11 @@ export function registerConventionRoutes(
         const family = familyOf(request);
         const { id } = request.params as { id: string };
         const { party } = input(documentQuerySchema, request.query);
-        const row = await readConvention(session, family, id, party);
-        if (row === undefined) {
+        const read = await readConvention(session, family, id, party);
+        if (read === undefined) {
             throw notFound(`There is no ${family.key} convention ${id}.`);
         }
+        const row = read.row;
         const code = kindCodeOf(family.key);
         const kinds = await readAll(
             session,
@@ -575,7 +654,7 @@ export function registerConventionRoutes(
             version: row['version'] ?? null,
             modifiedBy: text(row['modified_by']),
             recordedAt: text(row['recorded_at']),
-            terms: await termsOf(session, code, row),
+            terms: await termsOfHeldForm(session, code, row, read.held),
         };
     });
 
@@ -686,10 +765,11 @@ export function registerConventionRoutes(
         }
         const { id } = request.params as { id: string };
         const body = input(termsBodySchema, request.body);
-        const row = await readConvention(session, family, id, body.party);
-        if (row === undefined) {
+        const read = await readConvention(session, family, id, body.party);
+        if (read === undefined) {
             throw notFound(`There is no ${family.key} convention ${id}.`);
         }
+        const row = read.row;
         // The service writes a convention under the session's acting party, so a
         // row of another party would be written as a change to the acting party's.
         const owner = text(row['party_id']);

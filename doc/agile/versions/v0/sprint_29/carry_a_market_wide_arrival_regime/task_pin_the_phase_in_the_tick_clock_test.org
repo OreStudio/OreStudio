@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: B1468788-0CDB-415B-A332-32BAD9D92E95
+:END:
+#+title: Task: Pin the phase in the tick_clock test
+#+description: The tick_clock test asserts that every gap equals the nominal gap, and has failed on main since a periodic feed started at a random phase: the first gap is the phase times the gap. Read the phase from the process and assert the first gap against it, so the test states the law instead of an accident of the default seed.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/schedule-every-feed-on-the-market-clock
+#+pr: 3906
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tick_clock suite is green on main again, and it asserts the periodic law as it is now: the first gap is the phase times the nominal gap, and every later gap is the nominal gap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The case 'tick_clock hands the body the gap it waited' passes on a unity and a non-unity build.
+- The first gap is asserted against the phase the process drew, not against the nominal gap.
+- No other test changes.
+
+* Plan
+
+Give the periodic process a =phase()= accessor, the way the Hawkes process
+names its baseline and jump, and assert the first gap against it. The process
+itself is replaced by a law value in a later task, so nothing else changes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3906][#3906]] | [analytics] Pin the phase in the tick_clock test, and scope the arrival redesign |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: no findings in the changed code; misspell clean on the changed files | — | — | The repository-wide misspell hits predate this branch. |
+| 2 | Add a case with an explicit seed so the phase law is pinned apart from the default | tick_clock_tests.cpp | Declined | arrival_process_tests.cpp already pins explicit seeds, and the law value of a later task replaces this process. |
+| 3 | The blocked task's updated date and Last touched still say 2026-10-26 | task_make_a_rate_change_change_sampling_only.org | Accepted | Both set to 2026-10-27. |
+| 4 | Local gate: cmake-sources failed because feed_seed.hpp is missing from the synthetic api list on main | ores.synthetic/api/src/component_files.cmake | No change | Main listed the header before this branch rebased, so the fix fell away in the rebase. |
+
+* Result
+
+The case "tick_clock hands the body the gap it waited" passes again. The
+periodic process names its phase, and the test asserts the first gap as the
+phase times the nominal gap and the second and third as the nominal gap. The
+eight tick_clock cases and the four periodic cases pass on the release build.

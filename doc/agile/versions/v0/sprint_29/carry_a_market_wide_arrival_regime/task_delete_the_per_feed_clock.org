@@ -11,7 +11,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-27
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -82,3 +82,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-10-27. Deleting the clock is one step of a larger change:
+the scheduler is rewritten around one operational clock, and every feed takes
+it as a required dependency. [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]]
+carries that work, including the migration of the service-test fixtures and the
+adapter test this task described.
+
+Nothing was implemented under this task.

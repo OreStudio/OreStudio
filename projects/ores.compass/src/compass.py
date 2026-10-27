@@ -2625,11 +2625,21 @@ def cmd_lint(argv):
     extra_exclude = set(args.exclude)
     all_exclude = always_exclude | extra_exclude
 
+    # A file git ignores, such as scratch under tmp/, is local to one
+    # checkout and never reaches the corpus, so it is not linted.
+    visible = set(subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard",
+         "--", "*.org"],
+        cwd=PROJECT_ROOT, capture_output=True, text=True, check=True,
+    ).stdout.split("\0"))
+
     files = []
     for org_file in sorted(doc_index.find_org_files(root)):
         rel = org_file.relative_to(Path(PROJECT_ROOT))
         first_part = rel.parts[0] if rel.parts else ""
         if first_part in all_exclude or org_file.name.startswith("."):
+            continue
+        if rel.as_posix() not in visible:
             continue
         try:
             files.append((rel, org_file.read_text(encoding="utf-8",

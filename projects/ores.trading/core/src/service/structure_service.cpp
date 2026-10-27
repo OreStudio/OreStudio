@@ -24,8 +24,11 @@
  */
 #include "ores.trading.core/service/structure_service.hpp"
 #include "ores.trading.api/domain/structure.hpp"
+#include "ores.trading.api/domain/structure_identifier.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
+#include "ores.trading.core/repository/structure_identifier_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -57,6 +60,56 @@ using ores::database::domain::refuse;
 namespace ores::trading::service {
 
 using namespace ores::logging;
+
+
+/**
+ * @brief The prefix a deal reference carries for a kind of structure.
+ *
+ * The desk reads a reference and knows what it is looking at, so the prefix is
+ * the kind's and not a house-wide one. An unknown kind takes the structure
+ * prefix rather than no prefix at all: a reference is what makes a deal
+ * addressable, and a missing one is worse than an approximate one.
+ */
+std::string reference_prefix(const std::string& kind) {
+    if (kind == "Package")
+        return "PKG";
+    if (kind == "Strategy")
+        return "STR";
+    if (kind == "Typed")
+        return "TYP";
+    if (kind == "Dynamic")
+        return "DYN";
+    return "STR";
+}
+
+/**
+ * @brief Names a new structure with the reference that addresses it.
+ *
+ * A structure is grouped before anybody can book a leg into it, so the grouping
+ * is where it needs a name. The value is derived from the structure's own id,
+ * which is unique already, so two structures cannot collide and no counter has
+ * to be kept.
+ */
+void name_structure(const ores::database::context& ctx,
+                    const ores::utility::domain::precondition& claim,
+                    const domain::structure& value) {
+    if (claim.kind != ores::utility::domain::precondition_kind::must_not_exist)
+        return;
+
+    domain::structure_identifier identifier;
+    identifier.tenant_id = value.tenant_id;
+    identifier.structure_id = value.id;
+    identifier.id_type = "Internal";
+    identifier.id_value =
+        reference_prefix(value.kind) + "-" + boost::uuids::to_string(value.id).substr(0, 8);
+    identifier.modified_by = value.modified_by;
+    identifier.performed_by = value.performed_by;
+    identifier.change_reason_code = value.change_reason_code;
+    identifier.change_commentary = value.change_commentary;
+    identifier.recorded_at = value.recorded_at;
+
+    repository::structure_identifier_repository{}.write(ctx, identifier, claim);
+}
 
 structure_service::structure_service(context ctx)
     : ctx_(std::move(ctx)) {}
@@ -210,6 +263,8 @@ structure_service::put_many_structures(const messaging::put_many_structures_requ
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
+    for (std::size_t i = 0; i < batch.size(); ++i)
+        name_structure(ctx_, claims[i], batch[i]);
     response.structures.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = structure_read_one(repo_, ctx_, structure_key_from(value));

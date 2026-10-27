@@ -111,6 +111,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.pin(std::move(msg));
         }));
 
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::get_market_trace_request::nats_subject),
+        queue,
+        [&nats, &scheduler, ctx, verifier](ores::nats::message msg) {
+            market_regime_handler h(nats, scheduler, ctx, verifier);
+            h.trace(std::move(msg));
+        }));
+
     subs.push_back(nats.queue_subscribe(std::string(set_faults_request::nats_subject),
                                         queue,
                                         [&nats, faults, ctx, verifier](ores::nats::message msg) {

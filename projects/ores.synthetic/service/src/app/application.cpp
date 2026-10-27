@@ -286,22 +286,20 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // control-plane verb reads.
     const auto registry = make_default_feed_kind_registry();
 
-    // One market for the whole run: every feed built here consults it, so a
-    // busy market lifts all of them together. A feed only reads it; this thread
-    // is its single owner, and moving it on a few times a second is enough for a
-    // state whose dwell times are minutes.
-    ores::analytics::quant::domain::market_regime market;
-    // The heat any event anywhere adds to. The same thread fades it, so the decay
-    // is paid once a period rather than once per reader.
-    // Jumps and decay: half a rate per event, fading at twenty a second, which
-    // settles at an event rate of ten a second adding a quarter of a rate. Zero
-    // jump would leave the factor inert, so the default is explicit here.
-    ores::analytics::quant::domain::shared_intensity intensity(0.5, 20.0);
-
-    // One clock for the whole run: every feed registers its tick body here at
-    // start() and leaves at stop(), so the order in which series tick is decided
-    // in one place and a series can see another's event.
-    ores::analytics::quant::service::tick_scheduler scheduler;
+    // One loop for the whole run. It owns the market, the regime chain and the
+    // heat, and decides when every feed ticks, so a busy market lifts every feed
+    // at once and one seed reproduces the run.
+    // The heat adds half a rate per event and fades at twenty a second, so its
+    // loop gain is a fortieth. Zero jump would leave the heat inert, so the
+    // default is explicit here.
+    ores::analytics::quant::service::steady_run_clock run_clock;
+    const ores::analytics::quant::domain::market_config market{.wake_rate = 1.0 / 600.0,
+                                                               .calm_rate = 1.0 / 300.0,
+                                                               .active_multiplier = 2.0,
+                                                               .jump = 0.5,
+                                                               .decay = 20.0};
+    BOOST_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed;
+    ores::analytics::quant::service::tick_scheduler scheduler(run_clock, market, cfg.run_seed);
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [](const std::exception& ex) {
                             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
@@ -312,24 +310,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             (void)stop;
         });
 
-    constexpr auto market_period = std::chrono::milliseconds(100);
-    ores::platform::concurrency::jthread market_owner(
-        [&market, &intensity, market_period](ores::platform::concurrency::stop_token stop) {
-            while (!stop.stop_requested()) {
-                std::this_thread::sleep_for(market_period);
-                market.advance_to_now();
-                intensity.fade(std::chrono::duration<double>(market_period).count());
-            }
-        });
-
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for
     // each id that the demand names.
-    const ores::synthetic::feed::feed_build_context adapter_build{.nats = nats,
-                                                                  .auth_nats = svc_nats,
-                                                                  .market = &market,
-                                                                  .intensity = &intensity,
-                                                                  .scheduler = &scheduler};
+    const ores::synthetic::feed::feed_build_context adapter_build{
+        .nats = nats, .auth_nats = svc_nats, .scheduler = scheduler};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
@@ -341,11 +326,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [&generators, faults, &svc_nats, &registry, &market, &intensity, &scheduler](
-            auto& n, auto c, auto v) {
+        [&generators, faults, &svc_nats, &registry, &scheduler](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, generators, faults, c, v, registry, &market, &intensity, &scheduler);
+                n, svc_nats, generators, faults, c, v, registry, scheduler);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

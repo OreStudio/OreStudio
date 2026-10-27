@@ -23,6 +23,7 @@
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
 
@@ -44,6 +45,13 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+
+    /**
+     * @brief The seed every random stream of the run is keyed by.
+     *
+     * One seed reproduces a run: the same feeds tick at the same times.
+     */
+    std::uint64_t run_seed = 42;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

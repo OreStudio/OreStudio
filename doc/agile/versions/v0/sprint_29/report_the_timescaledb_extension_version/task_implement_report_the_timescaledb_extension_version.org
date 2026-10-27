@@ -8,7 +8,7 @@
 #+filetags: :report_the_timescaledb_extension_version:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/report-the-timescaledb-extension-version
-#+pr:
+#+pr: 3914
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3914][#3914]] | [compass] Say when a database's timescaledb version is not on disk |
 
 * Review
 

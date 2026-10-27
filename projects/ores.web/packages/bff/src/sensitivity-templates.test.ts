@@ -514,8 +514,32 @@ describe('POST /api/analytics/sensitivity-templates', () => {
         expect(response.statusCode).toBe(201);
         expect(calls.find((call) => call.subject === PUT)?.body).toMatchObject({
             change: {
-                write: { code: 'ACME_Trade', method_code: 'Trade', asset_class_code: null },
+                write: { code: 'ACME_Trade', method_code: 'Trade', asset_class_code: '' },
             },
+        });
+    });
+
+    it('reads an empty class on a trade-level key as no class', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            ...lookups(),
+            [PUT]: { result: ok, sensitivity_template: stored('SensiTrade', null, 'Trade') },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/analytics/sensitivity-templates/SensiTrade',
+            {
+                methodCode: 'Trade',
+                assetClassCode: '',
+                description: 'The trade states its own sensitivities.',
+                version: 1,
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls.find((call) => call.subject === PUT)?.body).toMatchObject({
+            change: { write: { code: 'SensiTrade', asset_class_code: '' } },
         });
     });
 

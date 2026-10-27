@@ -69,6 +69,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:4491F016-B433-4A55-BBDE-7D4EE4D43071][Close the approval model gaps]] | DONE | 2026-10-27 | 2026-10-27 | The controller part is never asked for, a market data publish has no kind, a tenant-wide change names no decider, and a hold has no reason lookup. |
 | [[id:DC6BD897-8E19-4910-BD94-E3A0828DDA2A][Name the publish subject and record who published it]] | DONE | 2026-10-27 | 2026-10-27 | A publish request authorises any subject, and a curve has no published marker or publisher. |
 | [[id:C8C5536D-1FFB-4E63-937D-88A27C05B21F][Design the published curve screens and decide the publish model gaps]] | DONE | 2026-10-27 | 2026-10-27 | The published-curves list, the delta and the queue subject need a prototype; the withdrawal, zero-approval, notification and maker-checker need decisions. |
+| [[id:3E5A507D-85B5-4CBC-AEA0-4F676026ABB8][Build the published curve screens]] | STARTED | 2026-10-27 | | Implement the signed-off prototype: the list, the record page with its four tabs, the last-N overlay, the comparison, the history and the queue subject. |
 
 * Decisions
 

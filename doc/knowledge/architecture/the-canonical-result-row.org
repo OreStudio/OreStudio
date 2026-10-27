@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 13C20438-4203-4A53-9135-EEEA71AEDE34
+:END:
+#+title: The canonical result row
+#+description: The contract between the grid, the result table and the screens: the columns, the measures, how a wide file widens, and what a marshal must refuse.
+#+type: knowledge
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+* Summary
+
+Every result the grid hands back is one file of the same shape: one row per
+subject, measure and currency. The marshal projects the engine's own headings onto
+those columns, so nothing is inferred; a file it does not recognise is refused with
+a reason. This is the contract the result table, the post-processing step and every
+screen are built against.
+
+* Detail
+
+** The columns
+
+| Column | Read from | Notes |
+|--------+-----------+-------|
+| =subject_type= | the marshal, from the file | =trade=, =book=, =counterparty=, =portfolio= |
+| =subject_id= | =TradeId=, the record's id | the engine's own identifier |
+| =measure= | the file's heading | =npv=, =npv_base=, =notional=, =delta=, =gamma= |
+| =currency= | =NpvCurrency=, =NotionalCurrency= | empty when the measure has none |
+| =value= | the figure's own column | a decimal, never formatted |
+| =source= | the marshal | the file name and the row it came from |
+
+The run, its definition, its party and its tenant are not in the file: they belong
+to the run, and the post-processing step fills them as it loads. =as_of= is the
+run's priced date, also the step's to fill.
+
+** The widening rule
+
+A file that states one measure in one row projects one row. A file that states
+several measures in one row, as the sensitivity output does, widens to one row per
+measure. The widening is stated per analytic in the marshal and nowhere else.
+
+** What the marshal must refuse
+
+- A file whose headings it does not know, naming the headings it found.
+- A row whose subject id is empty.
+- A figure it cannot read as a decimal.
+- A measure whose currency it cannot state, unless the measure has no currency.
+
+A refusal is a row in the run's errors with the post-processing scope, naming the
+file and the heading, and it fails the run's post-processing rather than writing
+part of the result.
+
+** The guarantees the screens may rely on
+
+- One row per subject, measure and currency per run; a repeated row is a fault the
+  table's key refuses.
+- =value= is a decimal; formatting is the screen's business.
+- =measure= values are open: a new analytic adds a value, not a column and not a
+  schema change.
+- The rows arrive together: one run's rows are written in one transaction.
+
+** What is not built
+
+The file itself, the marshal, the table and the step. This page is the shape they
+are written against, and it changes only by agreement between the three.

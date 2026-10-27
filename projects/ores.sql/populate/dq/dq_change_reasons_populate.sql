@@ -214,6 +214,28 @@ BEGIN
         67      -- display order
     );
 
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.curve_withdrawn',
+        'A published curve was taken out of use: the record stamps the account, the instant and the reason',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the end is a new version of the subject row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        68      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.curve_superseded',
+        'A later published set replaced a published curve: the record links the successor request and its as-of',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the link is a new version of the superseded row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        69      -- display order
+    );
+
     -- =============================================================================
     -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
     -- =============================================================================

@@ -485,4 +485,37 @@ curve_publish_repository::read_latest_published_for_series(context ctx,
     return *newest;
 }
 
+std::vector<domain::curve_publish>
+curve_publish_repository::read_live_for_series(context ctx, const boost::uuids::uuid& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto query =
+        sqlgen::read<std::vector<curve_publish_entity>> |
+        where("tenant_id"_c == tid && "output_series_id"_c == sid && "valid_to"_c == max.value());
+
+    auto rows = execute_read_query<curve_publish_entity, domain::curve_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return curve_publish_mapper::map(entities); },
+        lg(),
+        "Reading the live sets of a series.");
+
+    // A set is live when it was published and nothing ended it: a record with no
+    // instant is a request that still waits, and one that carries an end is a set
+    // a reader no longer prices from.
+    rows.erase(std::remove_if(rows.begin(),
+                              rows.end(),
+                              [](const auto& r) {
+                                  return !r.published_at.has_value() ||
+                                         r.withdrawn_at.has_value() || r.superseded_at.has_value();
+                              }),
+               rows.end());
+    std::sort(rows.begin(), rows.end(), [](const auto& a, const auto& b) {
+        return *a.published_at > *b.published_at;
+    });
+    return rows;
+}
+
 }

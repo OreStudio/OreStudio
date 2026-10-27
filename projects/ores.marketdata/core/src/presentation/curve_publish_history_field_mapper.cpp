@@ -52,6 +52,28 @@ render_curve_publish_fields(const domain::curve_publish& v) {
                       .value = v.published_at ?
                                    ores::platform::time::datetime::to_iso8601_utc(*v.published_at) :
                                    std::string{}});
+    fields.push_back({.name = "Withdrawn By", .value = v.withdrawn_by});
+    fields.push_back({.name = "Withdrawn At",
+                      .value = v.withdrawn_at ?
+                                   ores::platform::time::datetime::to_iso8601_utc(*v.withdrawn_at) :
+                                   std::string{}});
+    fields.push_back({.name = "Withdrawn Reason Code", .value = v.withdrawn_reason_code});
+    fields.push_back({.name = "Withdrawal Request ID",
+                      .value = v.withdrawal_request_id ?
+                                   boost::uuids::to_string(*v.withdrawal_request_id) :
+                                   std::string{}});
+    fields.push_back({.name = "Superseded At",
+                      .value = v.superseded_at ? ores::platform::time::datetime::to_iso8601_utc(
+                                                     *v.superseded_at) :
+                                                 std::string{}});
+    fields.push_back({.name = "Superseded By Request ID",
+                      .value = v.superseded_by_request_id ?
+                                   boost::uuids::to_string(*v.superseded_by_request_id) :
+                                   std::string{}});
+    fields.push_back({.name = "Superseded As Of",
+                      .value = v.superseded_as_of ? ores::platform::time::datetime::to_iso8601_utc(
+                                                        *v.superseded_as_of) :
+                                                    std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

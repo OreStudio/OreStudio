@@ -45,6 +45,21 @@
  * unapplied subject beside it. request_id is the natural key, so a request
  * authorises one publish and no second apply can find a row to write.
  *
+ * A set ends once, and the end is two more facts on the same row rather than a
+ * second entity. withdrawn_at, withdrawn_by, withdrawn_reason_code and
+ * withdrawal_request_id are the withdrawal: the instant, the account, the reason
+ * and the request that authorised it, written as a new version of this row. The
+ * withdrawal is not a deletion: the published facts stay, so the set a desk priced
+ * from is still readable afterwards. superseded_at,
+ * superseded_by_request_id and superseded_as_of are the supersession: a later
+ * publish replaced this set, and the link names the successor's request and the
+ * as-of it was built at. A supersession is a publish and not a second act, so the
+ * successor's own apply writes it on this row.
+ *
+ * The state a reader sees is a function of these facts and is stored nowhere:
+ * withdrawn when withdrawn_at holds an instant, superseded when superseded_at
+ * does, published when published_at does, and a candidate otherwise.
+ *
  * The row is not a client's to write: the raise writes it, the gate reads it, and
  * the apply stamps it. A client reads it to decide a request or to audit a curve.
  */
@@ -60,6 +75,13 @@ create table if not exists "ores_marketdata_curve_publishes_tbl" (
     "as_of" timestamp with time zone not null,
     "published_by" text not null,
     "published_at" timestamp with time zone null,
+    "withdrawn_by" text not null,
+    "withdrawn_at" timestamp with time zone null,
+    "withdrawn_reason_code" text not null,
+    "withdrawal_request_id" uuid null,
+    "superseded_at" timestamp with time zone null,
+    "superseded_by_request_id" uuid null,
+    "superseded_as_of" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -75,7 +97,13 @@ create table if not exists "ores_marketdata_curve_publishes_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check (("published_at" is null) = ("published_by" = '')),
-    check ("as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone)
+    check ("as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone),
+    check (("withdrawn_at" is null) = ("withdrawn_by" = '')),
+    check (("withdrawn_at" is null) = ("withdrawn_reason_code" = '')),
+    check ("withdrawn_at" is null or "withdrawn_at" >= "published_at"),
+    check (("superseded_at" is null) = ("superseded_by_request_id" is null)),
+    check (("superseded_at" is null) = ("superseded_as_of" is null)),
+    check (("withdrawn_at" is null) or ("superseded_at" is null))
 );
 
 -- Unique request_id for active records
@@ -98,6 +126,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists curve_publishes_curve_publishes_series_published_idx
 on "ores_marketdata_curve_publishes_tbl" (tenant_id, output_series_id, published_at desc)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists curve_publishes_curve_publishes_withdrawal_request_idx
+on "ores_marketdata_curve_publishes_tbl" (tenant_id, withdrawal_request_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_marketdata_curve_publishes_insert_fn()

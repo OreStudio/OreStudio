@@ -52,6 +52,13 @@ generate_synthetic_curve_publish(utility::generation::generation_context& ctx) {
     r.as_of = ctx.past_timepoint();
     r.published_by = std::string("");
     r.published_at = std::nullopt;
+    r.withdrawn_by = std::string("");
+    r.withdrawn_at = std::nullopt;
+    r.withdrawn_reason_code = std::string("");
+    r.withdrawal_request_id = std::nullopt;
+    r.superseded_at = std::nullopt;
+    r.superseded_by_request_id = std::nullopt;
+    r.superseded_as_of = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

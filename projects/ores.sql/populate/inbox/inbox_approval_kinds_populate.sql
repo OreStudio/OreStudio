@@ -41,6 +41,12 @@
  * for no comment on an approval, because a refusal already carries the one the
  * asker reads. It names no apply workflow: the trader applies an approved
  * request through marketdata.v1.ops.publish_curve, as the third journey draws it.
+ *
+ * A curve withdrawal is decided by Market Risk, as a publish is, because taking
+ * a curve out of use is the same risk decision read backwards. It does not
+ * expire: a withdrawal nobody answers leaves a wrong set in use, so the ask must
+ * stay visible rather than close in silence. It names no apply workflow either:
+ * the market data service applies it through marketdata.v1.ops.withdraw_curve.
  */
 
 \echo '--- Approval Kinds ---'
@@ -68,6 +74,11 @@ insert into ores_inbox_approval_kinds_tbl (
      'A trader asks for a candidate curve to become the one the desk prices from',
      'inbox::approvals:decide_market_risk',
      true, false, 14, null, null, 1, 50,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'marketdata.curve_withdrawal', 0, 'Curve withdrawal',
+     'A trader asks for a published curve to be taken out of use, with the reason kept against the act',
+     'inbox::approvals:decide_market_risk',
+     true, false, null, null, null, 1, 51,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'trading.operational_authorisation', 0, 'Operational authorisation',
      'Operations is asked to release a live trade',

@@ -24,7 +24,9 @@
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
@@ -123,6 +125,24 @@ public:
         write_series(series_id, output_series_uri("USD-SOFR-SECOND"));
         write_config(id, series_id);
         return id;
+    }
+
+    /// @brief The output series, as the resolver names it.
+    ores::marketdata::messaging::resolve_series_identity_request identity() const {
+        ores::marketdata::messaging::resolve_series_identity_request id;
+        id.asset = "ir";
+        id.scope = "USD";
+        id.instrument_type = "discount";
+        id.quote_type = "rate";
+        id.fields.push_back({"curve_id", "USD-SOFR-FIXTURE"});
+        return id;
+    }
+
+    /// @brief The snapshot a consumer reads, which states who published the set.
+    ores::marketdata::messaging::get_curve_snapshot_response snapshot() const {
+        ores::marketdata::messaging::get_curve_snapshot_request req;
+        req.identity = identity();
+        return ores::marketdata::service::series_snapshot_reader::read(*party, req, as_of);
     }
 
     /// @brief The published record of the output series, if any.
@@ -504,6 +524,39 @@ TEST_CASE("a_refused_publish_request_writes_nothing", tags) {
     // A refusal writes neither the published set nor the record of one.
     CHECK(f.output_point_count() == 0);
     CHECK_FALSE(f.published().has_value());
+}
+
+TEST_CASE("the_read_that_serves_the_curve_states_the_publisher_and_the_time", tags) {
+    curve_fixture f;
+    const auto maker = seed_person(f.h);
+    const auto decider = seed_person(f.h);
+    const auto subject = f.subject();
+
+    // Before anybody publishes, the read serves the observations and says so:
+    // a set nobody approved is not presented as a published one.
+    CHECK_FALSE(f.snapshot().published_at.has_value());
+    CHECK(f.snapshot().published_by.empty());
+    CHECK(f.snapshot().approval_request_id.empty());
+
+    const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
+    const auto id = boost::uuids::to_string(raised.id);
+    REQUIRE(approval_lifecycle(maker.ctx)
+                .decide(id, raised.version, "approve", decider.account.id, "")
+                .state_code == "approved");
+
+    const auto verdict = verdict_on_publish(maker.ctx, id, subject);
+    REQUIRE(verdict.approved);
+    ores::marketdata::service::app::curve_republish_service::republish(
+        *f.party, subject.bootstrap_config_id, subject.as_of);
+    const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
+
+    const auto snapshot = f.snapshot();
+    REQUIRE(snapshot.success);
+    CHECK(snapshot.published_by == maker.account.username);
+    REQUIRE(snapshot.published_at.has_value());
+    CHECK(*snapshot.published_at == *published.published_at);
+    CHECK(snapshot.published_as_of == subject.as_of);
+    CHECK(snapshot.approval_request_id == id);
 }
 
 TEST_CASE("an_approved_request_of_another_kind_does_not_permit_a_publish", tags) {

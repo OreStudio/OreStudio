@@ -1901,6 +1901,81 @@ The threshold is stated by the evolution journey; the read only reports it.
  */
 #+end_src
 
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+When a person last published this series, or absent when nobody has. The
+snapshot serves whatever the observations hold; this says whether what it
+serves is a published set or a set that nobody has approved yet.
+
+#+begin_src cpp :name comment
+/**
+ * @brief When a person last published this series, or absent when nobody has.
+ *
+ * The values the snapshot serves are the latest observations, published or
+ * not. This is what tells a reader which of the two it is looking at, and a
+ * series no person published answers absent rather than a plausible instant.
+ */
+#+end_src
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The account that published that set, or empty when nobody has. The decider and
+the publisher are two people: the approval records who answered, and this
+records who applied the answer.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account that published the set, or empty when nobody has.
+ *
+ * The decider and the publisher are two people: the approval records who
+ * answered the request, and this records who applied the answer.
+ */
+#+end_src
+
+*** published_as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The market instant the published set was bootstrapped against, and the epoch
+when nobody has published the series. A curve published at one as-of and read
+at another is the change this read lets a reader see.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The market instant the published set was bootstrapped against.
+ *
+ * The epoch when nobody has published the series. The snapshot's own instant
+ * is now, and the values carry their own ages; this is the as-of the published
+ * set was built at, which is what a delta against the live set is measured
+ * from.
+ */
+#+end_src
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The approval request that authorised the published set, or empty when nobody
+has published it. It is the request a decider answered, so the read says which
+decision the set in use stands on.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approval request that authorised the published set, or empty.
+ *
+ * The request a decider answered, so a reader sees which decision the set in
+ * use stands on and can read its decisions, its reason and its state.
+ */
+#+end_src
+
 ** import_market_data_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.import_market_data

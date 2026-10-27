@@ -86,6 +86,17 @@ task and name that file in the Command column.
 
 * Notes
 
+The provisioned database was one build behind this branch, so the new table, its
+trigger and its grants were applied by hand as well as committed: the create and
+notify-trigger scripts, =alter table ... owner to= and the same grants its
+sibling market data tables carry, the change reason and the two IAM seeds. The
+Acme tenant already existed, so the new permission and its two role grants were
+applied to that tenant directly, through the seed's own upsert functions, rather
+than by re-provisioning it and losing the demonstration's data. A scratch
+database built from the seeds (=compass db setup ores_eager_maxwell_seedcheck=,
+then dropped) shows the schema, the change reason, the permission and both role
+grants arrive from the committed files alone.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

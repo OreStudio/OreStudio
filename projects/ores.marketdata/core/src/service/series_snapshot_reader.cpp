@@ -22,6 +22,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
@@ -172,6 +173,18 @@ series_snapshot_reader::read(ores::database::context ctx,
     response.oldest_age_seconds = summary.oldest_age_seconds;
     response.spread_seconds = summary.spread_seconds;
     response.warning = summary.warning;
+
+    // What the values are: the set a person published under a decision, or a set
+    // nobody has approved yet. The read serves the observations either way, and
+    // states which of the two it served rather than leaving the caller to guess.
+    repository::curve_publish_repository publish_repo;
+    if (const auto published = publish_repo.read_latest_published_for_series(ctx, series.front().id);
+        published && published->published_at) {
+        response.published_at = published->published_at;
+        response.published_by = published->published_by;
+        response.published_as_of = published->as_of;
+        response.approval_request_id = boost::uuids::to_string(published->request_id);
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Read the snapshot of series " << series_id << ": "
                                << placed.size() << " points over " << grid.size() << " nodes";

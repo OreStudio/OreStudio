@@ -28,9 +28,9 @@ The work that follows the documentation task, and it owns the rest of the story.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | The entity prose calls a curve configuration's leaves parameters, and the code, SQL and diagrams that read it are regenerated. The page and the write check remain. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Draw the curve configuration page with the shared leaf parts, then check a value against its set on write. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -62,6 +62,18 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- *The docstring correction is done, and it is a cross-layer regeneration.*
+  =yield_curve_config= and =curve_definition= described their leaves as
+  *settings*, the word reserved to the engine run settings. Correcting the two
+  models regenerates the C++ domain headers, the refdata and dq create scripts,
+  and the ER diagrams. The diagram run also picked up drift from merges after
+  this branch's base, so diagrams the change does not concern move with it;
+  leaving them stale keeps =er-diagram= red.
+- *Two of this task's original items are already delivered.* The value sets were
+  carried by [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][their own task]], and the curve sections have been in the
+  =curve_section= data since before this story, so the page reads them rather
+  than restating them. What is left is the page and the write check.
 
 * Test Scenarios
 

@@ -219,7 +219,6 @@ TEST_CASE("the_queue_shows_a_request_to_the_decider_of_its_open_part", tags) {
     const decidable_scope as_finance{.part_codes = {"finance"}};
     const decidable_scope as_book_change_kind{.kind_codes = {"refdata.book_change"}};
 
-    CHECK(lifecycle.queue(as_controller, controller.id, 0, 500).total == 1);
     CHECK(listed(as_controller, controller.id));
     CHECK_FALSE(listed(as_finance, finance.id));
     CHECK_FALSE(listed(decidable_scope{}, trader.id));
@@ -233,13 +232,23 @@ TEST_CASE("the_queue_shows_a_request_to_the_decider_of_its_open_part", tags) {
         lifecycle.decide(id, raised.version, "approve", controller.id, "Checked", "controller");
     REQUIRE(first.outcome == "ok");
 
-    // The controller answered, so the request is out of their open queue and in
-    // the tail the screen reads afterwards.
+    // The controller answered, so the request is out of their open queue. It
+    // still waits on Finance, so it is in nobody's answered tail yet.
     CHECK_FALSE(listed(as_controller, controller.id));
-    CHECK(answered(as_controller, controller.id));
+    CHECK_FALSE(answered(as_controller, controller.id));
     CHECK(listed(as_finance, finance.id));
-    CHECK(lifecycle.queue(as_finance, finance.id, 0, 500).total == 1);
     CHECK_FALSE(answered(as_finance, finance.id));
+
+    const auto second =
+        lifecycle.decide(id, first.version, "approve", finance.id, "Agreed", "finance");
+    REQUIRE(second.outcome == "ok");
+    CHECK(second.state_code == "approved");
+
+    // Answered, the request leaves both open queues and enters the tail of the
+    // people who answered it.
+    CHECK_FALSE(listed(as_finance, finance.id));
+    CHECK(answered(as_controller, controller.id));
+    CHECK(answered(as_finance, finance.id));
 }
 
 TEST_CASE("the_queue_pages_what_it_counts_when_a_part_decides", tags) {
@@ -254,15 +263,28 @@ TEST_CASE("the_queue_pages_what_it_counts_when_a_part_decides", tags) {
     const auto later = lifecycle.raise(*kind, "Another book moves", asker.id, {"controller"});
     const decidable_scope as_controller{.part_codes = {"controller"}};
 
-    const auto first = lifecycle.queue(as_controller, controller.id, 0, 1);
-    const auto second = lifecycle.queue(as_controller, controller.id, 1, 1);
-    CHECK(first.total == 2);
-    CHECK(second.total == 2);
-    REQUIRE(first.requests.size() == 1);
-    REQUIRE(second.requests.size() == 1);
-    CHECK(first.requests.front().id == older.id);
-    CHECK(second.requests.front().id == later.id);
-    CHECK(lifecycle.queue(as_controller, controller.id, 2, 1).requests.empty());
+    // Every page states the same total, and walking the pages one row at a time
+    // visits exactly that many requests, in the order the requests were made.
+    std::vector<boost::uuids::uuid> walked;
+    auto total = -1;
+    for (int offset = 0;; ++offset) {
+        const auto page = lifecycle.queue(as_controller, controller.id, offset, 1);
+        if (total < 0)
+            total = page.total;
+        CHECK(page.total == total);
+        if (page.requests.empty())
+            break;
+        REQUIRE(page.requests.size() == 1);
+        walked.push_back(page.requests.front().id);
+    }
+    CHECK(total == static_cast<int>(walked.size()));
+
+    const auto position = [&](const boost::uuids::uuid& id) {
+        return static_cast<std::size_t>(std::ranges::find(walked, id) - walked.begin());
+    };
+    REQUIRE(position(older.id) < walked.size());
+    REQUIRE(position(later.id) < walked.size());
+    CHECK(position(older.id) < position(later.id));
 }
 
 TEST_CASE("a_part_cannot_answer_before_the_parts_ahead_of_it_approve", tags) {

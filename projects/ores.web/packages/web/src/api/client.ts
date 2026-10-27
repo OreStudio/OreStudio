@@ -193,6 +193,23 @@ import { ApiFailure, request } from './transport.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
+/**
+ * One reason a decider may park a request with, as the lookup holds it.
+ */
+const holdReasonSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    description: z.string(),
+});
+
+const holdReasonsSchema = z.object({
+    holdReasons: z.array(holdReasonSchema),
+    /** Which kinds of request allow a hold, by kind code. */
+    allowsHoldByKind: z.record(z.string(), z.boolean()).default({}),
+});
+
+export type HoldReason = z.infer<typeof holdReasonSchema>;
+
 const oreDocumentSchema = z.object({
     success: z.boolean(),
     message: z.string(),
@@ -1382,6 +1399,11 @@ export const api = {
             readonly comment: string;
             /** The part the decider answers for; omitted for a request that names none. */
             readonly partCode?: string;
+            /**
+             * Why the request is parked, when the decision is a hold: a code the
+             * hold reason lookup holds. Omitted on every other decision.
+             */
+            readonly holdReasonCode?: string;
         },
     ): Promise<void> {
         await request(`/api/requests/${encodeURIComponent(requestId)}/decision`, {
@@ -1389,6 +1411,20 @@ export const api = {
             headers: JSON_HEADERS,
             body: JSON.stringify(input),
         });
+    },
+
+    /**
+     * The reasons a decider may park a request with.
+     *
+     * A hold names a code from this list rather than free text, so the answer
+     * panel offers it.
+     */
+    async holdReasons(): Promise<{
+        readonly reasons: readonly HoldReason[];
+        readonly allowsHoldByKind: Readonly<Record<string, boolean>>;
+    }> {
+        const body = holdReasonsSchema.parse(await request('/api/hold-reasons', { method: 'GET' }));
+        return { reasons: body.holdReasons, allowsHoldByKind: body.allowsHoldByKind };
     },
 
     /** The signed-in person's notifications, newest first. */

@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/calendar_exception_protocol.hpp"
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/service/calendar_exception_service.hpp"
+#include "test_suite.hpp"
 // Country sentinel seed (Calendar Exception's insert trigger validates
 // country_code against the countries table, and the synthetic generator
 // always emits the ZZ sentinel): like the party seeds, the country
@@ -80,13 +81,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::calendar_exception;
@@ -96,7 +90,7 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_calendar_exception_publishes_an_event", tags) {
+TEST_CASE("write_calendar_exception_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

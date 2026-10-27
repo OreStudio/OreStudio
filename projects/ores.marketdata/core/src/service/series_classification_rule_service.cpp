@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::series_classification_rule>
-read_one(repository::series_classification_rule_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::series_classification_rule_key& key) {
+series_classification_rule_read_one(repository::series_classification_rule_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const messaging::series_classification_rule_key& key) {
     return repo.read_latest(ctx, key.series_type, key.metric);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::series_classification_rule_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::series_classification_rule_key key_from(const domain::series_classification_rule& v) {
+messaging::series_classification_rule_key
+series_classification_rule_key_from(const domain::series_classification_rule& v) {
     messaging::series_classification_rule_key key;
     key.series_type = v.series_type;
     key.metric = v.metric;
@@ -97,7 +98,7 @@ messaging::series_classification_rule_key key_from(const domain::series_classifi
  * database's to state, and are set after this conversion.
  */
 domain::series_classification_rule
-to_domain(const messaging::series_classification_rule_write& write) {
+series_classification_rule_to_domain(const messaging::series_classification_rule_write& write) {
     domain::series_classification_rule v;
     v.series_type = write.series_type;
     v.metric = write.metric;
@@ -142,7 +143,7 @@ messaging::get_series_classification_rule_response
 series_classification_rule_service::get_series_classification_rule(
     const messaging::get_series_classification_rule_request& request) {
     messaging::get_series_classification_rule_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = series_classification_rule_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "series_classification_rule"});
         return response;
@@ -162,7 +163,7 @@ series_classification_rule_service::get_many_series_classification_rules(
     for (const auto& k : request.keys) {
         messaging::series_classification_rule_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = series_classification_rule_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.series_classification_rule = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -179,7 +180,8 @@ series_classification_rule_service::put_series_classification_rule(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = series_classification_rule_read_one(
+        repo_, ctx_, series_classification_rule_key_from(value));
     if (!written.empty())
         response.series_classification_rule = std::move(written.front());
     return response;
@@ -212,7 +214,8 @@ series_classification_rule_service::put_many_series_classification_rules(
     repo_.write(ctx_, batch, claims);
     response.rules.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = series_classification_rule_read_one(
+            repo_, ctx_, series_classification_rule_key_from(value));
         response.rules.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -248,7 +251,7 @@ series_classification_rule_service::delete_series_classification_rule(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = series_classification_rule_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "series_classification_rule",
@@ -344,8 +347,9 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = series_classification_rule_to_domain(change.write);
+    const auto current =
+        series_classification_rule_read_one(repo_, ctx_, series_classification_rule_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

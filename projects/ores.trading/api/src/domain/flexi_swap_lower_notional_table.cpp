@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string flexi_swap_lower_notional_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,7 +51,8 @@ std::string convert_to_table(const std::vector<flexi_swap_lower_notional>& v) {
 
     for ([[maybe_unused]] const auto& lower_notional : v) {
         table << lower_notional.trade_id << lower_notional.bound_number
-              << lower_notional.sequence_number << opt_str(lower_notional.start_date)
+              << lower_notional.sequence_number
+              << flexi_swap_lower_notional_opt_str(lower_notional.start_date)
               << lower_notional.notional << lower_notional.modified_by << lower_notional.version
               << fort::endr;
     }

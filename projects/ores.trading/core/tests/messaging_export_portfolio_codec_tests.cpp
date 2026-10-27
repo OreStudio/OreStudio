@@ -24,6 +24,7 @@
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -38,9 +39,6 @@ using ores::trading::domain::bond_instrument_data;
 using ores::trading::messaging::export_portfolio_response;
 using ores::trading::messaging::export_trades_to_storage_response;
 using ores::trading::messaging::trade_export_item;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[messaging][codec]");
 
 /**
  * A bond whose identity fields a caller can check, appended to the batch that
@@ -92,19 +90,19 @@ std::string check_bond_survives_the_codec(wire_format format) {
 
 }
 
-TEST_CASE("export_portfolio_response_survives_the_json_codec", tags) {
+TEST_CASE("export_portfolio_response_survives_the_json_codec", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     CHECK(check_bond_survives_the_codec(wire_format::json) == "CodecBond001");
 }
 
-TEST_CASE("export_portfolio_response_survives_the_msgpack_codec", tags) {
+TEST_CASE("export_portfolio_response_survives_the_msgpack_codec", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     CHECK(check_bond_survives_the_codec(wire_format::msgpack) == "CodecBond001");
 }
 
-TEST_CASE("export_portfolio_response_carries_a_trade_with_no_instrument", tags) {
+TEST_CASE("export_portfolio_response_carries_a_trade_with_no_instrument", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto codec = wire_codec{wire_format::msgpack};
@@ -122,7 +120,7 @@ TEST_CASE("export_portfolio_response_carries_a_trade_with_no_instrument", tags) 
         decoded->instruments, decoded->items[0].anchor.id)));
 }
 
-TEST_CASE("export_portfolio_response_carries_the_envelope", tags) {
+TEST_CASE("export_portfolio_response_carries_the_envelope", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto codec = wire_codec{wire_format::json};
@@ -145,7 +143,8 @@ TEST_CASE("export_portfolio_response_carries_the_envelope", tags) {
     CHECK(decoded->items[0].envelope->netting_set_id == "NS-1");
 }
 
-TEST_CASE("export_trades_to_storage_response_survives_the_codec_with_its_versions", tags) {
+TEST_CASE("export_trades_to_storage_response_survives_the_codec_with_its_versions",
+          "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto codec = wire_codec{wire_format::msgpack};

@@ -39,7 +39,7 @@
 namespace ores::assets::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.assets.service";
+static constexpr std::string_view image_tag_queue_group = "ores.assets.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,36 +49,36 @@ register_image_tag_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<image_tag_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_image_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_image_tags_request::nats_subject, image_tag_queue_group, [h](ores::nats::message msg) {
             h->list_image_tags(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_image_tag_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_image_tag_request::nats_subject, image_tag_queue_group, [h](ores::nats::message msg) {
             h->get_image_tag(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_image_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_image_tags(std::move(msg));
-        }));
+        get_many_image_tags_request::nats_subject,
+        image_tag_queue_group,
+        [h](ores::nats::message msg) { h->get_many_image_tags(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_image_tag_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_image_tag_request::nats_subject, image_tag_queue_group, [h](ores::nats::message msg) {
             h->put_image_tag(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_image_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_image_tags(std::move(msg));
-        }));
+        put_many_image_tags_request::nats_subject,
+        image_tag_queue_group,
+        [h](ores::nats::message msg) { h->put_many_image_tags(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_image_tag_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_image_tag(std::move(msg));
-        }));
+        delete_image_tag_request::nats_subject,
+        image_tag_queue_group,
+        [h](ores::nats::message msg) { h->delete_image_tag(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_image_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_image_tags(std::move(msg));
-        }));
+        delete_many_image_tags_request::nats_subject,
+        image_tag_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_image_tags(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_image_id_image_tags_request::nats_subject,
-        queue_group,
+        image_tag_queue_group,
         [h](ores::nats::message msg) { h->list_by_image_id_image_tags(std::move(msg)); }));
     return subs;
 }

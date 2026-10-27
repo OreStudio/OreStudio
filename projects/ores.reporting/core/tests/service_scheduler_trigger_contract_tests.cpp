@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -55,9 +56,6 @@
 // regenerating fails this test.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[contract][trigger][integration]");
 
 // The subject the test's stand-in answers on.
 //
@@ -94,7 +92,8 @@ ores::nats::service::nats_client make_unauthenticated_client(ores::nats::service
 using ores::reporting::messaging::trigger_report_instance_request;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("what the scheduler publishes decodes as the reporting trigger request", tags) {
+TEST_CASE("what the scheduler publishes decodes as the reporting trigger request",
+          "[contract][trigger][integration]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

@@ -23,8 +23,6 @@
 
 namespace {
 
-const std::string tags("[hierarchy]");
-
 ores::utility::domain::hierarchy_flat_row make_row(const boost::uuids::uuid& id,
                                                    std::optional<boost::uuids::uuid> parent_id,
                                                    const std::string& name) {
@@ -37,7 +35,7 @@ ores::utility::domain::hierarchy_flat_row make_row(const boost::uuids::uuid& id,
 
 } // namespace
 
-TEST_CASE("build_tree_assembles_multi_level_tree", tags) {
+TEST_CASE("build_tree_assembles_multi_level_tree", "[hierarchy]") {
     auto rootId = boost::uuids::random_generator()();
     auto childId = boost::uuids::random_generator()();
     auto grandchildId = boost::uuids::random_generator()();
@@ -61,7 +59,7 @@ TEST_CASE("build_tree_assembles_multi_level_tree", tags) {
     CHECK(child.children[0].name == "Grandchild");
 }
 
-TEST_CASE("build_tree_supports_multiple_roots", tags) {
+TEST_CASE("build_tree_supports_multiple_roots", "[hierarchy]") {
     auto rootAId = boost::uuids::random_generator()();
     auto rootBId = boost::uuids::random_generator()();
     auto childOfAId = boost::uuids::random_generator()();
@@ -92,7 +90,7 @@ TEST_CASE("build_tree_supports_multiple_roots", tags) {
     CHECK(foundRootB);
 }
 
-TEST_CASE("build_tree_treats_orphan_nodes_as_additional_roots", tags) {
+TEST_CASE("build_tree_treats_orphan_nodes_as_additional_roots", "[hierarchy]") {
     auto rootId = boost::uuids::random_generator()();
     auto orphanId = boost::uuids::random_generator()();
     auto missingParentId = boost::uuids::random_generator()();
@@ -121,14 +119,14 @@ TEST_CASE("build_tree_treats_orphan_nodes_as_additional_roots", tags) {
     CHECK(foundOrphan);
 }
 
-TEST_CASE("build_tree_handles_empty_input", tags) {
+TEST_CASE("build_tree_handles_empty_input", "[hierarchy]") {
     std::vector<ores::utility::domain::hierarchy_flat_row> rows;
     auto forest = ores::utility::domain::build_tree(rows);
 
     CHECK(forest.empty());
 }
 
-TEST_CASE("build_tree_keeps_first_occurrence_of_duplicate_ids", tags) {
+TEST_CASE("build_tree_keeps_first_occurrence_of_duplicate_ids", "[hierarchy]") {
     auto rootId = boost::uuids::random_generator()();
     auto duplicateId = boost::uuids::random_generator()();
 
@@ -148,7 +146,7 @@ TEST_CASE("build_tree_keeps_first_occurrence_of_duplicate_ids", tags) {
     CHECK(root.children[0].name == "First");
 }
 
-TEST_CASE("build_tree_keeps_every_row_of_a_parent_cycle", tags) {
+TEST_CASE("build_tree_keeps_every_row_of_a_parent_cycle", "[hierarchy]") {
     auto firstId = boost::uuids::random_generator()();
     auto secondId = boost::uuids::random_generator()();
 
@@ -171,7 +169,7 @@ TEST_CASE("build_tree_keeps_every_row_of_a_parent_cycle", tags) {
     CHECK(forest[0].children[0].children.empty());
 }
 
-TEST_CASE("build_tree_breaks_a_self_parented_row", tags) {
+TEST_CASE("build_tree_breaks_a_self_parented_row", "[hierarchy]") {
     auto selfId = boost::uuids::random_generator()();
 
     // A row whose parent is itself: a ring of one, with no root.

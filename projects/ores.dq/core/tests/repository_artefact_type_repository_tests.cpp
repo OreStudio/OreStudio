@@ -25,17 +25,11 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::dq::generators;
@@ -44,7 +38,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::artefact_type_repository;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("write_single_artefact_type", tags) {
+TEST_CASE("write_single_artefact_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_single_artefact_type", tags) {
     CHECK(read_artefact_types[0].name == artefact_type.name);
 }
 
-TEST_CASE("write_multiple_artefact_types", tags) {
+TEST_CASE("write_multiple_artefact_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -97,7 +91,7 @@ TEST_CASE("write_multiple_artefact_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_artefact_types", tags) {
+TEST_CASE("read_latest_artefact_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -128,7 +122,7 @@ TEST_CASE("read_latest_artefact_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_artefact_type_by_code", tags) {
+TEST_CASE("read_latest_artefact_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -155,7 +149,7 @@ TEST_CASE("read_latest_artefact_type_by_code", tags) {
     CHECK(read_artefact_types[0].name == target.name);
 }
 
-TEST_CASE("read_all_artefact_type_versions", tags) {
+TEST_CASE("read_all_artefact_type_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -194,7 +188,7 @@ TEST_CASE("read_all_artefact_type_versions", tags) {
     CHECK(found_v2);
 }
 
-TEST_CASE("read_nonexistent_artefact_type", tags) {
+TEST_CASE("read_nonexistent_artefact_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -221,7 +215,7 @@ TEST_CASE("read_nonexistent_artefact_type", tags) {
     CHECK(read_artefact_types.size() == 0);
 }
 
-TEST_CASE("write_and_read_artefact_type_roundtrip", tags) {
+TEST_CASE("write_and_read_artefact_type_roundtrip", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

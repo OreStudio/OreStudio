@@ -32,8 +32,6 @@
 
 namespace {
 
-const std::string tags("[repository][step_claim]");
-
 using ores::testing::database_helper;
 using ores::utility::uuid::tenant_id;
 using ores::workflow::repository::step_claim_repository;
@@ -82,7 +80,7 @@ private:
 
 }
 
-TEST_CASE("a_claim_is_taken_once_and_refused_while_its_lease_is_live", tags) {
+TEST_CASE("a_claim_is_taken_once_and_refused_while_its_lease_is_live", "[repository][step_claim]") {
     database_helper h;
     claim_cleanup cleanup(h);
     // A step id no other test and no run uses, so the claim is the only one on it.
@@ -106,7 +104,7 @@ TEST_CASE("a_claim_is_taken_once_and_refused_while_its_lease_is_live", tags) {
     CHECK(claims.holder(cleanup.system(), step) == std::optional<std::string>("first/1"));
 }
 
-TEST_CASE("a_claim_is_taken_over_once_its_lease_has_ended", tags) {
+TEST_CASE("a_claim_is_taken_over_once_its_lease_has_ended", "[repository][step_claim]") {
     database_helper h;
     claim_cleanup cleanup(h);
     const auto step = cleanup.watch(random_uuid());
@@ -124,7 +122,7 @@ TEST_CASE("a_claim_is_taken_over_once_its_lease_has_ended", tags) {
     CHECK(claims.holder(cleanup.system(), step) == std::optional<std::string>("second/2"));
 }
 
-TEST_CASE("two_claims_arriving_together_leave_exactly_one_owner", tags) {
+TEST_CASE("two_claims_arriving_together_leave_exactly_one_owner", "[repository][step_claim]") {
     database_helper h;
     claim_cleanup cleanup(h);
     const auto step = cleanup.watch(random_uuid());
@@ -150,7 +148,7 @@ TEST_CASE("two_claims_arriving_together_leave_exactly_one_owner", tags) {
     CHECK(*holder == (one_won ? "one/1" : "two/2"));
 }
 
-TEST_CASE("release_removes_a_claim_whatever_the_holder_named_itself", tags) {
+TEST_CASE("release_removes_a_claim_whatever_the_holder_named_itself", "[repository][step_claim]") {
     database_helper h;
     claim_cleanup cleanup(h);
     const auto step = cleanup.watch(random_uuid());

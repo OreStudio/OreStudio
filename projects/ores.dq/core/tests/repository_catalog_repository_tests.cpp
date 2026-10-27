@@ -25,17 +25,11 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::dq::generators;
@@ -44,7 +38,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::catalog_repository;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("write_single_catalog", tags) {
+TEST_CASE("write_single_catalog", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_single_catalog", tags) {
     CHECK(read_catalogs[0].description == catalog.description);
 }
 
-TEST_CASE("write_multiple_catalogs", tags) {
+TEST_CASE("write_multiple_catalogs", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -97,7 +91,7 @@ TEST_CASE("write_multiple_catalogs", tags) {
     }
 }
 
-TEST_CASE("read_latest_catalogs", tags) {
+TEST_CASE("read_latest_catalogs", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -128,7 +122,7 @@ TEST_CASE("read_latest_catalogs", tags) {
     }
 }
 
-TEST_CASE("read_latest_catalog_by_name", tags) {
+TEST_CASE("read_latest_catalog_by_name", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -155,7 +149,7 @@ TEST_CASE("read_latest_catalog_by_name", tags) {
     CHECK(read_catalogs[0].description == target.description);
 }
 
-TEST_CASE("read_all_catalog_versions", tags) {
+TEST_CASE("read_all_catalog_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -194,7 +188,7 @@ TEST_CASE("read_all_catalog_versions", tags) {
     CHECK(found_v2);
 }
 
-TEST_CASE("read_nonexistent_catalog", tags) {
+TEST_CASE("read_nonexistent_catalog", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -221,7 +215,7 @@ TEST_CASE("read_nonexistent_catalog", tags) {
     CHECK(read_catalogs.size() == 0);
 }
 
-TEST_CASE("write_and_read_catalog_roundtrip", tags) {
+TEST_CASE("write_and_read_catalog_roundtrip", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

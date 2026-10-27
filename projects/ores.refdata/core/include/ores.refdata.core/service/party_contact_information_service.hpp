@@ -77,29 +77,37 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_party_contact_informations_response list_party_contact_informations(
-        const messaging::list_party_contact_informations_request& request);
-    messaging::get_party_contact_information_response
-    get_party_contact_information(const messaging::get_party_contact_information_request& request);
-    messaging::get_many_party_contact_informations_response get_many_party_contact_informations(
-        const messaging::get_many_party_contact_informations_request& request);
-    messaging::put_party_contact_information_response
-    put_party_contact_information(const messaging::put_party_contact_information_request& request);
-    messaging::put_many_party_contact_informations_response put_many_party_contact_informations(
-        const messaging::put_many_party_contact_informations_request& request);
-    messaging::delete_party_contact_information_response delete_party_contact_information(
-        const messaging::delete_party_contact_information_request& request);
-    messaging::delete_many_party_contact_informations_response
+    ::ores::refdata::messaging::list_party_contact_informations_response
+    list_party_contact_informations(
+        const ::ores::refdata::messaging::list_party_contact_informations_request& request);
+    ::ores::refdata::messaging::get_party_contact_information_response
+    get_party_contact_information(
+        const ::ores::refdata::messaging::get_party_contact_information_request& request);
+    ::ores::refdata::messaging::get_many_party_contact_informations_response
+    get_many_party_contact_informations(
+        const ::ores::refdata::messaging::get_many_party_contact_informations_request& request);
+    ::ores::refdata::messaging::put_party_contact_information_response
+    put_party_contact_information(
+        const ::ores::refdata::messaging::put_party_contact_information_request& request);
+    ::ores::refdata::messaging::put_many_party_contact_informations_response
+    put_many_party_contact_informations(
+        const ::ores::refdata::messaging::put_many_party_contact_informations_request& request);
+    ::ores::refdata::messaging::delete_party_contact_information_response
+    delete_party_contact_information(
+        const ::ores::refdata::messaging::delete_party_contact_information_request& request);
+    ::ores::refdata::messaging::delete_many_party_contact_informations_response
     delete_many_party_contact_informations(
-        const messaging::delete_many_party_contact_informations_request& request);
-    messaging::list_by_party_id_party_contact_informations_response
+        const ::ores::refdata::messaging::delete_many_party_contact_informations_request& request);
+    ::ores::refdata::messaging::list_by_party_id_party_contact_informations_response
     list_by_party_id_party_contact_informations(
-        const messaging::list_by_party_id_party_contact_informations_request& request);
-    messaging::list_party_contact_information_versions_response
+        const ::ores::refdata::messaging::list_by_party_id_party_contact_informations_request&
+            request);
+    ::ores::refdata::messaging::list_party_contact_information_versions_response
     list_party_contact_information_versions(
-        const messaging::list_party_contact_information_versions_request& request);
-    messaging::get_party_contact_information_version_response get_party_contact_information_version(
-        const messaging::get_party_contact_information_version_request& request);
+        const ::ores::refdata::messaging::list_party_contact_information_versions_request& request);
+    ::ores::refdata::messaging::get_party_contact_information_version_response
+    get_party_contact_information_version(
+        const ::ores::refdata::messaging::get_party_contact_information_version_request& request);
     /**@}*/
 
     /**
@@ -306,7 +314,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::party_contact_information_change& change,
+    prepare_change(const ::ores::refdata::messaging::party_contact_information_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::party_contact_information& out);
 };

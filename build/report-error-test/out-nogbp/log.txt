@@ -1,0 +1,223 @@
+NOTICE   [2026-Oct-16 23:13:04.976411]    (OREAnalytics/orea/app/parameters.cpp:139) : Parameters:
+NOTICE   [2026-Oct-16 23:13:04.976539]    (OREAnalytics/orea/app/parameters.cpp:144) : group = markets : pricing = default
+NOTICE   [2026-Oct-16 23:13:04.976569]    (OREAnalytics/orea/app/parameters.cpp:144) : group = npv : active = Y
+NOTICE   [2026-Oct-16 23:13:04.976592]    (OREAnalytics/orea/app/parameters.cpp:144) : group = npv : baseCurrency = GBP
+NOTICE   [2026-Oct-16 23:13:04.976612]    (OREAnalytics/orea/app/parameters.cpp:144) : group = npv : outputFileName = npv.csv
+NOTICE   [2026-Oct-16 23:13:04.976631]    (OREAnalytics/orea/app/parameters.cpp:144) : group = saccr : active = Y
+NOTICE   [2026-Oct-16 23:13:04.976650]    (OREAnalytics/orea/app/parameters.cpp:144) : group = saccr : simmVersion = 2.1
+NOTICE   [2026-Oct-16 23:13:04.976670]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : asofDate = 2026-10-15
+NOTICE   [2026-Oct-16 23:13:04.976690]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : baseCurrency = GBP
+NOTICE   [2026-Oct-16 23:13:04.976708]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : continueOnError = false
+NOTICE   [2026-Oct-16 23:13:04.976727]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : conventionsFile = conventions.xml
+NOTICE   [2026-Oct-16 23:13:04.976747]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : curveConfigFile = curveconfig.xml
+NOTICE   [2026-Oct-16 23:13:04.976765]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : fixingDataFile = fixings.txt
+NOTICE   [2026-Oct-16 23:13:04.976784]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : implyTodaysFixings = N
+NOTICE   [2026-Oct-16 23:13:04.976803]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : inputPath = Input
+NOTICE   [2026-Oct-16 23:13:04.976822]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : logFile = log.txt
+NOTICE   [2026-Oct-16 23:13:04.976841]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : logMask = 31
+NOTICE   [2026-Oct-16 23:13:04.976860]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : marketConfigFile = todaysmarket.xml
+NOTICE   [2026-Oct-16 23:13:04.976879]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : marketDataFile = market.txt
+NOTICE   [2026-Oct-16 23:13:04.976898]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : nThreads = 1
+NOTICE   [2026-Oct-16 23:13:04.976917]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : observationModel = Disable
+NOTICE   [2026-Oct-16 23:13:04.976937]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : outputPath = Output
+NOTICE   [2026-Oct-16 23:13:04.976957]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : portfolioFile = portfolio.xml
+NOTICE   [2026-Oct-16 23:13:04.976976]    (OREAnalytics/orea/app/parameters.cpp:144) : group = setup : pricingEnginesFile = pricingengine.xml
+NOTICE   [2026-Oct-16 23:13:04.984598]        (OREAnalytics/orea/app/oreapp.cpp:680) : load OREAppInputParameters called
+NOTICE   [2026-Oct-16 23:13:04.984670]        (OREAnalytics/orea/app/oreapp.cpp:693) : MarketContext::pricing = default
+NOTICE   [2026-Oct-16 23:13:05.002510]    (OREData/ored/portfolio/portfolio.cpp:109) : Finished Parsing XML doc
+NOTICE   [2026-Oct-16 23:13:05.002740]  (...lytics/orea/app/inputparameters.cpp:199) : Observation Mode is Disable
+NOTICE   [2026-Oct-16 23:13:05.002786]       (OREAnalytics/orea/app/oreapp.cpp:1089) : SIMM
+NOTICE   [2026-Oct-16 23:13:05.002812]       (OREAnalytics/orea/app/oreapp.cpp:1201) : IM SCHEDULE
+NOTICE   [2026-Oct-16 23:13:05.002845]       (OREAnalytics/orea/app/oreapp.cpp:1796) : analytics: 2
+NOTICE   [2026-Oct-16 23:13:05.002866]       (OREAnalytics/orea/app/oreapp.cpp:1798) : analytic: NPV
+NOTICE   [2026-Oct-16 23:13:05.002885]       (OREAnalytics/orea/app/oreapp.cpp:1798) : analytic: SA_CCR
+NOTICE   [2026-Oct-16 23:13:05.002904]       (OREAnalytics/orea/app/oreapp.cpp:1800) : buildInputParameters done
+NOTICE   [2026-Oct-16 23:13:05.002927]  (...lytics/orea/app/inputparameters.cpp:928) : OutputFileNameMap called
+NOTICE   [2026-Oct-16 23:13:05.002972]  (...ytics/orea/app/inputparameters.cpp:1025) : OutputFileNameMap complete
+NOTICE   [2026-Oct-16 23:13:05.004528]        (OREAnalytics/orea/app/oreapp.cpp:420) : initFromParameters done, requested analytics:NPV,SA_CCR
+NOTICE   [2026-Oct-16 23:13:05.004605]        (OREAnalytics/orea/app/oreapp.cpp:482) : Global IncludeTodaysCashFlows is set false, value: na
+NOTICE   [2026-Oct-16 23:13:05.004641]        (OREAnalytics/orea/app/oreapp.cpp:256) : ORE analytics starting
+WARNING  [2026-Oct-16 23:13:05.004662]        (OREAnalytics/orea/app/oreapp.cpp:257) : Starting OREApp::analytics(): 59084800|59285504 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+NOTICE   [2026-Oct-16 23:13:05.004755]        (OREAnalytics/orea/app/oreapp.cpp:236) : dividend data file not found
+NOTICE   [2026-Oct-16 23:13:05.004856]        (OREAnalytics/orea/app/oreapp.cpp:244) : fixing cutoff date not set
+NOTICE   [2026-Oct-16 23:13:05.004919]    (OREData/ored/marketdata/csvloader.cpp:86) : CSVLoader loading from Input/market.txt
+NOTICE   [2026-Oct-16 23:13:16.931658]   (OREData/ored/marketdata/csvloader.cpp:174) : CSVLoader completed processing Input/market.txt
+NOTICE   [2026-Oct-16 23:13:16.931791]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for January 4th, 2016
+NOTICE   [2026-Oct-16 23:13:16.931825]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for January 29th, 2016
+NOTICE   [2026-Oct-16 23:13:16.931851]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for February 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.931874]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 14 market data points for February 5th, 2016
+NOTICE   [2026-Oct-16 23:13:16.931898]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for February 29th, 2016
+NOTICE   [2026-Oct-16 23:13:16.931921]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for March 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.931945]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for March 31st, 2016
+NOTICE   [2026-Oct-16 23:13:16.931968]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for April 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.931991]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for April 29th, 2016
+NOTICE   [2026-Oct-16 23:13:16.932015]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for May 2nd, 2016
+NOTICE   [2026-Oct-16 23:13:16.932039]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for May 31st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932061]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for June 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932085]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for June 30th, 2016
+NOTICE   [2026-Oct-16 23:13:16.932109]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for July 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932133]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for July 29th, 2016
+NOTICE   [2026-Oct-16 23:13:16.932158]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for August 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932184]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for August 31st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932209]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for September 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932236]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for September 30th, 2016
+NOTICE   [2026-Oct-16 23:13:16.932260]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for October 3rd, 2016
+NOTICE   [2026-Oct-16 23:13:16.932293]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for October 31st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932318]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for November 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932340]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for November 30th, 2016
+NOTICE   [2026-Oct-16 23:13:16.932362]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for December 1st, 2016
+NOTICE   [2026-Oct-16 23:13:16.932386]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for December 30th, 2016
+NOTICE   [2026-Oct-16 23:13:16.932409]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 13 market data points for May 5th, 2026
+NOTICE   [2026-Oct-16 23:13:16.933121]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 350 market data points for October 15th, 2026
+NOTICE   [2026-Oct-16 23:13:16.933225]    (OREData/ored/marketdata/csvloader.cpp:70) : CSVLoader loaded 350 market data points for October 16th, 2026
+NOTICE   [2026-Oct-16 23:13:16.933275]    (OREData/ored/marketdata/csvloader.cpp:86) : CSVLoader loading from Input/fixings.txt
+NOTICE   [2026-Oct-16 23:13:16.933306]   (OREData/ored/marketdata/csvloader.cpp:174) : CSVLoader completed processing Input/fixings.txt
+NOTICE   [2026-Oct-16 23:13:16.933330]    (OREData/ored/marketdata/csvloader.cpp:73) : CSVLoader loaded 0 fixings
+NOTICE   [2026-Oct-16 23:13:16.933349]    (OREData/ored/marketdata/csvloader.cpp:76) : CSVLoader loaded 0 dividends
+NOTICE   [2026-Oct-16 23:13:16.933368]    (OREData/ored/marketdata/csvloader.cpp:77) : CSVLoader complete.
+NOTICE   [2026-Oct-16 23:13:16.933439]  (...lytics/orea/app/analyticsmanager.cpp:57) : register analytic with label 'PRICING' and sub-analytics CASHFLOW,CASHFLOWNPV,CURVES,NPV,SENSITIVITY
+NOTICE   [2026-Oct-16 23:13:16.933490]  (...lytics/orea/app/analyticsmanager.cpp:57) : register analytic with label 'SA_CCR' and sub-analytics SA_CCR
+NOTICE   [2026-Oct-16 23:13:16.933517]        (OREAnalytics/orea/app/oreapp.cpp:281) : Available analytics: CASHFLOW,CASHFLOWNPV,CURVES,NPV,SA_CCR,SENSITIVITY
+NOTICE   [2026-Oct-16 23:13:16.933549]        (OREAnalytics/orea/app/oreapp.cpp:284) : Requested analytics: NPV,SA_CCR
+NOTICE   [2026-Oct-16 23:13:16.933644]  (...ytics/orea/app/analyticsmanager.cpp:129) : AnalyticsManager::runAnalytics: populate loader for dates: October 15th, 2026
+NOTICE   [2026-Oct-16 23:13:16.935968]  (...ytics/orea/app/marketdataloader.cpp:186) : Asking portfolio for its required fixings
+NOTICE   [2026-Oct-16 23:13:16.936020]  (...ytics/orea/app/marketdataloader.cpp:193) : The portfolio depends on fixings from 0 indices
+NOTICE   [2026-Oct-16 23:13:16.936041]  (...ytics/orea/app/marketdataloader.cpp:198) : Add fixings possibly required for bootstrapping TodaysMarket
+NOTICE   [2026-Oct-16 23:13:16.936068]  (OREData/ored/portfolio/fixingdates.cpp:948) : Start adding market fixing dates for configuration 'default'
+NOTICE   [2026-Oct-16 23:13:16.940576]  (...ata/ored/portfolio/fixingdates.cpp:1145) : Finished adding market fixing dates for configuration 'default'
+NOTICE   [2026-Oct-16 23:13:16.940636]  (...ytics/orea/app/marketdataloader.cpp:202) : Add fixing possibly required for equity index delta risk decomposition
+NOTICE   [2026-Oct-16 23:13:16.940665]  (OREData/ored/portfolio/fixingdates.cpp:948) : Start adding market fixing dates for configuration 'default'
+NOTICE   [2026-Oct-16 23:13:16.940993]  (...ata/ored/portfolio/fixingdates.cpp:1145) : Finished adding market fixing dates for configuration 'default'
+NOTICE   [2026-Oct-16 23:13:16.941026]  (...ytics/orea/app/marketdataloader.cpp:202) : Add fixing possibly required for equity index delta risk decomposition
+NOTICE   [2026-Oct-16 23:13:16.941047]  (...ytics/orea/app/marketdataloader.cpp:208) : Adjust inflation fixing dates to the end of the month before the request
+NOTICE   [2026-Oct-16 23:13:16.941242]  (...ics/orea/app/marketdatacsvloader.cpp:71) : MarketDataCsvLoader::retrieveFixings called: all fixings ? Y
+NOTICE   [2026-Oct-16 23:13:16.941314]      (OREData/ored/marketdata/fixings.cpp:68) : Added 0 of 0 fixings in 0.000000 seconds
+NOTICE   [2026-Oct-16 23:13:16.941344]  (...ytics/orea/app/marketdataloader.cpp:281) : Adding the loaded fixings to the IndexManager
+NOTICE   [2026-Oct-16 23:13:16.941366]  (...ytics/orea/app/marketdataloader.cpp:282) : Fixings size = 4
+NOTICE   [2026-Oct-16 23:13:16.941385]  (...ytics/orea/app/marketdataloader.cpp:285) : Generating market datum set
+NOTICE   [2026-Oct-16 23:13:16.941678]  (...ytics/orea/app/marketdataloader.cpp:303) : CurveConfigs require 54 quotes
+NOTICE   [2026-Oct-16 23:13:16.942671]  (...ytics/orea/app/marketdataloader.cpp:311) : Got market data
+NOTICE   [2026-Oct-16 23:13:16.942722]  (OREAnalytics/orea/app/reportwriter.cpp:324) : Writing MarketData report
+NOTICE   [2026-Oct-16 23:13:16.942826]  (OREAnalytics/orea/app/reportwriter.cpp:363) : MarketData report written
+NOTICE   [2026-Oct-16 23:13:16.942857]  (OREAnalytics/orea/app/reportwriter.cpp:368) : Writing Fixings report
+NOTICE   [2026-Oct-16 23:13:16.942879]  (OREAnalytics/orea/app/reportwriter.cpp:377) : Fixings report written
+NOTICE   [2026-Oct-16 23:13:16.943686]  (OREAnalytics/orea/app/reportwriter.cpp:382) : Writing Dividends report
+NOTICE   [2026-Oct-16 23:13:16.943723]  (OREAnalytics/orea/app/reportwriter.cpp:394) : Dividends report written
+NOTICE   [2026-Oct-16 23:13:16.943753]  (...ytics/orea/app/analyticsmanager.cpp:155) : run analytic with label 'PRICING'
+WARNING  [2026-Oct-16 23:13:16.943787]      (OREAnalytics/orea/app/analytic.cpp:127) : Starting PRICING Analytic::runAnalytic(): 61890560|61849600 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+NOTICE   [2026-Oct-16 23:13:16.944140]      (OREAnalytics/orea/app/analytic.cpp:282) : Analytic::buildMarket called
+NOTICE   [2026-Oct-16 23:13:16.944193]  (.../ored/marketdata/bondspreadimply.cpp:51) : identify securities that require a spread imply for configuration default
+NOTICE   [2026-Oct-16 23:13:16.944238]  (...ored/marketdata/bondspreadimply.cpp:108) : got 0 securities
+NOTICE   [2026-Oct-16 23:13:16.946746]  (.../ored/marketdata/fxtriangulation.cpp:65) : FXTriangulation: initializing
+NOTICE   [2026-Oct-16 23:13:16.946856]  (...ored/marketdata/fxtriangulation.cpp:112) : FXTriangulation: initialized with 26 quotes, 27 currencies.
+NOTICE   [2026-Oct-16 23:13:16.947063]  (...ta/ored/marketdata/todaysmarket.cpp:233) : Build objects in TodaysMarket lazily, i.e. when requested.
+NOTICE   [2026-Oct-16 23:13:16.947126]      (OREAnalytics/orea/app/analytic.cpp:320) : Market Build time 0.010000 sec
+NOTICE   [2026-Oct-16 23:13:16.947908]     (OREData/ored/portfolio/portfolio.cpp:51) : Reset portfolio of size 8
+NOTICE   [2026-Oct-16 23:13:16.947964]      (OREAnalytics/orea/app/analytic.cpp:351) : Build the portfolio
+NOTICE   [2026-Oct-16 23:13:16.947986]      (OREAnalytics/orea/app/analytic.cpp:238) : Analytic::engineFactory() called
+NOTICE   [2026-Oct-16 23:13:16.948062]      (OREAnalytics/orea/app/analytic.cpp:248) : MarketContext::pricing = default
+NOTICE   [2026-Oct-16 23:13:16.948105]    (OREData/ored/portfolio/portfolio.cpp:137) : Building Portfolio of size 8 for context = 'analytic/PRICING'
+ALERT    [2026-Oct-16 23:13:16.951014]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.951258]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Curve", "message": "yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15", "sub_fields": [ { "name": "curveId", "value": "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]" }, { "name": "exceptionType", "value": "Failed to Build Curve" } ] }
+ALERT    [2026-Oct-16 23:13:16.951437]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "2c91c371-86c9-5fb4-a288-6766d0dc1ffa" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.953027]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.953196]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "3154aaf2-e79d-5d07-83f4-c562da690834" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.953600]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.954465]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "334cb578-05e7-5321-b495-b11f4ddb871e" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.954892]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.957069]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "6996563e-2ac6-5dfd-8345-4f3b4686e930" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.957652]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.959787]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "91284240-8b90-58a3-b6d4-414ce1d11292" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.960241]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.960385]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "a2a7a64a-e32d-52ab-87fa-6448107118ff" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.962255]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.962449]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "d22b2642-b7aa-5074-9d17-02fe16356146" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:16.962874]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:16.963001]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'" }, { "name": "tradeId", "value": "fe21a60d-4d15-5601-b650-7ca3f316d8cf" }, { "name": "tradeType", "value": "Bond" } ] }
+NOTICE   [2026-Oct-16 23:13:16.963037]    (OREData/ored/portfolio/portfolio.cpp:165) : Built Portfolio. Initial size = 8, size now 0, built 0 failed trades, context is analytic/PRICING
+NOTICE   [2026-Oct-16 23:13:16.963058]    (OREData/ored/portfolio/portfolio.cpp:166) : Build stats:
+NOTICE   [2026-Oct-16 23:13:16.963090]    (OREData/ored/portfolio/portfolio.cpp:170) : Bond                              8             10 ms (avg = 1.25)
+ALERT    [2026-Oct-16 23:13:16.963428]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Analytics", "message": "Portfolio does not contain any built trades, context is 'analytic/PRICING'", "sub_fields": [ { "name": "analyticType", "value": "PRICING" }, { "name": "exceptionType", "value": "Failed Analytic" } ] }
+NOTICE   [2026-Oct-16 23:13:16.963474]  (...ytics/orea/app/analyticsmanager.cpp:164) : run analytic with label 'PRICING' finished.
+ALERT    [2026-Oct-16 23:13:16.970822]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+NOTICE   [2026-Oct-16 23:13:17.001113]      (OREAnalytics/orea/app/analytic.cpp:114) : Analytic::releaseMemory() called for PRICING
+WARNING  [2026-Oct-16 23:13:17.001168]      (OREAnalytics/orea/app/analytic.cpp:115) : Before releaseMemory() PRICING: 69197824|69111808 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+WARNING  [2026-Oct-16 23:13:17.001222]      (OREAnalytics/orea/app/analytic.cpp:122) : After releaseMemory() PRICING: 69197824|69111808 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+NOTICE   [2026-Oct-16 23:13:17.001255]  (...ytics/orea/app/analyticsmanager.cpp:155) : run analytic with label 'SA_CCR'
+WARNING  [2026-Oct-16 23:13:17.001281]      (OREAnalytics/orea/app/analytic.cpp:127) : Starting SA_CCR Analytic::runAnalytic(): 69197824|69111808 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+NOTICE   [2026-Oct-16 23:13:17.001311]  (...orea/app/analytics/saccranalytic.cpp:85) : SaCcrAnalytic::runAnalytic called
+NOTICE   [2026-Oct-16 23:13:17.001334]      (OREAnalytics/orea/app/analytic.cpp:282) : Analytic::buildMarket called
+NOTICE   [2026-Oct-16 23:13:17.001357]  (.../ored/marketdata/bondspreadimply.cpp:51) : identify securities that require a spread imply for configuration default
+NOTICE   [2026-Oct-16 23:13:17.001397]  (...ored/marketdata/bondspreadimply.cpp:108) : got 0 securities
+NOTICE   [2026-Oct-16 23:13:17.001475]  (.../ored/marketdata/fxtriangulation.cpp:65) : FXTriangulation: initializing
+NOTICE   [2026-Oct-16 23:13:17.001521]  (...ored/marketdata/fxtriangulation.cpp:112) : FXTriangulation: initialized with 26 quotes, 27 currencies.
+NOTICE   [2026-Oct-16 23:13:17.001635]  (...ta/ored/marketdata/todaysmarket.cpp:233) : Build objects in TodaysMarket lazily, i.e. when requested.
+NOTICE   [2026-Oct-16 23:13:17.001677]      (OREAnalytics/orea/app/analytic.cpp:320) : Market Build time 0.000000 sec
+NOTICE   [2026-Oct-16 23:13:17.001702]     (OREData/ored/portfolio/portfolio.cpp:51) : Reset portfolio of size 8
+NOTICE   [2026-Oct-16 23:13:17.001731]      (OREAnalytics/orea/app/analytic.cpp:351) : Build the portfolio
+NOTICE   [2026-Oct-16 23:13:17.001752]      (OREAnalytics/orea/app/analytic.cpp:238) : Analytic::engineFactory() called
+NOTICE   [2026-Oct-16 23:13:17.001776]      (OREAnalytics/orea/app/analytic.cpp:248) : MarketContext::pricing = default
+NOTICE   [2026-Oct-16 23:13:17.001798]    (OREData/ored/portfolio/portfolio.cpp:137) : Building Portfolio of size 8 for context = 'analytic/SA_CCR'
+ALERT    [2026-Oct-16 23:13:17.002373]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.002543]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "2c91c371-86c9-5fb4-a288-6766d0dc1ffa" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.002910]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.003040]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "3154aaf2-e79d-5d07-83f4-c562da690834" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.003392]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.003519]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "334cb578-05e7-5321-b495-b11f4ddb871e" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.010336]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.010570]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "6996563e-2ac6-5dfd-8345-4f3b4686e930" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.011019]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.011172]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "91284240-8b90-58a3-b6d4-414ce1d11292" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.011561]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.012736]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "a2a7a64a-e32d-52ab-87fa-6448107118ff" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.013219]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.013368]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "d22b2642-b7aa-5074-9d17-02fe16356146" }, { "name": "tradeType", "value": "Bond" } ] }
+ALERT    [2026-Oct-16 23:13:17.016220]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+ALERT    [2026-Oct-16 23:13:17.016417]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15); ", "sub_fields": [ { "name": "exceptionType", "value": "Error building trade for context 'analytic/SA_CCR'" }, { "name": "tradeId", "value": "fe21a60d-4d15-5601-b650-7ca3f316d8cf" }, { "name": "tradeType", "value": "Bond" } ] }
+NOTICE   [2026-Oct-16 23:13:17.016458]    (OREData/ored/portfolio/portfolio.cpp:165) : Built Portfolio. Initial size = 8, size now 0, built 0 failed trades, context is analytic/SA_CCR
+NOTICE   [2026-Oct-16 23:13:17.016491]    (OREData/ored/portfolio/portfolio.cpp:166) : Build stats:
+NOTICE   [2026-Oct-16 23:13:17.016516]    (OREData/ored/portfolio/portfolio.cpp:170) : Bond                              8             20 ms (avg = 2.5)
+ALERT    [2026-Oct-16 23:13:17.016780]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Error", "group": "Analytics", "message": "Portfolio does not contain any built trades, context is 'analytic/SA_CCR'", "sub_fields": [ { "name": "analyticType", "value": "SA_CCR" }, { "name": "exceptionType", "value": "Failed Analytic" } ] }
+NOTICE   [2026-Oct-16 23:13:17.016820]  (...ytics/orea/app/analyticsmanager.cpp:164) : run analytic with label 'SA_CCR' finished.
+ALERT    [2026-Oct-16 23:13:17.023525]  (...a/ored/marketdata/todaysmarket.cpp:1062) : error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] in configuration default: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-10-15
+NOTICE   [2026-Oct-16 23:13:17.047949]  (...rea/app/marketcalibrationreport.cpp:368) : Skipping curve EUR1D for label  as it has already been added
+NOTICE   [2026-Oct-16 23:13:17.051704]  (...rea/app/marketcalibrationreport.cpp:368) : Skipping curve HKD1D for label  as it has already been added
+NOTICE   [2026-Oct-16 23:13:17.051745]  (...rea/app/marketcalibrationreport.cpp:368) : Skipping curve USD1D for label  as it has already been added
+NOTICE   [2026-Oct-16 23:13:17.051769]      (OREAnalytics/orea/app/analytic.cpp:114) : Analytic::releaseMemory() called for SA_CCR
+WARNING  [2026-Oct-16 23:13:17.051790]      (OREAnalytics/orea/app/analytic.cpp:115) : Before releaseMemory() SA_CCR: 70246400|70221824 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+WARNING  [2026-Oct-16 23:13:17.051838]      (OREAnalytics/orea/app/analytic.cpp:122) : After releaseMemory() SA_CCR: 70246400|70221824 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+NOTICE   [2026-Oct-16 23:13:17.051873]  (OREAnalytics/orea/app/reportwriter.cpp:399) : Writing Pricing stats report
+NOTICE   [2026-Oct-16 23:13:17.051903]  (OREAnalytics/orea/app/reportwriter.cpp:415) : Pricing stats report written
+NOTICE   [2026-Oct-16 23:13:17.051954]  (OREAnalytics/orea/app/reportwriter.cpp:420) : Writing runtimes report
+NOTICE   [2026-Oct-16 23:13:17.051994]  (OREAnalytics/orea/app/reportwriter.cpp:444) : Finished writing runtimes report
+NOTICE   [2026-Oct-16 23:13:17.053363]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name dividends occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053441]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name fixings occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053481]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name marketdata occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053500]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name pricingstats occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053519]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name runtimes occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053538]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name todaysmarketcalibration occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053557]  (...ytics/orea/app/analyticsmanager.cpp:254) : report name todaysmarketcalibration_cashflows occurs 1 times
+NOTICE   [2026-Oct-16 23:13:17.053681]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/dividends.csv'
+NOTICE   [2026-Oct-16 23:13:17.053793]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/dividends.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.053822]  (...ytics/orea/app/analyticsmanager.cpp:308) : report dividends written to Output/dividends.csv
+NOTICE   [2026-Oct-16 23:13:17.053844]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/fixings.csv'
+NOTICE   [2026-Oct-16 23:13:17.053894]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/fixings.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.053918]  (...ytics/orea/app/analyticsmanager.cpp:308) : report fixings written to Output/fixings.csv
+NOTICE   [2026-Oct-16 23:13:17.053941]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/todaysmarketcalibration.csv'
+NOTICE   [2026-Oct-16 23:13:17.054063]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/todaysmarketcalibration.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.054089]  (...ytics/orea/app/analyticsmanager.cpp:308) : report todaysmarketcalibration written to Output/todaysmarketcalibration.csv
+NOTICE   [2026-Oct-16 23:13:17.054111]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/todaysmarketcalibration_cashflows.csv'
+NOTICE   [2026-Oct-16 23:13:17.080768]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/todaysmarketcalibration_cashflows.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.080824]  (...ytics/orea/app/analyticsmanager.cpp:308) : report todaysmarketcalibration_cashflows written to Output/todaysmarketcalibration_cashflows.csv
+NOTICE   [2026-Oct-16 23:13:17.080853]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/marketdata.csv'
+NOTICE   [2026-Oct-16 23:13:17.080953]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/marketdata.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.080981]  (...ytics/orea/app/analyticsmanager.cpp:308) : report marketdata written to Output/marketdata.csv
+NOTICE   [2026-Oct-16 23:13:17.081004]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/pricingstats.csv'
+NOTICE   [2026-Oct-16 23:13:17.081054]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/pricingstats.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.081079]  (...ytics/orea/app/analyticsmanager.cpp:308) : report pricingstats written to Output/pricingstats.csv
+NOTICE   [2026-Oct-16 23:13:17.081101]       (OREData/ored/report/csvreport.cpp:131) : Opening CSV file report 'Output/runtimes.csv'
+NOTICE   [2026-Oct-16 23:13:17.081157]       (OREData/ored/report/csvreport.cpp:220) : CSV file report 'Output/runtimes.csv' closed.
+NOTICE   [2026-Oct-16 23:13:17.082188]  (...ytics/orea/app/analyticsmanager.cpp:308) : report runtimes written to Output/runtimes.csv
+ALERT    [2026-Oct-16 23:13:17.083260]        (OREAnalytics/orea/app/oreapp.cpp:348) : Error in ORE analytics: Failed to run analytics PRICING,SA_CCR
+WARNING  [2026-Oct-16 23:13:17.083329]        (OREAnalytics/orea/app/oreapp.cpp:349) : Finishing OREApp::analytics(): 70684672|70660096 (peakMemoryUsage (bytes) | memoryUsage (bytes))
+WARNING  [2026-Oct-16 23:13:17.083554]          (OREData/ored/utilities/log.cpp:214) : StructuredMessage { "category": "Warning", "group": "Analytics", "message": "Error in ORE analytics: Failed to run analytics PRICING,SA_CCR", "sub_fields": [ { "name": "analyticType", "value": "OREApp::run()" }, { "name": "warningType", "value": "Error" } ] }

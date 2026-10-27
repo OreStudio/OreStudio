@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.workflow.core/service/workflow_graph.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -26,8 +27,6 @@
 
 namespace {
 
-const std::string test_suite("ores.workflow.core.workflow_graph_tests");
-const std::string tags("[graph][unit]");
 using ores::workflow::service::workflow_graph;
 using ores::workflow::service::workflow_node;
 
@@ -39,7 +38,7 @@ std::size_t position_of(const std::vector<std::string>& order, const std::string
 
 }
 
-TEST_CASE("a linear chain is ordered as it was written", tags) {
+TEST_CASE("a linear chain is ordered as it was written", "[graph][unit]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     // The chain the reporting path builds, reduced to its shape.
@@ -62,7 +61,7 @@ TEST_CASE("a linear chain is ordered as it was written", tags) {
     CHECK(position_of(graph.order(), "finalise") == 5);
 }
 
-TEST_CASE("an input that no step produces is refused", tags) {
+TEST_CASE("an input that no step produces is refused", "[graph][unit]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const workflow_graph graph({{"one", {}}, {"two", {"nowhere"}}});
@@ -72,7 +71,7 @@ TEST_CASE("an input that no step produces is refused", tags) {
     CHECK(graph.ready({}, {}).empty());
 }
 
-TEST_CASE("two steps with one name are refused", tags) {
+TEST_CASE("two steps with one name are refused", "[graph][unit]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     // A consumer cannot say which of them it reads, so the chain cannot be run
@@ -84,7 +83,7 @@ TEST_CASE("two steps with one name are refused", tags) {
     CHECK(graph.incoherent()->find("two steps") != std::string::npos);
 }
 
-TEST_CASE("a step that reads one the engine reaches later is refused", tags) {
+TEST_CASE("a step that reads one the engine reaches later is refused", "[graph][unit]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     // The graph derives an order and would run this chain the other way round.
@@ -98,7 +97,7 @@ TEST_CASE("a step that reads one the engine reaches later is refused", tags) {
     CHECK(graph.ready({}, {}).empty());
 }
 
-TEST_CASE("a step is ready only once everything it reads has answered", tags) {
+TEST_CASE("a step is ready only once everything it reads has answered", "[graph][unit]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const workflow_graph graph({{"gather_trades", {}},
@@ -128,7 +127,7 @@ TEST_CASE("a step is ready only once everything it reads has answered", tags) {
               .empty());
 }
 
-TEST_CASE("a consumer waits on every producer that writes its input", tags) {
+TEST_CASE("a consumer waits on every producer that writes its input", "[graph][unit]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     // Two books, each gathered by its own batch key, and one step that reads

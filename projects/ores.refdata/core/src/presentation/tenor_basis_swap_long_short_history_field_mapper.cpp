@@ -38,30 +38,38 @@ render_tenor_basis_swap_long_short_fields(const domain::tenor_basis_swap_long_sh
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
-    fields.push_back({.name = "Convention ID", .value = boost::uuids::to_string(v.convention_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Long Index", .value = v.long_index.value_or(std::string{})});
-    fields.push_back({.name = "Long Pay Tenor", .value = v.long_pay_tenor.value_or(std::string{})});
-    fields.push_back({.name = "Short Index", .value = v.short_index.value_or(std::string{})});
+    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.identity.id)});
     fields.push_back(
-        {.name = "Short Pay Tenor", .value = v.short_pay_tenor.value_or(std::string{})});
+        {.name = "Convention ID", .value = boost::uuids::to_string(v.identity.convention_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
     fields.push_back(
-        {.name = "Spread On Short",
-         .value = v.spread_on_short ? (*v.spread_on_short ? "true" : "false") : std::string{}});
+        {.name = "Long Index", .value = v.long_leg.long_index.value_or(std::string{})});
     fields.push_back(
-        {.name = "Include Spread",
-         .value = v.include_spread ? (*v.include_spread ? "true" : "false") : std::string{}});
+        {.name = "Long Pay Tenor", .value = v.long_leg.long_pay_tenor.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Short Index", .value = v.short_leg.short_index.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Short Pay Tenor", .value = v.short_leg.short_pay_tenor.value_or(std::string{})});
+    fields.push_back({.name = "Spread On Short",
+                      .value = v.short_leg.spread_on_short ?
+                                   (*v.short_leg.spread_on_short ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Include Spread",
+                      .value = v.coupon.include_spread ?
+                                   (*v.coupon.include_spread ? "true" : "false") :
+                                   std::string{}});
     fields.push_back({.name = "Sub Periods Coupon Type",
-                      .value = v.sub_periods_coupon_type.value_or(std::string{})});
+                      .value = v.coupon.sub_periods_coupon_type.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
-    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});
     fields.push_back(
-        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
-    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
-    fields.push_back({.name = provenance_fields::recorded_at,
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+        {.name = provenance_fields::change_reason_code, .value = v.audit.change_reason_code});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.audit.change_commentary});
+    fields.push_back(
+        {.name = provenance_fields::recorded_at,
+         .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
 
     return fields;
 }

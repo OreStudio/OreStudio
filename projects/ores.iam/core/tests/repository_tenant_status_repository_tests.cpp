@@ -25,14 +25,12 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
 
 using ores::iam::domain::tenant_status;
 
@@ -62,7 +60,7 @@ using namespace ores::logging;
 using ores::testing::database_helper;
 using ores::iam::repository::tenant_status_repository;
 
-TEST_CASE("write_single_tenant_status", tags) {
+TEST_CASE("write_single_tenant_status", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -75,7 +73,7 @@ TEST_CASE("write_single_tenant_status", tags) {
     CHECK_NOTHROW(repo.write(sys_ctx, ts));
 }
 
-TEST_CASE("write_multiple_tenant_statuses", tags) {
+TEST_CASE("write_multiple_tenant_statuses", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -90,7 +88,7 @@ TEST_CASE("write_multiple_tenant_statuses", tags) {
     CHECK_NOTHROW(repo.write(sys_ctx, statuses));
 }
 
-TEST_CASE("read_latest_tenant_statuses", tags) {
+TEST_CASE("read_latest_tenant_statuses", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -111,7 +109,7 @@ TEST_CASE("read_latest_tenant_statuses", tags) {
     CHECK(read_statuses.size() >= written.size());
 }
 
-TEST_CASE("read_latest_tenant_status_by_status", tags) {
+TEST_CASE("read_latest_tenant_status_by_status", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -138,7 +136,7 @@ TEST_CASE("read_latest_tenant_status_by_status", tags) {
     CHECK(read_statuses[0] == expected);
 }
 
-TEST_CASE("read_nonexistent_tenant_status", tags) {
+TEST_CASE("read_nonexistent_tenant_status", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

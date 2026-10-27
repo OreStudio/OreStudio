@@ -31,6 +31,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "report_instance_test_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -48,9 +49,6 @@
 // by name.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][integration]");
 
 // The seeded catalogue codes. A report instance's kind is reference data, so
 // the test names a seeded code rather than writing a row of its own.
@@ -96,7 +94,8 @@ using ores::reporting::repository::report_instance_repository;
 using ores::reporting::service::report_instance_service;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a list shows production instances unless the caller asks for a kind", tags) {
+TEST_CASE("a list shows production instances unless the caller asks for a kind",
+          "[service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -146,7 +145,7 @@ TEST_CASE("a list shows production instances unless the caller asks for a kind",
     CHECK_FALSE(lists(only_packages.instances, production.id));
 }
 
-TEST_CASE("a list of runs answers only the definitions it is asked for", tags) {
+TEST_CASE("a list of runs answers only the definitions it is asked for", "[service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -198,7 +197,8 @@ TEST_CASE("a list of runs answers only the definitions it is asked for", tags) {
     CHECK(lists(both.instances, second.id));
 }
 
-TEST_CASE("two definitions and three runs read as two rows, each the latest run", tags) {
+TEST_CASE("two definitions and three runs read as two rows, each the latest run",
+          "[service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

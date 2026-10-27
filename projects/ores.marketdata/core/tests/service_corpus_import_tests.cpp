@@ -31,6 +31,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -60,9 +61,6 @@
 // walk pass with no run looking at it.
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[corpus][import_service]");
 
 /// The payload lines of @p content, without comments and blanks: a cheap size
 /// for choosing a sample, not a reading of the file.
@@ -320,7 +318,7 @@ using namespace ores::logging;
 using ores::marketdata::service::import_service;
 using ores::testing::database_helper;
 
-TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", tags) {
+TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", "[corpus][import_service]") {
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;
@@ -359,7 +357,8 @@ TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]"
     CHECK(total > 0);
 }
 
-TEST_CASE("every_line_of_every_corpus_fixing_file_reaches_the_database", tags) {
+TEST_CASE("every_line_of_every_corpus_fixing_file_reaches_the_database",
+          "[corpus][import_service]") {
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;

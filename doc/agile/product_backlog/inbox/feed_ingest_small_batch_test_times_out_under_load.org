@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 440A09AB-8EE5-4238-B2C7-ED00235A51A8
+:END:
+#+title: The feed ingest small batch test fails in full suite runs
+#+description: a_small_batch_does_not_pass_the_batches_that_are_in_the_stages fails in full suite runs after its 60 s deadline and passes alone in about 3.5 s; the cause is not yet known.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find why =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= in
+=ores.marketdata.service.tests= fails in the full suite run, and make it pass
+there.
+
+* Why
+
+On 2026-10-27 the test failed twice in full =rat= runs: =wait_until= at
+=app_feed_ingest_loop_tests.cpp:1243= gave up after its 60 s deadline before the
+tap counted every tick. Run alone it passed five times out of five, in about
+3.5 s. So 60 s of slack is not enough in the full run, which points to more
+than a slow machine, such as another suite running at the same time against
+the same services. That is not yet shown.
+
+On the same day a full =ctest= run after a rebase failed it again, at line
+1249, and with it a second test of the same file:
+=a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits=,
+whose =wait_until= at line 1089 gave up before every tick was republished.
+The load average was about 30. The suite run again alone passed both.
+
+* References
+
+-
+
+* See also
+
+-

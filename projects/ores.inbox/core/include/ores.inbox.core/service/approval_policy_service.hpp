@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_approval_policies_response
-    list_approval_policies(const messaging::list_approval_policies_request& request);
-    messaging::get_approval_policy_response
-    get_approval_policy(const messaging::get_approval_policy_request& request);
-    messaging::get_many_approval_policies_response
-    get_many_approval_policies(const messaging::get_many_approval_policies_request& request);
-    messaging::put_approval_policy_response
-    put_approval_policy(const messaging::put_approval_policy_request& request);
-    messaging::put_many_approval_policies_response
-    put_many_approval_policies(const messaging::put_many_approval_policies_request& request);
-    messaging::delete_approval_policy_response
-    delete_approval_policy(const messaging::delete_approval_policy_request& request);
-    messaging::delete_many_approval_policies_response
-    delete_many_approval_policies(const messaging::delete_many_approval_policies_request& request);
-    messaging::list_approval_policy_versions_response
-    list_approval_policy_versions(const messaging::list_approval_policy_versions_request& request);
-    messaging::get_approval_policy_version_response
-    get_approval_policy_version(const messaging::get_approval_policy_version_request& request);
+    ::ores::inbox::messaging::list_approval_policies_response
+    list_approval_policies(const ::ores::inbox::messaging::list_approval_policies_request& request);
+    ::ores::inbox::messaging::get_approval_policy_response
+    get_approval_policy(const ::ores::inbox::messaging::get_approval_policy_request& request);
+    ::ores::inbox::messaging::get_many_approval_policies_response get_many_approval_policies(
+        const ::ores::inbox::messaging::get_many_approval_policies_request& request);
+    ::ores::inbox::messaging::put_approval_policy_response
+    put_approval_policy(const ::ores::inbox::messaging::put_approval_policy_request& request);
+    ::ores::inbox::messaging::put_many_approval_policies_response put_many_approval_policies(
+        const ::ores::inbox::messaging::put_many_approval_policies_request& request);
+    ::ores::inbox::messaging::delete_approval_policy_response
+    delete_approval_policy(const ::ores::inbox::messaging::delete_approval_policy_request& request);
+    ::ores::inbox::messaging::delete_many_approval_policies_response delete_many_approval_policies(
+        const ::ores::inbox::messaging::delete_many_approval_policies_request& request);
+    ::ores::inbox::messaging::list_approval_policy_versions_response list_approval_policy_versions(
+        const ::ores::inbox::messaging::list_approval_policy_versions_request& request);
+    ::ores::inbox::messaging::get_approval_policy_version_response get_approval_policy_version(
+        const ::ores::inbox::messaging::get_approval_policy_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::approval_policy_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::approval_policy& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::inbox::messaging::approval_policy_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::approval_policy& out);
 };
 
 }

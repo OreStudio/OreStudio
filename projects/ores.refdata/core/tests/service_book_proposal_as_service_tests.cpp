@@ -34,8 +34,6 @@
 
 namespace {
 
-const std::string tags("[book_proposal][as_service]");
-
 using namespace ores::refdata::tests;
 using ores::refdata::service::book_proposal_service;
 using ores::platform::environment::environment;
@@ -64,7 +62,8 @@ ores::database::context as_refdata_service(ores::testing::scoped_database_helper
 
 }
 
-TEST_CASE("the_refdata_service_user_raises_a_request_and_tells_its_deciders", tags) {
+TEST_CASE("the_refdata_service_user_raises_a_request_and_tells_its_deciders",
+          "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(as_refdata_service(h, w));
@@ -76,7 +75,7 @@ TEST_CASE("the_refdata_service_user_raises_a_request_and_tells_its_deciders", ta
     CHECK(proposal.request->state_code == "waiting");
 }
 
-TEST_CASE("the_refdata_service_user_previews_without_writing", tags) {
+TEST_CASE("the_refdata_service_user_previews_without_writing", "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(as_refdata_service(h, w));
@@ -88,7 +87,7 @@ TEST_CASE("the_refdata_service_user_previews_without_writing", tags) {
     CHECK_FALSE(preview.part_codes.empty());
 }
 
-TEST_CASE("the_refdata_service_user_applies_an_approved_request", tags) {
+TEST_CASE("the_refdata_service_user_applies_an_approved_request", "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(as_refdata_service(h, w));
@@ -105,7 +104,8 @@ TEST_CASE("the_refdata_service_user_applies_an_approved_request", tags) {
     CHECK(books.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed", tags) {
+TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed",
+          "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(as_refdata_service(h, w));
@@ -149,7 +149,7 @@ TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed", ta
     CHECK(std::ranges::any_of(page.notifications, [&](const auto& n) { return n.link_id == id; }));
 }
 
-TEST_CASE("the_refdata_service_user_reads_who_holds_a_permission", tags) {
+TEST_CASE("the_refdata_service_user_reads_who_holds_a_permission", "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto service_ctx = as_refdata_service(h, w);

@@ -24,8 +24,6 @@
 
 namespace {
 
-const std::string tags("[ore][log][ore_log_parser]");
-
 // Build a UTC time_point from explicit fields (no DST, no timezone conversion).
 std::chrono::system_clock::time_point
 make_utc(int year, int mon, int mday, int hour, int min, int sec, long microseconds = 0) {
@@ -45,7 +43,7 @@ using ores::ore::log::parse_ore_log_line;
 // Valid lines — all five ORE levels
 // =============================================================================
 
-TEST_CASE("parse_data_level_maps_to_debug", tags) {
+TEST_CASE("parse_data_level_maps_to_debug", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "DATA    [2024-Jan-15 09:12:34.000001]    (ore/oreapp.cpp:42) : some debug info");
 
@@ -56,7 +54,7 @@ TEST_CASE("parse_data_level_maps_to_debug", tags) {
     CHECK(result->timestamp == make_utc(2024, 1, 15, 9, 12, 34, 1));
 }
 
-TEST_CASE("parse_notice_level_maps_to_info", tags) {
+TEST_CASE("parse_notice_level_maps_to_info", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "NOTICE    [2025-Mar-01 00:00:00.000000]    (ored/main.cpp:10) : application started");
 
@@ -67,7 +65,7 @@ TEST_CASE("parse_notice_level_maps_to_info", tags) {
     CHECK(result->timestamp == make_utc(2025, 3, 1, 0, 0, 0, 0));
 }
 
-TEST_CASE("parse_warning_level_maps_to_warn", tags) {
+TEST_CASE("parse_warning_level_maps_to_warn", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "WARNING    [2024-Dec-31 23:59:59.123456]    (risk/engine.cpp:99) : curve not found");
 
@@ -78,7 +76,7 @@ TEST_CASE("parse_warning_level_maps_to_warn", tags) {
     CHECK(result->timestamp == make_utc(2024, 12, 31, 23, 59, 59, 123456));
 }
 
-TEST_CASE("parse_memory_report_sent_as_warning_maps_to_debug", tags) {
+TEST_CASE("parse_memory_report_sent_as_warning_maps_to_debug", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "WARNING  [2026-Oct-11 09:54:13.735791]    (OREAnalytics/orea/app/oreapp.cpp:257) : "
         "Starting OREApp::analytics(): 52359168|52514816 (peakMemoryUsage (bytes) | memoryUsage "
@@ -91,7 +89,7 @@ TEST_CASE("parse_memory_report_sent_as_warning_maps_to_debug", tags) {
           "(bytes))");
 }
 
-TEST_CASE("parse_other_warning_mentioning_memory_stays_warn", tags) {
+TEST_CASE("parse_other_warning_mentioning_memory_stays_warn", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "WARNING  [2026-Oct-11 09:54:13.735791]    (ored/main.cpp:10) : low memory, "
         "peakMemoryUsage is high");
@@ -100,7 +98,7 @@ TEST_CASE("parse_other_warning_mentioning_memory_stays_warn", tags) {
     CHECK(result->level == "warn");
 }
 
-TEST_CASE("parse_error_level_maps_to_error", tags) {
+TEST_CASE("parse_error_level_maps_to_error", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "ERROR    [2024-Jun-15 12:00:00.500000]    (pricing/model.cpp:200) : pricing failed");
 
@@ -111,7 +109,7 @@ TEST_CASE("parse_error_level_maps_to_error", tags) {
     CHECK(result->timestamp == make_utc(2024, 6, 15, 12, 0, 0, 500000));
 }
 
-TEST_CASE("parse_alert_level_maps_to_error", tags) {
+TEST_CASE("parse_alert_level_maps_to_error", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "ALERT    [2024-Sep-10 08:30:00.000000]    (monitor/alert.cpp:5) : critical threshold");
 
@@ -126,7 +124,7 @@ TEST_CASE("parse_alert_level_maps_to_error", tags) {
 // Message field
 // =============================================================================
 
-TEST_CASE("parse_message_with_colon_inside_is_preserved", tags) {
+TEST_CASE("parse_message_with_colon_inside_is_preserved", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "NOTICE    [2024-Feb-20 10:00:00.000000]    (a/b.cpp:1) : key: value: extra");
 
@@ -134,7 +132,7 @@ TEST_CASE("parse_message_with_colon_inside_is_preserved", tags) {
     CHECK(result->message == "key: value: extra");
 }
 
-TEST_CASE("parse_message_with_leading_whitespace_after_colon", tags) {
+TEST_CASE("parse_message_with_leading_whitespace_after_colon", "[ore][log][ore_log_parser]") {
     const auto result = parse_ore_log_line(
         "NOTICE    [2024-Feb-20 10:00:00.000000]    (a/b.cpp:1) :   spaced message");
 
@@ -146,7 +144,8 @@ TEST_CASE("parse_message_with_leading_whitespace_after_colon", tags) {
 // Microsecond handling
 // =============================================================================
 
-TEST_CASE("parse_microseconds_fewer_than_six_digits_are_scaled_to_microseconds", tags) {
+TEST_CASE("parse_microseconds_fewer_than_six_digits_are_scaled_to_microseconds",
+          "[ore][log][ore_log_parser]") {
     // "123" → treated as 123000 µs (i.e., 0.123 seconds, right-padded with zeros)
     const auto result =
         parse_ore_log_line("NOTICE    [2024-Jan-01 00:00:01.123]    (x.cpp:1) : msg");
@@ -155,7 +154,7 @@ TEST_CASE("parse_microseconds_fewer_than_six_digits_are_scaled_to_microseconds",
     CHECK(result->timestamp == make_utc(2024, 1, 1, 0, 0, 1, 123000));
 }
 
-TEST_CASE("parse_zero_microseconds_is_accepted", tags) {
+TEST_CASE("parse_zero_microseconds_is_accepted", "[ore][log][ore_log_parser]") {
     const auto result =
         parse_ore_log_line("NOTICE    [2024-Jan-01 00:00:00.000000]    (x.cpp:1) : msg");
 
@@ -167,35 +166,35 @@ TEST_CASE("parse_zero_microseconds_is_accepted", tags) {
 // Malformed / empty lines
 // =============================================================================
 
-TEST_CASE("parse_empty_line_returns_nullopt", tags) {
+TEST_CASE("parse_empty_line_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(parse_ore_log_line("").has_value());
 }
 
-TEST_CASE("parse_whitespace_only_line_returns_nullopt", tags) {
+TEST_CASE("parse_whitespace_only_line_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(parse_ore_log_line("   \t  ").has_value());
 }
 
-TEST_CASE("parse_unknown_level_returns_nullopt", tags) {
+TEST_CASE("parse_unknown_level_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(parse_ore_log_line("DEBUG    [2024-Jan-01 00:00:00.000000]    (x.cpp:1) : msg")
                     .has_value());
 }
 
-TEST_CASE("parse_missing_timestamp_brackets_returns_nullopt", tags) {
+TEST_CASE("parse_missing_timestamp_brackets_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(
         parse_ore_log_line("NOTICE    2024-Jan-01 00:00:00.000000    (x.cpp:1) : msg").has_value());
 }
 
-TEST_CASE("parse_missing_source_parens_returns_nullopt", tags) {
+TEST_CASE("parse_missing_source_parens_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(
         parse_ore_log_line("NOTICE    [2024-Jan-01 00:00:00.000000]    x.cpp:1 : msg").has_value());
 }
 
-TEST_CASE("parse_missing_colon_separator_returns_nullopt", tags) {
+TEST_CASE("parse_missing_colon_separator_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(parse_ore_log_line(
                     "NOTICE    [2024-Jan-01 00:00:00.000000]    (x.cpp:1) message without colon")
                     .has_value());
 }
 
-TEST_CASE("parse_invalid_timestamp_returns_nullopt", tags) {
+TEST_CASE("parse_invalid_timestamp_returns_nullopt", "[ore][log][ore_log_parser]") {
     CHECK_FALSE(parse_ore_log_line("NOTICE    [not-a-date]    (x.cpp:1) : msg").has_value());
 }

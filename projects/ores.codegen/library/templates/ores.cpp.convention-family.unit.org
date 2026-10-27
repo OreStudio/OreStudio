@@ -53,7 +53,9 @@ void apply_{{key}}(const ores::database::context& ctx,
             "Staged conventions payload for family "
             "\"{{key}}\" does not decode.");
     auto rows = std::vector<{{domain_type}}>{std::move(*decoded)};
-    ores::service::messaging::stamp(rows.front(), ctx);
+    // A grouped row keeps its security fields in a member, so the stamp has
+    // to walk into it; stamp_document does, and leaves a flat row alone.
+    ores::service::messaging::stamp_document(rows.front(), ctx);
 {{#is_world}}
     add_missing_world_rows(ctx,
                            ores::refdata::repository::{{entity}}_repository(),

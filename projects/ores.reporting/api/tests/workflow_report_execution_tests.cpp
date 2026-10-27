@@ -36,8 +36,6 @@
 
 namespace {
 
-const std::string tags("[workflow][reporting]");
-
 namespace wf = ores::reporting::workflow;
 namespace msg = ores::reporting::messaging;
 namespace svc = ores::workflow::service;
@@ -83,7 +81,8 @@ std::string packaging_result(const std::string& uri) {
 
 }
 
-TEST_CASE("a run that executes every phase builds the chain it always built", tags) {
+TEST_CASE("a run that executes every phase builds the chain it always built",
+          "[workflow][reporting]") {
     const auto steps = steps_for(run_request("execute", "", "execute"));
 
     CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
@@ -95,7 +94,7 @@ TEST_CASE("a run that executes every phase builds the chain it always built", ta
                                                       "finalise"});
 }
 
-TEST_CASE("a run that replaces both phases builds the substituted chain", tags) {
+TEST_CASE("a run that replaces both phases builds the substituted chain", "[workflow][reporting]") {
     const auto steps = steps_for(run_request("substitute", "prepared/input.tar.gz", "ignore"));
 
     CHECK(names_of(steps) ==
@@ -103,7 +102,7 @@ TEST_CASE("a run that replaces both phases builds the substituted chain", tags) 
               "resolve_prepared_input", "submit_compute", "ignore_compute_results", "finalise"});
 }
 
-TEST_CASE("a run substitutes one phase at a time", tags) {
+TEST_CASE("a run substitutes one phase at a time", "[workflow][reporting]") {
     CHECK(names_of(steps_for(run_request("substitute", "prepared/input.tar.gz", "execute"))) ==
           std::vector<std::string>{
               "resolve_prepared_input", "submit_compute", "collect_compute_results", "finalise"});
@@ -118,7 +117,7 @@ TEST_CASE("a run substitutes one phase at a time", tags) {
                                    "finalise"});
 }
 
-TEST_CASE("submission reads whichever step filled the input role", tags) {
+TEST_CASE("submission reads whichever step filled the input role", "[workflow][reporting]") {
     const auto json = run_request("substitute", "prepared/input.tar.gz", "execute");
     const auto steps = steps_for(json);
     REQUIRE(steps[1].name == "submit_compute");
@@ -133,7 +132,8 @@ TEST_CASE("submission reads whichever step filled the input role", tags) {
     CHECK(cmd->tarball_uris == std::vector<std::string>{"prepared/input.tar.gz"});
 }
 
-TEST_CASE("the substitute is indistinguishable to the step that follows it", tags) {
+TEST_CASE("the substitute is indistinguishable to the step that follows it",
+          "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto executed = steps_for(json);
     const auto substituted =
@@ -152,7 +152,7 @@ TEST_CASE("the substitute is indistinguishable to the step that follows it", tag
           substituted[1].build_command(json, from_substitute));
 }
 
-TEST_CASE("a consumer whose result is absent fails rather than guessing", tags) {
+TEST_CASE("a consumer whose result is absent fails rather than guessing", "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
 
@@ -160,7 +160,8 @@ TEST_CASE("a consumer whose result is absent fails rather than guessing", tags) 
     CHECK_THROWS_AS(steps[2].build_command(json, {}), std::runtime_error);
 }
 
-TEST_CASE("a consumer whose result cannot be read fails rather than guessing", tags) {
+TEST_CASE("a consumer whose result cannot be read fails rather than guessing",
+          "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
 
@@ -169,7 +170,7 @@ TEST_CASE("a consumer whose result cannot be read fails rather than guessing", t
     CHECK_THROWS_AS(steps[2].build_command(json, prev), std::runtime_error);
 }
 
-TEST_CASE("finalisation needs no result from the phase before it", tags) {
+TEST_CASE("finalisation needs no result from the phase before it", "[workflow][reporting]") {
     const auto json = run_request("execute", "", "ignore");
     const auto steps = steps_for(json);
     REQUIRE(steps.back().name == "finalise");
@@ -180,7 +181,7 @@ TEST_CASE("finalisation needs no result from the phase before it", tags) {
     CHECK(cmd->report_instance_id == "instance");
 }
 
-TEST_CASE("the bundle is told the version of each trade the run read", tags) {
+TEST_CASE("the bundle is told the version of each trade the run read", "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
     REQUIRE(steps[2].name == "assemble_bundle");
@@ -204,7 +205,7 @@ TEST_CASE("the bundle is told the version of each trade the run read", tags) {
     CHECK(cmd->trade_versions == R"({"033b4053-fe1d-5901-bc2f-7d95afe91f00":3})");
 }
 
-TEST_CASE("packaging names the report definition the run belongs to", tags) {
+TEST_CASE("packaging names the report definition the run belongs to", "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
     REQUIRE(steps[3].name == "prepare_ore_package");
@@ -229,16 +230,17 @@ TEST_CASE("packaging names the report definition the run belongs to", tags) {
     CHECK(cmd->fixings_storage_key == "fixings");
 }
 
-TEST_CASE("a configuration nobody implements builds no chain", tags) {
+TEST_CASE("a configuration nobody implements builds no chain", "[workflow][reporting]") {
     CHECK_THROWS_AS(steps_for(run_request("magic", "", "execute")), std::runtime_error);
     CHECK_THROWS_AS(steps_for(run_request("execute", "", "magic")), std::runtime_error);
 }
 
-TEST_CASE("substituting without naming an input fails at chain build", tags) {
+TEST_CASE("substituting without naming an input fails at chain build", "[workflow][reporting]") {
     CHECK_THROWS_AS(steps_for(run_request("substitute", "", "execute")), std::runtime_error);
 }
 
-TEST_CASE("a package instance prepares the input and stops before the grid", tags) {
+TEST_CASE("a package instance prepares the input and stops before the grid",
+          "[workflow][reporting]") {
     const auto steps = steps_for(run_request("execute", "", "execute", "package"));
 
     CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
@@ -249,12 +251,13 @@ TEST_CASE("a package instance prepares the input and stops before the grid", tag
 }
 
 TEST_CASE("the post-processing of a package instance changes nothing, because nothing computes",
-          tags) {
+          "[workflow][reporting]") {
     CHECK(names_of(steps_for(run_request("execute", "", "ignore", "package"))) ==
           names_of(steps_for(run_request("execute", "", "execute", "package"))));
 }
 
-TEST_CASE("a package instance runs the very steps a production instance runs", tags) {
+TEST_CASE("a package instance runs the very steps a production instance runs",
+          "[workflow][reporting]") {
     const auto package = steps_for(run_request("execute", "", "execute", "package"));
     const auto production = steps_for(run_request("execute", "", "execute", "production"));
 
@@ -270,30 +273,32 @@ TEST_CASE("a package instance runs the very steps a production instance runs", t
     CHECK(package[4].name == production[6].name);
 }
 
-TEST_CASE("an instance that names no kind is a production instance", tags) {
+TEST_CASE("an instance that names no kind is a production instance", "[workflow][reporting]") {
     CHECK(names_of(steps_for(run_request("execute", "", "execute", std::nullopt))) ==
           names_of(steps_for(run_request("execute", "", "execute", "production"))));
 }
 
-TEST_CASE("a report that substitutes its input has no packages to build", tags) {
+TEST_CASE("a report that substitutes its input has no packages to build", "[workflow][reporting]") {
     CHECK_THROWS_AS(
         steps_for(run_request("substitute", "prepared/input.tar.gz", "execute", "package")),
         std::runtime_error);
 }
 
-TEST_CASE("an instance kind nobody implements is refused before a step is dispatched", tags) {
+TEST_CASE("an instance kind nobody implements is refused before a step is dispatched",
+          "[workflow][reporting]") {
     CHECK_THROWS_AS(steps_for(run_request("execute", "", "execute", "rehearsal")),
                     std::runtime_error);
 }
 
-TEST_CASE("the instance kinds this component implements are production and package", tags) {
+TEST_CASE("the instance kinds this component implements are production and package",
+          "[workflow][reporting]") {
     CHECK(wf::is_known_instance_kind("production"));
     CHECK(wf::is_known_instance_kind("package"));
     CHECK_FALSE(wf::is_known_instance_kind("rehearsal"));
     CHECK_FALSE(wf::is_known_instance_kind(""));
 }
 
-TEST_CASE("finalise waits for the step whose result it completes", tags) {
+TEST_CASE("finalise waits for the step whose result it completes", "[workflow][reporting]") {
     // A step that waits for nothing is dispatched at once, so a finalise with no
     // dependency races the chain it exists to close: it marks the instance complete
     // while the run is still setting it running, and the state machine refuses a move

@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_asset_classes_response
-    list_asset_classes(const messaging::list_asset_classes_request& request);
-    messaging::get_asset_class_response
-    get_asset_class(const messaging::get_asset_class_request& request);
-    messaging::get_many_asset_classes_response
-    get_many_asset_classes(const messaging::get_many_asset_classes_request& request);
-    messaging::put_asset_class_response
-    put_asset_class(const messaging::put_asset_class_request& request);
-    messaging::put_many_asset_classes_response
-    put_many_asset_classes(const messaging::put_many_asset_classes_request& request);
-    messaging::delete_asset_class_response
-    delete_asset_class(const messaging::delete_asset_class_request& request);
-    messaging::delete_many_asset_classes_response
-    delete_many_asset_classes(const messaging::delete_many_asset_classes_request& request);
-    messaging::list_asset_class_versions_response
-    list_asset_class_versions(const messaging::list_asset_class_versions_request& request);
-    messaging::get_asset_class_version_response
-    get_asset_class_version(const messaging::get_asset_class_version_request& request);
+    ::ores::refdata::messaging::list_asset_classes_response
+    list_asset_classes(const ::ores::refdata::messaging::list_asset_classes_request& request);
+    ::ores::refdata::messaging::get_asset_class_response
+    get_asset_class(const ::ores::refdata::messaging::get_asset_class_request& request);
+    ::ores::refdata::messaging::get_many_asset_classes_response get_many_asset_classes(
+        const ::ores::refdata::messaging::get_many_asset_classes_request& request);
+    ::ores::refdata::messaging::put_asset_class_response
+    put_asset_class(const ::ores::refdata::messaging::put_asset_class_request& request);
+    ::ores::refdata::messaging::put_many_asset_classes_response put_many_asset_classes(
+        const ::ores::refdata::messaging::put_many_asset_classes_request& request);
+    ::ores::refdata::messaging::delete_asset_class_response
+    delete_asset_class(const ::ores::refdata::messaging::delete_asset_class_request& request);
+    ::ores::refdata::messaging::delete_many_asset_classes_response delete_many_asset_classes(
+        const ::ores::refdata::messaging::delete_many_asset_classes_request& request);
+    ::ores::refdata::messaging::list_asset_class_versions_response list_asset_class_versions(
+        const ::ores::refdata::messaging::list_asset_class_versions_request& request);
+    ::ores::refdata::messaging::get_asset_class_version_response get_asset_class_version(
+        const ::ores::refdata::messaging::get_asset_class_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +191,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::asset_class_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::asset_class& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::asset_class_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::asset_class& out);
 };
 
 }

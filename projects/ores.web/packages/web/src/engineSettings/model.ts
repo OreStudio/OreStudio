@@ -177,15 +177,6 @@ export function setCount(group: EngineGroup, saved: Draft): number {
     return group.settings.filter((setting) => (saved[setting.column] ?? null) !== null).length;
 }
 
-/**
- * The default of a setting in a few words: the first sentence of its default text,
- * which says the value and then what it means, as in No. Today's fixing is loaded.
- */
-export function shortDefault(defaultText: string): string {
-    const first = defaultText.split(/\.(?:\s|$)/, 1)[0] ?? '';
-    return first.trim();
-}
-
 /** The label of a setting, or the name ORE gives it when its ore parameter is missing. */
 export function labelOf(setting: EngineSetting): string {
     return setting.label === '' ? setting.ore : setting.label;

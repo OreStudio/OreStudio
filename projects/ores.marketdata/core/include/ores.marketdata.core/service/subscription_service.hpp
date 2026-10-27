@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_subscriptions_response
-    list_subscriptions(const messaging::list_subscriptions_request& request);
-    messaging::get_subscription_response
-    get_subscription(const messaging::get_subscription_request& request);
-    messaging::get_many_subscriptions_response
-    get_many_subscriptions(const messaging::get_many_subscriptions_request& request);
-    messaging::put_subscription_response
-    put_subscription(const messaging::put_subscription_request& request);
-    messaging::put_many_subscriptions_response
-    put_many_subscriptions(const messaging::put_many_subscriptions_request& request);
-    messaging::delete_subscription_response
-    delete_subscription(const messaging::delete_subscription_request& request);
-    messaging::delete_many_subscriptions_response
-    delete_many_subscriptions(const messaging::delete_many_subscriptions_request& request);
-    messaging::list_subscription_versions_response
-    list_subscription_versions(const messaging::list_subscription_versions_request& request);
-    messaging::get_subscription_version_response
-    get_subscription_version(const messaging::get_subscription_version_request& request);
+    ::ores::marketdata::messaging::list_subscriptions_response
+    list_subscriptions(const ::ores::marketdata::messaging::list_subscriptions_request& request);
+    ::ores::marketdata::messaging::get_subscription_response
+    get_subscription(const ::ores::marketdata::messaging::get_subscription_request& request);
+    ::ores::marketdata::messaging::get_many_subscriptions_response get_many_subscriptions(
+        const ::ores::marketdata::messaging::get_many_subscriptions_request& request);
+    ::ores::marketdata::messaging::put_subscription_response
+    put_subscription(const ::ores::marketdata::messaging::put_subscription_request& request);
+    ::ores::marketdata::messaging::put_many_subscriptions_response put_many_subscriptions(
+        const ::ores::marketdata::messaging::put_many_subscriptions_request& request);
+    ::ores::marketdata::messaging::delete_subscription_response
+    delete_subscription(const ::ores::marketdata::messaging::delete_subscription_request& request);
+    ::ores::marketdata::messaging::delete_many_subscriptions_response delete_many_subscriptions(
+        const ::ores::marketdata::messaging::delete_many_subscriptions_request& request);
+    ::ores::marketdata::messaging::list_subscription_versions_response list_subscription_versions(
+        const ::ores::marketdata::messaging::list_subscription_versions_request& request);
+    ::ores::marketdata::messaging::get_subscription_version_response get_subscription_version(
+        const ::ores::marketdata::messaging::get_subscription_version_request& request);
     /**@}*/
 
     /**
@@ -204,9 +204,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::subscription_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::subscription& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::subscription_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::subscription& out);
 };
 
 }

@@ -22,6 +22,12 @@
  * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { TenorBasisSwapPartIdentity } from './tenor_basis_swap_part_identity.js';
+import type { TenorBasisSwapPayLeg } from './tenor_basis_swap_pay_leg.js';
+import type { TenorBasisSwapReceiveLeg } from './tenor_basis_swap_receive_leg.js';
+import type { TenorBasisSwapPayReceiveCoupon } from './tenor_basis_swap_pay_receive_coupon.js';
+import type { AuditRecord } from '../../dq/domain/audit_record.js';
+
 /**
  * The tenor basis swap pay receive wire shape.
  *
@@ -31,23 +37,9 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface TenorBasisSwapPayReceive {
-    version: number;
-    tenant_id: string;
-    id: string;
-    convention_id: string;
-    party_id: string;
-    pay_index: string | null;
-    pay_frequency: string | null;
-    receive_index: string | null;
-    receive_frequency: string | null;
-    spread_on_rec: boolean | null;
-    include_spread: boolean | null;
-    sub_periods_coupon_type: string | null;
-    pay_is_averaged: boolean | null;
-    rec_is_averaged: boolean | null;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+    identity: TenorBasisSwapPartIdentity;
+    pay_leg: TenorBasisSwapPayLeg;
+    rec_leg: TenorBasisSwapReceiveLeg;
+    coupon: TenorBasisSwapPayReceiveCoupon;
+    audit: AuditRecord;
 }

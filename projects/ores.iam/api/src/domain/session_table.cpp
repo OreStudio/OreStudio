@@ -31,7 +31,7 @@ namespace ores::iam::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string session_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,7 +51,7 @@ std::string convert_to_table(const std::vector<session>& v) {
 
     for ([[maybe_unused]] const auto& s : v) {
         table << s.id << boost::uuids::to_string(s.account_id) << s.start_time
-              << opt_str(s.end_time) << s.client_ip << s.client_identifier << s.country_code
+              << session_opt_str(s.end_time) << s.client_ip << s.client_identifier << s.country_code
               << s.protocol << s.bytes_sent << s.bytes_received << fort::endr;
     }
     return table.to_string();

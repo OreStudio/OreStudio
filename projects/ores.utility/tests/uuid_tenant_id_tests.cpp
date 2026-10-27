@@ -19,23 +19,17 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[uuid][tenant_id]");
-
-}
 
 using ores::utility::uuid::tenant_id;
 using ores::utility::uuid::nil_uuid_str;
 using ores::utility::uuid::max_uuid_str;
 using namespace ores::logging;
 
-TEST_CASE("tenant_id_system_returns_max_uuid", tags) {
+TEST_CASE("tenant_id_system_returns_max_uuid", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     auto sut = tenant_id::system();
@@ -47,7 +41,7 @@ TEST_CASE("tenant_id_system_returns_max_uuid", tags) {
     CHECK_FALSE(sut.is_nil());
 }
 
-TEST_CASE("tenant_id_system_is_consistent", tags) {
+TEST_CASE("tenant_id_system_is_consistent", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     auto sut1 = tenant_id::system();
@@ -59,7 +53,7 @@ TEST_CASE("tenant_id_system_is_consistent", tags) {
     CHECK(sut1 == sut2);
 }
 
-TEST_CASE("tenant_id_from_uuid_rejects_nil", tags) {
+TEST_CASE("tenant_id_from_uuid_rejects_nil", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::uuid nil = boost::uuids::nil_uuid();
@@ -72,7 +66,7 @@ TEST_CASE("tenant_id_from_uuid_rejects_nil", tags) {
     CHECK(result.error().find("nil UUID") != std::string::npos);
 }
 
-TEST_CASE("tenant_id_from_uuid_accepts_valid_uuid", tags) {
+TEST_CASE("tenant_id_from_uuid_accepts_valid_uuid", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::random_generator gen;
@@ -88,7 +82,7 @@ TEST_CASE("tenant_id_from_uuid_accepts_valid_uuid", tags) {
     CHECK_FALSE(result.value().is_nil());
 }
 
-TEST_CASE("tenant_id_from_uuid_accepts_max_uuid", tags) {
+TEST_CASE("tenant_id_from_uuid_accepts_max_uuid", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator gen;
@@ -103,7 +97,7 @@ TEST_CASE("tenant_id_from_uuid_accepts_max_uuid", tags) {
     CHECK(result.value() == tenant_id::system());
 }
 
-TEST_CASE("tenant_id_from_string_rejects_nil", tags) {
+TEST_CASE("tenant_id_from_string_rejects_nil", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     auto result = tenant_id::from_string(nil_uuid_str);
@@ -115,7 +109,7 @@ TEST_CASE("tenant_id_from_string_rejects_nil", tags) {
     CHECK(result.error().find("nil UUID") != std::string::npos);
 }
 
-TEST_CASE("tenant_id_from_string_accepts_valid_uuid", tags) {
+TEST_CASE("tenant_id_from_string_accepts_valid_uuid", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     const std::string valid_uuid = "550e8400-e29b-41d4-a716-446655440000";
@@ -130,7 +124,7 @@ TEST_CASE("tenant_id_from_string_accepts_valid_uuid", tags) {
     CHECK_FALSE(result.value().is_nil());
 }
 
-TEST_CASE("tenant_id_from_string_accepts_max_uuid", tags) {
+TEST_CASE("tenant_id_from_string_accepts_max_uuid", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     auto result = tenant_id::from_string(max_uuid_str);
@@ -143,7 +137,7 @@ TEST_CASE("tenant_id_from_string_accepts_max_uuid", tags) {
     CHECK(result.value() == tenant_id::system());
 }
 
-TEST_CASE("tenant_id_from_string_rejects_invalid_format", tags) {
+TEST_CASE("tenant_id_from_string_rejects_invalid_format", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     const std::string invalid = "not-a-uuid";
@@ -156,7 +150,7 @@ TEST_CASE("tenant_id_from_string_rejects_invalid_format", tags) {
     CHECK(result.error().find("Failed to parse") != std::string::npos);
 }
 
-TEST_CASE("tenant_id_from_string_handles_uppercase", tags) {
+TEST_CASE("tenant_id_from_string_handles_uppercase", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     const std::string upper = "550E8400-E29B-41D4-A716-446655440000";
@@ -169,7 +163,7 @@ TEST_CASE("tenant_id_from_string_handles_uppercase", tags) {
     CHECK_FALSE(result.value().is_system());
 }
 
-TEST_CASE("tenant_id_equality_comparison", tags) {
+TEST_CASE("tenant_id_equality_comparison", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     const std::string uuid_str = "550e8400-e29b-41d4-a716-446655440000";
@@ -185,7 +179,7 @@ TEST_CASE("tenant_id_equality_comparison", tags) {
     CHECK(result1.value() == result2.value());
 }
 
-TEST_CASE("tenant_id_inequality_for_different_uuids", tags) {
+TEST_CASE("tenant_id_inequality_for_different_uuids", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     const std::string uuid_str1 = "550e8400-e29b-41d4-a716-446655440000";
@@ -202,7 +196,7 @@ TEST_CASE("tenant_id_inequality_for_different_uuids", tags) {
     CHECK_FALSE(result1.value() == result2.value());
 }
 
-TEST_CASE("tenant_id_to_uuid_returns_correct_uuid", tags) {
+TEST_CASE("tenant_id_to_uuid_returns_correct_uuid", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::random_generator gen;
@@ -219,7 +213,7 @@ TEST_CASE("tenant_id_to_uuid_returns_correct_uuid", tags) {
     CHECK(actual_uuid == expected_uuid);
 }
 
-TEST_CASE("tenant_id_constants_are_valid_uuids", tags) {
+TEST_CASE("tenant_id_constants_are_valid_uuids", "[uuid][tenant_id]") {
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Nil UUID constant: " << nil_uuid_str;

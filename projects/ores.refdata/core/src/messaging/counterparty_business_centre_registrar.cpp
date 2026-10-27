@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view counterparty_business_centre_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_counterparty_business_centre_handlers(
@@ -51,41 +51,41 @@ std::vector<ores::nats::service::subscription> register_counterparty_business_ce
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_counterparty_business_centres_request::nats_subject,
-        queue_group,
+        counterparty_business_centre_queue_group,
         [h](ores::nats::message msg) { h->list_counterparty_business_centres(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_counterparty_business_centre_request::nats_subject,
-        queue_group,
+        counterparty_business_centre_queue_group,
         [h](ores::nats::message msg) { h->get_counterparty_business_centre(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_counterparty_business_centres_request::nats_subject,
-                             queue_group,
+                             counterparty_business_centre_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_counterparty_business_centres(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_counterparty_business_centre_request::nats_subject,
-        queue_group,
+        counterparty_business_centre_queue_group,
         [h](ores::nats::message msg) { h->put_counterparty_business_centre(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_counterparty_business_centres_request::nats_subject,
-                             queue_group,
+                             counterparty_business_centre_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_counterparty_business_centres(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_counterparty_business_centre_request::nats_subject,
-        queue_group,
+        counterparty_business_centre_queue_group,
         [h](ores::nats::message msg) { h->delete_counterparty_business_centre(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_counterparty_business_centres_request::nats_subject,
-                             queue_group,
+                             counterparty_business_centre_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_counterparty_business_centres(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_counterparty_id_counterparty_business_centres_request::nats_subject,
-        queue_group,
+        counterparty_business_centre_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_counterparty_id_counterparty_business_centres(std::move(msg));
         }));

@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bond_yield_conventions_response
-    list_bond_yield_conventions(const messaging::list_bond_yield_conventions_request& request);
-    messaging::get_bond_yield_convention_response
-    get_bond_yield_convention(const messaging::get_bond_yield_convention_request& request);
-    messaging::get_many_bond_yield_conventions_response get_many_bond_yield_conventions(
-        const messaging::get_many_bond_yield_conventions_request& request);
-    messaging::put_bond_yield_convention_response
-    put_bond_yield_convention(const messaging::put_bond_yield_convention_request& request);
-    messaging::put_many_bond_yield_conventions_response put_many_bond_yield_conventions(
-        const messaging::put_many_bond_yield_conventions_request& request);
-    messaging::delete_bond_yield_convention_response
-    delete_bond_yield_convention(const messaging::delete_bond_yield_convention_request& request);
-    messaging::delete_many_bond_yield_conventions_response delete_many_bond_yield_conventions(
-        const messaging::delete_many_bond_yield_conventions_request& request);
-    messaging::list_bond_yield_convention_versions_response list_bond_yield_convention_versions(
-        const messaging::list_bond_yield_convention_versions_request& request);
-    messaging::get_bond_yield_convention_version_response get_bond_yield_convention_version(
-        const messaging::get_bond_yield_convention_version_request& request);
+    ::ores::refdata::messaging::list_bond_yield_conventions_response list_bond_yield_conventions(
+        const ::ores::refdata::messaging::list_bond_yield_conventions_request& request);
+    ::ores::refdata::messaging::get_bond_yield_convention_response get_bond_yield_convention(
+        const ::ores::refdata::messaging::get_bond_yield_convention_request& request);
+    ::ores::refdata::messaging::get_many_bond_yield_conventions_response
+    get_many_bond_yield_conventions(
+        const ::ores::refdata::messaging::get_many_bond_yield_conventions_request& request);
+    ::ores::refdata::messaging::put_bond_yield_convention_response put_bond_yield_convention(
+        const ::ores::refdata::messaging::put_bond_yield_convention_request& request);
+    ::ores::refdata::messaging::put_many_bond_yield_conventions_response
+    put_many_bond_yield_conventions(
+        const ::ores::refdata::messaging::put_many_bond_yield_conventions_request& request);
+    ::ores::refdata::messaging::delete_bond_yield_convention_response delete_bond_yield_convention(
+        const ::ores::refdata::messaging::delete_bond_yield_convention_request& request);
+    ::ores::refdata::messaging::delete_many_bond_yield_conventions_response
+    delete_many_bond_yield_conventions(
+        const ::ores::refdata::messaging::delete_many_bond_yield_conventions_request& request);
+    ::ores::refdata::messaging::list_bond_yield_convention_versions_response
+    list_bond_yield_convention_versions(
+        const ::ores::refdata::messaging::list_bond_yield_convention_versions_request& request);
+    ::ores::refdata::messaging::get_bond_yield_convention_version_response
+    get_bond_yield_convention_version(
+        const ::ores::refdata::messaging::get_bond_yield_convention_version_request& request);
     /**@}*/
 
     /**
@@ -192,7 +197,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::bond_yield_convention_change& change,
+    prepare_change(const ::ores::refdata::messaging::bond_yield_convention_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::bond_yield_convention& out);
 };

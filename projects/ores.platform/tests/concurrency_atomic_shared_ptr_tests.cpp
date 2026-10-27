@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
+#include "test_suite.hpp"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -27,9 +28,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[concurrency][atomic_shared_ptr]");
 
 using ores::platform::concurrency::atomic_shared_ptr;
 
@@ -43,7 +41,7 @@ struct snapshot {
 
 using namespace ores::logging;
 
-TEST_CASE("a_default_constructed_snapshot_is_empty", tags) {
+TEST_CASE("a_default_constructed_snapshot_is_empty", "[concurrency][atomic_shared_ptr]") {
     auto lg(make_logger(test_suite));
 
     const atomic_shared_ptr<const snapshot> published;
@@ -52,7 +50,7 @@ TEST_CASE("a_default_constructed_snapshot_is_empty", tags) {
     CHECK(published.load() == nullptr);
 }
 
-TEST_CASE("a_stored_snapshot_is_what_the_next_read_returns", tags) {
+TEST_CASE("a_stored_snapshot_is_what_the_next_read_returns", "[concurrency][atomic_shared_ptr]") {
     auto lg(make_logger(test_suite));
 
     atomic_shared_ptr<const snapshot> published;
@@ -66,7 +64,7 @@ TEST_CASE("a_stored_snapshot_is_what_the_next_read_returns", tags) {
     CHECK(read->revision == 1);
 }
 
-TEST_CASE("a_read_survives_the_store_that_replaces_it", tags) {
+TEST_CASE("a_read_survives_the_store_that_replaces_it", "[concurrency][atomic_shared_ptr]") {
     auto lg(make_logger(test_suite));
 
     atomic_shared_ptr<const snapshot> published;
@@ -84,7 +82,7 @@ TEST_CASE("a_read_survives_the_store_that_replaces_it", tags) {
     CHECK(published.load()->revision == 2);
 }
 
-TEST_CASE("readers_never_see_a_half_published_snapshot", tags) {
+TEST_CASE("readers_never_see_a_half_published_snapshot", "[concurrency][atomic_shared_ptr]") {
     auto lg(make_logger(test_suite));
 
     constexpr int revisions = 20000;

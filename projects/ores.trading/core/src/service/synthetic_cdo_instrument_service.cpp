@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::synthetic_cdo_instrument>
-read_one(repository::synthetic_cdo_instrument_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::synthetic_cdo_instrument_key& key) {
+synthetic_cdo_instrument_read_one(repository::synthetic_cdo_instrument_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const messaging::synthetic_cdo_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::synthetic_cdo_instrument_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::synthetic_cdo_instrument_key key_from(const domain::synthetic_cdo_instrument& v) {
+messaging::synthetic_cdo_instrument_key
+synthetic_cdo_instrument_key_from(const domain::synthetic_cdo_instrument& v) {
     messaging::synthetic_cdo_instrument_key key;
     key.trade_id = v.trade_id;
     return key;
@@ -99,7 +100,8 @@ messaging::synthetic_cdo_instrument_key key_from(const domain::synthetic_cdo_ins
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::synthetic_cdo_instrument to_domain(const messaging::synthetic_cdo_instrument_write& write) {
+domain::synthetic_cdo_instrument
+synthetic_cdo_instrument_to_domain(const messaging::synthetic_cdo_instrument_write& write) {
     domain::synthetic_cdo_instrument v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
@@ -158,7 +160,7 @@ messaging::get_synthetic_cdo_instrument_response
 synthetic_cdo_instrument_service::get_synthetic_cdo_instrument(
     const messaging::get_synthetic_cdo_instrument_request& request) {
     messaging::get_synthetic_cdo_instrument_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = synthetic_cdo_instrument_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "synthetic_cdo_instrument"});
         return response;
@@ -178,7 +180,7 @@ synthetic_cdo_instrument_service::get_many_synthetic_cdo_instruments(
     for (const auto& k : request.keys) {
         messaging::synthetic_cdo_instrument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = synthetic_cdo_instrument_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.synthetic_cdo_instrument = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -195,7 +197,8 @@ synthetic_cdo_instrument_service::put_synthetic_cdo_instrument(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        synthetic_cdo_instrument_read_one(repo_, ctx_, synthetic_cdo_instrument_key_from(value));
     if (!written.empty())
         response.synthetic_cdo_instrument = std::move(written.front());
     return response;
@@ -228,7 +231,8 @@ synthetic_cdo_instrument_service::put_many_synthetic_cdo_instruments(
     repo_.write(ctx_, batch, claims);
     response.synthetic_cdo_instruments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = synthetic_cdo_instrument_read_one(
+            repo_, ctx_, synthetic_cdo_instrument_key_from(value));
         response.synthetic_cdo_instruments.push_back(written.empty() ? value :
                                                                        std::move(written.front()));
     }
@@ -264,7 +268,7 @@ synthetic_cdo_instrument_service::delete_synthetic_cdo_instrument(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = synthetic_cdo_instrument_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "synthetic_cdo_instrument",
@@ -356,8 +360,9 @@ ores::utility::domain::result synthetic_cdo_instrument_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = synthetic_cdo_instrument_to_domain(change.write);
+    const auto current =
+        synthetic_cdo_instrument_read_one(repo_, ctx_, synthetic_cdo_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

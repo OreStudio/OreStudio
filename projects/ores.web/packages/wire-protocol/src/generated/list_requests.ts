@@ -1107,6 +1107,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['code_one_of'],
         rows: ['delivery_outcome_types'],
     },
+    'inbox.v1.hold_reasons.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['reasons'],
+    },
+    'inbox.v1.hold_reasons_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'inbox.v1.notification_arguments.list': {
         asOf: false,
         filter: ['notification_id', 'notification_id_one_of'],

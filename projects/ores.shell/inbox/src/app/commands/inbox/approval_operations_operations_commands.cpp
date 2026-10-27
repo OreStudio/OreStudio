@@ -55,7 +55,7 @@ namespace {
  * carry an empty argument: the tokenizer drops one, and a command whose list
  * field should be empty has no other way to say so.
  */
-std::vector<std::string> split_list_token(const std::string& value) {
+std::vector<std::string> approval_operations_split_list_token(const std::string& value) {
     if (value == "__none__")
         return {};
     std::vector<std::string> parts;
@@ -97,7 +97,8 @@ void approval_operations_operations_commands::register_commands(cli::Menu& root_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_decide_approval(std::ref(out), std::ref(session), std::move(args));
         },
-        "decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>]");
+        "decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>] "
+        "[--hold_reason_code <v>]");
 
     menu->Insert(
         "list-approval-queue",
@@ -192,7 +193,7 @@ void approval_operations_operations_commands::process_raise_approval(
     try {
         req.kind_code = parsed->positionals[next++];
         req.reason = parsed->positionals[next++];
-        req.part_codes = split_list_token(parsed->positionals[next++]);
+        req.part_codes = approval_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -287,6 +288,7 @@ void approval_operations_operations_commands::process_decide_approval(
 
     const std::vector<flag_spec> specs{
         {.name = "version", .requires_value = true, .default_value = ""},
+        {.name = "hold_reason_code", .requires_value = true, .default_value = ""},
     };
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -310,6 +312,10 @@ void approval_operations_operations_commands::process_decide_approval(
         req.part_code = parsed->positionals[next++];
         if (const auto& raw_version = parsed->flag("version"); !raw_version.empty()) {
             req.version = ores::shell::app::from_token<int>(raw_version, "version");
+        }
+        if (const auto& raw_hold_reason_code = parsed->flag("hold_reason_code");
+            !raw_hold_reason_code.empty()) {
+            req.hold_reason_code = raw_hold_reason_code;
         }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;

@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view lifecycle_event_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_lifecycle_event_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<lifecycle_event_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_lifecycle_events_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_lifecycle_events(std::move(msg));
-        }));
+        list_lifecycle_events_request::nats_subject,
+        lifecycle_event_queue_group,
+        [h](ores::nats::message msg) { h->list_lifecycle_events(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_lifecycle_event_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_lifecycle_event(std::move(msg));
-        }));
+        get_lifecycle_event_request::nats_subject,
+        lifecycle_event_queue_group,
+        [h](ores::nats::message msg) { h->get_lifecycle_event(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_lifecycle_events_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_lifecycle_events(std::move(msg));
-        }));
+        get_many_lifecycle_events_request::nats_subject,
+        lifecycle_event_queue_group,
+        [h](ores::nats::message msg) { h->get_many_lifecycle_events(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_lifecycle_event_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_lifecycle_event(std::move(msg));
-        }));
+        put_lifecycle_event_request::nats_subject,
+        lifecycle_event_queue_group,
+        [h](ores::nats::message msg) { h->put_lifecycle_event(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_lifecycle_events_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_lifecycle_events(std::move(msg));
-        }));
+        put_many_lifecycle_events_request::nats_subject,
+        lifecycle_event_queue_group,
+        [h](ores::nats::message msg) { h->put_many_lifecycle_events(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_lifecycle_event_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_lifecycle_event(std::move(msg));
-        }));
+        delete_lifecycle_event_request::nats_subject,
+        lifecycle_event_queue_group,
+        [h](ores::nats::message msg) { h->delete_lifecycle_event(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_lifecycle_events_request::nats_subject,
-        queue_group,
+        lifecycle_event_queue_group,
         [h](ores::nats::message msg) { h->delete_many_lifecycle_events(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_lifecycle_event_versions_request::nats_subject,
-        queue_group,
+        lifecycle_event_queue_group,
         [h](ores::nats::message msg) { h->list_lifecycle_event_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_lifecycle_event_version_request::nats_subject,
-        queue_group,
+        lifecycle_event_queue_group,
         [h](ores::nats::message msg) { h->get_lifecycle_event_version(std::move(msg)); }));
     return subs;
 }

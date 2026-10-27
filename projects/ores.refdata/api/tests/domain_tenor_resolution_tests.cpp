@@ -29,8 +29,6 @@ using ores::refdata::domain::tenor_convention_resolution;
 using ores::refdata::domain::tenor_window;
 using ores::refdata::domain::windows_overlap;
 
-const std::string tags("[tenor_resolution]");
-
 tenor make_period_tenor(std::string code, std::string unit, int multiplier) {
     tenor t;
     t.code = std::move(code);
@@ -78,7 +76,8 @@ make_resolution(std::string convention_code,
 
 }
 
-TEST_CASE("resolve_end_date_uses_tenor_multiplier_for_period_tenors_from_spot", tags) {
+TEST_CASE("resolve_end_date_uses_tenor_multiplier_for_period_tenors_from_spot",
+          "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto oneMonth = make_period_tenor("1M", "MONTH", 1);
@@ -92,7 +91,7 @@ TEST_CASE("resolve_end_date_uses_tenor_multiplier_for_period_tenors_from_spot", 
     CHECK(end == year_month_day{year(2026), month(2), day(19)});
 }
 
-TEST_CASE("resolve_end_date_clamps_to_last_valid_day_of_month", tags) {
+TEST_CASE("resolve_end_date_clamps_to_last_valid_day_of_month", "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto oneMonth = make_period_tenor("1M", "MONTH", 1);
@@ -107,7 +106,7 @@ TEST_CASE("resolve_end_date_clamps_to_last_valid_day_of_month", tags) {
     CHECK(end == year_month_day{year(2026), month(2), day(28)});
 }
 
-TEST_CASE("resolve_end_date_uses_resolution_row_offset_for_special_tenors", tags) {
+TEST_CASE("resolve_end_date_uses_resolution_row_offset_for_special_tenors", "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto overnight = make_special_tenor("O/N");
@@ -122,7 +121,7 @@ TEST_CASE("resolve_end_date_uses_resolution_row_offset_for_special_tenors", tags
     CHECK(end == year_month_day{year(2026), month(1), day(16)});
 }
 
-TEST_CASE("resolve_end_date_resolves_same_tenor_differently_by_convention", tags) {
+TEST_CASE("resolve_end_date_resolves_same_tenor_differently_by_convention", "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto overnight = make_special_tenor("O/N");
@@ -147,7 +146,7 @@ TEST_CASE("resolve_end_date_resolves_same_tenor_differently_by_convention", tags
     CHECK(spotForwardEnd != swapEnd);
 }
 
-TEST_CASE("resolve_end_date_rejects_tenor_not_a_member_of_the_convention", tags) {
+TEST_CASE("resolve_end_date_rejects_tenor_not_a_member_of_the_convention", "[tenor_resolution]") {
     const auto overnight = make_special_tenor("O/N");
     const auto convention = make_convention("RATES_SPOT_FORWARD", "SPOT");
 
@@ -159,7 +158,7 @@ TEST_CASE("resolve_end_date_rejects_tenor_not_a_member_of_the_convention", tags)
                     std::invalid_argument);
 }
 
-TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", tags) {
+TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", "[tenor_resolution]") {
     const auto overnight = make_special_tenor("O/N");
     const auto convention = make_convention("RATES_SPOT_FORWARD", "SPOT");
     const auto resolution = make_resolution("RATES_SPOT_FORWARD", "O/N");
@@ -172,7 +171,8 @@ TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter", tags) {
+TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter",
+          "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto oneYear = make_period_tenor("1Y", "YEAR", 1);
@@ -193,7 +193,8 @@ TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quar
     CHECK(end == year_month_day{year(2027), month(3), day(20)});
 }
 
-TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset", tags) {
+TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset",
+          "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto rollTenor = make_special_tenor("RQ");
@@ -210,7 +211,7 @@ TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset", ta
     CHECK(end == year_month_day{year(2026), month(3), day(20)});
 }
 
-TEST_CASE("windows_overlap_detects_overlapping_windows", tags) {
+TEST_CASE("windows_overlap_detects_overlapping_windows", "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto threeMonths = make_period_tenor("3M", "MONTH", 3);
@@ -231,7 +232,7 @@ TEST_CASE("windows_overlap_detects_overlapping_windows", tags) {
     CHECK(windows_overlap(deposit, overlapping));
 }
 
-TEST_CASE("windows_overlap_treats_windows_as_half_open", tags) {
+TEST_CASE("windows_overlap_treats_windows_as_half_open", "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto oneMonth = make_period_tenor("1M", "MONTH", 1);

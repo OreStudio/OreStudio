@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string equity_position_option_underlying_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<equity_position_option_underlying
 
     for ([[maybe_unused]] const auto& underlying : v) {
         table << underlying.sequence_number << underlying.underlying_name << underlying.strike
-              << opt_str(underlying.weight) << underlying.long_short << underlying.option_type
-              << underlying.modified_by << underlying.version << fort::endr;
+              << equity_position_option_underlying_opt_str(underlying.weight)
+              << underlying.long_short << underlying.option_type << underlying.modified_by
+              << underlying.version << fort::endr;
     }
     return table.to_string();
 }

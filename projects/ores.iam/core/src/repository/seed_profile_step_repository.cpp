@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+seed_profile_step_list_order(const ores::utility::domain::order& order,
+                             std::initializer_list<std::string> default_columns,
+                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!seed_profile_step_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::seed_profile_steps_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> seed_profile_step_filter_condition(
+    const std::optional<messaging::seed_profile_steps_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -280,8 +281,8 @@ std::vector<domain::seed_profile_step> seed_profile_step_repository::read_latest
     return execute_ordered_read_query<seed_profile_step_entity, domain::seed_profile_step>(
         ctx,
         query,
-        list_order(order, {"display_order"}, false),
-        filter_condition(filter),
+        seed_profile_step_list_order(order, {"display_order"}, false),
+        seed_profile_step_filter_condition(filter),
         [](const auto& entities) { return seed_profile_step_mapper::map(entities); },
         lg(),
         "Reading latest seed profile steps by seed_profile_id.");
@@ -303,7 +304,7 @@ std::uint32_t seed_profile_step_repository::get_total_seed_profile_step_count_by
     return execute_count_query<seed_profile_step_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        seed_profile_step_filter_condition(filter),
         lg(),
         "Counting seed profile steps by seed_profile_id");
 }
@@ -358,8 +359,8 @@ std::vector<domain::seed_profile_step> seed_profile_step_repository::read_latest
     return execute_ordered_read_query<seed_profile_step_entity, domain::seed_profile_step>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        seed_profile_step_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), seed_profile_step_filter_condition(filter)),
         [](const auto& entities) { return seed_profile_step_mapper::map(entities); },
         lg(),
         "Reading latest seed profile steps with pagination.");
@@ -378,7 +379,7 @@ std::uint32_t seed_profile_step_repository::get_total_seed_profile_step_count(
     return execute_count_query<seed_profile_step_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), seed_profile_step_filter_condition(filter)),
         lg(),
         "Counting seed profile steps");
 }

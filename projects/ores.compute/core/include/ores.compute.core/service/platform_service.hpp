@@ -75,22 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_platforms_response
-    list_platforms(const messaging::list_platforms_request& request);
-    messaging::get_platform_response get_platform(const messaging::get_platform_request& request);
-    messaging::get_many_platforms_response
-    get_many_platforms(const messaging::get_many_platforms_request& request);
-    messaging::put_platform_response put_platform(const messaging::put_platform_request& request);
-    messaging::put_many_platforms_response
-    put_many_platforms(const messaging::put_many_platforms_request& request);
-    messaging::delete_platform_response
-    delete_platform(const messaging::delete_platform_request& request);
-    messaging::delete_many_platforms_response
-    delete_many_platforms(const messaging::delete_many_platforms_request& request);
-    messaging::list_platform_versions_response
-    list_platform_versions(const messaging::list_platform_versions_request& request);
-    messaging::get_platform_version_response
-    get_platform_version(const messaging::get_platform_version_request& request);
+    ::ores::compute::messaging::list_platforms_response
+    list_platforms(const ::ores::compute::messaging::list_platforms_request& request);
+    ::ores::compute::messaging::get_platform_response
+    get_platform(const ::ores::compute::messaging::get_platform_request& request);
+    ::ores::compute::messaging::get_many_platforms_response
+    get_many_platforms(const ::ores::compute::messaging::get_many_platforms_request& request);
+    ::ores::compute::messaging::put_platform_response
+    put_platform(const ::ores::compute::messaging::put_platform_request& request);
+    ::ores::compute::messaging::put_many_platforms_response
+    put_many_platforms(const ::ores::compute::messaging::put_many_platforms_request& request);
+    ::ores::compute::messaging::delete_platform_response
+    delete_platform(const ::ores::compute::messaging::delete_platform_request& request);
+    ::ores::compute::messaging::delete_many_platforms_response
+    delete_many_platforms(const ::ores::compute::messaging::delete_many_platforms_request& request);
+    ::ores::compute::messaging::list_platform_versions_response list_platform_versions(
+        const ::ores::compute::messaging::list_platform_versions_request& request);
+    ::ores::compute::messaging::get_platform_version_response
+    get_platform_version(const ::ores::compute::messaging::get_platform_version_request& request);
     /**@}*/
 
     /**
@@ -201,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::platform_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::platform& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::compute::messaging::platform_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::platform& out);
 };
 
 }

@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::bundle_import_item> read_one(repository::bundle_import_item_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::bundle_import_item_key& key) {
+std::vector<domain::bundle_import_item>
+bundle_import_item_read_one(repository::bundle_import_item_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::bundle_import_item_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::bundle_import_item> read_one(repository::bundle_import_item_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::bundle_import_item_key key_from(const domain::bundle_import_item& v) {
+messaging::bundle_import_item_key bundle_import_item_key_from(const domain::bundle_import_item& v) {
     messaging::bundle_import_item_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,8 @@ messaging::bundle_import_item_key key_from(const domain::bundle_import_item& v) 
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::bundle_import_item to_domain(const messaging::bundle_import_item_write& write) {
+domain::bundle_import_item
+bundle_import_item_to_domain(const messaging::bundle_import_item_write& write) {
     domain::bundle_import_item v;
     v.id = write.id;
     v.import_id = write.import_id;
@@ -186,7 +188,7 @@ bundle_import_item_service::list_by_import_id_bundle_import_items(
 messaging::get_bundle_import_item_response bundle_import_item_service::get_bundle_import_item(
     const messaging::get_bundle_import_item_request& request) {
     messaging::get_bundle_import_item_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = bundle_import_item_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "bundle_import_item"});
         return response;
@@ -206,7 +208,7 @@ bundle_import_item_service::get_many_bundle_import_items(
     for (const auto& k : request.keys) {
         messaging::bundle_import_item_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = bundle_import_item_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.bundle_import_item = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -222,7 +224,7 @@ messaging::put_bundle_import_item_response bundle_import_item_service::put_bundl
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = bundle_import_item_read_one(repo_, ctx_, bundle_import_item_key_from(value));
     if (!written.empty())
         response.bundle_import_item = std::move(written.front());
     return response;
@@ -255,7 +257,7 @@ bundle_import_item_service::put_many_bundle_import_items(
     repo_.write(ctx_, batch, claims);
     response.bundle_import_items.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = bundle_import_item_read_one(repo_, ctx_, bundle_import_item_key_from(value));
         response.bundle_import_items.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -289,7 +291,7 @@ messaging::delete_bundle_import_item_response bundle_import_item_service::delete
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = bundle_import_item_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "bundle_import_item",
@@ -378,8 +380,8 @@ bundle_import_item_service::prepare_change(const messaging::bundle_import_item_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = bundle_import_item_to_domain(change.write);
+    const auto current = bundle_import_item_read_one(repo_, ctx_, bundle_import_item_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

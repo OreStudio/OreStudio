@@ -59,8 +59,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::currency_currency_group>
-read_one(repository::currency_currency_group_repository& repo,
-         const messaging::currency_currency_group_key& key) {
+currency_currency_group_read_one(repository::currency_currency_group_repository& repo,
+                                 const messaging::currency_currency_group_key& key) {
     return repo.read_latest(key.currency_iso_code, key.currency_group_code);
 }
 
@@ -70,7 +70,8 @@ read_one(repository::currency_currency_group_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::currency_currency_group_key key_from(const domain::currency_currency_group& v) {
+messaging::currency_currency_group_key
+currency_currency_group_key_from(const domain::currency_currency_group& v) {
     messaging::currency_currency_group_key key;
     key.currency_iso_code = v.currency_iso_code;
     key.currency_group_code = v.currency_group_code;
@@ -85,7 +86,8 @@ messaging::currency_currency_group_key key_from(const domain::currency_currency_
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::currency_currency_group to_domain(const messaging::currency_currency_group_write& write) {
+domain::currency_currency_group
+currency_currency_group_to_domain(const messaging::currency_currency_group_write& write) {
     domain::currency_currency_group v;
     v.currency_iso_code = write.currency_iso_code;
     v.currency_group_code = write.currency_group_code;
@@ -144,7 +146,7 @@ messaging::get_currency_currency_group_response
 currency_currency_group_service::get_currency_currency_group(
     const messaging::get_currency_currency_group_request& request) {
     messaging::get_currency_currency_group_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = currency_currency_group_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "currency_currency_group"});
         return response;
@@ -164,7 +166,7 @@ currency_currency_group_service::get_many_currency_currency_groups(
     for (const auto& k : request.keys) {
         messaging::currency_currency_group_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = currency_currency_group_read_one(repo_, k);
         if (!found.empty())
             entry.currency_currency_group = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +183,7 @@ currency_currency_group_service::put_currency_currency_group(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = currency_currency_group_read_one(repo_, currency_currency_group_key_from(value));
     if (!written.empty())
         response.currency_currency_group = std::move(written.front());
     return response;
@@ -214,7 +216,8 @@ currency_currency_group_service::put_many_currency_currency_groups(
     repo_.write(batch, claims);
     response.currency_currency_groups.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written =
+            currency_currency_group_read_one(repo_, currency_currency_group_key_from(value));
         response.currency_currency_groups.push_back(written.empty() ? value :
                                                                       std::move(written.front()));
     }
@@ -251,7 +254,7 @@ currency_currency_group_service::delete_currency_currency_group(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = currency_currency_group_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "currency_currency_group",
@@ -304,8 +307,9 @@ ores::utility::domain::result currency_currency_group_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = currency_currency_group_to_domain(change.write);
+    const auto current =
+        currency_currency_group_read_one(repo_, currency_currency_group_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

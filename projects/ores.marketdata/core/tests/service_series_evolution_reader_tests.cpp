@@ -24,6 +24,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -34,9 +35,6 @@
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][series_evolution_reader]");
 
 using ores::marketdata::messaging::get_series_evolution_request;
 using ores::marketdata::messaging::get_series_evolution_response;
@@ -131,7 +129,8 @@ std::vector<std::string> statuses_of(const get_series_evolution_response& resp) 
 
 }
 
-TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid", tags) {
+TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -171,7 +170,8 @@ TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid", tags) {
               "persistent", "dropped", "dropped", "dropped", "added", "never_quoted"});
 }
 
-TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent", tags) {
+TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -193,7 +193,8 @@ TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent", ta
     CHECK(statuses_of(resp) == std::vector<std::string>{"intermittent", "intermittent"});
 }
 
-TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder", tags) {
+TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -218,7 +219,8 @@ TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder", tags) {
     CHECK(statuses_of(resp) == std::vector<std::string>{"dropped", "persistent"});
 }
 
-TEST_CASE("a_set_of_instants_the_caller_states_replaces_the_range", tags) {
+TEST_CASE("a_set_of_instants_the_caller_states_replaces_the_range",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -245,7 +247,7 @@ TEST_CASE("a_set_of_instants_the_caller_states_replaces_the_range", tags) {
     CHECK(resp.instants[1].values == std::vector<std::string>{"0.090"});
 }
 
-TEST_CASE("an_evolution_is_refused_when_it_cannot_be_read", tags) {
+TEST_CASE("an_evolution_is_refused_when_it_cannot_be_read", "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

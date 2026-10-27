@@ -21,23 +21,17 @@
 #include "ores.compute.api/domain/workunit_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/workunit_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.compute.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::compute::domain::workunit;
 using namespace ores::compute::domain;
 using namespace ores::logging;
 
-TEST_CASE("create_workunit_with_valid_fields", tags) {
+TEST_CASE("create_workunit_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     workunit sut;
@@ -61,7 +55,7 @@ TEST_CASE("create_workunit_with_valid_fields", tags) {
     CHECK(sut.target_redundancy == 2);
 }
 
-TEST_CASE("create_high_priority_workunit", tags) {
+TEST_CASE("create_high_priority_workunit", "[domain]") {
     auto lg(make_logger(test_suite));
 
     workunit sut;
@@ -81,7 +75,7 @@ TEST_CASE("create_high_priority_workunit", tags) {
     CHECK(sut.target_redundancy == 3);
 }
 
-TEST_CASE("create_workunit_with_specific_uuid", tags) {
+TEST_CASE("create_workunit_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -104,7 +98,7 @@ TEST_CASE("create_workunit_with_specific_uuid", tags) {
     CHECK(sut.priority == 5);
 }
 
-TEST_CASE("workunit_insertion_operator", tags) {
+TEST_CASE("workunit_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     workunit sut;
@@ -128,7 +122,7 @@ TEST_CASE("workunit_insertion_operator", tags) {
     CHECK(json_output.find("serialization-test") != std::string::npos);
 }
 
-TEST_CASE("workunit_convert_single_to_table", tags) {
+TEST_CASE("workunit_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     workunit wu;
@@ -150,7 +144,7 @@ TEST_CASE("workunit_convert_single_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("workunit_convert_multiple_to_table", tags) {
+TEST_CASE("workunit_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<workunit> workunits;
@@ -175,7 +169,7 @@ TEST_CASE("workunit_convert_multiple_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("workunit_convert_empty_vector_to_table", tags) {
+TEST_CASE("workunit_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<workunit> workunits;
@@ -187,7 +181,7 @@ TEST_CASE("workunit_convert_empty_vector_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("create_workunit_with_faker", tags) {
+TEST_CASE("create_workunit_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     workunit sut;

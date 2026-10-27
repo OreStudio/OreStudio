@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -36,19 +37,12 @@
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::repository::currency_market_tier_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_currency_market_tier", tags) {
+TEST_CASE("write_single_currency_market_tier", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_single_currency_market_tier", tags) {
     CHECK(read_tiers[0].name == cmt.name);
 }
 
-TEST_CASE("read_latest_currency_market_tiers_no_duplicate_codes", tags) {
+TEST_CASE("read_latest_currency_market_tiers_no_duplicate_codes", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -101,7 +95,7 @@ TEST_CASE("read_latest_currency_market_tiers_no_duplicate_codes", tags) {
     }
 }
 
-TEST_CASE("read_latest_currency_market_tier_by_code", tags) {
+TEST_CASE("read_latest_currency_market_tier_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -126,7 +120,7 @@ TEST_CASE("read_latest_currency_market_tier_by_code", tags) {
     CHECK(read_tiers[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_currency_market_tier_code", tags) {
+TEST_CASE("read_nonexistent_currency_market_tier_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

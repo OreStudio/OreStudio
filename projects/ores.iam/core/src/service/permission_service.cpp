@@ -70,9 +70,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::permission> read_one(repository::permission_repository& repo,
-                                         const ores::database::context& ctx,
-                                         const messaging::permission_key& key) {
+std::vector<domain::permission> permission_read_one(repository::permission_repository& repo,
+                                                    const ores::database::context& ctx,
+                                                    const messaging::permission_key& key) {
     return repo.read_latest_by_code(ctx, key.code);
 }
 
@@ -82,7 +82,7 @@ std::vector<domain::permission> read_one(repository::permission_repository& repo
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::permission_key key_from(const domain::permission& v) {
+messaging::permission_key permission_key_from(const domain::permission& v) {
     messaging::permission_key key;
     key.code = v.code;
     return key;
@@ -95,7 +95,7 @@ messaging::permission_key key_from(const domain::permission& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::permission to_domain(const messaging::permission_write& write) {
+domain::permission permission_to_domain(const messaging::permission_write& write) {
     domain::permission v;
     v.id = write.id;
     v.code = write.code;
@@ -140,7 +140,7 @@ permission_service::list_permissions(const messaging::list_permissions_request& 
 messaging::get_permission_response
 permission_service::get_permission(const messaging::get_permission_request& request) {
     messaging::get_permission_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = permission_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "permission"});
         return response;
@@ -159,7 +159,7 @@ permission_service::get_many_permissions(const messaging::get_many_permissions_r
     for (const auto& k : request.keys) {
         messaging::permission_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = permission_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.permission = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -175,7 +175,7 @@ permission_service::put_permission(const messaging::put_permission_request& requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = permission_read_one(repo_, ctx_, permission_key_from(value));
     if (!written.empty())
         response.permission = std::move(written.front());
     return response;
@@ -207,7 +207,7 @@ permission_service::put_many_permissions(const messaging::put_many_permissions_r
     repo_.write(ctx_, batch, claims);
     response.permissions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = permission_read_one(repo_, ctx_, permission_key_from(value));
         response.permissions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -230,7 +230,7 @@ permission_service::delete_permission(const messaging::delete_permission_request
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = permission_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "permission"});
         return response;
@@ -284,7 +284,7 @@ messaging::delete_many_permissions_response permission_service::delete_many_perm
     std::vector<domain::permission> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = permission_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -303,8 +303,8 @@ permission_service::prepare_change(const messaging::permission_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = permission_to_domain(change.write);
+    const auto current = permission_read_one(repo_, ctx_, permission_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -354,7 +354,7 @@ permission_service::get_permission_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting permission by code: " << code;
     messaging::permission_key k;
     k.code = code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = permission_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

@@ -76,24 +76,30 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_subscription_intervals_response
-    list_subscription_intervals(const messaging::list_subscription_intervals_request& request);
-    messaging::get_subscription_interval_response
-    get_subscription_interval(const messaging::get_subscription_interval_request& request);
-    messaging::get_many_subscription_intervals_response get_many_subscription_intervals(
-        const messaging::get_many_subscription_intervals_request& request);
-    messaging::put_subscription_interval_response
-    put_subscription_interval(const messaging::put_subscription_interval_request& request);
-    messaging::put_many_subscription_intervals_response put_many_subscription_intervals(
-        const messaging::put_many_subscription_intervals_request& request);
-    messaging::delete_subscription_interval_response
-    delete_subscription_interval(const messaging::delete_subscription_interval_request& request);
-    messaging::delete_many_subscription_intervals_response delete_many_subscription_intervals(
-        const messaging::delete_many_subscription_intervals_request& request);
-    messaging::list_subscription_interval_versions_response list_subscription_interval_versions(
-        const messaging::list_subscription_interval_versions_request& request);
-    messaging::get_subscription_interval_version_response get_subscription_interval_version(
-        const messaging::get_subscription_interval_version_request& request);
+    ::ores::marketdata::messaging::list_subscription_intervals_response list_subscription_intervals(
+        const ::ores::marketdata::messaging::list_subscription_intervals_request& request);
+    ::ores::marketdata::messaging::get_subscription_interval_response get_subscription_interval(
+        const ::ores::marketdata::messaging::get_subscription_interval_request& request);
+    ::ores::marketdata::messaging::get_many_subscription_intervals_response
+    get_many_subscription_intervals(
+        const ::ores::marketdata::messaging::get_many_subscription_intervals_request& request);
+    ::ores::marketdata::messaging::put_subscription_interval_response put_subscription_interval(
+        const ::ores::marketdata::messaging::put_subscription_interval_request& request);
+    ::ores::marketdata::messaging::put_many_subscription_intervals_response
+    put_many_subscription_intervals(
+        const ::ores::marketdata::messaging::put_many_subscription_intervals_request& request);
+    ::ores::marketdata::messaging::delete_subscription_interval_response
+    delete_subscription_interval(
+        const ::ores::marketdata::messaging::delete_subscription_interval_request& request);
+    ::ores::marketdata::messaging::delete_many_subscription_intervals_response
+    delete_many_subscription_intervals(
+        const ::ores::marketdata::messaging::delete_many_subscription_intervals_request& request);
+    ::ores::marketdata::messaging::list_subscription_interval_versions_response
+    list_subscription_interval_versions(
+        const ::ores::marketdata::messaging::list_subscription_interval_versions_request& request);
+    ::ores::marketdata::messaging::get_subscription_interval_version_response
+    get_subscription_interval_version(
+        const ::ores::marketdata::messaging::get_subscription_interval_version_request& request);
     /**@}*/
 
     /**
@@ -211,7 +217,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::subscription_interval_change& change,
+    prepare_change(const ::ores::marketdata::messaging::subscription_interval_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::subscription_interval& out);
 };

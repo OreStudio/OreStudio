@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ore_parameter_value_sets_response
-    list_ore_parameter_value_sets(const messaging::list_ore_parameter_value_sets_request& request);
-    messaging::get_ore_parameter_value_set_response
-    get_ore_parameter_value_set(const messaging::get_ore_parameter_value_set_request& request);
-    messaging::get_many_ore_parameter_value_sets_response get_many_ore_parameter_value_sets(
-        const messaging::get_many_ore_parameter_value_sets_request& request);
-    messaging::put_ore_parameter_value_set_response
-    put_ore_parameter_value_set(const messaging::put_ore_parameter_value_set_request& request);
-    messaging::put_many_ore_parameter_value_sets_response put_many_ore_parameter_value_sets(
-        const messaging::put_many_ore_parameter_value_sets_request& request);
-    messaging::delete_ore_parameter_value_set_response delete_ore_parameter_value_set(
-        const messaging::delete_ore_parameter_value_set_request& request);
-    messaging::delete_many_ore_parameter_value_sets_response delete_many_ore_parameter_value_sets(
-        const messaging::delete_many_ore_parameter_value_sets_request& request);
-    messaging::list_ore_parameter_value_set_versions_response list_ore_parameter_value_set_versions(
-        const messaging::list_ore_parameter_value_set_versions_request& request);
-    messaging::get_ore_parameter_value_set_version_response get_ore_parameter_value_set_version(
-        const messaging::get_ore_parameter_value_set_version_request& request);
+    ::ores::reporting::messaging::list_ore_parameter_value_sets_response
+    list_ore_parameter_value_sets(
+        const ::ores::reporting::messaging::list_ore_parameter_value_sets_request& request);
+    ::ores::reporting::messaging::get_ore_parameter_value_set_response get_ore_parameter_value_set(
+        const ::ores::reporting::messaging::get_ore_parameter_value_set_request& request);
+    ::ores::reporting::messaging::get_many_ore_parameter_value_sets_response
+    get_many_ore_parameter_value_sets(
+        const ::ores::reporting::messaging::get_many_ore_parameter_value_sets_request& request);
+    ::ores::reporting::messaging::put_ore_parameter_value_set_response put_ore_parameter_value_set(
+        const ::ores::reporting::messaging::put_ore_parameter_value_set_request& request);
+    ::ores::reporting::messaging::put_many_ore_parameter_value_sets_response
+    put_many_ore_parameter_value_sets(
+        const ::ores::reporting::messaging::put_many_ore_parameter_value_sets_request& request);
+    ::ores::reporting::messaging::delete_ore_parameter_value_set_response
+    delete_ore_parameter_value_set(
+        const ::ores::reporting::messaging::delete_ore_parameter_value_set_request& request);
+    ::ores::reporting::messaging::delete_many_ore_parameter_value_sets_response
+    delete_many_ore_parameter_value_sets(
+        const ::ores::reporting::messaging::delete_many_ore_parameter_value_sets_request& request);
+    ::ores::reporting::messaging::list_ore_parameter_value_set_versions_response
+    list_ore_parameter_value_set_versions(
+        const ::ores::reporting::messaging::list_ore_parameter_value_set_versions_request& request);
+    ::ores::reporting::messaging::get_ore_parameter_value_set_version_response
+    get_ore_parameter_value_set_version(
+        const ::ores::reporting::messaging::get_ore_parameter_value_set_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +196,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::ore_parameter_value_set_change& change,
+    prepare_change(const ::ores::reporting::messaging::ore_parameter_value_set_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::ore_parameter_value_set& out);
 };

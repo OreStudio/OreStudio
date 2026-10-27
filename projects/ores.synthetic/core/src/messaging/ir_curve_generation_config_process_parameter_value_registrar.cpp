@@ -39,7 +39,8 @@
 namespace ores::synthetic::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.synthetic.service";
+static constexpr std::string_view ir_curve_generation_config_process_parameter_value_queue_group =
+    "ores.synthetic.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -52,55 +53,55 @@ register_ir_curve_generation_config_process_parameter_value_handlers(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_ir_curve_generation_config_process_parameter_values_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->list_ir_curve_generation_config_process_parameter_values(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_ir_curve_generation_config_process_parameter_value_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->get_ir_curve_generation_config_process_parameter_value(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_many_ir_curve_generation_config_process_parameter_values_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->get_many_ir_curve_generation_config_process_parameter_values(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         put_ir_curve_generation_config_process_parameter_value_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->put_ir_curve_generation_config_process_parameter_value(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         put_many_ir_curve_generation_config_process_parameter_values_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->put_many_ir_curve_generation_config_process_parameter_values(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         delete_ir_curve_generation_config_process_parameter_value_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->delete_ir_curve_generation_config_process_parameter_value(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         delete_many_ir_curve_generation_config_process_parameter_values_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->delete_many_ir_curve_generation_config_process_parameter_values(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_ir_curve_generation_config_process_parameter_value_versions_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->list_ir_curve_generation_config_process_parameter_value_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_ir_curve_generation_config_process_parameter_value_version_request::nats_subject,
-        queue_group,
+        ir_curve_generation_config_process_parameter_value_queue_group,
         [h](ores::nats::message msg) {
             h->get_ir_curve_generation_config_process_parameter_value_version(std::move(msg));
         }));

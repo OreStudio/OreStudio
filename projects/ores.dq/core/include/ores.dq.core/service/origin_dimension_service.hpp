@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_origin_dimensions_response
-    list_origin_dimensions(const messaging::list_origin_dimensions_request& request);
-    messaging::get_origin_dimension_response
-    get_origin_dimension(const messaging::get_origin_dimension_request& request);
-    messaging::get_many_origin_dimensions_response
-    get_many_origin_dimensions(const messaging::get_many_origin_dimensions_request& request);
-    messaging::put_origin_dimension_response
-    put_origin_dimension(const messaging::put_origin_dimension_request& request);
-    messaging::put_many_origin_dimensions_response
-    put_many_origin_dimensions(const messaging::put_many_origin_dimensions_request& request);
-    messaging::delete_origin_dimension_response
-    delete_origin_dimension(const messaging::delete_origin_dimension_request& request);
-    messaging::delete_many_origin_dimensions_response
-    delete_many_origin_dimensions(const messaging::delete_many_origin_dimensions_request& request);
-    messaging::list_origin_dimension_versions_response list_origin_dimension_versions(
-        const messaging::list_origin_dimension_versions_request& request);
-    messaging::get_origin_dimension_version_response
-    get_origin_dimension_version(const messaging::get_origin_dimension_version_request& request);
+    ::ores::dq::messaging::list_origin_dimensions_response
+    list_origin_dimensions(const ::ores::dq::messaging::list_origin_dimensions_request& request);
+    ::ores::dq::messaging::get_origin_dimension_response
+    get_origin_dimension(const ::ores::dq::messaging::get_origin_dimension_request& request);
+    ::ores::dq::messaging::get_many_origin_dimensions_response get_many_origin_dimensions(
+        const ::ores::dq::messaging::get_many_origin_dimensions_request& request);
+    ::ores::dq::messaging::put_origin_dimension_response
+    put_origin_dimension(const ::ores::dq::messaging::put_origin_dimension_request& request);
+    ::ores::dq::messaging::put_many_origin_dimensions_response put_many_origin_dimensions(
+        const ::ores::dq::messaging::put_many_origin_dimensions_request& request);
+    ::ores::dq::messaging::delete_origin_dimension_response
+    delete_origin_dimension(const ::ores::dq::messaging::delete_origin_dimension_request& request);
+    ::ores::dq::messaging::delete_many_origin_dimensions_response delete_many_origin_dimensions(
+        const ::ores::dq::messaging::delete_many_origin_dimensions_request& request);
+    ::ores::dq::messaging::list_origin_dimension_versions_response list_origin_dimension_versions(
+        const ::ores::dq::messaging::list_origin_dimension_versions_request& request);
+    ::ores::dq::messaging::get_origin_dimension_version_response get_origin_dimension_version(
+        const ::ores::dq::messaging::get_origin_dimension_version_request& request);
     /**@}*/
 
     /**
@@ -187,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::origin_dimension_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::origin_dimension& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::origin_dimension_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::origin_dimension& out);
 };
 
 }

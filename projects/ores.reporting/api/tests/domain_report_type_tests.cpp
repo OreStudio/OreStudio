@@ -22,6 +22,7 @@
 #include "ores.reporting.api/domain/report_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_type_table.hpp"
 #include "ores.reporting.api/domain/report_type_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
@@ -29,9 +30,6 @@
 namespace {
 
 using ores::reporting::domain::report_type;
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[domain]");
 
 report_type make_report_type(const std::string& code, const std::string& name, int display_order) {
     report_type rt;
@@ -53,7 +51,7 @@ report_type make_report_type(const std::string& code, const std::string& name, i
 using ores::reporting::domain::report_type;
 using namespace ores::logging;
 
-TEST_CASE("create_report_type_with_valid_fields", tags) {
+TEST_CASE("create_report_type_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_type sut;
@@ -77,7 +75,7 @@ TEST_CASE("create_report_type_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("report_type_insertion_operator", tags) {
+TEST_CASE("report_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_type sut;
@@ -103,7 +101,7 @@ TEST_CASE("report_type_insertion_operator", tags) {
     CHECK(json_output.find("grid") != std::string::npos);
 }
 
-TEST_CASE("create_report_type_with_faker", tags) {
+TEST_CASE("create_report_type_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     report_type sut;
@@ -128,7 +126,7 @@ TEST_CASE("create_report_type_with_faker", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_multiple_random_report_types", tags) {
+TEST_CASE("create_multiple_random_report_types", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::tuple<std::string, std::string, int>> types = {
@@ -146,7 +144,7 @@ TEST_CASE("create_multiple_random_report_types", tags) {
     }
 }
 
-TEST_CASE("report_type_convert_single_to_table", tags) {
+TEST_CASE("report_type_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_type> items = {make_report_type("risk", "Risk", 1)};
@@ -159,7 +157,7 @@ TEST_CASE("report_type_convert_single_to_table", tags) {
     CHECK(table.find("risk") != std::string::npos);
 }
 
-TEST_CASE("report_type_convert_multiple_to_table", tags) {
+TEST_CASE("report_type_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_type> items;
@@ -178,7 +176,7 @@ TEST_CASE("report_type_convert_multiple_to_table", tags) {
     CHECK(table.find("type2") != std::string::npos);
 }
 
-TEST_CASE("report_type_convert_empty_vector_to_table", tags) {
+TEST_CASE("report_type_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_type> items;
@@ -191,7 +189,7 @@ TEST_CASE("report_type_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Code") != std::string::npos);
 }
 
-TEST_CASE("report_type_table_with_faker_data", tags) {
+TEST_CASE("report_type_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<report_type> items;

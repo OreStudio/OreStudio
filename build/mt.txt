@@ -1,0 +1,24 @@
+6e122d97077e9d4af32c61377cc2916a8111bff0
+100644 7a7fe49f23c91d7192f45e1827ce69f74e7bfbdb 1	doc/agile/versions/v0/sprint_28/populate-the-acme-books-with-a-realistic-trade-population/story.org
+100644 3b19e2f78c7a9ae25e2f12e14fe2cca4846cecd6 2	doc/agile/versions/v0/sprint_28/populate-the-acme-books-with-a-realistic-trade-population/story.org
+100644 5760f45b68f72d817bac15bfa6f77bd8356db7ad 3	doc/agile/versions/v0/sprint_28/populate-the-acme-books-with-a-realistic-trade-population/story.org
+100644 79d43e4d9b3ed8efcfa2cd571512694e6455efdc 1	projects/ores.synthetic/core/include/ores.synthetic.core/trading/trading_trade_population_writer.hpp
+100644 457baf4b2646c96876cda62aa8328a12bd88d895 2	projects/ores.synthetic/core/include/ores.synthetic.core/trading/trading_trade_population_writer.hpp
+100644 20f85e8394ecb398b0246a696cccc21eb889a2f5 3	projects/ores.synthetic/core/include/ores.synthetic.core/trading/trading_trade_population_writer.hpp
+100644 4abb3da78e6bc6f1e55b56a37368cd7abee36b6a 1	projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp
+100644 6b5ca4d2175062778187e0df19b754cbc234ebf8 2	projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp
+100644 db0b891fd17531cef0d0f29e315420fcfe44c3fa 3	projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp
+100644 44ced46b6b22f3bf77864f1c191a22ee17942bb3 1	projects/ores.synthetic/core/tests/trade_population_tests.cpp
+100644 519f8f9a56f06d49091ac943ac4ffe5fb403abd5 2	projects/ores.synthetic/core/tests/trade_population_tests.cpp
+100644 be1aedf0b7f5f163a0dbe274f208ec5b24661160 3	projects/ores.synthetic/core/tests/trade_population_tests.cpp
+
+Auto-merging doc/agile/versions/v0/sprint_28/populate-the-acme-books-with-a-realistic-trade-population/story.org
+CONFLICT (content): Merge conflict in doc/agile/versions/v0/sprint_28/populate-the-acme-books-with-a-realistic-trade-population/story.org
+Auto-merging projects/ores.synthetic/core/include/ores.synthetic.core/service/trade_population_writer.hpp
+Auto-merging projects/ores.synthetic/core/include/ores.synthetic.core/trading/trading_trade_population_writer.hpp
+CONFLICT (content): Merge conflict in projects/ores.synthetic/core/include/ores.synthetic.core/trading/trading_trade_population_writer.hpp
+Auto-merging projects/ores.synthetic/core/src/service/trade_population_service.cpp
+Auto-merging projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp
+CONFLICT (content): Merge conflict in projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp
+Auto-merging projects/ores.synthetic/core/tests/trade_population_tests.cpp
+CONFLICT (content): Merge conflict in projects/ores.synthetic/core/tests/trade_population_tests.cpp

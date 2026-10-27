@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_payment_frequencies_response
-    list_payment_frequencies(const messaging::list_payment_frequencies_request& request);
-    messaging::get_payment_frequency_response
-    get_payment_frequency(const messaging::get_payment_frequency_request& request);
-    messaging::get_many_payment_frequencies_response
-    get_many_payment_frequencies(const messaging::get_many_payment_frequencies_request& request);
-    messaging::put_payment_frequency_response
-    put_payment_frequency(const messaging::put_payment_frequency_request& request);
-    messaging::put_many_payment_frequencies_response
-    put_many_payment_frequencies(const messaging::put_many_payment_frequencies_request& request);
-    messaging::delete_payment_frequency_response
-    delete_payment_frequency(const messaging::delete_payment_frequency_request& request);
-    messaging::delete_many_payment_frequencies_response delete_many_payment_frequencies(
-        const messaging::delete_many_payment_frequencies_request& request);
-    messaging::list_payment_frequency_versions_response list_payment_frequency_versions(
-        const messaging::list_payment_frequency_versions_request& request);
-    messaging::get_payment_frequency_version_response
-    get_payment_frequency_version(const messaging::get_payment_frequency_version_request& request);
+    ::ores::refdata::messaging::list_payment_frequencies_response list_payment_frequencies(
+        const ::ores::refdata::messaging::list_payment_frequencies_request& request);
+    ::ores::refdata::messaging::get_payment_frequency_response
+    get_payment_frequency(const ::ores::refdata::messaging::get_payment_frequency_request& request);
+    ::ores::refdata::messaging::get_many_payment_frequencies_response get_many_payment_frequencies(
+        const ::ores::refdata::messaging::get_many_payment_frequencies_request& request);
+    ::ores::refdata::messaging::put_payment_frequency_response
+    put_payment_frequency(const ::ores::refdata::messaging::put_payment_frequency_request& request);
+    ::ores::refdata::messaging::put_many_payment_frequencies_response put_many_payment_frequencies(
+        const ::ores::refdata::messaging::put_many_payment_frequencies_request& request);
+    ::ores::refdata::messaging::delete_payment_frequency_response delete_payment_frequency(
+        const ::ores::refdata::messaging::delete_payment_frequency_request& request);
+    ::ores::refdata::messaging::delete_many_payment_frequencies_response
+    delete_many_payment_frequencies(
+        const ::ores::refdata::messaging::delete_many_payment_frequencies_request& request);
+    ::ores::refdata::messaging::list_payment_frequency_versions_response
+    list_payment_frequency_versions(
+        const ::ores::refdata::messaging::list_payment_frequency_versions_request& request);
+    ::ores::refdata::messaging::get_payment_frequency_version_response
+    get_payment_frequency_version(
+        const ::ores::refdata::messaging::get_payment_frequency_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +192,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::payment_frequency_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::payment_frequency& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::payment_frequency_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::payment_frequency& out);
 };
 
 }

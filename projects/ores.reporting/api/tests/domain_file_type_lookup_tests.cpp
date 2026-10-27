@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <string>
@@ -40,9 +41,6 @@ using namespace ores::logging;
 using ores::reporting::domain::file_type;
 using ores::reporting::domain::input_document_file_type_of;
 
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[domain][filetype]");
-
 file_type make_file_type(const std::string& code,
                          const std::optional<std::string>& configuration_type_code,
                          const std::string& kind,
@@ -62,7 +60,7 @@ file_type make_file_type(const std::string& code,
 
 }
 
-TEST_CASE("the_input_document_of_a_configuration_type_names_its_file", tags) {
+TEST_CASE("the_input_document_of_a_configuration_type_names_its_file", "[domain][filetype]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<file_type> types{
@@ -80,7 +78,7 @@ TEST_CASE("the_input_document_of_a_configuration_type_names_its_file", tags) {
     BOOST_LOG_SEV(lg, debug) << "Named: " << type->name_pattern;
 }
 
-TEST_CASE("a_row_for_another_kind_or_direction_does_not_answer", tags) {
+TEST_CASE("a_row_for_another_kind_or_direction_does_not_answer", "[domain][filetype]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<file_type> types{
@@ -93,7 +91,7 @@ TEST_CASE("a_row_for_another_kind_or_direction_does_not_answer", tags) {
     CHECK(input_document_file_type_of(types, "pricing_engines") == nullptr);
 }
 
-TEST_CASE("the_default_row_answers_when_a_type_names_several", tags) {
+TEST_CASE("the_default_row_answers_when_a_type_names_several", "[domain][filetype]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<file_type> types{
@@ -112,7 +110,7 @@ TEST_CASE("the_default_row_answers_when_a_type_names_several", tags) {
     CHECK(type->name_pattern == "default.xml");
 }
 
-TEST_CASE("a_row_that_names_no_file_does_not_answer", tags) {
+TEST_CASE("a_row_that_names_no_file_does_not_answer", "[domain][filetype]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<file_type> types{
@@ -137,7 +135,7 @@ TEST_CASE("a_row_that_names_no_file_does_not_answer", tags) {
     CHECK(input_document_file_type_of(nameless, "pricing_engines") == nullptr);
 }
 
-TEST_CASE("no_row_states_no_name", tags) {
+TEST_CASE("no_row_states_no_name", "[domain][filetype]") {
     auto lg(make_logger(test_suite));
 
     CHECK(input_document_file_type_of({}, "pricing_engines") == nullptr);

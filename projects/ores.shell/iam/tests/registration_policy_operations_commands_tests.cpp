@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/registration_policy_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.iam.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("registration_policy_operations_registers_every_declared_command", tags) {
+TEST_CASE("registration_policy_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -69,7 +67,7 @@ TEST_CASE("registration_policy_operations_registers_every_declared_command", tag
 }
 
 TEST_CASE("registration_policy_operations_process_registration_policy_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -88,7 +86,7 @@ TEST_CASE("registration_policy_operations_process_registration_policy_reports_th
 }
 
 TEST_CASE("registration_policy_operations_process_registration_policy_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

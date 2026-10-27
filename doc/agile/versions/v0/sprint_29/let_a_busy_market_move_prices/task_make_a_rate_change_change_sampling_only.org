@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 5AEEAC8B-5435-46FD-B9C4-250F634682D3
+#+blocked_since: 2026-10-27
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ gets twice the samples of the same path, not twice the realized volatility.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]]: the price step must come from the time the scheduler hands each feed. |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-26                               |
+| Last touched | 2026-10-27                               |
 
 * Acceptance
 

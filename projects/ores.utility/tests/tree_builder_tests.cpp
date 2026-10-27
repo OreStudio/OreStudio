@@ -27,19 +27,17 @@
 
 namespace {
 
-const std::string tags("[tree_builder]");
-
 using namespace ores::utility::generation;
 
 }
 
-TEST_CASE("empty_tree_when_zero_count", tags) {
+TEST_CASE("empty_tree_when_zero_count", "[tree_builder]") {
     generation_engine engine(42);
     auto nodes = generate_tree(0, 5, engine);
     REQUIRE(nodes.empty());
 }
 
-TEST_CASE("single_node_tree", tags) {
+TEST_CASE("single_node_tree", "[tree_builder]") {
     generation_engine engine(42);
     auto nodes = generate_tree(1, 5, engine);
 
@@ -49,7 +47,7 @@ TEST_CASE("single_node_tree", tags) {
     CHECK(!nodes[0].parent_index.has_value());
 }
 
-TEST_CASE("flat_tree_with_max_depth_zero", tags) {
+TEST_CASE("flat_tree_with_max_depth_zero", "[tree_builder]") {
     generation_engine engine(42);
     auto nodes = generate_tree(5, 0, engine);
 
@@ -58,7 +56,7 @@ TEST_CASE("flat_tree_with_max_depth_zero", tags) {
     CHECK(nodes[0].depth == 0);
 }
 
-TEST_CASE("flat_tree_with_max_depth_one", tags) {
+TEST_CASE("flat_tree_with_max_depth_one", "[tree_builder]") {
     generation_engine engine(42);
     auto nodes = generate_tree(5, 1, engine);
 
@@ -73,7 +71,7 @@ TEST_CASE("flat_tree_with_max_depth_one", tags) {
     }
 }
 
-TEST_CASE("total_count_respected", tags) {
+TEST_CASE("total_count_respected", "[tree_builder]") {
     generation_engine engine(42);
     for (std::size_t count : {1, 3, 5, 10, 20}) {
         auto nodes = generate_tree(count, 5, engine);
@@ -81,7 +79,7 @@ TEST_CASE("total_count_respected", tags) {
     }
 }
 
-TEST_CASE("parent_first_ordering", tags) {
+TEST_CASE("parent_first_ordering", "[tree_builder]") {
     generation_engine engine(42);
     auto nodes = generate_tree(10, 4, engine);
 
@@ -92,7 +90,7 @@ TEST_CASE("parent_first_ordering", tags) {
     }
 }
 
-TEST_CASE("max_depth_respected", tags) {
+TEST_CASE("max_depth_respected", "[tree_builder]") {
     generation_engine engine(42);
     for (std::size_t max_depth : {1, 2, 3, 4}) {
         auto nodes = generate_tree(20, max_depth, engine);
@@ -102,7 +100,7 @@ TEST_CASE("max_depth_respected", tags) {
     }
 }
 
-TEST_CASE("tree_shape_is_fixed_for_a_seed", tags) {
+TEST_CASE("tree_shape_is_fixed_for_a_seed", "[tree_builder]") {
     generation_engine engine(42);
     const auto nodes = generate_tree(6, 3, engine);
 
@@ -123,7 +121,7 @@ TEST_CASE("tree_shape_is_fixed_for_a_seed", tags) {
     }
 }
 
-TEST_CASE("the_seed_selects_the_shape", tags) {
+TEST_CASE("the_seed_selects_the_shape", "[tree_builder]") {
     std::set<std::vector<std::size_t>> shapes;
 
     for (std::uint64_t seed = 0; seed < 10; ++seed) {
@@ -142,7 +140,7 @@ TEST_CASE("the_seed_selects_the_shape", tags) {
     CHECK(shapes.size() > 1);
 }
 
-TEST_CASE("all_nodes_have_valid_parent_references", tags) {
+TEST_CASE("all_nodes_have_valid_parent_references", "[tree_builder]") {
     generation_engine engine(42);
     auto nodes = generate_tree(15, 4, engine);
 

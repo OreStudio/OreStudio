@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string synthetic_cdo_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,8 @@ std::string convert_to_table(const std::vector<synthetic_cdo_instrument>& v) {
 
     for ([[maybe_unused]] const auto& sc : v) {
         table << sc.trade_id << sc.qualifier << sc.protection_start_date << sc.attachment_point
-              << sc.detachment_point << opt_str(sc.upfront_fee) << sc.modified_by << sc.version
-              << fort::endr;
+              << sc.detachment_point << synthetic_cdo_instrument_opt_str(sc.upfront_fee)
+              << sc.modified_by << sc.version << fort::endr;
     }
     return table.to_string();
 }

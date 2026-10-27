@@ -76,20 +76,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_party_counterparty_changes_response list_party_counterparty_changes(
-        const messaging::list_party_counterparty_changes_request& request);
-    messaging::get_party_counterparty_change_response
-    get_party_counterparty_change(const messaging::get_party_counterparty_change_request& request);
-    messaging::get_many_party_counterparty_changes_response get_many_party_counterparty_changes(
-        const messaging::get_many_party_counterparty_changes_request& request);
-    messaging::list_by_request_id_party_counterparty_changes_response
+    ::ores::refdata::messaging::list_party_counterparty_changes_response
+    list_party_counterparty_changes(
+        const ::ores::refdata::messaging::list_party_counterparty_changes_request& request);
+    ::ores::refdata::messaging::get_party_counterparty_change_response
+    get_party_counterparty_change(
+        const ::ores::refdata::messaging::get_party_counterparty_change_request& request);
+    ::ores::refdata::messaging::get_many_party_counterparty_changes_response
+    get_many_party_counterparty_changes(
+        const ::ores::refdata::messaging::get_many_party_counterparty_changes_request& request);
+    ::ores::refdata::messaging::list_by_request_id_party_counterparty_changes_response
     list_by_request_id_party_counterparty_changes(
-        const messaging::list_by_request_id_party_counterparty_changes_request& request);
-    messaging::list_party_counterparty_change_versions_response
+        const ::ores::refdata::messaging::list_by_request_id_party_counterparty_changes_request&
+            request);
+    ::ores::refdata::messaging::list_party_counterparty_change_versions_response
     list_party_counterparty_change_versions(
-        const messaging::list_party_counterparty_change_versions_request& request);
-    messaging::get_party_counterparty_change_version_response get_party_counterparty_change_version(
-        const messaging::get_party_counterparty_change_version_request& request);
+        const ::ores::refdata::messaging::list_party_counterparty_change_versions_request& request);
+    ::ores::refdata::messaging::get_party_counterparty_change_version_response
+    get_party_counterparty_change_version(
+        const ::ores::refdata::messaging::get_party_counterparty_change_version_request& request);
     /**@}*/
 
     /**

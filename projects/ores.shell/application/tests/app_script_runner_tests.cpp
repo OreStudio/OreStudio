@@ -21,23 +21,17 @@
 #include "ores.platform/environment/environment.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/script_runner.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <vector>
-
-namespace {
-
-const std::string_view test_suite("ores.shell.tests");
-const std::string tags("[app]");
-
-}
 
 using ores::shell::app::command_feedback;
 using ores::shell::app::fail;
 using ores::shell::app::run_script;
 using namespace ores::logging;
 
-TEST_CASE("command_feedback_reset_clears_failure", tags) {
+TEST_CASE("command_feedback_reset_clears_failure", "[app]") {
     auto lg(make_logger(test_suite));
 
     command_feedback::mark_failure();
@@ -46,7 +40,7 @@ TEST_CASE("command_feedback_reset_clears_failure", tags) {
     CHECK_FALSE(command_feedback::failed());
 }
 
-TEST_CASE("fail_marks_failure_and_prefixes_message", tags) {
+TEST_CASE("fail_marks_failure_and_prefixes_message", "[app]") {
     auto lg(make_logger(test_suite));
 
     command_feedback::reset();
@@ -57,7 +51,7 @@ TEST_CASE("fail_marks_failure_and_prefixes_message", tags) {
     command_feedback::reset();
 }
 
-TEST_CASE("run_script_executes_commands_and_skips_noise", tags) {
+TEST_CASE("run_script_executes_commands_and_skips_noise", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -75,7 +69,7 @@ TEST_CASE("run_script_executes_commands_and_skips_noise", tags) {
     CHECK(fed == std::vector<std::string>{"one", "two"});
 }
 
-TEST_CASE("run_script_skips_whitespace_and_cr_only_lines", tags) {
+TEST_CASE("run_script_skips_whitespace_and_cr_only_lines", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -95,7 +89,7 @@ TEST_CASE("run_script_skips_whitespace_and_cr_only_lines", tags) {
     CHECK(fed == std::vector<std::string>{"one", "two"});
 }
 
-TEST_CASE("run_script_aborts_on_first_failure_by_default", tags) {
+TEST_CASE("run_script_aborts_on_first_failure_by_default", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -121,7 +115,7 @@ TEST_CASE("run_script_aborts_on_first_failure_by_default", tags) {
     CHECK(fed == std::vector<std::string>{"good", "bad"});
 }
 
-TEST_CASE("run_script_continue_on_error_keeps_going", tags) {
+TEST_CASE("run_script_continue_on_error_keeps_going", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -145,7 +139,7 @@ TEST_CASE("run_script_continue_on_error_keeps_going", tags) {
     CHECK(fed == std::vector<std::string>{"good", "bad", "after"});
 }
 
-TEST_CASE("run_script_expands_environment_variables", tags) {
+TEST_CASE("run_script_expands_environment_variables", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -169,7 +163,7 @@ TEST_CASE("run_script_expands_environment_variables", tags) {
                                           "literal $ and ${ alone"});
 }
 
-TEST_CASE("run_script_aborts_on_undefined_environment_variable", tags) {
+TEST_CASE("run_script_aborts_on_undefined_environment_variable", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -189,7 +183,7 @@ TEST_CASE("run_script_aborts_on_undefined_environment_variable", tags) {
                          "$ORES_TEST_RUNNER_MISSING") != std::string::npos);
 }
 
-TEST_CASE("run_script_continue_on_error_skips_undefined_variable_line", tags) {
+TEST_CASE("run_script_continue_on_error_skips_undefined_variable_line", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 
@@ -207,7 +201,7 @@ TEST_CASE("run_script_continue_on_error_skips_undefined_variable_line", tags) {
     CHECK(fed == std::vector<std::string>{"good", "after"});
 }
 
-TEST_CASE("run_script_nested_failure_propagates", tags) {
+TEST_CASE("run_script_nested_failure_propagates", "[app]") {
     auto lg(make_logger(test_suite));
     command_feedback::reset();
 

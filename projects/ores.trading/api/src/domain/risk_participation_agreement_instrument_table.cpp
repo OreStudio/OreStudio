@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string risk_participation_agreement_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,10 @@ std::string convert_to_table(const std::vector<risk_participation_agreement_inst
           << "Recovery Rate" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rp : v) {
-        table << rp.trade_id << rp.credit_curve_id << rp.participation_rate << opt_str(rp.issuer_id)
-              << opt_str(rp.recovery_rate) << rp.modified_by << rp.version << fort::endr;
+        table << rp.trade_id << rp.credit_curve_id << rp.participation_rate
+              << risk_participation_agreement_instrument_opt_str(rp.issuer_id)
+              << risk_participation_agreement_instrument_opt_str(rp.recovery_rate) << rp.modified_by
+              << rp.version << fort::endr;
     }
     return table.to_string();
 }

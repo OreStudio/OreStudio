@@ -82,7 +82,7 @@ namespace {
  * The stored column behind a sortable field. A field is named as the wire
  * names it, which is the column itself except for the recording time.
  */
-std::string sort_column(std::string_view field) {
+std::string workunit_sort_column(std::string_view field) {
     const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
         {"recorded_at", "valid_from"},
     };
@@ -98,15 +98,15 @@ std::string sort_column(std::string_view field) {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy workunit_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!workunit_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of workunits cannot be ordered by " + order.field +
                                     ".");
-    return make_order({sort_column(order.field)}, order.descending, {"id"});
+    return make_order({workunit_sort_column(order.field)}, order.descending, {"id"});
 }
 
 /*
@@ -114,7 +114,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::workunits_filter>& filter) {
+workunit_filter_condition(const std::optional<messaging::workunits_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -289,8 +289,8 @@ std::vector<domain::workunit> workunit_repository::read_latest_by_batch_id(
     return execute_ordered_read_query<workunit_entity, domain::workunit>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        workunit_list_order(order, {"id"}, false),
+        workunit_filter_condition(filter),
         [](const auto& entities) { return workunit_mapper::map(entities); },
         lg(),
         "Reading latest workunits by batch_id.");
@@ -309,7 +309,7 @@ std::uint32_t workunit_repository::get_total_workunit_count_by_batch_id(
         where("tenant_id"_c == tid && "batch_id"_c == batch_id && "valid_to"_c == max.value());
 
     return execute_count_query<workunit_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting workunits by batch_id");
+        ctx, query, workunit_filter_condition(filter), lg(), "Counting workunits by batch_id");
 }
 
 
@@ -362,8 +362,8 @@ workunit_repository::read_latest(context ctx,
     return execute_ordered_read_query<workunit_entity, domain::workunit>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        workunit_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), workunit_filter_condition(filter)),
         [](const auto& entities) { return workunit_mapper::map(entities); },
         lg(),
         "Reading latest workunits with pagination.");
@@ -378,11 +378,12 @@ std::uint32_t workunit_repository::get_total_workunit_count(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workunit_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<workunit_entity>(ctx,
-                                                query,
-                                                narrowed(valid_at(as_of), filter_condition(filter)),
-                                                lg(),
-                                                "Counting workunits");
+    return execute_count_query<workunit_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), workunit_filter_condition(filter)),
+        lg(),
+        "Counting workunits");
 }
 
 std::vector<domain::workunit>

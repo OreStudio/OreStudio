@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_coding_schemes_response
-    list_coding_schemes(const messaging::list_coding_schemes_request& request);
-    messaging::get_coding_scheme_response
-    get_coding_scheme(const messaging::get_coding_scheme_request& request);
-    messaging::get_many_coding_schemes_response
-    get_many_coding_schemes(const messaging::get_many_coding_schemes_request& request);
-    messaging::put_coding_scheme_response
-    put_coding_scheme(const messaging::put_coding_scheme_request& request);
-    messaging::put_many_coding_schemes_response
-    put_many_coding_schemes(const messaging::put_many_coding_schemes_request& request);
-    messaging::delete_coding_scheme_response
-    delete_coding_scheme(const messaging::delete_coding_scheme_request& request);
-    messaging::delete_many_coding_schemes_response
-    delete_many_coding_schemes(const messaging::delete_many_coding_schemes_request& request);
-    messaging::list_coding_scheme_versions_response
-    list_coding_scheme_versions(const messaging::list_coding_scheme_versions_request& request);
-    messaging::get_coding_scheme_version_response
-    get_coding_scheme_version(const messaging::get_coding_scheme_version_request& request);
+    ::ores::dq::messaging::list_coding_schemes_response
+    list_coding_schemes(const ::ores::dq::messaging::list_coding_schemes_request& request);
+    ::ores::dq::messaging::get_coding_scheme_response
+    get_coding_scheme(const ::ores::dq::messaging::get_coding_scheme_request& request);
+    ::ores::dq::messaging::get_many_coding_schemes_response
+    get_many_coding_schemes(const ::ores::dq::messaging::get_many_coding_schemes_request& request);
+    ::ores::dq::messaging::put_coding_scheme_response
+    put_coding_scheme(const ::ores::dq::messaging::put_coding_scheme_request& request);
+    ::ores::dq::messaging::put_many_coding_schemes_response
+    put_many_coding_schemes(const ::ores::dq::messaging::put_many_coding_schemes_request& request);
+    ::ores::dq::messaging::delete_coding_scheme_response
+    delete_coding_scheme(const ::ores::dq::messaging::delete_coding_scheme_request& request);
+    ::ores::dq::messaging::delete_many_coding_schemes_response delete_many_coding_schemes(
+        const ::ores::dq::messaging::delete_many_coding_schemes_request& request);
+    ::ores::dq::messaging::list_coding_scheme_versions_response list_coding_scheme_versions(
+        const ::ores::dq::messaging::list_coding_scheme_versions_request& request);
+    ::ores::dq::messaging::get_coding_scheme_version_response get_coding_scheme_version(
+        const ::ores::dq::messaging::get_coding_scheme_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::coding_scheme_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::coding_scheme& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::coding_scheme_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::coding_scheme& out);
 };
 
 }

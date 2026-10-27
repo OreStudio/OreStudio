@@ -20,19 +20,13 @@
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::dq::domain::dataset_dependency;
 using namespace ores::logging;
 
-TEST_CASE("create_dataset_dependency_with_valid_fields", tags) {
+TEST_CASE("create_dataset_dependency_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     dataset_dependency sut;
@@ -50,7 +44,7 @@ TEST_CASE("create_dataset_dependency_with_valid_fields", tags) {
     CHECK(sut.modified_by == "admin");
 }
 
-TEST_CASE("dataset_dependency_uses_standard_codes", tags) {
+TEST_CASE("dataset_dependency_uses_standard_codes", "[domain]") {
     auto lg(make_logger(test_suite));
 
     // Test typical dataset dependency relationships
@@ -75,7 +69,7 @@ TEST_CASE("dataset_dependency_uses_standard_codes", tags) {
     BOOST_LOG_SEV(lg, info) << "Standard dataset codes work correctly";
 }
 
-TEST_CASE("dataset_dependency_supports_custom_codes", tags) {
+TEST_CASE("dataset_dependency_supports_custom_codes", "[domain]") {
     auto lg(make_logger(test_suite));
 
     // Test that custom codes work

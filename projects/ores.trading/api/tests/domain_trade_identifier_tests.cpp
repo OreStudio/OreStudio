@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_identifier_table.hpp"
 #include "ores.trading.api/domain/trade_identifier_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -30,9 +31,6 @@
 namespace {
 
 using ores::trading::domain::trade_identifier;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 trade_identifier make_trade_identifier(const std::string& id_type, const std::string& id_value) {
     trade_identifier ti;
@@ -53,7 +51,7 @@ trade_identifier make_trade_identifier(const std::string& id_type, const std::st
 using ores::trading::domain::trade_identifier;
 using namespace ores::logging;
 
-TEST_CASE("create_trade_identifier_with_valid_fields", tags) {
+TEST_CASE("create_trade_identifier_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade_identifier sut;
@@ -76,7 +74,7 @@ TEST_CASE("create_trade_identifier_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_trade_identifier_with_issuing_party", tags) {
+TEST_CASE("create_trade_identifier_with_issuing_party", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade_identifier sut;
@@ -97,7 +95,7 @@ TEST_CASE("create_trade_identifier_with_issuing_party", tags) {
     CHECK(sut.id_type == "USI");
 }
 
-TEST_CASE("trade_identifier_insertion_operator", tags) {
+TEST_CASE("trade_identifier_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade_identifier sut;
@@ -120,7 +118,7 @@ TEST_CASE("trade_identifier_insertion_operator", tags) {
     CHECK(json_output.find("INT-12345") != std::string::npos);
 }
 
-TEST_CASE("create_trade_identifier_with_faker", tags) {
+TEST_CASE("create_trade_identifier_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade_identifier sut;
@@ -143,7 +141,7 @@ TEST_CASE("create_trade_identifier_with_faker", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_multiple_random_trade_identifiers", tags) {
+TEST_CASE("create_multiple_random_trade_identifiers", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::pair<std::string, std::string>> ids = {
@@ -156,7 +154,7 @@ TEST_CASE("create_multiple_random_trade_identifiers", tags) {
     }
 }
 
-TEST_CASE("trade_identifier_convert_single_to_table", tags) {
+TEST_CASE("trade_identifier_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_identifier> items = {make_trade_identifier("UTI", "UTI-2026-001")};
@@ -167,7 +165,7 @@ TEST_CASE("trade_identifier_convert_single_to_table", tags) {
     CHECK(table.find("UTI-2026-001") != std::string::npos);
 }
 
-TEST_CASE("trade_identifier_convert_multiple_to_table", tags) {
+TEST_CASE("trade_identifier_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_identifier> items;
@@ -184,7 +182,7 @@ TEST_CASE("trade_identifier_convert_multiple_to_table", tags) {
     CHECK(table.find("Type2") != std::string::npos);
 }
 
-TEST_CASE("trade_identifier_convert_empty_vector_to_table", tags) {
+TEST_CASE("trade_identifier_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_identifier> items;
@@ -195,7 +193,7 @@ TEST_CASE("trade_identifier_convert_empty_vector_to_table", tags) {
     CHECK(table.find("ID Value") != std::string::npos);
 }
 
-TEST_CASE("trade_identifier_table_with_faker_data", tags) {
+TEST_CASE("trade_identifier_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_identifier> items;

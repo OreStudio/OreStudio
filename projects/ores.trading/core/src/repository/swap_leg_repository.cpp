@@ -83,9 +83,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy swap_leg_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"trade_id", "leg_number"});
@@ -100,7 +100,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::swap_legs_filter>& filter) {
+swap_leg_filter_condition(const std::optional<messaging::swap_legs_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -284,8 +284,8 @@ std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_trade_id(
     return execute_ordered_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
-        list_order(order, {"trade_id", "leg_number"}, false),
-        filter_condition(filter),
+        swap_leg_list_order(order, {"trade_id", "leg_number"}, false),
+        swap_leg_filter_condition(filter),
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
         "Reading latest swap legs by trade_id.");
@@ -304,7 +304,7 @@ std::uint32_t swap_leg_repository::get_total_swap_leg_count_by_trade_id(
         where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_count_query<swap_leg_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting swap legs by trade_id");
+        ctx, query, swap_leg_filter_condition(filter), lg(), "Counting swap legs by trade_id");
 }
 
 
@@ -364,8 +364,8 @@ swap_leg_repository::read_latest(context ctx,
     return execute_ordered_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
-        list_order(order, {"trade_id", "leg_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        swap_leg_list_order(order, {"trade_id", "leg_number"}, false),
+        narrowed(valid_at(as_of), swap_leg_filter_condition(filter)),
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
         "Reading latest swap legs with pagination.");
@@ -380,11 +380,12 @@ std::uint32_t swap_leg_repository::get_total_swap_leg_count(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<swap_leg_entity>(ctx,
-                                                query,
-                                                narrowed(valid_at(as_of), filter_condition(filter)),
-                                                lg(),
-                                                "Counting swap legs");
+    return execute_count_query<swap_leg_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), swap_leg_filter_condition(filter)),
+        lg(),
+        "Counting swap legs");
 }
 
 std::vector<domain::swap_leg>

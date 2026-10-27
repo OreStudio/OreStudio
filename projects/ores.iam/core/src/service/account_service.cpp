@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::account> read_one(repository::account_repository& repo,
-                                      const ores::database::context& ctx,
-                                      const messaging::account_key& key) {
+std::vector<domain::account> account_read_one(repository::account_repository& repo,
+                                              const ores::database::context& ctx,
+                                              const messaging::account_key& key) {
     return repo.read_latest_by_username(ctx, key.username);
 }
 
@@ -120,7 +120,7 @@ account_service::list_accounts(const messaging::list_accounts_request& request) 
 messaging::get_account_response
 account_service::get_account(const messaging::get_account_request& request) {
     messaging::get_account_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = account_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
@@ -139,7 +139,7 @@ account_service::get_many_accounts(const messaging::get_many_accounts_request& r
     for (const auto& k : request.keys) {
         messaging::account_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = account_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.account = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -161,7 +161,7 @@ account_service::list_account_versions(const messaging::list_account_versions_re
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = account_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
@@ -184,7 +184,7 @@ account_service::get_account_version(const messaging::get_account_version_reques
     messaging::get_account_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.account);
+    const auto named = account_read_one(repo_, ctx_, request.key.account);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
@@ -232,7 +232,7 @@ account_service::get_account_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Getting account by username: " << username;
     messaging::account_key k;
     k.username = username;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = account_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

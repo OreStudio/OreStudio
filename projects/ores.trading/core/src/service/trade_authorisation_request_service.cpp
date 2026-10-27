@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::trade_authorisation_request>
-read_one(repository::trade_authorisation_request_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::trade_authorisation_request_key& key) {
+trade_authorisation_request_read_one(repository::trade_authorisation_request_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::trade_authorisation_request_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.request_id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::trade_authorisation_request_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::trade_authorisation_request_key key_from(const domain::trade_authorisation_request& v) {
+messaging::trade_authorisation_request_key
+trade_authorisation_request_key_from(const domain::trade_authorisation_request& v) {
     messaging::trade_authorisation_request_key key;
     key.request_id = v.request_id;
     return key;
@@ -100,7 +101,7 @@ messaging::trade_authorisation_request_key key_from(const domain::trade_authoris
  * database's to state, and are set after this conversion.
  */
 domain::trade_authorisation_request
-to_domain(const messaging::trade_authorisation_request_write& write) {
+trade_authorisation_request_to_domain(const messaging::trade_authorisation_request_write& write) {
     domain::trade_authorisation_request v;
     v.request_id = write.request_id;
     v.trade_id = write.trade_id;
@@ -191,7 +192,7 @@ messaging::get_trade_authorisation_request_response
 trade_authorisation_request_service::get_trade_authorisation_request(
     const messaging::get_trade_authorisation_request_request& request) {
     messaging::get_trade_authorisation_request_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = trade_authorisation_request_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "trade_authorisation_request"});
@@ -212,7 +213,7 @@ trade_authorisation_request_service::get_many_trade_authorisation_requests(
     for (const auto& k : request.keys) {
         messaging::trade_authorisation_request_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = trade_authorisation_request_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.trade_authorisation_request = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -229,7 +230,8 @@ trade_authorisation_request_service::put_trade_authorisation_request(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = trade_authorisation_request_read_one(
+        repo_, ctx_, trade_authorisation_request_key_from(value));
     if (!written.empty())
         response.trade_authorisation_request = std::move(written.front());
     return response;
@@ -262,7 +264,8 @@ trade_authorisation_request_service::put_many_trade_authorisation_requests(
     repo_.write(ctx_, batch, claims);
     response.trade_authorisation_requests.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = trade_authorisation_request_read_one(
+            repo_, ctx_, trade_authorisation_request_key_from(value));
         response.trade_authorisation_requests.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -298,7 +301,8 @@ trade_authorisation_request_service::delete_trade_authorisation_request(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                trade_authorisation_request_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "trade_authorisation_request",
@@ -391,8 +395,9 @@ ores::utility::domain::result trade_authorisation_request_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = trade_authorisation_request_to_domain(change.write);
+    const auto current = trade_authorisation_request_read_one(
+        repo_, ctx_, trade_authorisation_request_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

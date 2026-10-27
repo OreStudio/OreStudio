@@ -21,6 +21,7 @@
 #include "ores.nats/config/nats_configuration.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include "test_suite.hpp"
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
@@ -28,9 +29,6 @@
 #include <utility>
 
 namespace {
-
-const std::string_view test_suite("ores.nats.tests");
-const std::string tags("[config]");
 
 /**
  * @brief Put a real environment variable back when the case leaves.
@@ -68,7 +66,7 @@ ores::nats::config::nats_options parse(const std::vector<std::string>& args) {
 
 }
 
-TEST_CASE("nats_configuration_defaults", tags) {
+TEST_CASE("nats_configuration_defaults", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result = parse({});
@@ -77,7 +75,7 @@ TEST_CASE("nats_configuration_defaults", tags) {
     CHECK(result.subject_prefix.empty());
 }
 
-TEST_CASE("nats_configuration_custom_url", tags) {
+TEST_CASE("nats_configuration_custom_url", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result = parse({"--nats-url", "nats://myserver:5555"});
@@ -85,7 +83,7 @@ TEST_CASE("nats_configuration_custom_url", tags) {
     CHECK(result.url == "nats://myserver:5555");
 }
 
-TEST_CASE("nats_configuration_subject_prefix", tags) {
+TEST_CASE("nats_configuration_subject_prefix", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result = parse({"--nats-subject-prefix", "ores.prod.main1"});
@@ -93,7 +91,7 @@ TEST_CASE("nats_configuration_subject_prefix", tags) {
     CHECK(result.subject_prefix == "ores.prod.main1");
 }
 
-TEST_CASE("nats_configuration_url_and_prefix_together", tags) {
+TEST_CASE("nats_configuration_url_and_prefix_together", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result =
@@ -103,7 +101,7 @@ TEST_CASE("nats_configuration_url_and_prefix_together", tags) {
     CHECK(result.subject_prefix == "ores.staging.node2");
 }
 
-TEST_CASE("nats_configuration_wire_format_defaults_to_msgpack", tags) {
+TEST_CASE("nats_configuration_wire_format_defaults_to_msgpack", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result = parse({});
@@ -111,7 +109,7 @@ TEST_CASE("nats_configuration_wire_format_defaults_to_msgpack", tags) {
     CHECK(result.format == ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("nats_configuration_wire_format_msgpack", tags) {
+TEST_CASE("nats_configuration_wire_format_msgpack", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result = parse({"--nats-wire-format", "msgpack"});
@@ -119,13 +117,13 @@ TEST_CASE("nats_configuration_wire_format_msgpack", tags) {
     CHECK(result.format == ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("nats_configuration_wire_format_rejects_unknown_value", tags) {
+TEST_CASE("nats_configuration_wire_format_rejects_unknown_value", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     CHECK_THROWS_AS(parse({"--nats-wire-format", "bson"}), std::invalid_argument);
 }
 
-TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_app", tags) {
+TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_app", "[config]") {
     // Regression test for a real bug caught in review: the shared-domain
     // fallback must resolve ORES_NATS_URL to the actual registered option
     // name "nats-url" (not "url"), and must NOT choke on other ORES_NATS_*
@@ -159,7 +157,7 @@ TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_
     CHECK(result.url == "nats://regression-check:4222");
 }
 
-TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
+TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", "[config]") {
     // Regression test for a real bug caught in review: registering TLS_CA
     // alone (cert/key stay excluded, genuinely per-service) would let
     // nats_options.tls_ca_cert resolve non-empty via the shared fallback

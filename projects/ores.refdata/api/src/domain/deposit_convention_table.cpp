@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string deposit_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,10 @@ std::string convert_to_table(const std::vector<deposit_convention>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& dc : v) {
-        table << dc.id << (dc.index_based ? "true" : "false") << opt_str(dc.index)
-              << opt_str(dc.calendar) << opt_str(dc.day_count_fraction) << dc.modified_by
-              << dc.version << fort::endr;
+        table << dc.id << (dc.index_based ? "true" : "false")
+              << deposit_convention_opt_str(dc.index) << deposit_convention_opt_str(dc.calendar)
+              << deposit_convention_opt_str(dc.day_count_fraction) << dc.modified_by << dc.version
+              << fort::endr;
     }
     return table.to_string();
 }

@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::structure> read_one(repository::structure_repository& repo,
-                                        const ores::database::context& ctx,
-                                        const messaging::structure_key& key) {
+std::vector<domain::structure> structure_read_one(repository::structure_repository& repo,
+                                                  const ores::database::context& ctx,
+                                                  const messaging::structure_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::structure> read_one(repository::structure_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::structure_key key_from(const domain::structure& v) {
+messaging::structure_key structure_key_from(const domain::structure& v) {
     messaging::structure_key key;
     key.id = v.id;
     return key;
@@ -98,7 +98,7 @@ messaging::structure_key key_from(const domain::structure& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::structure to_domain(const messaging::structure_write& write) {
+domain::structure structure_to_domain(const messaging::structure_write& write) {
     domain::structure v;
     v.id = write.id;
     v.counterparty_id = write.counterparty_id;
@@ -145,7 +145,7 @@ structure_service::list_structures(const messaging::list_structures_request& req
 messaging::get_structure_response
 structure_service::get_structure(const messaging::get_structure_request& request) {
     messaging::get_structure_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = structure_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "structure"});
         return response;
@@ -164,7 +164,7 @@ structure_service::get_many_structures(const messaging::get_many_structures_requ
     for (const auto& k : request.keys) {
         messaging::structure_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = structure_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.structure = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +180,7 @@ structure_service::put_structure(const messaging::put_structure_request& request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
     if (!written.empty())
         response.structure = std::move(written.front());
     return response;
@@ -212,7 +212,7 @@ structure_service::put_many_structures(const messaging::put_many_structures_requ
     repo_.write(ctx_, batch, claims);
     response.structures.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
         response.structures.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -245,7 +245,7 @@ structure_service::delete_structure(const messaging::delete_structure_request& r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = structure_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "structure",
@@ -330,8 +330,8 @@ structure_service::prepare_change(const messaging::structure_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = structure_to_domain(change.write);
+    const auto current = structure_read_one(repo_, ctx_, structure_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -88,8 +88,9 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::party_country> read_one(repository::party_country_repository& repo,
-                                            const messaging::party_country_key& key) {
+std::vector<domain::party_country>
+party_country_read_one(repository::party_country_repository& repo,
+                       const messaging::party_country_key& key) {
     return repo.read_latest(key.party_id, key.country_alpha2_code);
 }
 
@@ -99,7 +100,7 @@ std::vector<domain::party_country> read_one(repository::party_country_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::party_country_key key_from(const domain::party_country& v) {
+messaging::party_country_key party_country_key_from(const domain::party_country& v) {
     messaging::party_country_key key;
     key.party_id = v.party_id;
     key.country_alpha2_code = v.country_alpha2_code;
@@ -114,7 +115,7 @@ messaging::party_country_key key_from(const domain::party_country& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::party_country to_domain(const messaging::party_country_write& write) {
+domain::party_country party_country_to_domain(const messaging::party_country_write& write) {
     domain::party_country v;
     v.party_id = write.party_id;
     v.country_alpha2_code = write.country_alpha2_code;
@@ -166,7 +167,7 @@ party_country_service::list_by_party_id_party_countries(
 messaging::get_party_country_response
 party_country_service::get_party_country(const messaging::get_party_country_request& request) {
     messaging::get_party_country_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = party_country_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_country"});
         return response;
@@ -185,7 +186,7 @@ messaging::get_many_party_countries_response party_country_service::get_many_par
     for (const auto& k : request.keys) {
         messaging::party_country_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = party_country_read_one(repo_, k);
         if (!found.empty())
             entry.party_country = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -201,7 +202,7 @@ party_country_service::put_party_country(const messaging::put_party_country_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = party_country_read_one(repo_, party_country_key_from(value));
     if (!written.empty())
         response.party_country = std::move(written.front());
     return response;
@@ -233,7 +234,7 @@ messaging::put_many_party_countries_response party_country_service::put_many_par
     repo_.write(batch, claims);
     response.party_countries.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = party_country_read_one(repo_, party_country_key_from(value));
         response.party_countries.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -267,7 +268,7 @@ messaging::delete_party_country_response party_country_service::delete_party_cou
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = party_country_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "party_country",
@@ -319,8 +320,8 @@ party_country_service::prepare_change(const messaging::party_country_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = party_country_to_domain(change.write);
+    const auto current = party_country_read_one(repo_, party_country_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

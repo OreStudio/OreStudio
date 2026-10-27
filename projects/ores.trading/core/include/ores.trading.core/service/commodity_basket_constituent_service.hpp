@@ -76,32 +76,40 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_commodity_basket_constituents_response list_commodity_basket_constituents(
-        const messaging::list_commodity_basket_constituents_request& request);
-    messaging::get_commodity_basket_constituent_response get_commodity_basket_constituent(
-        const messaging::get_commodity_basket_constituent_request& request);
-    messaging::get_many_commodity_basket_constituents_response
+    ::ores::trading::messaging::list_commodity_basket_constituents_response
+    list_commodity_basket_constituents(
+        const ::ores::trading::messaging::list_commodity_basket_constituents_request& request);
+    ::ores::trading::messaging::get_commodity_basket_constituent_response
+    get_commodity_basket_constituent(
+        const ::ores::trading::messaging::get_commodity_basket_constituent_request& request);
+    ::ores::trading::messaging::get_many_commodity_basket_constituents_response
     get_many_commodity_basket_constituents(
-        const messaging::get_many_commodity_basket_constituents_request& request);
-    messaging::put_commodity_basket_constituent_response put_commodity_basket_constituent(
-        const messaging::put_commodity_basket_constituent_request& request);
-    messaging::put_many_commodity_basket_constituents_response
+        const ::ores::trading::messaging::get_many_commodity_basket_constituents_request& request);
+    ::ores::trading::messaging::put_commodity_basket_constituent_response
+    put_commodity_basket_constituent(
+        const ::ores::trading::messaging::put_commodity_basket_constituent_request& request);
+    ::ores::trading::messaging::put_many_commodity_basket_constituents_response
     put_many_commodity_basket_constituents(
-        const messaging::put_many_commodity_basket_constituents_request& request);
-    messaging::delete_commodity_basket_constituent_response delete_commodity_basket_constituent(
-        const messaging::delete_commodity_basket_constituent_request& request);
-    messaging::delete_many_commodity_basket_constituents_response
+        const ::ores::trading::messaging::put_many_commodity_basket_constituents_request& request);
+    ::ores::trading::messaging::delete_commodity_basket_constituent_response
+    delete_commodity_basket_constituent(
+        const ::ores::trading::messaging::delete_commodity_basket_constituent_request& request);
+    ::ores::trading::messaging::delete_many_commodity_basket_constituents_response
     delete_many_commodity_basket_constituents(
-        const messaging::delete_many_commodity_basket_constituents_request& request);
-    messaging::list_by_trade_id_commodity_basket_constituents_response
+        const ::ores::trading::messaging::delete_many_commodity_basket_constituents_request&
+            request);
+    ::ores::trading::messaging::list_by_trade_id_commodity_basket_constituents_response
     list_by_trade_id_commodity_basket_constituents(
-        const messaging::list_by_trade_id_commodity_basket_constituents_request& request);
-    messaging::list_commodity_basket_constituent_versions_response
+        const ::ores::trading::messaging::list_by_trade_id_commodity_basket_constituents_request&
+            request);
+    ::ores::trading::messaging::list_commodity_basket_constituent_versions_response
     list_commodity_basket_constituent_versions(
-        const messaging::list_commodity_basket_constituent_versions_request& request);
-    messaging::get_commodity_basket_constituent_version_response
+        const ::ores::trading::messaging::list_commodity_basket_constituent_versions_request&
+            request);
+    ::ores::trading::messaging::get_commodity_basket_constituent_version_response
     get_commodity_basket_constituent_version(
-        const messaging::get_commodity_basket_constituent_version_request& request);
+        const ::ores::trading::messaging::get_commodity_basket_constituent_version_request&
+            request);
     /**@}*/
 
     /**
@@ -229,7 +237,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::commodity_basket_constituent_change& change,
+    prepare_change(const ::ores::trading::messaging::commodity_basket_constituent_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::commodity_basket_constituent& out);
 };

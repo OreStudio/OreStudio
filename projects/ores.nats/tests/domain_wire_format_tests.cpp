@@ -20,29 +20,23 @@
 #include "ores.nats/domain/wire_format.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
-
-const std::string tags("[domain][wire_format]");
-
-}
-
-TEST_CASE("parse_wire_format accepts the documented spellings", tags) {
+TEST_CASE("parse_wire_format accepts the documented spellings", "[domain][wire_format]") {
     CHECK(ores::nats::parse_wire_format("json") == ores::nats::wire_format::json);
     CHECK(ores::nats::parse_wire_format("msgpack") == ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("parse_wire_format is case-insensitive", tags) {
+TEST_CASE("parse_wire_format is case-insensitive", "[domain][wire_format]") {
     CHECK(ores::nats::parse_wire_format("JSON") == ores::nats::wire_format::json);
     CHECK(ores::nats::parse_wire_format("MsgPack") == ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("parse_wire_format rejects unrecognised spellings", tags) {
+TEST_CASE("parse_wire_format rejects unrecognised spellings", "[domain][wire_format]") {
     CHECK_FALSE(ores::nats::parse_wire_format("").has_value());
     CHECK_FALSE(ores::nats::parse_wire_format("bson").has_value());
     CHECK_FALSE(ores::nats::parse_wire_format("json ").has_value());
 }
 
-TEST_CASE("to_string round-trips through parse_wire_format", tags) {
+TEST_CASE("to_string round-trips through parse_wire_format", "[domain][wire_format]") {
     CHECK(ores::nats::parse_wire_format(ores::nats::to_string(ores::nats::wire_format::json)) ==
           ores::nats::wire_format::json);
     CHECK(ores::nats::parse_wire_format(ores::nats::to_string(ores::nats::wire_format::msgpack)) ==

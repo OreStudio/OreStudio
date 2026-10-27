@@ -97,6 +97,22 @@ When the decision was taken.
 std::chrono::system_clock::now()
 #+end_src
 
+** hold_reason_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Why the request was parked, when the decision is a hold. FK reference to
+ores_inbox_hold_reasons_tbl, which the system tenant holds. Null on every
+decision that is not a hold, and on the holds taken before the lookup existed,
+whose words are the comment alone.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** comment
 :PROPERTIES:
 :type:     text
@@ -151,6 +167,17 @@ The lookup is system reference data, so the check reads the system tenant.
 :END:
 
 The part the decision answers, when the request names parts.
+
+** hold_reason_code
+:PROPERTIES:
+:table:             ores_inbox_hold_reasons_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid hold_reason_code: %. No hold reason found with this code.
+:END:
+
+Why a hold was taken, when the decision is a hold.
 
 * SQL
 

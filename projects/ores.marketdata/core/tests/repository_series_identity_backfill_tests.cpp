@@ -23,6 +23,7 @@
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -33,9 +34,6 @@
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[repository][series_identity][backfill]");
 
 using ores::marketdata::repository::market_series_identity_projector;
 using ores::marketdata::repository::market_series_identity_repository;
@@ -86,7 +84,8 @@ std::size_t identity_rows(database_helper& h, const std::string& series_id) {
 
 }
 
-TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected", tags) {
+TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -100,7 +99,8 @@ TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected", tags
     CHECK(identity_rows(h, bare) == 1);
 }
 
-TEST_CASE("projecting_missing_identities_leaves_a_projected_series_alone", tags) {
+TEST_CASE("projecting_missing_identities_leaves_a_projected_series_alone",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -129,7 +129,7 @@ TEST_CASE("projecting_missing_identities_leaves_a_projected_series_alone", tags)
     CHECK(identity_rows(h, written_id) == 1);
 }
 
-TEST_CASE("a_second_backfill_finds_nothing_to_project", tags) {
+TEST_CASE("a_second_backfill_finds_nothing_to_project", "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -143,7 +143,8 @@ TEST_CASE("a_second_backfill_finds_nothing_to_project", tags) {
     CHECK(again.already_projected >= 1);
 }
 
-TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried", tags) {
+TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -166,7 +167,8 @@ TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried", t
     CHECK(identity_rows(h, odd) == 1);
 }
 
-TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected", tags) {
+TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

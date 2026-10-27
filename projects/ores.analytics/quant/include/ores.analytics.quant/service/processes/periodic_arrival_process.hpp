@@ -56,6 +56,11 @@ public:
     double next_gap() override;
     void set_baseline_multiplier(double multiplier) override;
 
+    /// How far into its first gap the process starts, as a fraction of that gap.
+    [[nodiscard]] double phase() const {
+        return phase_;
+    }
+
 private:
     double mean_rate_;
     double multiplier_ = 1.0;

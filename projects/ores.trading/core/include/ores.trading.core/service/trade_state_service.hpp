@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_states_response
-    list_trade_states(const messaging::list_trade_states_request& request);
-    messaging::get_trade_state_response
-    get_trade_state(const messaging::get_trade_state_request& request);
-    messaging::get_many_trade_states_response
-    get_many_trade_states(const messaging::get_many_trade_states_request& request);
-    messaging::put_trade_state_response
-    put_trade_state(const messaging::put_trade_state_request& request);
-    messaging::put_many_trade_states_response
-    put_many_trade_states(const messaging::put_many_trade_states_request& request);
-    messaging::delete_trade_state_response
-    delete_trade_state(const messaging::delete_trade_state_request& request);
-    messaging::delete_many_trade_states_response
-    delete_many_trade_states(const messaging::delete_many_trade_states_request& request);
-    messaging::list_trade_state_versions_response
-    list_trade_state_versions(const messaging::list_trade_state_versions_request& request);
-    messaging::get_trade_state_version_response
-    get_trade_state_version(const messaging::get_trade_state_version_request& request);
+    ::ores::trading::messaging::list_trade_states_response
+    list_trade_states(const ::ores::trading::messaging::list_trade_states_request& request);
+    ::ores::trading::messaging::get_trade_state_response
+    get_trade_state(const ::ores::trading::messaging::get_trade_state_request& request);
+    ::ores::trading::messaging::get_many_trade_states_response
+    get_many_trade_states(const ::ores::trading::messaging::get_many_trade_states_request& request);
+    ::ores::trading::messaging::put_trade_state_response
+    put_trade_state(const ::ores::trading::messaging::put_trade_state_request& request);
+    ::ores::trading::messaging::put_many_trade_states_response
+    put_many_trade_states(const ::ores::trading::messaging::put_many_trade_states_request& request);
+    ::ores::trading::messaging::delete_trade_state_response
+    delete_trade_state(const ::ores::trading::messaging::delete_trade_state_request& request);
+    ::ores::trading::messaging::delete_many_trade_states_response delete_many_trade_states(
+        const ::ores::trading::messaging::delete_many_trade_states_request& request);
+    ::ores::trading::messaging::list_trade_state_versions_response list_trade_state_versions(
+        const ::ores::trading::messaging::list_trade_state_versions_request& request);
+    ::ores::trading::messaging::get_trade_state_version_response get_trade_state_version(
+        const ::ores::trading::messaging::get_trade_state_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +189,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::trade_state_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::trade_state& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::trade_state_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::trade_state& out);
 };
 
 }

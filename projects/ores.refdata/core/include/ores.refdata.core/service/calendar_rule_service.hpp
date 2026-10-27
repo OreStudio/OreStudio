@@ -75,26 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_calendar_rules_response
-    list_calendar_rules(const messaging::list_calendar_rules_request& request);
-    messaging::get_calendar_rule_response
-    get_calendar_rule(const messaging::get_calendar_rule_request& request);
-    messaging::get_many_calendar_rules_response
-    get_many_calendar_rules(const messaging::get_many_calendar_rules_request& request);
-    messaging::put_calendar_rule_response
-    put_calendar_rule(const messaging::put_calendar_rule_request& request);
-    messaging::put_many_calendar_rules_response
-    put_many_calendar_rules(const messaging::put_many_calendar_rules_request& request);
-    messaging::delete_calendar_rule_response
-    delete_calendar_rule(const messaging::delete_calendar_rule_request& request);
-    messaging::delete_many_calendar_rules_response
-    delete_many_calendar_rules(const messaging::delete_many_calendar_rules_request& request);
-    messaging::list_by_calendar_code_calendar_rules_response list_by_calendar_code_calendar_rules(
-        const messaging::list_by_calendar_code_calendar_rules_request& request);
-    messaging::list_calendar_rule_versions_response
-    list_calendar_rule_versions(const messaging::list_calendar_rule_versions_request& request);
-    messaging::get_calendar_rule_version_response
-    get_calendar_rule_version(const messaging::get_calendar_rule_version_request& request);
+    ::ores::refdata::messaging::list_calendar_rules_response
+    list_calendar_rules(const ::ores::refdata::messaging::list_calendar_rules_request& request);
+    ::ores::refdata::messaging::get_calendar_rule_response
+    get_calendar_rule(const ::ores::refdata::messaging::get_calendar_rule_request& request);
+    ::ores::refdata::messaging::get_many_calendar_rules_response get_many_calendar_rules(
+        const ::ores::refdata::messaging::get_many_calendar_rules_request& request);
+    ::ores::refdata::messaging::put_calendar_rule_response
+    put_calendar_rule(const ::ores::refdata::messaging::put_calendar_rule_request& request);
+    ::ores::refdata::messaging::put_many_calendar_rules_response put_many_calendar_rules(
+        const ::ores::refdata::messaging::put_many_calendar_rules_request& request);
+    ::ores::refdata::messaging::delete_calendar_rule_response
+    delete_calendar_rule(const ::ores::refdata::messaging::delete_calendar_rule_request& request);
+    ::ores::refdata::messaging::delete_many_calendar_rules_response delete_many_calendar_rules(
+        const ::ores::refdata::messaging::delete_many_calendar_rules_request& request);
+    ::ores::refdata::messaging::list_by_calendar_code_calendar_rules_response
+    list_by_calendar_code_calendar_rules(
+        const ::ores::refdata::messaging::list_by_calendar_code_calendar_rules_request& request);
+    ::ores::refdata::messaging::list_calendar_rule_versions_response list_calendar_rule_versions(
+        const ::ores::refdata::messaging::list_calendar_rule_versions_request& request);
+    ::ores::refdata::messaging::get_calendar_rule_version_response get_calendar_rule_version(
+        const ::ores::refdata::messaging::get_calendar_rule_version_request& request);
     /**@}*/
 
     /**
@@ -227,9 +228,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::calendar_rule_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::calendar_rule& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::calendar_rule_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::calendar_rule& out);
 };
 
 }

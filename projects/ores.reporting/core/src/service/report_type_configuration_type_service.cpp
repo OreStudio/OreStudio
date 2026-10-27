@@ -59,8 +59,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::report_type_configuration_type>
-read_one(repository::report_type_configuration_type_repository& repo,
-         const messaging::report_type_configuration_type_key& key) {
+report_type_configuration_type_read_one(repository::report_type_configuration_type_repository& repo,
+                                        const messaging::report_type_configuration_type_key& key) {
     return repo.read_latest(key.report_type_code, key.configuration_type_code);
 }
 
@@ -71,7 +71,7 @@ read_one(repository::report_type_configuration_type_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::report_type_configuration_type_key
-key_from(const domain::report_type_configuration_type& v) {
+report_type_configuration_type_key_from(const domain::report_type_configuration_type& v) {
     messaging::report_type_configuration_type_key key;
     key.report_type_code = v.report_type_code;
     key.configuration_type_code = v.configuration_type_code;
@@ -86,8 +86,8 @@ key_from(const domain::report_type_configuration_type& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::report_type_configuration_type
-to_domain(const messaging::report_type_configuration_type_write& write) {
+domain::report_type_configuration_type report_type_configuration_type_to_domain(
+    const messaging::report_type_configuration_type_write& write) {
     domain::report_type_configuration_type v;
     v.report_type_code = write.report_type_code;
     v.configuration_type_code = write.configuration_type_code;
@@ -147,7 +147,7 @@ messaging::get_report_type_configuration_type_response
 report_type_configuration_type_service::get_report_type_configuration_type(
     const messaging::get_report_type_configuration_type_request& request) {
     messaging::get_report_type_configuration_type_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = report_type_configuration_type_read_one(repo_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "report_type_configuration_type"});
@@ -168,7 +168,7 @@ report_type_configuration_type_service::get_many_report_type_configuration_types
     for (const auto& k : request.keys) {
         messaging::report_type_configuration_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = report_type_configuration_type_read_one(repo_, k);
         if (!found.empty())
             entry.report_type_configuration_type = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +185,8 @@ report_type_configuration_type_service::put_report_type_configuration_type(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = report_type_configuration_type_read_one(
+        repo_, report_type_configuration_type_key_from(value));
     if (!written.empty())
         response.report_type_configuration_type = std::move(written.front());
     return response;
@@ -218,7 +219,8 @@ report_type_configuration_type_service::put_many_report_type_configuration_types
     repo_.write(batch, claims);
     response.report_type_configuration_types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = report_type_configuration_type_read_one(
+            repo_, report_type_configuration_type_key_from(value));
         response.report_type_configuration_types.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -256,7 +258,7 @@ report_type_configuration_type_service::delete_report_type_configuration_type(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = report_type_configuration_type_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "report_type_configuration_type",
@@ -309,8 +311,9 @@ ores::utility::domain::result report_type_configuration_type_service::prepare_ch
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = report_type_configuration_type_to_domain(change.write);
+    const auto current = report_type_configuration_type_read_one(
+        repo_, report_type_configuration_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

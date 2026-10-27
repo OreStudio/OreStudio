@@ -39,7 +39,7 @@
 namespace ores::inbox::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.inbox.service";
+static constexpr std::string_view notification_recipient_queue_group = "ores.inbox.service";
 }
 
 std::vector<ores::nats::service::subscription> register_notification_recipient_handlers(
@@ -51,35 +51,35 @@ std::vector<ores::nats::service::subscription> register_notification_recipient_h
         std::make_shared<notification_recipient_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_notification_recipients_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->list_notification_recipients(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_notification_recipient_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->get_notification_recipient(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_notification_recipients_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->get_many_notification_recipients(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_notification_recipient_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->put_notification_recipient(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_notification_recipients_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->put_many_notification_recipients(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_notification_recipient_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->delete_notification_recipient(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_notification_recipients_request::nats_subject,
-        queue_group,
+        notification_recipient_queue_group,
         [h](ores::nats::message msg) { h->delete_many_notification_recipients(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_account_id_notification_recipients_request::nats_subject,
-                             queue_group,
+                             notification_recipient_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_account_id_notification_recipients(std::move(msg));
                              }));

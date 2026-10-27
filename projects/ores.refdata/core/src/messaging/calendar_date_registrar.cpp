@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view calendar_date_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,20 +49,20 @@ register_calendar_date_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<calendar_date_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_calendar_dates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_calendar_dates(std::move(msg));
-        }));
+        list_calendar_dates_request::nats_subject,
+        calendar_date_queue_group,
+        [h](ores::nats::message msg) { h->list_calendar_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_calendar_date_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_calendar_date(std::move(msg));
-        }));
+        get_calendar_date_request::nats_subject,
+        calendar_date_queue_group,
+        [h](ores::nats::message msg) { h->get_calendar_date(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_calendar_dates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_calendar_dates(std::move(msg));
-        }));
+        get_many_calendar_dates_request::nats_subject,
+        calendar_date_queue_group,
+        [h](ores::nats::message msg) { h->get_many_calendar_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_calendar_code_calendar_dates_request::nats_subject,
-        queue_group,
+        calendar_date_queue_group,
         [h](ores::nats::message msg) { h->list_by_calendar_code_calendar_dates(std::move(msg)); }));
     return subs;
 }

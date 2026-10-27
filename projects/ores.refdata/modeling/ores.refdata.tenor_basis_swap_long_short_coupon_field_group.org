@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: bc23b13d-64c5-42f1-beb0-e30318112053
+:END:
+#+title: ores.refdata.tenor_basis_swap_long_short_coupon
+#+description: Codegen field-group model for ores::refdata::domain::tenor_basis_swap_long_short_coupon.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: tenor_basis_swap_long_short_coupon
+#+namespace: ores::refdata::domain
+#+brief: The coupon treatment of the long and short form of a tenor basis swap.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+Whether the spread is included and which sub-period convention applies. ORE
+writes these beside the legs of both forms, so each form declares them rather
+than the shared central row.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** include_spread
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+Whether the spread is included in the coupon at all.
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The sub-periods coupon convention ORE applies, as its own code.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

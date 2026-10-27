@@ -33,6 +33,7 @@
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -40,9 +41,6 @@
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.repository.rate_instrument.cascade.tests");
-const std::string tags("[repository][rate_instrument]");
 
 using ores::testing::database_helper;
 using ores::trading::domain::fra_instrument;
@@ -114,7 +112,7 @@ swap_leg make_leg(database_helper& h,
 
 }
 
-TEST_CASE("rate_instrument_delete_closes_the_whole_family", tags) {
+TEST_CASE("rate_instrument_delete_closes_the_whole_family", "[repository][rate_instrument]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -181,7 +179,8 @@ TEST_CASE("rate_instrument_delete_closes_the_whole_family", tags) {
     CHECK(anchor.size() == 1);
 }
 
-TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold", tags) {
+TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold",
+          "[repository][rate_instrument]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

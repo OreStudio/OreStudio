@@ -57,8 +57,9 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::calendar_date> read_one(repository::calendar_date_repository& repo,
-                                            const messaging::calendar_date_key& key) {
+std::vector<domain::calendar_date>
+calendar_date_read_one(repository::calendar_date_repository& repo,
+                       const messaging::calendar_date_key& key) {
     return repo.read_latest(key.calendar_code, key.date);
 }
 
@@ -107,7 +108,7 @@ calendar_date_service::list_by_calendar_code_calendar_dates(
 messaging::get_calendar_date_response
 calendar_date_service::get_calendar_date(const messaging::get_calendar_date_request& request) {
     messaging::get_calendar_date_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = calendar_date_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "calendar_date"});
         return response;
@@ -126,7 +127,7 @@ messaging::get_many_calendar_dates_response calendar_date_service::get_many_cale
     for (const auto& k : request.keys) {
         messaging::calendar_date_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = calendar_date_read_one(repo_, k);
         if (!found.empty())
             entry.calendar_date = std::move(found.front());
         response.entries.push_back(std::move(entry));

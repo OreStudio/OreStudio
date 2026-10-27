@@ -21,18 +21,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-namespace {
-
-const std::string tags("[domain][tick_subjects]");
-
-}
-
-TEST_CASE("a_producer_publishes_on_its_source_subject", tags) {
+TEST_CASE("a_producer_publishes_on_its_source_subject", "[domain][tick_subjects]") {
     CHECK(ores::marketdata::domain::synthetic_tick_subject_for("usd.sofr") ==
           "synthetic.v1.ops.tick.usd.sofr");
 }
 
-TEST_CASE("a_subject_token_holds_only_what_a_subject_may", tags) {
+TEST_CASE("a_subject_token_holds_only_what_a_subject_may", "[domain][tick_subjects]") {
     const std::string uri =
         "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD *>. \t";
     const auto token = ores::marketdata::domain::subject_token(uri);
@@ -47,7 +41,7 @@ TEST_CASE("a_subject_token_holds_only_what_a_subject_may", tags) {
     CHECK(token.find('>') == std::string::npos);
 }
 
-TEST_CASE("a_subject_token_gives_its_text_back", tags) {
+TEST_CASE("a_subject_token_gives_its_text_back", "[domain][tick_subjects]") {
     using ores::marketdata::domain::subject_token;
     using ores::marketdata::domain::subject_token_text;
     for (const auto& text : {std::string(""),
@@ -61,7 +55,7 @@ TEST_CASE("a_subject_token_gives_its_text_back", tags) {
     }
 }
 
-TEST_CASE("a_subject_token_refuses_text_it_could_not_have_made", tags) {
+TEST_CASE("a_subject_token_refuses_text_it_could_not_have_made", "[domain][tick_subjects]") {
     using ores::marketdata::domain::subject_token_text;
     CHECK_FALSE(subject_token_text("a.b").has_value());
     CHECK_FALSE(subject_token_text("%").has_value());
@@ -73,13 +67,13 @@ TEST_CASE("a_subject_token_refuses_text_it_could_not_have_made", tags) {
     CHECK_FALSE(subject_token_text("a%5Fb").has_value());
 }
 
-TEST_CASE("different_data_never_share_a_token", tags) {
+TEST_CASE("different_data_never_share_a_token", "[domain][tick_subjects]") {
     using ores::marketdata::domain::subject_token;
     CHECK(subject_token("a.b") != subject_token("a%2Eb"));
     CHECK(subject_token("a%b") != subject_token("a b"));
 }
 
-TEST_CASE("a_consumer_reads_a_datum_under_its_encoded_oresmd_uri", tags) {
+TEST_CASE("a_consumer_reads_a_datum_under_its_encoded_oresmd_uri", "[domain][tick_subjects]") {
     const std::string uri = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
     const auto subject = ores::marketdata::domain::market_tick_subject("t", "p", uri);
     CHECK(subject.starts_with(std::string(ores::marketdata::messaging::market_tick::nats_subject) +
@@ -88,7 +82,7 @@ TEST_CASE("a_consumer_reads_a_datum_under_its_encoded_oresmd_uri", tags) {
     CHECK(subject.find('/') == std::string::npos);
 }
 
-TEST_CASE("a_party_reads_all_its_data_under_one_wildcard", tags) {
+TEST_CASE("a_party_reads_all_its_data_under_one_wildcard", "[domain][tick_subjects]") {
     CHECK(ores::marketdata::domain::market_tick_subject_all("t", "p") ==
           std::string(ores::marketdata::messaging::market_tick::nats_subject) + ".t.p.>");
 }

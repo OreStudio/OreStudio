@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::intraday_power_curve_config>
-read_one(repository::intraday_power_curve_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::intraday_power_curve_config_key& key) {
+intraday_power_curve_config_read_one(repository::intraday_power_curve_config_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::intraday_power_curve_config_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::intraday_power_curve_config_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::intraday_power_curve_config_key key_from(const domain::intraday_power_curve_config& v) {
+messaging::intraday_power_curve_config_key
+intraday_power_curve_config_key_from(const domain::intraday_power_curve_config& v) {
     messaging::intraday_power_curve_config_key key;
     key.id = v.id;
     return key;
@@ -100,7 +101,7 @@ messaging::intraday_power_curve_config_key key_from(const domain::intraday_power
  * database's to state, and are set after this conversion.
  */
 domain::intraday_power_curve_config
-to_domain(const messaging::intraday_power_curve_config_write& write) {
+intraday_power_curve_config_to_domain(const messaging::intraday_power_curve_config_write& write) {
     domain::intraday_power_curve_config v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -151,7 +152,7 @@ messaging::get_intraday_power_curve_config_response
 intraday_power_curve_config_service::get_intraday_power_curve_config(
     const messaging::get_intraday_power_curve_config_request& request) {
     messaging::get_intraday_power_curve_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = intraday_power_curve_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "intraday_power_curve_config"});
@@ -172,7 +173,7 @@ intraday_power_curve_config_service::get_many_intraday_power_curve_configs(
     for (const auto& k : request.keys) {
         messaging::intraday_power_curve_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = intraday_power_curve_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.intraday_power_curve_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -189,7 +190,8 @@ intraday_power_curve_config_service::put_intraday_power_curve_config(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = intraday_power_curve_config_read_one(
+        repo_, ctx_, intraday_power_curve_config_key_from(value));
     if (!written.empty())
         response.intraday_power_curve_config = std::move(written.front());
     return response;
@@ -222,7 +224,8 @@ intraday_power_curve_config_service::put_many_intraday_power_curve_configs(
     repo_.write(ctx_, batch, claims);
     response.intraday_power_curve_configs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = intraday_power_curve_config_read_one(
+            repo_, ctx_, intraday_power_curve_config_key_from(value));
         response.intraday_power_curve_configs.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -258,7 +261,8 @@ intraday_power_curve_config_service::delete_intraday_power_curve_config(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                intraday_power_curve_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "intraday_power_curve_config",
@@ -351,8 +355,9 @@ ores::utility::domain::result intraday_power_curve_config_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = intraday_power_curve_config_to_domain(change.write);
+    const auto current = intraday_power_curve_config_read_one(
+        repo_, ctx_, intraday_power_curve_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

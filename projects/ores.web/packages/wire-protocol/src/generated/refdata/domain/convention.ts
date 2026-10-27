@@ -22,6 +22,10 @@
  * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { ConventionIdentity } from './convention_identity.js';
+import type { ConventionPayload } from './convention_payload.js';
+import type { AuditRecord } from '../../dq/domain/audit_record.js';
+
 /**
  * The convention wire shape.
  *
@@ -31,16 +35,7 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface Convention {
-    version: number;
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    kind_code: string;
-    name: string;
-    oresmd_uri: string | null;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+    identity: ConventionIdentity;
+    payload: ConventionPayload;
+    audit: AuditRecord;
 }

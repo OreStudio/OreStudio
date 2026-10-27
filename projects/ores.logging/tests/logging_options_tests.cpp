@@ -19,15 +19,13 @@
  */
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
 #include <string_view>
 
 namespace {
-
-const std::string_view test_suite("ores.logging.tests");
-const std::string tags("[logging]");
 
 ores::logging::logging_options make_populated_options() {
     ores::logging::logging_options r;
@@ -49,7 +47,7 @@ std::string stream_to_string(const ores::logging::logging_options& v) {
 
 }
 
-TEST_CASE("logging_options_stream_renders_every_field_name", tags) {
+TEST_CASE("logging_options_stream_renders_every_field_name", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::string json(stream_to_string(make_populated_options()));
@@ -64,7 +62,7 @@ TEST_CASE("logging_options_stream_renders_every_field_name", tags) {
     CHECK(json.contains("\"tag\""));
 }
 
-TEST_CASE("logging_options_stream_renders_populated_field_values", tags) {
+TEST_CASE("logging_options_stream_renders_populated_field_values", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::string json(stream_to_string(make_populated_options()));

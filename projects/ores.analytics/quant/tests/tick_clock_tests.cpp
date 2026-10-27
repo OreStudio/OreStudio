@@ -30,8 +30,6 @@
 
 namespace {
 
-const std::string tags("[tick_clock]");
-
 /// A process with a scripted gap, to prove the clock asks each time.
 class scripted_arrival_process final : public ores::analytics::quant::domain::i_arrival_process {
 public:
@@ -68,7 +66,7 @@ using ores::analytics::quant::domain::shared_intensity;
 using ores::analytics::quant::service::periodic_arrival_process;
 using ores::analytics::quant::service::tick_clock;
 
-TEST_CASE("tick_clock runs the body once per gap and counts every batch", tags) {
+TEST_CASE("tick_clock runs the body once per gap and counts every batch", "[tick_clock]") {
     // One tick per millisecond, so a three-tick case is fast but still
     // exercises the real gap and sleep path.
     periodic_arrival_process arrivals(1000.0);
@@ -96,7 +94,7 @@ TEST_CASE("tick_clock runs the body once per gap and counts every batch", tags) 
     CHECK(summaries == std::vector<std::string>{"tick1", "tick2", "tick3"});
 }
 
-TEST_CASE("tick_clock asks the arrival process for every gap", tags) {
+TEST_CASE("tick_clock asks the arrival process for every gap", "[tick_clock]") {
     scripted_arrival_process arrivals(0.001);
     tick_clock clock(arrivals);
     int calls = 0;
@@ -114,7 +112,7 @@ TEST_CASE("tick_clock asks the arrival process for every gap", tags) {
     CHECK(arrivals.calls() == 3);
 }
 
-TEST_CASE("tick_clock skips a throwing tick and keeps counting from the next one", tags) {
+TEST_CASE("tick_clock skips a throwing tick and keeps counting from the next one", "[tick_clock]") {
     periodic_arrival_process arrivals(1000.0);
     tick_clock clock(arrivals);
     std::vector<std::uint64_t> counts;
@@ -139,7 +137,7 @@ TEST_CASE("tick_clock skips a throwing tick and keeps counting from the next one
     CHECK(failures == std::vector<std::string>{"first tick failed"});
 }
 
-TEST_CASE("tick_clock stopped before run emits nothing", tags) {
+TEST_CASE("tick_clock stopped before run emits nothing", "[tick_clock]") {
     periodic_arrival_process arrivals(1000.0);
     tick_clock clock(arrivals);
     clock.stop();
@@ -157,7 +155,7 @@ TEST_CASE("tick_clock stopped before run emits nothing", tags) {
     CHECK(clock.publish_count() == 0);
 }
 
-TEST_CASE("tick_clock hands the body the gap it waited", tags) {
+TEST_CASE("tick_clock hands the body the gap it waited", "[tick_clock]") {
     // One tick per millisecond, so the gap the body sees is a millisecond in
     // seconds. A producer needs it to step a value process by elapsed time.
     periodic_arrival_process arrivals(1000.0);
@@ -176,13 +174,16 @@ TEST_CASE("tick_clock hands the body the gap it waited", tags) {
         [](std::uint64_t, const std::string&) {},
         [](const std::exception&) {});
 
+    // A periodic stream starts part way into its first gap, at a phase it draws,
+    // and is exactly periodic after it.
     REQUIRE(gaps.size() == 3);
-    for (const double gap : gaps)
-        CHECK(gap == Catch::Approx(0.001).epsilon(1e-12));
+    CHECK(gaps[0] == Catch::Approx(0.001 * arrivals.phase()).epsilon(1e-12));
+    CHECK(gaps[1] == Catch::Approx(0.001).epsilon(1e-12));
+    CHECK(gaps[2] == Catch::Approx(0.001).epsilon(1e-12));
 }
 
 TEST_CASE("tick_clock scales the arrival rate by the market state and the row's sensitivity",
-          tags) {
+          "[tick_clock]") {
     // An active market is at two, and this row follows the market twice as hard
     // as the average, so every gap is drawn at four times the rate.
     market_regime market;
@@ -212,7 +213,7 @@ TEST_CASE("tick_clock scales the arrival rate by the market state and the row's 
     CHECK(arrivals.multipliers().front() == Catch::Approx(4.0));
 }
 
-TEST_CASE("tick_clock leaves the rate alone with no market", tags) {
+TEST_CASE("tick_clock leaves the rate alone with no market", "[tick_clock]") {
     scripted_arrival_process arrivals(0.001);
     tick_clock clock(arrivals);
     int calls = 0;
@@ -230,7 +231,7 @@ TEST_CASE("tick_clock leaves the rate alone with no market", tags) {
     CHECK(arrivals.multipliers().empty());
 }
 
-TEST_CASE("tick_clock reads the shared intensity into the rate", tags) {
+TEST_CASE("tick_clock reads the shared intensity into the rate", "[tick_clock]") {
     // The intensity adds heat on top of the market: one series enrolled at ten a
     // second and heat of ten is a multiplier of two, and a row that follows the
     // market twice as hard draws at four times its rate.

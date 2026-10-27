@@ -72,9 +72,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::trade_identifier> read_one(repository::trade_identifier_repository& repo,
-                                               const ores::database::context& ctx,
-                                               const messaging::trade_identifier_key& key) {
+std::vector<domain::trade_identifier>
+trade_identifier_read_one(repository::trade_identifier_repository& repo,
+                          const ores::database::context& ctx,
+                          const messaging::trade_identifier_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id), key.id_type);
 }
 
@@ -84,7 +85,7 @@ std::vector<domain::trade_identifier> read_one(repository::trade_identifier_repo
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::trade_identifier_key key_from(const domain::trade_identifier& v) {
+messaging::trade_identifier_key trade_identifier_key_from(const domain::trade_identifier& v) {
     messaging::trade_identifier_key key;
     key.trade_id = v.trade_id;
     key.id_type = v.id_type;
@@ -98,7 +99,8 @@ messaging::trade_identifier_key key_from(const domain::trade_identifier& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::trade_identifier to_domain(const messaging::trade_identifier_write& write) {
+domain::trade_identifier
+trade_identifier_to_domain(const messaging::trade_identifier_write& write) {
     domain::trade_identifier v;
     v.trade_id = write.trade_id;
     v.id_type = write.id_type;
@@ -174,7 +176,7 @@ trade_identifier_service::list_by_trade_id_trade_identifiers(
 messaging::get_trade_identifier_response trade_identifier_service::get_trade_identifier(
     const messaging::get_trade_identifier_request& request) {
     messaging::get_trade_identifier_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = trade_identifier_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "trade_identifier"});
         return response;
@@ -193,7 +195,7 @@ messaging::get_many_trade_identifiers_response trade_identifier_service::get_man
     for (const auto& k : request.keys) {
         messaging::trade_identifier_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = trade_identifier_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.trade_identifier = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -209,7 +211,7 @@ messaging::put_trade_identifier_response trade_identifier_service::put_trade_ide
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = trade_identifier_read_one(repo_, ctx_, trade_identifier_key_from(value));
     if (!written.empty())
         response.trade_identifier = std::move(written.front());
     return response;
@@ -241,7 +243,7 @@ messaging::put_many_trade_identifiers_response trade_identifier_service::put_man
     repo_.write(ctx_, batch, claims);
     response.identifiers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = trade_identifier_read_one(repo_, ctx_, trade_identifier_key_from(value));
         response.identifiers.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -277,7 +279,7 @@ messaging::delete_trade_identifier_response trade_identifier_service::delete_tra
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = trade_identifier_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "trade_identifier",
@@ -374,8 +376,8 @@ trade_identifier_service::prepare_change(const messaging::trade_identifier_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = trade_identifier_to_domain(change.write);
+    const auto current = trade_identifier_read_one(repo_, ctx_, trade_identifier_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -39,7 +39,8 @@
 namespace ores::marketdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.marketdata.service";
+static constexpr std::string_view market_data_vendor_instrument_queue_group =
+    "ores.marketdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_market_data_vendor_instrument_handlers(
@@ -51,47 +52,47 @@ std::vector<ores::nats::service::subscription> register_market_data_vendor_instr
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_market_data_vendor_instruments_request::nats_subject,
-        queue_group,
+        market_data_vendor_instrument_queue_group,
         [h](ores::nats::message msg) { h->list_market_data_vendor_instruments(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_market_data_vendor_instrument_request::nats_subject,
-        queue_group,
+        market_data_vendor_instrument_queue_group,
         [h](ores::nats::message msg) { h->get_market_data_vendor_instrument(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_market_data_vendor_instruments_request::nats_subject,
-                             queue_group,
+                             market_data_vendor_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_market_data_vendor_instruments(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_market_data_vendor_instrument_request::nats_subject,
-        queue_group,
+        market_data_vendor_instrument_queue_group,
         [h](ores::nats::message msg) { h->put_market_data_vendor_instrument(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_market_data_vendor_instruments_request::nats_subject,
-                             queue_group,
+                             market_data_vendor_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_market_data_vendor_instruments(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_market_data_vendor_instrument_request::nats_subject,
-        queue_group,
+        market_data_vendor_instrument_queue_group,
         [h](ores::nats::message msg) { h->delete_market_data_vendor_instrument(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_market_data_vendor_instruments_request::nats_subject,
-                             queue_group,
+                             market_data_vendor_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_market_data_vendor_instruments(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_market_data_vendor_instrument_versions_request::nats_subject,
-                             queue_group,
+                             market_data_vendor_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_market_data_vendor_instrument_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_market_data_vendor_instrument_version_request::nats_subject,
-                             queue_group,
+                             market_data_vendor_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_market_data_vendor_instrument_version(std::move(msg));
                              }));

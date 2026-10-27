@@ -116,7 +116,9 @@ market data, permissions and authorisation model are documented.
   the seed profile, the permission matrix and the approval model, with three
   UML flows and the site index updated.
 
-Open, recorded in the approval note: a part decider reads an empty queue because
-the queue filters by kind; no policy emits the controller part; no market-data
-approval kind exists; the journeys do not say which party's Market Risk decides
-a tenant-wide change; and a hold has no reason lookup.
+Open, recorded in the approval note: no policy emits the controller part; no
+market-data approval kind exists; the journeys do not say which party's Market
+Risk decides a tenant-wide change; and a hold has no reason lookup.
+
+Fixed after the task closed: the part decider's queue now lists the requests
+whose parts the caller may answer, in answer order (PR 3903).

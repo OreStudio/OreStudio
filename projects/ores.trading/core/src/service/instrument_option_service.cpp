@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::instrument_option> read_one(repository::instrument_option_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::instrument_option_key& key) {
+std::vector<domain::instrument_option>
+instrument_option_read_one(repository::instrument_option_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::instrument_option_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::instrument_option> read_one(repository::instrument_option_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::instrument_option_key key_from(const domain::instrument_option& v) {
+messaging::instrument_option_key instrument_option_key_from(const domain::instrument_option& v) {
     messaging::instrument_option_key key;
     key.trade_id = v.trade_id;
     return key;
@@ -98,7 +99,8 @@ messaging::instrument_option_key key_from(const domain::instrument_option& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::instrument_option to_domain(const messaging::instrument_option_write& write) {
+domain::instrument_option
+instrument_option_to_domain(const messaging::instrument_option_write& write) {
     domain::instrument_option v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
@@ -174,7 +176,7 @@ messaging::list_instrument_options_response instrument_option_service::list_inst
 messaging::get_instrument_option_response instrument_option_service::get_instrument_option(
     const messaging::get_instrument_option_request& request) {
     messaging::get_instrument_option_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = instrument_option_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "instrument_option"});
         return response;
@@ -194,7 +196,7 @@ instrument_option_service::get_many_instrument_options(
     for (const auto& k : request.keys) {
         messaging::instrument_option_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = instrument_option_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.instrument_option = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -210,7 +212,7 @@ messaging::put_instrument_option_response instrument_option_service::put_instrum
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = instrument_option_read_one(repo_, ctx_, instrument_option_key_from(value));
     if (!written.empty())
         response.instrument_option = std::move(written.front());
     return response;
@@ -243,7 +245,7 @@ instrument_option_service::put_many_instrument_options(
     repo_.write(ctx_, batch, claims);
     response.instrument_options.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = instrument_option_read_one(repo_, ctx_, instrument_option_key_from(value));
         response.instrument_options.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -276,7 +278,7 @@ messaging::delete_instrument_option_response instrument_option_service::delete_i
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = instrument_option_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "instrument_option",
@@ -365,8 +367,8 @@ instrument_option_service::prepare_change(const messaging::instrument_option_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = instrument_option_to_domain(change.write);
+    const auto current = instrument_option_read_one(repo_, ctx_, instrument_option_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

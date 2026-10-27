@@ -76,29 +76,33 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_coding_scheme_authority_types_response list_coding_scheme_authority_types(
-        const messaging::list_coding_scheme_authority_types_request& request);
-    messaging::get_coding_scheme_authority_type_response get_coding_scheme_authority_type(
-        const messaging::get_coding_scheme_authority_type_request& request);
-    messaging::get_many_coding_scheme_authority_types_response
+    ::ores::dq::messaging::list_coding_scheme_authority_types_response
+    list_coding_scheme_authority_types(
+        const ::ores::dq::messaging::list_coding_scheme_authority_types_request& request);
+    ::ores::dq::messaging::get_coding_scheme_authority_type_response
+    get_coding_scheme_authority_type(
+        const ::ores::dq::messaging::get_coding_scheme_authority_type_request& request);
+    ::ores::dq::messaging::get_many_coding_scheme_authority_types_response
     get_many_coding_scheme_authority_types(
-        const messaging::get_many_coding_scheme_authority_types_request& request);
-    messaging::put_coding_scheme_authority_type_response put_coding_scheme_authority_type(
-        const messaging::put_coding_scheme_authority_type_request& request);
-    messaging::put_many_coding_scheme_authority_types_response
+        const ::ores::dq::messaging::get_many_coding_scheme_authority_types_request& request);
+    ::ores::dq::messaging::put_coding_scheme_authority_type_response
+    put_coding_scheme_authority_type(
+        const ::ores::dq::messaging::put_coding_scheme_authority_type_request& request);
+    ::ores::dq::messaging::put_many_coding_scheme_authority_types_response
     put_many_coding_scheme_authority_types(
-        const messaging::put_many_coding_scheme_authority_types_request& request);
-    messaging::delete_coding_scheme_authority_type_response delete_coding_scheme_authority_type(
-        const messaging::delete_coding_scheme_authority_type_request& request);
-    messaging::delete_many_coding_scheme_authority_types_response
+        const ::ores::dq::messaging::put_many_coding_scheme_authority_types_request& request);
+    ::ores::dq::messaging::delete_coding_scheme_authority_type_response
+    delete_coding_scheme_authority_type(
+        const ::ores::dq::messaging::delete_coding_scheme_authority_type_request& request);
+    ::ores::dq::messaging::delete_many_coding_scheme_authority_types_response
     delete_many_coding_scheme_authority_types(
-        const messaging::delete_many_coding_scheme_authority_types_request& request);
-    messaging::list_coding_scheme_authority_type_versions_response
+        const ::ores::dq::messaging::delete_many_coding_scheme_authority_types_request& request);
+    ::ores::dq::messaging::list_coding_scheme_authority_type_versions_response
     list_coding_scheme_authority_type_versions(
-        const messaging::list_coding_scheme_authority_type_versions_request& request);
-    messaging::get_coding_scheme_authority_type_version_response
+        const ::ores::dq::messaging::list_coding_scheme_authority_type_versions_request& request);
+    ::ores::dq::messaging::get_coding_scheme_authority_type_version_response
     get_coding_scheme_authority_type_version(
-        const messaging::get_coding_scheme_authority_type_version_request& request);
+        const ::ores::dq::messaging::get_coding_scheme_authority_type_version_request& request);
     /**@}*/
 
     /**
@@ -197,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::coding_scheme_authority_type_change& change,
+    prepare_change(const ::ores::dq::messaging::coding_scheme_authority_type_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::coding_scheme_authority_type& out);
 };

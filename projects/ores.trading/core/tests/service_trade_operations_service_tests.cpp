@@ -65,8 +65,6 @@
 
 namespace {
 
-const std::string tags("[service]");
-
 using ores::trading::messaging::book_trade_request;
 using ores::trading::messaging::put_bond_issue_composite_request;
 using ores::trading::service::book_status_port;
@@ -235,7 +233,7 @@ struct fixture final {
 
 }
 
-TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
+TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", "[service]") {
     fixture f;
     auto req = f.request();
     const auto executed_at =
@@ -260,7 +258,7 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     CHECK(states.front().trade_activity_id == *response.activity_id);
 }
 
-TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", tags) {
+TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", "[service]") {
     fixture f;
     const stated_book_status frozen{book_status_port::state::not_open};
     auto request = f.request();
@@ -269,7 +267,7 @@ TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", tags) {
     CHECK(response.result.code == "book_not_open");
 }
 
-TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", tags) {
+TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", "[service]") {
     fixture f;
     const auto req = f.request();
     REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req, {}).result.outcome ==
@@ -285,7 +283,7 @@ TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", tags) {
     CHECK(bookings.front().version == 1);
 }
 
-TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
+TEST_CASE("a_booking_that_fails_writes_no_anchor", "[service]") {
     fixture f;
     auto req = f.request();
     req.booking.book_id = f.gen.generate_uuid();
@@ -297,7 +295,7 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
               .empty());
 }
 
-TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {
+TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", "[service]") {
     fixture f;
     const auto req = f.issue_request();
 
@@ -310,7 +308,7 @@ TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {
               .size() == 1);
 }
 
-TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", tags) {
+TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", "[service]") {
     fixture f;
     const auto req = f.issue_request();
     REQUIRE(trade_operations_service(f.ctx, every_book_open)
@@ -324,7 +322,7 @@ TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", tags) {
     CHECK(response.result.code == "already_exists");
 }
 
-TEST_CASE("a_second_write_with_other_terms_is_content_differs", tags) {
+TEST_CASE("a_second_write_with_other_terms_is_content_differs", "[service]") {
     fixture f;
     auto req = f.issue_request();
     REQUIRE(trade_operations_service(f.ctx, every_book_open)
@@ -343,7 +341,7 @@ TEST_CASE("a_second_write_with_other_terms_is_content_differs", tags) {
     CHECK(stored.front().issuer != req.issue.issuer);
 }
 
-TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
+TEST_CASE("a_refused_child_write_leaves_no_issue", "[service]") {
     fixture f;
     auto req = f.issue_request();
     req.amounts.front().sequence_number = 0;
@@ -355,7 +353,7 @@ TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
               .empty());
 }
 
-TEST_CASE("a_second_write_of_an_issue_with_every_child_type_is_already_exists", tags) {
+TEST_CASE("a_second_write_of_an_issue_with_every_child_type_is_already_exists", "[service]") {
     fixture f;
     const auto req = f.full_issue_request();
     REQUIRE(trade_operations_service(f.ctx, every_book_open)
@@ -369,7 +367,7 @@ TEST_CASE("a_second_write_of_an_issue_with_every_child_type_is_already_exists", 
     CHECK(response.result.code == "already_exists");
 }
 
-TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
+TEST_CASE("a_change_in_any_optional_child_is_content_differs", "[service]") {
     const auto change = GENERATE(0, 1, 2, 3);
     fixture f;
     auto req = f.full_issue_request();
@@ -399,7 +397,7 @@ TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
     CHECK(response.result.code == "content_differs");
 }
 
-TEST_CASE("a_write_with_a_child_less_than_the_stored_issue_is_content_differs", tags) {
+TEST_CASE("a_write_with_a_child_less_than_the_stored_issue_is_content_differs", "[service]") {
     fixture f;
     auto req = f.full_issue_request();
     REQUIRE(trade_operations_service(f.ctx, every_book_open)
@@ -433,7 +431,7 @@ requests_for(const ores::database::context& ctx, const boost::uuids::uuid& trade
 
 }
 
-TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", tags) {
+TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
@@ -446,7 +444,7 @@ TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", tags) 
     CHECK(raised.front().trade_version >= 1);
 }
 
-TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
+TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
@@ -457,7 +455,8 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
     CHECK(requests_for(f.ctx, req.anchor.id).empty());
 }
 
-TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting_request", tags) {
+TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting_request",
+          "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
@@ -474,7 +473,7 @@ TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting
     CHECK(rows.front().authorisation_status == "waiting");
 }
 
-TEST_CASE("the_summary_of_a_booked_test_trade_needs_no_authorisation", tags) {
+TEST_CASE("the_summary_of_a_booked_test_trade_needs_no_authorisation", "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
@@ -488,7 +487,7 @@ TEST_CASE("the_summary_of_a_booked_test_trade_needs_no_authorisation", tags) {
     CHECK(rows.front().authorisation_status == "not_required");
 }
 
-TEST_CASE("a_bond_trade_is_booked_with_its_identifier_and_instrument", tags) {
+TEST_CASE("a_bond_trade_is_booked_with_its_identifier_and_instrument", "[service]") {
     fixture f;
     const auto issue_id = f.stored_issue();
     const auto req = f.bond_request(issue_id);
@@ -511,7 +510,7 @@ TEST_CASE("a_bond_trade_is_booked_with_its_identifier_and_instrument", tags) {
     CHECK(instruments.front().issue_id == issue_id);
 }
 
-TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", tags) {
+TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", "[service]") {
     fixture f;
     const auto req = f.bond_request(f.gen.generate_uuid());
 
@@ -524,7 +523,7 @@ TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", tags) {
               .empty());
 }
 
-TEST_CASE("an_array_the_trade_type_does_not_hold_is_refused_by_name", tags) {
+TEST_CASE("an_array_the_trade_type_does_not_hold_is_refused_by_name", "[service]") {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.instruments.fx_forward_instruments.emplace_back();
@@ -539,7 +538,7 @@ TEST_CASE("an_array_the_trade_type_does_not_hold_is_refused_by_name", tags) {
               .empty());
 }
 
-TEST_CASE("an_fx_forward_trade_is_booked_with_its_instrument", tags) {
+TEST_CASE("an_fx_forward_trade_is_booked_with_its_instrument", "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.trade_type = "FxForward";
@@ -557,7 +556,7 @@ TEST_CASE("an_fx_forward_trade_is_booked_with_its_instrument", tags) {
     CHECK(stored.front().identity.trade_activity_id == *response.activity_id);
 }
 
-TEST_CASE("a_swap_trade_is_booked_with_its_header_and_its_legs", tags) {
+TEST_CASE("a_swap_trade_is_booked_with_its_header_and_its_legs", "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.trade_type = "Swap";
@@ -581,7 +580,7 @@ TEST_CASE("a_swap_trade_is_booked_with_its_header_and_its_legs", tags) {
     CHECK(legs.front().identity.trade_id == req.anchor.id);
 }
 
-TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
+TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", "[service]") {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.instruments.bond_instruments.front().option.emplace();
@@ -593,7 +592,7 @@ TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
     CHECK(response.result.message.contains("bond_instruments"));
 }
 
-TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_member", tags) {
+TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_member", "[service]") {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.instruments.bond_instruments.front().option_data.emplace();
@@ -605,7 +604,7 @@ TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_mem
     CHECK(response.result.message.contains("bond_instruments.option_data"));
 }
 
-TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_name", tags) {
+TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_name", "[service]") {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.anchor.trade_type = "Swap";
@@ -620,7 +619,7 @@ TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_name", tags) {
               .empty());
 }
 
-TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
+TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
     fixture f;
     auto first = f.request();
     first.anchor.trade_type = "Swap";
@@ -665,7 +664,7 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
     CHECK(ores::trading::domain::find(again.rate_instruments, second.anchor.id) != nullptr);
 }
 
-TEST_CASE("a_child_array_with_no_header_is_refused_by_name", tags) {
+TEST_CASE("a_child_array_with_no_header_is_refused_by_name", "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.trade_type = "Swap";
@@ -682,7 +681,7 @@ TEST_CASE("a_child_array_with_no_header_is_refused_by_name", tags) {
               .empty());
 }
 
-TEST_CASE("every_array_the_trade_type_does_not_hold_is_named_once", tags) {
+TEST_CASE("every_array_the_trade_type_does_not_hold_is_named_once", "[service]") {
     fixture f;
     auto req = f.bond_request(f.stored_issue());
     req.instruments.fx_forward_instruments.emplace_back();

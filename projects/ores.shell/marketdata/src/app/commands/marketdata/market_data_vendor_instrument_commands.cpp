@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void market_data_vendor_instrument_read_token(T& target,
+                                              const std::string& raw,
+                                              const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void market_data_vendor_instrument_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -221,7 +223,7 @@ void market_data_vendor_instrument_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        market_data_vendor_instrument_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -269,7 +271,8 @@ void market_data_vendor_instrument_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.external_id, parsed->positionals[next++], "external_id");
+        market_data_vendor_instrument_read_token(
+            req.key.external_id, parsed->positionals[next++], "external_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -313,7 +316,8 @@ void market_data_vendor_instrument_commands::process_get_many(
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::market_data_vendor_instrument_key key;
-            read_token(key.external_id, parsed->positionals[i + 0], "external_id");
+            market_data_vendor_instrument_read_token(
+                key.external_id, parsed->positionals[i + 0], "external_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -359,12 +363,18 @@ void market_data_vendor_instrument_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
-        read_token(req.change.write.id_scheme, parsed->positionals[next++], "id_scheme");
-        read_token(req.change.write.external_id, parsed->positionals[next++], "external_id");
-        read_token(req.change.write.field, parsed->positionals[next++], "field");
-        read_token(req.change.write.minted, parsed->positionals[next++], "minted");
-        read_token(req.change.write.deviation_note, parsed->positionals[next++], "deviation_note");
+        market_data_vendor_instrument_read_token(
+            req.change.write.provider_code, parsed->positionals[next++], "provider_code");
+        market_data_vendor_instrument_read_token(
+            req.change.write.id_scheme, parsed->positionals[next++], "id_scheme");
+        market_data_vendor_instrument_read_token(
+            req.change.write.external_id, parsed->positionals[next++], "external_id");
+        market_data_vendor_instrument_read_token(
+            req.change.write.field, parsed->positionals[next++], "field");
+        market_data_vendor_instrument_read_token(
+            req.change.write.minted, parsed->positionals[next++], "minted");
+        market_data_vendor_instrument_read_token(
+            req.change.write.deviation_note, parsed->positionals[next++], "deviation_note");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -412,13 +422,20 @@ void market_data_vendor_instrument_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.provider_code, parsed->positionals[next++], "provider_code");
-        read_token(req.change.write.id_scheme, parsed->positionals[next++], "id_scheme");
-        read_token(req.change.write.external_id, parsed->positionals[next++], "external_id");
-        read_token(req.change.write.field, parsed->positionals[next++], "field");
-        read_token(req.change.write.minted, parsed->positionals[next++], "minted");
-        read_token(req.change.write.deviation_note, parsed->positionals[next++], "deviation_note");
+        market_data_vendor_instrument_read_token(
+            req.change.write.id, parsed->positionals[next++], "id");
+        market_data_vendor_instrument_read_token(
+            req.change.write.provider_code, parsed->positionals[next++], "provider_code");
+        market_data_vendor_instrument_read_token(
+            req.change.write.id_scheme, parsed->positionals[next++], "id_scheme");
+        market_data_vendor_instrument_read_token(
+            req.change.write.external_id, parsed->positionals[next++], "external_id");
+        market_data_vendor_instrument_read_token(
+            req.change.write.field, parsed->positionals[next++], "field");
+        market_data_vendor_instrument_read_token(
+            req.change.write.minted, parsed->positionals[next++], "minted");
+        market_data_vendor_instrument_read_token(
+            req.change.write.deviation_note, parsed->positionals[next++], "deviation_note");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -479,13 +496,20 @@ void market_data_vendor_instrument_commands::process_put_many(
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::market_data_vendor_instrument_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.provider_code, parsed->positionals[next++], "provider_code");
-            read_token(change.write.id_scheme, parsed->positionals[next++], "id_scheme");
-            read_token(change.write.external_id, parsed->positionals[next++], "external_id");
-            read_token(change.write.field, parsed->positionals[next++], "field");
-            read_token(change.write.minted, parsed->positionals[next++], "minted");
-            read_token(change.write.deviation_note, parsed->positionals[next++], "deviation_note");
+            market_data_vendor_instrument_read_token(
+                change.write.id, parsed->positionals[next++], "id");
+            market_data_vendor_instrument_read_token(
+                change.write.provider_code, parsed->positionals[next++], "provider_code");
+            market_data_vendor_instrument_read_token(
+                change.write.id_scheme, parsed->positionals[next++], "id_scheme");
+            market_data_vendor_instrument_read_token(
+                change.write.external_id, parsed->positionals[next++], "external_id");
+            market_data_vendor_instrument_read_token(
+                change.write.field, parsed->positionals[next++], "field");
+            market_data_vendor_instrument_read_token(
+                change.write.minted, parsed->positionals[next++], "minted");
+            market_data_vendor_instrument_read_token(
+                change.write.deviation_note, parsed->positionals[next++], "deviation_note");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -535,7 +559,8 @@ void market_data_vendor_instrument_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.external_id, parsed->positionals[next++], "external_id");
+        market_data_vendor_instrument_read_token(
+            req.removal.key.external_id, parsed->positionals[next++], "external_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -588,7 +613,8 @@ void market_data_vendor_instrument_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::market_data_vendor_instrument_key key;
-            read_token(key.external_id, parsed->positionals[i * 1 + 0], "external_id");
+            market_data_vendor_instrument_read_token(
+                key.external_id, parsed->positionals[i * 1 + 0], "external_id");
             req.removals.push_back(
                 messaging::market_data_vendor_instrument_removal{.key = std::move(key)});
         }
@@ -640,8 +666,9 @@ void market_data_vendor_instrument_commands::process_versions(
                       << std::endl;
             return;
         }
-        read_token(req.key.external_id, parsed->positionals[next++], "external_id");
-        apply_page(req, *parsed);
+        market_data_vendor_instrument_read_token(
+            req.key.external_id, parsed->positionals[next++], "external_id");
+        market_data_vendor_instrument_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -686,9 +713,9 @@ void market_data_vendor_instrument_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.market_data_vendor_instrument.external_id,
-                   parsed->positionals[next++],
-                   "external_id");
+        market_data_vendor_instrument_read_token(req.key.market_data_vendor_instrument.external_id,
+                                                 parsed->positionals[next++],
+                                                 "external_id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

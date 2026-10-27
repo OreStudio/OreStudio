@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+convention_kind_list_order(const ores::utility::domain::order& order,
+                           std::initializer_list<std::string> default_columns,
+                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!convention_kind_repository::is_sortable(order.field))
@@ -96,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::convention_kinds_filter>& filter) {
+convention_kind_filter_condition(const std::optional<messaging::convention_kinds_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -301,8 +302,8 @@ std::vector<domain::convention_kind> convention_kind_repository::read_latest(
     return execute_ordered_read_query<convention_kind_entity, domain::convention_kind>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        convention_kind_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), convention_kind_filter_condition(filter)),
         [](const auto& entities) { return convention_kind_mapper::map(entities); },
         lg(),
         "Reading latest convention kinds with pagination.");
@@ -321,7 +322,7 @@ std::uint32_t convention_kind_repository::get_total_kind_count(
     return execute_count_query<convention_kind_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), convention_kind_filter_condition(filter)),
         lg(),
         "Counting convention kinds");
 }

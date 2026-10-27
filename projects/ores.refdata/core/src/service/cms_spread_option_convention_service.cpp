@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::cms_spread_option_convention>
-read_one(repository::cms_spread_option_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::cms_spread_option_convention_key& key) {
+cms_spread_option_convention_read_one(repository::cms_spread_option_convention_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const messaging::cms_spread_option_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -83,7 +83,7 @@ read_one(repository::cms_spread_option_convention_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::cms_spread_option_convention_key
-key_from(const domain::cms_spread_option_convention& v) {
+cms_spread_option_convention_key_from(const domain::cms_spread_option_convention& v) {
     messaging::cms_spread_option_convention_key key;
     key.id = v.id;
     return key;
@@ -97,7 +97,7 @@ key_from(const domain::cms_spread_option_convention& v) {
  * database's to state, and are set after this conversion.
  */
 domain::cms_spread_option_convention
-to_domain(const messaging::cms_spread_option_convention_write& write) {
+cms_spread_option_convention_to_domain(const messaging::cms_spread_option_convention_write& write) {
     domain::cms_spread_option_convention v;
     v.id = write.id;
     v.forward_start = write.forward_start;
@@ -152,7 +152,7 @@ messaging::get_cms_spread_option_convention_response
 cms_spread_option_convention_service::get_cms_spread_option_convention(
     const messaging::get_cms_spread_option_convention_request& request) {
     messaging::get_cms_spread_option_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = cms_spread_option_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "cms_spread_option_convention"});
@@ -173,7 +173,7 @@ cms_spread_option_convention_service::get_many_cms_spread_option_conventions(
     for (const auto& k : request.keys) {
         messaging::cms_spread_option_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = cms_spread_option_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.cms_spread_option_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -190,7 +190,8 @@ cms_spread_option_convention_service::put_cms_spread_option_convention(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = cms_spread_option_convention_read_one(
+        repo_, ctx_, cms_spread_option_convention_key_from(value));
     if (!written.empty())
         response.cms_spread_option_convention = std::move(written.front());
     return response;
@@ -223,7 +224,8 @@ cms_spread_option_convention_service::put_many_cms_spread_option_conventions(
     repo_.write(ctx_, batch, claims);
     response.cms_spread_option_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = cms_spread_option_convention_read_one(
+            repo_, ctx_, cms_spread_option_convention_key_from(value));
         response.cms_spread_option_conventions.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -259,7 +261,8 @@ cms_spread_option_convention_service::delete_cms_spread_option_convention(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                cms_spread_option_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "cms_spread_option_convention",
@@ -350,8 +353,9 @@ ores::utility::domain::result cms_spread_option_convention_service::prepare_chan
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = cms_spread_option_convention_to_domain(change.write);
+    const auto current = cms_spread_option_convention_read_one(
+        repo_, ctx_, cms_spread_option_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

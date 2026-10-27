@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view default_curve_configuration_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_default_curve_configuration_handlers(
@@ -51,47 +51,47 @@ std::vector<ores::nats::service::subscription> register_default_curve_configurat
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_default_curve_configurations_request::nats_subject,
-        queue_group,
+        default_curve_configuration_queue_group,
         [h](ores::nats::message msg) { h->list_default_curve_configurations(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_default_curve_configuration_request::nats_subject,
-        queue_group,
+        default_curve_configuration_queue_group,
         [h](ores::nats::message msg) { h->get_default_curve_configuration(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_default_curve_configurations_request::nats_subject,
-                                        queue_group,
+                                        default_curve_configuration_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_default_curve_configurations(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_default_curve_configuration_request::nats_subject,
-        queue_group,
+        default_curve_configuration_queue_group,
         [h](ores::nats::message msg) { h->put_default_curve_configuration(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_default_curve_configurations_request::nats_subject,
-                                        queue_group,
+                                        default_curve_configuration_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_default_curve_configurations(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         delete_default_curve_configuration_request::nats_subject,
-        queue_group,
+        default_curve_configuration_queue_group,
         [h](ores::nats::message msg) { h->delete_default_curve_configuration(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_default_curve_configurations_request::nats_subject,
-                             queue_group,
+                             default_curve_configuration_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_default_curve_configurations(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_default_curve_configuration_versions_request::nats_subject,
-                             queue_group,
+                             default_curve_configuration_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_default_curve_configuration_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_default_curve_configuration_version_request::nats_subject,
-                             queue_group,
+                             default_curve_configuration_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_default_curve_configuration_version(std::move(msg));
                              }));

@@ -19,15 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/time_utils.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
 
 namespace {
-
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[time][time_utils]");
 
 using ores::platform::time::time_utils;
 
@@ -81,7 +79,7 @@ void parse_time(const std::string& s, const char* fmt, std::tm& tm) {
 
 } // namespace
 
-TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", tags) {
+TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", "[time][time_utils]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     // A fixed UTC time that falls within a DST period in European timezones.
@@ -108,7 +106,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", tags) {
     CHECK(result == expected);
 }
 
-TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", tags) {
+TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", "[time][time_utils]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     // A fixed UTC time in winter (no DST in European zones) as a control case.
@@ -127,7 +125,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", tags) {
     CHECK(result == expected);
 }
 
-TEST_CASE("to_time_point_utc_roundtrips", tags) {
+TEST_CASE("to_time_point_utc_roundtrips", "[time][time_utils]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto expected = make_utc(2026, 3, 30, 11, 55, 0);
@@ -146,32 +144,32 @@ TEST_CASE("to_time_point_utc_roundtrips", tags) {
 // the corpus at external/ore/examples found five, and the three that were
 // missing made 9,423 lines across four files unreadable.
 
-TEST_CASE("parse_date_reads_yyyy_mm_dd", tags) {
+TEST_CASE("parse_date_reads_yyyy_mm_dd", "[time][time_utils]") {
     const auto d = time_utils::parse_date("2025-09-30");
     CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
 }
 
-TEST_CASE("parse_date_reads_yyyymmdd", tags) {
+TEST_CASE("parse_date_reads_yyyymmdd", "[time][time_utils]") {
     const auto d = time_utils::parse_date("20250930");
     CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
 }
 
-TEST_CASE("parse_date_reads_dd_mm_yyyy", tags) {
+TEST_CASE("parse_date_reads_dd_mm_yyyy", "[time][time_utils]") {
     const auto d = time_utils::parse_date("30-09-2025");
     CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
 }
 
-TEST_CASE("parse_date_reads_dd_mm_yyyy_with_dots", tags) {
+TEST_CASE("parse_date_reads_dd_mm_yyyy_with_dots", "[time][time_utils]") {
     const auto d = time_utils::parse_date("30.09.2025");
     CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
 }
 
-TEST_CASE("parse_date_reads_dd_mm_yy_as_a_2000s_year", tags) {
+TEST_CASE("parse_date_reads_dd_mm_yy_as_a_2000s_year", "[time][time_utils]") {
     const auto d = time_utils::parse_date("30.09.25");
     CHECK(d == std::chrono::year{2025} / std::chrono::month{9} / std::chrono::day{30});
 }
 
-TEST_CASE("parse_date_distinguishes_dd_mm_yyyy_from_yyyy_mm_dd", tags) {
+TEST_CASE("parse_date_distinguishes_dd_mm_yyyy_from_yyyy_mm_dd", "[time][time_utils]") {
     // Both are ten characters, so only the separator positions tell them apart.
     // A day above the twelfth cannot be confused, but an ambiguous one can, and
     // reading 05-03-2025 as month five would be silent rather than loud.
@@ -181,7 +179,7 @@ TEST_CASE("parse_date_distinguishes_dd_mm_yyyy_from_yyyy_mm_dd", tags) {
           std::chrono::year{2025} / std::chrono::month{3} / std::chrono::day{5});
 }
 
-TEST_CASE("parse_date_rejects_a_date_that_is_not_one", tags) {
+TEST_CASE("parse_date_rejects_a_date_that_is_not_one", "[time][time_utils]") {
     CHECK_THROWS_AS(time_utils::parse_date("31-02-2025"), std::invalid_argument);
     CHECK_THROWS_AS(time_utils::parse_date("2025/09/30"), std::invalid_argument);
     CHECK_THROWS_AS(time_utils::parse_date(""), std::invalid_argument);

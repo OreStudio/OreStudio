@@ -22,14 +22,12 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string test_suite("ores.database.tests");
-const std::string tags("[unit_of_work]");
 
 struct ip2country_probe {
     constexpr static const char* schema = "public";
@@ -59,7 +57,7 @@ std::string probe_range() {
 using ores::database::repository::execute_raw_multi_column_query;
 using ores::database::repository::unit_of_work;
 
-TEST_CASE("a unit of work binds its transaction to the context it hands out", tags) {
+TEST_CASE("a unit of work binds its transaction to the context it hands out", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 
@@ -70,7 +68,7 @@ TEST_CASE("a unit of work binds its transaction to the context it hands out", ta
     uow.commit();
 }
 
-TEST_CASE("a unit of work that is not committed frees its connection", tags) {
+TEST_CASE("a unit of work that is not committed frees its connection", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 
@@ -85,7 +83,7 @@ TEST_CASE("a unit of work that is not committed frees its connection", tags) {
     REQUIRE(rows.size() == 1);
 }
 
-TEST_CASE("a raw insert through a unit of work is rolled back", tags) {
+TEST_CASE("a raw insert through a unit of work is rolled back", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto code =
@@ -111,7 +109,7 @@ TEST_CASE("a raw insert through a unit of work is rolled back", tags) {
     CHECK(rows[0][0].value_or("?") == "0");
 }
 
-TEST_CASE("a raw insert through a committed unit of work is kept", tags) {
+TEST_CASE("a raw insert through a committed unit of work is kept", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto code =
@@ -138,7 +136,7 @@ TEST_CASE("a raw insert through a committed unit of work is kept", tags) {
     CHECK(rows[0][0].value_or("?") == "1");
 }
 
-TEST_CASE("an entity insert through a unit of work is rolled back", tags) {
+TEST_CASE("an entity insert through a unit of work is rolled back", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto code =
@@ -164,7 +162,7 @@ TEST_CASE("an entity insert through a unit of work is rolled back", tags) {
     CHECK(rows[0][0].value_or("?") == "0");
 }
 
-TEST_CASE("a failed insert leaves no earlier row in the unit of work", tags) {
+TEST_CASE("a failed insert leaves no earlier row in the unit of work", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto code =
@@ -201,7 +199,7 @@ TEST_CASE("a failed insert leaves no earlier row in the unit of work", tags) {
  * insert that follows the read is therefore still part of the unit of work,
  * and destroying the unit of work without commit rolls it back.
  */
-TEST_CASE("a read inside a unit of work does not commit it", tags) {
+TEST_CASE("a read inside a unit of work does not commit it", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto code =

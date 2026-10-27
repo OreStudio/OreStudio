@@ -77,20 +77,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_parties_response list_parties(const messaging::list_parties_request& request);
-    messaging::get_party_response get_party(const messaging::get_party_request& request);
-    messaging::get_many_parties_response
-    get_many_parties(const messaging::get_many_parties_request& request);
-    messaging::put_party_response put_party(const messaging::put_party_request& request);
-    messaging::put_many_parties_response
-    put_many_parties(const messaging::put_many_parties_request& request);
-    messaging::delete_party_response delete_party(const messaging::delete_party_request& request);
-    messaging::delete_many_parties_response
-    delete_many_parties(const messaging::delete_many_parties_request& request);
-    messaging::list_party_versions_response
-    list_party_versions(const messaging::list_party_versions_request& request);
-    messaging::get_party_version_response
-    get_party_version(const messaging::get_party_version_request& request);
+    ::ores::refdata::messaging::list_parties_response
+    list_parties(const ::ores::refdata::messaging::list_parties_request& request);
+    ::ores::refdata::messaging::get_party_response
+    get_party(const ::ores::refdata::messaging::get_party_request& request);
+    ::ores::refdata::messaging::get_many_parties_response
+    get_many_parties(const ::ores::refdata::messaging::get_many_parties_request& request);
+    ::ores::refdata::messaging::put_party_response
+    put_party(const ::ores::refdata::messaging::put_party_request& request);
+    ::ores::refdata::messaging::put_many_parties_response
+    put_many_parties(const ::ores::refdata::messaging::put_many_parties_request& request);
+    ::ores::refdata::messaging::delete_party_response
+    delete_party(const ::ores::refdata::messaging::delete_party_request& request);
+    ::ores::refdata::messaging::delete_many_parties_response
+    delete_many_parties(const ::ores::refdata::messaging::delete_many_parties_request& request);
+    ::ores::refdata::messaging::list_party_versions_response
+    list_party_versions(const ::ores::refdata::messaging::list_party_versions_request& request);
+    ::ores::refdata::messaging::get_party_version_response
+    get_party_version(const ::ores::refdata::messaging::get_party_version_request& request);
     /**@}*/
 
     /**
@@ -240,9 +244,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::party_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::party& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::party_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::party& out);
 };
 
 }

@@ -26,14 +26,8 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.analytics.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::analytics::generators;
 using ores::analytics::domain::pricing_engine_type;
@@ -41,7 +35,7 @@ using ores::analytics::repository::pricing_engine_type_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_pricing_engine_type", tags) {
+TEST_CASE("write_single_pricing_engine_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -55,7 +49,7 @@ TEST_CASE("write_single_pricing_engine_type", tags) {
     CHECK_NOTHROW(repo.write(h.context(), t));
 }
 
-TEST_CASE("write_multiple_pricing_engine_types", tags) {
+TEST_CASE("write_multiple_pricing_engine_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -67,7 +61,7 @@ TEST_CASE("write_multiple_pricing_engine_types", tags) {
     CHECK_NOTHROW(repo.write(h.context(), types));
 }
 
-TEST_CASE("read_latest_pricing_engine_types", tags) {
+TEST_CASE("read_latest_pricing_engine_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -84,7 +78,7 @@ TEST_CASE("read_latest_pricing_engine_types", tags) {
     CHECK(read.size() >= written.size());
 }
 
-TEST_CASE("read_latest_pricing_engine_type_by_code", tags) {
+TEST_CASE("read_latest_pricing_engine_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -109,7 +103,7 @@ TEST_CASE("read_latest_pricing_engine_type_by_code", tags) {
     CHECK(read[0].description == original_description + " v2");
 }
 
-TEST_CASE("read_nonexistent_pricing_engine_type_code", tags) {
+TEST_CASE("read_nonexistent_pricing_engine_type_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -124,7 +118,7 @@ TEST_CASE("read_nonexistent_pricing_engine_type_code", tags) {
     CHECK(read.size() == 0);
 }
 
-TEST_CASE("read_all_pricing_engine_type_history", tags) {
+TEST_CASE("read_all_pricing_engine_type_history", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -146,7 +140,7 @@ TEST_CASE("read_all_pricing_engine_type_history", tags) {
     CHECK(history.size() >= 2);
 }
 
-TEST_CASE("remove_pricing_engine_type", tags) {
+TEST_CASE("remove_pricing_engine_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

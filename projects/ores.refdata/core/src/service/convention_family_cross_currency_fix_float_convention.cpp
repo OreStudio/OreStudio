@@ -43,7 +43,9 @@ void apply_cross_currency_fix_float(const ores::database::context& ctx,
                                  "\"cross_currency_fix_float\" does not decode.");
     auto rows = std::vector<ores::refdata::domain::cross_currency_fix_float_convention>{
         std::move(*decoded)};
-    ores::service::messaging::stamp(rows.front(), ctx);
+    // A grouped row keeps its security fields in a member, so the stamp has
+    // to walk into it; stamp_document does, and leaves a flat row alone.
+    ores::service::messaging::stamp_document(rows.front(), ctx);
     replace_party_rows(ctx,
                        ores::refdata::repository::cross_currency_fix_float_convention_repository(),
                        std::move(rows));

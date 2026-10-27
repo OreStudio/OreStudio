@@ -27,18 +27,12 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
-
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::regulatory_book_type;
@@ -46,7 +40,7 @@ using ores::refdata::repository::regulatory_book_type_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_regulatory_book_type", tags) {
+TEST_CASE("write_single_regulatory_book_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -63,7 +57,7 @@ TEST_CASE("write_single_regulatory_book_type", tags) {
     CHECK(read_regulatory_book_types[0].name == rbt.name);
 }
 
-TEST_CASE("write_multiple_regulatory_book_types", tags) {
+TEST_CASE("write_multiple_regulatory_book_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -88,7 +82,7 @@ TEST_CASE("write_multiple_regulatory_book_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_regulatory_book_types", tags) {
+TEST_CASE("read_latest_regulatory_book_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -115,7 +109,7 @@ TEST_CASE("read_latest_regulatory_book_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_regulatory_book_type_by_code", tags) {
+TEST_CASE("read_latest_regulatory_book_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -139,7 +133,7 @@ TEST_CASE("read_latest_regulatory_book_type_by_code", tags) {
     CHECK(read_regulatory_book_types[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_regulatory_book_type_code", tags) {
+TEST_CASE("read_nonexistent_regulatory_book_type_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -170,7 +164,7 @@ TEST_CASE("read_nonexistent_regulatory_book_type_code", tags) {
     CHECK(keeper_rows[0].name == keeper.name);
 }
 
-TEST_CASE("read_regulatory_book_types_versions_by_key", tags) {
+TEST_CASE("read_regulatory_book_types_versions_by_key", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -188,7 +182,7 @@ TEST_CASE("read_regulatory_book_types_versions_by_key", tags) {
     CHECK(versions[0].code == rbt.code);
 }
 
-TEST_CASE("read_regulatory_book_types_versions_resolve_each_version", tags) {
+TEST_CASE("read_regulatory_book_types_versions_resolve_each_version", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -219,7 +213,7 @@ TEST_CASE("read_regulatory_book_types_versions_resolve_each_version", tags) {
     CHECK(at_v2->name == original_name + " v2");
 }
 
-TEST_CASE("read_latest_regulatory_book_types_includes_the_written_row", tags) {
+TEST_CASE("read_latest_regulatory_book_types_includes_the_written_row", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -432,6 +432,11 @@ export const en: SourceCatalogue = {
             reasonHint: '{who} reads it. Needed to refuse; optional to give.',
             give: 'Give {role}',
             refuse: 'Refuse',
+            hold: 'Hold',
+            holdReason: 'Why it is held',
+            holdReasonHint:
+                'Chosen from the lookup, so the held-over report groups by the reason. Needed to hold.',
+            chooseHoldReason: 'Choose a reason',
             decided: 'Decided',
             notFound:
                 'This request is not here. It may have been taken away, or it may not be yours to see.',
@@ -4398,6 +4403,15 @@ export const en: SourceCatalogue = {
                 notFound: 'There is no such convention.',
                 readFailed: 'The convention could not be read. {message}',
                 shared: 'Every party reads this convention. It is held once for the tenant.',
+                otherParty:
+                    'This convention belongs to another party. Switch to that party to change it.',
+                edit: 'Edit terms',
+                save: 'Save',
+                conflict:
+                    'This convention changed since you opened it. Read it again before you change it.',
+                reload: 'Read again',
+                notEditable:
+                    'The terms of this kind are held on two parts, so this page does not change them yet.',
             },
             search: 'Search kinds',
             assetClass: 'Asset class',
@@ -5488,6 +5502,15 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            unreadRows: '{count} rows could not be read and are not shown.',
+            otherScopes: 'Other scopes',
+            shareTitle: "Each book's share of the run",
+            shareCaption:
+                'One whole in a few parts is a donut. The figures are stated beside it, because a ring says the shape and not the value.',
+            problemsTitle: "The run's problems by scope",
+            problemsCaption:
+                'One whole in a few parts is a donut. Every problem the run recorded is counted here, whatever its scope.',
+            unscoped: 'No scope stated',
             was: 'Earlier run',
             compareTo: 'Compare to',
             noComparison: 'No comparison',
@@ -5859,6 +5882,11 @@ export const en: SourceCatalogue = {
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',
         defaultIs: 'Default: {text}',
+        defaultOption: 'Default ({value})',
+        changed: 'changed',
+        noChanges: 'No changes yet',
+        oneChange: '1 change',
+        changes: '{count} changes',
         schema: {
             xml: 'ORE XML',
             format: 'Format',

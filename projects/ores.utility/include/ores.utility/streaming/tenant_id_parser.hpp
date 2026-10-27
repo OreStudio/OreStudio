@@ -42,7 +42,7 @@ struct Parser<ReaderType, WriterType, ores::utility::uuid::tenant_id, Processors
         const auto str_result =
             Parser<ReaderType, WriterType, std::string, ProcessorsType>::read(_r, _var);
         if (!str_result) {
-            return rfl::Unexpected(Error(str_result.error()->what()));
+            return rfl::Unexpected(Error(str_result.error().what()));
         }
         auto tenant_result = ores::utility::uuid::tenant_id::from_string(str_result.value());
         if (!tenant_result) {

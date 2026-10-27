@@ -21,25 +21,19 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.database.tests");
-const std::string tags("[repository][mapper_helpers]");
-
-}
 
 using namespace ores::database::repository;
 
-TEST_CASE("a_row_that_is_current_has_no_validity_end", tags) {
+TEST_CASE("a_row_that_is_current_has_no_validity_end", "[repository][mapper_helpers]") {
     auto lg(ores::logging::make_logger(test_suite));
     const auto current = make_timestamp(MAX_TIMESTAMP_NAIVE, lg);
 
     CHECK_FALSE(validity_end(current.value()).has_value());
 }
 
-TEST_CASE("a_row_that_ended_has_the_instant_it_ended", tags) {
+TEST_CASE("a_row_that_ended_has_the_instant_it_ended", "[repository][mapper_helpers]") {
     auto lg(ores::logging::make_logger(test_suite));
     const auto ended = make_timestamp("2026-10-11 16:52:50", lg);
 

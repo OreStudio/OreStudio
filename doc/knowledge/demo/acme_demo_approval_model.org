@@ -31,12 +31,16 @@ what turns a permission into four eyes.
 | =trading.operational_authorisation= | a booked trade waiting to be released | =inbox::approvals:decide_operations= | Operations | 1 | yes | yes | never |
 | =refdata.book_change= | a proposed change to books | =inbox::approvals:decide_operations= | Operations | 1 | no | no | 14 days |
 | =refdata.counterparty_change= | a proposed change to counterparties, their identifiers and the parties that may trade with them | =inbox::approvals:decide_operations= | Operations | 1 | no | no | 14 days |
+| =marketdata.curve_publish= | a candidate curve becoming the one the desk prices from | =inbox::approvals:decide_market_risk= | Operations, of whom the heads of market risk | 1 | yes | no | 14 days |
 | =iam.role_grant= | a person asking to be given a role | =iam::roles:assign= | TenantAdmin | 1 | no | no | 14 days |
 
 An operational authorisation does not expire and requires a comment on
 approval, because an unreleased trade is a risk a timeout must not hide and the
 decision has to be readable afterwards. A role request carries a review window,
-because an administrator who never answers asks the member to wait forever.
+because an administrator who never answers asks the member to wait forever. A
+curve publish allows a hold, because the approver's third answer is "not yet",
+and holds a review window of its own: a candidate nobody answered leaves the
+desk pricing from the published curve, which is the failure that costs least.
 
 ** The four parts
 
@@ -60,7 +64,10 @@ policies keyed by the field a change touches, and the policies follow the same
 division: a book's functional currency, GL account reference, cost centre, owner
 unit and ledger feed go to Finance, its regulatory type, purpose, rates centre and
 sweepable flag to Market Risk, and its status, portfolios and memberships to
-Operations.
+Operations. An opening is the one act the policy names by operation rather than
+by field, because it is the act the controller checks: the seeded =book.create=
+policy names the controller for it, and a change to a live book asks for the
+three field-owning parts and never for the controller.
 
 ** Who is who in the demonstration
 
@@ -101,9 +108,12 @@ Source: [[./acme_approval_request_and_decide.puml][=acme_approval_request_and_de
 The rule is enforced three times, at three levels, and each is worth knowing.
 
 1. *The queue.* The list of requests a person may decide is filtered by the
-   permission each kind names, and the person's own requests are cut from the page
-   before it is paged. A person does not see their own request in their queue at
-   all.
+   permission each kind names, and by the permission each of a request's parts
+   names while that part's turn has come, so a Controller or Finance persona finds
+   a book change in the queue when their part is the one waiting. The person's own
+   requests are left out by the same statement that pages the rest, so the total
+   the page reports is the number of rows the pages walk. A person does not see
+   their own request in their queue at all.
 2. *The decision.* The decisions table refuses a decision whose decider is the
    request's raiser, and the service answers =four_eyes= with the words "You asked
    for this request, so someone else decides it."
@@ -129,32 +139,49 @@ seed alone:
 
 ** What a person still cannot do, and what that leaves undecided
 
-The journeys and the seeds disagree in five places, and this page records the
-disagreement rather than resolving it.
+The journeys and the seeds disagree in four places. One is now closed by the
+policy model, and this page records the choice it took.
 
-- *A part decider reads an empty queue.* The queue filters by the kind's decide
-  code, and a Controller or Finance persona holds no kind's code, only a part's.
-  Such a person therefore learns of a request from the notice the raise sends and
-  must open it by identifier; the queue shows nothing. Whether the queue should
-  also list the requests whose parts a person may answer is an open question.
-- *No policy names the controller part.* The approval policies route a changed
-  field to Finance, Market Risk or Operations, and the controller answers only an
-  opening. No seeded policy row produces a controller part, so today no request
-  the platform raises asks a controller to answer. A Controller persona can decide
-  the part, as the run above shows, but only a request raised with that part asks
-  for it.
-- *No market-data approval kind exists.* *Decide a publish* describes an approver
-  waiting on a curve publish, and the kind it would filter the queue by is not
-  seeded, so the market data part of the demonstration has no approval to decide.
-  [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] carries the gap.
-- *Which market risk decides a tenant-wide change.* *Decide a convention change*
-  names Market Risk as the decider of a tenant kind and does not say which
-  party's Market Risk answers for the whole tenant. This demonstration answers
-  the question by accident rather than by design: the queue is tenant-wide, so
-  any office's head of market risk sees the request. That the queue is not
-  party-scoped is a property the journeys do not state.
-- *No kind carries a hold reason list.* An operational authorisation allows a
-  hold and has no reason lookup, so a hold takes the free-text comment alone.
+- *The controller part is asked for by an operation, not by a field.* The
+  approval policies routed a changed field to Finance, Market Risk or
+  Operations, and the controller answers only an opening, so no seeded row
+  produced a controller part. The policy model now names *create* as an
+  operation beside *put* and *delete*: the operation is the act a change
+  performs, and opening a row is an act of its own. A seeded policy,
+  =book.create=, names the controller for that act with no field, because the
+  opening check is of the act and not of a column the act writes. A book change
+  handler treats a =put= of a book that does not exist as both acts, so an
+  opening request names the controller beside Finance, Market Risk and
+  Operations, and a change to a live book names the three and never the
+  controller. The controller keeps answer order 1, so it answers first and the
+  other three wait for it.
+
+- *A market data publish is now a request.* The kind =marketdata.curve_publish=
+  is seeded with the Market Risk decide permission, one approval, a hold and a
+  two-week window, and the publish is gated: =marketdata.v1.ops.publish_curve=
+  raises the request when it is called with none, and publishes only when it is
+  called with an approved one. A published set that moves is therefore a set a
+  Market Risk decider approved, and a refusal leaves the curve as it was. What
+  the request does not yet name is the curve: a request is a header, and the
+  kind's detail table is still missing.
+- *A tenant-wide change is decided by the tenant's Market Risk.* *Decide a
+  convention change* named Market Risk as the decider of a tenant kind and did
+  not say which party's Market Risk answers for the whole tenant. The rule, now
+  written into that journey, is that the tenant's Market Risk decides and no
+  party's: a tenant kind belongs to no party, a permission is held by an account
+  in a tenant rather than by a party, and the queue a decider works from is the
+  tenant's. The demonstration follows the rule rather than contradicting it: the
+  group's head of market risk is the person it intends to answer, and any other
+  account of the tenant that holds =inbox::approvals:decide_market_risk= sees the
+  same request and may answer it first, which the record then names. The party an
+  answering account works in decides nothing about it.
+- *A hold takes a reason from a lookup.* The hold reason lookup is seeded with
+  the reasons the operational authorisation queue names — the questions an
+  operator waits on, the three handover markers between regional teams, and the
+  four exception flags that cause a hold — and the decide operation refuses a
+  hold whose code the lookup does not hold, with the codes it does. A hold row
+  taken before the lookup existed keeps its comment and carries no code, and
+  still reads.
 
 * What this note does not cover
 

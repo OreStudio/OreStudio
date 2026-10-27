@@ -75,20 +75,20 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_permissions_response
-    list_permissions(const messaging::list_permissions_request& request);
-    messaging::get_permission_response
-    get_permission(const messaging::get_permission_request& request);
-    messaging::get_many_permissions_response
-    get_many_permissions(const messaging::get_many_permissions_request& request);
-    messaging::put_permission_response
-    put_permission(const messaging::put_permission_request& request);
-    messaging::put_many_permissions_response
-    put_many_permissions(const messaging::put_many_permissions_request& request);
-    messaging::delete_permission_response
-    delete_permission(const messaging::delete_permission_request& request);
-    messaging::delete_many_permissions_response
-    delete_many_permissions(const messaging::delete_many_permissions_request& request);
+    ::ores::iam::messaging::list_permissions_response
+    list_permissions(const ::ores::iam::messaging::list_permissions_request& request);
+    ::ores::iam::messaging::get_permission_response
+    get_permission(const ::ores::iam::messaging::get_permission_request& request);
+    ::ores::iam::messaging::get_many_permissions_response
+    get_many_permissions(const ::ores::iam::messaging::get_many_permissions_request& request);
+    ::ores::iam::messaging::put_permission_response
+    put_permission(const ::ores::iam::messaging::put_permission_request& request);
+    ::ores::iam::messaging::put_many_permissions_response
+    put_many_permissions(const ::ores::iam::messaging::put_many_permissions_request& request);
+    ::ores::iam::messaging::delete_permission_response
+    delete_permission(const ::ores::iam::messaging::delete_permission_request& request);
+    ::ores::iam::messaging::delete_many_permissions_response
+    delete_many_permissions(const ::ores::iam::messaging::delete_many_permissions_request& request);
     /**@}*/
 
     /**
@@ -196,9 +196,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::permission_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::permission& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::iam::messaging::permission_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::permission& out);
 };
 
 }

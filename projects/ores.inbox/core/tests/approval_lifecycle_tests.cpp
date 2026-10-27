@@ -30,8 +30,6 @@
 
 namespace {
 
-const std::string tags("[approval]");
-
 ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
     auto ctx = ores::testing::make_generation_context(h);
     auto a = ores::iam::generators::generate_synthetic_account(ctx);
@@ -58,8 +56,9 @@ ores::database::context sweeping(ores::testing::scoped_database_helper& h) {
 }
 
 using ores::inbox::service::approval_lifecycle;
+using ores::inbox::service::decidable_scope;
 
-TEST_CASE("a_raised_request_waits_and_a_second_person_approves_it", tags) {
+TEST_CASE("a_raised_request_waits_and_a_second_person_approves_it", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -85,7 +84,7 @@ TEST_CASE("a_raised_request_waits_and_a_second_person_approves_it", tags) {
     CHECK(lifecycle.request(id)->state_code == "approved");
 }
 
-TEST_CASE("the_person_who_asked_cannot_decide_their_own_request", tags) {
+TEST_CASE("the_person_who_asked_cannot_decide_their_own_request", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -97,7 +96,7 @@ TEST_CASE("the_person_who_asked_cannot_decide_their_own_request", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("a_decision_on_a_version_someone_else_moved_is_a_conflict", tags) {
+TEST_CASE("a_decision_on_a_version_someone_else_moved_is_a_conflict", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -111,7 +110,7 @@ TEST_CASE("a_decision_on_a_version_someone_else_moved_is_a_conflict", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("a_closed_request_cannot_be_decided_again", tags) {
+TEST_CASE("a_closed_request_cannot_be_decided_again", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -129,7 +128,7 @@ TEST_CASE("a_closed_request_cannot_be_decided_again", tags) {
     CHECK(lifecycle.request(id)->state_code == "refused");
 }
 
-TEST_CASE("a_refusal_needs_a_comment", tags) {
+TEST_CASE("a_refusal_needs_a_comment", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -143,7 +142,7 @@ TEST_CASE("a_refusal_needs_a_comment", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("a_kind_that_does_not_hold_refuses_a_hold", tags) {
+TEST_CASE("a_kind_that_does_not_hold_refuses_a_hold", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -157,7 +156,7 @@ TEST_CASE("a_kind_that_does_not_hold_refuses_a_hold", tags) {
     CHECK(r.outcome == "invalid");
 }
 
-TEST_CASE("only_the_person_who_asked_withdraws_a_request", tags) {
+TEST_CASE("only_the_person_who_asked_withdraws_a_request", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto other = seed_account(h);
@@ -172,7 +171,7 @@ TEST_CASE("only_the_person_who_asked_withdraws_a_request", tags) {
     CHECK(r.state_code == "withdrawn");
 }
 
-TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", tags) {
+TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -183,14 +182,108 @@ TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", tags) {
         return std::ranges::any_of(page.requests, [&](const auto& r) { return r.id == raised.id; });
     };
 
-    CHECK(in(lifecycle.queue({"iam.role_grant"}, decider.id, 0, 500)));
-    CHECK_FALSE(in(lifecycle.queue({"iam.role_grant"}, asker.id, 0, 500)));
+    CHECK(in(lifecycle.queue({.kind_codes = {"iam.role_grant"}}, decider.id, 0, 500)));
+    CHECK_FALSE(in(lifecycle.queue({.kind_codes = {"iam.role_grant"}}, asker.id, 0, 500)));
     CHECK_FALSE(in(lifecycle.queue({}, decider.id, 0, 500)));
     CHECK(in(lifecycle.raised_by(asker.id, 0, 100)));
     CHECK_FALSE(in(lifecycle.raised_by(decider.id, 0, 100)));
 }
 
-TEST_CASE("a_part_cannot_answer_before_the_parts_ahead_of_it_approve", tags) {
+TEST_CASE("the_queue_shows_a_request_to_the_decider_of_its_open_part", "[approval]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    const auto finance = seed_account(h);
+    const auto trader = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("refdata.book_change"),
+                                        "A book moves to the banking book",
+                                        asker.id,
+                                        {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+    const auto listed = [&](const decidable_scope& scope, const boost::uuids::uuid& account) {
+        const auto page = lifecycle.queue(scope, account, 0, 500);
+        return std::ranges::any_of(page.requests, [&](const auto& r) { return r.id == raised.id; });
+    };
+    const auto answered = [&](const decidable_scope& scope, const boost::uuids::uuid& account) {
+        const auto tail = lifecycle.recently_answered(scope, account, std::chrono::hours(1));
+        return std::ranges::any_of(tail, [&](const auto& r) { return r.id == raised.id; });
+    };
+
+    const decidable_scope as_controller{.part_codes = {"controller"}};
+    const decidable_scope as_finance{.part_codes = {"finance"}};
+    const decidable_scope as_book_change_kind{.kind_codes = {"refdata.book_change"}};
+
+    CHECK(listed(as_controller, controller.id));
+    CHECK_FALSE(listed(as_finance, finance.id));
+    CHECK_FALSE(listed(decidable_scope{}, trader.id));
+    CHECK_FALSE(listed(as_controller, asker.id));
+
+    // A request decided by part is not the kind's decider's until their part's
+    // turn comes, so the kind's own code reaches nobody.
+    CHECK_FALSE(listed(as_book_change_kind, finance.id));
+
+    const auto first =
+        lifecycle.decide(id, raised.version, "approve", controller.id, "Checked", "controller");
+    REQUIRE(first.outcome == "ok");
+
+    // The controller answered, so the request is out of their open queue. It
+    // still waits on Finance, so it is in nobody's answered tail yet.
+    CHECK_FALSE(listed(as_controller, controller.id));
+    CHECK_FALSE(answered(as_controller, controller.id));
+    CHECK(listed(as_finance, finance.id));
+    CHECK_FALSE(answered(as_finance, finance.id));
+
+    const auto second =
+        lifecycle.decide(id, first.version, "approve", finance.id, "Agreed", "finance");
+    REQUIRE(second.outcome == "ok");
+    CHECK(second.state_code == "approved");
+
+    // Answered, the request leaves both open queues and enters the tail of the
+    // people who answered it.
+    CHECK_FALSE(listed(as_finance, finance.id));
+    CHECK(answered(as_controller, controller.id));
+    CHECK(answered(as_finance, finance.id));
+}
+
+TEST_CASE("the_queue_pages_what_it_counts_when_a_part_decides", "[approval]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto kind = lifecycle.kind("refdata.book_change");
+    REQUIRE(kind);
+
+    const auto older = lifecycle.raise(*kind, "One book moves", asker.id, {"controller"});
+    const auto later = lifecycle.raise(*kind, "Another book moves", asker.id, {"controller"});
+    const decidable_scope as_controller{.part_codes = {"controller"}};
+
+    // Every page states the same total, and walking the pages one row at a time
+    // visits exactly that many requests, in the order the requests were made.
+    std::vector<boost::uuids::uuid> walked;
+    auto total = -1;
+    for (int offset = 0;; ++offset) {
+        const auto page = lifecycle.queue(as_controller, controller.id, offset, 1);
+        if (total < 0)
+            total = page.total;
+        CHECK(page.total == total);
+        if (page.requests.empty())
+            break;
+        REQUIRE(page.requests.size() == 1);
+        walked.push_back(page.requests.front().id);
+    }
+    CHECK(total == static_cast<int>(walked.size()));
+
+    const auto position = [&](const boost::uuids::uuid& id) {
+        return static_cast<std::size_t>(std::ranges::find(walked, id) - walked.begin());
+    };
+    REQUIRE(position(older.id) < walked.size());
+    REQUIRE(position(later.id) < walked.size());
+    CHECK(position(older.id) < position(later.id));
+}
+
+TEST_CASE("a_part_cannot_answer_before_the_parts_ahead_of_it_approve", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto controller = seed_account(h);
@@ -215,7 +308,7 @@ TEST_CASE("a_part_cannot_answer_before_the_parts_ahead_of_it_approve", tags) {
     CHECK(second.state_code == "approved");
 }
 
-TEST_CASE("parts_of_the_same_order_answer_in_either_order", tags) {
+TEST_CASE("parts_of_the_same_order_answer_in_either_order", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto finance = seed_account(h);
@@ -237,7 +330,7 @@ TEST_CASE("parts_of_the_same_order_answer_in_either_order", tags) {
     CHECK(lifecycle.open_parts_of(id).empty());
 }
 
-TEST_CASE("an_answer_names_a_part_the_request_needs", tags) {
+TEST_CASE("an_answer_names_a_part_the_request_needs", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -253,7 +346,7 @@ TEST_CASE("an_answer_names_a_part_the_request_needs", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("a_part_code_is_listed_once_and_must_exist", tags) {
+TEST_CASE("a_part_code_is_listed_once_and_must_exist", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -266,7 +359,7 @@ TEST_CASE("a_part_code_is_listed_once_and_must_exist", tags) {
     CHECK_THROWS(lifecycle.raise(*kind, "Open a book", asker.id, {""}));
 }
 
-TEST_CASE("one_person_cannot_approve_two_parts_of_one_request", tags) {
+TEST_CASE("one_person_cannot_approve_two_parts_of_one_request", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -282,7 +375,7 @@ TEST_CASE("one_person_cannot_approve_two_parts_of_one_request", tags) {
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("the_asker_withdraws_a_request_that_names_parts", tags) {
+TEST_CASE("the_asker_withdraws_a_request_that_names_parts", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -296,7 +389,7 @@ TEST_CASE("the_asker_withdraws_a_request_that_names_parts", tags) {
     CHECK(r.state_code == "withdrawn");
 }
 
-TEST_CASE("a_refusal_from_a_part_refuses_the_request", tags) {
+TEST_CASE("a_refusal_from_a_part_refuses_the_request", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto controller = seed_account(h);
@@ -312,7 +405,7 @@ TEST_CASE("a_refusal_from_a_part_refuses_the_request", tags) {
     CHECK(r.state_code == "refused");
 }
 
-TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
+TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -360,7 +453,7 @@ TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
     CHECK(lifecycle.request(overdue_id)->version == after->version);
 }
 
-TEST_CASE("an_approved_request_that_cannot_be_applied_ends_in_apply_failed", tags) {
+TEST_CASE("an_approved_request_that_cannot_be_applied_ends_in_apply_failed", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -384,7 +477,7 @@ TEST_CASE("an_approved_request_that_cannot_be_applied_ends_in_apply_failed", tag
     CHECK(lifecycle.request(id)->version == stored->version);
 }
 
-TEST_CASE("a_request_that_is_not_approved_cannot_fail_to_apply", tags) {
+TEST_CASE("a_request_that_is_not_approved_cannot_fail_to_apply", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -398,7 +491,7 @@ TEST_CASE("a_request_that_is_not_approved_cannot_fail_to_apply", tags) {
 }
 
 TEST_CASE("the_progress_of_a_request_says_which_part_answered_which_waits_and_which_is_later",
-          tags) {
+          "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto controller = seed_account(h);
@@ -428,7 +521,7 @@ TEST_CASE("the_progress_of_a_request_says_which_part_answered_which_waits_and_wh
     CHECK(after[1].state == "waiting");
 }
 
-TEST_CASE("a_refused_part_is_shown_as_refused", tags) {
+TEST_CASE("a_refused_part_is_shown_as_refused", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto controller = seed_account(h);
@@ -447,7 +540,7 @@ TEST_CASE("a_refused_part_is_shown_as_refused", tags) {
     CHECK(progress[0].comment == "No");
 }
 
-TEST_CASE("a_request_that_names_no_parts_has_no_progress", tags) {
+TEST_CASE("a_request_that_names_no_parts_has_no_progress", "[approval]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));

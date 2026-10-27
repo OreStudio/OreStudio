@@ -37,19 +37,21 @@ std::vector<ores::diff::domain::field_value> render_convention_fields(const doma
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Kind Code", .value = v.kind_code});
-    fields.push_back({.name = "Name", .value = v.name});
-    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
+    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.identity.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Kind Code", .value = v.identity.kind_code});
+    fields.push_back({.name = "Name", .value = v.payload.name});
+    fields.push_back({.name = "Oresmd Uri", .value = v.payload.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
-    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});
     fields.push_back(
-        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
-    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
-    fields.push_back({.name = provenance_fields::recorded_at,
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+        {.name = provenance_fields::change_reason_code, .value = v.audit.change_reason_code});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.audit.change_commentary});
+    fields.push_back(
+        {.name = provenance_fields::recorded_at,
+         .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
 
     return fields;
 }

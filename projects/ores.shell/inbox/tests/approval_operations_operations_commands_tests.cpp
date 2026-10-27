@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/inbox/approval_operations_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.inbox.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("approval_operations_operations_registers_every_declared_command", tags) {
+TEST_CASE("approval_operations_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -78,7 +76,8 @@ TEST_CASE("approval_operations_operations_registers_every_declared_command", tag
     BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
 }
 
-TEST_CASE("approval_operations_operations_process_raise_approval_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_raise_approval_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -99,7 +98,7 @@ TEST_CASE("approval_operations_operations_process_raise_approval_requires_a_sess
 }
 
 TEST_CASE("approval_operations_operations_process_raise_approval_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -117,7 +116,8 @@ TEST_CASE("approval_operations_operations_process_raise_approval_reports_the_exp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_raise_approval_reaches_the_transport", tags) {
+TEST_CASE("approval_operations_operations_process_raise_approval_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -143,7 +143,8 @@ TEST_CASE("approval_operations_operations_process_raise_approval_reaches_the_tra
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_withdraw_approval_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_withdraw_approval_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -163,7 +164,7 @@ TEST_CASE("approval_operations_operations_process_withdraw_approval_requires_a_s
 }
 
 TEST_CASE("approval_operations_operations_process_withdraw_approval_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -181,7 +182,8 @@ TEST_CASE("approval_operations_operations_process_withdraw_approval_reports_the_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_withdraw_approval_reaches_the_transport", tags) {
+TEST_CASE("approval_operations_operations_process_withdraw_approval_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -206,7 +208,8 @@ TEST_CASE("approval_operations_operations_process_withdraw_approval_reaches_the_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_decide_approval_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_decide_approval_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -228,7 +231,7 @@ TEST_CASE("approval_operations_operations_process_decide_approval_requires_a_ses
 }
 
 TEST_CASE("approval_operations_operations_process_decide_approval_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -246,7 +249,8 @@ TEST_CASE("approval_operations_operations_process_decide_approval_reports_the_ex
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_decide_approval_reaches_the_transport", tags) {
+TEST_CASE("approval_operations_operations_process_decide_approval_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -273,7 +277,8 @@ TEST_CASE("approval_operations_operations_process_decide_approval_reaches_the_tr
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_list_approval_queue_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_list_approval_queue_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -289,7 +294,7 @@ TEST_CASE("approval_operations_operations_process_list_approval_queue_requires_a
 }
 
 TEST_CASE("approval_operations_operations_process_list_approval_queue_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -311,7 +316,7 @@ TEST_CASE("approval_operations_operations_process_list_approval_queue_reaches_th
 }
 
 TEST_CASE("approval_operations_operations_process_list_my_approval_requests_requires_a_session",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -327,7 +332,7 @@ TEST_CASE("approval_operations_operations_process_list_my_approval_requests_requ
 }
 
 TEST_CASE("approval_operations_operations_process_list_my_approval_requests_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -348,7 +353,7 @@ TEST_CASE("approval_operations_operations_process_list_my_approval_requests_reac
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_get_approval_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_get_approval_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -366,7 +371,8 @@ TEST_CASE("approval_operations_operations_process_get_approval_requires_a_sessio
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_get_approval_reports_the_expected_count", tags) {
+TEST_CASE("approval_operations_operations_process_get_approval_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -384,7 +390,8 @@ TEST_CASE("approval_operations_operations_process_get_approval_reports_the_expec
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_get_approval_reaches_the_transport", tags) {
+TEST_CASE("approval_operations_operations_process_get_approval_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -409,7 +416,7 @@ TEST_CASE("approval_operations_operations_process_get_approval_reaches_the_trans
 }
 
 TEST_CASE("approval_operations_operations_process_expire_overdue_approvals_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -431,7 +438,7 @@ TEST_CASE("approval_operations_operations_process_expire_overdue_approvals_reach
 }
 
 TEST_CASE("approval_operations_operations_process_remind_expiring_approvals_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -453,7 +460,7 @@ TEST_CASE("approval_operations_operations_process_remind_expiring_approvals_reac
 }
 
 TEST_CASE("approval_operations_operations_process_retry_stalled_applies_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -474,7 +481,8 @@ TEST_CASE("approval_operations_operations_process_retry_stalled_applies_reaches_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_get_approval_history_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_get_approval_history_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -493,7 +501,7 @@ TEST_CASE("approval_operations_operations_process_get_approval_history_requires_
 }
 
 TEST_CASE("approval_operations_operations_process_get_approval_history_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -512,7 +520,7 @@ TEST_CASE("approval_operations_operations_process_get_approval_history_reports_t
 }
 
 TEST_CASE("approval_operations_operations_process_get_approval_history_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -536,7 +544,8 @@ TEST_CASE("approval_operations_operations_process_get_approval_history_reaches_t
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_get_approval_parts_requires_a_session", tags) {
+TEST_CASE("approval_operations_operations_process_get_approval_parts_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -555,7 +564,7 @@ TEST_CASE("approval_operations_operations_process_get_approval_parts_requires_a_
 }
 
 TEST_CASE("approval_operations_operations_process_get_approval_parts_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -573,7 +582,8 @@ TEST_CASE("approval_operations_operations_process_get_approval_parts_reports_the
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("approval_operations_operations_process_get_approval_parts_reaches_the_transport", tags) {
+TEST_CASE("approval_operations_operations_process_get_approval_parts_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

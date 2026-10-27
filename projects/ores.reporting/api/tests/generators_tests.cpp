@@ -23,15 +23,9 @@
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
 #include "ores.reporting.api/generators/report_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::reporting::generators;
 using namespace ores::logging;
@@ -39,7 +33,7 @@ using ores::utility::generation::generation_context;
 
 // --- concurrency_policy ---
 
-TEST_CASE("concurrency_policy_generator_produces_valid_instance", tags) {
+TEST_CASE("concurrency_policy_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_concurrency_policy(ctx);
@@ -52,7 +46,7 @@ TEST_CASE("concurrency_policy_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("concurrency_policy_generator_produces_multiple_instances", tags) {
+TEST_CASE("concurrency_policy_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -67,7 +61,7 @@ TEST_CASE("concurrency_policy_generator_produces_multiple_instances", tags) {
 
 // --- report_type ---
 
-TEST_CASE("report_type_generator_produces_valid_instance", tags) {
+TEST_CASE("report_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_report_type(ctx);
@@ -80,7 +74,7 @@ TEST_CASE("report_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("report_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("report_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -95,7 +89,7 @@ TEST_CASE("report_type_generator_produces_multiple_instances", tags) {
 
 // --- report_definition ---
 
-TEST_CASE("report_definition_generator_produces_valid_instance", tags) {
+TEST_CASE("report_definition_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_report_definition(ctx);
@@ -108,7 +102,7 @@ TEST_CASE("report_definition_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("report_definition_generator_produces_multiple_instances", tags) {
+TEST_CASE("report_definition_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -123,7 +117,7 @@ TEST_CASE("report_definition_generator_produces_multiple_instances", tags) {
 
 // --- report_instance ---
 
-TEST_CASE("report_instance_generator_produces_valid_instance", tags) {
+TEST_CASE("report_instance_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_report_instance(ctx);
@@ -139,7 +133,7 @@ TEST_CASE("report_instance_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("report_instance_generator_produces_multiple_instances", tags) {
+TEST_CASE("report_instance_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

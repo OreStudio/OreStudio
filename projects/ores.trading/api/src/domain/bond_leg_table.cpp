@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string bond_leg_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,10 @@ std::string convert_to_table(const std::vector<bond_leg>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& leg : v) {
-        table << leg.leg_role << leg.leg_number << opt_str(leg.leg_type) << opt_str(leg.currency)
-              << opt_str(leg.day_counter) << opt_str(leg.payment_calendar) << leg.modified_by
-              << leg.version << fort::endr;
+        table << leg.leg_role << leg.leg_number << bond_leg_opt_str(leg.leg_type)
+              << bond_leg_opt_str(leg.currency) << bond_leg_opt_str(leg.day_counter)
+              << bond_leg_opt_str(leg.payment_calendar) << leg.modified_by << leg.version
+              << fort::endr;
     }
     return table.to_string();
 }

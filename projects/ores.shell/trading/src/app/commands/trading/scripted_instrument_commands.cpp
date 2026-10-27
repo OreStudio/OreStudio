@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void scripted_instrument_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void scripted_instrument_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -222,7 +222,7 @@ void scripted_instrument_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        scripted_instrument_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -270,7 +270,7 @@ void scripted_instrument_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        scripted_instrument_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -315,7 +315,7 @@ void scripted_instrument_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::scripted_instrument_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            scripted_instrument_read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -360,19 +360,24 @@ void scripted_instrument_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        scripted_instrument_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        scripted_instrument_read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-        read_token(
+        scripted_instrument_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.script_name, parsed->positionals[next++], "script_name");
-        read_token(req.change.write.script_body, parsed->positionals[next++], "script_body");
-        read_token(req.change.write.events_json, parsed->positionals[next++], "events_json");
-        read_token(
+        scripted_instrument_read_token(
+            req.change.write.script_name, parsed->positionals[next++], "script_name");
+        scripted_instrument_read_token(
+            req.change.write.script_body, parsed->positionals[next++], "script_body");
+        scripted_instrument_read_token(
+            req.change.write.events_json, parsed->positionals[next++], "events_json");
+        scripted_instrument_read_token(
             req.change.write.underlyings_json, parsed->positionals[next++], "underlyings_json");
-        read_token(
+        scripted_instrument_read_token(
             req.change.write.parameters_json, parsed->positionals[next++], "parameters_json");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        scripted_instrument_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -420,19 +425,24 @@ void scripted_instrument_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        scripted_instrument_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        scripted_instrument_read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-        read_token(
+        scripted_instrument_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.script_name, parsed->positionals[next++], "script_name");
-        read_token(req.change.write.script_body, parsed->positionals[next++], "script_body");
-        read_token(req.change.write.events_json, parsed->positionals[next++], "events_json");
-        read_token(
+        scripted_instrument_read_token(
+            req.change.write.script_name, parsed->positionals[next++], "script_name");
+        scripted_instrument_read_token(
+            req.change.write.script_body, parsed->positionals[next++], "script_body");
+        scripted_instrument_read_token(
+            req.change.write.events_json, parsed->positionals[next++], "events_json");
+        scripted_instrument_read_token(
             req.change.write.underlyings_json, parsed->positionals[next++], "underlyings_json");
-        read_token(
+        scripted_instrument_read_token(
             req.change.write.parameters_json, parsed->positionals[next++], "parameters_json");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        scripted_instrument_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -494,19 +504,24 @@ void scripted_instrument_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::scripted_instrument_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(
+            scripted_instrument_read_token(
+                change.write.trade_id, parsed->positionals[next++], "trade_id");
+            scripted_instrument_read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-            read_token(
+            scripted_instrument_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(change.write.script_name, parsed->positionals[next++], "script_name");
-            read_token(change.write.script_body, parsed->positionals[next++], "script_body");
-            read_token(change.write.events_json, parsed->positionals[next++], "events_json");
-            read_token(
+            scripted_instrument_read_token(
+                change.write.script_name, parsed->positionals[next++], "script_name");
+            scripted_instrument_read_token(
+                change.write.script_body, parsed->positionals[next++], "script_body");
+            scripted_instrument_read_token(
+                change.write.events_json, parsed->positionals[next++], "events_json");
+            scripted_instrument_read_token(
                 change.write.underlyings_json, parsed->positionals[next++], "underlyings_json");
-            read_token(
+            scripted_instrument_read_token(
                 change.write.parameters_json, parsed->positionals[next++], "parameters_json");
-            read_token(change.write.description, parsed->positionals[next++], "description");
+            scripted_instrument_read_token(
+                change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -556,7 +571,8 @@ void scripted_instrument_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        scripted_instrument_read_token(
+            req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -610,7 +626,8 @@ void scripted_instrument_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::scripted_instrument_key key;
-            read_token(key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
+            scripted_instrument_read_token(
+                key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
             req.removals.push_back(messaging::scripted_instrument_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -662,8 +679,8 @@ void scripted_instrument_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        apply_page(req, *parsed);
+        scripted_instrument_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        scripted_instrument_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -708,7 +725,8 @@ void scripted_instrument_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.scripted_instrument.trade_id, parsed->positionals[next++], "trade_id");
+        scripted_instrument_read_token(
+            req.key.scripted_instrument.trade_id, parsed->positionals[next++], "trade_id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

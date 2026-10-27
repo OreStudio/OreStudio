@@ -45,16 +45,14 @@
 
 namespace {
 
-const std::string tags("[book_proposal]");
-
 using ores::refdata::domain::book_change;
 using ores::refdata::service::book_proposal_service;
 using namespace ores::refdata::tests;
 
-
 }
 
-TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_it", tags) {
+TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_it",
+          "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -64,11 +62,43 @@ TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_
     REQUIRE(preview.lines.size() == 1);
     CHECK(preview.lines[0].refusal.empty());
     CHECK_FALSE(preview.refused());
-    const std::vector<std::string> expected{"finance", "market_risk", "operations"};
+    const std::vector<std::string> expected{"controller", "finance", "market_risk", "operations"};
     CHECK(preview.part_codes == expected);
 }
 
-TEST_CASE("a_preview_writes_nothing", tags) {
+TEST_CASE("an_opening_book_asks_the_controller_and_a_change_to_a_live_book_does_not", "[book_proposal]") {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+
+    const auto opening = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(opening.request);
+    std::vector<std::string> parts;
+    for (const auto& part : lifecycle.parts_of(boost::uuids::to_string(opening.request->id)))
+        parts.push_back(part.code);
+    const std::vector<std::string> expected{"controller", "finance", "market_risk", "operations"};
+    CHECK(parts == expected);
+    // The controller holds the first answer order, so it is the only part open.
+    const auto open = lifecycle.open_parts_of(boost::uuids::to_string(opening.request->id));
+    REQUIRE(open.size() == 1);
+    CHECK(open.front().code == "controller");
+
+    const auto created = new_book_line(h, w);
+    const auto live = make_live(w, created);
+    auto edit = edit_line(live, created);
+    edit.cost_center = live.cost_center == "CC-1" ? "CC-2" : "CC-1";
+
+    const auto change = svc.raise({edit}, "Move the cost centre");
+    REQUIRE(change.request);
+    std::vector<std::string> change_parts;
+    for (const auto& part : lifecycle.parts_of(boost::uuids::to_string(change.request->id)))
+        change_parts.push_back(part.code);
+    CHECK(std::ranges::find(change_parts, "controller") == change_parts.end());
+}
+
+TEST_CASE("a_preview_writes_nothing", "[book_proposal]") {
+
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -83,7 +113,7 @@ TEST_CASE("a_preview_writes_nothing", tags) {
     CHECK(pending_count(w) == before);
 }
 
-TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", tags) {
+TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -99,7 +129,8 @@ TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", tags) {
     CHECK(preview.refused());
 }
 
-TEST_CASE("a_preview_refuses_a_line_that_read_a_version_that_is_no_longer_current", tags) {
+TEST_CASE("a_preview_refuses_a_line_that_read_a_version_that_is_no_longer_current",
+          "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -116,7 +147,7 @@ TEST_CASE("a_preview_refuses_a_line_that_read_a_version_that_is_no_longer_curren
     CHECK_FALSE(preview.lines[0].refusal.empty());
 }
 
-TEST_CASE("a_change_to_one_column_names_only_the_part_of_that_column", tags) {
+TEST_CASE("a_change_to_one_column_names_only_the_part_of_that_column", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -135,7 +166,7 @@ TEST_CASE("a_change_to_one_column_names_only_the_part_of_that_column", tags) {
     CHECK(preview.part_codes == std::vector<std::string>{"operations"});
 }
 
-TEST_CASE("a_raise_writes_the_request_its_parts_and_its_lines_together", tags) {
+TEST_CASE("a_raise_writes_the_request_its_parts_and_its_lines_together", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -150,7 +181,10 @@ TEST_CASE("a_raise_writes_the_request_its_parts_and_its_lines_together", tags) {
     ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
     const auto id = boost::uuids::to_string(proposal.request->id);
     const auto parts = lifecycle.parts_of(id);
-    CHECK(parts.size() == 3);
+    // An opening asks the controller first and then the three functions that
+    // own the columns it writes.
+    CHECK(parts.size() == 4);
+    CHECK(parts.front().code == "controller");
 
     const auto rows = ores::refdata::repository::book_change_repository{}.read_latest(w.ctx);
     const auto mine = std::ranges::count_if(
@@ -161,7 +195,7 @@ TEST_CASE("a_raise_writes_the_request_its_parts_and_its_lines_together", tags) {
     CHECK_FALSE(books.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("a_raise_with_a_refused_line_raises_nothing", tags) {
+TEST_CASE("a_raise_with_a_refused_line_raises_nothing", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -176,7 +210,7 @@ TEST_CASE("a_raise_with_a_refused_line_raises_nothing", tags) {
     CHECK(pending_count(w) == before);
 }
 
-TEST_CASE("a_change_the_policy_does_not_gate_needs_no_request", tags) {
+TEST_CASE("a_change_the_policy_does_not_gate_needs_no_request", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -192,7 +226,7 @@ TEST_CASE("a_change_the_policy_does_not_gate_needs_no_request", tags) {
     CHECK(proposal.preview.part_codes.empty());
 }
 
-TEST_CASE("two_lines_of_one_request_cannot_share_a_line_number", tags) {
+TEST_CASE("two_lines_of_one_request_cannot_share_a_line_number", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -212,7 +246,7 @@ TEST_CASE("two_lines_of_one_request_cannot_share_a_line_number", tags) {
     CHECK_THROWS(repo.write(w.ctx, second));
 }
 
-TEST_CASE("a_line_for_a_request_that_does_not_exist_is_refused", tags) {
+TEST_CASE("a_line_for_a_request_that_does_not_exist_is_refused", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     static boost::uuids::random_generator gen;
@@ -228,7 +262,7 @@ TEST_CASE("a_line_for_a_request_that_does_not_exist_is_refused", tags) {
     CHECK_THROWS(repo.write(w.ctx, line));
 }
 
-TEST_CASE("a_raise_with_no_lines_or_no_reason_raises_nothing", tags) {
+TEST_CASE("a_raise_with_no_lines_or_no_reason_raises_nothing", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -242,7 +276,7 @@ TEST_CASE("a_raise_with_no_lines_or_no_reason_raises_nothing", tags) {
     CHECK_FALSE(unexplained.message.empty());
 }
 
-TEST_CASE("a_line_with_an_unknown_operation_is_refused", tags) {
+TEST_CASE("a_line_with_an_unknown_operation_is_refused", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -257,7 +291,7 @@ TEST_CASE("a_line_with_an_unknown_operation_is_refused", tags) {
     CHECK_FALSE(books.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("a_part_a_tenant_adds_to_an_act_is_named_with_the_system_parts", tags) {
+TEST_CASE("a_part_a_tenant_adds_to_an_act_is_named_with_the_system_parts", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto created = new_book_line(h, w);
@@ -299,8 +333,7 @@ TEST_CASE("a_part_a_tenant_adds_to_an_act_is_named_with_the_system_parts", tags)
     CHECK(preview.part_codes == std::vector<std::string>{"controller"});
 }
 
-
-TEST_CASE("an_apply_writes_every_line_once_and_marks_each_applied", tags) {
+TEST_CASE("an_apply_writes_every_line_once_and_marks_each_applied", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -329,7 +362,7 @@ TEST_CASE("an_apply_writes_every_line_once_and_marks_each_applied", tags) {
     CHECK(books.get_book(line.entity_id)->version == written->version);
 }
 
-TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tags) {
+TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -370,7 +403,7 @@ TEST_CASE("a_refused_line_rolls_the_whole_apply_back_and_fails_the_request", tag
     CHECK(failed->change_commentary.starts_with("Line 2:"));
 }
 
-TEST_CASE("a_request_that_is_not_approved_is_not_applied", tags) {
+TEST_CASE("a_request_that_is_not_approved_is_not_applied", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -389,7 +422,7 @@ TEST_CASE("a_request_that_is_not_approved_is_not_applied", tags) {
           "waiting");
 }
 
-TEST_CASE("a_request_that_failed_to_apply_is_not_applied_again", tags) {
+TEST_CASE("a_request_that_failed_to_apply_is_not_applied_again", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -409,7 +442,7 @@ TEST_CASE("a_request_that_failed_to_apply_is_not_applied_again", tags) {
     CHECK_FALSE(books.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("a_request_over_the_line_limit_is_not_raised", tags) {
+TEST_CASE("a_request_over_the_line_limit_is_not_raised", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -423,7 +456,7 @@ TEST_CASE("a_request_over_the_line_limit_is_not_raised", tags) {
     CHECK_FALSE(proposal.message.empty());
 }
 
-TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
+TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -445,7 +478,8 @@ TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", tags) {
     CHECK(svc.recheck(id).refused());
 }
 
-TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure", tags) {
+TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure",
+          "[book_proposal]") {
     using ores::refdata::service::is_infrastructure_failure;
     // The client cannot reach the server: no label from the server at all.
     CHECK(is_infrastructure_failure("server closed the connection unexpectedly"));
@@ -459,7 +493,7 @@ TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastru
         "Executing INSERT failed: ERROR:  Invalid name: lost connection timed out"));
 }
 
-TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", tags) {
+TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -486,7 +520,7 @@ TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", tags) {
     CHECK(visible.empty());
 }
 
-TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", tags) {
+TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -506,7 +540,7 @@ TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", tag
     CHECK(rows.empty());
 }
 
-TEST_CASE("a_requests_deltas_list_each_column_beside_the_live_book", tags) {
+TEST_CASE("a_requests_deltas_list_each_column_beside_the_live_book", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -534,7 +568,7 @@ TEST_CASE("a_requests_deltas_list_each_column_beside_the_live_book", tags) {
     CHECK_FALSE(description->changed);
 }
 
-TEST_CASE("a_line_that_creates_a_book_has_no_before", tags) {
+TEST_CASE("a_line_that_creates_a_book_has_no_before", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -552,7 +586,7 @@ TEST_CASE("a_line_that_creates_a_book_has_no_before", tags) {
     }
 }
 
-TEST_CASE("a_line_that_has_applied_still_shows_what_it_changed", tags) {
+TEST_CASE("a_line_that_has_applied_still_shows_what_it_changed", "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);

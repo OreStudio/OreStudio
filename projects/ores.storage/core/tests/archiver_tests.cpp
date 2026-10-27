@@ -21,6 +21,7 @@
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -36,9 +37,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.storage.tests");
-const std::string tags("[filesystem]");
-
 void write_file(const std::filesystem::path& path, const std::string& content) {
     std::filesystem::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary);
@@ -52,7 +50,7 @@ std::string read_file(const std::filesystem::path& path) {
 
 }
 
-TEST_CASE("pack_and_extract_round_trips_a_directory_tree", tags) {
+TEST_CASE("pack_and_extract_round_trips_a_directory_tree", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory source;
@@ -84,7 +82,7 @@ TEST_CASE("pack_and_extract_round_trips_a_directory_tree", tags) {
     CHECK(read_file(destination.path() / "docs" / "nested" / "README.md") == readme_content);
 }
 
-TEST_CASE("pack_of_a_missing_source_directory_throws", tags) {
+TEST_CASE("pack_of_a_missing_source_directory_throws", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory parent;
@@ -95,7 +93,7 @@ TEST_CASE("pack_of_a_missing_source_directory_throws", tags) {
     CHECK_THROWS_AS(archiver::pack(missing, archive.path()), std::runtime_error);
 }
 
-TEST_CASE("extract_of_a_file_that_is_not_an_archive_throws", tags) {
+TEST_CASE("extract_of_a_file_that_is_not_an_archive_throws", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file not_an_archive;

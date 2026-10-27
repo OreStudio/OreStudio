@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::benchmark_rate> read_one(repository::benchmark_rate_repository& repo,
-                                             const ores::database::context& ctx,
-                                             const messaging::benchmark_rate_key& key) {
+std::vector<domain::benchmark_rate>
+benchmark_rate_read_one(repository::benchmark_rate_repository& repo,
+                        const ores::database::context& ctx,
+                        const messaging::benchmark_rate_key& key) {
     return repo.read_latest(ctx, key.code, key.coding_scheme_code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::benchmark_rate> read_one(repository::benchmark_rate_reposito
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::benchmark_rate_key key_from(const domain::benchmark_rate& v) {
+messaging::benchmark_rate_key benchmark_rate_key_from(const domain::benchmark_rate& v) {
     messaging::benchmark_rate_key key;
     key.code = v.code;
     key.coding_scheme_code = v.coding_scheme_code;
@@ -95,7 +96,7 @@ messaging::benchmark_rate_key key_from(const domain::benchmark_rate& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::benchmark_rate to_domain(const messaging::benchmark_rate_write& write) {
+domain::benchmark_rate benchmark_rate_to_domain(const messaging::benchmark_rate_write& write) {
     domain::benchmark_rate v;
     v.code = write.code;
     v.coding_scheme_code = write.coding_scheme_code;
@@ -135,7 +136,7 @@ messaging::list_benchmark_rates_response benchmark_rate_service::list_benchmark_
 messaging::get_benchmark_rate_response
 benchmark_rate_service::get_benchmark_rate(const messaging::get_benchmark_rate_request& request) {
     messaging::get_benchmark_rate_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = benchmark_rate_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "benchmark_rate"});
         return response;
@@ -154,7 +155,7 @@ messaging::get_many_benchmark_rates_response benchmark_rate_service::get_many_be
     for (const auto& k : request.keys) {
         messaging::benchmark_rate_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = benchmark_rate_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.benchmark_rate = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -170,7 +171,7 @@ benchmark_rate_service::put_benchmark_rate(const messaging::put_benchmark_rate_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(value));
     if (!written.empty())
         response.benchmark_rate = std::move(written.front());
     return response;
@@ -202,7 +203,7 @@ messaging::put_many_benchmark_rates_response benchmark_rate_service::put_many_be
     repo_.write(ctx_, batch, claims);
     response.rates.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(value));
         response.rates.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -236,7 +237,7 @@ messaging::delete_benchmark_rate_response benchmark_rate_service::delete_benchma
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = benchmark_rate_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "benchmark_rate",
@@ -328,8 +329,8 @@ benchmark_rate_service::prepare_change(const messaging::benchmark_rate_change& c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = benchmark_rate_to_domain(change.write);
+    const auto current = benchmark_rate_read_one(repo_, ctx_, benchmark_rate_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

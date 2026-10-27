@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::crm_enabled_derived_pair>
-read_one(repository::crm_enabled_derived_pair_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::crm_enabled_derived_pair_key& key) {
+crm_enabled_derived_pair_read_one(repository::crm_enabled_derived_pair_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const messaging::crm_enabled_derived_pair_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::crm_enabled_derived_pair_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::crm_enabled_derived_pair_key key_from(const domain::crm_enabled_derived_pair& v) {
+messaging::crm_enabled_derived_pair_key
+crm_enabled_derived_pair_key_from(const domain::crm_enabled_derived_pair& v) {
     messaging::crm_enabled_derived_pair_key key;
     key.id = v.id;
     return key;
@@ -99,7 +100,8 @@ messaging::crm_enabled_derived_pair_key key_from(const domain::crm_enabled_deriv
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::crm_enabled_derived_pair to_domain(const messaging::crm_enabled_derived_pair_write& write) {
+domain::crm_enabled_derived_pair
+crm_enabled_derived_pair_to_domain(const messaging::crm_enabled_derived_pair_write& write) {
     domain::crm_enabled_derived_pair v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -150,7 +152,7 @@ messaging::get_crm_enabled_derived_pair_response
 crm_enabled_derived_pair_service::get_crm_enabled_derived_pair(
     const messaging::get_crm_enabled_derived_pair_request& request) {
     messaging::get_crm_enabled_derived_pair_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = crm_enabled_derived_pair_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "crm_enabled_derived_pair"});
         return response;
@@ -170,7 +172,7 @@ crm_enabled_derived_pair_service::get_many_crm_enabled_derived_pairs(
     for (const auto& k : request.keys) {
         messaging::crm_enabled_derived_pair_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = crm_enabled_derived_pair_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.crm_enabled_derived_pair = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -187,7 +189,8 @@ crm_enabled_derived_pair_service::put_crm_enabled_derived_pair(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        crm_enabled_derived_pair_read_one(repo_, ctx_, crm_enabled_derived_pair_key_from(value));
     if (!written.empty())
         response.crm_enabled_derived_pair = std::move(written.front());
     return response;
@@ -220,7 +223,8 @@ crm_enabled_derived_pair_service::put_many_crm_enabled_derived_pairs(
     repo_.write(ctx_, batch, claims);
     response.crm_enabled_derived_pairs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = crm_enabled_derived_pair_read_one(
+            repo_, ctx_, crm_enabled_derived_pair_key_from(value));
         response.crm_enabled_derived_pairs.push_back(written.empty() ? value :
                                                                        std::move(written.front()));
     }
@@ -256,7 +260,7 @@ crm_enabled_derived_pair_service::delete_crm_enabled_derived_pair(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = crm_enabled_derived_pair_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "crm_enabled_derived_pair",
@@ -348,8 +352,9 @@ ores::utility::domain::result crm_enabled_derived_pair_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = crm_enabled_derived_pair_to_domain(change.write);
+    const auto current =
+        crm_enabled_derived_pair_read_one(repo_, ctx_, crm_enabled_derived_pair_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

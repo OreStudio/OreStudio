@@ -28,6 +28,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "report_instance_test_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -38,19 +39,12 @@
 // the day the packaging step used, and a run the session cannot see answers
 // missing rather than being written.
 
-namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][database]");
-
-}
-
 using ores::reporting::messaging::apply_run_pricing;
 using ores::reporting::messaging::record_run_pricing_request;
 using ores::reporting::service::report_instance_service;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("record_run_pricing stores the date and the note on the run", tags) {
+TEST_CASE("record_run_pricing stores the date and the note on the run", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;
@@ -80,7 +74,8 @@ TEST_CASE("record_run_pricing stores the date and the note on the run", tags) {
     CHECK(stored->price_note == request.price_note);
 }
 
-TEST_CASE("record_run_pricing answers missing for a run the session cannot read", tags) {
+TEST_CASE("record_run_pricing answers missing for a run the session cannot read",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;
@@ -98,7 +93,7 @@ TEST_CASE("record_run_pricing answers missing for a run the session cannot read"
     CHECK(answer.result.message == "The report instance does not exist.");
 }
 
-TEST_CASE("record_run_pricing refuses a date that is not one", tags) {
+TEST_CASE("record_run_pricing refuses a date that is not one", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

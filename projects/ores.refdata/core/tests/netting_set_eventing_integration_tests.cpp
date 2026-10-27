@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.core/repository/netting_set_repository.hpp"
 #include "ores.refdata.core/service/netting_set_service.hpp"
+#include "test_suite.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
 // regardless of the child's generator facet, hence the fully-qualified
@@ -65,13 +66,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::netting_set;
@@ -79,7 +73,7 @@ using ores::refdata::repository::netting_set_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_netting_set_publishes_an_event", tags) {
+TEST_CASE("write_netting_set_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -209,7 +203,7 @@ TEST_CASE("write_netting_set_publishes_an_event", tags) {
     {
         // The row's party (seeded above for the mandatory party FK)
         // scopes the service reads: point the session's visible-party
-        // set at it directly, the way write_test_party_and_scope_context
+        // set at it directly, the way netting_set_write_test_party_and_scope_context
         // does for party-scoped entities.
         const auto crud_party = v.party_id;
         const auto crud_ctx =

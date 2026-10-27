@@ -39,7 +39,8 @@
 namespace ores::synthetic::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.synthetic.service";
+static constexpr std::string_view trade_generation_counterparty_queue_group =
+    "ores.synthetic.service";
 }
 
 std::vector<ores::nats::service::subscription> register_trade_generation_counterparty_handlers(
@@ -51,47 +52,47 @@ std::vector<ores::nats::service::subscription> register_trade_generation_counter
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_trade_generation_counterparties_request::nats_subject,
-        queue_group,
+        trade_generation_counterparty_queue_group,
         [h](ores::nats::message msg) { h->list_trade_generation_counterparties(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_trade_generation_counterparty_request::nats_subject,
-        queue_group,
+        trade_generation_counterparty_queue_group,
         [h](ores::nats::message msg) { h->get_trade_generation_counterparty(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_trade_generation_counterparties_request::nats_subject,
-                             queue_group,
+                             trade_generation_counterparty_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_trade_generation_counterparties(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_trade_generation_counterparty_request::nats_subject,
-        queue_group,
+        trade_generation_counterparty_queue_group,
         [h](ores::nats::message msg) { h->put_trade_generation_counterparty(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_trade_generation_counterparties_request::nats_subject,
-                             queue_group,
+                             trade_generation_counterparty_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_trade_generation_counterparties(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_trade_generation_counterparty_request::nats_subject,
-        queue_group,
+        trade_generation_counterparty_queue_group,
         [h](ores::nats::message msg) { h->delete_trade_generation_counterparty(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_trade_generation_counterparties_request::nats_subject,
-                             queue_group,
+                             trade_generation_counterparty_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_trade_generation_counterparties(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_trade_generation_counterparty_versions_request::nats_subject,
-                             queue_group,
+                             trade_generation_counterparty_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_trade_generation_counterparty_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_trade_generation_counterparty_version_request::nats_subject,
-                             queue_group,
+                             trade_generation_counterparty_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_trade_generation_counterparty_version(std::move(msg));
                              }));

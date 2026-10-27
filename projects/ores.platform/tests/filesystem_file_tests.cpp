@@ -22,6 +22,7 @@
 #include "ores.platform/filesystem/file_not_found.hpp"
 #include "ores.platform/filesystem/io_error.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <filesystem>
@@ -39,9 +40,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[filesystem]");
-
 scoped_temp_file create_temp_file(const std::string& content) {
     scoped_temp_file sut;
     file::write_content(sut.path(), content);
@@ -58,7 +56,7 @@ std::ostream& operator<<(std::ostream& os, const streamable_test_object& s) {
 
 }
 
-TEST_CASE("read_content_from_existing_file", tags) {
+TEST_CASE("read_content_from_existing_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     const std::string expected_content = "Hello, World!";
@@ -70,7 +68,7 @@ TEST_CASE("read_content_from_existing_file", tags) {
     CHECK(content == expected_content);
 }
 
-TEST_CASE("read_content_from_file_with_multiline_content", tags) {
+TEST_CASE("read_content_from_file_with_multiline_content", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     const std::string expected_content = "Line 1\nLine 2\nLine 3\n";
@@ -82,7 +80,7 @@ TEST_CASE("read_content_from_file_with_multiline_content", tags) {
     CHECK(content == expected_content);
 }
 
-TEST_CASE("read_content_from_nonexistent_file_throws_exception", tags) {
+TEST_CASE("read_content_from_nonexistent_file_throws_exception", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     std::filesystem::path nonexistent("/nonexistent/path/to/file.txt");
@@ -91,7 +89,7 @@ TEST_CASE("read_content_from_nonexistent_file_throws_exception", tags) {
     CHECK_THROWS_AS(file::read_content(nonexistent), file_not_found);
 }
 
-TEST_CASE("read_content_from_istream", tags) {
+TEST_CASE("read_content_from_istream", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     const std::string expected_content = "Stream content here";
@@ -103,7 +101,7 @@ TEST_CASE("read_content_from_istream", tags) {
     CHECK(content == expected_content);
 }
 
-TEST_CASE("read_content_from_istream_starts_at_the_current_position", tags) {
+TEST_CASE("read_content_from_istream_starts_at_the_current_position", "[filesystem]") {
     std::istringstream iss("header\nbody");
     std::string header;
     std::getline(iss, header);
@@ -111,7 +109,7 @@ TEST_CASE("read_content_from_istream_starts_at_the_current_position", tags) {
     CHECK(file::read_content(iss) == "body");
 }
 
-TEST_CASE("read_content_from_a_stream_that_cannot_seek", tags) {
+TEST_CASE("read_content_from_a_stream_that_cannot_seek", "[filesystem]") {
     // A buffer that hands out one character at a time and refuses to seek.
     struct forward_only : std::streambuf {
         explicit forward_only(std::string text)
@@ -134,7 +132,7 @@ TEST_CASE("read_content_from_a_stream_that_cannot_seek", tags) {
     CHECK(file::read_content(in) == "no size is known");
 }
 
-TEST_CASE("read_empty_file", tags) {
+TEST_CASE("read_empty_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     auto temp_file = create_temp_file("");
@@ -145,7 +143,7 @@ TEST_CASE("read_empty_file", tags) {
     CHECK(content.empty());
 }
 
-TEST_CASE("write_content_to_new_file", tags) {
+TEST_CASE("write_content_to_new_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;
@@ -159,7 +157,7 @@ TEST_CASE("write_content_to_new_file", tags) {
     CHECK(read_back == content);
 }
 
-TEST_CASE("write_content_overwrites_existing_file", tags) {
+TEST_CASE("write_content_overwrites_existing_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     auto temp_file = create_temp_file("Original content");
@@ -172,7 +170,7 @@ TEST_CASE("write_content_overwrites_existing_file", tags) {
     CHECK(read_back == new_content);
 }
 
-TEST_CASE("write_template_to_file", tags) {
+TEST_CASE("write_template_to_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;
@@ -186,7 +184,7 @@ TEST_CASE("write_template_to_file", tags) {
     CHECK(content == "value=42");
 }
 
-TEST_CASE("remove_files_from_list", tags) {
+TEST_CASE("remove_files_from_list", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     auto file1 = create_temp_file("content1");
@@ -204,7 +202,7 @@ TEST_CASE("remove_files_from_list", tags) {
     CHECK(!std::filesystem::exists(file2.path()));
 }
 
-TEST_CASE("write_and_read_with_faker_content", tags) {
+TEST_CASE("write_and_read_with_faker_content", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;

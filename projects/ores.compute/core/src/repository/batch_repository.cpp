@@ -82,7 +82,7 @@ namespace {
  * The stored column behind a sortable field. A field is named as the wire
  * names it, which is the column itself except for the recording time.
  */
-std::string sort_column(std::string_view field) {
+std::string batch_sort_column(std::string_view field) {
     const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
         {"recorded_at", "valid_from"},
     };
@@ -98,15 +98,15 @@ std::string sort_column(std::string_view field) {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy batch_list_order(const ores::utility::domain::order& order,
+                                          std::initializer_list<std::string> default_columns,
+                                          bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!batch_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of compute batches cannot be ordered by " +
                                     order.field + ".");
-    return make_order({sort_column(order.field)}, order.descending, {"id"});
+    return make_order({batch_sort_column(order.field)}, order.descending, {"id"});
 }
 
 /*
@@ -114,7 +114,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::batches_filter>& filter) {
+batch_filter_condition(const std::optional<messaging::batches_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -385,8 +385,8 @@ batch_repository::read_latest(context ctx,
     return execute_ordered_read_query<batch_entity, domain::batch>(
         ctx,
         query,
-        list_order(order, {"valid_from"}, true),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        batch_list_order(order, {"valid_from"}, true),
+        narrowed(valid_at(as_of), batch_filter_condition(filter)),
         [](const auto& entities) { return batch_mapper::map(entities); },
         lg(),
         "Reading latest compute batches with pagination.");
@@ -401,11 +401,12 @@ batch_repository::get_total_batch_count(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<batch_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<batch_entity>(ctx,
-                                             query,
-                                             narrowed(valid_at(as_of), filter_condition(filter)),
-                                             lg(),
-                                             "Counting compute batches");
+    return execute_count_query<batch_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), batch_filter_condition(filter)),
+        lg(),
+        "Counting compute batches");
 }
 
 std::vector<domain::batch> batch_repository::read_latest(context ctx,

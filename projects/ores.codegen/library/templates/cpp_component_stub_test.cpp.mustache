@@ -5,15 +5,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
-
-const std::string tags("[domain]");
-
-}
-
 using namespace {{namespace}}::domain;
 
-TEST_CASE("create_stub", tags) {
+TEST_CASE("create_stub", "[domain]") {
     REQUIRE(stub_function() == "STUB code to be removed");
 }
 {{/component}}

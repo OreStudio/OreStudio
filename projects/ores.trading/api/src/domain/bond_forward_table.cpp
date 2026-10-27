@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string bond_forward_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,11 @@ std::string convert_to_table(const std::vector<bond_forward>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& forward : v) {
-        table << opt_str(forward.forward_maturity_date) << opt_str(forward.forward_settlement_date)
-              << opt_str(forward.long_in_forward) << opt_str(forward.premium_amount)
-              << forward.modified_by << forward.version << fort::endr;
+        table << bond_forward_opt_str(forward.forward_maturity_date)
+              << bond_forward_opt_str(forward.forward_settlement_date)
+              << bond_forward_opt_str(forward.long_in_forward)
+              << bond_forward_opt_str(forward.premium_amount) << forward.modified_by
+              << forward.version << fort::endr;
     }
     return table.to_string();
 }

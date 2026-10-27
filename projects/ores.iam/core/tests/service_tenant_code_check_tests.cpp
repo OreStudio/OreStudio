@@ -23,21 +23,19 @@
 
 namespace {
 
-const std::string tags("[tenant]");
-
 using ores::iam::service::check_tenant_code;
 using ores::iam::service::tenant_code_max_length;
 
 }
 
-TEST_CASE("check_tenant_code_accepts_the_shape_the_deployment_states", tags) {
+TEST_CASE("check_tenant_code_accepts_the_shape_the_deployment_states", "[tenant]") {
     CHECK(check_tenant_code("northwind").empty());
     CHECK(check_tenant_code("barclays_plc").empty());
     CHECK(check_tenant_code("acme2").empty());
     CHECK(check_tenant_code(std::string(tenant_code_max_length, 'a')).empty());
 }
 
-TEST_CASE("check_tenant_code_refuses_a_code_that_is_not_the_stated_shape", tags) {
+TEST_CASE("check_tenant_code_refuses_a_code_that_is_not_the_stated_shape", "[tenant]") {
     CHECK_FALSE(check_tenant_code("").empty());
     CHECK_FALSE(check_tenant_code("Northwind").empty());
     CHECK_FALSE(check_tenant_code("2northwind").empty());
@@ -48,7 +46,7 @@ TEST_CASE("check_tenant_code_refuses_a_code_that_is_not_the_stated_shape", tags)
     CHECK_FALSE(check_tenant_code(std::string(tenant_code_max_length + 1, 'a')).empty());
 }
 
-TEST_CASE("check_tenant_code_states_which_rule_a_code_broke", tags) {
+TEST_CASE("check_tenant_code_states_which_rule_a_code_broke", "[tenant]") {
     CHECK(check_tenant_code("Northwind").find("lowercase letter") != std::string::npos);
     CHECK(check_tenant_code("north-wind").find("lowercase letters, digits") != std::string::npos);
     CHECK(check_tenant_code(std::string(tenant_code_max_length + 1, 'a'))

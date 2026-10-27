@@ -42,6 +42,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -65,9 +66,6 @@ using ores::service::messaging::reply;
 // arrive with no delegated token and this stub would refuse it.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests.run_grant");
-const std::string tags("[run_grant][trigger][handler]");
 
 const std::vector<std::string> person_permissions{"reporting::report_definitions:read",
                                                   "reporting::report_definitions:write",
@@ -265,7 +263,8 @@ struct fixture {
 
 }
 
-TEST_CASE("a definition with no consent is given one, from the person asking", tags) {
+TEST_CASE("a definition with no consent is given one, from the person asking",
+          "[run_grant][trigger][handler]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     fixture f;
@@ -306,7 +305,8 @@ TEST_CASE("a definition with no consent is given one, from the person asking", t
     CHECK(f.grant_calls == 1);
 }
 
-TEST_CASE("an on-demand run of a never-scheduled definition holds its consent", tags) {
+TEST_CASE("an on-demand run of a never-scheduled definition holds its consent",
+          "[run_grant][trigger][handler]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     fixture f;

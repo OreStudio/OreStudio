@@ -1,0 +1,5 @@
+#Key,Total,Count,Max,Min,Average
+PRICING|Run PRICINGAnalytic,10000,1,10000,10000,10000.00
+PRICING|buildMarket(),0,1,0,0,0.00
+SA_CCR|Run SA_CCRAnalytic,0,1,0,0,0.00
+SA_CCR|buildMarket(),0,1,0,0,0.00

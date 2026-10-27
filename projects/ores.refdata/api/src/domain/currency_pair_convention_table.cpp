@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string currency_pair_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -52,8 +52,10 @@ std::string convert_to_table(const std::vector<currency_pair_convention>& v) {
 
     for ([[maybe_unused]] const auto& cpv : v) {
         table << cpv.pair_code << cpv.pip_factor << cpv.tick_size << cpv.decimal_places
-              << opt_str(cpv.business_day_convention) << opt_str(cpv.spot_relative)
-              << opt_str(cpv.end_of_month) << cpv.modified_by << cpv.version << fort::endr;
+              << currency_pair_convention_opt_str(cpv.business_day_convention)
+              << currency_pair_convention_opt_str(cpv.spot_relative)
+              << currency_pair_convention_opt_str(cpv.end_of_month) << cpv.modified_by
+              << cpv.version << fort::endr;
     }
     return table.to_string();
 }

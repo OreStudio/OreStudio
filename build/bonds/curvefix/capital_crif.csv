@@ -1,0 +1,1 @@
+TradeID,PortfolioID,CounterpartyName,CounterpartyID,NettingSetNumber,RiskType,HedgingSet,Qualifier,Bucket,Label1,Label2,AmountCurrency,Amount,AmountUSD,ValuationDate,EndDate,Label3,Regulation,Model,TradeType

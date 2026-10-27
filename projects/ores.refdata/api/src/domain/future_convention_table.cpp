@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string future_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<future_convention>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& fc : v) {
-        table << fc.id << fc.index << opt_str(fc.date_generation_rule) << opt_str(fc.netting_type)
-              << fc.modified_by << fc.version << fort::endr;
+        table << fc.id << fc.index << future_convention_opt_str(fc.date_generation_rule)
+              << future_convention_opt_str(fc.netting_type) << fc.modified_by << fc.version
+              << fort::endr;
     }
     return table.to_string();
 }

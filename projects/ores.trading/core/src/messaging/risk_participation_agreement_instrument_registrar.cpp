@@ -39,7 +39,8 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view risk_participation_agreement_instrument_queue_group =
+    "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -52,55 +53,55 @@ register_risk_participation_agreement_instrument_handlers(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_risk_participation_agreement_instruments_request::nats_subject,
-                             queue_group,
+                             risk_participation_agreement_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_risk_participation_agreement_instruments(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_risk_participation_agreement_instrument_request::nats_subject,
-                             queue_group,
+                             risk_participation_agreement_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_risk_participation_agreement_instrument(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         get_many_risk_participation_agreement_instruments_request::nats_subject,
-        queue_group,
+        risk_participation_agreement_instrument_queue_group,
         [h](ores::nats::message msg) {
             h->get_many_risk_participation_agreement_instruments(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(put_risk_participation_agreement_instrument_request::nats_subject,
-                             queue_group,
+                             risk_participation_agreement_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_risk_participation_agreement_instrument(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_many_risk_participation_agreement_instruments_request::nats_subject,
-        queue_group,
+        risk_participation_agreement_instrument_queue_group,
         [h](ores::nats::message msg) {
             h->put_many_risk_participation_agreement_instruments(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(delete_risk_participation_agreement_instrument_request::nats_subject,
-                             queue_group,
+                             risk_participation_agreement_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_risk_participation_agreement_instrument(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_many_risk_participation_agreement_instruments_request::nats_subject,
-        queue_group,
+        risk_participation_agreement_instrument_queue_group,
         [h](ores::nats::message msg) {
             h->delete_many_risk_participation_agreement_instruments(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_risk_participation_agreement_instrument_versions_request::nats_subject,
-        queue_group,
+        risk_participation_agreement_instrument_queue_group,
         [h](ores::nats::message msg) {
             h->list_risk_participation_agreement_instrument_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_risk_participation_agreement_instrument_version_request::nats_subject,
-        queue_group,
+        risk_participation_agreement_instrument_queue_group,
         [h](ores::nats::message msg) {
             h->get_risk_participation_agreement_instrument_version(std::move(msg));
         }));

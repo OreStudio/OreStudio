@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::tenor_resolution_algorithm>
-read_one(repository::tenor_resolution_algorithm_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::tenor_resolution_algorithm_key& key) {
+tenor_resolution_algorithm_read_one(repository::tenor_resolution_algorithm_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const messaging::tenor_resolution_algorithm_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::tenor_resolution_algorithm_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::tenor_resolution_algorithm_key key_from(const domain::tenor_resolution_algorithm& v) {
+messaging::tenor_resolution_algorithm_key
+tenor_resolution_algorithm_key_from(const domain::tenor_resolution_algorithm& v) {
     messaging::tenor_resolution_algorithm_key key;
     key.code = v.code;
     return key;
@@ -96,7 +97,7 @@ messaging::tenor_resolution_algorithm_key key_from(const domain::tenor_resolutio
  * database's to state, and are set after this conversion.
  */
 domain::tenor_resolution_algorithm
-to_domain(const messaging::tenor_resolution_algorithm_write& write) {
+tenor_resolution_algorithm_to_domain(const messaging::tenor_resolution_algorithm_write& write) {
     domain::tenor_resolution_algorithm v;
     v.code = write.code;
     v.name = write.name;
@@ -146,7 +147,7 @@ messaging::get_tenor_resolution_algorithm_response
 tenor_resolution_algorithm_service::get_tenor_resolution_algorithm(
     const messaging::get_tenor_resolution_algorithm_request& request) {
     messaging::get_tenor_resolution_algorithm_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = tenor_resolution_algorithm_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "tenor_resolution_algorithm"});
         return response;
@@ -166,7 +167,7 @@ tenor_resolution_algorithm_service::get_many_tenor_resolution_algorithms(
     for (const auto& k : request.keys) {
         messaging::tenor_resolution_algorithm_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = tenor_resolution_algorithm_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.tenor_resolution_algorithm = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +184,8 @@ tenor_resolution_algorithm_service::put_tenor_resolution_algorithm(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = tenor_resolution_algorithm_read_one(
+        repo_, ctx_, tenor_resolution_algorithm_key_from(value));
     if (!written.empty())
         response.tenor_resolution_algorithm = std::move(written.front());
     return response;
@@ -216,7 +218,8 @@ tenor_resolution_algorithm_service::put_many_tenor_resolution_algorithms(
     repo_.write(ctx_, batch, claims);
     response.algorithms.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = tenor_resolution_algorithm_read_one(
+            repo_, ctx_, tenor_resolution_algorithm_key_from(value));
         response.algorithms.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -251,7 +254,7 @@ tenor_resolution_algorithm_service::delete_tenor_resolution_algorithm(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = tenor_resolution_algorithm_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "tenor_resolution_algorithm",
@@ -341,8 +344,9 @@ ores::utility::domain::result tenor_resolution_algorithm_service::prepare_change
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = tenor_resolution_algorithm_to_domain(change.write);
+    const auto current =
+        tenor_resolution_algorithm_read_one(repo_, ctx_, tenor_resolution_algorithm_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

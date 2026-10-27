@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void platform_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void platform_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -220,7 +220,7 @@ void platform_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        platform_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -268,7 +268,7 @@ void platform_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.code, parsed->positionals[next++], "code");
+        platform_read_token(req.key.code, parsed->positionals[next++], "code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -313,7 +313,7 @@ void platform_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::platform_key key;
-            read_token(key.code, parsed->positionals[i + 0], "code");
+            platform_read_token(key.code, parsed->positionals[i + 0], "code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -359,13 +359,15 @@ void platform_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.code, parsed->positionals[next++], "code");
-        read_token(req.change.write.display_name, parsed->positionals[next++], "display_name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.os_family, parsed->positionals[next++], "os_family");
-        read_token(req.change.write.cpu_arch, parsed->positionals[next++], "cpu_arch");
-        read_token(req.change.write.abi, parsed->positionals[next++], "abi");
-        read_token(req.change.write.is_active, parsed->positionals[next++], "is_active");
+        platform_read_token(req.change.write.code, parsed->positionals[next++], "code");
+        platform_read_token(
+            req.change.write.display_name, parsed->positionals[next++], "display_name");
+        platform_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        platform_read_token(req.change.write.os_family, parsed->positionals[next++], "os_family");
+        platform_read_token(req.change.write.cpu_arch, parsed->positionals[next++], "cpu_arch");
+        platform_read_token(req.change.write.abi, parsed->positionals[next++], "abi");
+        platform_read_token(req.change.write.is_active, parsed->positionals[next++], "is_active");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -413,14 +415,16 @@ void platform_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.code, parsed->positionals[next++], "code");
-        read_token(req.change.write.display_name, parsed->positionals[next++], "display_name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.os_family, parsed->positionals[next++], "os_family");
-        read_token(req.change.write.cpu_arch, parsed->positionals[next++], "cpu_arch");
-        read_token(req.change.write.abi, parsed->positionals[next++], "abi");
-        read_token(req.change.write.is_active, parsed->positionals[next++], "is_active");
+        platform_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        platform_read_token(req.change.write.code, parsed->positionals[next++], "code");
+        platform_read_token(
+            req.change.write.display_name, parsed->positionals[next++], "display_name");
+        platform_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        platform_read_token(req.change.write.os_family, parsed->positionals[next++], "os_family");
+        platform_read_token(req.change.write.cpu_arch, parsed->positionals[next++], "cpu_arch");
+        platform_read_token(req.change.write.abi, parsed->positionals[next++], "abi");
+        platform_read_token(req.change.write.is_active, parsed->positionals[next++], "is_active");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -482,14 +486,16 @@ void platform_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::platform_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.code, parsed->positionals[next++], "code");
-            read_token(change.write.display_name, parsed->positionals[next++], "display_name");
-            read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.os_family, parsed->positionals[next++], "os_family");
-            read_token(change.write.cpu_arch, parsed->positionals[next++], "cpu_arch");
-            read_token(change.write.abi, parsed->positionals[next++], "abi");
-            read_token(change.write.is_active, parsed->positionals[next++], "is_active");
+            platform_read_token(change.write.id, parsed->positionals[next++], "id");
+            platform_read_token(change.write.code, parsed->positionals[next++], "code");
+            platform_read_token(
+                change.write.display_name, parsed->positionals[next++], "display_name");
+            platform_read_token(
+                change.write.description, parsed->positionals[next++], "description");
+            platform_read_token(change.write.os_family, parsed->positionals[next++], "os_family");
+            platform_read_token(change.write.cpu_arch, parsed->positionals[next++], "cpu_arch");
+            platform_read_token(change.write.abi, parsed->positionals[next++], "abi");
+            platform_read_token(change.write.is_active, parsed->positionals[next++], "is_active");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -539,7 +545,7 @@ void platform_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.code, parsed->positionals[next++], "code");
+        platform_read_token(req.removal.key.code, parsed->positionals[next++], "code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -593,7 +599,7 @@ void platform_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::platform_key key;
-            read_token(key.code, parsed->positionals[i * 1 + 0], "code");
+            platform_read_token(key.code, parsed->positionals[i * 1 + 0], "code");
             req.removals.push_back(messaging::platform_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -645,8 +651,8 @@ void platform_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.code, parsed->positionals[next++], "code");
-        apply_page(req, *parsed);
+        platform_read_token(req.key.code, parsed->positionals[next++], "code");
+        platform_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -691,7 +697,7 @@ void platform_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.platform.code, parsed->positionals[next++], "code");
+        platform_read_token(req.key.platform.code, parsed->positionals[next++], "code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

@@ -41,6 +41,10 @@ of how tenors resolve ([[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and
 the controls on each]]). The person is never the one who asked: the approval
 record refuses a decision by the asker.
 
+The Market Risk that decides is the tenant's and not one party's, because a
+tenant kind belongs to no party and a permission is held by an account in a
+tenant. /What is missing/ states the rule and why it follows.
+
 The role exists. The part /Market Risk/ is seeded with the description
 "Classification, capital treatment, agreements and conventions", and the
 permission =inbox::approvals:decide_market_risk= is seeded. What does not exist is
@@ -71,8 +75,10 @@ approver can leave the screen at any step.
    party reads a party document, and every party of the tenant reads a tenant
    kind. It states what it cannot say: which runs are affected, because no run
    records the version of a document it read.
-5. *Read the rule.* The system shows how many approvals the request needs, the part
-   that decides, and the decisions so far.
+5. *Read the rule.* The system shows how many approvals the request needs, the
+   permission and the part that decide, and the decisions so far. For a tenant
+   kind it also states that the decider is the tenant's Market Risk and not one
+   party's, because the document is read by every party of the tenant.
 6. *Decide.* The person approves, declines or holds, and writes a comment. A
    decline needs a comment. The system records the decision under the person's own
    name.
@@ -144,9 +150,28 @@ build and reads mock data only. The page marks each server gap this journey name
    workflow. A convention has none, so an approval changes nothing. The apply
    must write the row with =must_match_version=, and it must refuse if the row
    changed after the request was raised.
-4. *A convention of a tenant kind is decided by one function for every party.* The
-   controls note names Market Risk as the decider and does not say which party's
-   Market Risk decides a tenant kind. The decision is the product owner's.
+4. *Who decides a tenant kind is now stated.* The controls note names Market
+   Risk as the decider and did not say which party's Market Risk decides a
+   tenant kind. The rule the tenancy model gives, and the rule this journey now
+   states, is that the *tenant's* Market Risk decides, and no party's:
+   - A tenant kind belongs to the tenant and not to a party. Every party of the
+     tenant reads the same row, so no party owns the document and no party's
+     function is accountable for it.
+   - A permission is held by an account in a tenant and never by a party. There
+     is no party-scoped permission to grant, so "the London head of market
+     risk" is not a decider the model can name.
+   - The queue a decider works from is the tenant's. The list of requests a
+     person may decide is filtered by the permission each kind names and by the
+     tenant, and by no party, so the first holder of the permission who answers
+     decides the tenant's request.
+
+   The group's head of market risk is the person the demonstration intends to
+   answer, because the group is the party that speaks for the tenant. Any other
+   account of the tenant that holds =inbox::approvals:decide_market_risk= may
+   answer too, and the record then names that person, which is the same answer
+   the rest of the tenant's approvals give. The asker never answers. A set that
+   names a tenant kind follows the same rule, because a set is a tenant-level
+   choice over documents of which some belong to the tenant.
 5. *The role is not tied to a person in the tenant.* The permission exists. A
    Market Risk account in a tenant holds it only if the tenant's roles grant it,
    and this journey assumes they do. The first task of the implementation reads

@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string balance_guaranteed_swap_tranche_notional_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,7 +51,8 @@ std::string convert_to_table(const std::vector<balance_guaranteed_swap_tranche_n
 
     for ([[maybe_unused]] const auto& tranche_notional : v) {
         table << tranche_notional.trade_id << tranche_notional.tranche_number
-              << tranche_notional.sequence_number << opt_str(tranche_notional.start_date)
+              << tranche_notional.sequence_number
+              << balance_guaranteed_swap_tranche_notional_opt_str(tranche_notional.start_date)
               << tranche_notional.notional << tranche_notional.modified_by
               << tranche_notional.version << fort::endr;
     }

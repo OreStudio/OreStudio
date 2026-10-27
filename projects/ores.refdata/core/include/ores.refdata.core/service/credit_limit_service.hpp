@@ -76,26 +76,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_credit_limits_response
-    list_credit_limits(const messaging::list_credit_limits_request& request);
-    messaging::get_credit_limit_response
-    get_credit_limit(const messaging::get_credit_limit_request& request);
-    messaging::get_many_credit_limits_response
-    get_many_credit_limits(const messaging::get_many_credit_limits_request& request);
-    messaging::put_credit_limit_response
-    put_credit_limit(const messaging::put_credit_limit_request& request);
-    messaging::put_many_credit_limits_response
-    put_many_credit_limits(const messaging::put_many_credit_limits_request& request);
-    messaging::delete_credit_limit_response
-    delete_credit_limit(const messaging::delete_credit_limit_request& request);
-    messaging::delete_many_credit_limits_response
-    delete_many_credit_limits(const messaging::delete_many_credit_limits_request& request);
-    messaging::list_by_counterparty_id_credit_limits_response list_by_counterparty_id_credit_limits(
-        const messaging::list_by_counterparty_id_credit_limits_request& request);
-    messaging::list_credit_limit_versions_response
-    list_credit_limit_versions(const messaging::list_credit_limit_versions_request& request);
-    messaging::get_credit_limit_version_response
-    get_credit_limit_version(const messaging::get_credit_limit_version_request& request);
+    ::ores::refdata::messaging::list_credit_limits_response
+    list_credit_limits(const ::ores::refdata::messaging::list_credit_limits_request& request);
+    ::ores::refdata::messaging::get_credit_limit_response
+    get_credit_limit(const ::ores::refdata::messaging::get_credit_limit_request& request);
+    ::ores::refdata::messaging::get_many_credit_limits_response get_many_credit_limits(
+        const ::ores::refdata::messaging::get_many_credit_limits_request& request);
+    ::ores::refdata::messaging::put_credit_limit_response
+    put_credit_limit(const ::ores::refdata::messaging::put_credit_limit_request& request);
+    ::ores::refdata::messaging::put_many_credit_limits_response put_many_credit_limits(
+        const ::ores::refdata::messaging::put_many_credit_limits_request& request);
+    ::ores::refdata::messaging::delete_credit_limit_response
+    delete_credit_limit(const ::ores::refdata::messaging::delete_credit_limit_request& request);
+    ::ores::refdata::messaging::delete_many_credit_limits_response delete_many_credit_limits(
+        const ::ores::refdata::messaging::delete_many_credit_limits_request& request);
+    ::ores::refdata::messaging::list_by_counterparty_id_credit_limits_response
+    list_by_counterparty_id_credit_limits(
+        const ::ores::refdata::messaging::list_by_counterparty_id_credit_limits_request& request);
+    ::ores::refdata::messaging::list_credit_limit_versions_response list_credit_limit_versions(
+        const ::ores::refdata::messaging::list_credit_limit_versions_request& request);
+    ::ores::refdata::messaging::get_credit_limit_version_response get_credit_limit_version(
+        const ::ores::refdata::messaging::get_credit_limit_version_request& request);
     /**@}*/
 
     /**
@@ -265,9 +266,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::credit_limit_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::credit_limit& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::credit_limit_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::credit_limit& out);
 };
 
 }

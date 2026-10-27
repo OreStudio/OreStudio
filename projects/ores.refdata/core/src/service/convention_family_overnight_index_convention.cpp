@@ -42,7 +42,9 @@ void apply_overnight_index(const ores::database::context& ctx,
         throw std::runtime_error("Staged conventions payload for family "
                                  "\"overnight_index\" does not decode.");
     auto rows = std::vector<ores::refdata::domain::overnight_index_convention>{std::move(*decoded)};
-    ores::service::messaging::stamp(rows.front(), ctx);
+    // A grouped row keeps its security fields in a member, so the stamp has
+    // to walk into it; stamp_document does, and leaves a flat row alone.
+    ores::service::messaging::stamp_document(rows.front(), ctx);
     add_missing_world_rows(ctx,
                            ores::refdata::repository::overnight_index_convention_repository(),
                            std::move(rows),

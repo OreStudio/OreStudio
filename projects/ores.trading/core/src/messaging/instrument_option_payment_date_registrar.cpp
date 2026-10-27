@@ -39,7 +39,8 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view instrument_option_payment_date_queue_group =
+    "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_instrument_option_payment_date_handlers(
@@ -51,55 +52,55 @@ std::vector<ores::nats::service::subscription> register_instrument_option_paymen
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_instrument_option_payment_dates_request::nats_subject,
-        queue_group,
+        instrument_option_payment_date_queue_group,
         [h](ores::nats::message msg) { h->list_instrument_option_payment_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_instrument_option_payment_date_request::nats_subject,
-        queue_group,
+        instrument_option_payment_date_queue_group,
         [h](ores::nats::message msg) { h->get_instrument_option_payment_date(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_instrument_option_payment_dates_request::nats_subject,
-                             queue_group,
+                             instrument_option_payment_date_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_instrument_option_payment_dates(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_instrument_option_payment_date_request::nats_subject,
-        queue_group,
+        instrument_option_payment_date_queue_group,
         [h](ores::nats::message msg) { h->put_instrument_option_payment_date(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_instrument_option_payment_dates_request::nats_subject,
-                             queue_group,
+                             instrument_option_payment_date_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_instrument_option_payment_dates(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(delete_instrument_option_payment_date_request::nats_subject,
-                                        queue_group,
+                                        instrument_option_payment_date_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->delete_instrument_option_payment_date(
                                                 std::move(msg));
                                         }));
     subs.push_back(
         nats.queue_subscribe(delete_many_instrument_option_payment_dates_request::nats_subject,
-                             queue_group,
+                             instrument_option_payment_date_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_instrument_option_payment_dates(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_trade_id_instrument_option_payment_dates_request::nats_subject,
-        queue_group,
+        instrument_option_payment_date_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_trade_id_instrument_option_payment_dates(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(list_instrument_option_payment_date_versions_request::nats_subject,
-                             queue_group,
+                             instrument_option_payment_date_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_instrument_option_payment_date_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_instrument_option_payment_date_version_request::nats_subject,
-                             queue_group,
+                             instrument_option_payment_date_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_instrument_option_payment_date_version(std::move(msg));
                              }));

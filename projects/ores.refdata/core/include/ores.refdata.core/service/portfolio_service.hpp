@@ -76,26 +76,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_portfolios_response
-    list_portfolios(const messaging::list_portfolios_request& request);
-    messaging::get_portfolio_response
-    get_portfolio(const messaging::get_portfolio_request& request);
-    messaging::get_many_portfolios_response
-    get_many_portfolios(const messaging::get_many_portfolios_request& request);
-    messaging::put_portfolio_response
-    put_portfolio(const messaging::put_portfolio_request& request);
-    messaging::put_many_portfolios_response
-    put_many_portfolios(const messaging::put_many_portfolios_request& request);
-    messaging::delete_portfolio_response
-    delete_portfolio(const messaging::delete_portfolio_request& request);
-    messaging::delete_many_portfolios_response
-    delete_many_portfolios(const messaging::delete_many_portfolios_request& request);
-    messaging::list_by_sandbox_id_portfolios_response
-    list_by_sandbox_id_portfolios(const messaging::list_by_sandbox_id_portfolios_request& request);
-    messaging::list_portfolio_versions_response
-    list_portfolio_versions(const messaging::list_portfolio_versions_request& request);
-    messaging::get_portfolio_version_response
-    get_portfolio_version(const messaging::get_portfolio_version_request& request);
+    ::ores::refdata::messaging::list_portfolios_response
+    list_portfolios(const ::ores::refdata::messaging::list_portfolios_request& request);
+    ::ores::refdata::messaging::get_portfolio_response
+    get_portfolio(const ::ores::refdata::messaging::get_portfolio_request& request);
+    ::ores::refdata::messaging::get_many_portfolios_response
+    get_many_portfolios(const ::ores::refdata::messaging::get_many_portfolios_request& request);
+    ::ores::refdata::messaging::put_portfolio_response
+    put_portfolio(const ::ores::refdata::messaging::put_portfolio_request& request);
+    ::ores::refdata::messaging::put_many_portfolios_response
+    put_many_portfolios(const ::ores::refdata::messaging::put_many_portfolios_request& request);
+    ::ores::refdata::messaging::delete_portfolio_response
+    delete_portfolio(const ::ores::refdata::messaging::delete_portfolio_request& request);
+    ::ores::refdata::messaging::delete_many_portfolios_response delete_many_portfolios(
+        const ::ores::refdata::messaging::delete_many_portfolios_request& request);
+    ::ores::refdata::messaging::list_by_sandbox_id_portfolios_response
+    list_by_sandbox_id_portfolios(
+        const ::ores::refdata::messaging::list_by_sandbox_id_portfolios_request& request);
+    ::ores::refdata::messaging::list_portfolio_versions_response list_portfolio_versions(
+        const ::ores::refdata::messaging::list_portfolio_versions_request& request);
+    ::ores::refdata::messaging::get_portfolio_version_response
+    get_portfolio_version(const ::ores::refdata::messaging::get_portfolio_version_request& request);
     /**@}*/
 
     /**
@@ -266,9 +267,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::portfolio_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::portfolio& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::portfolio_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::portfolio& out);
 };
 
 }

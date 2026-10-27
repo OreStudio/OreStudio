@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::market_data_generation_config>
-read_one(repository::market_data_generation_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::market_data_generation_config_key& key) {
+market_data_generation_config_read_one(repository::market_data_generation_config_repository& repo,
+                                       const ores::database::context& ctx,
+                                       const messaging::market_data_generation_config_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -87,7 +87,7 @@ read_one(repository::market_data_generation_config_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::market_data_generation_config_key
-key_from(const domain::market_data_generation_config& v) {
+market_data_generation_config_key_from(const domain::market_data_generation_config& v) {
     messaging::market_data_generation_config_key key;
     key.id = v.id;
     return key;
@@ -100,8 +100,8 @@ key_from(const domain::market_data_generation_config& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::market_data_generation_config
-to_domain(const messaging::market_data_generation_config_write& write) {
+domain::market_data_generation_config market_data_generation_config_to_domain(
+    const messaging::market_data_generation_config_write& write) {
     domain::market_data_generation_config v;
     v.id = write.id;
     v.name = write.name;
@@ -153,7 +153,7 @@ messaging::get_market_data_generation_config_response
 market_data_generation_config_service::get_market_data_generation_config(
     const messaging::get_market_data_generation_config_request& request) {
     messaging::get_market_data_generation_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = market_data_generation_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "market_data_generation_config"});
@@ -174,7 +174,7 @@ market_data_generation_config_service::get_many_market_data_generation_configs(
     for (const auto& k : request.keys) {
         messaging::market_data_generation_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = market_data_generation_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.market_data_generation_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -191,7 +191,8 @@ market_data_generation_config_service::put_market_data_generation_config(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = market_data_generation_config_read_one(
+        repo_, ctx_, market_data_generation_config_key_from(value));
     if (!written.empty())
         response.market_data_generation_config = std::move(written.front());
     return response;
@@ -224,7 +225,8 @@ market_data_generation_config_service::put_many_market_data_generation_configs(
     repo_.write(ctx_, batch, claims);
     response.market_data_generation_configs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = market_data_generation_config_read_one(
+            repo_, ctx_, market_data_generation_config_key_from(value));
         response.market_data_generation_configs.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -260,7 +262,8 @@ market_data_generation_config_service::delete_market_data_generation_config(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                market_data_generation_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "market_data_generation_config",
@@ -353,8 +356,9 @@ ores::utility::domain::result market_data_generation_config_service::prepare_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = market_data_generation_config_to_domain(change.write);
+    const auto current = market_data_generation_config_read_one(
+        repo_, ctx_, market_data_generation_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

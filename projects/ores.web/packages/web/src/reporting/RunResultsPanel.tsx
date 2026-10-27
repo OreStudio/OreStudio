@@ -31,7 +31,9 @@ import {
     type RunResultRow,
 } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { Donut, bookSharesOf, problemsOf, type Share } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
+import { asFigure, toAggregateRows, toErrors, toTradeRows, type RunError } from './resultsModel.js';
 
 /**
  * What a run produced, read at the level the reader asks for.
@@ -49,81 +51,6 @@ const REASON_TEXT: Readonly<Record<Exclude<ResultReason, ''>, string>> = {
     'no-output': 'reporting.results.noOutput',
     'no-result-file': 'reporting.results.noResultFile',
     'no-figures': 'reporting.results.noFigures',
-};
-
-/** A figure with its thousands grouped and two decimals, or the text as written. */
-const asFigure = (text: string): string => {
-    const figure = Number.parseFloat(text);
-    if (!Number.isFinite(figure)) {
-        return text;
-    }
-    return new Intl.NumberFormat('en-GB', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(figure);
-};
-
-const asText = (value: unknown): string => (typeof value === 'string' ? value : '');
-
-const toTrade = (raw: unknown): RunResultRow => {
-    const row = raw as Record<string, unknown>;
-    return {
-        trade_id: asText(row['trade_id']),
-        trade_type: asText(row['trade_type']),
-        npv: asText(row['npv']),
-        npv_currency: asText(row['npv_currency']),
-        npv_base: asText(row['npv_base']),
-        notional: asText(row['notional']),
-        notional_currency: asText(row['notional_currency']),
-        counterparty: asText(row['counterparty']),
-        counterparty_name: asText(row['counterparty_name']),
-        book_id: asText(row['book_id']),
-        book_name: asText(row['book_name']),
-    };
-};
-
-const toAggregate = (raw: unknown): AggregateRow => {
-    const row = raw as Record<string, unknown>;
-    const money = (value: unknown): readonly Money[] =>
-        Array.isArray(value)
-            ? value.map((entry) => {
-                  const item = entry as Record<string, unknown>;
-                  return { currency: asText(item['currency']), total: asText(item['total']) };
-              })
-            : [];
-    return {
-        key: asText(row['key']),
-        name: asText(row['name']),
-        trades: typeof row['trades'] === 'number' ? row['trades'] : 0,
-        totals: money(row['totals']),
-        notional: money(row['notional']),
-        group: asText(row['group']),
-        is_group: row['is_group'] === true,
-        previous: money(row['previous']),
-        change: money(row['change']),
-        change_pct: money(row['change_pct']),
-        is_removed: row['is_removed'] === true,
-        depth: typeof row['depth'] === 'number' ? Math.max(0, row['depth']) : 0,
-    };
-};
-
-type RunError = {
-    readonly scope: string;
-    readonly severity: string;
-    readonly message: string;
-    readonly cause: string;
-    readonly subjectId: string;
-};
-
-const toError = (raw: unknown): RunError => {
-    const row = raw as Record<string, unknown>;
-    return {
-        scope: asText(row['scope']),
-        severity: asText(row['severity']),
-        message: asText(row['message']),
-        cause: asText(row['cause']),
-        subjectId: asText(row['subject_id']),
-    };
 };
 
 export function RunResultsPanel({
@@ -161,7 +88,7 @@ export function RunResultsPanel({
     });
     const errorsOf = useMemo(() => {
         const byTrade = new Map<string, RunError[]>();
-        for (const error of (errors.data ?? []).map(toError)) {
+        for (const error of toErrors(errors.data ?? []).rows) {
             if (error.scope !== 'Trade' || error.subjectId === '') {
                 continue;
             }
@@ -171,11 +98,12 @@ export function RunResultsPanel({
     }, [errors.data]);
     const [selected, setSelected] = useState('');
 
+    const text = (value: unknown): string => (typeof value === 'string' ? value : '');
     const candidates = (otherRuns.data ?? [])
         .map((entry) => entry as Record<string, unknown>)
-        .filter((entry) => asText(entry['state_name']) === 'completed')
-        .filter((entry) => asText(entry['id']) !== runId)
-        .map((entry) => ({ id: asText(entry['id']), name: asText(entry['name']) }));
+        .filter((entry) => text(entry['state_name']) === 'completed')
+        .filter((entry) => text(entry['id']) !== runId)
+        .map((entry) => ({ id: text(entry['id']), name: text(entry['name']) }));
     const chooseBaseline = (next: string): void => {
         const params = new URLSearchParams(search);
         if (next === '') {
@@ -215,8 +143,11 @@ export function RunResultsPanel({
     };
 
     const rows = results.data?.rows ?? [];
-    const trades = level === 'trade' ? rows.map(toTrade) : [];
-    const aggregates = level === 'trade' ? [] : rows.map(toAggregate);
+    const tradeParse = level === 'trade' ? toTradeRows(rows) : { rows: [], unread: 0 };
+    const aggregateParse = level === 'trade' ? { rows: [], unread: 0 } : toAggregateRows(rows);
+    const trades = tradeParse.rows;
+    const aggregates = aggregateParse.rows;
+    const unread = tradeParse.unread + aggregateParse.unread;
     const filtered =
         level !== 'trade'
             ? []
@@ -233,6 +164,20 @@ export function RunResultsPanel({
     const reason = results.data?.reason ?? '';
     const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
     const tradeCount = results.data?.tradeCount ?? 0;
+    const bookShares = bookSharesOf(
+        aggregates.map((row) => ({
+            key: row.key,
+            name: row.name,
+            is_group: row.is_group,
+            is_removed: row.is_removed,
+            totals: row.totals,
+        })),
+    );
+    const problems: readonly Share[] = problemsOf(
+        toErrors(errors.data ?? []).rows,
+        t(`${field}.unscoped`),
+        t(`${field}.otherScopes`),
+    );
     const filterName = noBook
         ? t(`${field}.unbooked`)
         : bookFilter !== ''
@@ -287,6 +232,14 @@ export function RunResultsPanel({
             </label>
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {results.isError && <p className="text-sm text-down">{t(`${field}.failed`)}</p>}
+            {results.isSuccess && !errors.isPending && problems.length > 0 && (
+                <Donut
+                    title={t(`${field}.problemsTitle`)}
+                    caption={t(`${field}.problemsCaption`)}
+                    parts={problems}
+                    format={(value) => String(value)}
+                />
+            )}
             {results.isSuccess && (
                 <>
                     {trades.length === 0 && aggregates.length === 0 ? (
@@ -307,6 +260,11 @@ export function RunResultsPanel({
                             </p>
                             {degraded && (
                                 <p className="text-sm text-down">{t(`${field}.degraded`)}</p>
+                            )}
+                            {unread > 0 && (
+                                <p className="text-sm text-down">
+                                    {t(`${field}.unreadRows`, { count: unread })}
+                                </p>
                             )}
                             <dl className="flex flex-wrap gap-8">
                                 <div>
@@ -380,6 +338,14 @@ export function RunResultsPanel({
                                         {t(`${field}.clearFilter`)}
                                     </button>
                                 </p>
+                            )}
+                            {level === 'book' && bookShares !== null && (
+                                <Donut
+                                    title={t(`${field}.shareTitle`)}
+                                    caption={t(`${field}.shareCaption`)}
+                                    parts={bookShares}
+                                    format={(value) => asFigure(value.toFixed(2))}
+                                />
                             )}
                             {level === 'trade' ? (
                                 <TradeTable

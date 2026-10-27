@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: f48ed708-30b4-4588-ad92-5dbb7ca43908
+:END:
+#+title: ores.refdata.tenor_basis_swap_receive_leg
+#+description: Codegen field-group model for ores::refdata::domain::tenor_basis_swap_receive_leg.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: tenor_basis_swap_receive_leg
+#+namespace: ores::refdata::domain
+#+brief: The receiving leg of the paying and receiving form of a tenor basis swap.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The receiving leg: the index it references, the frequency it pays at, and
+whether its coupons are averaged.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** receive_index
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Index the receiving leg references, in the paying and receiving form.
+
+** receive_frequency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Payment frequency of the receiving leg, as ORE's period code.
+
+** rec_is_averaged
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+Whether the receiving leg's coupons are averaged rather than compounded.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

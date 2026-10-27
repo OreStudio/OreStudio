@@ -22,8 +22,6 @@
 
 namespace {
 
-const std::string tags("[short_code_generator]");
-
 using ores::utility::string::strip_corporate_suffixes;
 using ores::utility::string::generate_short_code;
 using ores::utility::string::generate_unique_short_code;
@@ -34,36 +32,36 @@ using ores::utility::string::generate_unique_short_code;
 // strip_corporate_suffixes
 // ============================================================================
 
-TEST_CASE("strip_corporate_suffixes_removes_plc", tags) {
+TEST_CASE("strip_corporate_suffixes_removes_plc", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Barclays Plc") == "Barclays");
 }
 
-TEST_CASE("strip_corporate_suffixes_removes_ltd", tags) {
+TEST_CASE("strip_corporate_suffixes_removes_ltd", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Hargreaves Securities Ltd") == "Hargreaves Securities");
 }
 
-TEST_CASE("strip_corporate_suffixes_removes_llc", tags) {
+TEST_CASE("strip_corporate_suffixes_removes_llc", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Goldman Capital LLC") == "Goldman Capital");
 }
 
-TEST_CASE("strip_corporate_suffixes_removes_inc", tags) {
+TEST_CASE("strip_corporate_suffixes_removes_inc", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Hamilton Financial Inc") == "Hamilton Financial");
 }
 
-TEST_CASE("strip_corporate_suffixes_removes_sa_dotted", tags) {
+TEST_CASE("strip_corporate_suffixes_removes_sa_dotted", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("BNP Paribas S.A.") == "BNP Paribas");
 }
 
-TEST_CASE("strip_corporate_suffixes_removes_gmbh", tags) {
+TEST_CASE("strip_corporate_suffixes_removes_gmbh", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Deutsche Bank AG") == "Deutsche Bank");
 }
 
-TEST_CASE("strip_corporate_suffixes_is_case_insensitive", tags) {
+TEST_CASE("strip_corporate_suffixes_is_case_insensitive", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Barclays PLC") == "Barclays");
     CHECK(strip_corporate_suffixes("Barclays plc") == "Barclays");
 }
 
-TEST_CASE("strip_corporate_suffixes_preserves_name_without_suffix", tags) {
+TEST_CASE("strip_corporate_suffixes_preserves_name_without_suffix", "[short_code_generator]") {
     CHECK(strip_corporate_suffixes("Rutherford Brothers") == "Rutherford Brothers");
 }
 
@@ -71,37 +69,37 @@ TEST_CASE("strip_corporate_suffixes_preserves_name_without_suffix", tags) {
 // generate_short_code — matches SQL ores_utility_generate_short_code_fn
 // ============================================================================
 
-TEST_CASE("generate_short_code_single_word_uses_consonants", tags) {
+TEST_CASE("generate_short_code_single_word_uses_consonants", "[short_code_generator]") {
     // "BARCLAYS" -> strip "Plc" -> "BARCLAYS"
     // Single word: B + RCLYS (consonants after first) = BRCLYS
     CHECK(generate_short_code("Barclays Plc") == "BRCLYS");
 }
 
-TEST_CASE("generate_short_code_two_words_uses_3_plus_3", tags) {
+TEST_CASE("generate_short_code_two_words_uses_3_plus_3", "[short_code_generator]") {
     // "BNP PARIBAS" -> 3+3 = BNPPAR
     CHECK(generate_short_code("BNP Paribas S.A.") == "BNPPAR");
 }
 
-TEST_CASE("generate_short_code_three_words_uses_2_plus_2_plus_2", tags) {
+TEST_CASE("generate_short_code_three_words_uses_2_plus_2_plus_2", "[short_code_generator]") {
     // "DEUTSCHE BANK" -> strip "AG" -> two words "DEUTSCHE BANK" = DEUBAN
     CHECK(generate_short_code("Deutsche Bank AG") == "DEUBAN");
 }
 
-TEST_CASE("generate_short_code_empty_returns_unknwn", tags) {
+TEST_CASE("generate_short_code_empty_returns_unknwn", "[short_code_generator]") {
     CHECK(generate_short_code("") == "UNKNWN");
 }
 
-TEST_CASE("generate_short_code_only_suffix_returns_unknwn", tags) {
+TEST_CASE("generate_short_code_only_suffix_returns_unknwn", "[short_code_generator]") {
     CHECK(generate_short_code("Plc") == "UNKNWN");
 }
 
-TEST_CASE("generate_short_code_short_single_word_is_padded", tags) {
+TEST_CASE("generate_short_code_short_single_word_is_padded", "[short_code_generator]") {
     // "AB" after stripping -> single word "AB" -> first letter A +
     // consonant B = "AB" -> pad to 3 = "ABX"
     CHECK(generate_short_code("AB").size() >= 3);
 }
 
-TEST_CASE("generate_short_code_three_plus_words", tags) {
+TEST_CASE("generate_short_code_three_plus_words", "[short_code_generator]") {
     // "ROYAL RUTHERFORD GROUP" -> 2+2+2 = RORUGR
     CHECK(generate_short_code("Royal Rutherford Group") == "RORUGR");
 }
@@ -110,14 +108,14 @@ TEST_CASE("generate_short_code_three_plus_words", tags) {
 // generate_unique_short_code — collision resolution
 // ============================================================================
 
-TEST_CASE("generate_unique_short_code_returns_base_on_first_call", tags) {
+TEST_CASE("generate_unique_short_code_returns_base_on_first_call", "[short_code_generator]") {
     std::unordered_set<std::string> used;
     auto code = generate_unique_short_code("Barclays Plc", used);
     CHECK(code == "BRCLYS");
     CHECK(used.contains("BRCLYS"));
 }
 
-TEST_CASE("generate_unique_short_code_appends_suffix_on_collision", tags) {
+TEST_CASE("generate_unique_short_code_appends_suffix_on_collision", "[short_code_generator]") {
     std::unordered_set<std::string> used;
     auto code1 = generate_unique_short_code("Barclays Plc", used);
     auto code2 = generate_unique_short_code("Barclays Ltd", used);
@@ -126,7 +124,7 @@ TEST_CASE("generate_unique_short_code_appends_suffix_on_collision", tags) {
     CHECK(used.size() == 2);
 }
 
-TEST_CASE("generate_unique_short_code_handles_multiple_collisions", tags) {
+TEST_CASE("generate_unique_short_code_handles_multiple_collisions", "[short_code_generator]") {
     std::unordered_set<std::string> used;
     auto code1 = generate_unique_short_code("Barclays Plc", used);
     auto code2 = generate_unique_short_code("Barclays Ltd", used);
@@ -136,7 +134,7 @@ TEST_CASE("generate_unique_short_code_handles_multiple_collisions", tags) {
     CHECK(code3 == "BRCLYS3");
 }
 
-TEST_CASE("generate_unique_short_code_different_names_no_collision", tags) {
+TEST_CASE("generate_unique_short_code_different_names_no_collision", "[short_code_generator]") {
     std::unordered_set<std::string> used;
     auto code1 = generate_unique_short_code("Barclays Plc", used);
     auto code2 = generate_unique_short_code("Goldman Sachs", used);

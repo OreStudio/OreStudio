@@ -21,22 +21,16 @@
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::iam::domain::permission;
 using namespace ores::iam::domain::permissions;
 using namespace ores::logging;
 
-TEST_CASE("create_permission_with_valid_fields", tags) {
+TEST_CASE("create_permission_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     permission sut;
@@ -49,7 +43,7 @@ TEST_CASE("create_permission_with_valid_fields", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("create_permission_with_wildcard", tags) {
+TEST_CASE("create_permission_with_wildcard", "[domain]") {
     auto lg(make_logger(test_suite));
 
     permission sut;
@@ -62,7 +56,7 @@ TEST_CASE("create_permission_with_wildcard", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("create_currency_permission", tags) {
+TEST_CASE("create_currency_permission", "[domain]") {
     auto lg(make_logger(test_suite));
 
     permission sut;
@@ -74,7 +68,7 @@ TEST_CASE("create_currency_permission", tags) {
     CHECK(sut.code == "refdata::currencies:read");
 }
 
-TEST_CASE("create_flags_permission", tags) {
+TEST_CASE("create_flags_permission", "[domain]") {
     auto lg(make_logger(test_suite));
 
     permission sut;
@@ -86,7 +80,7 @@ TEST_CASE("create_flags_permission", tags) {
     CHECK(sut.code == "variability::flags:update");
 }
 
-TEST_CASE("create_roles_permission", tags) {
+TEST_CASE("create_roles_permission", "[domain]") {
     auto lg(make_logger(test_suite));
 
     permission sut;
@@ -98,7 +92,7 @@ TEST_CASE("create_roles_permission", tags) {
     CHECK(sut.code == "iam::roles:assign");
 }
 
-TEST_CASE("permission_with_specific_uuid", tags) {
+TEST_CASE("permission_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -113,7 +107,7 @@ TEST_CASE("permission_with_specific_uuid", tags) {
     CHECK(sut.code == "iam::accounts:read");
 }
 
-TEST_CASE("permission_serialization_to_json", tags) {
+TEST_CASE("permission_serialization_to_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     permission sut;
@@ -131,7 +125,7 @@ TEST_CASE("permission_serialization_to_json", tags) {
     CHECK(json_output.find("Allows deleting user accounts") != std::string::npos);
 }
 
-TEST_CASE("create_permission_with_faker", tags) {
+TEST_CASE("create_permission_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> resources = {"accounts", "currencies", "flags", "roles"};
@@ -149,7 +143,7 @@ TEST_CASE("create_permission_with_faker", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("create_multiple_random_permissions", tags) {
+TEST_CASE("create_multiple_random_permissions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> codes = {accounts_create,
@@ -177,7 +171,7 @@ TEST_CASE("create_multiple_random_permissions", tags) {
     }
 }
 
-TEST_CASE("well_known_permission_codes_are_consistent", tags) {
+TEST_CASE("well_known_permission_codes_are_consistent", "[domain]") {
     auto lg(make_logger(test_suite));
 
     // IAM component

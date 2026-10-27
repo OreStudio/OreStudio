@@ -1657,6 +1657,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::crm:read',                           'Read cross rates derived from live market data');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:compute',            'Bootstrap a curve and return it without storing it');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:republish',          'Bootstrap a curve and store its output series');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:publish',            'Ask for a curve publish, and publish an approved one');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
 
     -- =============================================================================
@@ -1731,6 +1732,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_parts:read',        'Read and list approval parts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_parts:write',       'Create and update approval parts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_parts:delete',      'Delete approval parts');
+    -- The reasons a decider parks a request with. The read is the decision
+    -- panel's, so Member holds it; the writes are the tenant administrator's.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::hold_reasons:read',            'Read and list hold reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::hold_reasons:write',           'Create and update hold reasons');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::hold_reasons:delete',          'Delete hold reasons');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_policies:read',     'Read and list approval policies');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_policies:write',    'Create and update approval policies');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_policies:delete',   'Delete approval policies');

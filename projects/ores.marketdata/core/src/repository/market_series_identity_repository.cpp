@@ -79,9 +79,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+market_series_identity_list_order(const ores::utility::domain::order& order,
+                                  std::initializer_list<std::string> default_columns,
+                                  bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"series_id"});
     if (!market_series_identity_repository::is_sortable(order.field))
@@ -248,7 +249,7 @@ market_series_identity_repository::read_latest(context ctx,
                                       domain::market_series_identity>(
         ctx,
         query,
-        list_order(order, {"series_id"}, false),
+        market_series_identity_list_order(order, {"series_id"}, false),
         std::nullopt,
         [](const auto& entities) { return market_series_identity_mapper::map(entities); },
         lg(),

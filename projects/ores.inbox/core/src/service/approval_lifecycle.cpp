@@ -50,6 +50,100 @@ constexpr int max_page = 500;
  */
 constexpr int answered_tail_limit = 20;
 
+/**
+ * @brief The states a request is still waiting on somebody in.
+ */
+constexpr std::string_view open_state_codes = "waiting,held";
+
+/**
+ * @brief Every part that every request names, joined to the catalogue that
+ * gives it its answer order.
+ *
+ * A caller appends its own condition, or wraps the statement in an EXISTS to
+ * ask about one request. The part rows and the catalogue are both bitemporal,
+ * so only the current row of each counts.
+ */
+constexpr std::string_view request_parts_query =
+    "select rp.request_id, rp.part_code, p.answer_order, p.display_order "
+    "from ores_inbox_approval_request_parts_tbl rp "
+    "join ores_inbox_approval_parts_tbl p "
+    "  on p.tenant_id = ores_utility_system_tenant_id_fn() "
+    " and p.code = rp.part_code "
+    " and p.valid_to = ores_utility_infinity_timestamp_fn() "
+    "where rp.valid_to = ores_utility_infinity_timestamp_fn()";
+
+/*
+ * The parts a request still waits on whose turn has come: a part is open when
+ * it has not approved and every part of an earlier answer order has. That is
+ * the rule ores_inbox_decide_approval_request_fn refuses an early answer with,
+ * so the two change together.
+ */
+const std::string open_parts_query =
+    std::string("with waiting as (") + std::string(request_parts_query) +
+    " and not exists ("
+    "   select 1 from ores_inbox_approval_decisions_tbl d"
+    "   where d.request_id = rp.request_id"
+    "     and d.part_code = rp.part_code"
+    "     and d.decision_code = 'approve'"
+    "     and d.valid_to = ores_utility_infinity_timestamp_fn()))"
+    " select part_code, request_id, display_order from waiting "
+    "where answer_order = ("
+    "  select min(earlier.answer_order) from waiting earlier"
+    "  where earlier.request_id = waiting.request_id)";
+
+/**
+ * @brief The open requests a caller may decide and did not raise.
+ *
+ * A request that names no parts is the caller's when its kind is in the scope.
+ * A request that names parts is decided by part rather than by count, so its
+ * kind's permission reaches none of its deciders: it is the caller's only
+ * while a part they may answer is open, which is what makes it appear when its
+ * turn arrives and not before.
+ */
+const std::string decidable_requests_query =
+    std::string("select r.id, r.requested_at"
+                " from ores_inbox_approval_requests_tbl r"
+                " where r.valid_to = ores_utility_infinity_timestamp_fn()"
+                " and r.state_code = any(string_to_array($1::text, ','))"
+                " and r.requested_by <> $2::uuid"
+                " and ((r.kind_code = any(string_to_array($3::text, ','))"
+                "       and not exists (select 1 from (") +
+    std::string(request_parts_query) +
+    ") named where named.request_id = r.id))"
+    "      or exists (select 1 from (" +
+    open_parts_query +
+    ") open_part"
+    "                 where open_part.request_id = r.id"
+    "                   and open_part.part_code = any(string_to_array($4::text, ','))))";
+
+/**
+ * @brief The codes as one comma-joined list.
+ *
+ * A list rather than a PostgreSQL array literal, because every code the model
+ * declares is a name and none of them can hold the separator.
+ */
+std::string joined(const std::vector<std::string>& codes) {
+    std::string out;
+    for (const auto& code : codes) {
+        if (!out.empty())
+            out += ',';
+        out += code;
+    }
+    return out;
+}
+
+/**
+ * @brief Whether a page of requests is ordered before another.
+ *
+ * The order the queue pages in, so a page read as a set of rows is put back
+ * into the order the page was cut in.
+ */
+bool before(const domain::approval_request& l, const domain::approval_request& r) {
+    if (l.requested_at != r.requested_at)
+        return l.requested_at < r.requested_at;
+    return l.id < r.id;
+}
+
 int clamp_limit(int limit) {
     return std::clamp(limit, 1, max_page);
 }
@@ -215,6 +309,11 @@ std::optional<domain::approval_part> approval_lifecycle::part(const std::string&
     return found.front();
 }
 
+std::vector<domain::approval_part> approval_lifecycle::parts() {
+    repository::approval_part_repository repo;
+    return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
+}
+
 std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
@@ -241,30 +340,13 @@ std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::strin
     return parts;
 }
 
-// The rule for which parts are open is the same one
-// ores_inbox_decide_approval_request_fn applies. Change them together.
 std::vector<domain::approval_part>
 approval_lifecycle::open_parts_of(const std::string& request_id) {
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
-        "with waiting as ( "
-        "  select rp.part_code, p.answer_order, p.display_order "
-        "  from ores_inbox_approval_request_parts_tbl rp "
-        "  join ores_inbox_approval_parts_tbl p "
-        "    on p.tenant_id = ores_utility_system_tenant_id_fn() "
-        "   and p.code = rp.part_code "
-        "   and p.valid_to = ores_utility_infinity_timestamp_fn() "
-        "  where rp.request_id = $1::uuid "
-        "    and rp.valid_to = ores_utility_infinity_timestamp_fn() "
-        "    and not exists ( "
-        "      select 1 from ores_inbox_approval_decisions_tbl d "
-        "      where d.request_id = rp.request_id "
-        "        and d.part_code = rp.part_code "
-        "        and d.decision_code = 'approve' "
-        "        and d.valid_to = ores_utility_infinity_timestamp_fn())) "
-        "select part_code from waiting "
-        "where answer_order = (select min(answer_order) from waiting) "
-        "order by display_order, part_code",
+        open_parts_query +
+            " and request_id = $1::uuid"
+            " order by display_order, part_code",
         {request_id},
         lg(),
         "Reading the parts a request waits on");
@@ -284,20 +366,22 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
                                            const std::string& decision_code,
                                            const boost::uuids::uuid& decided_by,
                                            const std::string& comment,
-                                           const std::string& part_code) {
+                                           const std::string& part_code,
+                                           const std::string& hold_reason_code) {
     BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
         "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, "
-        "nullif($7, ''))",
+        "nullif($7, ''), nullif($8, ''))",
         {request_id,
          std::to_string(version),
          decision_code,
          boost::uuids::to_string(decided_by),
          comment,
          ctx_.actor(),
-         part_code},
+         part_code,
+         hold_reason_code},
         lg(),
         "Deciding an approval request");
 
@@ -332,78 +416,89 @@ decision_result approval_lifecycle::fail_apply(const std::string& request_id,
                            .version = row[3] ? std::stoi(*row[3]) : 0};
 }
 
-request_page approval_lifecycle::queue(const std::vector<std::string>& kind_codes,
+request_page approval_lifecycle::queue(const decidable_scope& scope,
                                        const boost::uuids::uuid& excluding,
                                        int offset,
                                        int limit) {
-    if (kind_codes.empty())
-        return {};
+    request_page page;
+    if (scope.kind_codes.empty() && scope.part_codes.empty())
+        return page;
 
-    messaging::approval_requests_filter open;
-    open.kind_code_one_of = kind_codes;
-    open.state_code_one_of = std::vector<std::string>{"waiting", "held"};
+    const std::vector<std::optional<std::string>> scope_params{
+        std::string(open_state_codes),
+        boost::uuids::to_string(excluding),
+        joined(scope.kind_codes),
+        joined(scope.part_codes)};
 
-    auto own = open;
-    own.requested_by = excluding;
+    const auto counted = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select count(*)::text from (" + decidable_requests_query + ") decidable",
+        scope_params,
+        lg(),
+        "Counting the approval requests a person may decide");
+    if (counted.empty() || counted.front().empty() || !counted.front().front())
+        throw std::runtime_error("The approval queue returned no count.");
+    page.total = std::stoi(*counted.front().front());
+    if (page.total == 0)
+        return page;
+
+    // The count and the page are the same statement over one set, so the total
+    // is the number of rows the pages walk.
+    auto params = scope_params;
+    params.push_back(std::to_string(std::max(offset, 0)));
+    params.push_back(std::to_string(clamp_limit(limit)));
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        decidable_requests_query +
+            " order by r.requested_at, r.id"
+            " offset $5::int limit $6::int",
+        params,
+        lg(),
+        "Reading a page of the approval requests a person may decide");
+
+    std::vector<std::string> ids;
+    ids.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (!row.empty() && row.front())
+            ids.push_back(*row.front());
+    }
+    if (ids.empty())
+        return page;
 
     repository::approval_request_repository repo;
-    const auto all = static_cast<int>(repo.get_total_request_count(ctx_, open));
-    const auto mine = static_cast<int>(repo.get_total_request_count(ctx_, own));
-
-    // A person never decides their own request, so theirs are left out. The
-    // read covers the page plus every request of their own that could fall
-    // inside it, and the page is cut after they are removed.
-    const auto page_limit = clamp_limit(limit);
-    const auto first = std::max(offset, 0);
-    auto rows = repo.read_latest(ctx_,
-                                 0,
-                                 static_cast<std::uint32_t>(first + page_limit + mine),
-                                 ores::utility::domain::order{.field = "requested_at"},
-                                 open);
-    std::erase_if(rows, [&](const auto& r) { return r.requested_by == excluding; });
-
-    request_page page;
-    page.total = all - mine;
-    if (first < static_cast<int>(rows.size())) {
-        const auto last = std::min(static_cast<int>(rows.size()), first + page_limit);
-        page.requests.assign(rows.begin() + first, rows.begin() + last);
-    }
+    page.requests = repo.read_latest(ctx_, ids);
+    std::ranges::sort(page.requests, before);
     return page;
 }
 
 std::vector<domain::approval_request>
-approval_lifecycle::recently_answered(const std::vector<std::string>& kind_codes,
+approval_lifecycle::recently_answered(const decidable_scope& scope,
                                       const boost::uuids::uuid& excluding,
                                       std::chrono::seconds window) {
-    if (kind_codes.empty() || window <= std::chrono::seconds::zero())
+    if (scope.kind_codes.empty() && scope.part_codes.empty())
         return {};
-
-    /*
-     * The two arrays are comma-joined rather than passed as PostgreSQL array
-     * literals: both hold codes the model itself declares, so neither can hold
-     * the separator.
-     */
-    std::string kinds;
-    for (const auto& code : kind_codes) {
-        if (!kinds.empty())
-            kinds += ',';
-        kinds += code;
-    }
-    const std::string open = "waiting,held";
+    if (window <= std::chrono::seconds::zero())
+        return {};
 
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select r.id::text"
         " from ores_inbox_approval_requests_tbl r"
         " where r.valid_to = ores_utility_infinity_timestamp_fn()"
-        " and r.kind_code = any(string_to_array($1::text, ','))"
+        " and (r.kind_code = any(string_to_array($1::text, ','))"
+        "      or exists ("
+        "        select 1 from ores_inbox_approval_decisions_tbl d"
+        "        where d.request_id = r.id"
+        "          and d.decided_by = $3::uuid"
+        "          and d.decision_code in ('approve', 'refuse')"
+        "          and d.valid_to = ores_utility_infinity_timestamp_fn()))"
         " and r.state_code <> all(string_to_array($2::text, ','))"
         " and r.requested_by <> $3::uuid"
         " and r.valid_from >= clock_timestamp() - make_interval(secs => $4::double precision)"
         " order by r.valid_from desc"
         " limit $5::int",
-        {kinds,
-         open,
+        {joined(scope.kind_codes),
+         std::string(open_state_codes),
          boost::uuids::to_string(excluding),
          std::to_string(window.count()),
          std::to_string(answered_tail_limit)},

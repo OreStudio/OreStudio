@@ -55,7 +55,7 @@ namespace {
  * carry an empty argument: the tokenizer drops one, and a command whose list
  * field should be empty has no other way to say so.
  */
-std::vector<std::string> split_list_token(const std::string& value) {
+std::vector<std::string> report_operations_split_list_token(const std::string& value) {
     if (value == "__none__")
         return {};
     std::vector<std::string> parts;
@@ -407,7 +407,7 @@ void report_operations_operations_commands::process_schedule_report_definitions(
     request_type req;
     std::size_t next = 0;
     try {
-        req.ids = split_list_token(parsed->positionals[next++]);
+        req.ids = report_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -459,7 +459,7 @@ void report_operations_operations_commands::process_unschedule_report_definition
     request_type req;
     std::size_t next = 0;
     try {
-        req.ids = split_list_token(parsed->positionals[next++]);
+        req.ids = report_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -761,7 +761,7 @@ void report_operations_operations_commands::process_submit_compute(
         req.party_id = parsed->positionals[next++];
         req.run_grant_id = parsed->positionals[next++];
         req.correlation_id = parsed->positionals[next++];
-        req.tarball_uris = split_list_token(parsed->positionals[next++]);
+        req.tarball_uris = report_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -1087,7 +1087,7 @@ void report_operations_operations_commands::process_get_next_fire(
     request_type req;
     std::size_t next = 0;
     try {
-        req.definition_ids = split_list_token(parsed->positionals[next++]);
+        req.definition_ids = report_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

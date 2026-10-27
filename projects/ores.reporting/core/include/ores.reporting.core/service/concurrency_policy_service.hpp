@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_concurrency_policies_response
-    list_concurrency_policies(const messaging::list_concurrency_policies_request& request);
-    messaging::get_concurrency_policy_response
-    get_concurrency_policy(const messaging::get_concurrency_policy_request& request);
-    messaging::get_many_concurrency_policies_response
-    get_many_concurrency_policies(const messaging::get_many_concurrency_policies_request& request);
-    messaging::put_concurrency_policy_response
-    put_concurrency_policy(const messaging::put_concurrency_policy_request& request);
-    messaging::put_many_concurrency_policies_response
-    put_many_concurrency_policies(const messaging::put_many_concurrency_policies_request& request);
-    messaging::delete_concurrency_policy_response
-    delete_concurrency_policy(const messaging::delete_concurrency_policy_request& request);
-    messaging::delete_many_concurrency_policies_response delete_many_concurrency_policies(
-        const messaging::delete_many_concurrency_policies_request& request);
-    messaging::list_concurrency_policy_versions_response list_concurrency_policy_versions(
-        const messaging::list_concurrency_policy_versions_request& request);
-    messaging::get_concurrency_policy_version_response get_concurrency_policy_version(
-        const messaging::get_concurrency_policy_version_request& request);
+    ::ores::reporting::messaging::list_concurrency_policies_response list_concurrency_policies(
+        const ::ores::reporting::messaging::list_concurrency_policies_request& request);
+    ::ores::reporting::messaging::get_concurrency_policy_response get_concurrency_policy(
+        const ::ores::reporting::messaging::get_concurrency_policy_request& request);
+    ::ores::reporting::messaging::get_many_concurrency_policies_response
+    get_many_concurrency_policies(
+        const ::ores::reporting::messaging::get_many_concurrency_policies_request& request);
+    ::ores::reporting::messaging::put_concurrency_policy_response put_concurrency_policy(
+        const ::ores::reporting::messaging::put_concurrency_policy_request& request);
+    ::ores::reporting::messaging::put_many_concurrency_policies_response
+    put_many_concurrency_policies(
+        const ::ores::reporting::messaging::put_many_concurrency_policies_request& request);
+    ::ores::reporting::messaging::delete_concurrency_policy_response delete_concurrency_policy(
+        const ::ores::reporting::messaging::delete_concurrency_policy_request& request);
+    ::ores::reporting::messaging::delete_many_concurrency_policies_response
+    delete_many_concurrency_policies(
+        const ::ores::reporting::messaging::delete_many_concurrency_policies_request& request);
+    ::ores::reporting::messaging::list_concurrency_policy_versions_response
+    list_concurrency_policy_versions(
+        const ::ores::reporting::messaging::list_concurrency_policy_versions_request& request);
+    ::ores::reporting::messaging::get_concurrency_policy_version_response
+    get_concurrency_policy_version(
+        const ::ores::reporting::messaging::get_concurrency_policy_version_request& request);
     /**@}*/
 
     /**
@@ -188,9 +193,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::concurrency_policy_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::concurrency_policy& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::reporting::messaging::concurrency_policy_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::concurrency_policy& out);
 };
 
 }

@@ -26,15 +26,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.analytics.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::analytics::generators;
 using ores::analytics::domain::pricing_model_config;
@@ -42,7 +36,7 @@ using ores::analytics::repository::pricing_model_config_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_pricing_model_config", tags) {
+TEST_CASE("write_single_pricing_model_config", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -56,7 +50,7 @@ TEST_CASE("write_single_pricing_model_config", tags) {
     CHECK_NOTHROW(repo.write(h.context(), cfg));
 }
 
-TEST_CASE("write_multiple_pricing_model_configs", tags) {
+TEST_CASE("write_multiple_pricing_model_configs", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -68,7 +62,7 @@ TEST_CASE("write_multiple_pricing_model_configs", tags) {
     CHECK_NOTHROW(repo.write(h.context(), configs));
 }
 
-TEST_CASE("read_latest_pricing_model_configs", tags) {
+TEST_CASE("read_latest_pricing_model_configs", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -85,7 +79,7 @@ TEST_CASE("read_latest_pricing_model_configs", tags) {
     CHECK(read.size() >= written.size());
 }
 
-TEST_CASE("read_latest_pricing_model_config_by_name", tags) {
+TEST_CASE("read_latest_pricing_model_config_by_name", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -110,7 +104,7 @@ TEST_CASE("read_latest_pricing_model_config_by_name", tags) {
     CHECK(read[0].description == original_description + " v2");
 }
 
-TEST_CASE("read_latest_pricing_model_config_by_id", tags) {
+TEST_CASE("read_latest_pricing_model_config_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -131,7 +125,7 @@ TEST_CASE("read_latest_pricing_model_config_by_id", tags) {
     CHECK(read[0].id == cfg.id);
 }
 
-TEST_CASE("read_nonexistent_pricing_model_config", tags) {
+TEST_CASE("read_nonexistent_pricing_model_config", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -146,7 +140,7 @@ TEST_CASE("read_nonexistent_pricing_model_config", tags) {
     CHECK(read.size() == 0);
 }
 
-TEST_CASE("read_all_pricing_model_config_history", tags) {
+TEST_CASE("read_all_pricing_model_config_history", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -169,7 +163,7 @@ TEST_CASE("read_all_pricing_model_config_history", tags) {
     CHECK(history.size() >= 2);
 }
 
-TEST_CASE("remove_pricing_model_config", tags) {
+TEST_CASE("remove_pricing_model_config", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

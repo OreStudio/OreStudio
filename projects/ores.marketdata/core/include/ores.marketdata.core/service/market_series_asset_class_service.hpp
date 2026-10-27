@@ -76,24 +76,32 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_market_series_asset_classes_response list_market_series_asset_classes(
-        const messaging::list_market_series_asset_classes_request& request);
-    messaging::get_market_series_asset_class_response
-    get_market_series_asset_class(const messaging::get_market_series_asset_class_request& request);
-    messaging::get_many_market_series_asset_classes_response get_many_market_series_asset_classes(
-        const messaging::get_many_market_series_asset_classes_request& request);
-    messaging::put_market_series_asset_class_response
-    put_market_series_asset_class(const messaging::put_market_series_asset_class_request& request);
-    messaging::put_many_market_series_asset_classes_response put_many_market_series_asset_classes(
-        const messaging::put_many_market_series_asset_classes_request& request);
-    messaging::delete_market_series_asset_class_response delete_market_series_asset_class(
-        const messaging::delete_market_series_asset_class_request& request);
-    messaging::delete_many_market_series_asset_classes_response
+    ::ores::marketdata::messaging::list_market_series_asset_classes_response
+    list_market_series_asset_classes(
+        const ::ores::marketdata::messaging::list_market_series_asset_classes_request& request);
+    ::ores::marketdata::messaging::get_market_series_asset_class_response
+    get_market_series_asset_class(
+        const ::ores::marketdata::messaging::get_market_series_asset_class_request& request);
+    ::ores::marketdata::messaging::get_many_market_series_asset_classes_response
+    get_many_market_series_asset_classes(
+        const ::ores::marketdata::messaging::get_many_market_series_asset_classes_request& request);
+    ::ores::marketdata::messaging::put_market_series_asset_class_response
+    put_market_series_asset_class(
+        const ::ores::marketdata::messaging::put_market_series_asset_class_request& request);
+    ::ores::marketdata::messaging::put_many_market_series_asset_classes_response
+    put_many_market_series_asset_classes(
+        const ::ores::marketdata::messaging::put_many_market_series_asset_classes_request& request);
+    ::ores::marketdata::messaging::delete_market_series_asset_class_response
+    delete_market_series_asset_class(
+        const ::ores::marketdata::messaging::delete_market_series_asset_class_request& request);
+    ::ores::marketdata::messaging::delete_many_market_series_asset_classes_response
     delete_many_market_series_asset_classes(
-        const messaging::delete_many_market_series_asset_classes_request& request);
-    messaging::list_by_market_series_id_market_series_asset_classes_response
+        const ::ores::marketdata::messaging::delete_many_market_series_asset_classes_request&
+            request);
+    ::ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classes_response
     list_by_market_series_id_market_series_asset_classes(
-        const messaging::list_by_market_series_id_market_series_asset_classes_request& request);
+        const ::ores::marketdata::messaging::
+            list_by_market_series_id_market_series_asset_classes_request& request);
     /**@}*/
 
 private:
@@ -114,7 +122,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::market_series_asset_class_change& change,
+    prepare_change(const ::ores::marketdata::messaging::market_series_asset_class_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::market_series_asset_class& out);
 };

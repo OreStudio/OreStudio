@@ -45,6 +45,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 // Soft-FK parent seeding (ores_inbox_approval_requests_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -92,13 +93,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("iam.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::iam::generators;
 using ores::iam::domain::role_grant_request;
@@ -106,7 +100,7 @@ using ores::iam::repository::role_grant_request_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_role_grant_request_publishes_an_event", tags) {
+TEST_CASE("write_role_grant_request_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

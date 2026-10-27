@@ -78,6 +78,7 @@ public:
 
     /**
      * @brief decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>]
+     * [--hold_reason_code <v>]
      */
     static void process_decide_approval(std::ostream& out,
                                         ores::nats::service::nats_client& session,

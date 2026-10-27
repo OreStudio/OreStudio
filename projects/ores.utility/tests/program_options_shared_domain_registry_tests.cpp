@@ -22,18 +22,16 @@
 
 namespace {
 
-const std::string tags("[shared_domain_registry]");
-
 using ores::utility::program_options::shared_domain_registry;
 
 }
 
-TEST_CASE("register_domain_makes_it_appear_in_domains", tags) {
+TEST_CASE("register_domain_makes_it_appear_in_domains", "[shared_domain_registry]") {
     shared_domain_registry::register_domain("SPROCKET", {"COLOUR"});
     REQUIRE(shared_domain_registry::domains().contains("SPROCKET"));
 }
 
-TEST_CASE("registered_domain_carries_its_allowed_suffixes", tags) {
+TEST_CASE("registered_domain_carries_its_allowed_suffixes", "[shared_domain_registry]") {
     shared_domain_registry::register_domain("COG", {"SIZE", "MATERIAL"});
 
     const auto& suffixes = shared_domain_registry::domains().at("COG");
@@ -42,7 +40,7 @@ TEST_CASE("registered_domain_carries_its_allowed_suffixes", tags) {
     REQUIRE_FALSE(suffixes.contains("COLOUR"));
 }
 
-TEST_CASE("registering_the_same_domain_twice_merges_suffixes", tags) {
+TEST_CASE("registering_the_same_domain_twice_merges_suffixes", "[shared_domain_registry]") {
     shared_domain_registry::register_domain("RATCHET", {"SIZE"});
     shared_domain_registry::register_domain("RATCHET", {"TORQUE"});
 
@@ -51,6 +49,6 @@ TEST_CASE("registering_the_same_domain_twice_merges_suffixes", tags) {
     REQUIRE(suffixes.contains("TORQUE"));
 }
 
-TEST_CASE("unregistered_domain_is_absent", tags) {
+TEST_CASE("unregistered_domain_is_absent", "[shared_domain_registry]") {
     REQUIRE_FALSE(shared_domain_registry::domains().contains("NEVER_REGISTERED_DOMAIN"));
 }

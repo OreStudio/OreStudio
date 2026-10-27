@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::badge_definition> read_one(repository::badge_definition_repository& repo,
-                                               const ores::database::context& ctx,
-                                               const messaging::badge_definition_key& key) {
+std::vector<domain::badge_definition>
+badge_definition_read_one(repository::badge_definition_repository& repo,
+                          const ores::database::context& ctx,
+                          const messaging::badge_definition_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::badge_definition> read_one(repository::badge_definition_repo
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::badge_definition_key key_from(const domain::badge_definition& v) {
+messaging::badge_definition_key badge_definition_key_from(const domain::badge_definition& v) {
     messaging::badge_definition_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,8 @@ messaging::badge_definition_key key_from(const domain::badge_definition& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::badge_definition to_domain(const messaging::badge_definition_write& write) {
+domain::badge_definition
+badge_definition_to_domain(const messaging::badge_definition_write& write) {
     domain::badge_definition v;
     v.code = write.code;
     v.name = write.name;
@@ -145,7 +147,7 @@ messaging::list_badge_definitions_response badge_definition_service::list_badge_
 messaging::get_badge_definition_response badge_definition_service::get_badge_definition(
     const messaging::get_badge_definition_request& request) {
     messaging::get_badge_definition_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = badge_definition_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "badge_definition"});
         return response;
@@ -164,7 +166,7 @@ messaging::get_many_badge_definitions_response badge_definition_service::get_man
     for (const auto& k : request.keys) {
         messaging::badge_definition_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = badge_definition_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.badge_definition = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +182,7 @@ messaging::put_badge_definition_response badge_definition_service::put_badge_def
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value));
     if (!written.empty())
         response.badge_definition = std::move(written.front());
     return response;
@@ -212,7 +214,7 @@ messaging::put_many_badge_definitions_response badge_definition_service::put_man
     repo_.write(ctx_, batch, claims);
     response.definitions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value));
         response.definitions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -245,7 +247,7 @@ messaging::delete_badge_definition_response badge_definition_service::delete_bad
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = badge_definition_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "badge_definition",
@@ -334,8 +336,8 @@ badge_definition_service::prepare_change(const messaging::badge_definition_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = badge_definition_to_domain(change.write);
+    const auto current = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

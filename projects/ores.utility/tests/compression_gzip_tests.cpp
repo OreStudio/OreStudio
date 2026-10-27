@@ -19,15 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/compression/gzip.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[compression]");
 
 std::string to_string(const std::vector<char>& bytes) {
     return {bytes.begin(), bytes.end()};
@@ -39,7 +37,7 @@ using ores::utility::compression::gzip_compress;
 using ores::utility::compression::gzip_decompress;
 using namespace ores::logging;
 
-TEST_CASE("gzip_roundtrip_preserves_payload", tags) {
+TEST_CASE("gzip_roundtrip_preserves_payload", "[compression]") {
     auto lg(make_logger(test_suite));
 
     const std::string payload("hello world");
@@ -53,7 +51,7 @@ TEST_CASE("gzip_roundtrip_preserves_payload", tags) {
     CHECK(to_string(compressed) != payload);
 }
 
-TEST_CASE("gzip_compress_emits_the_gzip_container_header", tags) {
+TEST_CASE("gzip_compress_emits_the_gzip_container_header", "[compression]") {
     auto lg(make_logger(test_suite));
 
     const auto compressed = gzip_compress(std::string("hello world"));
@@ -69,7 +67,7 @@ TEST_CASE("gzip_compress_emits_the_gzip_container_header", tags) {
                             << static_cast<int>(static_cast<unsigned char>(compressed[2]));
 }
 
-TEST_CASE("gzip_decompress_reads_a_stream_from_another_producer", tags) {
+TEST_CASE("gzip_decompress_reads_a_stream_from_another_producer", "[compression]") {
     auto lg(make_logger(test_suite));
 
     // Produced by GNU gzip -n -9 for "The quick brown fox jumps over the lazy dog".
@@ -88,7 +86,7 @@ TEST_CASE("gzip_decompress_reads_a_stream_from_another_producer", tags) {
     CHECK(to_string(restored) == "The quick brown fox jumps over the lazy dog");
 }
 
-TEST_CASE("gzip_roundtrip_of_empty_input_returns_no_bytes", tags) {
+TEST_CASE("gzip_roundtrip_of_empty_input_returns_no_bytes", "[compression]") {
     auto lg(make_logger(test_suite));
 
     const auto compressed = gzip_compress(std::string());
@@ -100,7 +98,7 @@ TEST_CASE("gzip_roundtrip_of_empty_input_returns_no_bytes", tags) {
     CHECK(restored.empty());
 }
 
-TEST_CASE("gzip_compress_shrinks_a_repetitive_payload", tags) {
+TEST_CASE("gzip_compress_shrinks_a_repetitive_payload", "[compression]") {
     auto lg(make_logger(test_suite));
 
     const std::string payload(10000, 'a');
@@ -112,7 +110,7 @@ TEST_CASE("gzip_compress_shrinks_a_repetitive_payload", tags) {
     CHECK(to_string(gzip_decompress(compressed)) == payload);
 }
 
-TEST_CASE("gzip_roundtrip_preserves_embedded_nul_bytes", tags) {
+TEST_CASE("gzip_roundtrip_preserves_embedded_nul_bytes", "[compression]") {
     auto lg(make_logger(test_suite));
 
     const std::string payload("a\0b", 3);
@@ -122,7 +120,7 @@ TEST_CASE("gzip_roundtrip_preserves_embedded_nul_bytes", tags) {
     CHECK(to_string(restored) == payload);
 }
 
-TEST_CASE("gzip_decompress_rejects_input_that_is_not_gzip", tags) {
+TEST_CASE("gzip_decompress_rejects_input_that_is_not_gzip", "[compression]") {
     auto lg(make_logger(test_suite));
 
     const std::string not_gzip("this is not a gzip stream");

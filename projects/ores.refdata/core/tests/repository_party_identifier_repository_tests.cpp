@@ -29,6 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -38,13 +39,6 @@
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party_identifier;
 using ores::refdata::repository::party_identifier_repository;
@@ -52,7 +46,7 @@ using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_party_identifier", tags) {
+TEST_CASE("write_single_party_identifier", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -85,7 +79,7 @@ TEST_CASE("write_single_party_identifier", tags) {
     CHECK(read_pis[0].id_value == pi.id_value);
 }
 
-TEST_CASE("write_multiple_party_identifiers", tags) {
+TEST_CASE("write_multiple_party_identifiers", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -123,7 +117,7 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_identifiers", tags) {
+TEST_CASE("read_latest_party_identifiers", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -163,7 +157,7 @@ TEST_CASE("read_latest_party_identifiers", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_identifier_by_id", tags) {
+TEST_CASE("read_latest_party_identifier_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -201,7 +195,7 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
     CHECK(read_party_identifiers[0].id_value == original_id_value + "_v2");
 }
 
-TEST_CASE("read_nonexistent_party_identifier_id", tags) {
+TEST_CASE("read_nonexistent_party_identifier_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -246,7 +240,7 @@ TEST_CASE("read_nonexistent_party_identifier_id", tags) {
     CHECK(keeper_rows[0].id_value == keeper.id_value);
 }
 
-TEST_CASE("as_of_composition_reflects_party_version_history", tags) {
+TEST_CASE("as_of_composition_reflects_party_version_history", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

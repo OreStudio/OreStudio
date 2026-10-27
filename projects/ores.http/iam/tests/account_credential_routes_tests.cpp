@@ -27,6 +27,7 @@
 #include "ores.http/routes/iam/account_credential_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -42,11 +43,8 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-const std::string_view test_suite("ores.http.iam.tests");
-const std::string tags("[routes]");
-
 /// One route the unit must register, as the derivation states it.
-struct expected_route {
+struct account_credential_expected_route {
     http_method method;
     std::string pattern;
     bool requires_auth;
@@ -56,7 +54,7 @@ struct expected_route {
 ///
 /// Registration touches no transport: the client is only what each route
 /// forwards on, so an unconnected one is enough to read the route table.
-std::shared_ptr<router> registered_routes(nats_client& session) {
+std::shared_ptr<router> account_credential_registered_routes(nats_client& session) {
     auto table = std::make_shared<router>();
     auto registry = std::make_shared<endpoint_registry>();
     account_credential_routes::register_routes(table, registry, session);
@@ -65,11 +63,11 @@ std::shared_ptr<router> registered_routes(nats_client& session) {
 
 }
 
-TEST_CASE("account_credential_routes_registers_every_derived_route", tags) {
+TEST_CASE("account_credential_routes_registers_every_derived_route", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    const auto table = registered_routes(session);
+    const auto table = account_credential_registered_routes(session);
     const auto& routes = table->routes();
 
     REQUIRE(routes.size() == 6);
@@ -77,21 +75,24 @@ TEST_CASE("account_credential_routes_registers_every_derived_route", tags) {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             expected_route{http_method::get, std::string{"/api/v1/iam/account_credentials"}, true},
-             expected_route{
+             account_credential_expected_route{
+                 http_method::get, std::string{"/api/v1/iam/account_credentials"}, true},
+             account_credential_expected_route{
                  http_method::get, std::string{"/api/v1/iam/account_credentials/{id}"}, true},
-             expected_route{
+             account_credential_expected_route{
                  http_method::post, std::string{"/api/v1/iam/account_credentials/get-many"}, true},
-             expected_route{
+             account_credential_expected_route{
                  http_method::get,
                  std::string{"/api/v1/iam/account_credentials/by-account-id/{account_id}"},
                  true},
-             expected_route{http_method::get,
-                            std::string{"/api/v1/iam/account_credentials/{id}/versions"},
-                            true},
-             expected_route{http_method::get,
-                            std::string{"/api/v1/iam/account_credentials/{id}/versions/{version}"},
-                            true},
+             account_credential_expected_route{
+                 http_method::get,
+                 std::string{"/api/v1/iam/account_credentials/{id}/versions"},
+                 true},
+             account_credential_expected_route{
+                 http_method::get,
+                 std::string{"/api/v1/iam/account_credentials/{id}/versions/{version}"},
+                 true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -102,32 +103,35 @@ TEST_CASE("account_credential_routes_registers_every_derived_route", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 6 route(s).";
 }
 
-TEST_CASE("account_credential_routes_requires_a_session_where_the_operation_does", tags) {
+TEST_CASE("account_credential_routes_requires_a_session_where_the_operation_does", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    const auto table = registered_routes(session);
+    const auto table = account_credential_registered_routes(session);
     const auto& routes = table->routes();
 
     // The flag is the operation's own stated requirement. A route that needs
     // a session cannot be registered without one, and one that does not is
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
-             expected_route{http_method::get, std::string{"/api/v1/iam/account_credentials"}, true},
-             expected_route{
+             account_credential_expected_route{
+                 http_method::get, std::string{"/api/v1/iam/account_credentials"}, true},
+             account_credential_expected_route{
                  http_method::get, std::string{"/api/v1/iam/account_credentials/{id}"}, true},
-             expected_route{
+             account_credential_expected_route{
                  http_method::post, std::string{"/api/v1/iam/account_credentials/get-many"}, true},
-             expected_route{
+             account_credential_expected_route{
                  http_method::get,
                  std::string{"/api/v1/iam/account_credentials/by-account-id/{account_id}"},
                  true},
-             expected_route{http_method::get,
-                            std::string{"/api/v1/iam/account_credentials/{id}/versions"},
-                            true},
-             expected_route{http_method::get,
-                            std::string{"/api/v1/iam/account_credentials/{id}/versions/{version}"},
-                            true},
+             account_credential_expected_route{
+                 http_method::get,
+                 std::string{"/api/v1/iam/account_credentials/{id}/versions"},
+                 true},
+             account_credential_expected_route{
+                 http_method::get,
+                 std::string{"/api/v1/iam/account_credentials/{id}/versions/{version}"},
+                 true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

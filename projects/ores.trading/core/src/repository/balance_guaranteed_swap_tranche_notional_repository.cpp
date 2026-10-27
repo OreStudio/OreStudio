@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy balance_guaranteed_swap_tranche_notional_list_order(
+    const ores::utility::domain::order& order,
+    std::initializer_list<std::string> default_columns,
+    bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -102,7 +103,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> filter_condition(
+std::optional<sqlgen::dynamic::Condition> balance_guaranteed_swap_tranche_notional_filter_condition(
     const std::optional<messaging::balance_guaranteed_swap_tranche_notionals_filter>& filter) {
     if (!filter)
         return std::nullopt;
@@ -338,8 +339,9 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest_by_trade_id(
                                       domain::balance_guaranteed_swap_tranche_notional>(
         ctx,
         query,
-        list_order(order, {"trade_id", "tranche_number", "sequence_number"}, false),
-        filter_condition(filter),
+        balance_guaranteed_swap_tranche_notional_list_order(
+            order, {"trade_id", "tranche_number", "sequence_number"}, false),
+        balance_guaranteed_swap_tranche_notional_filter_condition(filter),
         [](const auto& entities) {
             return balance_guaranteed_swap_tranche_notional_mapper::map(entities);
         },
@@ -365,7 +367,7 @@ std::uint32_t balance_guaranteed_swap_tranche_notional_repository::
     return execute_count_query<balance_guaranteed_swap_tranche_notional_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        balance_guaranteed_swap_tranche_notional_filter_condition(filter),
         lg(),
         "Counting balance guaranteed swap tranche notionals by trade_id");
 }
@@ -436,8 +438,10 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest(
                                       domain::balance_guaranteed_swap_tranche_notional>(
         ctx,
         query,
-        list_order(order, {"trade_id", "tranche_number", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        balance_guaranteed_swap_tranche_notional_list_order(
+            order, {"trade_id", "tranche_number", "sequence_number"}, false),
+        narrowed(valid_at(as_of),
+                 balance_guaranteed_swap_tranche_notional_filter_condition(filter)),
         [](const auto& entities) {
             return balance_guaranteed_swap_tranche_notional_mapper::map(entities);
         },
@@ -460,7 +464,8 @@ std::uint32_t balance_guaranteed_swap_tranche_notional_repository::
     return execute_count_query<balance_guaranteed_swap_tranche_notional_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of),
+                 balance_guaranteed_swap_tranche_notional_filter_condition(filter)),
         lg(),
         "Counting balance guaranteed swap tranche notionals");
 }

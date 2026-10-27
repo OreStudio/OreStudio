@@ -20,6 +20,7 @@
 #include "ores.logging/lifecycle_manager.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/log/core.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
@@ -27,9 +28,6 @@
 #include <string_view>
 
 namespace {
-
-const std::string_view test_suite("ores.logging.tests");
-const std::string tags("[logging]");
 
 ores::logging::logging_options make_console_only_options() {
     ores::logging::logging_options r;
@@ -46,7 +44,7 @@ bool core_logging_enabled() {
 
 using ores::logging::lifecycle_manager;
 
-TEST_CASE("absent_configuration_disables_core_logging", tags) {
+TEST_CASE("absent_configuration_disables_core_logging", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     boost::log::core::get()->set_logging_enabled(true);
 
@@ -57,7 +55,7 @@ TEST_CASE("absent_configuration_disables_core_logging", tags) {
     CHECK_FALSE(core_logging_enabled());
 }
 
-TEST_CASE("valid_configuration_enables_core_logging", tags) {
+TEST_CASE("valid_configuration_enables_core_logging", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     boost::log::core::get()->set_logging_enabled(false);
     REQUIRE_FALSE(core_logging_enabled());

@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_workflow_instances_response
-    list_workflow_instances(const messaging::list_workflow_instances_request& request);
-    messaging::get_workflow_instance_response
-    get_workflow_instance(const messaging::get_workflow_instance_request& request);
-    messaging::get_many_workflow_instances_response
-    get_many_workflow_instances(const messaging::get_many_workflow_instances_request& request);
-    messaging::put_workflow_instance_response
-    put_workflow_instance(const messaging::put_workflow_instance_request& request);
-    messaging::put_many_workflow_instances_response
-    put_many_workflow_instances(const messaging::put_many_workflow_instances_request& request);
-    messaging::delete_workflow_instance_response
-    delete_workflow_instance(const messaging::delete_workflow_instance_request& request);
-    messaging::delete_many_workflow_instances_response delete_many_workflow_instances(
-        const messaging::delete_many_workflow_instances_request& request);
-    messaging::list_workflow_instance_versions_response list_workflow_instance_versions(
-        const messaging::list_workflow_instance_versions_request& request);
-    messaging::get_workflow_instance_version_response
-    get_workflow_instance_version(const messaging::get_workflow_instance_version_request& request);
+    ::ores::workflow::messaging::list_workflow_instances_response list_workflow_instances(
+        const ::ores::workflow::messaging::list_workflow_instances_request& request);
+    ::ores::workflow::messaging::get_workflow_instance_response get_workflow_instance(
+        const ::ores::workflow::messaging::get_workflow_instance_request& request);
+    ::ores::workflow::messaging::get_many_workflow_instances_response get_many_workflow_instances(
+        const ::ores::workflow::messaging::get_many_workflow_instances_request& request);
+    ::ores::workflow::messaging::put_workflow_instance_response put_workflow_instance(
+        const ::ores::workflow::messaging::put_workflow_instance_request& request);
+    ::ores::workflow::messaging::put_many_workflow_instances_response put_many_workflow_instances(
+        const ::ores::workflow::messaging::put_many_workflow_instances_request& request);
+    ::ores::workflow::messaging::delete_workflow_instance_response delete_workflow_instance(
+        const ::ores::workflow::messaging::delete_workflow_instance_request& request);
+    ::ores::workflow::messaging::delete_many_workflow_instances_response
+    delete_many_workflow_instances(
+        const ::ores::workflow::messaging::delete_many_workflow_instances_request& request);
+    ::ores::workflow::messaging::list_workflow_instance_versions_response
+    list_workflow_instance_versions(
+        const ::ores::workflow::messaging::list_workflow_instance_versions_request& request);
+    ::ores::workflow::messaging::get_workflow_instance_version_response
+    get_workflow_instance_version(
+        const ::ores::workflow::messaging::get_workflow_instance_version_request& request);
     /**@}*/
 
     /**
@@ -190,9 +193,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::workflow_instance_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::workflow_instance& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::workflow::messaging::workflow_instance_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::workflow_instance& out);
 };
 
 }

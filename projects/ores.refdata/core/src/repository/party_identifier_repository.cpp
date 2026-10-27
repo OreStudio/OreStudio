@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+party_identifier_list_order(const ores::utility::domain::order& order,
+                            std::initializer_list<std::string> default_columns,
+                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!party_identifier_repository::is_sortable(order.field))
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::party_identifiers_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> party_identifier_filter_condition(
+    const std::optional<messaging::party_identifiers_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -348,8 +349,8 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest_b
     return execute_ordered_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        party_identifier_list_order(order, {"id"}, false),
+        party_identifier_filter_condition(filter),
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
         lg(),
         "Reading latest party identifiers by party_id.");
@@ -368,8 +369,11 @@ std::uint32_t party_identifier_repository::get_total_party_identifier_count_by_p
         sqlgen::read<std::vector<party_identifier_entity>> |
         where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value());
 
-    return execute_count_query<party_identifier_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting party identifiers by party_id");
+    return execute_count_query<party_identifier_entity>(ctx,
+                                                        query,
+                                                        party_identifier_filter_condition(filter),
+                                                        lg(),
+                                                        "Counting party identifiers by party_id");
 }
 
 
@@ -447,8 +451,8 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest(
     return execute_ordered_read_query<party_identifier_entity, domain::party_identifier>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        party_identifier_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), party_identifier_filter_condition(filter)),
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
         lg(),
         "Reading latest party identifiers with pagination.");
@@ -467,7 +471,7 @@ std::uint32_t party_identifier_repository::get_total_party_identifier_count(
     return execute_count_query<party_identifier_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), party_identifier_filter_condition(filter)),
         lg(),
         "Counting party identifiers");
 }

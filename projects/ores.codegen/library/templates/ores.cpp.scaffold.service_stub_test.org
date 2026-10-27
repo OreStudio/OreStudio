@@ -35,22 +35,16 @@ The full template source. Edit here and re-tangle with
 #include <catch2/catch_test_macros.hpp>
 #include "{{full_name}}/config/parser_exception.hpp"
 
-namespace {
-
-const std::string tags("[config]");
-
-}
-
 using namespace {{namespace}}::config;
 
-TEST_CASE("parse_help_does_not_throw", tags) {
+TEST_CASE("parse_help_does_not_throw", "[config]") {
     std::ostringstream out, err;
     parser p;
     const auto r(p.parse({"--help"}, out, err));
     REQUIRE(!r);
 }
 
-TEST_CASE("parse_version_does_not_throw", tags) {
+TEST_CASE("parse_version_does_not_throw", "[config]") {
     std::ostringstream out, err;
     parser p;
     const auto r(p.parse({"--version"}, out, err));

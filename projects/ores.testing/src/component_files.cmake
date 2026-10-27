@@ -41,6 +41,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/nats_options_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/ore_parameter_fixture.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/ores.testing.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/party_fixture.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/project_root.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/publish_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/run_coroutine_test.hpp"

@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string equity_tarf_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<equity_tarf_instrument>& v) {
 
     for ([[maybe_unused]] const auto& tarf : v) {
         table << tarf.underlying_name << tarf.currency << tarf.fixing_amount
-              << opt_str(tarf.target_amount) << opt_str(tarf.target_points) << opt_str(tarf.strike)
-              << fort::endr;
+              << equity_tarf_instrument_opt_str(tarf.target_amount)
+              << equity_tarf_instrument_opt_str(tarf.target_points)
+              << equity_tarf_instrument_opt_str(tarf.strike) << fort::endr;
     }
     return table.to_string();
 }

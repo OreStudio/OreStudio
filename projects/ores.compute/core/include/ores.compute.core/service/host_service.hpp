@@ -75,20 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_hosts_response list_hosts(const messaging::list_hosts_request& request);
-    messaging::get_host_response get_host(const messaging::get_host_request& request);
-    messaging::get_many_hosts_response
-    get_many_hosts(const messaging::get_many_hosts_request& request);
-    messaging::put_host_response put_host(const messaging::put_host_request& request);
-    messaging::put_many_hosts_response
-    put_many_hosts(const messaging::put_many_hosts_request& request);
-    messaging::delete_host_response delete_host(const messaging::delete_host_request& request);
-    messaging::delete_many_hosts_response
-    delete_many_hosts(const messaging::delete_many_hosts_request& request);
-    messaging::list_host_versions_response
-    list_host_versions(const messaging::list_host_versions_request& request);
-    messaging::get_host_version_response
-    get_host_version(const messaging::get_host_version_request& request);
+    ::ores::compute::messaging::list_hosts_response
+    list_hosts(const ::ores::compute::messaging::list_hosts_request& request);
+    ::ores::compute::messaging::get_host_response
+    get_host(const ::ores::compute::messaging::get_host_request& request);
+    ::ores::compute::messaging::get_many_hosts_response
+    get_many_hosts(const ::ores::compute::messaging::get_many_hosts_request& request);
+    ::ores::compute::messaging::put_host_response
+    put_host(const ::ores::compute::messaging::put_host_request& request);
+    ::ores::compute::messaging::put_many_hosts_response
+    put_many_hosts(const ::ores::compute::messaging::put_many_hosts_request& request);
+    ::ores::compute::messaging::delete_host_response
+    delete_host(const ::ores::compute::messaging::delete_host_request& request);
+    ::ores::compute::messaging::delete_many_hosts_response
+    delete_many_hosts(const ::ores::compute::messaging::delete_many_hosts_request& request);
+    ::ores::compute::messaging::list_host_versions_response
+    list_host_versions(const ::ores::compute::messaging::list_host_versions_request& request);
+    ::ores::compute::messaging::get_host_version_response
+    get_host_version(const ::ores::compute::messaging::get_host_version_request& request);
     /**@}*/
 
     /**
@@ -199,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::host_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::host& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::compute::messaging::host_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::host& out);
 };
 
 }

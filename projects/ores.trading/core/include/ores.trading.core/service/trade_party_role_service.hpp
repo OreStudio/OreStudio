@@ -75,26 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_party_roles_response
-    list_trade_party_roles(const messaging::list_trade_party_roles_request& request);
-    messaging::get_trade_party_role_response
-    get_trade_party_role(const messaging::get_trade_party_role_request& request);
-    messaging::get_many_trade_party_roles_response
-    get_many_trade_party_roles(const messaging::get_many_trade_party_roles_request& request);
-    messaging::put_trade_party_role_response
-    put_trade_party_role(const messaging::put_trade_party_role_request& request);
-    messaging::put_many_trade_party_roles_response
-    put_many_trade_party_roles(const messaging::put_many_trade_party_roles_request& request);
-    messaging::delete_trade_party_role_response
-    delete_trade_party_role(const messaging::delete_trade_party_role_request& request);
-    messaging::delete_many_trade_party_roles_response
-    delete_many_trade_party_roles(const messaging::delete_many_trade_party_roles_request& request);
-    messaging::list_by_trade_id_trade_party_roles_response list_by_trade_id_trade_party_roles(
-        const messaging::list_by_trade_id_trade_party_roles_request& request);
-    messaging::list_trade_party_role_versions_response list_trade_party_role_versions(
-        const messaging::list_trade_party_role_versions_request& request);
-    messaging::get_trade_party_role_version_response
-    get_trade_party_role_version(const messaging::get_trade_party_role_version_request& request);
+    ::ores::trading::messaging::list_trade_party_roles_response list_trade_party_roles(
+        const ::ores::trading::messaging::list_trade_party_roles_request& request);
+    ::ores::trading::messaging::get_trade_party_role_response
+    get_trade_party_role(const ::ores::trading::messaging::get_trade_party_role_request& request);
+    ::ores::trading::messaging::get_many_trade_party_roles_response get_many_trade_party_roles(
+        const ::ores::trading::messaging::get_many_trade_party_roles_request& request);
+    ::ores::trading::messaging::put_trade_party_role_response
+    put_trade_party_role(const ::ores::trading::messaging::put_trade_party_role_request& request);
+    ::ores::trading::messaging::put_many_trade_party_roles_response put_many_trade_party_roles(
+        const ::ores::trading::messaging::put_many_trade_party_roles_request& request);
+    ::ores::trading::messaging::delete_trade_party_role_response delete_trade_party_role(
+        const ::ores::trading::messaging::delete_trade_party_role_request& request);
+    ::ores::trading::messaging::delete_many_trade_party_roles_response
+    delete_many_trade_party_roles(
+        const ::ores::trading::messaging::delete_many_trade_party_roles_request& request);
+    ::ores::trading::messaging::list_by_trade_id_trade_party_roles_response
+    list_by_trade_id_trade_party_roles(
+        const ::ores::trading::messaging::list_by_trade_id_trade_party_roles_request& request);
+    ::ores::trading::messaging::list_trade_party_role_versions_response
+    list_trade_party_role_versions(
+        const ::ores::trading::messaging::list_trade_party_role_versions_request& request);
+    ::ores::trading::messaging::get_trade_party_role_version_response get_trade_party_role_version(
+        const ::ores::trading::messaging::get_trade_party_role_version_request& request);
     /**@}*/
 
     /**
@@ -213,9 +216,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::trade_party_role_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::trade_party_role& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::trade_party_role_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::trade_party_role& out);
 };
 
 }

@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view bond_issue_call_date_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_bond_issue_call_date_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_bond_issue_call_date_han
         std::make_shared<bond_issue_call_date_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_bond_issue_call_dates_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->list_bond_issue_call_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_bond_issue_call_date_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_bond_issue_call_date(std::move(msg));
-        }));
+        get_bond_issue_call_date_request::nats_subject,
+        bond_issue_call_date_queue_group,
+        [h](ores::nats::message msg) { h->get_bond_issue_call_date(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_bond_issue_call_dates_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->get_many_bond_issue_call_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_bond_issue_call_date_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_bond_issue_call_date(std::move(msg));
-        }));
+        put_bond_issue_call_date_request::nats_subject,
+        bond_issue_call_date_queue_group,
+        [h](ores::nats::message msg) { h->put_bond_issue_call_date(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_bond_issue_call_dates_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->put_many_bond_issue_call_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_bond_issue_call_date_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->delete_bond_issue_call_date(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_bond_issue_call_dates_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->delete_many_bond_issue_call_dates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_bond_issue_call_date_versions_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->list_bond_issue_call_date_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_bond_issue_call_date_version_request::nats_subject,
-        queue_group,
+        bond_issue_call_date_queue_group,
         [h](ores::nats::message msg) { h->get_bond_issue_call_date_version(std::move(msg)); }));
     return subs;
 }

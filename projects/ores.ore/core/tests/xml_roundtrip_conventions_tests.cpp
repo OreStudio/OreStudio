@@ -49,8 +49,6 @@ using ores::ore::tests::rows_of;
 
 namespace {
 
-const std::string tags("[ore][xml][roundtrip][conventions]");
-
 using namespace ores::ore::domain;
 
 std::filesystem::path corpus_root() {
@@ -178,7 +176,7 @@ std::vector<std::string> ids_in(const conventions& document, const std::string& 
 // that come back from the export are the rows that went in, field for field,
 // because the mapper stores canonical spellings and the value is what has to
 // survive.
-TEST_CASE("every_conventions_family_round_trips", tags) {
+TEST_CASE("every_conventions_family_round_trips", "[ore][xml][roundtrip][conventions]") {
     for (const auto& f : families()) {
         INFO("family " << f.key);
         int files = 0;
@@ -212,7 +210,7 @@ TEST_CASE("every_conventions_family_round_trips", tags) {
     }
 }
 
-TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
+TEST_CASE("conventions_intraday_power_load_round_trips", "[ore][xml][roundtrip][conventions]") {
     std::size_t elements = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -244,7 +242,7 @@ TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
     CHECK(elements == 2);
 }
 
-TEST_CASE("conventions_bond_yield_round_trips", tags) {
+TEST_CASE("conventions_bond_yield_round_trips", "[ore][xml][roundtrip][conventions]") {
     std::size_t elements = 0;
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root()))
         elements += root_of(load(path)).children("BondYield").size();
@@ -258,7 +256,8 @@ TEST_CASE("conventions_bond_yield_round_trips", tags) {
 // all nine, including a zero-valued fixing days and a false resettable flag,
 // which are the two cases a mapper that tested the value rather than the
 // presence would drop.
-TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) {
+TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive",
+          "[ore][xml][roundtrip][conventions]") {
     const std::string text = R"(<Conventions>
   <CrossCurrencyFixFloat>
     <Id>USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS</Id>
@@ -311,7 +310,8 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) 
     CHECK(again[0] == out);
 }
 
-TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled", tags) {
+TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled",
+          "[ore][xml][roundtrip][conventions]") {
     int files_with_a_publication_schedule = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -343,7 +343,8 @@ TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled", tags)
 // when one appears. This case builds that document and asserts the mapper
 // counts the field instead of dropping it: a skip that is counted keeps the
 // file out of the round-trip set, and a skip that is silent loses content.
-TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) {
+TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted",
+          "[ore][xml][roundtrip][conventions]") {
     const std::string without = R"(<Conventions>
   <ZeroInflationIndex>
     <Id>UKRPI</Id>
@@ -376,7 +377,7 @@ TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) 
     CHECK(unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
 }
 
-TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
+TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][conventions]") {
     int files = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -397,21 +398,21 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
         for (std::size_t i = 0; i < swaps.size(); ++i) {
             const auto& in = swaps[i];
             const auto& central = centrals[i];
-            CHECK(central.kind_code == "TENOR_BASIS_SWAP");
-            CHECK(central.name == in.text("Id").value_or(std::string()));
+            CHECK(central.identity.kind_code == "TENOR_BASIS_SWAP");
+            CHECK(central.payload.name == in.text("Id").value_or(std::string()));
 
             const auto pay_receive = std::ranges::find_if(
-                pay_receives, [&](const auto& p) { return p.convention_id == central.id; });
+                pay_receives, [&](const auto& p) { return p.identity.convention_id == central.identity.id; });
             const auto long_short = std::ranges::find_if(
-                long_shorts, [&](const auto& l) { return l.convention_id == central.id; });
+                long_shorts, [&](const auto& l) { return l.identity.convention_id == central.identity.id; });
             if (in.has("PayIndex"))
-                CHECK(pay_receive->pay_index == in.text("PayIndex"));
+                CHECK(pay_receive->pay_leg.pay_index == in.text("PayIndex"));
             if (in.has("ReceiveIndex"))
-                CHECK(pay_receive->receive_index == in.text("ReceiveIndex"));
+                CHECK(pay_receive->rec_leg.receive_index == in.text("ReceiveIndex"));
             if (in.has("LongIndex"))
-                CHECK(long_short->long_index == in.text("LongIndex"));
+                CHECK(long_short->long_leg.long_index == in.text("LongIndex"));
             if (in.has("ShortIndex"))
-                CHECK(long_short->short_index == in.text("ShortIndex"));
+                CHECK(long_short->short_leg.short_index == in.text("ShortIndex"));
         }
 
         const std::string exported = conventions_mapper::write(join_conventions(mapped));
@@ -430,7 +431,8 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
     CHECK(files == 29);
 }
 
-TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
+TEST_CASE("conventions_files_using_only_modelled_categories_round_trip",
+          "[ore][xml][roundtrip][conventions]") {
     const auto kind = conventions_kind();
     int walked = 0;
 
@@ -552,7 +554,8 @@ std::map<std::string, std::string> read_digests(const std::filesystem::path& pat
 
 }
 
-TEST_CASE("the exported conventions corpus matches its recorded digests", tags) {
+TEST_CASE("the exported conventions corpus matches its recorded digests",
+          "[ore][xml][roundtrip][conventions]") {
     const auto root = corpus_root();
     const auto recorded = read_digests(digests_path());
     REQUIRE_FALSE(recorded.empty());

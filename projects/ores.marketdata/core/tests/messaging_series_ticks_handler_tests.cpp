@@ -56,8 +56,6 @@
 
 namespace {
 
-const std::string tags("[series_ticks_handler][integration]");
-
 const std::string test_subject("ores.test.series_ticks.get");
 const std::string read_permission("marketdata::market_observations:read");
 
@@ -148,7 +146,8 @@ get_series_ticks_response decode_reply(const ores::nats::message& reply) {
 
 }
 
-TEST_CASE("a_token_with_the_read_permission_gets_the_ticks_over_nats", tags) {
+TEST_CASE("a_token_with_the_read_permission_gets_the_ticks_over_nats",
+          "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
     ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.25);
@@ -168,7 +167,8 @@ TEST_CASE("a_token_with_the_read_permission_gets_the_ticks_over_nats", tags) {
     CHECK(response.values == std::vector<double>{1.25, 2.5});
 }
 
-TEST_CASE("a_token_without_the_read_permission_is_refused_forbidden", tags) {
+TEST_CASE("a_token_without_the_read_permission_is_refused_forbidden",
+          "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
     ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.0);
@@ -181,7 +181,8 @@ TEST_CASE("a_token_without_the_read_permission_is_refused_forbidden", tags) {
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }
 
-TEST_CASE("a_request_without_a_token_is_refused_unauthorized", tags) {
+TEST_CASE("a_request_without_a_token_is_refused_unauthorized",
+          "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
 
@@ -191,7 +192,8 @@ TEST_CASE("a_request_without_a_token_is_refused_unauthorized", tags) {
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "unauthorized");
 }
 
-TEST_CASE("a_token_that_sees_another_party_gets_an_empty_reply", tags) {
+TEST_CASE("a_token_that_sees_another_party_gets_an_empty_reply",
+          "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
     ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.0);
@@ -205,7 +207,8 @@ TEST_CASE("a_token_that_sees_another_party_gets_an_empty_reply", tags) {
     CHECK(response.values.empty());
 }
 
-TEST_CASE("a_token_that_sees_no_party_is_answered_party_required", tags) {
+TEST_CASE("a_token_that_sees_no_party_is_answered_party_required",
+          "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
     ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.0);

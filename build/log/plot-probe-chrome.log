@@ -1,0 +1,9 @@
+[3:3:1017/154811.734437:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/marco/.config/google-chrome/Crash Reports/settings.dat: Read-only file system (30)
+[3:3:1017/154811.734562:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/marco/.config/google-chrome/Crash Reports/settings.dat: Read-only file system (30)
+[3:22:1017/154811.857143:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/marco/.config/google-chrome/Crash Reports/settings.dat: Read-only file system (30)
+[3:3:1017/154811.860500:INFO:components/enterprise/browser/controller/chrome_browser_cloud_management_controller.cc:241] No machine level policy manager exists.
+[38:38:1017/154811.903864:WARNING:media/gpu/vaapi/vaapi_wrapper.cc:1660] drmGetDevices2() has not found any devices
+[38:38:1017/154811.922394:WARNING:sandbox/policy/linux/sandbox_linux.cc:405] InitializeSandbox() called with multiple threads in process gpu-process.
+[3:3:1017/154812.247514:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.systemd1.Manager.StartTransientUnit: object_path= /org/freedesktop/systemd1: org.freedesktop.DBus.Error.InvalidArgs: Process 3 is a kernel thread, refusing.
+[3:23:1017/154812.346912:ERROR:crypto/nss_util.cc:256] Error initializing NSS with a persistent database (sql:/home/marco/.pki/nssdb): NSS error code: -8126
+923865 bytes written to file build/proto-shots/plot-probe.png

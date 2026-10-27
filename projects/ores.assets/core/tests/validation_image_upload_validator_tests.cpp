@@ -24,18 +24,12 @@
 #include <string>
 #include <vector>
 
-namespace {
-
-const std::string tags("[validation]");
-
-}
-
 using namespace ores::assets::validation;
 using ores::assets::tests::jpeg_bytes;
 using ores::assets::tests::png_bytes;
 using ores::assets::tests::webp_bytes;
 
-TEST_CASE("image_upload_policy_states_the_rule", tags) {
+TEST_CASE("image_upload_policy_states_the_rule", "[validation]") {
     const auto rules = image_upload_validator::policy();
 
     CHECK(rules.formats == std::vector<std::string>{"image/png", "image/jpeg", "image/webp"});
@@ -44,7 +38,7 @@ TEST_CASE("image_upload_policy_states_the_rule", tags) {
     CHECK(rules.min_height == 128);
 }
 
-TEST_CASE("image_upload_validator_accepts_every_stated_format", tags) {
+TEST_CASE("image_upload_validator_accepts_every_stated_format", "[validation]") {
     const auto rules = image_upload_validator::policy();
 
     for (const auto& format : rules.formats) {
@@ -57,7 +51,7 @@ TEST_CASE("image_upload_validator_accepts_every_stated_format", tags) {
     }
 }
 
-TEST_CASE("image_upload_validator_refuses_an_unstated_media_type", tags) {
+TEST_CASE("image_upload_validator_refuses_an_unstated_media_type", "[validation]") {
     const auto refusal = image_upload_validator::validate("image/svg+xml", png_bytes(256, 256));
 
     REQUIRE(refusal.has_value());
@@ -65,7 +59,7 @@ TEST_CASE("image_upload_validator_refuses_an_unstated_media_type", tags) {
     CHECK(refusal->field == "mime_type");
 }
 
-TEST_CASE("image_upload_validator_refuses_an_oversized_image", tags) {
+TEST_CASE("image_upload_validator_refuses_an_oversized_image", "[validation]") {
     const auto rules = image_upload_validator::policy();
     auto bytes = png_bytes(rules.min_width, rules.min_height);
     bytes.resize(rules.max_size_bytes + 1, 0);
@@ -79,7 +73,7 @@ TEST_CASE("image_upload_validator_refuses_an_oversized_image", tags) {
     CHECK(refusal->message.find("2 MB") != std::string::npos);
 }
 
-TEST_CASE("image_upload_validator_refuses_an_image_below_the_minimum_size", tags) {
+TEST_CASE("image_upload_validator_refuses_an_image_below_the_minimum_size", "[validation]") {
     const auto rules = image_upload_validator::policy();
     const auto refusal = image_upload_validator::validate(
         "image/png", png_bytes(rules.min_width - 1, rules.min_height - 1));
@@ -91,7 +85,7 @@ TEST_CASE("image_upload_validator_refuses_an_image_below_the_minimum_size", tags
     CHECK(refusal->message.find("128 by 128") != std::string::npos);
 }
 
-TEST_CASE("image_upload_validator_refuses_bytes_that_are_not_the_stated_type", tags) {
+TEST_CASE("image_upload_validator_refuses_bytes_that_are_not_the_stated_type", "[validation]") {
     const auto refusal = image_upload_validator::validate("image/png", jpeg_bytes(256, 256));
 
     REQUIRE(refusal.has_value());
@@ -99,7 +93,7 @@ TEST_CASE("image_upload_validator_refuses_bytes_that_are_not_the_stated_type", t
     CHECK(refusal->field == "data");
 }
 
-TEST_CASE("image_upload_validator_refuses_bytes_that_carry_no_image", tags) {
+TEST_CASE("image_upload_validator_refuses_bytes_that_carry_no_image", "[validation]") {
     const std::vector<std::uint8_t> bytes(64, 0);
 
     const auto refusal = image_upload_validator::validate("image/png", bytes);
@@ -109,7 +103,7 @@ TEST_CASE("image_upload_validator_refuses_bytes_that_carry_no_image", tags) {
     CHECK(refusal->field == "data");
 }
 
-TEST_CASE("image_upload_validator_refuses_empty_bytes", tags) {
+TEST_CASE("image_upload_validator_refuses_empty_bytes", "[validation]") {
     const auto refusal =
         image_upload_validator::validate("image/webp", std::vector<std::uint8_t>{});
 

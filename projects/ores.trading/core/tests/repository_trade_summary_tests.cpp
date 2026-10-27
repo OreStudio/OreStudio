@@ -61,8 +61,6 @@
 
 namespace {
 
-const std::string tags("[repository][list_filter][trade_summary]");
-
 using ores::trading::messaging::trade_summaries_filter;
 using ores::trading::repository::trade_summary_repository;
 using uuid = boost::uuids::uuid;
@@ -197,7 +195,8 @@ std::vector<uuid> sorted(std::vector<uuid> v) {
 
 }
 
-TEST_CASE("a counterparty narrows the trade summary, and the total follows", tags) {
+TEST_CASE("a counterparty narrows the trade summary, and the total follows",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -207,7 +206,8 @@ TEST_CASE("a counterparty narrows the trade summary, and the total follows", tag
     CHECK(trade_summary_repository().get_total_trade_summary_count(f.ctx, on(f.counterparty)) == 2);
 }
 
-TEST_CASE("a row of a trade names its kind and its instrument type", tags) {
+TEST_CASE("a row of a trade names its kind and its instrument type",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
 
@@ -219,7 +219,7 @@ TEST_CASE("a row of a trade names its kind and its instrument type", tags) {
     CHECK(rows[0].trade_count == 1);
 }
 
-TEST_CASE("an instrument type narrows the summary", tags) {
+TEST_CASE("an instrument type narrows the summary", "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
@@ -232,7 +232,8 @@ TEST_CASE("an instrument type narrows the summary", tags) {
     CHECK(f.read(filter).empty());
 }
 
-TEST_CASE("a book and a trade date narrow the summary through the booking", tags) {
+TEST_CASE("a book and a trade date narrow the summary through the booking",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -251,7 +252,7 @@ TEST_CASE("a book and a trade date narrow the summary through the booking", tags
     CHECK(ids(f.read(filter)) == std::vector<uuid>{a});
 }
 
-TEST_CASE("a trade with no booking has no book", tags) {
+TEST_CASE("a trade with no booking has no book", "[repository][list_filter][trade_summary]") {
     fixture f;
     f.write("Swap", f.counterparty);
 
@@ -260,7 +261,8 @@ TEST_CASE("a trade with no booking has no book", tags) {
     CHECK_FALSE(rows[0].book_id.has_value());
 }
 
-TEST_CASE("the authorisation status of an actual trade with no request is not requested", tags) {
+TEST_CASE("the authorisation status of an actual trade with no request is not requested",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto actual = f.write("Swap", f.counterparty);
     const auto test = f.write("Swap", f.counterparty, ores::trading::domain::booking_nature::test);
@@ -273,7 +275,8 @@ TEST_CASE("the authorisation status of an actual trade with no request is not re
     CHECK(ids(f.read(filter)) == std::vector<uuid>{test});
 }
 
-TEST_CASE("a search matches an identifier of the trade, ignoring case, and literally", tags) {
+TEST_CASE("a search matches an identifier of the trade, ignoring case, and literally",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -290,7 +293,7 @@ TEST_CASE("a search matches an identifier of the trade, ignoring case, and liter
     CHECK(f.read(filter).size() == 2);
 }
 
-TEST_CASE("a search matches the id of the trade", tags) {
+TEST_CASE("a search matches the id of the trade", "[repository][list_filter][trade_summary]") {
     fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -300,7 +303,7 @@ TEST_CASE("a search matches the id of the trade", tags) {
     CHECK(ids(f.read(filter)) == std::vector<uuid>{b});
 }
 
-TEST_CASE("the summary pages in the service", tags) {
+TEST_CASE("the summary pages in the service", "[repository][list_filter][trade_summary]") {
     fixture f;
     f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
@@ -312,7 +315,7 @@ TEST_CASE("the summary pages in the service", tags) {
     CHECK(page[0].instrument_type == "FxForward");
 }
 
-TEST_CASE("only the listed columns sort the summary", tags) {
+TEST_CASE("only the listed columns sort the summary", "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto swap = f.write("Swap", f.counterparty);
     const auto forward = f.write("FxForward", f.counterparty);
@@ -325,7 +328,8 @@ TEST_CASE("only the listed columns sort the summary", tags) {
     CHECK_THROWS_AS(f.read(on(f.counterparty), {.field = "search_text"}), std::invalid_argument);
 }
 
-TEST_CASE("a structure is a row of the same list, with the count of its trades", tags) {
+TEST_CASE("a structure is a row of the same list, with the count of its trades",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -345,7 +349,8 @@ TEST_CASE("a structure is a row of the same list, with the count of its trades",
     CHECK(ids(f.read(on(f.counterparty))) == sorted({a, b, package}));
 }
 
-TEST_CASE("a search finds a structure through an identifier of one of its trades", tags) {
+TEST_CASE("a search finds a structure through an identifier of one of its trades",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -357,7 +362,8 @@ TEST_CASE("a search finds a structure through an identifier of one of its trades
     CHECK(ids(f.read(filter)) == sorted({a, package}));
 }
 
-TEST_CASE("a filter on a column only a trade has leaves the structure out", tags) {
+TEST_CASE("a filter on a column only a trade has leaves the structure out",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write_booking(a, year_month_day{year{2025} / 1 / 15});

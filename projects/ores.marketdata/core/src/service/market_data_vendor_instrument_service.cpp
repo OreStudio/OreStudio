@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::market_data_vendor_instrument>
-read_one(repository::market_data_vendor_instrument_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::market_data_vendor_instrument_key& key) {
+market_data_vendor_instrument_read_one(repository::market_data_vendor_instrument_repository& repo,
+                                       const ores::database::context& ctx,
+                                       const messaging::market_data_vendor_instrument_key& key) {
     return repo.read_latest_by_external_id(ctx, key.external_id);
 }
 
@@ -87,7 +87,7 @@ read_one(repository::market_data_vendor_instrument_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::market_data_vendor_instrument_key
-key_from(const domain::market_data_vendor_instrument& v) {
+market_data_vendor_instrument_key_from(const domain::market_data_vendor_instrument& v) {
     messaging::market_data_vendor_instrument_key key;
     key.external_id = v.external_id;
     return key;
@@ -100,8 +100,8 @@ key_from(const domain::market_data_vendor_instrument& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::market_data_vendor_instrument
-to_domain(const messaging::market_data_vendor_instrument_write& write) {
+domain::market_data_vendor_instrument market_data_vendor_instrument_to_domain(
+    const messaging::market_data_vendor_instrument_write& write) {
     domain::market_data_vendor_instrument v;
     v.id = write.id;
     v.provider_code = write.provider_code;
@@ -182,7 +182,7 @@ messaging::get_market_data_vendor_instrument_response
 market_data_vendor_instrument_service::get_market_data_vendor_instrument(
     const messaging::get_market_data_vendor_instrument_request& request) {
     messaging::get_market_data_vendor_instrument_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = market_data_vendor_instrument_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "market_data_vendor_instrument"});
@@ -203,7 +203,7 @@ market_data_vendor_instrument_service::get_many_market_data_vendor_instruments(
     for (const auto& k : request.keys) {
         messaging::market_data_vendor_instrument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = market_data_vendor_instrument_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.market_data_vendor_instrument = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -220,7 +220,8 @@ market_data_vendor_instrument_service::put_market_data_vendor_instrument(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = market_data_vendor_instrument_read_one(
+        repo_, ctx_, market_data_vendor_instrument_key_from(value));
     if (!written.empty())
         response.market_data_vendor_instrument = std::move(written.front());
     return response;
@@ -253,7 +254,8 @@ market_data_vendor_instrument_service::put_many_market_data_vendor_instruments(
     repo_.write(ctx_, batch, claims);
     response.vendor_instruments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = market_data_vendor_instrument_read_one(
+            repo_, ctx_, market_data_vendor_instrument_key_from(value));
         response.vendor_instruments.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -277,7 +279,7 @@ market_data_vendor_instrument_service::delete_market_data_vendor_instrument(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = market_data_vendor_instrument_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "market_data_vendor_instrument"});
@@ -295,7 +297,8 @@ market_data_vendor_instrument_service::delete_market_data_vendor_instrument(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                market_data_vendor_instrument_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "market_data_vendor_instrument",
@@ -337,7 +340,7 @@ market_data_vendor_instrument_service::delete_many_market_data_vendor_instrument
     std::vector<domain::market_data_vendor_instrument> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = market_data_vendor_instrument_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -366,7 +369,7 @@ market_data_vendor_instrument_service::list_market_data_vendor_instrument_versio
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = market_data_vendor_instrument_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "market_data_vendor_instrument"});
@@ -391,7 +394,8 @@ market_data_vendor_instrument_service::get_market_data_vendor_instrument_version
     messaging::get_market_data_vendor_instrument_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.market_data_vendor_instrument);
+    const auto named = market_data_vendor_instrument_read_one(
+        repo_, ctx_, request.key.market_data_vendor_instrument);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "market_data_vendor_instrument"});
@@ -415,8 +419,9 @@ ores::utility::domain::result market_data_vendor_instrument_service::prepare_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = market_data_vendor_instrument_to_domain(change.write);
+    const auto current = market_data_vendor_instrument_read_one(
+        repo_, ctx_, market_data_vendor_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -493,7 +498,7 @@ market_data_vendor_instrument_service::get_vendor_instrument_by_external_id(
                                << external_id;
     messaging::market_data_vendor_instrument_key k;
     k.external_id = external_id;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = market_data_vendor_instrument_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+approval_decision_list_order(const ores::utility::domain::order& order,
+                             std::initializer_list<std::string> default_columns,
+                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!approval_decision_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::approval_decisions_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> approval_decision_filter_condition(
+    const std::optional<messaging::approval_decisions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -280,8 +281,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
     return execute_ordered_read_query<approval_decision_entity, domain::approval_decision>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        approval_decision_list_order(order, {"id"}, false),
+        approval_decision_filter_condition(filter),
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
         lg(),
         "Reading latest approval decisions by request_id.");
@@ -301,7 +302,11 @@ std::uint32_t approval_decision_repository::get_total_decision_count_by_request_
         where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value());
 
     return execute_count_query<approval_decision_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting approval decisions by request_id");
+        ctx,
+        query,
+        approval_decision_filter_condition(filter),
+        lg(),
+        "Counting approval decisions by request_id");
 }
 
 
@@ -354,8 +359,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
     return execute_ordered_read_query<approval_decision_entity, domain::approval_decision>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        approval_decision_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), approval_decision_filter_condition(filter)),
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
         lg(),
         "Reading latest approval decisions with pagination.");
@@ -374,7 +379,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count(
     return execute_count_query<approval_decision_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), approval_decision_filter_condition(filter)),
         lg(),
         "Counting approval decisions");
 }

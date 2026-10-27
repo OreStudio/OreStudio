@@ -75,23 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_results_response list_results(const messaging::list_results_request& request);
-    messaging::get_result_response get_result(const messaging::get_result_request& request);
-    messaging::get_many_results_response
-    get_many_results(const messaging::get_many_results_request& request);
-    messaging::put_result_response put_result(const messaging::put_result_request& request);
-    messaging::put_many_results_response
-    put_many_results(const messaging::put_many_results_request& request);
-    messaging::delete_result_response
-    delete_result(const messaging::delete_result_request& request);
-    messaging::delete_many_results_response
-    delete_many_results(const messaging::delete_many_results_request& request);
-    messaging::list_by_workunit_id_results_response
-    list_by_workunit_id_results(const messaging::list_by_workunit_id_results_request& request);
-    messaging::list_result_versions_response
-    list_result_versions(const messaging::list_result_versions_request& request);
-    messaging::get_result_version_response
-    get_result_version(const messaging::get_result_version_request& request);
+    ::ores::compute::messaging::list_results_response
+    list_results(const ::ores::compute::messaging::list_results_request& request);
+    ::ores::compute::messaging::get_result_response
+    get_result(const ::ores::compute::messaging::get_result_request& request);
+    ::ores::compute::messaging::get_many_results_response
+    get_many_results(const ::ores::compute::messaging::get_many_results_request& request);
+    ::ores::compute::messaging::put_result_response
+    put_result(const ::ores::compute::messaging::put_result_request& request);
+    ::ores::compute::messaging::put_many_results_response
+    put_many_results(const ::ores::compute::messaging::put_many_results_request& request);
+    ::ores::compute::messaging::delete_result_response
+    delete_result(const ::ores::compute::messaging::delete_result_request& request);
+    ::ores::compute::messaging::delete_many_results_response
+    delete_many_results(const ::ores::compute::messaging::delete_many_results_request& request);
+    ::ores::compute::messaging::list_by_workunit_id_results_response list_by_workunit_id_results(
+        const ::ores::compute::messaging::list_by_workunit_id_results_request& request);
+    ::ores::compute::messaging::list_result_versions_response
+    list_result_versions(const ::ores::compute::messaging::list_result_versions_request& request);
+    ::ores::compute::messaging::get_result_version_response
+    get_result_version(const ::ores::compute::messaging::get_result_version_request& request);
     /**@}*/
 
     /**
@@ -214,9 +217,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::result_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::result& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::compute::messaging::result_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::result& out);
 };
 
 }

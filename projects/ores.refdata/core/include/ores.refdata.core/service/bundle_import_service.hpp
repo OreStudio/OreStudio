@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bundle_imports_response
-    list_bundle_imports(const messaging::list_bundle_imports_request& request);
-    messaging::get_bundle_import_response
-    get_bundle_import(const messaging::get_bundle_import_request& request);
-    messaging::get_many_bundle_imports_response
-    get_many_bundle_imports(const messaging::get_many_bundle_imports_request& request);
-    messaging::put_bundle_import_response
-    put_bundle_import(const messaging::put_bundle_import_request& request);
-    messaging::put_many_bundle_imports_response
-    put_many_bundle_imports(const messaging::put_many_bundle_imports_request& request);
-    messaging::delete_bundle_import_response
-    delete_bundle_import(const messaging::delete_bundle_import_request& request);
-    messaging::delete_many_bundle_imports_response
-    delete_many_bundle_imports(const messaging::delete_many_bundle_imports_request& request);
-    messaging::list_bundle_import_versions_response
-    list_bundle_import_versions(const messaging::list_bundle_import_versions_request& request);
-    messaging::get_bundle_import_version_response
-    get_bundle_import_version(const messaging::get_bundle_import_version_request& request);
+    ::ores::refdata::messaging::list_bundle_imports_response
+    list_bundle_imports(const ::ores::refdata::messaging::list_bundle_imports_request& request);
+    ::ores::refdata::messaging::get_bundle_import_response
+    get_bundle_import(const ::ores::refdata::messaging::get_bundle_import_request& request);
+    ::ores::refdata::messaging::get_many_bundle_imports_response get_many_bundle_imports(
+        const ::ores::refdata::messaging::get_many_bundle_imports_request& request);
+    ::ores::refdata::messaging::put_bundle_import_response
+    put_bundle_import(const ::ores::refdata::messaging::put_bundle_import_request& request);
+    ::ores::refdata::messaging::put_many_bundle_imports_response put_many_bundle_imports(
+        const ::ores::refdata::messaging::put_many_bundle_imports_request& request);
+    ::ores::refdata::messaging::delete_bundle_import_response
+    delete_bundle_import(const ::ores::refdata::messaging::delete_bundle_import_request& request);
+    ::ores::refdata::messaging::delete_many_bundle_imports_response delete_many_bundle_imports(
+        const ::ores::refdata::messaging::delete_many_bundle_imports_request& request);
+    ::ores::refdata::messaging::list_bundle_import_versions_response list_bundle_import_versions(
+        const ::ores::refdata::messaging::list_bundle_import_versions_request& request);
+    ::ores::refdata::messaging::get_bundle_import_version_response get_bundle_import_version(
+        const ::ores::refdata::messaging::get_bundle_import_version_request& request);
     /**@}*/
 
     /**
@@ -190,9 +190,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::bundle_import_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::bundle_import& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::bundle_import_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::bundle_import& out);
 };
 
 }

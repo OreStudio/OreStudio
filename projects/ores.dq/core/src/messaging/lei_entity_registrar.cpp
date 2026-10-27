@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view lei_entity_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,17 +49,17 @@ register_lei_entity_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<lei_entity_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_lei_entities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_lei_entities(std::move(msg));
-        }));
+        list_lei_entities_request::nats_subject,
+        lei_entity_queue_group,
+        [h](ores::nats::message msg) { h->list_lei_entities(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_lei_entity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_lei_entity_request::nats_subject, lei_entity_queue_group, [h](ores::nats::message msg) {
             h->get_lei_entity(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_lei_entities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_lei_entities(std::move(msg));
-        }));
+        get_many_lei_entities_request::nats_subject,
+        lei_entity_queue_group,
+        [h](ores::nats::message msg) { h->get_many_lei_entities(std::move(msg)); }));
     return subs;
 }
 

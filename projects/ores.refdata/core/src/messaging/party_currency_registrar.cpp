@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view party_currency_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,36 +49,36 @@ register_party_currency_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<party_currency_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_party_currencies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_party_currencies(std::move(msg));
-        }));
+        list_party_currencies_request::nats_subject,
+        party_currency_queue_group,
+        [h](ores::nats::message msg) { h->list_party_currencies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_party_currency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_party_currency(std::move(msg));
-        }));
+        get_party_currency_request::nats_subject,
+        party_currency_queue_group,
+        [h](ores::nats::message msg) { h->get_party_currency(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_party_currencies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_party_currencies(std::move(msg));
-        }));
+        get_many_party_currencies_request::nats_subject,
+        party_currency_queue_group,
+        [h](ores::nats::message msg) { h->get_many_party_currencies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_party_currency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_party_currency(std::move(msg));
-        }));
+        put_party_currency_request::nats_subject,
+        party_currency_queue_group,
+        [h](ores::nats::message msg) { h->put_party_currency(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_party_currencies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_party_currencies(std::move(msg));
-        }));
+        put_many_party_currencies_request::nats_subject,
+        party_currency_queue_group,
+        [h](ores::nats::message msg) { h->put_many_party_currencies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_party_currency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_party_currency(std::move(msg));
-        }));
+        delete_party_currency_request::nats_subject,
+        party_currency_queue_group,
+        [h](ores::nats::message msg) { h->delete_party_currency(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_party_currencies_request::nats_subject,
-        queue_group,
+        party_currency_queue_group,
         [h](ores::nats::message msg) { h->delete_many_party_currencies(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_party_id_party_currencies_request::nats_subject,
-        queue_group,
+        party_currency_queue_group,
         [h](ores::nats::message msg) { h->list_by_party_id_party_currencies(std::move(msg)); }));
     return subs;
 }

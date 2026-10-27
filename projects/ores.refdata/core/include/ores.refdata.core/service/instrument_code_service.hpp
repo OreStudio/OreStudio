@@ -75,24 +75,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_instrument_codes_response
-    list_instrument_codes(const messaging::list_instrument_codes_request& request);
-    messaging::get_instrument_code_response
-    get_instrument_code(const messaging::get_instrument_code_request& request);
-    messaging::get_many_instrument_codes_response
-    get_many_instrument_codes(const messaging::get_many_instrument_codes_request& request);
-    messaging::put_instrument_code_response
-    put_instrument_code(const messaging::put_instrument_code_request& request);
-    messaging::put_many_instrument_codes_response
-    put_many_instrument_codes(const messaging::put_many_instrument_codes_request& request);
-    messaging::delete_instrument_code_response
-    delete_instrument_code(const messaging::delete_instrument_code_request& request);
-    messaging::delete_many_instrument_codes_response
-    delete_many_instrument_codes(const messaging::delete_many_instrument_codes_request& request);
-    messaging::list_instrument_code_versions_response
-    list_instrument_code_versions(const messaging::list_instrument_code_versions_request& request);
-    messaging::get_instrument_code_version_response
-    get_instrument_code_version(const messaging::get_instrument_code_version_request& request);
+    ::ores::refdata::messaging::list_instrument_codes_response
+    list_instrument_codes(const ::ores::refdata::messaging::list_instrument_codes_request& request);
+    ::ores::refdata::messaging::get_instrument_code_response
+    get_instrument_code(const ::ores::refdata::messaging::get_instrument_code_request& request);
+    ::ores::refdata::messaging::get_many_instrument_codes_response get_many_instrument_codes(
+        const ::ores::refdata::messaging::get_many_instrument_codes_request& request);
+    ::ores::refdata::messaging::put_instrument_code_response
+    put_instrument_code(const ::ores::refdata::messaging::put_instrument_code_request& request);
+    ::ores::refdata::messaging::put_many_instrument_codes_response put_many_instrument_codes(
+        const ::ores::refdata::messaging::put_many_instrument_codes_request& request);
+    ::ores::refdata::messaging::delete_instrument_code_response delete_instrument_code(
+        const ::ores::refdata::messaging::delete_instrument_code_request& request);
+    ::ores::refdata::messaging::delete_many_instrument_codes_response delete_many_instrument_codes(
+        const ::ores::refdata::messaging::delete_many_instrument_codes_request& request);
+    ::ores::refdata::messaging::list_instrument_code_versions_response
+    list_instrument_code_versions(
+        const ::ores::refdata::messaging::list_instrument_code_versions_request& request);
+    ::ores::refdata::messaging::get_instrument_code_version_response get_instrument_code_version(
+        const ::ores::refdata::messaging::get_instrument_code_version_request& request);
     /**@}*/
 
     /**
@@ -187,9 +188,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::instrument_code_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::instrument_code& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::instrument_code_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::instrument_code& out);
 };
 
 }

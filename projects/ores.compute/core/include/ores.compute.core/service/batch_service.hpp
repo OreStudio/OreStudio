@@ -75,20 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_batches_response list_batches(const messaging::list_batches_request& request);
-    messaging::get_batch_response get_batch(const messaging::get_batch_request& request);
-    messaging::get_many_batches_response
-    get_many_batches(const messaging::get_many_batches_request& request);
-    messaging::put_batch_response put_batch(const messaging::put_batch_request& request);
-    messaging::put_many_batches_response
-    put_many_batches(const messaging::put_many_batches_request& request);
-    messaging::delete_batch_response delete_batch(const messaging::delete_batch_request& request);
-    messaging::delete_many_batches_response
-    delete_many_batches(const messaging::delete_many_batches_request& request);
-    messaging::list_batch_versions_response
-    list_batch_versions(const messaging::list_batch_versions_request& request);
-    messaging::get_batch_version_response
-    get_batch_version(const messaging::get_batch_version_request& request);
+    ::ores::compute::messaging::list_batches_response
+    list_batches(const ::ores::compute::messaging::list_batches_request& request);
+    ::ores::compute::messaging::get_batch_response
+    get_batch(const ::ores::compute::messaging::get_batch_request& request);
+    ::ores::compute::messaging::get_many_batches_response
+    get_many_batches(const ::ores::compute::messaging::get_many_batches_request& request);
+    ::ores::compute::messaging::put_batch_response
+    put_batch(const ::ores::compute::messaging::put_batch_request& request);
+    ::ores::compute::messaging::put_many_batches_response
+    put_many_batches(const ::ores::compute::messaging::put_many_batches_request& request);
+    ::ores::compute::messaging::delete_batch_response
+    delete_batch(const ::ores::compute::messaging::delete_batch_request& request);
+    ::ores::compute::messaging::delete_many_batches_response
+    delete_many_batches(const ::ores::compute::messaging::delete_many_batches_request& request);
+    ::ores::compute::messaging::list_batch_versions_response
+    list_batch_versions(const ::ores::compute::messaging::list_batch_versions_request& request);
+    ::ores::compute::messaging::get_batch_version_response
+    get_batch_version(const ::ores::compute::messaging::get_batch_version_request& request);
     /**@}*/
 
     /**
@@ -199,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::batch_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::batch& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::compute::messaging::batch_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::batch& out);
 };
 
 }

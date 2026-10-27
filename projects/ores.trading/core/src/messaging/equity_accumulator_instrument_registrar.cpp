@@ -39,7 +39,8 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view equity_accumulator_instrument_queue_group =
+    "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_equity_accumulator_instrument_handlers(
@@ -51,47 +52,47 @@ std::vector<ores::nats::service::subscription> register_equity_accumulator_instr
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_equity_accumulator_instruments_request::nats_subject,
-        queue_group,
+        equity_accumulator_instrument_queue_group,
         [h](ores::nats::message msg) { h->list_equity_accumulator_instruments(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_equity_accumulator_instrument_request::nats_subject,
-        queue_group,
+        equity_accumulator_instrument_queue_group,
         [h](ores::nats::message msg) { h->get_equity_accumulator_instrument(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_equity_accumulator_instruments_request::nats_subject,
-                             queue_group,
+                             equity_accumulator_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_equity_accumulator_instruments(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_equity_accumulator_instrument_request::nats_subject,
-        queue_group,
+        equity_accumulator_instrument_queue_group,
         [h](ores::nats::message msg) { h->put_equity_accumulator_instrument(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_equity_accumulator_instruments_request::nats_subject,
-                             queue_group,
+                             equity_accumulator_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_equity_accumulator_instruments(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_equity_accumulator_instrument_request::nats_subject,
-        queue_group,
+        equity_accumulator_instrument_queue_group,
         [h](ores::nats::message msg) { h->delete_equity_accumulator_instrument(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_equity_accumulator_instruments_request::nats_subject,
-                             queue_group,
+                             equity_accumulator_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_equity_accumulator_instruments(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_equity_accumulator_instrument_versions_request::nats_subject,
-                             queue_group,
+                             equity_accumulator_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_equity_accumulator_instrument_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_equity_accumulator_instrument_version_request::nats_subject,
-                             queue_group,
+                             equity_accumulator_instrument_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_equity_accumulator_instrument_version(std::move(msg));
                              }));

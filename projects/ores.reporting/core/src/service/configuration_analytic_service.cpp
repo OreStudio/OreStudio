@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::configuration_analytic>
-read_one(repository::configuration_analytic_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::configuration_analytic_key& key) {
+configuration_analytic_read_one(repository::configuration_analytic_repository& repo,
+                                const ores::database::context& ctx,
+                                const messaging::configuration_analytic_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::configuration_analytic_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::configuration_analytic_key key_from(const domain::configuration_analytic& v) {
+messaging::configuration_analytic_key
+configuration_analytic_key_from(const domain::configuration_analytic& v) {
     messaging::configuration_analytic_key key;
     key.id = v.id;
     return key;
@@ -99,7 +100,8 @@ messaging::configuration_analytic_key key_from(const domain::configuration_analy
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::configuration_analytic to_domain(const messaging::configuration_analytic_write& write) {
+domain::configuration_analytic
+configuration_analytic_to_domain(const messaging::configuration_analytic_write& write) {
     domain::configuration_analytic v;
     v.id = write.id;
     v.configuration_id = write.configuration_id;
@@ -243,7 +245,7 @@ messaging::get_configuration_analytic_response
 configuration_analytic_service::get_configuration_analytic(
     const messaging::get_configuration_analytic_request& request) {
     messaging::get_configuration_analytic_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = configuration_analytic_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "configuration_analytic"});
         return response;
@@ -263,7 +265,7 @@ configuration_analytic_service::get_many_configuration_analytics(
     for (const auto& k : request.keys) {
         messaging::configuration_analytic_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = configuration_analytic_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.configuration_analytic = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -280,7 +282,8 @@ configuration_analytic_service::put_configuration_analytic(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        configuration_analytic_read_one(repo_, ctx_, configuration_analytic_key_from(value));
     if (!written.empty())
         response.configuration_analytic = std::move(written.front());
     return response;
@@ -313,7 +316,8 @@ configuration_analytic_service::put_many_configuration_analytics(
     repo_.write(ctx_, batch, claims);
     response.analytics.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            configuration_analytic_read_one(repo_, ctx_, configuration_analytic_key_from(value));
         response.analytics.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -347,7 +351,7 @@ configuration_analytic_service::delete_configuration_analytic(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = configuration_analytic_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "configuration_analytic",
@@ -437,8 +441,9 @@ ores::utility::domain::result configuration_analytic_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = configuration_analytic_to_domain(change.write);
+    const auto current =
+        configuration_analytic_read_one(repo_, ctx_, configuration_analytic_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

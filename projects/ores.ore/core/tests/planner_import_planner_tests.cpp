@@ -22,6 +22,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -32,9 +33,6 @@
 #include <variant>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][planner][import_planner]");
 
 std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
@@ -104,7 +102,6 @@ using namespace ores::logging;
 // Currency tests
 // =============================================================================
 
-
 namespace {
 
 // The domain holds a calendar date; the ORE XML holds its ISO-8601 spelling.
@@ -118,7 +115,7 @@ namespace {
 
 } // namespace
 
-TEST_CASE("plan_includes_all_currencies_when_mode_is_all", tags) {
+TEST_CASE("plan_includes_all_currencies_when_mode_is_all", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1/Input");
@@ -139,7 +136,8 @@ TEST_CASE("plan_includes_all_currencies_when_mode_is_all", tags) {
     CHECK(!plan.currencies.empty());
 }
 
-TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only", tags) {
+TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1/Input");
@@ -191,7 +189,8 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only", tags) {
 // Portfolio / book tests
 // =============================================================================
 
-TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files", tags) {
+TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1");
@@ -234,7 +233,7 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files", tags) {
 // A portfolio directory above the books is what gives every book a parent.
 // The wrapping parent portfolio sits above that directory, so it adds one
 // portfolio to the plan and nothing else.
-TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", tags) {
+TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
@@ -272,7 +271,7 @@ TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", tags) {
 // builder makes book nodes with no portfolio above them. The wrapping
 // parent portfolio is the only thing that can give those books a parent,
 // and a book without one cannot be saved.
-TEST_CASE("plan_rejects_a_flat_upload_with_no_parent_portfolio", tags) {
+TEST_CASE("plan_rejects_a_flat_upload_with_no_parent_portfolio", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
@@ -308,7 +307,7 @@ TEST_CASE("plan_rejects_a_flat_upload_with_no_parent_portfolio", tags) {
 // Trade tests
 // =============================================================================
 
-TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", tags) {
+TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1");
@@ -340,7 +339,7 @@ TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", tags) {
     BOOST_LOG_SEV(lg, info) << "All " << plan.trades.size() << " trades have a book";
 }
 
-TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
+TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1");
@@ -425,7 +424,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
     BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id key for " << checked << " trade(s)";
 }
 
-TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
+TEST_CASE("plan_trade_defaults_override_parsed_values", "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1");
@@ -459,7 +458,8 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
 // An import into a sandbox puts everything it creates in the sandbox: the
 // wrapping portfolio, the portfolios of the tree and the books, which are
 // virtual books that never reach the ledger.
-TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books", tags) {
+TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
@@ -491,7 +491,8 @@ TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books
     std::filesystem::remove_all(root, ec);
 }
 
-TEST_CASE("plan_without_a_sandbox_creates_official_portfolios_and_books", tags) {
+TEST_CASE("plan_without_a_sandbox_creates_official_portfolios_and_books",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");

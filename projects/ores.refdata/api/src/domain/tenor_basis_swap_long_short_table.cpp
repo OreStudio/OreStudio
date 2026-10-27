@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string tenor_basis_swap_long_short_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,13 @@ std::string convert_to_table(const std::vector<tenor_basis_swap_long_short>& v) 
           << "Include Spread" << "Sub Periods Type" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ls : v) {
-        table << opt_str(ls.long_index) << opt_str(ls.short_index) << opt_str(ls.long_pay_tenor)
-              << opt_str(ls.short_pay_tenor) << opt_str(ls.include_spread)
-              << opt_str(ls.sub_periods_coupon_type) << ls.modified_by << ls.version << fort::endr;
+        table << tenor_basis_swap_long_short_opt_str(ls.long_leg.long_index)
+              << tenor_basis_swap_long_short_opt_str(ls.short_leg.short_index)
+              << tenor_basis_swap_long_short_opt_str(ls.long_leg.long_pay_tenor)
+              << tenor_basis_swap_long_short_opt_str(ls.short_leg.short_pay_tenor)
+              << tenor_basis_swap_long_short_opt_str(ls.coupon.include_spread)
+              << tenor_basis_swap_long_short_opt_str(ls.coupon.sub_periods_coupon_type)
+              << ls.audit.modified_by << ls.identity.version << fort::endr;
     }
     return table.to_string();
 }

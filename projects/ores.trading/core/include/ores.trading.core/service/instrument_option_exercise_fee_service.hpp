@@ -76,32 +76,42 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_instrument_option_exercise_fees_response list_instrument_option_exercise_fees(
-        const messaging::list_instrument_option_exercise_fees_request& request);
-    messaging::get_instrument_option_exercise_fee_response get_instrument_option_exercise_fee(
-        const messaging::get_instrument_option_exercise_fee_request& request);
-    messaging::get_many_instrument_option_exercise_fees_response
+    ::ores::trading::messaging::list_instrument_option_exercise_fees_response
+    list_instrument_option_exercise_fees(
+        const ::ores::trading::messaging::list_instrument_option_exercise_fees_request& request);
+    ::ores::trading::messaging::get_instrument_option_exercise_fee_response
+    get_instrument_option_exercise_fee(
+        const ::ores::trading::messaging::get_instrument_option_exercise_fee_request& request);
+    ::ores::trading::messaging::get_many_instrument_option_exercise_fees_response
     get_many_instrument_option_exercise_fees(
-        const messaging::get_many_instrument_option_exercise_fees_request& request);
-    messaging::put_instrument_option_exercise_fee_response put_instrument_option_exercise_fee(
-        const messaging::put_instrument_option_exercise_fee_request& request);
-    messaging::put_many_instrument_option_exercise_fees_response
+        const ::ores::trading::messaging::get_many_instrument_option_exercise_fees_request&
+            request);
+    ::ores::trading::messaging::put_instrument_option_exercise_fee_response
+    put_instrument_option_exercise_fee(
+        const ::ores::trading::messaging::put_instrument_option_exercise_fee_request& request);
+    ::ores::trading::messaging::put_many_instrument_option_exercise_fees_response
     put_many_instrument_option_exercise_fees(
-        const messaging::put_many_instrument_option_exercise_fees_request& request);
-    messaging::delete_instrument_option_exercise_fee_response delete_instrument_option_exercise_fee(
-        const messaging::delete_instrument_option_exercise_fee_request& request);
-    messaging::delete_many_instrument_option_exercise_fees_response
+        const ::ores::trading::messaging::put_many_instrument_option_exercise_fees_request&
+            request);
+    ::ores::trading::messaging::delete_instrument_option_exercise_fee_response
+    delete_instrument_option_exercise_fee(
+        const ::ores::trading::messaging::delete_instrument_option_exercise_fee_request& request);
+    ::ores::trading::messaging::delete_many_instrument_option_exercise_fees_response
     delete_many_instrument_option_exercise_fees(
-        const messaging::delete_many_instrument_option_exercise_fees_request& request);
-    messaging::list_by_trade_id_instrument_option_exercise_fees_response
+        const ::ores::trading::messaging::delete_many_instrument_option_exercise_fees_request&
+            request);
+    ::ores::trading::messaging::list_by_trade_id_instrument_option_exercise_fees_response
     list_by_trade_id_instrument_option_exercise_fees(
-        const messaging::list_by_trade_id_instrument_option_exercise_fees_request& request);
-    messaging::list_instrument_option_exercise_fee_versions_response
+        const ::ores::trading::messaging::list_by_trade_id_instrument_option_exercise_fees_request&
+            request);
+    ::ores::trading::messaging::list_instrument_option_exercise_fee_versions_response
     list_instrument_option_exercise_fee_versions(
-        const messaging::list_instrument_option_exercise_fee_versions_request& request);
-    messaging::get_instrument_option_exercise_fee_version_response
+        const ::ores::trading::messaging::list_instrument_option_exercise_fee_versions_request&
+            request);
+    ::ores::trading::messaging::get_instrument_option_exercise_fee_version_response
     get_instrument_option_exercise_fee_version(
-        const messaging::get_instrument_option_exercise_fee_version_request& request);
+        const ::ores::trading::messaging::get_instrument_option_exercise_fee_version_request&
+            request);
     /**@}*/
 
     /**
@@ -223,7 +233,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::instrument_option_exercise_fee_change& change,
+    prepare_change(const ::ores::trading::messaging::instrument_option_exercise_fee_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::instrument_option_exercise_fee& out);
 };

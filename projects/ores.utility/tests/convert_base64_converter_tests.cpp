@@ -19,19 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[convert]");
-
-}
 
 using ores::utility::convert::base64_converter;
 using namespace ores::logging;
 
-TEST_CASE("base64_encode_empty_input", tags) {
+TEST_CASE("base64_encode_empty_input", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::vector<uint8_t> input;
@@ -42,7 +36,7 @@ TEST_CASE("base64_encode_empty_input", tags) {
     CHECK(result.empty());
 }
 
-TEST_CASE("base64_encode_hello", tags) {
+TEST_CASE("base64_encode_hello", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::string input_str = "Hello";
@@ -55,7 +49,7 @@ TEST_CASE("base64_encode_hello", tags) {
     CHECK(result == "SGVsbG8=");
 }
 
-TEST_CASE("base64_encode_hello_world", tags) {
+TEST_CASE("base64_encode_hello_world", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::string input_str = "Hello, World!";
@@ -67,7 +61,7 @@ TEST_CASE("base64_encode_hello_world", tags) {
     CHECK(result == "SGVsbG8sIFdvcmxkIQ==");
 }
 
-TEST_CASE("base64_decode_hello", tags) {
+TEST_CASE("base64_decode_hello", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::string encoded = "SGVsbG8=";
@@ -79,7 +73,7 @@ TEST_CASE("base64_decode_hello", tags) {
     CHECK(result_str == "Hello");
 }
 
-TEST_CASE("base64_roundtrip_conversion", tags) {
+TEST_CASE("base64_roundtrip_conversion", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::string original = "The quick brown fox jumps over the lazy dog";
@@ -98,7 +92,7 @@ TEST_CASE("base64_roundtrip_conversion", tags) {
     CHECK(decoded_str == original);
 }
 
-TEST_CASE("base64_encode_binary_data", tags) {
+TEST_CASE("base64_encode_binary_data", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::vector<uint8_t> input = {0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD};
@@ -116,7 +110,7 @@ TEST_CASE("base64_encode_binary_data", tags) {
     CHECK(!result.empty());
 }
 
-TEST_CASE("base64_roundtrip_binary_data", tags) {
+TEST_CASE("base64_roundtrip_binary_data", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::vector<uint8_t> original = {0x00,
@@ -149,7 +143,7 @@ TEST_CASE("base64_roundtrip_binary_data", tags) {
     CHECK(decoded == original);
 }
 
-TEST_CASE("base64_decode_empty_throws", tags) {
+TEST_CASE("base64_decode_empty_throws", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::string empty;
@@ -159,7 +153,7 @@ TEST_CASE("base64_decode_empty_throws", tags) {
     CHECK_THROWS_AS(base64_converter::convert(empty), std::runtime_error);
 }
 
-TEST_CASE("base64_encode_various_lengths", tags) {
+TEST_CASE("base64_encode_various_lengths", "[convert]") {
     auto lg(make_logger(test_suite));
 
     // Padding is needed unless the byte count is a multiple of three.
@@ -178,7 +172,7 @@ TEST_CASE("base64_encode_various_lengths", tags) {
     }
 }
 
-TEST_CASE("base64_encode_long_text", tags) {
+TEST_CASE("base64_encode_long_text", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::string original = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
@@ -196,7 +190,7 @@ TEST_CASE("base64_encode_long_text", tags) {
     CHECK(decoded_str == original);
 }
 
-TEST_CASE("base64_encode_all_zeros", tags) {
+TEST_CASE("base64_encode_all_zeros", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::vector<uint8_t> input(100, 0x00);
@@ -210,7 +204,7 @@ TEST_CASE("base64_encode_all_zeros", tags) {
     CHECK(decoded.size() == 100);
 }
 
-TEST_CASE("base64_encode_all_ones", tags) {
+TEST_CASE("base64_encode_all_ones", "[convert]") {
     auto lg(make_logger(test_suite));
 
     std::vector<uint8_t> input(50, 0xFF);

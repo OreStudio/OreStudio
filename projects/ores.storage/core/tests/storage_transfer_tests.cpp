@@ -22,6 +22,7 @@
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "support/loopback_http_server.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <filesystem>
@@ -40,9 +41,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.storage.tests");
-const std::string tags("[net]");
-
 /// The caller token every transfer carries.
 const std::string test_token("ores-storage-test-token");
 
@@ -59,7 +57,7 @@ std::string read_file(const std::filesystem::path& path) {
 
 }
 
-TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", tags) {
+TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -78,7 +76,7 @@ TEST_CASE("upload_puts_the_file_bytes_to_the_object_path", tags) {
     CHECK(server.last_authorization() == "Bearer " + test_token);
 }
 
-TEST_CASE("download_writes_the_exact_server_bytes", tags) {
+TEST_CASE("download_writes_the_exact_server_bytes", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -95,7 +93,7 @@ TEST_CASE("download_writes_the_exact_server_bytes", tags) {
     CHECK(read_file(destination.path()) == content);
 }
 
-TEST_CASE("upload_returning_response_returns_the_exact_server_body", tags) {
+TEST_CASE("upload_returning_response_returns_the_exact_server_body", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -113,7 +111,7 @@ TEST_CASE("upload_returning_response_returns_the_exact_server_body", tags) {
     CHECK(actual == response);
 }
 
-TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", tags) {
+TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -143,7 +141,7 @@ TEST_CASE("pack_and_upload_then_fetch_and_unpack_reproduces_the_tree", tags) {
     CHECK(read_file(destination.path() / "nested" / "payload.json") == payload_content);
 }
 
-TEST_CASE("upload_blob_then_download_blob_round_trips_arbitrary_bytes", tags) {
+TEST_CASE("upload_blob_then_download_blob_round_trips_arbitrary_bytes", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -168,7 +166,7 @@ TEST_CASE("upload_blob_then_download_blob_round_trips_arbitrary_bytes", tags) {
     CHECK(round_tripped == original);
 }
 
-TEST_CASE("remove_targets_the_object_url_and_returns_the_server_answer", tags) {
+TEST_CASE("remove_targets_the_object_url_and_returns_the_server_answer", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -186,7 +184,7 @@ TEST_CASE("remove_targets_the_object_url_and_returns_the_server_answer", tags) {
     CHECK(actual == answer);
 }
 
-TEST_CASE("list_asks_the_bucket_url_for_the_requested_page", tags) {
+TEST_CASE("list_asks_the_bucket_url_for_the_requested_page", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;
@@ -204,7 +202,7 @@ TEST_CASE("list_asks_the_bucket_url_for_the_requested_page", tags) {
     CHECK(actual == listing);
 }
 
-TEST_CASE("list_escapes_a_prefix_that_would_otherwise_change_the_query", tags) {
+TEST_CASE("list_escapes_a_prefix_that_would_otherwise_change_the_query", "[net]") {
     auto lg(make_logger(test_suite));
 
     loopback_http_server server;

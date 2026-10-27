@@ -740,6 +740,7 @@ describe('inbox routes', () => {
                     decision_code: 'refuse',
                     comment: 'Not this desk',
                     part_code: '',
+                    hold_reason_code: '',
                 },
             },
         ]);

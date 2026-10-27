@@ -76,27 +76,36 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_series_classification_rules_response list_series_classification_rules(
-        const messaging::list_series_classification_rules_request& request);
-    messaging::get_series_classification_rule_response get_series_classification_rule(
-        const messaging::get_series_classification_rule_request& request);
-    messaging::get_many_series_classification_rules_response get_many_series_classification_rules(
-        const messaging::get_many_series_classification_rules_request& request);
-    messaging::put_series_classification_rule_response put_series_classification_rule(
-        const messaging::put_series_classification_rule_request& request);
-    messaging::put_many_series_classification_rules_response put_many_series_classification_rules(
-        const messaging::put_many_series_classification_rules_request& request);
-    messaging::delete_series_classification_rule_response delete_series_classification_rule(
-        const messaging::delete_series_classification_rule_request& request);
-    messaging::delete_many_series_classification_rules_response
+    ::ores::marketdata::messaging::list_series_classification_rules_response
+    list_series_classification_rules(
+        const ::ores::marketdata::messaging::list_series_classification_rules_request& request);
+    ::ores::marketdata::messaging::get_series_classification_rule_response
+    get_series_classification_rule(
+        const ::ores::marketdata::messaging::get_series_classification_rule_request& request);
+    ::ores::marketdata::messaging::get_many_series_classification_rules_response
+    get_many_series_classification_rules(
+        const ::ores::marketdata::messaging::get_many_series_classification_rules_request& request);
+    ::ores::marketdata::messaging::put_series_classification_rule_response
+    put_series_classification_rule(
+        const ::ores::marketdata::messaging::put_series_classification_rule_request& request);
+    ::ores::marketdata::messaging::put_many_series_classification_rules_response
+    put_many_series_classification_rules(
+        const ::ores::marketdata::messaging::put_many_series_classification_rules_request& request);
+    ::ores::marketdata::messaging::delete_series_classification_rule_response
+    delete_series_classification_rule(
+        const ::ores::marketdata::messaging::delete_series_classification_rule_request& request);
+    ::ores::marketdata::messaging::delete_many_series_classification_rules_response
     delete_many_series_classification_rules(
-        const messaging::delete_many_series_classification_rules_request& request);
-    messaging::list_series_classification_rule_versions_response
+        const ::ores::marketdata::messaging::delete_many_series_classification_rules_request&
+            request);
+    ::ores::marketdata::messaging::list_series_classification_rule_versions_response
     list_series_classification_rule_versions(
-        const messaging::list_series_classification_rule_versions_request& request);
-    messaging::get_series_classification_rule_version_response
+        const ::ores::marketdata::messaging::list_series_classification_rule_versions_request&
+            request);
+    ::ores::marketdata::messaging::get_series_classification_rule_version_response
     get_series_classification_rule_version(
-        const messaging::get_series_classification_rule_version_request& request);
+        const ::ores::marketdata::messaging::get_series_classification_rule_version_request&
+            request);
     /**@}*/
 
     /**
@@ -197,7 +206,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::series_classification_rule_change& change,
+    prepare_change(const ::ores::marketdata::messaging::series_classification_rule_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::series_classification_rule& out);
 };

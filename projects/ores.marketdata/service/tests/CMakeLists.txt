@@ -50,6 +50,10 @@ target_link_libraries(${tests_target_name}
         ores.utility.lib
         ores.testing.lib
         ores.logging.lib
+        ores.iam.api.lib
+        ores.iam.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)

@@ -1,0 +1,113 @@
+On feature/seed-provider-feeds: wip: synthetic system-folder RLS select policy + tests (pre gate-fix branch)
+diff --git a/projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql b/projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql
+index 2d47e533f4..0327d11e11 100644
+--- a/projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql
++++ b/projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql
+@@ -257,7 +257,9 @@ for select using (
+ -- Whether a folder belongs to a system collection, so every tenant may read it: the
+ -- collection's own folder and those under it, and the root above it. The tree of a system
+ -- collection is the installation's, as its feeds are. The function reads the folders as its
+--- definer, because a policy on the folders that reads the folders would never end.
++-- definer, because a policy on the folders that reads the folders would never end. It walks
++-- at most eight levels up from each folder it is asked about. A parent of a system collection's
++-- folder is visible too, which is how the system root reaches a tenant.
+ create or replace function ores_synthetic_is_system_folder_fn(p_folder_id uuid)
+ returns boolean
+ language sql
+@@ -292,6 +294,11 @@ as $$
+     )
+ $$;
+ 
++-- The walk up from a folder and the look below a root read the folders by their parent.
++create index if not exists synthetic_folders_parent_idx
++on ores_synthetic_folders_tbl (parent_id)
++where valid_to = ores_utility_infinity_timestamp_fn();
++
+ alter table ores_synthetic_folders_tbl enable row level security;
+ 
+ drop policy if exists folders_tenant_isolation_policy
+@@ -301,13 +308,23 @@ create policy folders_tenant_isolation_policy
+ on ores_synthetic_folders_tbl
+ for all using (
+     tenant_id = ores_iam_current_tenant_id_fn()
+-    or (tenant_id = ores_utility_system_tenant_id_fn()
+-        and ores_synthetic_is_system_folder_fn(id))
+ )
+ with check (
+     tenant_id = ores_iam_current_tenant_id_fn()
+ );
+ 
++-- A tenant reads the folders of a system collection and writes none: the policy is for select
++-- alone, so an update or a delete still reaches only the tenant's own folders.
++drop policy if exists folders_system_read_policy
++    on ores_synthetic_folders_tbl;
++
++create policy folders_system_read_policy
++on ores_synthetic_folders_tbl
++for select using (
++    tenant_id = ores_utility_system_tenant_id_fn()
++    and ores_synthetic_is_system_folder_fn(id)
++);
++
+ drop policy if exists folders_party_isolation_policy
+     on ores_synthetic_folders_tbl;
+ 
+diff --git a/projects/ores.sql/test/synthetic_provider_feeds_publish_test.sql b/projects/ores.sql/test/synthetic_provider_feeds_publish_test.sql
+index 5a7b4f308d..361248c4e1 100644
+--- a/projects/ores.sql/test/synthetic_provider_feeds_publish_test.sql
++++ b/projects/ores.sql/test/synthetic_provider_feeds_publish_test.sql
+@@ -31,7 +31,7 @@
+ 
+ begin;
+ 
+-select plan(9);
++select plan(10);
+ 
+ create temporary table t_dataset on commit drop as
+ select id, code from ores_dq_datasets_tbl
+@@ -140,6 +140,22 @@ select is(
+     'another tenant reads the folders of the system collection, the root above it included'
+ );
+ 
++-- A tenant reads the folders of a system collection and cannot touch them.
++delete from ores_synthetic_folders_tbl
++where tenant_id = ores_utility_system_tenant_id_fn()
++  and name in ('Synthetic', 'Refinitiv', 'FX', 'FX Rates');
++
++select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
++
++select is(
++    (select count(*)::int from ores_synthetic_folders_tbl f
++     where f.tenant_id = ores_utility_system_tenant_id_fn()
++       and f.valid_to = ores_utility_infinity_timestamp_fn()
++       and f.name in ('Synthetic', 'Refinitiv', 'FX', 'FX Rates')),
++    4,
++    'a delete from another tenant leaves the folders of a system collection'
++);
++
+ select * from finish();
+ 
+ rollback;
+diff --git a/projects/ores.synthetic/service/tests/feed_kind_registry_tests.cpp b/projects/ores.synthetic/service/tests/feed_kind_registry_tests.cpp
+index 82f0fe28bd..c4660e7927 100644
+--- a/projects/ores.synthetic/service/tests/feed_kind_registry_tests.cpp
++++ b/projects/ores.synthetic/service/tests/feed_kind_registry_tests.cpp
+@@ -631,6 +631,18 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
+     }
+     CHECK(f.ctrl->running_count() == 1);
+ 
++    // Naming the feed by its source, not its config, does not get past the check either.
++    f.ctrl->stop();
++    set_stub_scope(ores::synthetic::domain::scope::party);
++    start();
++    REQUIRE(f.ctrl->running_count() == 1);
++    set_stub_scope(ores::synthetic::domain::scope::system);
++    {
++        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
++        h.stop(request_message(stop_feed_request{.source_name = stub_source}, f.token));
++    }
++    CHECK(f.ctrl->running_count() == 1);
++
+     // The system tenant itself is not refused.
+     CHECK(feed_kind_registry::is_system_caller(
+         ores::database::service::tenant_context::with_system_tenant(f.ctx)));

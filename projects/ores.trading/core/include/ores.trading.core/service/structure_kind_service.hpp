@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_structure_kinds_response
-    list_structure_kinds(const messaging::list_structure_kinds_request& request);
-    messaging::get_structure_kind_response
-    get_structure_kind(const messaging::get_structure_kind_request& request);
-    messaging::get_many_structure_kinds_response
-    get_many_structure_kinds(const messaging::get_many_structure_kinds_request& request);
-    messaging::put_structure_kind_response
-    put_structure_kind(const messaging::put_structure_kind_request& request);
-    messaging::put_many_structure_kinds_response
-    put_many_structure_kinds(const messaging::put_many_structure_kinds_request& request);
-    messaging::delete_structure_kind_response
-    delete_structure_kind(const messaging::delete_structure_kind_request& request);
-    messaging::delete_many_structure_kinds_response
-    delete_many_structure_kinds(const messaging::delete_many_structure_kinds_request& request);
-    messaging::list_structure_kind_versions_response
-    list_structure_kind_versions(const messaging::list_structure_kind_versions_request& request);
-    messaging::get_structure_kind_version_response
-    get_structure_kind_version(const messaging::get_structure_kind_version_request& request);
+    ::ores::trading::messaging::list_structure_kinds_response
+    list_structure_kinds(const ::ores::trading::messaging::list_structure_kinds_request& request);
+    ::ores::trading::messaging::get_structure_kind_response
+    get_structure_kind(const ::ores::trading::messaging::get_structure_kind_request& request);
+    ::ores::trading::messaging::get_many_structure_kinds_response get_many_structure_kinds(
+        const ::ores::trading::messaging::get_many_structure_kinds_request& request);
+    ::ores::trading::messaging::put_structure_kind_response
+    put_structure_kind(const ::ores::trading::messaging::put_structure_kind_request& request);
+    ::ores::trading::messaging::put_many_structure_kinds_response put_many_structure_kinds(
+        const ::ores::trading::messaging::put_many_structure_kinds_request& request);
+    ::ores::trading::messaging::delete_structure_kind_response
+    delete_structure_kind(const ::ores::trading::messaging::delete_structure_kind_request& request);
+    ::ores::trading::messaging::delete_many_structure_kinds_response delete_many_structure_kinds(
+        const ::ores::trading::messaging::delete_many_structure_kinds_request& request);
+    ::ores::trading::messaging::list_structure_kind_versions_response list_structure_kind_versions(
+        const ::ores::trading::messaging::list_structure_kind_versions_request& request);
+    ::ores::trading::messaging::get_structure_kind_version_response get_structure_kind_version(
+        const ::ores::trading::messaging::get_structure_kind_version_request& request);
     /**@}*/
 
     /**
@@ -187,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::structure_kind_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::structure_kind& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::structure_kind_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::structure_kind& out);
 };
 
 }

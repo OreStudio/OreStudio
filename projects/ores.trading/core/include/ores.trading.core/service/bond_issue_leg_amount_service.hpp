@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bond_issue_leg_amounts_response
-    list_bond_issue_leg_amounts(const messaging::list_bond_issue_leg_amounts_request& request);
-    messaging::get_bond_issue_leg_amount_response
-    get_bond_issue_leg_amount(const messaging::get_bond_issue_leg_amount_request& request);
-    messaging::get_many_bond_issue_leg_amounts_response get_many_bond_issue_leg_amounts(
-        const messaging::get_many_bond_issue_leg_amounts_request& request);
-    messaging::put_bond_issue_leg_amount_response
-    put_bond_issue_leg_amount(const messaging::put_bond_issue_leg_amount_request& request);
-    messaging::put_many_bond_issue_leg_amounts_response put_many_bond_issue_leg_amounts(
-        const messaging::put_many_bond_issue_leg_amounts_request& request);
-    messaging::delete_bond_issue_leg_amount_response
-    delete_bond_issue_leg_amount(const messaging::delete_bond_issue_leg_amount_request& request);
-    messaging::delete_many_bond_issue_leg_amounts_response delete_many_bond_issue_leg_amounts(
-        const messaging::delete_many_bond_issue_leg_amounts_request& request);
-    messaging::list_bond_issue_leg_amount_versions_response list_bond_issue_leg_amount_versions(
-        const messaging::list_bond_issue_leg_amount_versions_request& request);
-    messaging::get_bond_issue_leg_amount_version_response get_bond_issue_leg_amount_version(
-        const messaging::get_bond_issue_leg_amount_version_request& request);
+    ::ores::trading::messaging::list_bond_issue_leg_amounts_response list_bond_issue_leg_amounts(
+        const ::ores::trading::messaging::list_bond_issue_leg_amounts_request& request);
+    ::ores::trading::messaging::get_bond_issue_leg_amount_response get_bond_issue_leg_amount(
+        const ::ores::trading::messaging::get_bond_issue_leg_amount_request& request);
+    ::ores::trading::messaging::get_many_bond_issue_leg_amounts_response
+    get_many_bond_issue_leg_amounts(
+        const ::ores::trading::messaging::get_many_bond_issue_leg_amounts_request& request);
+    ::ores::trading::messaging::put_bond_issue_leg_amount_response put_bond_issue_leg_amount(
+        const ::ores::trading::messaging::put_bond_issue_leg_amount_request& request);
+    ::ores::trading::messaging::put_many_bond_issue_leg_amounts_response
+    put_many_bond_issue_leg_amounts(
+        const ::ores::trading::messaging::put_many_bond_issue_leg_amounts_request& request);
+    ::ores::trading::messaging::delete_bond_issue_leg_amount_response delete_bond_issue_leg_amount(
+        const ::ores::trading::messaging::delete_bond_issue_leg_amount_request& request);
+    ::ores::trading::messaging::delete_many_bond_issue_leg_amounts_response
+    delete_many_bond_issue_leg_amounts(
+        const ::ores::trading::messaging::delete_many_bond_issue_leg_amounts_request& request);
+    ::ores::trading::messaging::list_bond_issue_leg_amount_versions_response
+    list_bond_issue_leg_amount_versions(
+        const ::ores::trading::messaging::list_bond_issue_leg_amount_versions_request& request);
+    ::ores::trading::messaging::get_bond_issue_leg_amount_version_response
+    get_bond_issue_leg_amount_version(
+        const ::ores::trading::messaging::get_bond_issue_leg_amount_version_request& request);
     /**@}*/
 
     /**
@@ -212,7 +217,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::bond_issue_leg_amount_change& change,
+    prepare_change(const ::ores::trading::messaging::bond_issue_leg_amount_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::bond_issue_leg_amount& out);
 };

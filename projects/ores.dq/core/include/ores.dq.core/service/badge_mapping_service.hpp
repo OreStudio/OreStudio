@@ -74,23 +74,23 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_badge_mappings_response
-    list_badge_mappings(const messaging::list_badge_mappings_request& request);
-    messaging::get_badge_mapping_response
-    get_badge_mapping(const messaging::get_badge_mapping_request& request);
-    messaging::get_many_badge_mappings_response
-    get_many_badge_mappings(const messaging::get_many_badge_mappings_request& request);
-    messaging::put_badge_mapping_response
-    put_badge_mapping(const messaging::put_badge_mapping_request& request);
-    messaging::put_many_badge_mappings_response
-    put_many_badge_mappings(const messaging::put_many_badge_mappings_request& request);
-    messaging::delete_badge_mapping_response
-    delete_badge_mapping(const messaging::delete_badge_mapping_request& request);
-    messaging::delete_many_badge_mappings_response
-    delete_many_badge_mappings(const messaging::delete_many_badge_mappings_request& request);
-    messaging::list_by_code_domain_code_badge_mappings_response
+    ::ores::dq::messaging::list_badge_mappings_response
+    list_badge_mappings(const ::ores::dq::messaging::list_badge_mappings_request& request);
+    ::ores::dq::messaging::get_badge_mapping_response
+    get_badge_mapping(const ::ores::dq::messaging::get_badge_mapping_request& request);
+    ::ores::dq::messaging::get_many_badge_mappings_response
+    get_many_badge_mappings(const ::ores::dq::messaging::get_many_badge_mappings_request& request);
+    ::ores::dq::messaging::put_badge_mapping_response
+    put_badge_mapping(const ::ores::dq::messaging::put_badge_mapping_request& request);
+    ::ores::dq::messaging::put_many_badge_mappings_response
+    put_many_badge_mappings(const ::ores::dq::messaging::put_many_badge_mappings_request& request);
+    ::ores::dq::messaging::delete_badge_mapping_response
+    delete_badge_mapping(const ::ores::dq::messaging::delete_badge_mapping_request& request);
+    ::ores::dq::messaging::delete_many_badge_mappings_response delete_many_badge_mappings(
+        const ::ores::dq::messaging::delete_many_badge_mappings_request& request);
+    ::ores::dq::messaging::list_by_code_domain_code_badge_mappings_response
     list_by_code_domain_code_badge_mappings(
-        const messaging::list_by_code_domain_code_badge_mappings_request& request);
+        const ::ores::dq::messaging::list_by_code_domain_code_badge_mappings_request& request);
     /**@}*/
 
 private:
@@ -110,9 +110,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::badge_mapping_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::badge_mapping& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::badge_mapping_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::badge_mapping& out);
 };
 
 }

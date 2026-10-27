@@ -637,11 +637,11 @@ via the =nats-sub-registrar= facet's custom-subscription paste point.
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
     subs.push_back(
         nats.queue_subscribe(get_counterparty_composite_as_of_request::nats_subject,
-                             queue_group,
+                             counterparty_queue_group,
                              [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_counterparty_composite_request::nats_subject,
-                             queue_group,
+                             counterparty_queue_group,
                              [h](ores::nats::message msg) { h->put_composite(std::move(msg)); }));
 #+end_src
 

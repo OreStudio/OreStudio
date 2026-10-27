@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void book_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void book_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -234,7 +234,7 @@ void book_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        book_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -282,7 +282,7 @@ void book_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
+        book_read_token(req.key.name, parsed->positionals[next++], "name");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -327,7 +327,7 @@ void book_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::book_key key;
-            read_token(key.name, parsed->positionals[i + 0], "name");
+            book_read_token(key.name, parsed->positionals[i + 0], "name");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -373,30 +373,32 @@ void book_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.parent_portfolio_id,
-                   parsed->positionals[next++],
-                   "parent_portfolio_id");
-        read_token(req.change.write.owner_unit_id, parsed->positionals[next++], "owner_unit_id");
-        read_token(req.change.write.functional_currency,
-                   parsed->positionals[next++],
-                   "functional_currency");
-        read_token(req.change.write.gl_account_ref, parsed->positionals[next++], "gl_account_ref");
-        read_token(req.change.write.cost_center, parsed->positionals[next++], "cost_center");
-        read_token(req.change.write.book_status, parsed->positionals[next++], "book_status");
-        read_token(req.change.write.regulatory_book_type,
-                   parsed->positionals[next++],
-                   "regulatory_book_type");
-        read_token(
+        book_read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
+        book_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        book_read_token(req.change.write.description, parsed->positionals[next++], "description");
+        book_read_token(req.change.write.parent_portfolio_id,
+                        parsed->positionals[next++],
+                        "parent_portfolio_id");
+        book_read_token(
+            req.change.write.owner_unit_id, parsed->positionals[next++], "owner_unit_id");
+        book_read_token(req.change.write.functional_currency,
+                        parsed->positionals[next++],
+                        "functional_currency");
+        book_read_token(
+            req.change.write.gl_account_ref, parsed->positionals[next++], "gl_account_ref");
+        book_read_token(req.change.write.cost_center, parsed->positionals[next++], "cost_center");
+        book_read_token(req.change.write.book_status, parsed->positionals[next++], "book_status");
+        book_read_token(req.change.write.regulatory_book_type,
+                        parsed->positionals[next++],
+                        "regulatory_book_type");
+        book_read_token(
             req.change.write.book_purpose_type, parsed->positionals[next++], "book_purpose_type");
-        read_token(
+        book_read_token(
             req.change.write.ledger_feed_type, parsed->positionals[next++], "ledger_feed_type");
-        read_token(req.change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
-        read_token(
+        book_read_token(req.change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
+        book_read_token(
             req.change.write.rates_centre_code, parsed->positionals[next++], "rates_centre_code");
-        read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
+        book_read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -444,31 +446,33 @@ void book_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.parent_portfolio_id,
-                   parsed->positionals[next++],
-                   "parent_portfolio_id");
-        read_token(req.change.write.owner_unit_id, parsed->positionals[next++], "owner_unit_id");
-        read_token(req.change.write.functional_currency,
-                   parsed->positionals[next++],
-                   "functional_currency");
-        read_token(req.change.write.gl_account_ref, parsed->positionals[next++], "gl_account_ref");
-        read_token(req.change.write.cost_center, parsed->positionals[next++], "cost_center");
-        read_token(req.change.write.book_status, parsed->positionals[next++], "book_status");
-        read_token(req.change.write.regulatory_book_type,
-                   parsed->positionals[next++],
-                   "regulatory_book_type");
-        read_token(
+        book_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        book_read_token(req.change.write.party_id, parsed->positionals[next++], "party_id");
+        book_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        book_read_token(req.change.write.description, parsed->positionals[next++], "description");
+        book_read_token(req.change.write.parent_portfolio_id,
+                        parsed->positionals[next++],
+                        "parent_portfolio_id");
+        book_read_token(
+            req.change.write.owner_unit_id, parsed->positionals[next++], "owner_unit_id");
+        book_read_token(req.change.write.functional_currency,
+                        parsed->positionals[next++],
+                        "functional_currency");
+        book_read_token(
+            req.change.write.gl_account_ref, parsed->positionals[next++], "gl_account_ref");
+        book_read_token(req.change.write.cost_center, parsed->positionals[next++], "cost_center");
+        book_read_token(req.change.write.book_status, parsed->positionals[next++], "book_status");
+        book_read_token(req.change.write.regulatory_book_type,
+                        parsed->positionals[next++],
+                        "regulatory_book_type");
+        book_read_token(
             req.change.write.book_purpose_type, parsed->positionals[next++], "book_purpose_type");
-        read_token(
+        book_read_token(
             req.change.write.ledger_feed_type, parsed->positionals[next++], "ledger_feed_type");
-        read_token(req.change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
-        read_token(
+        book_read_token(req.change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
+        book_read_token(
             req.change.write.rates_centre_code, parsed->positionals[next++], "rates_centre_code");
-        read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
+        book_read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -530,31 +534,33 @@ void book_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::book_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.party_id, parsed->positionals[next++], "party_id");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.parent_portfolio_id,
-                       parsed->positionals[next++],
-                       "parent_portfolio_id");
-            read_token(change.write.owner_unit_id, parsed->positionals[next++], "owner_unit_id");
-            read_token(change.write.functional_currency,
-                       parsed->positionals[next++],
-                       "functional_currency");
-            read_token(change.write.gl_account_ref, parsed->positionals[next++], "gl_account_ref");
-            read_token(change.write.cost_center, parsed->positionals[next++], "cost_center");
-            read_token(change.write.book_status, parsed->positionals[next++], "book_status");
-            read_token(change.write.regulatory_book_type,
-                       parsed->positionals[next++],
-                       "regulatory_book_type");
-            read_token(
+            book_read_token(change.write.id, parsed->positionals[next++], "id");
+            book_read_token(change.write.party_id, parsed->positionals[next++], "party_id");
+            book_read_token(change.write.name, parsed->positionals[next++], "name");
+            book_read_token(change.write.description, parsed->positionals[next++], "description");
+            book_read_token(change.write.parent_portfolio_id,
+                            parsed->positionals[next++],
+                            "parent_portfolio_id");
+            book_read_token(
+                change.write.owner_unit_id, parsed->positionals[next++], "owner_unit_id");
+            book_read_token(change.write.functional_currency,
+                            parsed->positionals[next++],
+                            "functional_currency");
+            book_read_token(
+                change.write.gl_account_ref, parsed->positionals[next++], "gl_account_ref");
+            book_read_token(change.write.cost_center, parsed->positionals[next++], "cost_center");
+            book_read_token(change.write.book_status, parsed->positionals[next++], "book_status");
+            book_read_token(change.write.regulatory_book_type,
+                            parsed->positionals[next++],
+                            "regulatory_book_type");
+            book_read_token(
                 change.write.book_purpose_type, parsed->positionals[next++], "book_purpose_type");
-            read_token(
+            book_read_token(
                 change.write.ledger_feed_type, parsed->positionals[next++], "ledger_feed_type");
-            read_token(change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
-            read_token(
+            book_read_token(change.write.is_sweepable, parsed->positionals[next++], "is_sweepable");
+            book_read_token(
                 change.write.rates_centre_code, parsed->positionals[next++], "rates_centre_code");
-            read_token(change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
+            book_read_token(change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -604,7 +610,7 @@ void book_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.name, parsed->positionals[next++], "name");
+        book_read_token(req.removal.key.name, parsed->positionals[next++], "name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -658,7 +664,7 @@ void book_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::book_key key;
-            read_token(key.name, parsed->positionals[i * 1 + 0], "name");
+            book_read_token(key.name, parsed->positionals[i * 1 + 0], "name");
             req.removals.push_back(messaging::book_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -717,7 +723,7 @@ void book_commands::process_by_parent_portfolio_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        book_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -765,8 +771,8 @@ void book_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
-        apply_page(req, *parsed);
+        book_read_token(req.key.name, parsed->positionals[next++], "name");
+        book_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -811,7 +817,7 @@ void book_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.book.name, parsed->positionals[next++], "name");
+        book_read_token(req.key.book.name, parsed->positionals[next++], "name");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

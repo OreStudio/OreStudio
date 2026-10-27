@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[app][feed_series]");
-
 using ores::marketdata::service::app::consumer;
 using ores::marketdata::service::app::make_feed_series;
 
@@ -48,7 +46,7 @@ consumer make_owner() {
 
 TEST_CASE("the ingest creates the series under the provider of the route it stores the "
           "tick for",
-          tags) {
+          "[app][feed_series]") {
     auto owner = make_owner();
     owner.provider_code = "bloomberg";
 

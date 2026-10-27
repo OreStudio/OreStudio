@@ -39,7 +39,7 @@
 namespace ores::compute::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.compute.service";
+static constexpr std::string_view platform_queue_group = "ores.compute.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_platform_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<platform_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_platforms_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_platforms_request::nats_subject, platform_queue_group, [h](ores::nats::message msg) {
             h->list_platforms(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_platform_request::nats_subject, platform_queue_group, [h](ores::nats::message msg) {
             h->get_platform(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_platforms_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_platforms(std::move(msg));
-        }));
+        get_many_platforms_request::nats_subject,
+        platform_queue_group,
+        [h](ores::nats::message msg) { h->get_many_platforms(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_platform_request::nats_subject, platform_queue_group, [h](ores::nats::message msg) {
             h->put_platform(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_platforms_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_platforms(std::move(msg));
-        }));
+        put_many_platforms_request::nats_subject,
+        platform_queue_group,
+        [h](ores::nats::message msg) { h->put_many_platforms(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_platform_request::nats_subject, platform_queue_group, [h](ores::nats::message msg) {
             h->delete_platform(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_platforms_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_platforms(std::move(msg));
-        }));
+        delete_many_platforms_request::nats_subject,
+        platform_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_platforms(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_platform_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_platform_versions(std::move(msg));
-        }));
+        list_platform_versions_request::nats_subject,
+        platform_queue_group,
+        [h](ores::nats::message msg) { h->list_platform_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_platform_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_platform_version(std::move(msg));
-        }));
+        get_platform_version_request::nats_subject,
+        platform_queue_group,
+        [h](ores::nats::message msg) { h->get_platform_version(std::move(msg)); }));
     return subs;
 }
 

@@ -1,0 +1,14 @@
+2026-10-16 18:34:43.000572 [INFO] [ores.testing.database_lifecycle_listener] Test run starting, provisioning test tenant
+2026-10-16 18:34:43.053895 [INFO] [ores.testing.test_database_manager] Generated test tenant code: ores_reporting_core_tests_20261016_183443_3_2223
+2026-10-16 18:34:43.054026 [INFO] [ores.testing.test_database_manager] Provisioning test tenant: ores_reporting_core_tests_20261016_183443_3_2223 (v0.0.28 (local c759acec1f-dirty))
+2026-10-16 18:34:43.067221 [DEBUG] [ores.testing.test_database_manager] Provisioning test tenant. SQL: SELECT tenant_id::text FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5) with 5 parameters
+2026-10-16 18:34:43.077853 [DEBUG] [ores.testing.test_database_manager] Set tenant context to: ffffffff-ffff-ffff-ffff-ffffffffffff
+2026-10-16 18:34:43.564334 [DEBUG] [ores.testing.test_database_manager] Provisioning test tenant. Total: 1
+2026-10-16 18:34:43.564574 [INFO] [ores.testing.test_database_manager] Successfully provisioned test tenant: ores_reporting_core_tests_20261016_183443_3_2223 (id: 67af68e2-48b6-4cb5-8c1b-c21013ac6699)
+2026-10-16 18:34:43.564600 [INFO] [ores.testing.database_lifecycle_listener] Test tenant ready: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.671718 [INFO] [ores.testing.database_lifecycle_listener] Test run ended, terminating test tenant: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.742264 [INFO] [ores.testing.test_database_manager] Terminating test tenant: 67af68e2-48b6-4cb5-8c1b-c21013ac6699
+2026-10-16 18:34:43.757225 [DEBUG] [ores.testing.test_database_manager] Terminating test tenant. SQL: SELECT ores_iam_terminate_tenant_fn($1::uuid) with 1 parameters
+2026-10-16 18:34:43.768127 [DEBUG] [ores.testing.test_database_manager] Set tenant context to: ffffffff-ffff-ffff-ffff-ffffffffffff
+2026-10-16 18:34:43.773926 [DEBUG] [ores.testing.test_database_manager] Finished Terminating test tenant.
+2026-10-16 18:34:43.774037 [INFO] [ores.testing.test_database_manager] Successfully terminated test tenant: 67af68e2-48b6-4cb5-8c1b-c21013ac6699. Data preserved for analysis.

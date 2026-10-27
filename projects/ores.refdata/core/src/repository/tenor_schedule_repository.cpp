@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+tenor_schedule_list_order(const ores::utility::domain::order& order,
+                          std::initializer_list<std::string> default_columns,
+                          bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!tenor_schedule_repository::is_sortable(order.field))
@@ -96,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::tenor_schedules_filter>& filter) {
+tenor_schedule_filter_condition(const std::optional<messaging::tenor_schedules_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -291,8 +292,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_ca
     return execute_ordered_read_query<tenor_schedule_entity, domain::tenor_schedule>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        filter_condition(filter),
+        tenor_schedule_list_order(order, {"code"}, false),
+        tenor_schedule_filter_condition(filter),
         [](const auto& entities) { return tenor_schedule_mapper::map(entities); },
         lg(),
         "Reading latest tenor schedules by calendar_code.");
@@ -311,8 +312,11 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_calendar_co
                        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<tenor_schedule_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting tenor schedules by calendar_code");
+    return execute_count_query<tenor_schedule_entity>(ctx,
+                                                      query,
+                                                      tenor_schedule_filter_condition(filter),
+                                                      lg(),
+                                                      "Counting tenor schedules by calendar_code");
 }
 
 
@@ -335,8 +339,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_di
     return execute_ordered_read_query<tenor_schedule_entity, domain::tenor_schedule>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        filter_condition(filter),
+        tenor_schedule_list_order(order, {"code"}, false),
+        tenor_schedule_filter_condition(filter),
         [](const auto& entities) { return tenor_schedule_mapper::map(entities); },
         lg(),
         "Reading latest tenor schedules by diary_entry_type.");
@@ -356,7 +360,11 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_diary_entry
                              "valid_to"_c == max.value());
 
     return execute_count_query<tenor_schedule_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting tenor schedules by diary_entry_type");
+        ctx,
+        query,
+        tenor_schedule_filter_condition(filter),
+        lg(),
+        "Counting tenor schedules by diary_entry_type");
 }
 
 
@@ -409,8 +417,8 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(
     return execute_ordered_read_query<tenor_schedule_entity, domain::tenor_schedule>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        tenor_schedule_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), tenor_schedule_filter_condition(filter)),
         [](const auto& entities) { return tenor_schedule_mapper::map(entities); },
         lg(),
         "Reading latest tenor schedules with pagination.");
@@ -429,7 +437,7 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count(
     return execute_count_query<tenor_schedule_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), tenor_schedule_filter_condition(filter)),
         lg(),
         "Counting tenor schedules");
 }

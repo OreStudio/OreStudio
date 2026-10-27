@@ -22,15 +22,13 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.repository.equity_barrier_option.tests");
-const std::string tags("[repository][equity][equity_barrier_option]");
 
 using ores::testing::database_helper;
 using ores::trading::repository::equity_barrier_option_instrument_repository;
@@ -70,7 +68,8 @@ equity_barrier_option_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("equity_barrier_option_instrument_write_and_read_latest", tags) {
+TEST_CASE("equity_barrier_option_instrument_write_and_read_latest",
+          "[repository][equity][equity_barrier_option]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -100,7 +99,8 @@ TEST_CASE("equity_barrier_option_instrument_write_and_read_latest", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read equity barrier option instrument: " << read[0];
 }
 
-TEST_CASE("equity_barrier_option_instrument_read_nonexistent", tags) {
+TEST_CASE("equity_barrier_option_instrument_read_nonexistent",
+          "[repository][equity][equity_barrier_option]") {
     database_helper h;
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
@@ -119,7 +119,8 @@ TEST_CASE("equity_barrier_option_instrument_read_nonexistent", tags) {
     CHECK(read.empty());
 }
 
-TEST_CASE("equity_barrier_option_instrument_remove", tags) {
+TEST_CASE("equity_barrier_option_instrument_remove",
+          "[repository][equity][equity_barrier_option]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

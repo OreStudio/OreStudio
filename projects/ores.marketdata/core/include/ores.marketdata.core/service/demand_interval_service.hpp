@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_demand_intervals_response
-    list_demand_intervals(const messaging::list_demand_intervals_request& request);
-    messaging::get_demand_interval_response
-    get_demand_interval(const messaging::get_demand_interval_request& request);
-    messaging::get_many_demand_intervals_response
-    get_many_demand_intervals(const messaging::get_many_demand_intervals_request& request);
-    messaging::put_demand_interval_response
-    put_demand_interval(const messaging::put_demand_interval_request& request);
-    messaging::put_many_demand_intervals_response
-    put_many_demand_intervals(const messaging::put_many_demand_intervals_request& request);
-    messaging::delete_demand_interval_response
-    delete_demand_interval(const messaging::delete_demand_interval_request& request);
-    messaging::delete_many_demand_intervals_response
-    delete_many_demand_intervals(const messaging::delete_many_demand_intervals_request& request);
-    messaging::list_demand_interval_versions_response
-    list_demand_interval_versions(const messaging::list_demand_interval_versions_request& request);
-    messaging::get_demand_interval_version_response
-    get_demand_interval_version(const messaging::get_demand_interval_version_request& request);
+    ::ores::marketdata::messaging::list_demand_intervals_response list_demand_intervals(
+        const ::ores::marketdata::messaging::list_demand_intervals_request& request);
+    ::ores::marketdata::messaging::get_demand_interval_response
+    get_demand_interval(const ::ores::marketdata::messaging::get_demand_interval_request& request);
+    ::ores::marketdata::messaging::get_many_demand_intervals_response get_many_demand_intervals(
+        const ::ores::marketdata::messaging::get_many_demand_intervals_request& request);
+    ::ores::marketdata::messaging::put_demand_interval_response
+    put_demand_interval(const ::ores::marketdata::messaging::put_demand_interval_request& request);
+    ::ores::marketdata::messaging::put_many_demand_intervals_response put_many_demand_intervals(
+        const ::ores::marketdata::messaging::put_many_demand_intervals_request& request);
+    ::ores::marketdata::messaging::delete_demand_interval_response delete_demand_interval(
+        const ::ores::marketdata::messaging::delete_demand_interval_request& request);
+    ::ores::marketdata::messaging::delete_many_demand_intervals_response
+    delete_many_demand_intervals(
+        const ::ores::marketdata::messaging::delete_many_demand_intervals_request& request);
+    ::ores::marketdata::messaging::list_demand_interval_versions_response
+    list_demand_interval_versions(
+        const ::ores::marketdata::messaging::list_demand_interval_versions_request& request);
+    ::ores::marketdata::messaging::get_demand_interval_version_response get_demand_interval_version(
+        const ::ores::marketdata::messaging::get_demand_interval_version_request& request);
     /**@}*/
 
     /**
@@ -205,9 +207,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::demand_interval_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::demand_interval& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::demand_interval_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::demand_interval& out);
 };
 
 }

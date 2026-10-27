@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_calendar_names_response
-    list_calendar_names(const messaging::list_calendar_names_request& request);
-    messaging::get_calendar_name_response
-    get_calendar_name(const messaging::get_calendar_name_request& request);
-    messaging::get_many_calendar_names_response
-    get_many_calendar_names(const messaging::get_many_calendar_names_request& request);
-    messaging::put_calendar_name_response
-    put_calendar_name(const messaging::put_calendar_name_request& request);
-    messaging::put_many_calendar_names_response
-    put_many_calendar_names(const messaging::put_many_calendar_names_request& request);
-    messaging::delete_calendar_name_response
-    delete_calendar_name(const messaging::delete_calendar_name_request& request);
-    messaging::delete_many_calendar_names_response
-    delete_many_calendar_names(const messaging::delete_many_calendar_names_request& request);
-    messaging::list_calendar_name_versions_response
-    list_calendar_name_versions(const messaging::list_calendar_name_versions_request& request);
-    messaging::get_calendar_name_version_response
-    get_calendar_name_version(const messaging::get_calendar_name_version_request& request);
+    ::ores::refdata::messaging::list_calendar_names_response
+    list_calendar_names(const ::ores::refdata::messaging::list_calendar_names_request& request);
+    ::ores::refdata::messaging::get_calendar_name_response
+    get_calendar_name(const ::ores::refdata::messaging::get_calendar_name_request& request);
+    ::ores::refdata::messaging::get_many_calendar_names_response get_many_calendar_names(
+        const ::ores::refdata::messaging::get_many_calendar_names_request& request);
+    ::ores::refdata::messaging::put_calendar_name_response
+    put_calendar_name(const ::ores::refdata::messaging::put_calendar_name_request& request);
+    ::ores::refdata::messaging::put_many_calendar_names_response put_many_calendar_names(
+        const ::ores::refdata::messaging::put_many_calendar_names_request& request);
+    ::ores::refdata::messaging::delete_calendar_name_response
+    delete_calendar_name(const ::ores::refdata::messaging::delete_calendar_name_request& request);
+    ::ores::refdata::messaging::delete_many_calendar_names_response delete_many_calendar_names(
+        const ::ores::refdata::messaging::delete_many_calendar_names_request& request);
+    ::ores::refdata::messaging::list_calendar_name_versions_response list_calendar_name_versions(
+        const ::ores::refdata::messaging::list_calendar_name_versions_request& request);
+    ::ores::refdata::messaging::get_calendar_name_version_response get_calendar_name_version(
+        const ::ores::refdata::messaging::get_calendar_name_version_request& request);
     /**@}*/
 
     /**
@@ -187,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::calendar_name_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::calendar_name& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::calendar_name_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::calendar_name& out);
 };
 
 }

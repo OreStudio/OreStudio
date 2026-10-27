@@ -31,7 +31,7 @@ namespace ores::analytics::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string todays_market_entry_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,7 +50,8 @@ std::string convert_to_table(const std::vector<todays_market_entry>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& tme : v) {
-        table << opt_str(tme.key_value) << opt_str(tme.key_value_2) << tme.target << tme.modified_by
+        table << todays_market_entry_opt_str(tme.key_value)
+              << todays_market_entry_opt_str(tme.key_value_2) << tme.target << tme.modified_by
               << tme.version << fort::endr;
     }
     return table.to_string();

@@ -30,8 +30,6 @@
 
 namespace {
 
-const std::string tags("[repository][system_visibility]");
-
 using ores::database::service::tenant_context;
 using ores::synthetic::repository::market_data_provider_repository;
 
@@ -41,7 +39,7 @@ using ores::synthetic::repository::market_data_provider_repository;
 // the system tenant, and every tenant reads them. The generated reads state
 // that with the system tenant visible flag; the row level security policy
 // still decides which system rows a tenant sees.
-TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
+TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", "[repository][system_visibility]") {
     ores::testing::scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto& tenant_ctx = h.context();

@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+counterparty_scope_type_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!counterparty_scope_type_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::counterparty_scope_types_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> counterparty_scope_type_filter_condition(
+    const std::optional<messaging::counterparty_scope_types_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -303,8 +304,8 @@ std::vector<domain::counterparty_scope_type> counterparty_scope_type_repository:
                                       domain::counterparty_scope_type>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        counterparty_scope_type_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), counterparty_scope_type_filter_condition(filter)),
         [](const auto& entities) { return counterparty_scope_type_mapper::map(entities); },
         lg(),
         "Reading latest counterparty scope types with pagination.");
@@ -321,7 +322,7 @@ std::uint32_t counterparty_scope_type_repository::get_total_counterparty_scope_t
     return execute_count_query<counterparty_scope_type_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), counterparty_scope_type_filter_condition(filter)),
         lg(),
         "Counting counterparty scope types");
 }

@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+party_contact_information_list_order(const ores::utility::domain::order& order,
+                                     std::initializer_list<std::string> default_columns,
+                                     bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!party_contact_information_repository::is_sortable(order.field))
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::party_contact_informations_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> party_contact_information_filter_condition(
+    const std::optional<messaging::party_contact_informations_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -370,8 +371,8 @@ party_contact_information_repository::read_latest_by_party_id(
                                       domain::party_contact_information>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        party_contact_information_list_order(order, {"id"}, false),
+        party_contact_information_filter_condition(filter),
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest party contact informations by party_id.");
@@ -394,7 +395,7 @@ party_contact_information_repository::get_total_party_contact_information_count_
     return execute_count_query<party_contact_information_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        party_contact_information_filter_condition(filter),
         lg(),
         "Counting party contact informations by party_id");
 }
@@ -477,8 +478,8 @@ std::vector<domain::party_contact_information> party_contact_information_reposit
                                       domain::party_contact_information>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        party_contact_information_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), party_contact_information_filter_condition(filter)),
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest party contact informations with pagination.");
@@ -497,7 +498,7 @@ std::uint32_t party_contact_information_repository::get_total_party_contact_info
     return execute_count_query<party_contact_information_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), party_contact_information_filter_condition(filter)),
         lg(),
         "Counting party contact informations");
 }

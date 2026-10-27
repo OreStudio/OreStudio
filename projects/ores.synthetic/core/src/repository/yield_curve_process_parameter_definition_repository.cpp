@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy yield_curve_process_parameter_definition_list_order(
+    const ores::utility::domain::order& order,
+    std::initializer_list<std::string> default_columns,
+    bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!yield_curve_process_parameter_definition_repository::is_sortable(order.field))
@@ -97,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> filter_condition(
+std::optional<sqlgen::dynamic::Condition> yield_curve_process_parameter_definition_filter_condition(
     const std::optional<messaging::yield_curve_process_parameter_definitions_filter>& filter) {
     if (!filter)
         return std::nullopt;
@@ -384,8 +385,9 @@ yield_curve_process_parameter_definition_repository::read_latest(
                                       domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        yield_curve_process_parameter_definition_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of),
+                 yield_curve_process_parameter_definition_filter_condition(filter)),
         [](const auto& entities) {
             return yield_curve_process_parameter_definition_mapper::map(entities);
         },
@@ -408,7 +410,8 @@ yield_curve_process_parameter_definition_repository::get_total_parameter_definit
     return execute_count_query<yield_curve_process_parameter_definition_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of),
+                 yield_curve_process_parameter_definition_filter_condition(filter)),
         lg(),
         "Counting yield curve process parameter definitions");
 }

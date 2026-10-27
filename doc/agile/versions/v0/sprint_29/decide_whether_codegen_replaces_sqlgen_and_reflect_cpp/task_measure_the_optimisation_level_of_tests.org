@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 3017065B-2EA8-494C-823C-30387A61AA28
+:END:
+#+title: Task: Measure the optimisation level of test and generated code
+#+description: Build one component's tests without ccache at the release level and at a lower one, and compare build time and test run time.
+#+type: task
+#+level: s1
+#+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Numbers for one component's test build and test run at the release optimisation level and at a lower one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- Compile CPU, wall time and peak memory of =ores.dq.core.tests= without ccache
+  at =-O3=, =-O1= and =-O0=, and the test run time at =-O3= and =-O0=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.dq.core.tests= at =-O3= (the release preset) | 1 min 21 s wall, 3 min 54 s CPU, 1.6 GiB peak; tests run in 10.1 to 10.2 s | =build_any.sh= on =ores.dq.core.tests= (32 files), the level set last by =target_compile_options=; two timed runs of the test binary | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| at =-O1= | 1 min 23 s wall, 3 min 52 s CPU, 1.8 GiB peak | the same | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| at =-O0= | 1 min 15 s wall, 3 min 28 s CPU (-11%), 1.8 GiB peak; tests run in 10.1 to 10.2 s | the same | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+
+* Notes
+
+- The test files spend little time in the optimiser; their cost is parsing and
+  instantiation. =-O0= saves 11% of their compile CPU at no cost to the test run,
+  which waits on the database. Tests are about an eighth of the files, so this is
+  about 1.4% of the total build: worth taking, and it makes tests easier to
+  debug, but it is a small lever.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Compiling =ores.dq.core.tests= at =-O0= saves 11% of its compile CPU, and the
+tests run in the same time, because they wait on the database. Tests are about
+an eighth of the files, so this saves about 1.4% of the total build. It is worth
+taking, and it makes the tests easier to debug, but it is a small lever.

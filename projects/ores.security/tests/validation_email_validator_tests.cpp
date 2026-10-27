@@ -19,19 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/validation/email_validator.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.security.tests");
-const std::string tags("[validation][email]");
-
-}
 
 using ores::security::validation::email_validator;
 using namespace ores::logging;
 
-TEST_CASE("valid_email_passes_validation", tags) {
+TEST_CASE("valid_email_passes_validation", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@example.com";
@@ -42,7 +36,7 @@ TEST_CASE("valid_email_passes_validation", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("valid_email_with_subdomain", tags) {
+TEST_CASE("valid_email_with_subdomain", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@mail.example.com";
@@ -53,7 +47,7 @@ TEST_CASE("valid_email_with_subdomain", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("valid_email_with_plus_sign", tags) {
+TEST_CASE("valid_email_with_plus_sign", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user+tag@example.com";
@@ -64,7 +58,7 @@ TEST_CASE("valid_email_with_plus_sign", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("valid_email_with_dots_in_local_part", tags) {
+TEST_CASE("valid_email_with_dots_in_local_part", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "first.last@example.com";
@@ -75,7 +69,7 @@ TEST_CASE("valid_email_with_dots_in_local_part", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("empty_email_fails", tags) {
+TEST_CASE("empty_email_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "";
@@ -86,7 +80,7 @@ TEST_CASE("empty_email_fails", tags) {
     CHECK(result.error_message.find("empty") != std::string::npos);
 }
 
-TEST_CASE("email_without_at_symbol_fails", tags) {
+TEST_CASE("email_without_at_symbol_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "userexample.com";
@@ -97,7 +91,7 @@ TEST_CASE("email_without_at_symbol_fails", tags) {
     CHECK(result.error_message.find("'@'") != std::string::npos);
 }
 
-TEST_CASE("email_with_multiple_at_symbols_fails", tags) {
+TEST_CASE("email_with_multiple_at_symbols_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@@example.com";
@@ -108,7 +102,7 @@ TEST_CASE("email_with_multiple_at_symbols_fails", tags) {
     CHECK(result.error_message.find("only one '@'") != std::string::npos);
 }
 
-TEST_CASE("email_starting_with_at_fails", tags) {
+TEST_CASE("email_starting_with_at_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "@example.com";
@@ -119,7 +113,7 @@ TEST_CASE("email_starting_with_at_fails", tags) {
     CHECK(result.error_message.find("start with '@'") != std::string::npos);
 }
 
-TEST_CASE("email_ending_with_at_fails", tags) {
+TEST_CASE("email_ending_with_at_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@";
@@ -130,7 +124,7 @@ TEST_CASE("email_ending_with_at_fails", tags) {
     CHECK(result.error_message.find("end with '@'") != std::string::npos);
 }
 
-TEST_CASE("email_without_dot_in_domain_fails", tags) {
+TEST_CASE("email_without_dot_in_domain_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@localhost";
@@ -141,7 +135,7 @@ TEST_CASE("email_without_dot_in_domain_fails", tags) {
     CHECK(result.error_message.find("'.'") != std::string::npos);
 }
 
-TEST_CASE("email_with_domain_starting_with_dot_fails", tags) {
+TEST_CASE("email_with_domain_starting_with_dot_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@.example.com";
@@ -152,7 +146,7 @@ TEST_CASE("email_with_domain_starting_with_dot_fails", tags) {
     CHECK(result.error_message.find("start with '.'") != std::string::npos);
 }
 
-TEST_CASE("email_with_domain_ending_with_dot_fails", tags) {
+TEST_CASE("email_with_domain_ending_with_dot_fails", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@example.com.";
@@ -163,7 +157,7 @@ TEST_CASE("email_with_domain_ending_with_dot_fails", tags) {
     CHECK(result.error_message.find("end with '.'") != std::string::npos);
 }
 
-TEST_CASE("valid_email_with_numbers", tags) {
+TEST_CASE("valid_email_with_numbers", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user123@example123.com";
@@ -174,7 +168,7 @@ TEST_CASE("valid_email_with_numbers", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("valid_email_with_hyphen_in_domain", tags) {
+TEST_CASE("valid_email_with_hyphen_in_domain", "[validation][email]") {
     auto lg(make_logger(test_suite));
 
     const std::string email = "user@my-example.com";

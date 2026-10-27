@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string credit_linked_swap_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,10 @@ std::string convert_to_table(const std::vector<credit_linked_swap_instrument>& v
           << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& cl : v) {
-        table << cl.trade_id << cl.credit_curve_id << opt_str(cl.recovery_rate)
-              << opt_str(cl.default_payment_time) << cl.modified_by << cl.version << fort::endr;
+        table << cl.trade_id << cl.credit_curve_id
+              << credit_linked_swap_instrument_opt_str(cl.recovery_rate)
+              << credit_linked_swap_instrument_opt_str(cl.default_payment_time) << cl.modified_by
+              << cl.version << fort::endr;
     }
     return table.to_string();
 }

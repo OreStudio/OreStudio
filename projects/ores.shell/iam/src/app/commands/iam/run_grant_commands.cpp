@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void run_grant_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void run_grant_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -190,7 +190,7 @@ void run_grant_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        run_grant_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -238,7 +238,7 @@ void run_grant_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.resource, parsed->positionals[next++], "resource");
+        run_grant_read_token(req.key.resource, parsed->positionals[next++], "resource");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -283,7 +283,7 @@ void run_grant_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::run_grant_key key;
-            read_token(key.resource, parsed->positionals[i + 0], "resource");
+            run_grant_read_token(key.resource, parsed->positionals[i + 0], "resource");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -340,7 +340,7 @@ void run_grant_commands::process_by_grantor_account_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        run_grant_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -388,8 +388,8 @@ void run_grant_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.resource, parsed->positionals[next++], "resource");
-        apply_page(req, *parsed);
+        run_grant_read_token(req.key.resource, parsed->positionals[next++], "resource");
+        run_grant_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -434,7 +434,7 @@ void run_grant_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.run_grant.resource, parsed->positionals[next++], "resource");
+        run_grant_read_token(req.key.run_grant.resource, parsed->positionals[next++], "resource");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

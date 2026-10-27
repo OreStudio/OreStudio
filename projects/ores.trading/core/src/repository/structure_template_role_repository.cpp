@@ -78,9 +78,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+structure_template_role_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"template_code", "role"});
@@ -305,7 +306,7 @@ structure_template_role_repository::read_latest(context ctx,
                                       domain::structure_template_role>(
         ctx,
         query,
-        list_order(order, {"template_code", "role"}, false),
+        structure_template_role_list_order(order, {"template_code", "role"}, false),
         narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return structure_template_role_mapper::map(entities); },
         lg(),

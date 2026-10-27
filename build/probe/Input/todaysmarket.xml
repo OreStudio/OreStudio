@@ -1,0 +1,24 @@
+<TodaysMarket>
+  <Configuration id="default">
+    <DiscountingCurvesId>ois</DiscountingCurvesId>
+    <IndexForwardingCurvesId>default</IndexForwardingCurvesId>
+    <FxSpotsId>default</FxSpotsId>
+  </Configuration>
+  <DiscountingCurves id="ois">
+    <DiscountingCurve currency="GBP">Yield/GBP/GBP1D</DiscountingCurve>
+    <DiscountingCurve currency="USD">Yield/USD/USD1D</DiscountingCurve>
+    <DiscountingCurve currency="HKD">Yield/HKD/HKD1D</DiscountingCurve>
+    <DiscountingCurve currency="EUR">Yield/EUR/EUR1D</DiscountingCurve>
+  </DiscountingCurves>
+  <IndexForwardingCurves id="default">
+    <Index name="GBP-SONIA">Yield/GBP/GBP1D</Index>
+    <Index name="USD-SOFR">Yield/USD/USD1D</Index>
+    <Index name="HKD-HONIA">Yield/HKD/HKD1D</Index>
+    <Index name="EUR-ESTER">Yield/EUR/EUR1D</Index>
+  </IndexForwardingCurves>
+  <FxSpots id="default">
+    <FxSpot pair="GBPUSD">FX/GBP/USD</FxSpot>
+    <FxSpot pair="USDHKD">FX/USD/HKD</FxSpot>
+    <FxSpot pair="EURUSD">FX/EUR/USD</FxSpot>
+  </FxSpots>
+</TodaysMarket>

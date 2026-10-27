@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void swap_leg_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void swap_leg_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -230,7 +230,7 @@ void swap_leg_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        swap_leg_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -278,8 +278,8 @@ void swap_leg_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.leg_number, parsed->positionals[next++], "leg_number");
+        swap_leg_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        swap_leg_read_token(req.key.leg_number, parsed->positionals[next++], "leg_number");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -324,8 +324,8 @@ void swap_leg_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::swap_leg_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
-            read_token(key.leg_number, parsed->positionals[i + 1], "leg_number");
+            swap_leg_read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            swap_leg_read_token(key.leg_number, parsed->positionals[i + 1], "leg_number");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -371,25 +371,26 @@ void swap_leg_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.trade_id = boost::uuids::random_generator()();
-        read_token(req.change.write.leg_number, parsed->positionals[next++], "leg_number");
-        read_token(
+        swap_leg_read_token(req.change.write.leg_number, parsed->positionals[next++], "leg_number");
+        swap_leg_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.payer, parsed->positionals[next++], "payer");
-        read_token(req.change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
-        read_token(req.change.write.day_count_fraction_code,
-                   parsed->positionals[next++],
-                   "day_count_fraction_code");
-        read_token(req.change.write.business_day_convention_code,
-                   parsed->positionals[next++],
-                   "business_day_convention_code");
-        read_token(req.change.write.payment_frequency_code,
-                   parsed->positionals[next++],
-                   "payment_frequency_code");
-        read_token(req.change.write.floating_index_code,
-                   parsed->positionals[next++],
-                   "floating_index_code");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
+        swap_leg_read_token(req.change.write.payer, parsed->positionals[next++], "payer");
+        swap_leg_read_token(
+            req.change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
+        swap_leg_read_token(req.change.write.day_count_fraction_code,
+                            parsed->positionals[next++],
+                            "day_count_fraction_code");
+        swap_leg_read_token(req.change.write.business_day_convention_code,
+                            parsed->positionals[next++],
+                            "business_day_convention_code");
+        swap_leg_read_token(req.change.write.payment_frequency_code,
+                            parsed->positionals[next++],
+                            "payment_frequency_code");
+        swap_leg_read_token(req.change.write.floating_index_code,
+                            parsed->positionals[next++],
+                            "floating_index_code");
+        swap_leg_read_token(req.change.write.currency, parsed->positionals[next++], "currency");
+        swap_leg_read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -437,26 +438,27 @@ void swap_leg_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.change.write.leg_number, parsed->positionals[next++], "leg_number");
-        read_token(
+        swap_leg_read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        swap_leg_read_token(req.change.write.leg_number, parsed->positionals[next++], "leg_number");
+        swap_leg_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(req.change.write.payer, parsed->positionals[next++], "payer");
-        read_token(req.change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
-        read_token(req.change.write.day_count_fraction_code,
-                   parsed->positionals[next++],
-                   "day_count_fraction_code");
-        read_token(req.change.write.business_day_convention_code,
-                   parsed->positionals[next++],
-                   "business_day_convention_code");
-        read_token(req.change.write.payment_frequency_code,
-                   parsed->positionals[next++],
-                   "payment_frequency_code");
-        read_token(req.change.write.floating_index_code,
-                   parsed->positionals[next++],
-                   "floating_index_code");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
+        swap_leg_read_token(req.change.write.payer, parsed->positionals[next++], "payer");
+        swap_leg_read_token(
+            req.change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
+        swap_leg_read_token(req.change.write.day_count_fraction_code,
+                            parsed->positionals[next++],
+                            "day_count_fraction_code");
+        swap_leg_read_token(req.change.write.business_day_convention_code,
+                            parsed->positionals[next++],
+                            "business_day_convention_code");
+        swap_leg_read_token(req.change.write.payment_frequency_code,
+                            parsed->positionals[next++],
+                            "payment_frequency_code");
+        swap_leg_read_token(req.change.write.floating_index_code,
+                            parsed->positionals[next++],
+                            "floating_index_code");
+        swap_leg_read_token(req.change.write.currency, parsed->positionals[next++], "currency");
+        swap_leg_read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -518,26 +520,27 @@ void swap_leg_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::swap_leg_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(change.write.leg_number, parsed->positionals[next++], "leg_number");
-            read_token(
+            swap_leg_read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
+            swap_leg_read_token(change.write.leg_number, parsed->positionals[next++], "leg_number");
+            swap_leg_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(change.write.payer, parsed->positionals[next++], "payer");
-            read_token(change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
-            read_token(change.write.day_count_fraction_code,
-                       parsed->positionals[next++],
-                       "day_count_fraction_code");
-            read_token(change.write.business_day_convention_code,
-                       parsed->positionals[next++],
-                       "business_day_convention_code");
-            read_token(change.write.payment_frequency_code,
-                       parsed->positionals[next++],
-                       "payment_frequency_code");
-            read_token(change.write.floating_index_code,
-                       parsed->positionals[next++],
-                       "floating_index_code");
-            read_token(change.write.currency, parsed->positionals[next++], "currency");
-            read_token(change.write.leg_group, parsed->positionals[next++], "leg_group");
+            swap_leg_read_token(change.write.payer, parsed->positionals[next++], "payer");
+            swap_leg_read_token(
+                change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
+            swap_leg_read_token(change.write.day_count_fraction_code,
+                                parsed->positionals[next++],
+                                "day_count_fraction_code");
+            swap_leg_read_token(change.write.business_day_convention_code,
+                                parsed->positionals[next++],
+                                "business_day_convention_code");
+            swap_leg_read_token(change.write.payment_frequency_code,
+                                parsed->positionals[next++],
+                                "payment_frequency_code");
+            swap_leg_read_token(change.write.floating_index_code,
+                                parsed->positionals[next++],
+                                "floating_index_code");
+            swap_leg_read_token(change.write.currency, parsed->positionals[next++], "currency");
+            swap_leg_read_token(change.write.leg_group, parsed->positionals[next++], "leg_group");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -587,8 +590,8 @@ void swap_leg_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.removal.key.leg_number, parsed->positionals[next++], "leg_number");
+        swap_leg_read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        swap_leg_read_token(req.removal.key.leg_number, parsed->positionals[next++], "leg_number");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -642,8 +645,8 @@ void swap_leg_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::swap_leg_key key;
-            read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
-            read_token(key.leg_number, parsed->positionals[i * 2 + 1], "leg_number");
+            swap_leg_read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
+            swap_leg_read_token(key.leg_number, parsed->positionals[i * 2 + 1], "leg_number");
             req.removals.push_back(messaging::swap_leg_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -702,7 +705,7 @@ void swap_leg_commands::process_by_trade_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        swap_leg_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -750,9 +753,9 @@ void swap_leg_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.leg_number, parsed->positionals[next++], "leg_number");
-        apply_page(req, *parsed);
+        swap_leg_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        swap_leg_read_token(req.key.leg_number, parsed->positionals[next++], "leg_number");
+        swap_leg_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -797,8 +800,8 @@ void swap_leg_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.swap_leg.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.swap_leg.leg_number, parsed->positionals[next++], "leg_number");
+        swap_leg_read_token(req.key.swap_leg.trade_id, parsed->positionals[next++], "trade_id");
+        swap_leg_read_token(req.key.swap_leg.leg_number, parsed->positionals[next++], "leg_number");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

@@ -24,22 +24,16 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::iam::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("generate_single_account", tags) {
+TEST_CASE("generate_single_account", "[generators]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;
@@ -52,7 +46,7 @@ TEST_CASE("generate_single_account", tags) {
     CHECK(account.recorded_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("generate_multiple_accounts", tags) {
+TEST_CASE("generate_multiple_accounts", "[generators]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;

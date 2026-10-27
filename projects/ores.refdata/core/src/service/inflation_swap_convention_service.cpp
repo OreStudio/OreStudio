@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::inflation_swap_convention>
-read_one(repository::inflation_swap_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::inflation_swap_convention_key& key) {
+inflation_swap_convention_read_one(repository::inflation_swap_convention_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const messaging::inflation_swap_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::inflation_swap_convention_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::inflation_swap_convention_key key_from(const domain::inflation_swap_convention& v) {
+messaging::inflation_swap_convention_key
+inflation_swap_convention_key_from(const domain::inflation_swap_convention& v) {
     messaging::inflation_swap_convention_key key;
     key.id = v.id;
     return key;
@@ -96,7 +97,7 @@ messaging::inflation_swap_convention_key key_from(const domain::inflation_swap_c
  * database's to state, and are set after this conversion.
  */
 domain::inflation_swap_convention
-to_domain(const messaging::inflation_swap_convention_write& write) {
+inflation_swap_convention_to_domain(const messaging::inflation_swap_convention_write& write) {
     domain::inflation_swap_convention v;
     v.id = write.id;
     v.fix_calendar = write.fix_calendar;
@@ -159,7 +160,7 @@ messaging::get_inflation_swap_convention_response
 inflation_swap_convention_service::get_inflation_swap_convention(
     const messaging::get_inflation_swap_convention_request& request) {
     messaging::get_inflation_swap_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = inflation_swap_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "inflation_swap_convention"});
         return response;
@@ -179,7 +180,7 @@ inflation_swap_convention_service::get_many_inflation_swap_conventions(
     for (const auto& k : request.keys) {
         messaging::inflation_swap_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = inflation_swap_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.inflation_swap_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -196,7 +197,8 @@ inflation_swap_convention_service::put_inflation_swap_convention(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        inflation_swap_convention_read_one(repo_, ctx_, inflation_swap_convention_key_from(value));
     if (!written.empty())
         response.inflation_swap_convention = std::move(written.front());
     return response;
@@ -229,7 +231,8 @@ inflation_swap_convention_service::put_many_inflation_swap_conventions(
     repo_.write(ctx_, batch, claims);
     response.inflation_swap_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = inflation_swap_convention_read_one(
+            repo_, ctx_, inflation_swap_convention_key_from(value));
         response.inflation_swap_conventions.push_back(written.empty() ? value :
                                                                         std::move(written.front()));
     }
@@ -265,7 +268,7 @@ inflation_swap_convention_service::delete_inflation_swap_convention(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = inflation_swap_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "inflation_swap_convention",
@@ -355,8 +358,9 @@ ores::utility::domain::result inflation_swap_convention_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = inflation_swap_convention_to_domain(change.write);
+    const auto current =
+        inflation_swap_convention_read_one(repo_, ctx_, inflation_swap_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

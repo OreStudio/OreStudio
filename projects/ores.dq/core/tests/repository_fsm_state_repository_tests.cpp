@@ -21,16 +21,10 @@
 #include "ores.dq.core/repository/fsm_state_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string_view>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using ores::dq::repository::fsm_state_repository;
@@ -40,7 +34,7 @@ using ores::testing::database_helper;
 // test tenant, so every read below switches context first. Without the switch
 // row-level security hides the rows and the read looks like a missing seed.
 
-TEST_CASE("read_latest_by_machine_name_returns_the_named_machines_states", tags) {
+TEST_CASE("read_latest_by_machine_name_returns_the_named_machines_states", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -75,7 +69,7 @@ TEST_CASE("read_latest_by_machine_name_returns_the_named_machines_states", tags)
         CHECK(s.machine_id != instance_machine_id);
 }
 
-TEST_CASE("read_latest_by_machine_name_returns_nothing_for_an_unknown_machine", tags) {
+TEST_CASE("read_latest_by_machine_name_returns_nothing_for_an_unknown_machine", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

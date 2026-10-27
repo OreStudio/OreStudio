@@ -23,14 +23,12 @@
 
 namespace {
 
-const std::string tags("[authorization]");
-
 using ores::iam::service::authorization_service;
 namespace permissions = ores::iam::domain::permissions;
 
 }
 
-TEST_CASE("check_permission_returns_true_for_exact_match", tags) {
+TEST_CASE("check_permission_returns_true_for_exact_match", "[authorization]") {
     // Sorted list as required by binary_search
     std::vector<std::string> perms = {
         permissions::accounts_create, permissions::accounts_read, permissions::roles_read};
@@ -41,7 +39,7 @@ TEST_CASE("check_permission_returns_true_for_exact_match", tags) {
     CHECK(authorization_service::check_permission(perms, permissions::roles_read));
 }
 
-TEST_CASE("check_permission_returns_false_for_missing_permission", tags) {
+TEST_CASE("check_permission_returns_false_for_missing_permission", "[authorization]") {
     std::vector<std::string> perms = {permissions::accounts_read, permissions::roles_read};
     std::ranges::sort(perms);
 
@@ -49,7 +47,7 @@ TEST_CASE("check_permission_returns_false_for_missing_permission", tags) {
     CHECK_FALSE(authorization_service::check_permission(perms, permissions::roles_assign));
 }
 
-TEST_CASE("check_permission_wildcard_grants_all", tags) {
+TEST_CASE("check_permission_wildcard_grants_all", "[authorization]") {
     std::vector<std::string> perms = {permissions::all};
 
     CHECK(authorization_service::check_permission(perms, permissions::accounts_create));
@@ -57,13 +55,13 @@ TEST_CASE("check_permission_wildcard_grants_all", tags) {
     CHECK(authorization_service::check_permission(perms, "anything::at:all"));
 }
 
-TEST_CASE("check_permission_empty_list_returns_false", tags) {
+TEST_CASE("check_permission_empty_list_returns_false", "[authorization]") {
     std::vector<std::string> perms;
 
     CHECK_FALSE(authorization_service::check_permission(perms, permissions::accounts_read));
 }
 
-TEST_CASE("check_permission_is_case_sensitive", tags) {
+TEST_CASE("check_permission_is_case_sensitive", "[authorization]") {
     std::vector<std::string> perms = {permissions::accounts_read};
 
     CHECK(authorization_service::check_permission(perms, permissions::accounts_read));

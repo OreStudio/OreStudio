@@ -74,14 +74,15 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_calendar_dates_response
-    list_calendar_dates(const messaging::list_calendar_dates_request& request);
-    messaging::get_calendar_date_response
-    get_calendar_date(const messaging::get_calendar_date_request& request);
-    messaging::get_many_calendar_dates_response
-    get_many_calendar_dates(const messaging::get_many_calendar_dates_request& request);
-    messaging::list_by_calendar_code_calendar_dates_response list_by_calendar_code_calendar_dates(
-        const messaging::list_by_calendar_code_calendar_dates_request& request);
+    ::ores::refdata::messaging::list_calendar_dates_response
+    list_calendar_dates(const ::ores::refdata::messaging::list_calendar_dates_request& request);
+    ::ores::refdata::messaging::get_calendar_date_response
+    get_calendar_date(const ::ores::refdata::messaging::get_calendar_date_request& request);
+    ::ores::refdata::messaging::get_many_calendar_dates_response get_many_calendar_dates(
+        const ::ores::refdata::messaging::get_many_calendar_dates_request& request);
+    ::ores::refdata::messaging::list_by_calendar_code_calendar_dates_response
+    list_by_calendar_code_calendar_dates(
+        const ::ores::refdata::messaging::list_by_calendar_code_calendar_dates_request& request);
     /**@}*/
 
 private:

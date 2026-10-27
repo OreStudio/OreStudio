@@ -75,9 +75,10 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::credit_simulation_netting_set_config>
-read_one(repository::credit_simulation_netting_set_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::credit_simulation_netting_set_config_key& key) {
+credit_simulation_netting_set_config_read_one(
+    repository::credit_simulation_netting_set_config_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::credit_simulation_netting_set_config_key& key) {
     return repo.read_latest_by_netting_set_id(ctx, key.netting_set_id);
 }
 
@@ -87,8 +88,8 @@ read_one(repository::credit_simulation_netting_set_config_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::credit_simulation_netting_set_config_key
-key_from(const domain::credit_simulation_netting_set_config& v) {
+messaging::credit_simulation_netting_set_config_key credit_simulation_netting_set_config_key_from(
+    const domain::credit_simulation_netting_set_config& v) {
     messaging::credit_simulation_netting_set_config_key key;
     key.netting_set_id = v.netting_set_id;
     return key;
@@ -101,8 +102,8 @@ key_from(const domain::credit_simulation_netting_set_config& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::credit_simulation_netting_set_config
-to_domain(const messaging::credit_simulation_netting_set_config_write& write) {
+domain::credit_simulation_netting_set_config credit_simulation_netting_set_config_to_domain(
+    const messaging::credit_simulation_netting_set_config_write& write) {
     domain::credit_simulation_netting_set_config v;
     v.id = write.id;
     v.credit_simulation_config_id = write.credit_simulation_config_id;
@@ -195,7 +196,7 @@ messaging::get_credit_simulation_netting_set_config_response
 credit_simulation_netting_set_config_service::get_credit_simulation_netting_set_config(
     const messaging::get_credit_simulation_netting_set_config_request& request) {
     messaging::get_credit_simulation_netting_set_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = credit_simulation_netting_set_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_netting_set_config"});
@@ -216,7 +217,7 @@ credit_simulation_netting_set_config_service::get_many_credit_simulation_netting
     for (const auto& k : request.keys) {
         messaging::credit_simulation_netting_set_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = credit_simulation_netting_set_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.credit_simulation_netting_set_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -233,7 +234,8 @@ credit_simulation_netting_set_config_service::put_credit_simulation_netting_set_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = credit_simulation_netting_set_config_read_one(
+        repo_, ctx_, credit_simulation_netting_set_config_key_from(value));
     if (!written.empty())
         response.credit_simulation_netting_set_config = std::move(written.front());
     return response;
@@ -266,7 +268,8 @@ credit_simulation_netting_set_config_service::put_many_credit_simulation_netting
     repo_.write(ctx_, batch, claims);
     response.netting_sets.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = credit_simulation_netting_set_config_read_one(
+            repo_, ctx_, credit_simulation_netting_set_config_key_from(value));
         response.netting_sets.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -290,7 +293,8 @@ credit_simulation_netting_set_config_service::delete_credit_simulation_netting_s
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named =
+        credit_simulation_netting_set_config_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_netting_set_config"});
@@ -309,7 +313,8 @@ credit_simulation_netting_set_config_service::delete_credit_simulation_netting_s
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                credit_simulation_netting_set_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "credit_simulation_netting_set_config",
@@ -352,7 +357,7 @@ credit_simulation_netting_set_config_service::delete_many_credit_simulation_nett
     std::vector<domain::credit_simulation_netting_set_config> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = credit_simulation_netting_set_config_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -379,7 +384,7 @@ credit_simulation_netting_set_config_service::list_credit_simulation_netting_set
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = credit_simulation_netting_set_config_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_netting_set_config"});
@@ -404,7 +409,8 @@ credit_simulation_netting_set_config_service::get_credit_simulation_netting_set_
     messaging::get_credit_simulation_netting_set_config_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.credit_simulation_netting_set_config);
+    const auto named = credit_simulation_netting_set_config_read_one(
+        repo_, ctx_, request.key.credit_simulation_netting_set_config);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_netting_set_config"});
@@ -428,8 +434,9 @@ ores::utility::domain::result credit_simulation_netting_set_config_service::prep
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = credit_simulation_netting_set_config_to_domain(change.write);
+    const auto current = credit_simulation_netting_set_config_read_one(
+        repo_, ctx_, credit_simulation_netting_set_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -526,7 +533,7 @@ credit_simulation_netting_set_config_service::get_netting_set_by_netting_set_id(
     BOOST_LOG_SEV(lg(), debug) << "Getting netting set by netting_set_id: " << netting_set_id;
     messaging::credit_simulation_netting_set_config_key k;
     k.netting_set_id = netting_set_id;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = credit_simulation_netting_set_config_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

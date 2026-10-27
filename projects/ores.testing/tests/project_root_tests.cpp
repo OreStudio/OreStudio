@@ -19,18 +19,12 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <string>
 
-namespace {
-
-const std::string test_suite("ores.testing.tests");
-const std::string tags("[testing]");
-
-}
-
-TEST_CASE("resolves_a_path_that_names_the_component_model", tags) {
+TEST_CASE("resolves_a_path_that_names_the_component_model", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto resolved = ores::testing::project_root::resolve(
@@ -43,7 +37,7 @@ TEST_CASE("resolves_a_path_that_names_the_component_model", tags) {
     CHECK(std::filesystem::exists(resolved));
 }
 
-TEST_CASE("discovers_a_root_that_holds_the_repository", tags) {
+TEST_CASE("discovers_a_root_that_holds_the_repository", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto root = ores::testing::project_root::get();

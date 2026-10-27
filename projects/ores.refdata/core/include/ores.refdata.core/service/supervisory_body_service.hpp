@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_supervisory_bodies_response
-    list_supervisory_bodies(const messaging::list_supervisory_bodies_request& request);
-    messaging::get_supervisory_body_response
-    get_supervisory_body(const messaging::get_supervisory_body_request& request);
-    messaging::get_many_supervisory_bodies_response
-    get_many_supervisory_bodies(const messaging::get_many_supervisory_bodies_request& request);
-    messaging::put_supervisory_body_response
-    put_supervisory_body(const messaging::put_supervisory_body_request& request);
-    messaging::put_many_supervisory_bodies_response
-    put_many_supervisory_bodies(const messaging::put_many_supervisory_bodies_request& request);
-    messaging::delete_supervisory_body_response
-    delete_supervisory_body(const messaging::delete_supervisory_body_request& request);
-    messaging::delete_many_supervisory_bodies_response delete_many_supervisory_bodies(
-        const messaging::delete_many_supervisory_bodies_request& request);
-    messaging::list_supervisory_body_versions_response list_supervisory_body_versions(
-        const messaging::list_supervisory_body_versions_request& request);
-    messaging::get_supervisory_body_version_response
-    get_supervisory_body_version(const messaging::get_supervisory_body_version_request& request);
+    ::ores::refdata::messaging::list_supervisory_bodies_response list_supervisory_bodies(
+        const ::ores::refdata::messaging::list_supervisory_bodies_request& request);
+    ::ores::refdata::messaging::get_supervisory_body_response
+    get_supervisory_body(const ::ores::refdata::messaging::get_supervisory_body_request& request);
+    ::ores::refdata::messaging::get_many_supervisory_bodies_response get_many_supervisory_bodies(
+        const ::ores::refdata::messaging::get_many_supervisory_bodies_request& request);
+    ::ores::refdata::messaging::put_supervisory_body_response
+    put_supervisory_body(const ::ores::refdata::messaging::put_supervisory_body_request& request);
+    ::ores::refdata::messaging::put_many_supervisory_bodies_response put_many_supervisory_bodies(
+        const ::ores::refdata::messaging::put_many_supervisory_bodies_request& request);
+    ::ores::refdata::messaging::delete_supervisory_body_response delete_supervisory_body(
+        const ::ores::refdata::messaging::delete_supervisory_body_request& request);
+    ::ores::refdata::messaging::delete_many_supervisory_bodies_response
+    delete_many_supervisory_bodies(
+        const ::ores::refdata::messaging::delete_many_supervisory_bodies_request& request);
+    ::ores::refdata::messaging::list_supervisory_body_versions_response
+    list_supervisory_body_versions(
+        const ::ores::refdata::messaging::list_supervisory_body_versions_request& request);
+    ::ores::refdata::messaging::get_supervisory_body_version_response get_supervisory_body_version(
+        const ::ores::refdata::messaging::get_supervisory_body_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +193,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::supervisory_body_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::supervisory_body& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::supervisory_body_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::supervisory_body& out);
 };
 
 }

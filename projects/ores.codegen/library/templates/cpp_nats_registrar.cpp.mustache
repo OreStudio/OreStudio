@@ -19,7 +19,7 @@
 namespace ores::{{component}}::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.{{component}}.service";
+static constexpr std::string_view {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group = "ores.{{component}}.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -30,7 +30,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
     auto h = std::make_shared<{{entity_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
 {{#operations}}
     subs.push_back(nats.queue_subscribe(
-        {{request}}::nats_subject, queue_group,
+        {{request}}::nats_subject, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group,
         [h](ores::nats::message msg) { h->{{method}}(std::move(msg)); }));
 {{/operations}}
 <<paste:FB267332-79AB-4873-AFDA-CEEE68A0F398>>
@@ -57,7 +57,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 namespace ores::{{component}}::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.{{component}}.service";
+static constexpr std::string_view {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group = "ores.{{component}}.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -69,7 +69,7 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
 {{! A read-only junction derives no write verb, so this one loop states none. }}
 {{#operations}}
     subs.push_back(nats.queue_subscribe(
-        {{request}}::nats_subject, queue_group,
+        {{request}}::nats_subject, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group,
         [h](ores::nats::message msg) { h->{{method}}(std::move(msg)); }));
 {{/operations}}
     return subs;
@@ -95,7 +95,7 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
 namespace ores::{{component}}::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.{{component}}.service";
+static constexpr std::string_view {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group = "ores.{{component}}.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -106,7 +106,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
     auto h = std::make_shared<{{entity_singular}}_handler>(nats, std::move(ctx), std::move(verifier));
 {{#operations}}
     subs.push_back(nats.queue_subscribe(
-        {{request}}::nats_subject, queue_group,
+        {{request}}::nats_subject, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_queue_group,
         [h](ores::nats::message msg) { h->{{method}}(std::move(msg)); }));
 {{/operations}}
     return subs;

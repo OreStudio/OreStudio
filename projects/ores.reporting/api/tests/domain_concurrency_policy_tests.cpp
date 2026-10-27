@@ -22,6 +22,7 @@
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/concurrency_policy_table.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
@@ -29,9 +30,6 @@
 namespace {
 
 using ores::reporting::domain::concurrency_policy;
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[domain]");
 
 concurrency_policy
 make_concurrency_policy(const std::string& code, const std::string& name, int display_order) {
@@ -54,7 +52,7 @@ make_concurrency_policy(const std::string& code, const std::string& name, int di
 using ores::reporting::domain::concurrency_policy;
 using namespace ores::logging;
 
-TEST_CASE("create_concurrency_policy_with_valid_fields", tags) {
+TEST_CASE("create_concurrency_policy_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     concurrency_policy sut;
@@ -78,7 +76,7 @@ TEST_CASE("create_concurrency_policy_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("concurrency_policy_insertion_operator", tags) {
+TEST_CASE("concurrency_policy_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     concurrency_policy sut;
@@ -104,7 +102,7 @@ TEST_CASE("concurrency_policy_insertion_operator", tags) {
     CHECK(json_output.find("queue") != std::string::npos);
 }
 
-TEST_CASE("create_concurrency_policy_with_faker", tags) {
+TEST_CASE("create_concurrency_policy_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     concurrency_policy sut;
@@ -129,7 +127,7 @@ TEST_CASE("create_concurrency_policy_with_faker", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("create_multiple_random_concurrency_policies", tags) {
+TEST_CASE("create_multiple_random_concurrency_policies", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::tuple<std::string, std::string, int>> policies = {
@@ -146,7 +144,7 @@ TEST_CASE("create_multiple_random_concurrency_policies", tags) {
     }
 }
 
-TEST_CASE("concurrency_policy_convert_single_to_table", tags) {
+TEST_CASE("concurrency_policy_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<concurrency_policy> items = {make_concurrency_policy("fail", "Fail", 3)};
@@ -159,7 +157,7 @@ TEST_CASE("concurrency_policy_convert_single_to_table", tags) {
     CHECK(table.find("fail") != std::string::npos);
 }
 
-TEST_CASE("concurrency_policy_convert_multiple_to_table", tags) {
+TEST_CASE("concurrency_policy_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<concurrency_policy> items;
@@ -178,7 +176,7 @@ TEST_CASE("concurrency_policy_convert_multiple_to_table", tags) {
     CHECK(table.find("fail") != std::string::npos);
 }
 
-TEST_CASE("concurrency_policy_convert_empty_vector_to_table", tags) {
+TEST_CASE("concurrency_policy_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<concurrency_policy> items;
@@ -191,7 +189,7 @@ TEST_CASE("concurrency_policy_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Code") != std::string::npos);
 }
 
-TEST_CASE("concurrency_policy_table_with_faker_data", tags) {
+TEST_CASE("concurrency_policy_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<concurrency_policy> items;

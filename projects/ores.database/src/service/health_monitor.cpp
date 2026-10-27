@@ -19,20 +19,16 @@
  */
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/log/sources/severity_feature.hpp>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::database {
 
-namespace {
-using severity_level = boost::log::trivial::severity_level;
-constexpr auto info = severity_level::info;
-constexpr auto debug = severity_level::debug;
-constexpr auto warn = severity_level::warning;
-constexpr auto error = severity_level::error;
-}
+using namespace ores::logging;
 
 health_monitor::health_monitor(database_options options, std::chrono::seconds poll_interval)
     : options_(std::move(options))

@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_business_processes_response
-    list_business_processes(const messaging::list_business_processes_request& request);
-    messaging::get_business_process_response
-    get_business_process(const messaging::get_business_process_request& request);
-    messaging::get_many_business_processes_response
-    get_many_business_processes(const messaging::get_many_business_processes_request& request);
-    messaging::put_business_process_response
-    put_business_process(const messaging::put_business_process_request& request);
-    messaging::put_many_business_processes_response
-    put_many_business_processes(const messaging::put_many_business_processes_request& request);
-    messaging::delete_business_process_response
-    delete_business_process(const messaging::delete_business_process_request& request);
-    messaging::delete_many_business_processes_response delete_many_business_processes(
-        const messaging::delete_many_business_processes_request& request);
-    messaging::list_business_process_versions_response list_business_process_versions(
-        const messaging::list_business_process_versions_request& request);
-    messaging::get_business_process_version_response
-    get_business_process_version(const messaging::get_business_process_version_request& request);
+    ::ores::refdata::messaging::list_business_processes_response list_business_processes(
+        const ::ores::refdata::messaging::list_business_processes_request& request);
+    ::ores::refdata::messaging::get_business_process_response
+    get_business_process(const ::ores::refdata::messaging::get_business_process_request& request);
+    ::ores::refdata::messaging::get_many_business_processes_response get_many_business_processes(
+        const ::ores::refdata::messaging::get_many_business_processes_request& request);
+    ::ores::refdata::messaging::put_business_process_response
+    put_business_process(const ::ores::refdata::messaging::put_business_process_request& request);
+    ::ores::refdata::messaging::put_many_business_processes_response put_many_business_processes(
+        const ::ores::refdata::messaging::put_many_business_processes_request& request);
+    ::ores::refdata::messaging::delete_business_process_response delete_business_process(
+        const ::ores::refdata::messaging::delete_business_process_request& request);
+    ::ores::refdata::messaging::delete_many_business_processes_response
+    delete_many_business_processes(
+        const ::ores::refdata::messaging::delete_many_business_processes_request& request);
+    ::ores::refdata::messaging::list_business_process_versions_response
+    list_business_process_versions(
+        const ::ores::refdata::messaging::list_business_process_versions_request& request);
+    ::ores::refdata::messaging::get_business_process_version_response get_business_process_version(
+        const ::ores::refdata::messaging::get_business_process_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +193,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::business_process_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::business_process& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::business_process_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::business_process& out);
 };
 
 }

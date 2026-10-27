@@ -23,19 +23,17 @@
 
 namespace {
 
-const std::string tags("[tenant]");
-
 using ores::iam::service::check_tenant_hostname;
 
 }
 
-TEST_CASE("check_tenant_hostname_accepts_a_name_the_routing_can_resolve", tags) {
+TEST_CASE("check_tenant_hostname_accepts_a_name_the_routing_can_resolve", "[tenant]") {
     CHECK(check_tenant_hostname("northwind").empty());
     CHECK(check_tenant_hostname("northwind.example.com").empty());
     CHECK(check_tenant_hostname("acme_corporation").empty());
 }
 
-TEST_CASE("check_tenant_hostname_refuses_a_hostname_that_carries_a_port", tags) {
+TEST_CASE("check_tenant_hostname_refuses_a_hostname_that_carries_a_port", "[tenant]") {
     // A principal is username@hostname and the login looks the hostname up
     // exactly, so a port makes the tenant's own administrator unresolvable.
     const auto refusal = check_tenant_hostname("northwind.example.com:8080");
@@ -44,6 +42,6 @@ TEST_CASE("check_tenant_hostname_refuses_a_hostname_that_carries_a_port", tags) 
     CHECK(refusal.find("port") != std::string::npos);
 }
 
-TEST_CASE("check_tenant_hostname_reports_a_missing_hostname", tags) {
+TEST_CASE("check_tenant_hostname_reports_a_missing_hostname", "[tenant]") {
     CHECK_FALSE(check_tenant_hostname("").empty());
 }

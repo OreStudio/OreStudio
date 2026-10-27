@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+seed_profile_parameter_list_order(const ores::utility::domain::order& order,
+                                  std::initializer_list<std::string> default_columns,
+                                  bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!seed_profile_parameter_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::seed_profile_parameters_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> seed_profile_parameter_filter_condition(
+    const std::optional<messaging::seed_profile_parameters_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -290,8 +291,8 @@ seed_profile_parameter_repository::read_latest_by_seed_profile_id(
                                       domain::seed_profile_parameter>(
         ctx,
         query,
-        list_order(order, {"display_order"}, false),
-        filter_condition(filter),
+        seed_profile_parameter_list_order(order, {"display_order"}, false),
+        seed_profile_parameter_filter_condition(filter),
         [](const auto& entities) { return seed_profile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest seed profile parameters by seed_profile_id.");
@@ -315,7 +316,7 @@ seed_profile_parameter_repository::get_total_seed_profile_parameter_count_by_see
     return execute_count_query<seed_profile_parameter_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        seed_profile_parameter_filter_condition(filter),
         lg(),
         "Counting seed profile parameters by seed_profile_id");
 }
@@ -371,8 +372,8 @@ std::vector<domain::seed_profile_parameter> seed_profile_parameter_repository::r
                                       domain::seed_profile_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        seed_profile_parameter_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), seed_profile_parameter_filter_condition(filter)),
         [](const auto& entities) { return seed_profile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest seed profile parameters with pagination.");
@@ -391,7 +392,7 @@ std::uint32_t seed_profile_parameter_repository::get_total_seed_profile_paramete
     return execute_count_query<seed_profile_parameter_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), seed_profile_parameter_filter_condition(filter)),
         lg(),
         "Counting seed profile parameters");
 }

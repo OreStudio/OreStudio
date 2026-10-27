@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string csa_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,9 @@ std::string convert_to_table(const std::vector<csa>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& csa : v) {
-        table << (csa.is_active ? "true" : "false") << opt_str(csa.bilateral)
-              << opt_str(csa.csa_currency) << opt_str(csa.margin_period_of_risk) << csa.modified_by
-              << csa.version << fort::endr;
+        table << (csa.is_active ? "true" : "false") << csa_opt_str(csa.bilateral)
+              << csa_opt_str(csa.csa_currency) << csa_opt_str(csa.margin_period_of_risk)
+              << csa.modified_by << csa.version << fort::endr;
     }
     return table.to_string();
 }

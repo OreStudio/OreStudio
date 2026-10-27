@@ -75,24 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_floating_index_types_response
-    list_floating_index_types(const messaging::list_floating_index_types_request& request);
-    messaging::get_floating_index_type_response
-    get_floating_index_type(const messaging::get_floating_index_type_request& request);
-    messaging::get_many_floating_index_types_response
-    get_many_floating_index_types(const messaging::get_many_floating_index_types_request& request);
-    messaging::put_floating_index_type_response
-    put_floating_index_type(const messaging::put_floating_index_type_request& request);
-    messaging::put_many_floating_index_types_response
-    put_many_floating_index_types(const messaging::put_many_floating_index_types_request& request);
-    messaging::delete_floating_index_type_response
-    delete_floating_index_type(const messaging::delete_floating_index_type_request& request);
-    messaging::delete_many_floating_index_types_response delete_many_floating_index_types(
-        const messaging::delete_many_floating_index_types_request& request);
-    messaging::list_floating_index_type_versions_response list_floating_index_type_versions(
-        const messaging::list_floating_index_type_versions_request& request);
-    messaging::get_floating_index_type_version_response get_floating_index_type_version(
-        const messaging::get_floating_index_type_version_request& request);
+    ::ores::refdata::messaging::list_floating_index_types_response list_floating_index_types(
+        const ::ores::refdata::messaging::list_floating_index_types_request& request);
+    ::ores::refdata::messaging::get_floating_index_type_response get_floating_index_type(
+        const ::ores::refdata::messaging::get_floating_index_type_request& request);
+    ::ores::refdata::messaging::get_many_floating_index_types_response
+    get_many_floating_index_types(
+        const ::ores::refdata::messaging::get_many_floating_index_types_request& request);
+    ::ores::refdata::messaging::put_floating_index_type_response put_floating_index_type(
+        const ::ores::refdata::messaging::put_floating_index_type_request& request);
+    ::ores::refdata::messaging::put_many_floating_index_types_response
+    put_many_floating_index_types(
+        const ::ores::refdata::messaging::put_many_floating_index_types_request& request);
+    ::ores::refdata::messaging::delete_floating_index_type_response delete_floating_index_type(
+        const ::ores::refdata::messaging::delete_floating_index_type_request& request);
+    ::ores::refdata::messaging::delete_many_floating_index_types_response
+    delete_many_floating_index_types(
+        const ::ores::refdata::messaging::delete_many_floating_index_types_request& request);
+    ::ores::refdata::messaging::list_floating_index_type_versions_response
+    list_floating_index_type_versions(
+        const ::ores::refdata::messaging::list_floating_index_type_versions_request& request);
+    ::ores::refdata::messaging::get_floating_index_type_version_response
+    get_floating_index_type_version(
+        const ::ores::refdata::messaging::get_floating_index_type_version_request& request);
     /**@}*/
 
     /**
@@ -187,7 +192,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::floating_index_type_change& change,
+    prepare_change(const ::ores::refdata::messaging::floating_index_type_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::floating_index_type& out);
 };

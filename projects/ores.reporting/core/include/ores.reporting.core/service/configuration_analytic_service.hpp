@@ -76,30 +76,39 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_configuration_analytics_response
-    list_configuration_analytics(const messaging::list_configuration_analytics_request& request);
-    messaging::get_configuration_analytic_response
-    get_configuration_analytic(const messaging::get_configuration_analytic_request& request);
-    messaging::get_many_configuration_analytics_response get_many_configuration_analytics(
-        const messaging::get_many_configuration_analytics_request& request);
-    messaging::put_configuration_analytic_response
-    put_configuration_analytic(const messaging::put_configuration_analytic_request& request);
-    messaging::put_many_configuration_analytics_response put_many_configuration_analytics(
-        const messaging::put_many_configuration_analytics_request& request);
-    messaging::delete_configuration_analytic_response
-    delete_configuration_analytic(const messaging::delete_configuration_analytic_request& request);
-    messaging::delete_many_configuration_analytics_response delete_many_configuration_analytics(
-        const messaging::delete_many_configuration_analytics_request& request);
-    messaging::list_by_configuration_id_configuration_analytics_response
+    ::ores::reporting::messaging::list_configuration_analytics_response
+    list_configuration_analytics(
+        const ::ores::reporting::messaging::list_configuration_analytics_request& request);
+    ::ores::reporting::messaging::get_configuration_analytic_response get_configuration_analytic(
+        const ::ores::reporting::messaging::get_configuration_analytic_request& request);
+    ::ores::reporting::messaging::get_many_configuration_analytics_response
+    get_many_configuration_analytics(
+        const ::ores::reporting::messaging::get_many_configuration_analytics_request& request);
+    ::ores::reporting::messaging::put_configuration_analytic_response put_configuration_analytic(
+        const ::ores::reporting::messaging::put_configuration_analytic_request& request);
+    ::ores::reporting::messaging::put_many_configuration_analytics_response
+    put_many_configuration_analytics(
+        const ::ores::reporting::messaging::put_many_configuration_analytics_request& request);
+    ::ores::reporting::messaging::delete_configuration_analytic_response
+    delete_configuration_analytic(
+        const ::ores::reporting::messaging::delete_configuration_analytic_request& request);
+    ::ores::reporting::messaging::delete_many_configuration_analytics_response
+    delete_many_configuration_analytics(
+        const ::ores::reporting::messaging::delete_many_configuration_analytics_request& request);
+    ::ores::reporting::messaging::list_by_configuration_id_configuration_analytics_response
     list_by_configuration_id_configuration_analytics(
-        const messaging::list_by_configuration_id_configuration_analytics_request& request);
-    messaging::list_by_analytic_type_code_configuration_analytics_response
+        const ::ores::reporting::messaging::
+            list_by_configuration_id_configuration_analytics_request& request);
+    ::ores::reporting::messaging::list_by_analytic_type_code_configuration_analytics_response
     list_by_analytic_type_code_configuration_analytics(
-        const messaging::list_by_analytic_type_code_configuration_analytics_request& request);
-    messaging::list_configuration_analytic_versions_response list_configuration_analytic_versions(
-        const messaging::list_configuration_analytic_versions_request& request);
-    messaging::get_configuration_analytic_version_response get_configuration_analytic_version(
-        const messaging::get_configuration_analytic_version_request& request);
+        const ::ores::reporting::messaging::
+            list_by_analytic_type_code_configuration_analytics_request& request);
+    ::ores::reporting::messaging::list_configuration_analytic_versions_response
+    list_configuration_analytic_versions(
+        const ::ores::reporting::messaging::list_configuration_analytic_versions_request& request);
+    ::ores::reporting::messaging::get_configuration_analytic_version_response
+    get_configuration_analytic_version(
+        const ::ores::reporting::messaging::get_configuration_analytic_version_request& request);
     /**@}*/
 
     /**
@@ -238,7 +247,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::configuration_analytic_change& change,
+    prepare_change(const ::ores::reporting::messaging::configuration_analytic_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::configuration_analytic& out);
 };

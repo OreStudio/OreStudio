@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view commodity_curve_config_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_commodity_curve_config_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_commodity_curve_config_h
         std::make_shared<commodity_curve_config_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_commodity_curve_configs_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->list_commodity_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_commodity_curve_config_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->get_commodity_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_commodity_curve_configs_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->get_many_commodity_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_commodity_curve_config_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->put_commodity_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_commodity_curve_configs_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->put_many_commodity_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_commodity_curve_config_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->delete_commodity_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_commodity_curve_configs_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->delete_many_commodity_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_commodity_curve_config_versions_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->list_commodity_curve_config_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_commodity_curve_config_version_request::nats_subject,
-        queue_group,
+        commodity_curve_config_queue_group,
         [h](ores::nats::message msg) { h->get_commodity_curve_config_version(std::move(msg)); }));
     return subs;
 }

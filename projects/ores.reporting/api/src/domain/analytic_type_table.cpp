@@ -31,7 +31,7 @@ namespace ores::reporting::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string analytic_type_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,8 @@ std::string convert_to_table(const std::vector<analytic_type>& v) {
           << fort::endr;
 
     for ([[maybe_unused]] const auto& at : v) {
-        table << at.code << at.name << opt_str(at.parameter_entity) << at.modified_by << at.version
-              << fort::endr;
+        table << at.code << at.name << analytic_type_opt_str(at.parameter_entity) << at.modified_by
+              << at.version << fort::endr;
     }
     return table.to_string();
 }

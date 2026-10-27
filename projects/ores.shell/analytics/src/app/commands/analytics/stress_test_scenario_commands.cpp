@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void stress_test_scenario_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void stress_test_scenario_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -219,7 +219,7 @@ void stress_test_scenario_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        stress_test_scenario_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -267,7 +267,7 @@ void stress_test_scenario_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
+        stress_test_scenario_read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -312,7 +312,7 @@ void stress_test_scenario_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::stress_test_scenario_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            stress_test_scenario_read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -358,12 +358,13 @@ void stress_test_scenario_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.stress_test_library_id,
-                   parsed->positionals[next++],
-                   "stress_test_library_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.date, parsed->positionals[next++], "date");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        stress_test_scenario_read_token(req.change.write.stress_test_library_id,
+                                        parsed->positionals[next++],
+                                        "stress_test_library_id");
+        stress_test_scenario_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        stress_test_scenario_read_token(req.change.write.date, parsed->positionals[next++], "date");
+        stress_test_scenario_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -411,13 +412,14 @@ void stress_test_scenario_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.stress_test_library_id,
-                   parsed->positionals[next++],
-                   "stress_test_library_id");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.date, parsed->positionals[next++], "date");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        stress_test_scenario_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        stress_test_scenario_read_token(req.change.write.stress_test_library_id,
+                                        parsed->positionals[next++],
+                                        "stress_test_library_id");
+        stress_test_scenario_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        stress_test_scenario_read_token(req.change.write.date, parsed->positionals[next++], "date");
+        stress_test_scenario_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -479,13 +481,14 @@ void stress_test_scenario_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::stress_test_scenario_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.stress_test_library_id,
-                       parsed->positionals[next++],
-                       "stress_test_library_id");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.date, parsed->positionals[next++], "date");
-            read_token(change.write.position, parsed->positionals[next++], "position");
+            stress_test_scenario_read_token(change.write.id, parsed->positionals[next++], "id");
+            stress_test_scenario_read_token(change.write.stress_test_library_id,
+                                            parsed->positionals[next++],
+                                            "stress_test_library_id");
+            stress_test_scenario_read_token(change.write.name, parsed->positionals[next++], "name");
+            stress_test_scenario_read_token(change.write.date, parsed->positionals[next++], "date");
+            stress_test_scenario_read_token(
+                change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -535,7 +538,7 @@ void stress_test_scenario_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.id, parsed->positionals[next++], "id");
+        stress_test_scenario_read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -589,7 +592,7 @@ void stress_test_scenario_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::stress_test_scenario_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            stress_test_scenario_read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::stress_test_scenario_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -641,8 +644,8 @@ void stress_test_scenario_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
-        apply_page(req, *parsed);
+        stress_test_scenario_read_token(req.key.id, parsed->positionals[next++], "id");
+        stress_test_scenario_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -687,7 +690,8 @@ void stress_test_scenario_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.stress_test_scenario.id, parsed->positionals[next++], "id");
+        stress_test_scenario_read_token(
+            req.key.stress_test_scenario.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

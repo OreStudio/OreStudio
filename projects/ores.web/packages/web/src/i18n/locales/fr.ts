@@ -433,6 +433,11 @@ const fr: SourceCatalogue = {
             reasonHint: '{who} la lit. Obligatoire pour refuser ; facultative pour accorder.',
             give: 'Accorder {role}',
             refuse: 'Refuser',
+            hold: 'Mettre en attente',
+            holdReason: 'Motif de la mise en attente',
+            holdReasonHint:
+                'Choisi dans la liste de référence, afin que le rapport des demandes en attente soit groupé par motif. Requis pour mettre en attente.',
+            chooseHoldReason: 'Choisir un motif',
             decided: 'Décidée',
             notFound:
                 "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",
@@ -4460,6 +4465,15 @@ const fr: SourceCatalogue = {
                 notFound: "Cette convention n'existe pas.",
                 readFailed: "La convention n'a pas pu être lue. {message}",
                 shared: 'Toutes les parties lisent cette convention. Elle est détenue une seule fois pour le locataire.',
+                otherParty:
+                    'Cette convention appartient à une autre partie. Passez à cette partie pour la modifier.',
+                edit: 'Modifier les termes',
+                save: 'Enregistrer',
+                conflict:
+                    "Cette convention a changé depuis que vous l'avez ouverte. Relisez-la avant de la modifier.",
+                reload: 'Relire',
+                notEditable:
+                    'Les termes de ce type sont détenus sur deux parties, donc cette page ne les modifie pas encore.',
             },
             search: 'Rechercher un type',
             assetClass: 'Classe d’actifs',
@@ -5573,6 +5587,15 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            unreadRows: "{count} lignes n'ont pas pu être lues et ne sont pas affichées.",
+            otherScopes: 'Autres portées',
+            shareTitle: "Part de chaque livre dans l'exécution",
+            shareCaption:
+                'Un tout en quelques parts se lit en anneau. Les chiffres sont à côté, car un anneau dit la forme et non la valeur.',
+            problemsTitle: "Les problèmes de l'exécution par portée",
+            problemsCaption:
+                'Un tout en quelques parts se lit en anneau. Chaque problème enregistré est compté ici, quelle que soit sa portée.',
+            unscoped: 'Portée non indiquée',
             was: 'Exécution précédente',
             compareTo: 'Comparer à',
             noComparison: 'Aucune comparaison',
@@ -5945,6 +5968,11 @@ const fr: SourceCatalogue = {
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",
         defaultIs: 'La valeur par défaut est {text}.',
+        defaultOption: 'Défaut ({value})',
+        changed: 'modifié',
+        noChanges: 'Aucun changement',
+        oneChange: '1 changement',
+        changes: '{count} changements',
         schema: {
             xml: 'XML ORE',
             format: 'Format',

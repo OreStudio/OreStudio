@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_instrument_options_response
-    list_instrument_options(const messaging::list_instrument_options_request& request);
-    messaging::get_instrument_option_response
-    get_instrument_option(const messaging::get_instrument_option_request& request);
-    messaging::get_many_instrument_options_response
-    get_many_instrument_options(const messaging::get_many_instrument_options_request& request);
-    messaging::put_instrument_option_response
-    put_instrument_option(const messaging::put_instrument_option_request& request);
-    messaging::put_many_instrument_options_response
-    put_many_instrument_options(const messaging::put_many_instrument_options_request& request);
-    messaging::delete_instrument_option_response
-    delete_instrument_option(const messaging::delete_instrument_option_request& request);
-    messaging::delete_many_instrument_options_response delete_many_instrument_options(
-        const messaging::delete_many_instrument_options_request& request);
-    messaging::list_instrument_option_versions_response list_instrument_option_versions(
-        const messaging::list_instrument_option_versions_request& request);
-    messaging::get_instrument_option_version_response
-    get_instrument_option_version(const messaging::get_instrument_option_version_request& request);
+    ::ores::trading::messaging::list_instrument_options_response list_instrument_options(
+        const ::ores::trading::messaging::list_instrument_options_request& request);
+    ::ores::trading::messaging::get_instrument_option_response
+    get_instrument_option(const ::ores::trading::messaging::get_instrument_option_request& request);
+    ::ores::trading::messaging::get_many_instrument_options_response get_many_instrument_options(
+        const ::ores::trading::messaging::get_many_instrument_options_request& request);
+    ::ores::trading::messaging::put_instrument_option_response
+    put_instrument_option(const ::ores::trading::messaging::put_instrument_option_request& request);
+    ::ores::trading::messaging::put_many_instrument_options_response put_many_instrument_options(
+        const ::ores::trading::messaging::put_many_instrument_options_request& request);
+    ::ores::trading::messaging::delete_instrument_option_response delete_instrument_option(
+        const ::ores::trading::messaging::delete_instrument_option_request& request);
+    ::ores::trading::messaging::delete_many_instrument_options_response
+    delete_many_instrument_options(
+        const ::ores::trading::messaging::delete_many_instrument_options_request& request);
+    ::ores::trading::messaging::list_instrument_option_versions_response
+    list_instrument_option_versions(
+        const ::ores::trading::messaging::list_instrument_option_versions_request& request);
+    ::ores::trading::messaging::get_instrument_option_version_response
+    get_instrument_option_version(
+        const ::ores::trading::messaging::get_instrument_option_version_request& request);
     /**@}*/
 
     /**
@@ -193,9 +196,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::instrument_option_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::instrument_option& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::instrument_option_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::instrument_option& out);
 };
 
 }

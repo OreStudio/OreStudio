@@ -27,6 +27,7 @@
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -46,9 +47,6 @@ using ores::trading::domain::bond_instrument;
 using ores::trading::domain::bond_issue;
 using ores::trading::domain::economic_digest;
 using ores::trading::domain::trade;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 /*
  * Two text fields that sit next to each other in the canonical form. The
@@ -118,7 +116,7 @@ bond_instrument make_bond_instrument(std::string_view notional) {
 
 using namespace ores::logging;
 
-TEST_CASE("economic_digest_is_stable_for_the_same_value", tags) {
+TEST_CASE("economic_digest_is_stable_for_the_same_value", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto sut = make_bond_instrument("1000000.25");
@@ -131,7 +129,7 @@ TEST_CASE("economic_digest_is_stable_for_the_same_value", tags) {
     CHECK(first != economic_digest(bond_instrument{}));
 }
 
-TEST_CASE("economic_digest_changes_when_an_economic_field_changes", tags) {
+TEST_CASE("economic_digest_changes_when_an_economic_field_changes", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto baseline = make_bond_instrument("1000000.25");
@@ -146,7 +144,7 @@ TEST_CASE("economic_digest_changes_when_an_economic_field_changes", tags) {
     CHECK(economic_digest(absent) != economic_digest(baseline));
 }
 
-TEST_CASE("economic_digest_changes_when_an_economic_text_changes", tags) {
+TEST_CASE("economic_digest_changes_when_an_economic_text_changes", "[domain]") {
     auto lg(make_logger(test_suite));
 
     bond_amortization_data baseline;
@@ -167,7 +165,7 @@ TEST_CASE("economic_digest_changes_when_an_economic_text_changes", tags) {
  * digest that moved here would move the trade's external version for no
  * reason.
  */
-TEST_CASE("economic_digest_ignores_identity_and_audit_fields", tags) {
+TEST_CASE("economic_digest_ignores_identity_and_audit_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto baseline = make_bond_instrument("1000000.25");
@@ -193,7 +191,7 @@ TEST_CASE("economic_digest_ignores_identity_and_audit_fields", tags) {
     CHECK(economic_digest(changed) == expected);
 }
 
-TEST_CASE("economic_digest_of_a_trade_ignores_its_audit_tail", tags) {
+TEST_CASE("economic_digest_of_a_trade_ignores_its_audit_tail", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade baseline;
@@ -226,7 +224,7 @@ TEST_CASE("economic_digest_of_a_trade_ignores_its_audit_tail", tags) {
     CHECK(economic_digest(changed) == expected);
 }
 
-TEST_CASE("economic_digest_of_a_trade_moves_with_a_classification", tags) {
+TEST_CASE("economic_digest_of_a_trade_moves_with_a_classification", "[domain]") {
     auto lg(make_logger(test_suite));
 
     trade baseline;
@@ -241,7 +239,7 @@ TEST_CASE("economic_digest_of_a_trade_moves_with_a_classification", tags) {
     CHECK(economic_digest(baseline) != economic_digest(amended));
 }
 
-TEST_CASE("economic_digest_treats_a_sequence_as_ordered_elements", tags) {
+TEST_CASE("economic_digest_treats_a_sequence_as_ordered_elements", "[domain]") {
     auto lg(make_logger(test_suite));
 
     bond_fixed_leg_data ascending;
@@ -258,7 +256,7 @@ TEST_CASE("economic_digest_treats_a_sequence_as_ordered_elements", tags) {
     CHECK(economic_digest(ascending) != economic_digest(descending));
 }
 
-TEST_CASE("economic_digest_does_not_collide_on_ambiguous_concatenation", tags) {
+TEST_CASE("economic_digest_does_not_collide_on_ambiguous_concatenation", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const ambiguous_pair left{"ab", "c"};
@@ -277,7 +275,7 @@ TEST_CASE("economic_digest_does_not_collide_on_ambiguous_concatenation", tags) {
  * customer agreed to, so the digest must move. The issue's own surrogate key
  * is still identity, so re-keying it must not.
  */
-TEST_CASE("economic_digest_moves_with_an_external_identifier", tags) {
+TEST_CASE("economic_digest_moves_with_an_external_identifier", "[domain]") {
     auto lg(make_logger(test_suite));
 
     bond_issue baseline;
@@ -302,7 +300,7 @@ TEST_CASE("economic_digest_moves_with_an_external_identifier", tags) {
     CHECK(economic_digest(re_keyed) == economic_digest(baseline));
 }
 
-TEST_CASE("economic_digest_follows_the_declaration_and_not_the_names", tags) {
+TEST_CASE("economic_digest_follows_the_declaration_and_not_the_names", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const declared_against_its_names baseline{"100", "party-1"};

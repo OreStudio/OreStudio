@@ -27,14 +27,8 @@
 #include "ores.iam.api/generators/tenant_type_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::iam::generators;
 using namespace ores::logging;
@@ -42,7 +36,7 @@ using ores::utility::generation::generation_context;
 
 // --- tenant ---
 
-TEST_CASE("tenant_generator_produces_valid_instance", tags) {
+TEST_CASE("tenant_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_tenant(ctx);
@@ -62,7 +56,7 @@ TEST_CASE("tenant_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("tenant_generator_produces_multiple_instances", tags) {
+TEST_CASE("tenant_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -77,7 +71,7 @@ TEST_CASE("tenant_generator_produces_multiple_instances", tags) {
 
 // --- tenant_status ---
 
-TEST_CASE("tenant_status_generator_produces_valid_instance", tags) {
+TEST_CASE("tenant_status_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_tenant_status(ctx);
@@ -93,7 +87,7 @@ TEST_CASE("tenant_status_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("tenant_status_generator_produces_multiple_instances", tags) {
+TEST_CASE("tenant_status_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -107,7 +101,7 @@ TEST_CASE("tenant_status_generator_produces_multiple_instances", tags) {
 
 // --- tenant_type ---
 
-TEST_CASE("tenant_type_generator_produces_valid_instance", tags) {
+TEST_CASE("tenant_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_tenant_type(ctx);
@@ -123,7 +117,7 @@ TEST_CASE("tenant_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("tenant_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("tenant_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -137,7 +131,7 @@ TEST_CASE("tenant_type_generator_produces_multiple_instances", tags) {
 
 // --- role ---
 
-TEST_CASE("role_generator_produces_valid_instance", tags) {
+TEST_CASE("role_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_role(ctx);
@@ -152,7 +146,7 @@ TEST_CASE("role_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("role_generator_produces_multiple_instances", tags) {
+TEST_CASE("role_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -167,7 +161,7 @@ TEST_CASE("role_generator_produces_multiple_instances", tags) {
 
 // --- permission ---
 
-TEST_CASE("permission_generator_produces_valid_instance", tags) {
+TEST_CASE("permission_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_permission(ctx);
@@ -177,7 +171,7 @@ TEST_CASE("permission_generator_produces_valid_instance", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("permission_generator_produces_multiple_instances", tags) {
+TEST_CASE("permission_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -192,7 +186,7 @@ TEST_CASE("permission_generator_produces_multiple_instances", tags) {
 
 // --- session ---
 
-TEST_CASE("session_generator_produces_valid_instance", tags) {
+TEST_CASE("session_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_session(ctx);
@@ -205,7 +199,7 @@ TEST_CASE("session_generator_produces_valid_instance", tags) {
     CHECK(sut.protocol == "binary");
 }
 
-TEST_CASE("session_generator_produces_multiple_instances", tags) {
+TEST_CASE("session_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -220,7 +214,7 @@ TEST_CASE("session_generator_produces_multiple_instances", tags) {
 
 // --- login_info ---
 
-TEST_CASE("login_info_generator_produces_valid_instance", tags) {
+TEST_CASE("login_info_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_login_info(ctx);
@@ -232,7 +226,7 @@ TEST_CASE("login_info_generator_produces_valid_instance", tags) {
     CHECK(sut.password_reset_required == false);
 }
 
-TEST_CASE("login_info_generator_produces_multiple_instances", tags) {
+TEST_CASE("login_info_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -246,7 +240,7 @@ TEST_CASE("login_info_generator_produces_multiple_instances", tags) {
 
 // --- account_role ---
 
-TEST_CASE("account_role_generator_produces_valid_instance", tags) {
+TEST_CASE("account_role_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_account_role(ctx);
@@ -258,7 +252,7 @@ TEST_CASE("account_role_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("account_role_generator_produces_multiple_instances", tags) {
+TEST_CASE("account_role_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

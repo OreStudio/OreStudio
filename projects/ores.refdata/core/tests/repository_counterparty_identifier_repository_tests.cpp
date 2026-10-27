@@ -29,6 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -37,13 +38,6 @@
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::counterparty_identifier;
 using ores::refdata::repository::counterparty_identifier_repository;
@@ -51,7 +45,7 @@ using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_counterparty_identifier", tags) {
+TEST_CASE("write_single_counterparty_identifier", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -75,7 +69,7 @@ TEST_CASE("write_single_counterparty_identifier", tags) {
     CHECK(read_counterparty_identifiers[0].id_value == ci.id_value);
 }
 
-TEST_CASE("write_multiple_counterparty_identifiers", tags) {
+TEST_CASE("write_multiple_counterparty_identifiers", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -105,7 +99,7 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     }
 }
 
-TEST_CASE("read_latest_counterparty_identifiers", tags) {
+TEST_CASE("read_latest_counterparty_identifiers", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -138,7 +132,7 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     }
 }
 
-TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
+TEST_CASE("read_latest_counterparty_identifier_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -169,7 +163,7 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     CHECK(read_counterparty_identifiers[0].id_value == original_id_value + "_v2");
 }
 
-TEST_CASE("read_nonexistent_counterparty_identifier_id", tags) {
+TEST_CASE("read_nonexistent_counterparty_identifier_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

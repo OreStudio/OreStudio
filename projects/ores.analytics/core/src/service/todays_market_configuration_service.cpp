@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::todays_market_configuration>
-read_one(repository::todays_market_configuration_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::todays_market_configuration_key& key) {
+todays_market_configuration_read_one(repository::todays_market_configuration_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::todays_market_configuration_key& key) {
     return repo.read_latest_by_configuration_id(ctx, key.configuration_id);
 }
 
@@ -86,7 +86,8 @@ read_one(repository::todays_market_configuration_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::todays_market_configuration_key key_from(const domain::todays_market_configuration& v) {
+messaging::todays_market_configuration_key
+todays_market_configuration_key_from(const domain::todays_market_configuration& v) {
     messaging::todays_market_configuration_key key;
     key.configuration_id = v.configuration_id;
     return key;
@@ -100,7 +101,7 @@ messaging::todays_market_configuration_key key_from(const domain::todays_market_
  * database's to state, and are set after this conversion.
  */
 domain::todays_market_configuration
-to_domain(const messaging::todays_market_configuration_write& write) {
+todays_market_configuration_to_domain(const messaging::todays_market_configuration_write& write) {
     domain::todays_market_configuration v;
     v.id = write.id;
     v.todays_market_config_id = write.todays_market_config_id;
@@ -191,7 +192,7 @@ messaging::get_todays_market_configuration_response
 todays_market_configuration_service::get_todays_market_configuration(
     const messaging::get_todays_market_configuration_request& request) {
     messaging::get_todays_market_configuration_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = todays_market_configuration_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration"});
@@ -212,7 +213,7 @@ todays_market_configuration_service::get_many_todays_market_configurations(
     for (const auto& k : request.keys) {
         messaging::todays_market_configuration_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = todays_market_configuration_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.todays_market_configuration = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -229,7 +230,8 @@ todays_market_configuration_service::put_todays_market_configuration(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = todays_market_configuration_read_one(
+        repo_, ctx_, todays_market_configuration_key_from(value));
     if (!written.empty())
         response.todays_market_configuration = std::move(written.front());
     return response;
@@ -262,7 +264,8 @@ todays_market_configuration_service::put_many_todays_market_configurations(
     repo_.write(ctx_, batch, claims);
     response.configurations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = todays_market_configuration_read_one(
+            repo_, ctx_, todays_market_configuration_key_from(value));
         response.configurations.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -286,7 +289,7 @@ todays_market_configuration_service::delete_todays_market_configuration(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = todays_market_configuration_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration"});
@@ -304,7 +307,8 @@ todays_market_configuration_service::delete_todays_market_configuration(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                todays_market_configuration_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "todays_market_configuration",
@@ -346,7 +350,7 @@ todays_market_configuration_service::delete_many_todays_market_configurations(
     std::vector<domain::todays_market_configuration> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = todays_market_configuration_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -375,7 +379,7 @@ todays_market_configuration_service::list_todays_market_configuration_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = todays_market_configuration_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration"});
@@ -400,7 +404,8 @@ todays_market_configuration_service::get_todays_market_configuration_version(
     messaging::get_todays_market_configuration_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.todays_market_configuration);
+    const auto named =
+        todays_market_configuration_read_one(repo_, ctx_, request.key.todays_market_configuration);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration"});
@@ -424,8 +429,9 @@ ores::utility::domain::result todays_market_configuration_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = todays_market_configuration_to_domain(change.write);
+    const auto current = todays_market_configuration_read_one(
+        repo_, ctx_, todays_market_configuration_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -522,7 +528,7 @@ todays_market_configuration_service::get_configuration_by_configuration_id(
                                << configuration_id;
     messaging::todays_market_configuration_key k;
     k.configuration_id = configuration_id;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = todays_market_configuration_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

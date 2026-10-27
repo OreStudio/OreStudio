@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string fx_digital_option_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -53,8 +53,9 @@ std::string convert_to_table(const std::vector<fx_digital_option_instrument>& v)
     for ([[maybe_unused]] const auto& fdoi : v) {
         table << fdoi.identity.trade_id << fdoi.identity.trade_type_code << fdoi.option_type
               << fdoi.expiry_date << fdoi.payoff_currency << fdoi.payoff_amount
-              << fdoi.foreign_currency << fdoi.domestic_currency << opt_str(fdoi.strike)
-              << fdoi.audit.recorded_at << fort::endr;
+              << fdoi.foreign_currency << fdoi.domestic_currency
+              << fx_digital_option_instrument_opt_str(fdoi.strike) << fdoi.audit.recorded_at
+              << fort::endr;
     }
     return table.to_string();
 }

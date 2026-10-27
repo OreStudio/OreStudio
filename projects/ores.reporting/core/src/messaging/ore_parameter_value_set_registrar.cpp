@@ -39,7 +39,7 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view ore_parameter_value_set_queue_group = "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_ore_parameter_value_set_handlers(
@@ -51,41 +51,41 @@ std::vector<ores::nats::service::subscription> register_ore_parameter_value_set_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_ore_parameter_value_sets_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->list_ore_parameter_value_sets(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_ore_parameter_value_set_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->get_ore_parameter_value_set(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_ore_parameter_value_sets_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->get_many_ore_parameter_value_sets(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_ore_parameter_value_set_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->put_ore_parameter_value_set(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_ore_parameter_value_sets_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->put_many_ore_parameter_value_sets(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_ore_parameter_value_set_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->delete_ore_parameter_value_set(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_ore_parameter_value_sets_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->delete_many_ore_parameter_value_sets(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_ore_parameter_value_set_versions_request::nats_subject,
-                                        queue_group,
+                                        ore_parameter_value_set_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_ore_parameter_value_set_versions(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         get_ore_parameter_value_set_version_request::nats_subject,
-        queue_group,
+        ore_parameter_value_set_queue_group,
         [h](ores::nats::message msg) { h->get_ore_parameter_value_set_version(std::move(msg)); }));
     return subs;
 }

@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <filesystem>
@@ -30,9 +31,6 @@
 #include <utility>
 
 namespace {
-
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[filesystem]");
 
 /**
  * @brief Moves a guard into a short-lived owner and reports the path that
@@ -50,7 +48,7 @@ using namespace ores::logging;
 using ores::platform::filesystem::scoped_temp_directory;
 using ores::platform::filesystem::scoped_temp_file;
 
-TEST_CASE("create_temp_file_at_path_that_exists", tags) {
+TEST_CASE("create_temp_file_at_path_that_exists", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;
@@ -59,7 +57,7 @@ TEST_CASE("create_temp_file_at_path_that_exists", tags) {
     CHECK(std::filesystem::exists(sut.path()));
 }
 
-TEST_CASE("delete_temp_file_on_destruction", tags) {
+TEST_CASE("delete_temp_file_on_destruction", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     std::filesystem::path temp_path;
@@ -72,7 +70,7 @@ TEST_CASE("delete_temp_file_on_destruction", tags) {
     CHECK(!std::filesystem::exists(temp_path));
 }
 
-TEST_CASE("place_temp_file_under_system_temp_directory", tags) {
+TEST_CASE("place_temp_file_under_system_temp_directory", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;
@@ -88,7 +86,7 @@ TEST_CASE("place_temp_file_under_system_temp_directory", tags) {
     CHECK(std::filesystem::equivalent(parent, temp_dir));
 }
 
-TEST_CASE("create_temp_directory_at_path_that_exists", tags) {
+TEST_CASE("create_temp_directory_at_path_that_exists", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory sut;
@@ -98,7 +96,7 @@ TEST_CASE("create_temp_directory_at_path_that_exists", tags) {
     CHECK(std::filesystem::is_directory(sut.path()));
 }
 
-TEST_CASE("delete_temp_directory_and_its_contents_on_destruction", tags) {
+TEST_CASE("delete_temp_directory_and_its_contents_on_destruction", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     std::filesystem::path temp_path;
@@ -113,7 +111,7 @@ TEST_CASE("delete_temp_directory_and_its_contents_on_destruction", tags) {
     CHECK(!std::filesystem::exists(temp_path));
 }
 
-TEST_CASE("place_temp_directory_under_system_temp_directory", tags) {
+TEST_CASE("place_temp_directory_under_system_temp_directory", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory sut;
@@ -126,7 +124,7 @@ TEST_CASE("place_temp_directory_under_system_temp_directory", tags) {
     CHECK(std::filesystem::equivalent(parent, temp_dir));
 }
 
-TEST_CASE("create_distinct_paths_for_consecutive_temp_files", tags) {
+TEST_CASE("create_distinct_paths_for_consecutive_temp_files", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file first;
@@ -136,7 +134,7 @@ TEST_CASE("create_distinct_paths_for_consecutive_temp_files", tags) {
     CHECK(first.path() != second.path());
 }
 
-TEST_CASE("create_distinct_paths_for_consecutive_temp_directories", tags) {
+TEST_CASE("create_distinct_paths_for_consecutive_temp_directories", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory first;
@@ -146,7 +144,7 @@ TEST_CASE("create_distinct_paths_for_consecutive_temp_directories", tags) {
     CHECK(first.path() != second.path());
 }
 
-TEST_CASE("create_distinct_paths_for_many_temp_files", tags) {
+TEST_CASE("create_distinct_paths_for_many_temp_files", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     const std::size_t count = 100;
@@ -160,7 +158,7 @@ TEST_CASE("create_distinct_paths_for_many_temp_files", tags) {
     CHECK(paths.size() == count);
 }
 
-TEST_CASE("create_temp_file_as_a_regular_file", tags) {
+TEST_CASE("create_temp_file_as_a_regular_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file sut;
@@ -170,7 +168,7 @@ TEST_CASE("create_temp_file_as_a_regular_file", tags) {
     CHECK(!std::filesystem::is_directory(sut.path()));
 }
 
-TEST_CASE("hold_content_written_to_temp_file", tags) {
+TEST_CASE("hold_content_written_to_temp_file", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     const std::string expected_content = "Hello, World!";
@@ -188,7 +186,7 @@ TEST_CASE("hold_content_written_to_temp_file", tags) {
     CHECK(content == expected_content);
 }
 
-TEST_CASE("keep_temp_file_on_disk_after_release", tags) {
+TEST_CASE("keep_temp_file_on_disk_after_release", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     std::filesystem::path temp_path;
@@ -205,7 +203,7 @@ TEST_CASE("keep_temp_file_on_disk_after_release", tags) {
     std::filesystem::remove(temp_path, ec);
 }
 
-TEST_CASE("keep_temp_directory_on_disk_after_release", tags) {
+TEST_CASE("keep_temp_directory_on_disk_after_release", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     std::filesystem::path temp_path;
@@ -222,7 +220,7 @@ TEST_CASE("keep_temp_directory_on_disk_after_release", tags) {
     std::filesystem::remove_all(temp_path, ec);
 }
 
-TEST_CASE("keep_temp_file_of_moved_to_guard_after_moved_from_guard_dies", tags) {
+TEST_CASE("keep_temp_file_of_moved_to_guard_after_moved_from_guard_dies", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file source;
@@ -237,7 +235,7 @@ TEST_CASE("keep_temp_file_of_moved_to_guard_after_moved_from_guard_dies", tags) 
     CHECK(!std::filesystem::exists(source_path));
 }
 
-TEST_CASE("keep_temp_directory_of_moved_to_guard_after_moved_from_guard_dies", tags) {
+TEST_CASE("keep_temp_directory_of_moved_to_guard_after_moved_from_guard_dies", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory source;
@@ -252,7 +250,7 @@ TEST_CASE("keep_temp_directory_of_moved_to_guard_after_moved_from_guard_dies", t
     CHECK(!std::filesystem::exists(source_path));
 }
 
-TEST_CASE("keep_temp_file_held_by_another_owner_when_moved_from_guard_dies", tags) {
+TEST_CASE("keep_temp_file_held_by_another_owner_when_moved_from_guard_dies", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_file source;
@@ -270,7 +268,7 @@ TEST_CASE("keep_temp_file_held_by_another_owner_when_moved_from_guard_dies", tag
     CHECK(!std::filesystem::exists(evicted_path));
 }
 
-TEST_CASE("keep_temp_directory_held_by_another_owner_when_moved_from_guard_dies", tags) {
+TEST_CASE("keep_temp_directory_held_by_another_owner_when_moved_from_guard_dies", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory source;

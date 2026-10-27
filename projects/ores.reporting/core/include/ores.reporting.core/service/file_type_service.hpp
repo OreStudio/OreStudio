@@ -75,32 +75,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_file_types_response
-    list_file_types(const messaging::list_file_types_request& request);
-    messaging::get_file_type_response
-    get_file_type(const messaging::get_file_type_request& request);
-    messaging::get_many_file_types_response
-    get_many_file_types(const messaging::get_many_file_types_request& request);
-    messaging::put_file_type_response
-    put_file_type(const messaging::put_file_type_request& request);
-    messaging::put_many_file_types_response
-    put_many_file_types(const messaging::put_many_file_types_request& request);
-    messaging::delete_file_type_response
-    delete_file_type(const messaging::delete_file_type_request& request);
-    messaging::delete_many_file_types_response
-    delete_many_file_types(const messaging::delete_many_file_types_request& request);
-    messaging::list_by_analytic_type_code_file_types_response list_by_analytic_type_code_file_types(
-        const messaging::list_by_analytic_type_code_file_types_request& request);
-    messaging::list_by_configuration_type_code_file_types_response
+    ::ores::reporting::messaging::list_file_types_response
+    list_file_types(const ::ores::reporting::messaging::list_file_types_request& request);
+    ::ores::reporting::messaging::get_file_type_response
+    get_file_type(const ::ores::reporting::messaging::get_file_type_request& request);
+    ::ores::reporting::messaging::get_many_file_types_response
+    get_many_file_types(const ::ores::reporting::messaging::get_many_file_types_request& request);
+    ::ores::reporting::messaging::put_file_type_response
+    put_file_type(const ::ores::reporting::messaging::put_file_type_request& request);
+    ::ores::reporting::messaging::put_many_file_types_response
+    put_many_file_types(const ::ores::reporting::messaging::put_many_file_types_request& request);
+    ::ores::reporting::messaging::delete_file_type_response
+    delete_file_type(const ::ores::reporting::messaging::delete_file_type_request& request);
+    ::ores::reporting::messaging::delete_many_file_types_response delete_many_file_types(
+        const ::ores::reporting::messaging::delete_many_file_types_request& request);
+    ::ores::reporting::messaging::list_by_analytic_type_code_file_types_response
+    list_by_analytic_type_code_file_types(
+        const ::ores::reporting::messaging::list_by_analytic_type_code_file_types_request& request);
+    ::ores::reporting::messaging::list_by_configuration_type_code_file_types_response
     list_by_configuration_type_code_file_types(
-        const messaging::list_by_configuration_type_code_file_types_request& request);
-    messaging::list_by_produced_by_file_type_code_file_types_response
+        const ::ores::reporting::messaging::list_by_configuration_type_code_file_types_request&
+            request);
+    ::ores::reporting::messaging::list_by_produced_by_file_type_code_file_types_response
     list_by_produced_by_file_type_code_file_types(
-        const messaging::list_by_produced_by_file_type_code_file_types_request& request);
-    messaging::list_file_type_versions_response
-    list_file_type_versions(const messaging::list_file_type_versions_request& request);
-    messaging::get_file_type_version_response
-    get_file_type_version(const messaging::get_file_type_version_request& request);
+        const ::ores::reporting::messaging::list_by_produced_by_file_type_code_file_types_request&
+            request);
+    ::ores::reporting::messaging::list_file_type_versions_response list_file_type_versions(
+        const ::ores::reporting::messaging::list_file_type_versions_request& request);
+    ::ores::reporting::messaging::get_file_type_version_response get_file_type_version(
+        const ::ores::reporting::messaging::get_file_type_version_request& request);
     /**@}*/
 
     /**
@@ -256,9 +259,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::file_type_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::file_type& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::reporting::messaging::file_type_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::file_type& out);
 };
 
 }

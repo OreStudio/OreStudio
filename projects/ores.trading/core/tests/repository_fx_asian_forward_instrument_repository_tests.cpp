@@ -22,15 +22,13 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.repository.fx_asian_forward.tests");
-const std::string tags("[repository][fx][fx_asian_forward]");
 
 using ores::testing::database_helper;
 using ores::trading::repository::fx_asian_forward_instrument_repository;
@@ -69,7 +67,8 @@ fx_asian_forward_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("fx_asian_forward_instrument_write_and_read_latest", tags) {
+TEST_CASE("fx_asian_forward_instrument_write_and_read_latest",
+          "[repository][fx][fx_asian_forward]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -98,7 +97,7 @@ TEST_CASE("fx_asian_forward_instrument_write_and_read_latest", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read FX asian forward instrument: " << read[0];
 }
 
-TEST_CASE("fx_asian_forward_instrument_read_nonexistent", tags) {
+TEST_CASE("fx_asian_forward_instrument_read_nonexistent", "[repository][fx][fx_asian_forward]") {
     database_helper h;
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
@@ -117,7 +116,7 @@ TEST_CASE("fx_asian_forward_instrument_read_nonexistent", tags) {
     CHECK(read.empty());
 }
 
-TEST_CASE("fx_asian_forward_instrument_remove", tags) {
+TEST_CASE("fx_asian_forward_instrument_remove", "[repository][fx][fx_asian_forward]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

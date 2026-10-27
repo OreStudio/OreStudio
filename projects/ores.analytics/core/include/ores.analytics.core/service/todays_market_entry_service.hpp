@@ -77,31 +77,37 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_todays_market_entries_response
-    list_todays_market_entries(const messaging::list_todays_market_entries_request& request);
-    messaging::get_todays_market_entry_response
-    get_todays_market_entry(const messaging::get_todays_market_entry_request& request);
-    messaging::get_many_todays_market_entries_response get_many_todays_market_entries(
-        const messaging::get_many_todays_market_entries_request& request);
-    messaging::put_todays_market_entry_response
-    put_todays_market_entry(const messaging::put_todays_market_entry_request& request);
-    messaging::put_many_todays_market_entries_response put_many_todays_market_entries(
-        const messaging::put_many_todays_market_entries_request& request);
-    messaging::delete_todays_market_entry_response
-    delete_todays_market_entry(const messaging::delete_todays_market_entry_request& request);
-    messaging::delete_many_todays_market_entries_response delete_many_todays_market_entries(
-        const messaging::delete_many_todays_market_entries_request& request);
-    messaging::list_by_todays_market_config_id_todays_market_entries_response
+    ::ores::analytics::messaging::list_todays_market_entries_response list_todays_market_entries(
+        const ::ores::analytics::messaging::list_todays_market_entries_request& request);
+    ::ores::analytics::messaging::get_todays_market_entry_response get_todays_market_entry(
+        const ::ores::analytics::messaging::get_todays_market_entry_request& request);
+    ::ores::analytics::messaging::get_many_todays_market_entries_response
+    get_many_todays_market_entries(
+        const ::ores::analytics::messaging::get_many_todays_market_entries_request& request);
+    ::ores::analytics::messaging::put_todays_market_entry_response put_todays_market_entry(
+        const ::ores::analytics::messaging::put_todays_market_entry_request& request);
+    ::ores::analytics::messaging::put_many_todays_market_entries_response
+    put_many_todays_market_entries(
+        const ::ores::analytics::messaging::put_many_todays_market_entries_request& request);
+    ::ores::analytics::messaging::delete_todays_market_entry_response delete_todays_market_entry(
+        const ::ores::analytics::messaging::delete_todays_market_entry_request& request);
+    ::ores::analytics::messaging::delete_many_todays_market_entries_response
+    delete_many_todays_market_entries(
+        const ::ores::analytics::messaging::delete_many_todays_market_entries_request& request);
+    ::ores::analytics::messaging::list_by_todays_market_config_id_todays_market_entries_response
     list_by_todays_market_config_id_todays_market_entries(
-        const messaging::list_by_todays_market_config_id_todays_market_entries_request& request);
-    messaging::list_by_todays_market_collection_id_todays_market_entries_response
+        const ::ores::analytics::messaging::
+            list_by_todays_market_config_id_todays_market_entries_request& request);
+    ::ores::analytics::messaging::list_by_todays_market_collection_id_todays_market_entries_response
     list_by_todays_market_collection_id_todays_market_entries(
-        const messaging::list_by_todays_market_collection_id_todays_market_entries_request&
-            request);
-    messaging::list_todays_market_entry_versions_response list_todays_market_entry_versions(
-        const messaging::list_todays_market_entry_versions_request& request);
-    messaging::get_todays_market_entry_version_response get_todays_market_entry_version(
-        const messaging::get_todays_market_entry_version_request& request);
+        const ::ores::analytics::messaging::
+            list_by_todays_market_collection_id_todays_market_entries_request& request);
+    ::ores::analytics::messaging::list_todays_market_entry_versions_response
+    list_todays_market_entry_versions(
+        const ::ores::analytics::messaging::list_todays_market_entry_versions_request& request);
+    ::ores::analytics::messaging::get_todays_market_entry_version_response
+    get_todays_market_entry_version(
+        const ::ores::analytics::messaging::get_todays_market_entry_version_request& request);
     /**@}*/
 
     /**
@@ -264,7 +270,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::todays_market_entry_change& change,
+    prepare_change(const ::ores::analytics::messaging::todays_market_entry_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::todays_market_entry& out);
 };

@@ -433,6 +433,11 @@ const pt: SourceCatalogue = {
             reasonHint: '{who} lê isto. Obrigatório para recusar; opcional para conceder.',
             give: 'Conceder {role}',
             refuse: 'Recusar',
+            hold: 'Suspender',
+            holdReason: 'Motivo da suspensão',
+            holdReasonHint:
+                'Escolhido na lista de referência, para que o relatório de pedidos suspensos seja agrupado por motivo. Necessário para suspender.',
+            chooseHoldReason: 'Escolher um motivo',
             decided: 'Decidido',
             notFound: 'Este pedido não está aqui. Pode ter sido retirado, ou pode não ser seu.',
             approve: 'Aprovar',
@@ -4431,6 +4436,15 @@ const pt: SourceCatalogue = {
                 notFound: 'Esta convenção não existe.',
                 readFailed: 'Não foi possível ler a convenção. {message}',
                 shared: 'Todas as partes leem esta convenção. É detida uma única vez para o inquilino.',
+                otherParty:
+                    'Esta convenção pertence a outra parte. Mude para essa parte para alterá-la.',
+                edit: 'Editar termos',
+                save: 'Salvar',
+                conflict:
+                    'Esta convenção mudou desde que você a abriu. Leia-a de novo antes de alterá-la.',
+                reload: 'Ler de novo',
+                notEditable:
+                    'Os termos deste tipo são detidos em duas partes, por isso esta página ainda não os altera.',
             },
             search: 'Pesquisar tipos',
             assetClass: 'Classe de ativos',
@@ -5531,6 +5545,15 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            unreadRows: '{count} linhas não puderam ser lidas e não são mostradas.',
+            otherScopes: 'Outros âmbitos',
+            shareTitle: 'Peso de cada livro na execução',
+            shareCaption:
+                'Um todo em poucas partes lê-se em anel. Os números ficam ao lado, porque um anel diz a forma e não o valor.',
+            problemsTitle: 'Os problemas da execução por âmbito',
+            problemsCaption:
+                'Um todo em poucas partes lê-se em anel. Cada problema registado é contado aqui, seja qual for o âmbito.',
+            unscoped: 'Âmbito não indicado',
             was: 'Execução anterior',
             compareTo: 'Comparar com',
             noComparison: 'Sem comparação',
@@ -5902,6 +5925,11 @@ const pt: SourceCatalogue = {
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',
         defaultIs: 'O valor por omissão é {text}.',
+        defaultOption: 'Padrão ({value})',
+        changed: 'alterado',
+        noChanges: 'Nenhuma alteração ainda',
+        oneChange: '1 alteração',
+        changes: '{count} alterações',
         schema: {
             xml: 'XML ORE',
             format: 'Formato',

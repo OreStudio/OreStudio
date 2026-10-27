@@ -65,7 +65,7 @@ Sends =decide_approval_request_request= and prints =decide_approval_request_resp
 The command is shaped like this:
 
 #+begin_example
-approval_operations decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>]
+approval_operations decide-approval <request_id> <decision_code> <comment> <part_code> [--version <v>] [--hold_reason_code <v>]
 #+end_example
 
 It is addressed at =inbox.v1.ops.decide_approval=.

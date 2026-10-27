@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "test_suite.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -34,9 +35,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.core.repository.bond_leg_amount.tests");
-const std::string tags("[repository][bond_leg_amount][decimal]");
 
 using ores::testing::database_helper;
 using ores::trading::domain::bond_leg_amount;
@@ -119,7 +117,7 @@ std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
 
 }
 
-TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", tags) {
+TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", "[repository][bond_leg_amount][decimal]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -154,7 +152,8 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", tags) {
         repo.remove(ctx, id_str, "trs_funding", "1", "notional", std::to_string(i + 1));
 }
 
-TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", tags) {
+TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round",
+          "[repository][bond_leg_amount][decimal]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -178,7 +177,8 @@ TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", tags) {
     repo.remove(ctx, id_str, "trs_funding", "1", "notional", "1");
 }
 
-TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", tags) {
+TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column",
+          "[repository][bond_leg_amount][decimal]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

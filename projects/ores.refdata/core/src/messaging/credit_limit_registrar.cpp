@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view credit_limit_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,47 +49,47 @@ register_credit_limit_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<credit_limit_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_credit_limits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_credit_limits(std::move(msg));
-        }));
+        list_credit_limits_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->list_credit_limits(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_credit_limit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_credit_limit(std::move(msg));
-        }));
+        get_credit_limit_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->get_credit_limit(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_credit_limits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_credit_limits(std::move(msg));
-        }));
+        get_many_credit_limits_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->get_many_credit_limits(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_credit_limit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_credit_limit(std::move(msg));
-        }));
+        put_credit_limit_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->put_credit_limit(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_credit_limits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_credit_limits(std::move(msg));
-        }));
+        put_many_credit_limits_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->put_many_credit_limits(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_credit_limit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_credit_limit(std::move(msg));
-        }));
+        delete_credit_limit_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->delete_credit_limit(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_credit_limits_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_credit_limits(std::move(msg));
-        }));
+        delete_many_credit_limits_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_credit_limits(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_by_counterparty_id_credit_limits_request::nats_subject,
-                                        queue_group,
+                                        credit_limit_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_by_counterparty_id_credit_limits(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         list_credit_limit_versions_request::nats_subject,
-        queue_group,
+        credit_limit_queue_group,
         [h](ores::nats::message msg) { h->list_credit_limit_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_credit_limit_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_credit_limit_version(std::move(msg));
-        }));
+        get_credit_limit_version_request::nats_subject,
+        credit_limit_queue_group,
+        [h](ores::nats::message msg) { h->get_credit_limit_version(std::move(msg)); }));
     return subs;
 }
 

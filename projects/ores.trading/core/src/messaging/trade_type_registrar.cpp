@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view trade_type_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_trade_type_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<trade_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_trade_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_trade_types(std::move(msg));
-        }));
+        list_trade_types_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->list_trade_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_trade_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_trade_type_request::nats_subject, trade_type_queue_group, [h](ores::nats::message msg) {
             h->get_trade_type(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_trade_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_trade_types(std::move(msg));
-        }));
+        get_many_trade_types_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->get_many_trade_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_trade_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_trade_type_request::nats_subject, trade_type_queue_group, [h](ores::nats::message msg) {
             h->put_trade_type(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_trade_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_trade_types(std::move(msg));
-        }));
+        put_many_trade_types_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->put_many_trade_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_trade_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_trade_type(std::move(msg));
-        }));
+        delete_trade_type_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->delete_trade_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_trade_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_trade_types(std::move(msg));
-        }));
+        delete_many_trade_types_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_trade_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_trade_type_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_trade_type_versions(std::move(msg));
-        }));
+        list_trade_type_versions_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->list_trade_type_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_trade_type_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_trade_type_version(std::move(msg));
-        }));
+        get_trade_type_version_request::nats_subject,
+        trade_type_queue_group,
+        [h](ores::nats::message msg) { h->get_trade_type_version(std::move(msg)); }));
     return subs;
 }
 

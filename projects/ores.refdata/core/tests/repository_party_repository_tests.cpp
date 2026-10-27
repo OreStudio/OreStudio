@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,14 +42,7 @@ using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
-TEST_CASE("write_single_party", tags) {
+TEST_CASE("write_single_party", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -68,7 +62,7 @@ TEST_CASE("write_single_party", tags) {
     CHECK(read_parties[0].full_name == p.full_name);
 }
 
-TEST_CASE("write_multiple_parties", tags) {
+TEST_CASE("write_multiple_parties", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -94,7 +88,7 @@ TEST_CASE("write_multiple_parties", tags) {
     }
 }
 
-TEST_CASE("read_latest_parties", tags) {
+TEST_CASE("read_latest_parties", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -122,7 +116,7 @@ TEST_CASE("read_latest_parties", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_by_id", tags) {
+TEST_CASE("read_latest_party_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -149,7 +143,7 @@ TEST_CASE("read_latest_party_by_id", tags) {
     CHECK(read_parties[0].full_name == original_full_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_party_id", tags) {
+TEST_CASE("read_nonexistent_party_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -180,7 +174,7 @@ TEST_CASE("read_nonexistent_party_id", tags) {
     CHECK(keeper_rows[0].full_name == keeper.full_name);
 }
 
-TEST_CASE("get_hierarchy_returns_subtree_rooted_at_given_party", tags) {
+TEST_CASE("get_hierarchy_returns_subtree_rooted_at_given_party", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

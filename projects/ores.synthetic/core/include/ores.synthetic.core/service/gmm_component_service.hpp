@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_gmm_components_response
-    list_gmm_components(const messaging::list_gmm_components_request& request);
-    messaging::get_gmm_component_response
-    get_gmm_component(const messaging::get_gmm_component_request& request);
-    messaging::get_many_gmm_components_response
-    get_many_gmm_components(const messaging::get_many_gmm_components_request& request);
-    messaging::put_gmm_component_response
-    put_gmm_component(const messaging::put_gmm_component_request& request);
-    messaging::put_many_gmm_components_response
-    put_many_gmm_components(const messaging::put_many_gmm_components_request& request);
-    messaging::delete_gmm_component_response
-    delete_gmm_component(const messaging::delete_gmm_component_request& request);
-    messaging::delete_many_gmm_components_response
-    delete_many_gmm_components(const messaging::delete_many_gmm_components_request& request);
-    messaging::list_gmm_component_versions_response
-    list_gmm_component_versions(const messaging::list_gmm_component_versions_request& request);
-    messaging::get_gmm_component_version_response
-    get_gmm_component_version(const messaging::get_gmm_component_version_request& request);
+    ::ores::synthetic::messaging::list_gmm_components_response
+    list_gmm_components(const ::ores::synthetic::messaging::list_gmm_components_request& request);
+    ::ores::synthetic::messaging::get_gmm_component_response
+    get_gmm_component(const ::ores::synthetic::messaging::get_gmm_component_request& request);
+    ::ores::synthetic::messaging::get_many_gmm_components_response get_many_gmm_components(
+        const ::ores::synthetic::messaging::get_many_gmm_components_request& request);
+    ::ores::synthetic::messaging::put_gmm_component_response
+    put_gmm_component(const ::ores::synthetic::messaging::put_gmm_component_request& request);
+    ::ores::synthetic::messaging::put_many_gmm_components_response put_many_gmm_components(
+        const ::ores::synthetic::messaging::put_many_gmm_components_request& request);
+    ::ores::synthetic::messaging::delete_gmm_component_response
+    delete_gmm_component(const ::ores::synthetic::messaging::delete_gmm_component_request& request);
+    ::ores::synthetic::messaging::delete_many_gmm_components_response delete_many_gmm_components(
+        const ::ores::synthetic::messaging::delete_many_gmm_components_request& request);
+    ::ores::synthetic::messaging::list_gmm_component_versions_response list_gmm_component_versions(
+        const ::ores::synthetic::messaging::list_gmm_component_versions_request& request);
+    ::ores::synthetic::messaging::get_gmm_component_version_response get_gmm_component_version(
+        const ::ores::synthetic::messaging::get_gmm_component_version_request& request);
     /**@}*/
 
     /**
@@ -190,9 +190,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::gmm_component_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::gmm_component& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::synthetic::messaging::gmm_component_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::gmm_component& out);
 };
 
 }

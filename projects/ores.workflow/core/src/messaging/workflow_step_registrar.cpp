@@ -39,7 +39,7 @@
 namespace ores::workflow::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.workflow.service";
+static constexpr std::string_view workflow_step_queue_group = "ores.workflow.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,45 +49,45 @@ register_workflow_step_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<workflow_step_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_workflow_steps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_workflow_steps(std::move(msg));
-        }));
+        list_workflow_steps_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->list_workflow_steps(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_workflow_step_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_workflow_step(std::move(msg));
-        }));
+        get_workflow_step_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->get_workflow_step(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_workflow_steps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_workflow_steps(std::move(msg));
-        }));
+        get_many_workflow_steps_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->get_many_workflow_steps(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_workflow_step_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_workflow_step(std::move(msg));
-        }));
+        put_workflow_step_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->put_workflow_step(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_workflow_steps_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_workflow_steps(std::move(msg));
-        }));
+        put_many_workflow_steps_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->put_many_workflow_steps(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_workflow_step_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_workflow_step(std::move(msg));
-        }));
+        delete_workflow_step_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->delete_workflow_step(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_workflow_steps_request::nats_subject,
-        queue_group,
+        workflow_step_queue_group,
         [h](ores::nats::message msg) { h->delete_many_workflow_steps(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_workflow_id_workflow_steps_request::nats_subject,
-        queue_group,
+        workflow_step_queue_group,
         [h](ores::nats::message msg) { h->list_by_workflow_id_workflow_steps(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_workflow_step_versions_request::nats_subject,
-        queue_group,
+        workflow_step_queue_group,
         [h](ores::nats::message msg) { h->list_workflow_step_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_workflow_step_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_workflow_step_version(std::move(msg));
-        }));
+        get_workflow_step_version_request::nats_subject,
+        workflow_step_queue_group,
+        [h](ores::nats::message msg) { h->get_workflow_step_version(std::move(msg)); }));
     return subs;
 }
 

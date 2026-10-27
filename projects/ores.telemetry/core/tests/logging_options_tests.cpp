@@ -23,13 +23,11 @@
 
 namespace {
 
-const std::string tags("[logging_options]");
-
 using namespace ores::logging;
 
 }
 
-TEST_CASE("logging_options_stream_insertion_produces_valid_json", tags) {
+TEST_CASE("logging_options_stream_insertion_produces_valid_json", "[logging_options]") {
     logging_options opts;
     opts.severity = "debug";
     opts.filename = "test.log";
@@ -48,7 +46,7 @@ TEST_CASE("logging_options_stream_insertion_produces_valid_json", tags) {
     REQUIRE(json.find("/tmp/logs") != std::string::npos);
 }
 
-TEST_CASE("logging_options_stream_insertion_includes_all_fields", tags) {
+TEST_CASE("logging_options_stream_insertion_includes_all_fields", "[logging_options]") {
     logging_options opts;
     opts.severity = "info";
     opts.filename = "app.log";

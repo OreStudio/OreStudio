@@ -39,7 +39,7 @@
 namespace ores::inbox::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.inbox.service";
+static constexpr std::string_view notification_queue_group = "ores.inbox.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,45 +49,45 @@ register_notification_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<notification_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_notifications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_notifications(std::move(msg));
-        }));
+        list_notifications_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->list_notifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_notification_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_notification(std::move(msg));
-        }));
+        get_notification_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->get_notification(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_notifications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_notifications(std::move(msg));
-        }));
+        get_many_notifications_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->get_many_notifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_notification_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_notification(std::move(msg));
-        }));
+        put_notification_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->put_notification(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_notifications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_notifications(std::move(msg));
-        }));
+        put_many_notifications_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->put_many_notifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_notification_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_notification(std::move(msg));
-        }));
+        delete_notification_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->delete_notification(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_notifications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_notifications(std::move(msg));
-        }));
+        delete_many_notifications_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_notifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_kind_code_notifications_request::nats_subject,
-        queue_group,
+        notification_queue_group,
         [h](ores::nats::message msg) { h->list_by_kind_code_notifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_notification_versions_request::nats_subject,
-        queue_group,
+        notification_queue_group,
         [h](ores::nats::message msg) { h->list_notification_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_notification_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_notification_version(std::move(msg));
-        }));
+        get_notification_version_request::nats_subject,
+        notification_queue_group,
+        [h](ores::nats::message msg) { h->get_notification_version(std::move(msg)); }));
     return subs;
 }
 

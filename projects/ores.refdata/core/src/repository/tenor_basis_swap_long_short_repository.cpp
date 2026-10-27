@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+tenor_basis_swap_long_short_list_order(const ores::utility::domain::order& order,
+                                       std::initializer_list<std::string> default_columns,
+                                       bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!tenor_basis_swap_long_short_repository::is_sortable(order.field))
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::tenor_basis_swap_long_shorts_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> tenor_basis_swap_long_short_filter_condition(
+    const std::optional<messaging::tenor_basis_swap_long_shorts_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -124,11 +125,11 @@ filter_condition(const std::optional<messaging::tenor_basis_swap_long_shorts_fil
 
 ores::utility::domain::precondition tenor_basis_swap_long_short_repository::replace_claim(
     context ctx, const domain::tenor_basis_swap_long_short& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
-            static_cast<std::uint32_t>(current.front().version)};
+            static_cast<std::uint32_t>(current.front().identity.version)};
 }
 
 domain::tenor_basis_swap_long_short tenor_basis_swap_long_short_repository::apply_claim(
@@ -141,18 +142,18 @@ domain::tenor_basis_swap_long_short tenor_basis_swap_long_short_repository::appl
         case precondition_kind::must_not_exist:
             // Zero states that no current row exists, which is the one meaning the
             // store gives a zero version.
-            t.version = 0;
+            t.identity.version = 0;
             break;
         case precondition_kind::must_match_version:
-            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            t.identity.version = claim.version ? static_cast<int>(*claim.version) : 0;
             break;
         case precondition_kind::any: {
             // A caller that claims nothing still has to say what it replaces, so
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
-            t.version = current.empty() ? 0 : current.front().version;
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+            t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
         }
     }
@@ -177,7 +178,8 @@ void tenor_basis_swap_long_short_repository::write(
     context ctx,
     const domain::tenor_basis_swap_long_short& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap long short. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap long short. "
+                               << "id: " << v.identity.id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
                         tenor_basis_swap_long_short_mapper::map(t),
@@ -298,8 +300,8 @@ tenor_basis_swap_long_short_repository::read_latest_by_convention_id(
                                       domain::tenor_basis_swap_long_short>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        tenor_basis_swap_long_short_list_order(order, {"id"}, false),
+        tenor_basis_swap_long_short_filter_condition(filter),
         [](const auto& entities) { return tenor_basis_swap_long_short_mapper::map(entities); },
         lg(),
         "Reading latest tenor basis swap long shorts by convention_id.");
@@ -323,7 +325,7 @@ std::uint32_t tenor_basis_swap_long_short_repository::
     return execute_count_query<tenor_basis_swap_long_short_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        tenor_basis_swap_long_short_filter_condition(filter),
         lg(),
         "Counting tenor basis swap long shorts by convention_id");
 }
@@ -367,13 +369,13 @@ tenor_basis_swap_long_short_repository::remove(context ctx,
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
     // int, so the comparison states the conversion rather than relying on one.
-    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+    if (version && static_cast<std::uint32_t>(current.front().identity.version) != *version)
         return remove_status::conflicting;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     // The row is named by its version as well as by its key, so the removal
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
-    const auto expected = version ? static_cast<int>(*version) : current.front().version;
+    const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<tenor_basis_swap_long_short_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
@@ -410,8 +412,8 @@ tenor_basis_swap_long_short_repository::read_latest(
                                       domain::tenor_basis_swap_long_short>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        tenor_basis_swap_long_short_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), tenor_basis_swap_long_short_filter_condition(filter)),
         [](const auto& entities) { return tenor_basis_swap_long_short_mapper::map(entities); },
         lg(),
         "Reading latest tenor basis swap long shorts with pagination.");
@@ -430,7 +432,7 @@ std::uint32_t tenor_basis_swap_long_short_repository::get_total_tenor_basis_swap
     return execute_count_query<tenor_basis_swap_long_short_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), tenor_basis_swap_long_short_filter_condition(filter)),
         lg(),
         "Counting tenor basis swap long shorts");
 }

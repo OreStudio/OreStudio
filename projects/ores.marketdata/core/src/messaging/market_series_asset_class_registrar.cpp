@@ -39,7 +39,7 @@
 namespace ores::marketdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.marketdata.service";
+static constexpr std::string_view market_series_asset_class_queue_group = "ores.marketdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_market_series_asset_class_handlers(
@@ -51,37 +51,37 @@ std::vector<ores::nats::service::subscription> register_market_series_asset_clas
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_market_series_asset_classes_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) { h->list_market_series_asset_classes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_market_series_asset_class_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) { h->get_market_series_asset_class(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_market_series_asset_classes_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) { h->get_many_market_series_asset_classes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_market_series_asset_class_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) { h->put_market_series_asset_class(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_market_series_asset_classes_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) { h->put_many_market_series_asset_classes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_market_series_asset_class_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) { h->delete_market_series_asset_class(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_market_series_asset_classes_request::nats_subject,
-                             queue_group,
+                             market_series_asset_class_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_market_series_asset_classes(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_market_series_id_market_series_asset_classes_request::nats_subject,
-        queue_group,
+        market_series_asset_class_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_market_series_id_market_series_asset_classes(std::move(msg));
         }));

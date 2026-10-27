@@ -87,7 +87,7 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}}_repository& repo,
+std::vector<domain::{{entity_singular}}> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repository::{{entity_singular}}_repository& repo,
                                                 const ores::database::context& ctx,
                                                 const messaging::{{entity_singular}}_key& key) {
 {{#key_is_primary}}
@@ -106,7 +106,7 @@ std::vector<domain::{{entity_singular}}> read_one(repository::{{entity_singular}
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v) {
+messaging::{{entity_singular}}_key {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(const domain::{{entity_singular}}& v) {
     messaging::{{entity_singular}}_key key;
 {{#key_is_primary}}
 {{#primary_key.key_columns}}
@@ -126,7 +126,7 @@ messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::{{entity_singular}} to_domain(const messaging::{{entity_singular}}_write& write) {
+domain::{{entity_singular}} {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(const messaging::{{entity_singular}}_write& write) {
     domain::{{entity_singular}} v;
 {{#write_fields}}
 {{#enum_from_string}}
@@ -161,7 +161,7 @@ domain::{{entity_singular}} to_domain(const messaging::{{entity_singular}}_write
  *
  * A write that creates a row changes every column.
  */
-std::vector<std::string> columns_changed(const std::vector<domain::{{entity_singular}}>& live,
+std::vector<std::string> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_columns_changed(const std::vector<domain::{{entity_singular}}>& live,
                                          const domain::{{entity_singular}}& next) {
     const bool created = live.empty();
     std::vector<std::string> names;
@@ -354,7 +354,7 @@ messaging::{{response}}
 messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "{{entity_singular}}"});
         return response;
@@ -404,7 +404,7 @@ messaging::{{response}}
     for (const auto& k : request.keys) {
         messaging::{{entity_singular}}_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.{{entity_singular}} = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -423,7 +423,7 @@ messaging::{{response}}
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
     if (!written.empty())
         response.{{payload_member}} = std::move(written.front());
     return response;
@@ -475,7 +475,7 @@ messaging::{{response}}
 {{/service_batch_reads_by_trade_id}}
 {{^service_batch_reads_by_trade_id}}
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
         response.{{entity_plural_short}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -503,13 +503,13 @@ messaging::{{response}}
         expected = request.removal.precondition.version;
     }
 {{#gated}}
-    if (const auto refused = gate_delete(read_one(repo_, ctx_, request.removal.key), expected)) {
+    if (const auto refused = gate_delete({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, request.removal.key), expected)) {
         response.result = *refused;
         return response;
     }
 {{/gated}}
 {{^key_is_primary}}
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "{{entity_singular}}"});
         return response;
@@ -527,7 +527,7 @@ messaging::{{response}}
         // A conflicting removal states the version it expected but not the one
         // the row now holds, and the sentence wants both. The row is read only
         // on the refusal path.
-        const auto live = read_one(repo_, ctx_, request.removal.key);
+        const auto live = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, request.removal.key);
         response.result = refuse(outcome_code::version_conflict,
                                  {.entity = "{{entity_singular}}",
                                   .field = "{{domain_entity.primary_key.column}}",
@@ -578,7 +578,7 @@ messaging::{{response}}
     // A batch carries no versions, so an approved line that claims one never
     // matches here. The applier removes one row at a time, with its version.
     for (const auto& removal : request.removals) {
-        if (const auto refused = gate_delete(read_one(repo_, ctx_, removal.key), std::nullopt)) {
+        if (const auto refused = gate_delete({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, removal.key), std::nullopt)) {
             response.result = *refused;
             return response;
         }
@@ -593,7 +593,7 @@ messaging::{{response}}
     std::vector<domain::{{entity_singular}}> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -638,7 +638,7 @@ messaging::{{response}}
 {{^key_is_primary}}
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "{{entity_singular}}"});
         return response;
@@ -665,7 +665,7 @@ messaging::{{response}}
 {{^key_is_primary}}
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.{{entity_singular}});
+    const auto named = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, request.key.{{entity_singular}});
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "{{entity_singular}}"});
         return response;
@@ -692,8 +692,8 @@ ores::utility::domain::result
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(change.write);
+    const auto current = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(out));
 {{#gated}}
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
@@ -746,10 +746,12 @@ ores::utility::domain::result
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
-{{#domain_entity.stamp_members}}
+{{#domain_entity.has_stamp_members}}
     // The audit reaches the row through whichever member carries it, so a
     // grouped entity is stamped member by member; stamping it whole would
     // find no audit column and leave the row without one.
+{{/domain_entity.has_stamp_members}}
+{{#domain_entity.stamp_members}}
     stamp(out.{{member}}, ctx_,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
@@ -779,8 +781,8 @@ void {{entity_singular}}_service::rehearse() {
 
 std::vector<std::string>
 {{entity_singular}}_service::changed_columns(const messaging::{{entity_singular}}_write& proposed) {
-    const auto next = to_domain(proposed);
-    return columns_changed(read_one(repo_, ctx_, key_from(next)), next);
+    const auto next = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(proposed);
+    return {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_columns_changed({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(next)), next);
 }
 
 bool {{entity_singular}}_service::holds_line(const std::string& operation,
@@ -808,7 +810,7 @@ std::optional<ores::utility::domain::result>
     if (pass_.rehearsal)
         return std::nullopt;
     switch (ores::service::messaging::gate_verdict_of(
-        ctx_, "{{entity_singular}}", "put", columns_changed(current, next), pass_.request_id)) {
+        ctx_, "{{entity_singular}}", "put", {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_columns_changed(current, next), pass_.request_id)) {
     case gate_verdict::free:
         return std::nullopt;
     case gate_verdict::approved: {
@@ -951,7 +953,7 @@ std::optional<domain::{{entity_singular}}>
 {{^declared_key_is_uuid}}
     k.{{declared_key}} = {{declared_key}};
 {{/declared_key_is_uuid}}
-    auto found = read_one(repo_, ctx_, k);
+    auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();
@@ -1001,9 +1003,9 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
 {{#has_domain_groups}}
-{{#domain_groups}}
+{{#domain_entity.stamp_members}}
     stamp(t.{{member}}, ctx_);
-{{/domain_groups}}
+{{/domain_entity.stamp_members}}
 {{/has_domain_groups}}
 {{^has_domain_groups}}
     stamp(t, ctx_);
@@ -1034,9 +1036,9 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     auto ts = {{entity_plural_short}};
     for (auto& e : ts) {
 {{#has_domain_groups}}
-{{#domain_groups}}
+{{#domain_entity.stamp_members}}
         stamp(e.{{member}}, ctx_);
-{{/domain_groups}}
+{{/domain_entity.stamp_members}}
 {{/has_domain_groups}}
 {{^has_domain_groups}}
         stamp(e, ctx_);
@@ -1099,7 +1101,7 @@ std::vector<domain::{{entity_singular}}>
 {{#current_state}}
     // A current-state table deletes for real, so a row that is gone has no
     // history to read and resolving through the latest row is correct.
-    const auto found = read_one(repo_, ctx_, k);
+    const auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, k);
 {{/current_state}}
 {{^current_state}}
     // A delete here closes the transaction-time window and leaves every version
@@ -1233,7 +1235,7 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::{{name_singular}}> read_one(
+std::vector<domain::{{name_singular}}> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(
     repository::{{name_singular}}_repository& repo,
     const messaging::{{name_singular}}_key& key) {
     return repo.read_latest(key.{{left.column}}, key.{{right.column}});
@@ -1246,7 +1248,7 @@ std::vector<domain::{{name_singular}}> read_one(
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::{{name_singular}}_key key_from(const domain::{{name_singular}}& v) {
+messaging::{{name_singular}}_key {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(const domain::{{name_singular}}& v) {
     messaging::{{name_singular}}_key key;
     key.{{left.column}} = v.{{left.column}};
     key.{{right.column}} = v.{{right.column}};
@@ -1261,7 +1263,7 @@ messaging::{{name_singular}}_key key_from(const domain::{{name_singular}}& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::{{name_singular}} to_domain(const messaging::{{name_singular}}_write& write) {
+domain::{{name_singular}} {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(const messaging::{{name_singular}}_write& write) {
     domain::{{name_singular}} v;
     v.{{left.column}} = write.{{left.column}};
     v.{{right.column}} = write.{{right.column}};
@@ -1361,7 +1363,7 @@ messaging::list_by_{{right.column}}_{{name}}_response
 messaging::{{response}}
 {{name_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
-    auto found = read_one(repo_, request.key);
+    auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "{{name_singular}}"});
         return response;
@@ -1382,7 +1384,7 @@ messaging::{{response}}
     for (const auto& k : request.keys) {
         messaging::{{name_singular}}_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, k);
         if (!found.empty())
             entry.{{name_singular}} = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -1400,7 +1402,7 @@ messaging::{{response}}
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
     if (!written.empty())
         response.{{name_singular}} = std::move(written.front());
     return response;
@@ -1434,7 +1436,7 @@ messaging::{{response}}
     repo_.write(batch, claims);
     response.{{name}}.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
         response.{{name}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -1461,7 +1463,7 @@ messaging::{{response}}
         expected = request.removal.precondition.version;
     }
 {{#gated}}
-    if (const auto refused = gate_delete(read_one(repo_, request.removal.key), expected)) {
+    if (const auto refused = gate_delete({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, request.removal.key), expected)) {
         response.result = *refused;
         return response;
     }
@@ -1477,7 +1479,7 @@ messaging::{{response}}
         // The junction's removal states neither version, so the row is read for
         // the one it now holds. The sentence carries what the caller stated and
         // what the store holds.
-        const auto live = read_one(repo_, request.removal.key);
+        const auto live = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, request.removal.key);
         response.result = refuse(outcome_code::version_conflict,
                                  {.entity = "{{name_singular}}",
                                   .field = "{{left.column}}",
@@ -1517,7 +1519,7 @@ messaging::{{response}}
     // A batch carries no versions, so an approved line that claims one never
     // matches here. The applier removes one link at a time, with its version.
     for (const auto& removal : request.removals) {
-        if (const auto refused = gate_delete(read_one(repo_, removal.key), std::nullopt)) {
+        if (const auto refused = gate_delete({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, removal.key), std::nullopt)) {
             response.result = *refused;
             return response;
         }
@@ -1545,8 +1547,8 @@ ores::utility::domain::result
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(change.write);
+    const auto current = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(out));
 {{#gated}}
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the link from a conflict.
@@ -1731,7 +1733,7 @@ std::vector<domain::{{central.entity}}> read_{{central.entity}}(
  * @brief The key a central domain row states, so the row read back is
  * addressed exactly as the request addressed it.
  */
-messaging::{{entity_singular}}_key key_from(const domain::{{central.entity}}& v) {
+messaging::{{entity_singular}}_key {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(const domain::{{central.entity}}& v) {
     messaging::{{entity_singular}}_key key;
     key.{{central.key_field.name}} = v.{{central.key_member}};
     return key;
@@ -1744,7 +1746,7 @@ messaging::{{entity_singular}}_key key_from(const domain::{{central.entity}}& v)
  * provenance, the version and the validity window are the service's and the
  * database's to state.
  */
-domain::{{central.entity}} to_domain(const messaging::{{central.entity}}_write& write) {
+domain::{{central.entity}} {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(const messaging::{{central.entity}}_write& write) {
     domain::{{central.entity}} v;
 {{#central.write_fields}}
 {{#enum_from_string}}
@@ -1878,7 +1880,7 @@ messaging::{{response}}
 
     // The store owns the key and the window, so the key the row was written
     // under is the one the write stated rather than assumed from the request.
-    const auto key = key_from(central);
+    const auto key = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(central);
     // A part write bumps the central row through the part table's own trigger,
     // so the central row is read back after the parts land and the item carries
     // the version the write produced.
@@ -1917,7 +1919,7 @@ messaging::{{response}}
             return response;
         central_repo_.write(ctx, central, write.change.precondition);
 
-        const auto key = key_from(central);
+        const auto key = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(central);
         // A part write bumps the central row, so it is read back after them.
 {{#parts}}
         response.result = reconcile_{{part}}(ctx, central, write.{{part}}, request.intent);
@@ -1961,8 +1963,8 @@ ores::utility::domain::result
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_{{central.entity}}(central_repo_, ctx, key_from(out));
+    out = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_to_domain(change.write);
+    const auto current = read_{{central.entity}}(central_repo_, ctx, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(out));
     switch (change.precondition.kind) {
     case precondition_kind::must_not_exist:
         if (!current.empty())
@@ -2082,7 +2084,7 @@ ores::utility::domain::result
         // which is the row the session stamped. The part table's own policy
         // reads that column, so it must agree with the central row even when
         // the session has no party of its own.
-        row.party_id = central.party_id;
+        row.{{party_member}} = central.{{central_party_member}};
 {{/copy_party_id}}
         wanted.push_back(std::move(row));
         claims.push_back(change.precondition);

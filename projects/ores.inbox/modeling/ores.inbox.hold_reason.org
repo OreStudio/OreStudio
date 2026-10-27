@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 4c8b25d0-8f6a-4d19-9a41-6b2e07c53f18
+:END:
+#+title: ores.inbox.hold_reason
+#+description: Codegen entity model for the inbox =hold_reason= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: Why a decider parked an approval request instead of answering it.
+#+entity_singular: hold_reason
+#+entity_plural: hold_reasons
+#+entity_title: Hold Reason
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+Reference data table of the reasons a decider parks a request with. A hold is a
+suspension and not a refusal, so the reason is chosen from a list rather than
+typed: the operator names what is awaited, and the held-over report groups the
+queue by it.
+
+The reasons the controls note names, and the entries below, are the operational
+authorisation queue's: a query on the margin a customer holds, a question on the
+sales ticket, an awaited amendment, the handover markers between regional teams,
+and the four exception flags that cause a hold. They are the system tenant's
+rows, so every tenant reads one list.
+
+The list is read where a hold is taken: the decide operation refuses a hold
+whose reason is not one of these codes, and says which codes it accepts.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique hold reason code.
+
+Examples: 'awaiting.amendment', 'exception.late'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the reason.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Hold"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the person is waiting for, in the words the held-over report reads.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                      ores_inbox_hold_reasons_tbl
+:rls_tenant_isolation:           true
+:rls_own_or_system_tenant_rows:  true
+:END:
+
+The reasons are the system tenant's rows, and every tenant's deciders read
+them. The policy lets a reader see its own tenant's rows beside the system
+tenant's, so the list a person is offered is the one the record validates
+against. A tenant may add a reason of its own and may never remove one of the
+system's.
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_prefix: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: reason
+:entity_plural_short:   reasons
+:entity_singular_words: hold reason
+:entity_plural_words:   hold reasons
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: hr
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: hold_reasons
+:key_field:       code
+:END:
+
+*** Detail fields
+
+| field         | label       | widget          | type      | is_key | is_required | placeholder             |
+|---------------+-------------+-----------------+-----------+--------+-------------+-------------------------|
+| code          | Code        | codeEdit        | line_edit | true   | true        | Enter reason code       |
+| name          | Name        | nameEdit        | line_edit |        | true        | Enter display name      |
+| description   | Description | descriptionEdit | text_edit |        |             | Enter a description     |
+
+*** Columns
+
+* See also
+
+- [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] — the decision that names a reason.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the queue whose held-over reasons these are.

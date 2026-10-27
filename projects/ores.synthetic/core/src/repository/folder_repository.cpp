@@ -85,9 +85,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy folder_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!folder_repository::is_sortable(order.field))
@@ -100,7 +100,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::folders_filter>& filter) {
+folder_filter_condition(const std::optional<messaging::folders_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -309,8 +309,8 @@ folder_repository::read_latest(context ctx,
     return execute_ordered_read_query<folder_entity, domain::folder>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        folder_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), folder_filter_condition(filter)),
         [](const auto& entities) { return folder_mapper::map(entities); },
         lg(),
         "Reading latest folders with pagination.");
@@ -328,7 +328,11 @@ folder_repository::get_total_folder_count(context ctx,
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<folder_entity>(
-        ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting folders");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), folder_filter_condition(filter)),
+        lg(),
+        "Counting folders");
 }
 
 std::vector<domain::folder> folder_repository::read_latest(context ctx,

@@ -639,6 +639,8 @@ export {
     inboxStoryEventSchema,
     inboxStoryFieldSchema,
     markNotificationsRead,
+    readHoldReasons,
+    readKindHoldRules,
     readMyNotifications,
     readMyRequests,
     readRequest,

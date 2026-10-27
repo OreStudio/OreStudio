@@ -31,6 +31,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -49,9 +50,6 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository][currency_country]");
 
 // Total number of test cases that write currency_country records. Each
 // test uses a different slice of the fictional currencies/countries
@@ -75,7 +73,7 @@ currency_country make_currency_country(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_currency_country", tags) {
+TEST_CASE("write_single_currency_country", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -100,7 +98,7 @@ TEST_CASE("write_single_currency_country", tags) {
     CHECK(read_ccs[0].change_commentary == cc.change_commentary);
 }
 
-TEST_CASE("write_multiple_currency_countries", tags) {
+TEST_CASE("write_multiple_currency_countries", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -135,7 +133,7 @@ TEST_CASE("write_multiple_currency_countries", tags) {
     }
 }
 
-TEST_CASE("read_latest_currency_countries_by_currency", tags) {
+TEST_CASE("read_latest_currency_countries_by_currency", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -167,7 +165,7 @@ TEST_CASE("read_latest_currency_countries_by_currency", tags) {
     CHECK(found);
 }
 
-TEST_CASE("read_latest_currency_countries_by_country", tags) {
+TEST_CASE("read_latest_currency_countries_by_country", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -192,7 +190,7 @@ TEST_CASE("read_latest_currency_countries_by_country", tags) {
     CHECK(read_ccs[0].currency_iso_code == currencies[4].iso_code);
 }
 
-TEST_CASE("remove_currency_country", tags) {
+TEST_CASE("remove_currency_country", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -229,7 +227,7 @@ TEST_CASE("remove_currency_country", tags) {
     CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
 }
 
-TEST_CASE("remove_by_currency_currency_country", tags) {
+TEST_CASE("remove_by_currency_currency_country", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -266,7 +264,7 @@ TEST_CASE("remove_by_currency_currency_country", tags) {
     CHECK(keeper_rows[0].country_alpha2_code == keeper.country_alpha2_code);
 }
 
-TEST_CASE("read_nonexistent_currency_country", tags) {
+TEST_CASE("read_nonexistent_currency_country", "[repository][currency_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

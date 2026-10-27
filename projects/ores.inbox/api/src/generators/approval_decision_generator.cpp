@@ -49,6 +49,7 @@ generate_synthetic_approval_decision(utility::generation::generation_context& ct
     r.decision_code = std::string(faker::word::noun());
     r.decided_by = ctx.generate_uuid();
     r.decided_at = std::chrono::system_clock::now();
+    r.hold_reason_code = std::nullopt;
     r.comment = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_stress_test_shifts_response
-    list_stress_test_shifts(const messaging::list_stress_test_shifts_request& request);
-    messaging::get_stress_test_shift_response
-    get_stress_test_shift(const messaging::get_stress_test_shift_request& request);
-    messaging::get_many_stress_test_shifts_response
-    get_many_stress_test_shifts(const messaging::get_many_stress_test_shifts_request& request);
-    messaging::put_stress_test_shift_response
-    put_stress_test_shift(const messaging::put_stress_test_shift_request& request);
-    messaging::put_many_stress_test_shifts_response
-    put_many_stress_test_shifts(const messaging::put_many_stress_test_shifts_request& request);
-    messaging::delete_stress_test_shift_response
-    delete_stress_test_shift(const messaging::delete_stress_test_shift_request& request);
-    messaging::delete_many_stress_test_shifts_response delete_many_stress_test_shifts(
-        const messaging::delete_many_stress_test_shifts_request& request);
-    messaging::list_stress_test_shift_versions_response list_stress_test_shift_versions(
-        const messaging::list_stress_test_shift_versions_request& request);
-    messaging::get_stress_test_shift_version_response
-    get_stress_test_shift_version(const messaging::get_stress_test_shift_version_request& request);
+    ::ores::analytics::messaging::list_stress_test_shifts_response list_stress_test_shifts(
+        const ::ores::analytics::messaging::list_stress_test_shifts_request& request);
+    ::ores::analytics::messaging::get_stress_test_shift_response get_stress_test_shift(
+        const ::ores::analytics::messaging::get_stress_test_shift_request& request);
+    ::ores::analytics::messaging::get_many_stress_test_shifts_response get_many_stress_test_shifts(
+        const ::ores::analytics::messaging::get_many_stress_test_shifts_request& request);
+    ::ores::analytics::messaging::put_stress_test_shift_response put_stress_test_shift(
+        const ::ores::analytics::messaging::put_stress_test_shift_request& request);
+    ::ores::analytics::messaging::put_many_stress_test_shifts_response put_many_stress_test_shifts(
+        const ::ores::analytics::messaging::put_many_stress_test_shifts_request& request);
+    ::ores::analytics::messaging::delete_stress_test_shift_response delete_stress_test_shift(
+        const ::ores::analytics::messaging::delete_stress_test_shift_request& request);
+    ::ores::analytics::messaging::delete_many_stress_test_shifts_response
+    delete_many_stress_test_shifts(
+        const ::ores::analytics::messaging::delete_many_stress_test_shifts_request& request);
+    ::ores::analytics::messaging::list_stress_test_shift_versions_response
+    list_stress_test_shift_versions(
+        const ::ores::analytics::messaging::list_stress_test_shift_versions_request& request);
+    ::ores::analytics::messaging::get_stress_test_shift_version_response
+    get_stress_test_shift_version(
+        const ::ores::analytics::messaging::get_stress_test_shift_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +194,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::stress_test_shift_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::stress_test_shift& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::analytics::messaging::stress_test_shift_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::stress_test_shift& out);
 };
 
 }

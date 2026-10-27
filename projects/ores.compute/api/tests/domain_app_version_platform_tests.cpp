@@ -20,21 +20,15 @@
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/domain/app_version_platform_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.compute.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::compute::domain::app_version_platform;
 using namespace ores::logging;
 
-TEST_CASE("create_app_version_platform_with_valid_fields", tags) {
+TEST_CASE("create_app_version_platform_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app_version_platform sut;
@@ -52,7 +46,7 @@ TEST_CASE("create_app_version_platform_with_valid_fields", tags) {
     CHECK(!sut.platform_id.is_nil());
 }
 
-TEST_CASE("create_app_version_platform_with_specific_uuids", tags) {
+TEST_CASE("create_app_version_platform_with_specific_uuids", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -72,7 +66,7 @@ TEST_CASE("create_app_version_platform_with_specific_uuids", tags) {
     CHECK(sut.platform_code == "arm64-osx");
 }
 
-TEST_CASE("app_version_platform_insertion_operator_emits_json", tags) {
+TEST_CASE("app_version_platform_insertion_operator_emits_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app_version_platform sut;
@@ -92,7 +86,7 @@ TEST_CASE("app_version_platform_insertion_operator_emits_json", tags) {
     CHECK(json_output.find("ore-x64-windows.tar.gz") != std::string::npos);
 }
 
-TEST_CASE("app_version_platform_default_construction_has_empty_strings", tags) {
+TEST_CASE("app_version_platform_default_construction_has_empty_strings", "[domain]") {
     const app_version_platform sut;
 
     CHECK(sut.platform_code.empty());

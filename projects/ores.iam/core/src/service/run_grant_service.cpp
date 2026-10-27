@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::run_grant> read_one(repository::run_grant_repository& repo,
-                                        const ores::database::context& ctx,
-                                        const messaging::run_grant_key& key) {
+std::vector<domain::run_grant> run_grant_read_one(repository::run_grant_repository& repo,
+                                                  const ores::database::context& ctx,
+                                                  const messaging::run_grant_key& key) {
     return repo.read_latest_by_resource(ctx, key.resource);
 }
 
@@ -154,7 +154,7 @@ run_grant_service::list_by_grantor_account_id_run_grants(
 messaging::get_run_grant_response
 run_grant_service::get_run_grant(const messaging::get_run_grant_request& request) {
     messaging::get_run_grant_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = run_grant_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "run_grant"});
         return response;
@@ -173,7 +173,7 @@ run_grant_service::get_many_run_grants(const messaging::get_many_run_grants_requ
     for (const auto& k : request.keys) {
         messaging::run_grant_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = run_grant_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.run_grant = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -195,7 +195,7 @@ messaging::list_run_grant_versions_response run_grant_service::list_run_grant_ve
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = run_grant_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "run_grant"});
         return response;
@@ -218,7 +218,7 @@ run_grant_service::get_run_grant_version(const messaging::get_run_grant_version_
     messaging::get_run_grant_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.run_grant);
+    const auto named = run_grant_read_one(repo_, ctx_, request.key.run_grant);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "run_grant"});
         return response;
@@ -281,7 +281,7 @@ run_grant_service::get_grant_by_resource(const std::string& resource) {
     BOOST_LOG_SEV(lg(), debug) << "Getting run grant by resource: " << resource;
     messaging::run_grant_key k;
     k.resource = resource;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = run_grant_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

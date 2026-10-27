@@ -19,20 +19,14 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/crypto/sha256.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <fstream>
-
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[crypto]");
-
-}
 
 using ores::utility::crypto::sha256;
 using namespace ores::logging;
 
-TEST_CASE("sha256_hex_digest_of_empty_string", tags) {
+TEST_CASE("sha256_hex_digest_of_empty_string", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const auto result = sha256::hex_digest("");
@@ -41,7 +35,7 @@ TEST_CASE("sha256_hex_digest_of_empty_string", tags) {
     CHECK(result == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 }
 
-TEST_CASE("sha256_hex_digest_of_known_string", tags) {
+TEST_CASE("sha256_hex_digest_of_known_string", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const auto result = sha256::hex_digest("hello world");
@@ -50,7 +44,7 @@ TEST_CASE("sha256_hex_digest_of_known_string", tags) {
     CHECK(result == "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
 }
 
-TEST_CASE("sha256_hex_digest_of_file_matches_hex_digest", tags) {
+TEST_CASE("sha256_hex_digest_of_file_matches_hex_digest", "[crypto]") {
     auto lg(make_logger(test_suite));
 
     const auto tmp = std::filesystem::temp_directory_path() / "ores_utility_sha256_test.txt";

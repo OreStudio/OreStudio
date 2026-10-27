@@ -1,0 +1,6 @@
+{
+  "executable": "ore-1.8.17.0-x64-linux",
+  "args": [
+    "Input/ore.xml"
+  ]
+}

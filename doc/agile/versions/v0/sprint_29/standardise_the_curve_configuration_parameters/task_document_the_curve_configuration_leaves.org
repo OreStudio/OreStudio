@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-the-curve-configuration-leaves
+#+pr: 3905
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,21 +26,27 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started. The story is scaffolded and the branch exists. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build =extract_curve_terms.py=, then the contract rows and their value sets. |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
 
-- An extractor reads the ORE source and records every curve section, its entry element and each leaf ORE reads, with the source file and line of each fact.
-- Every extracted leaf has an ore_parameter row keyed by curveconfig.xsd and its XPath, with label, description, format, default and release where the source gives them.
-- Every row carries a value set: a flag, a closed list, a number, a text, or a catalogue of refdata data such as a currency, a calendar or a day counter.
+- An extractor reads the ORE source and records every curve section, its entry element and each leaf ORE reads, with the source file and line of each fact, and names any block it cannot resolve.
+- Every extracted leaf that the guide or a curation describes has an ore_parameter row keyed by curveconfig.xsd and its XPath, with label, description, format, default and release where the source gives them.
 - The generator's check mode passes and reports the coverage counts, and the counts are recorded on the task with the command and the commit.
 - The [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] defines /Parameter/ broadly enough for this kind, since the story decided a curve configuration's leaf is a parameter.
 - No screen or web change is made by this task.
+
+The value set each leaf's values belong to is the next task,
+[[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][Give the curve configuration leaves their value sets]]. This task was
+scaffolded with that work inside it, which was wrong for two reasons: the derive
+needs the parse function behind each leaf, which the extractor does not yet
+record, and the conventions precedent carried it as a task of its own so that a
+documented leaf and a controlled leaf are judged separately.
 
 * Plan
 
@@ -77,6 +83,15 @@ task and name that file in the Command column.
 | Curve config parser sources the extractor reads | 22 | =ls OREData/ored/configuration/{curveconfigurations,*curveconfig,volatilityconfig,parametricsmileconfiguration,bootstrapconfig,reportconfig}.cpp \| wc -l= | =3d75a6908= (ORE) |
 | Lines across those sources | 7,437 | =wc -l= over the same list | =3d75a6908= (ORE) |
 | The guide chapter of =curveconfig.xml= | 92,273 bytes | =wc -c Docs/UserGuide/parameterisation/curveconfig.tex= | =3d75a6908= (ORE) |
+| Sections the document names | 19 | =python3 projects/ores.sql/utility/extract_curve_terms.py= | =3d75a6908= (ORE) |
+| Leaves extracted | 434 | the same run | =3d75a6908= (ORE) |
+| Leaves ORE reads in more than one branch | 5 | the same run | =3d75a6908= (ORE) |
+| Blocks the extractor cannot resolve | 8 | the same run | =3d75a6908= (ORE) |
+| Leaves the guide gives text for | 235 | the same run | =3d75a6908= (ORE) |
+| Guide entries keyed by section and leaf | 517 | =python3 -c "import extract_curve_terms as e; print(len(e.guide_terms(ORE, sections)))"= | =3d75a6908= (ORE) |
+| Curve rows written into the contract | 235 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | this branch |
+| Leaves still without text (gaps) | 199 | the same run | this branch |
+| Rows in the contract after the change | 2,260 | the same run | this branch |
 
 * Notes
 
@@ -101,6 +116,24 @@ task and name that file in the Command column.
 - *The contract id derives from =schema_name= and =XPath=*
   (=ore_parameter_seed.py=), so the schema must be right on the first write. The
   pricing rows still carry =ore.xsd=, and their correction is separate work.
+- *The extractor reads five parser idioms*, because the curve document is not
+  written the way the conventions document is. A leaf is a direct
+  =getChildValue=; a child node whose value is read with =getNodeValue=; a
+  child node whose own children are read; a member that parses a block, whose
+  type names the class; and a dispatch on the child's node name, where the block
+  holds alternatives (=Segments= holds =Direct=, =Simple= and the rest). A
+  derived config may also inherit =fromXML= from a base class, which parses the
+  same node, so its leaves belong to the derived entry too.
+- *The same leaf is read in more than one branch.* A commodity curve reads
+  =DayCounter= once for its piecewise form and once for its direct form. Both
+  are one leaf of the document, so the extractor writes one term and marks it
+  conditional. Five leaves are conditional this way.
+- *Eight blocks stay unresolved*, each recorded with the source line that reads
+  it: =RecoveryGrid=, =BootstrapConfig= under =CommodityCurve=, =Configurations=,
+  =TimeExtrapolation=, =ParametricSmileConfiguration=, =Segments= under
+  =InflationCurve=, and the two volatility entries whose parser is inherited.
+  Each is a gap the next pass closes or records a reason for; none is silently
+  dropped.
 
 * Test Scenarios
 
@@ -117,12 +150,48 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3905][#3905]] | [sql] Document the curve configuration leaves in the ORE parameter contract |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Acceptance demands a value set for every row, but deriving a set needs the parse function behind the leaf, which the extractor does not record. | this task | Accept | The value sets moved to [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][their own task]], as the conventions precedent carried them, and the Acceptance now says what this task delivers. |
+| 2 | Eight parser blocks stay unresolved, so the extractor does not yet read every leaf. | extract_curve_terms.py | Accept | Each is named in =curve_terms.json= with the source line that reads it, and listed in Notes. Closing them is the next pass on the extractor; none is silently dropped. |
+| 3 | 199 leaves have no text and are not written into the contract. | this task | Accept | The generator prints them, so the coverage is visible rather than implied. A leaf gains text from a curation entry, which is how the guide's silence is recorded. |
+
+The six below came from the on-demand Claude review of PR #3905.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 4 | The docstring names =curve_term_curation.json=, which the PR does not add. | curve_parameter_rows.py | Accept | The docstring now says the file is created when the first text is curated, and that until then the guide is the only source and every leaf it does not describe is a gap. |
+| 5 | =position= has gaps within a section, because leaves without text are skipped. | curve_parameter_rows.py | Decline | The field keeps the order the document wrote, which a gap preserves. The screen sorts by it, and nothing requires the values to run 1..n. |
+| 6 | =humanise= raises =IndexError= on an empty name. | curve_parameter_rows.py | Accept | Guarded: an empty name is returned as it stands. |
+| 7 | =default_of= cuts a stated default at the first parenthesis. | curve_parameter_rows.py | Decline | Checked the rows rather than the code path: the one compound default the guide states ends "or left blank." and is intact, and a literal default never holds a parenthesis. |
+| 8 | The wildcard rule in =curated_for= should be protected by a test once the curation file has entries. | curve_parameter_rows.py | Decline | The rule cannot drift while =rows()= and =undocumented()= both reach it through the same call, and there are no curation entries to guard yet. The task that adds them can add the test. |
+| 9 | Two curve leaves could collide on the parameter id, since =subtype= is the path without the leaf's own name. | generate_ore_parameters_dataset.py | Decline | =rows()= already raises when two parameters document the same leaf, and =ore-parameters-seed= passes, so a collision stops the generator instead of writing a duplicate. |
+
+The re-review of the updated PR raised two more, and accepted every decline above.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 10 | =CURATION_KEYS= does not require a =description=, so an entry could carry a label and still leave a gap. | curve_parameter_rows.py | Decline | The schema is the conventions curation's, key to key, so the two read alike. Requiring the text belongs to the task that adds the first entry, which the reviewer also named as the place to settle it. |
+| 11 | A =default_of= default that holds a parenthesis would be cut at it. | curve_parameter_rows.py | Decline | No such text occurs in the data today. The rule is recorded here so the next guide release checks it rather than rediscovering it. |
 
 * Result
+
+The extractor reads the ORE source and writes =curve_terms.json=: 19 sections,
+434 leaves, 5 of them conditional, each with the source file and line of its
+read, and 8 blocks it cannot resolve, named with the line that reads them.
+
+The guide supplies prose for 235 of the leaves, attributed to the section it
+describes, and =curve_parameter_rows.py= turns those into contract rows keyed by
+=curveconfig.xsd= and the leaf's XPath. The generated seed carries 235 curve rows
+and 2,260 rows in all, and the generator reports the 199 leaves that still have
+no text.
+
+The leaf standard now defines /Parameter/ to cover a curve configuration, which
+the story decided and this task owed.
+
+What this task did not do, and says so: the value set each leaf's values belong
+to is [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][a task of its own]], because it needs the parse function behind each leaf.

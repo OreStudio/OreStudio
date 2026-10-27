@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::fsm_transition> read_one(repository::fsm_transition_repository& repo,
-                                             const ores::database::context& ctx,
-                                             const messaging::fsm_transition_key& key) {
+std::vector<domain::fsm_transition>
+fsm_transition_read_one(repository::fsm_transition_repository& repo,
+                        const ores::database::context& ctx,
+                        const messaging::fsm_transition_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::fsm_transition> read_one(repository::fsm_transition_reposito
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::fsm_transition_key key_from(const domain::fsm_transition& v) {
+messaging::fsm_transition_key fsm_transition_key_from(const domain::fsm_transition& v) {
     messaging::fsm_transition_key key;
     key.name = v.name;
     return key;
@@ -98,7 +99,7 @@ messaging::fsm_transition_key key_from(const domain::fsm_transition& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::fsm_transition to_domain(const messaging::fsm_transition_write& write) {
+domain::fsm_transition fsm_transition_to_domain(const messaging::fsm_transition_write& write) {
     domain::fsm_transition v;
     v.id = write.id;
     v.machine_id = write.machine_id;
@@ -146,7 +147,7 @@ messaging::list_fsm_transitions_response fsm_transition_service::list_fsm_transi
 messaging::get_fsm_transition_response
 fsm_transition_service::get_fsm_transition(const messaging::get_fsm_transition_request& request) {
     messaging::get_fsm_transition_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = fsm_transition_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "fsm_transition"});
         return response;
@@ -165,7 +166,7 @@ messaging::get_many_fsm_transitions_response fsm_transition_service::get_many_fs
     for (const auto& k : request.keys) {
         messaging::fsm_transition_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = fsm_transition_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.fsm_transition = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +182,7 @@ fsm_transition_service::put_fsm_transition(const messaging::put_fsm_transition_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(value));
     if (!written.empty())
         response.fsm_transition = std::move(written.front());
     return response;
@@ -213,7 +214,7 @@ messaging::put_many_fsm_transitions_response fsm_transition_service::put_many_fs
     repo_.write(ctx_, batch, claims);
     response.transitions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(value));
         response.transitions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -236,7 +237,7 @@ messaging::delete_fsm_transition_response fsm_transition_service::delete_fsm_tra
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = fsm_transition_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "fsm_transition"});
         return response;
@@ -252,7 +253,7 @@ messaging::delete_fsm_transition_response fsm_transition_service::delete_fsm_tra
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = fsm_transition_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "fsm_transition",
@@ -293,7 +294,7 @@ messaging::delete_many_fsm_transitions_response fsm_transition_service::delete_m
     std::vector<domain::fsm_transition> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = fsm_transition_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -320,7 +321,7 @@ fsm_transition_service::list_fsm_transition_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = fsm_transition_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "fsm_transition"});
         return response;
@@ -343,7 +344,7 @@ messaging::get_fsm_transition_version_response fsm_transition_service::get_fsm_t
     messaging::get_fsm_transition_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.fsm_transition);
+    const auto named = fsm_transition_read_one(repo_, ctx_, request.key.fsm_transition);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "fsm_transition"});
         return response;
@@ -365,8 +366,8 @@ fsm_transition_service::prepare_change(const messaging::fsm_transition_change& c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = fsm_transition_to_domain(change.write);
+    const auto current = fsm_transition_read_one(repo_, ctx_, fsm_transition_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -440,7 +441,7 @@ fsm_transition_service::get_transition_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting fsm transition by name: " << name;
     messaging::fsm_transition_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = fsm_transition_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

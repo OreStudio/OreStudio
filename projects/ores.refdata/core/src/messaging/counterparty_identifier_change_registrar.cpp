@@ -39,7 +39,8 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view counterparty_identifier_change_queue_group =
+    "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_counterparty_identifier_change_handlers(
@@ -51,33 +52,33 @@ std::vector<ores::nats::service::subscription> register_counterparty_identifier_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_counterparty_identifier_changes_request::nats_subject,
-        queue_group,
+        counterparty_identifier_change_queue_group,
         [h](ores::nats::message msg) { h->list_counterparty_identifier_changes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_counterparty_identifier_change_request::nats_subject,
-        queue_group,
+        counterparty_identifier_change_queue_group,
         [h](ores::nats::message msg) { h->get_counterparty_identifier_change(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_counterparty_identifier_changes_request::nats_subject,
-                             queue_group,
+                             counterparty_identifier_change_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_counterparty_identifier_changes(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_request_id_counterparty_identifier_changes_request::nats_subject,
-        queue_group,
+        counterparty_identifier_change_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_request_id_counterparty_identifier_changes(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(list_counterparty_identifier_change_versions_request::nats_subject,
-                             queue_group,
+                             counterparty_identifier_change_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_counterparty_identifier_change_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_counterparty_identifier_change_version_request::nats_subject,
-                             queue_group,
+                             counterparty_identifier_change_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_counterparty_identifier_change_version(std::move(msg));
                              }));

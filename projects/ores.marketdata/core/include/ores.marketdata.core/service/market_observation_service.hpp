@@ -76,22 +76,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_market_observations_response
-    list_market_observations(const messaging::list_market_observations_request& request);
-    messaging::get_market_observation_response
-    get_market_observation(const messaging::get_market_observation_request& request);
-    messaging::get_many_market_observations_response
-    get_many_market_observations(const messaging::get_many_market_observations_request& request);
-    messaging::put_market_observation_response
-    put_market_observation(const messaging::put_market_observation_request& request);
-    messaging::put_many_market_observations_response
-    put_many_market_observations(const messaging::put_many_market_observations_request& request);
-    messaging::delete_market_observation_response
-    delete_market_observation(const messaging::delete_market_observation_request& request);
-    messaging::delete_many_market_observations_response delete_many_market_observations(
-        const messaging::delete_many_market_observations_request& request);
-    messaging::list_by_series_id_market_observations_response list_by_series_id_market_observations(
-        const messaging::list_by_series_id_market_observations_request& request);
+    ::ores::marketdata::messaging::list_market_observations_response list_market_observations(
+        const ::ores::marketdata::messaging::list_market_observations_request& request);
+    ::ores::marketdata::messaging::get_market_observation_response get_market_observation(
+        const ::ores::marketdata::messaging::get_market_observation_request& request);
+    ::ores::marketdata::messaging::get_many_market_observations_response
+    get_many_market_observations(
+        const ::ores::marketdata::messaging::get_many_market_observations_request& request);
+    ::ores::marketdata::messaging::put_market_observation_response put_market_observation(
+        const ::ores::marketdata::messaging::put_market_observation_request& request);
+    ::ores::marketdata::messaging::put_many_market_observations_response
+    put_many_market_observations(
+        const ::ores::marketdata::messaging::put_many_market_observations_request& request);
+    ::ores::marketdata::messaging::delete_market_observation_response delete_market_observation(
+        const ::ores::marketdata::messaging::delete_market_observation_request& request);
+    ::ores::marketdata::messaging::delete_many_market_observations_response
+    delete_many_market_observations(
+        const ::ores::marketdata::messaging::delete_many_market_observations_request& request);
+    ::ores::marketdata::messaging::list_by_series_id_market_observations_response
+    list_by_series_id_market_observations(
+        const ::ores::marketdata::messaging::list_by_series_id_market_observations_request&
+            request);
     /**@}*/
 
     /**
@@ -201,9 +206,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::market_observation_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::market_observation& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::market_observation_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::market_observation& out);
 };
 
 }

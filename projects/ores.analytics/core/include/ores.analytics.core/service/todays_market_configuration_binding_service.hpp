@@ -77,38 +77,48 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_todays_market_configuration_bindings_response
+    ::ores::analytics::messaging::list_todays_market_configuration_bindings_response
     list_todays_market_configuration_bindings(
-        const messaging::list_todays_market_configuration_bindings_request& request);
-    messaging::get_todays_market_configuration_binding_response
+        const ::ores::analytics::messaging::list_todays_market_configuration_bindings_request&
+            request);
+    ::ores::analytics::messaging::get_todays_market_configuration_binding_response
     get_todays_market_configuration_binding(
-        const messaging::get_todays_market_configuration_binding_request& request);
-    messaging::get_many_todays_market_configuration_bindings_response
+        const ::ores::analytics::messaging::get_todays_market_configuration_binding_request&
+            request);
+    ::ores::analytics::messaging::get_many_todays_market_configuration_bindings_response
     get_many_todays_market_configuration_bindings(
-        const messaging::get_many_todays_market_configuration_bindings_request& request);
-    messaging::put_todays_market_configuration_binding_response
+        const ::ores::analytics::messaging::get_many_todays_market_configuration_bindings_request&
+            request);
+    ::ores::analytics::messaging::put_todays_market_configuration_binding_response
     put_todays_market_configuration_binding(
-        const messaging::put_todays_market_configuration_binding_request& request);
-    messaging::put_many_todays_market_configuration_bindings_response
+        const ::ores::analytics::messaging::put_todays_market_configuration_binding_request&
+            request);
+    ::ores::analytics::messaging::put_many_todays_market_configuration_bindings_response
     put_many_todays_market_configuration_bindings(
-        const messaging::put_many_todays_market_configuration_bindings_request& request);
-    messaging::delete_todays_market_configuration_binding_response
+        const ::ores::analytics::messaging::put_many_todays_market_configuration_bindings_request&
+            request);
+    ::ores::analytics::messaging::delete_todays_market_configuration_binding_response
     delete_todays_market_configuration_binding(
-        const messaging::delete_todays_market_configuration_binding_request& request);
-    messaging::delete_many_todays_market_configuration_bindings_response
+        const ::ores::analytics::messaging::delete_todays_market_configuration_binding_request&
+            request);
+    ::ores::analytics::messaging::delete_many_todays_market_configuration_bindings_response
     delete_many_todays_market_configuration_bindings(
-        const messaging::delete_many_todays_market_configuration_bindings_request& request);
-    messaging::list_by_todays_market_configuration_id_todays_market_configuration_bindings_response
-    list_by_todays_market_configuration_id_todays_market_configuration_bindings(
-        const messaging::
-            list_by_todays_market_configuration_id_todays_market_configuration_bindings_request&
-                request);
-    messaging::list_todays_market_configuration_binding_versions_response
+        const ::ores::analytics::messaging::
+            delete_many_todays_market_configuration_bindings_request& request);
+    ::ores::analytics::messaging::
+        list_by_todays_market_configuration_id_todays_market_configuration_bindings_response
+        list_by_todays_market_configuration_id_todays_market_configuration_bindings(
+            const ::ores::analytics::messaging::
+                list_by_todays_market_configuration_id_todays_market_configuration_bindings_request&
+                    request);
+    ::ores::analytics::messaging::list_todays_market_configuration_binding_versions_response
     list_todays_market_configuration_binding_versions(
-        const messaging::list_todays_market_configuration_binding_versions_request& request);
-    messaging::get_todays_market_configuration_binding_version_response
+        const ::ores::analytics::messaging::
+            list_todays_market_configuration_binding_versions_request& request);
+    ::ores::analytics::messaging::get_todays_market_configuration_binding_version_response
     get_todays_market_configuration_binding_version(
-        const messaging::get_todays_market_configuration_binding_version_request& request);
+        const ::ores::analytics::messaging::get_todays_market_configuration_binding_version_request&
+            request);
     /**@}*/
 
     /**
@@ -273,10 +283,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::todays_market_configuration_binding_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::todays_market_configuration_binding& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::analytics::messaging::todays_market_configuration_binding_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::todays_market_configuration_binding& out);
 };
 
 }

@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::ore_parameter_value_domain>
-read_one(repository::ore_parameter_value_domain_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::ore_parameter_value_domain_key& key) {
+ore_parameter_value_domain_read_one(repository::ore_parameter_value_domain_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const messaging::ore_parameter_value_domain_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::ore_parameter_value_domain_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::ore_parameter_value_domain_key key_from(const domain::ore_parameter_value_domain& v) {
+messaging::ore_parameter_value_domain_key
+ore_parameter_value_domain_key_from(const domain::ore_parameter_value_domain& v) {
     messaging::ore_parameter_value_domain_key key;
     key.code = v.code;
     return key;
@@ -96,7 +97,7 @@ messaging::ore_parameter_value_domain_key key_from(const domain::ore_parameter_v
  * database's to state, and are set after this conversion.
  */
 domain::ore_parameter_value_domain
-to_domain(const messaging::ore_parameter_value_domain_write& write) {
+ore_parameter_value_domain_to_domain(const messaging::ore_parameter_value_domain_write& write) {
     domain::ore_parameter_value_domain v;
     v.code = write.code;
     v.name = write.name;
@@ -146,7 +147,7 @@ messaging::get_ore_parameter_value_domain_response
 ore_parameter_value_domain_service::get_ore_parameter_value_domain(
     const messaging::get_ore_parameter_value_domain_request& request) {
     messaging::get_ore_parameter_value_domain_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = ore_parameter_value_domain_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "ore_parameter_value_domain"});
         return response;
@@ -166,7 +167,7 @@ ore_parameter_value_domain_service::get_many_ore_parameter_value_domains(
     for (const auto& k : request.keys) {
         messaging::ore_parameter_value_domain_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = ore_parameter_value_domain_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.ore_parameter_value_domain = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +184,8 @@ ore_parameter_value_domain_service::put_ore_parameter_value_domain(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = ore_parameter_value_domain_read_one(
+        repo_, ctx_, ore_parameter_value_domain_key_from(value));
     if (!written.empty())
         response.ore_parameter_value_domain = std::move(written.front());
     return response;
@@ -216,7 +218,8 @@ ore_parameter_value_domain_service::put_many_ore_parameter_value_domains(
     repo_.write(ctx_, batch, claims);
     response.domains.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = ore_parameter_value_domain_read_one(
+            repo_, ctx_, ore_parameter_value_domain_key_from(value));
         response.domains.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -251,7 +254,7 @@ ore_parameter_value_domain_service::delete_ore_parameter_value_domain(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = ore_parameter_value_domain_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "ore_parameter_value_domain",
@@ -341,8 +344,9 @@ ores::utility::domain::result ore_parameter_value_domain_service::prepare_change
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = ore_parameter_value_domain_to_domain(change.write);
+    const auto current =
+        ore_parameter_value_domain_read_one(repo_, ctx_, ore_parameter_value_domain_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

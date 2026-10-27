@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::composite_input> read_one(repository::composite_input_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::composite_input_key& key) {
+std::vector<domain::composite_input>
+composite_input_read_one(repository::composite_input_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::composite_input_key& key) {
     return repo.read_latest_by_oresmd_uri(ctx, key.oresmd_uri);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::composite_input> read_one(repository::composite_input_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::composite_input_key key_from(const domain::composite_input& v) {
+messaging::composite_input_key composite_input_key_from(const domain::composite_input& v) {
     messaging::composite_input_key key;
     key.oresmd_uri = v.oresmd_uri;
     return key;
@@ -98,7 +99,7 @@ messaging::composite_input_key key_from(const domain::composite_input& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::composite_input to_domain(const messaging::composite_input_write& write) {
+domain::composite_input composite_input_to_domain(const messaging::composite_input_write& write) {
     domain::composite_input v;
     v.id = write.id;
     v.composite_id = write.composite_id;
@@ -157,7 +158,7 @@ messaging::list_composite_inputs_response composite_input_service::list_composit
 messaging::get_composite_input_response composite_input_service::get_composite_input(
     const messaging::get_composite_input_request& request) {
     messaging::get_composite_input_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = composite_input_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "composite_input"});
         return response;
@@ -176,7 +177,7 @@ messaging::get_many_composite_inputs_response composite_input_service::get_many_
     for (const auto& k : request.keys) {
         messaging::composite_input_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = composite_input_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.composite_input = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -192,7 +193,7 @@ messaging::put_composite_input_response composite_input_service::put_composite_i
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = composite_input_read_one(repo_, ctx_, composite_input_key_from(value));
     if (!written.empty())
         response.composite_input = std::move(written.front());
     return response;
@@ -224,7 +225,7 @@ messaging::put_many_composite_inputs_response composite_input_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.composite_inputs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = composite_input_read_one(repo_, ctx_, composite_input_key_from(value));
         response.composite_inputs.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -247,7 +248,7 @@ messaging::delete_composite_input_response composite_input_service::delete_compo
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = composite_input_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "composite_input"});
         return response;
@@ -263,7 +264,7 @@ messaging::delete_composite_input_response composite_input_service::delete_compo
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = composite_input_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "composite_input",
@@ -305,7 +306,7 @@ composite_input_service::delete_many_composite_inputs(
     std::vector<domain::composite_input> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = composite_input_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -333,7 +334,7 @@ composite_input_service::list_composite_input_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = composite_input_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "composite_input"});
         return response;
@@ -357,7 +358,7 @@ composite_input_service::get_composite_input_version(
     messaging::get_composite_input_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.composite_input);
+    const auto named = composite_input_read_one(repo_, ctx_, request.key.composite_input);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "composite_input"});
         return response;
@@ -379,8 +380,8 @@ composite_input_service::prepare_change(const messaging::composite_input_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = composite_input_to_domain(change.write);
+    const auto current = composite_input_read_one(repo_, ctx_, composite_input_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -454,7 +455,7 @@ composite_input_service::get_composite_input_by_oresmd_uri(const std::string& or
     BOOST_LOG_SEV(lg(), debug) << "Getting composite input by oresmd_uri: " << oresmd_uri;
     messaging::composite_input_key k;
     k.oresmd_uri = oresmd_uri;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = composite_input_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

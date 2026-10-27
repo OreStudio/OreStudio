@@ -55,8 +55,6 @@
 
 namespace {
 
-const std::string tags("[ore][store][database]");
-
 using namespace ores::ore;
 using ores::ore::tests::rows_of;
 using ores::platform::filesystem::file;
@@ -125,7 +123,7 @@ std::set<std::string> ids_of(const Rows& rows) {
 
 }
 
-TEST_CASE("a run's configuration imports and exports as the same files", tags) {
+TEST_CASE("a run's configuration imports and exports as the same files", "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);
@@ -251,7 +249,7 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     CHECK_FALSE(execution.front().n_threads);
 }
 
-TEST_CASE("removing a run document removes its engine settings", tags) {
+TEST_CASE("removing a run document removes its engine settings", "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);
@@ -276,7 +274,7 @@ TEST_CASE("removing a run document removes its engine settings", tags) {
     CHECK(count() == 0);
 }
 
-TEST_CASE("a run import installs the conventions the sample names", tags) {
+TEST_CASE("a run import installs the conventions the sample names", "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     store::import_run(parties.a_context, make_definition(h, parties), "Example_1", example_input());
@@ -287,8 +285,8 @@ TEST_CASE("a run import installs the conventions the sample names", tags) {
     const auto central = conventions.read_latest(parties.a_context);
     CHECK(central.size() == 1);
     REQUIRE_FALSE(central.empty());
-    CHECK(central.front().kind_code == "TENOR_BASIS_SWAP");
-    CHECK(central.front().party_id == parties.a);
+    CHECK(central.front().identity.kind_code == "TENOR_BASIS_SWAP");
+    CHECK(central.front().identity.party_id == parties.a);
 
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository pay_receive;
     ores::refdata::repository::tenor_basis_swap_long_short_repository long_short;
@@ -298,10 +296,10 @@ TEST_CASE("a run import installs the conventions the sample names", tags) {
     // row, and that row names the central row the identity resolved to.
     CHECK(pay.size() + receive.size() == 1);
     if (!pay.empty())
-        CHECK(pay.front().convention_id == central.front().id);
+        CHECK(pay.front().identity.convention_id == central.front().identity.id);
     else {
         REQUIRE_FALSE(receive.empty());
-        CHECK(receive.front().convention_id == central.front().id);
+        CHECK(receive.front().identity.convention_id == central.front().identity.id);
     }
 
     ores::refdata::repository::deposit_convention_repository deposits;
@@ -310,7 +308,7 @@ TEST_CASE("a run import installs the conventions the sample names", tags) {
     CHECK_FALSE(swaps.read_latest(parties.a_context).empty());
 }
 
-TEST_CASE("another party cannot export a run it does not own", tags) {
+TEST_CASE("another party cannot export a run it does not own", "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);
@@ -318,7 +316,7 @@ TEST_CASE("another party cannot export a run it does not own", tags) {
     CHECK_THROWS(store::export_run(parties.b_context, definition));
 }
 
-TEST_CASE("a party imports the same run twice", tags) {
+TEST_CASE("a party imports the same run twice", "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto files = example_input();
@@ -341,7 +339,8 @@ TEST_CASE("a party imports the same run twice", tags) {
           1);
 }
 
-TEST_CASE("an import naming a file the input lacks is refused before it writes", tags) {
+TEST_CASE("an import naming a file the input lacks is refused before it writes",
+          "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);
@@ -358,7 +357,7 @@ TEST_CASE("an import naming a file the input lacks is refused before it writes",
         bindings, [&](const auto& b) { return b.report_definition_id == definition; }));
 }
 
-TEST_CASE("a second import into the same report definition is refused", tags) {
+TEST_CASE("a second import into the same report definition is refused", "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);
@@ -369,7 +368,8 @@ TEST_CASE("a second import into the same report definition is refused", tags) {
                       "into a new definition.");
 }
 
-TEST_CASE("an export from a session with no party reads the definition's party", tags) {
+TEST_CASE("an export from a session with no party reads the definition's party",
+          "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto files = example_input();
@@ -460,7 +460,8 @@ TEST_CASE("the run document refuses a data file that leaves the package", "[ore]
     CHECK_THROWS_AS(store::declared_data_files(files), std::invalid_argument);
 }
 
-TEST_CASE("an import whose document does not parse is refused before it writes", tags) {
+TEST_CASE("an import whose document does not parse is refused before it writes",
+          "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);

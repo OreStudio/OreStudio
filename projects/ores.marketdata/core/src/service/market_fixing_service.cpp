@@ -70,9 +70,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::market_fixing> read_one(repository::market_fixing_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::market_fixing_key& key) {
+std::vector<domain::market_fixing>
+market_fixing_read_one(repository::market_fixing_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::market_fixing_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -82,7 +83,7 @@ std::vector<domain::market_fixing> read_one(repository::market_fixing_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::market_fixing_key key_from(const domain::market_fixing& v) {
+messaging::market_fixing_key market_fixing_key_from(const domain::market_fixing& v) {
     messaging::market_fixing_key key;
     key.id = v.id;
     return key;
@@ -95,7 +96,7 @@ messaging::market_fixing_key key_from(const domain::market_fixing& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::market_fixing to_domain(const messaging::market_fixing_write& write) {
+domain::market_fixing market_fixing_to_domain(const messaging::market_fixing_write& write) {
     domain::market_fixing v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -143,7 +144,7 @@ market_fixing_service::list_market_fixings(const messaging::list_market_fixings_
 messaging::get_market_fixing_response
 market_fixing_service::get_market_fixing(const messaging::get_market_fixing_request& request) {
     messaging::get_market_fixing_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = market_fixing_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "market_fixing"});
         return response;
@@ -162,7 +163,7 @@ messaging::get_many_market_fixings_response market_fixing_service::get_many_mark
     for (const auto& k : request.keys) {
         messaging::market_fixing_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = market_fixing_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.market_fixing = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -178,7 +179,7 @@ market_fixing_service::put_market_fixing(const messaging::put_market_fixing_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = market_fixing_read_one(repo_, ctx_, market_fixing_key_from(value));
     if (!written.empty())
         response.market_fixing = std::move(written.front());
     return response;
@@ -210,7 +211,7 @@ messaging::put_many_market_fixings_response market_fixing_service::put_many_mark
     repo_.write(ctx_, batch, claims);
     response.market_fixings.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = market_fixing_read_one(repo_, ctx_, market_fixing_key_from(value));
         response.market_fixings.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -288,8 +289,8 @@ market_fixing_service::prepare_change(const messaging::market_fixing_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = market_fixing_to_domain(change.write);
+    const auto current = market_fixing_read_one(repo_, ctx_, market_fixing_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

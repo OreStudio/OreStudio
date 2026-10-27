@@ -21,6 +21,7 @@
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -35,9 +36,6 @@
 // value: an exception here would end the scheduler loop.
 
 namespace {
-
-const std::string_view test_suite("scheduler.tests");
-const std::string tags("[action][mq]");
 
 ores::scheduler::domain::job_definition make_job(const std::string& payload) {
     ores::scheduler::domain::job_definition job;
@@ -56,14 +54,14 @@ using ores::scheduler::service::action_context;
 using ores::scheduler::service::mq_action_handler;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("mq_action_handler claims the send_mq_message action type", tags) {
+TEST_CASE("mq_action_handler claims the send_mq_message action type", "[action][mq]") {
     auto lg(make_logger(test_suite));
 
     mq_action_handler handler;
     CHECK(handler.action_type() == "send_mq_message");
 }
 
-TEST_CASE("mq_action_handler refuses a payload it cannot read", tags) {
+TEST_CASE("mq_action_handler refuses a payload it cannot read", "[action][mq]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -81,7 +79,7 @@ TEST_CASE("mq_action_handler refuses a payload it cannot read", tags) {
     CHECK_FALSE(result.error().empty());
 }
 
-TEST_CASE("mq_action_handler refuses a payload with no queue", tags) {
+TEST_CASE("mq_action_handler refuses a payload with no queue", "[action][mq]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -99,7 +97,7 @@ TEST_CASE("mq_action_handler refuses a payload with no queue", tags) {
     CHECK(result.error().find("queue_id") != std::string::npos);
 }
 
-TEST_CASE("mq_action_handler reports the database's refusal for an unknown queue", tags) {
+TEST_CASE("mq_action_handler reports the database's refusal for an unknown queue", "[action][mq]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

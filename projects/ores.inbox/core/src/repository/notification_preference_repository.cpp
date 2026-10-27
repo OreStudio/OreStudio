@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+notification_preference_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::notification_preferences_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> notification_preference_filter_condition(
+    const std::optional<messaging::notification_preferences_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -312,8 +313,9 @@ notification_preference_repository::read_latest_by_account_id(
                                       domain::notification_preference>(
         ctx,
         query,
-        list_order(order, {"account_id", "kind_code", "channel_code"}, false),
-        filter_condition(filter),
+        notification_preference_list_order(
+            order, {"account_id", "kind_code", "channel_code"}, false),
+        notification_preference_filter_condition(filter),
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
         lg(),
         "Reading latest notification preferences by account_id.");
@@ -335,7 +337,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count_by_
     return execute_count_query<notification_preference_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        notification_preference_filter_condition(filter),
         lg(),
         "Counting notification preferences by account_id");
 }
@@ -401,8 +403,9 @@ std::vector<domain::notification_preference> notification_preference_repository:
                                       domain::notification_preference>(
         ctx,
         query,
-        list_order(order, {"account_id", "kind_code", "channel_code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        notification_preference_list_order(
+            order, {"account_id", "kind_code", "channel_code"}, false),
+        narrowed(valid_at(as_of), notification_preference_filter_condition(filter)),
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
         lg(),
         "Reading latest notification preferences with pagination.");
@@ -421,7 +424,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count(
     return execute_count_query<notification_preference_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), notification_preference_filter_condition(filter)),
         lg(),
         "Counting notification preferences");
 }

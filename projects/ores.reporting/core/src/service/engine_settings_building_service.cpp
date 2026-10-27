@@ -75,9 +75,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::engine_settings_building>
-read_one(repository::engine_settings_building_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::engine_settings_building_key& key) {
+engine_settings_building_read_one(repository::engine_settings_building_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const messaging::engine_settings_building_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -87,7 +87,8 @@ read_one(repository::engine_settings_building_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::engine_settings_building_key key_from(const domain::engine_settings_building& v) {
+messaging::engine_settings_building_key
+engine_settings_building_key_from(const domain::engine_settings_building& v) {
     messaging::engine_settings_building_key key;
     key.id = v.id;
     return key;
@@ -100,7 +101,8 @@ messaging::engine_settings_building_key key_from(const domain::engine_settings_b
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::engine_settings_building to_domain(const messaging::engine_settings_building_write& write) {
+domain::engine_settings_building
+engine_settings_building_to_domain(const messaging::engine_settings_building_write& write) {
     domain::engine_settings_building v;
     v.id = write.id;
     v.engine_settings_id = write.engine_settings_id;
@@ -194,7 +196,7 @@ messaging::get_engine_settings_building_response
 engine_settings_building_service::get_engine_settings_building(
     const messaging::get_engine_settings_building_request& request) {
     messaging::get_engine_settings_building_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = engine_settings_building_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "engine_settings_building"});
         return response;
@@ -214,7 +216,7 @@ engine_settings_building_service::get_many_engine_settings_building(
     for (const auto& k : request.keys) {
         messaging::engine_settings_building_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = engine_settings_building_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.engine_settings_building = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -231,7 +233,8 @@ engine_settings_building_service::put_engine_settings_building(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        engine_settings_building_read_one(repo_, ctx_, engine_settings_building_key_from(value));
     if (!written.empty())
         response.engine_settings_building = std::move(written.front());
     return response;
@@ -264,7 +267,8 @@ engine_settings_building_service::put_many_engine_settings_building(
     repo_.write(ctx_, batch, claims);
     response.engine_settings_building.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = engine_settings_building_read_one(
+            repo_, ctx_, engine_settings_building_key_from(value));
         response.engine_settings_building.push_back(written.empty() ? value :
                                                                       std::move(written.front()));
     }
@@ -300,7 +304,7 @@ engine_settings_building_service::delete_engine_settings_building(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = engine_settings_building_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "engine_settings_building",
@@ -392,8 +396,9 @@ ores::utility::domain::result engine_settings_building_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = engine_settings_building_to_domain(change.write);
+    const auto current =
+        engine_settings_building_read_one(repo_, ctx_, engine_settings_building_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

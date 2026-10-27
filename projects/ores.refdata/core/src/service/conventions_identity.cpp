@@ -17,6 +17,7 @@
  *
  */
 #include "conventions_identity.hpp"
+#include "conventions_row_helpers.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/service/convention_service.hpp"
@@ -46,7 +47,7 @@ void close_live_rows(const ores::database::context& ctx,
     const auto live = repo.read_latest_by_convention_id(
         ctx, convention_id, 0, std::numeric_limits<std::uint32_t>::max(), {}, std::nullopt);
     for (const auto& row : live)
-        repo.remove(ctx, boost::uuids::to_string(row.id));
+        repo.remove(ctx, boost::uuids::to_string(row_identity(row).id));
 }
 
 }
@@ -57,12 +58,14 @@ tenor_basis_swap_forms_of(const std::vector<domain::convention>& central,
                           const std::vector<domain::tenor_basis_swap_long_short>& long_short) {
     tenor_basis_swap_forms forms;
     for (const auto& c : central)
-        if (c.kind_code == tenor_basis_swap_kind)
-            forms.central.push_back(c.id);
+        if (c.identity.kind_code == tenor_basis_swap_kind)
+            forms.central.push_back(c.identity.id);
     for (const auto& p : pay_receive)
-        forms.pay_receive.insert(boost::uuids::to_string(p.convention_id));
+        forms.pay_receive.insert(
+            boost::uuids::to_string(row_identity(p).convention_id));
     for (const auto& l : long_short)
-        forms.long_short.insert(boost::uuids::to_string(l.convention_id));
+        forms.long_short.insert(
+            boost::uuids::to_string(row_identity(l).convention_id));
     return forms;
 }
 
@@ -74,22 +77,24 @@ void resolve_tenor_basis_swap_identity(
     convention_service conventions(ctx);
     std::map<std::string, boost::uuids::uuid> resolved;
     for (auto& c : central) {
-        if (c.kind_code != tenor_basis_swap_kind)
+        if (c.identity.kind_code != tenor_basis_swap_kind)
             continue;
-        const auto provisional = c.id;
-        const auto existing = conventions.find_convention_by_code(c.party_id, c.kind_code, c.name);
-        c.id = existing ? existing->id : new_uuid();
-        resolved[boost::uuids::to_string(provisional)] = c.id;
+        const auto provisional = c.identity.id;
+        const auto existing = conventions.find_convention_by_code(
+            c.identity.party_id, c.identity.kind_code, c.payload.name);
+        c.identity.id = existing ? existing->identity.id : new_uuid();
+        resolved[boost::uuids::to_string(provisional)] = c.identity.id;
     }
     if (resolved.empty())
         return;
 
     const auto relink = [&](auto& parts, auto repo) {
         for (auto& p : parts) {
-            const auto it = resolved.find(boost::uuids::to_string(p.convention_id));
+            const auto it = resolved.find(
+                boost::uuids::to_string(row_identity(p).convention_id));
             if (it == resolved.end())
                 continue;
-            p.convention_id = it->second;
+            row_identity(p).convention_id = it->second;
             const auto held =
                 repo.read_latest_by_convention_id(ctx,
                                                   boost::uuids::to_string(it->second),
@@ -97,7 +102,8 @@ void resolve_tenor_basis_swap_identity(
                                                   std::numeric_limits<std::uint32_t>::max(),
                                                   {},
                                                   std::nullopt);
-            p.id = held.empty() ? new_uuid() : held.front().id;
+            row_identity(p).id =
+                held.empty() ? new_uuid() : row_identity(held.front()).id;
         }
     };
     relink(pay_receive, tenor_basis_swap_pay_receive_repository());

@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::route> read_one(repository::route_repository& repo,
-                                    const ores::database::context& ctx,
-                                    const messaging::route_key& key) {
+std::vector<domain::route> route_read_one(repository::route_repository& repo,
+                                          const ores::database::context& ctx,
+                                          const messaging::route_key& key) {
     return repo.read_latest_by_provider_code(ctx, key.provider_code);
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::route> read_one(repository::route_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::route_key key_from(const domain::route& v) {
+messaging::route_key route_key_from(const domain::route& v) {
     messaging::route_key key;
     key.provider_code = v.provider_code;
     return key;
@@ -98,7 +98,7 @@ messaging::route_key key_from(const domain::route& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::route to_domain(const messaging::route_write& write) {
+domain::route route_to_domain(const messaging::route_write& write) {
     domain::route v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -162,7 +162,7 @@ route_service::list_routes(const messaging::list_routes_request& request) {
 messaging::get_route_response
 route_service::get_route(const messaging::get_route_request& request) {
     messaging::get_route_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = route_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "route"});
         return response;
@@ -181,7 +181,7 @@ route_service::get_many_routes(const messaging::get_many_routes_request& request
     for (const auto& k : request.keys) {
         messaging::route_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = route_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.route = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -197,7 +197,7 @@ route_service::put_route(const messaging::put_route_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = route_read_one(repo_, ctx_, route_key_from(value));
     if (!written.empty())
         response.route = std::move(written.front());
     return response;
@@ -229,7 +229,7 @@ route_service::put_many_routes(const messaging::put_many_routes_request& request
     repo_.write(ctx_, batch, claims);
     response.routes.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = route_read_one(repo_, ctx_, route_key_from(value));
         response.routes.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -252,7 +252,7 @@ route_service::delete_route(const messaging::delete_route_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = route_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "route"});
         return response;
@@ -268,7 +268,7 @@ route_service::delete_route(const messaging::delete_route_request& request) {
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = route_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "route",
@@ -309,7 +309,7 @@ route_service::delete_many_routes(const messaging::delete_many_routes_request& r
     std::vector<domain::route> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = route_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -335,7 +335,7 @@ route_service::list_route_versions(const messaging::list_route_versions_request&
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = route_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "route"});
         return response;
@@ -358,7 +358,7 @@ route_service::get_route_version(const messaging::get_route_version_request& req
     messaging::get_route_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.route);
+    const auto named = route_read_one(repo_, ctx_, request.key.route);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "route"});
         return response;
@@ -380,8 +380,8 @@ route_service::prepare_change(const messaging::route_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = route_to_domain(change.write);
+    const auto current = route_read_one(repo_, ctx_, route_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -451,7 +451,7 @@ route_service::get_route_by_provider_code(const std::string& provider_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting route by provider_code: " << provider_code;
     messaging::route_key k;
     k.provider_code = provider_code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = route_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

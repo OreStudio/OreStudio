@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+trade_authorisation_request_list_order(const ores::utility::domain::order& order,
+                                       std::initializer_list<std::string> default_columns,
+                                       bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"request_id"});
     if (!trade_authorisation_request_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::trade_authorisation_requests_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> trade_authorisation_request_filter_condition(
+    const std::optional<messaging::trade_authorisation_requests_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -301,8 +302,8 @@ trade_authorisation_request_repository::read_latest_by_trade_id(
                                       domain::trade_authorisation_request>(
         ctx,
         query,
-        list_order(order, {"request_id"}, false),
-        filter_condition(filter),
+        trade_authorisation_request_list_order(order, {"request_id"}, false),
+        trade_authorisation_request_filter_condition(filter),
         [](const auto& entities) { return trade_authorisation_request_mapper::map(entities); },
         lg(),
         "Reading latest trade authorisation requests by trade_id.");
@@ -325,7 +326,7 @@ trade_authorisation_request_repository::get_total_trade_authorisation_request_co
     return execute_count_query<trade_authorisation_request_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        trade_authorisation_request_filter_condition(filter),
         lg(),
         "Counting trade authorisation requests by trade_id");
 }
@@ -385,8 +386,8 @@ trade_authorisation_request_repository::read_latest(
                                       domain::trade_authorisation_request>(
         ctx,
         query,
-        list_order(order, {"request_id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        trade_authorisation_request_list_order(order, {"request_id"}, false),
+        narrowed(valid_at(as_of), trade_authorisation_request_filter_condition(filter)),
         [](const auto& entities) { return trade_authorisation_request_mapper::map(entities); },
         lg(),
         "Reading latest trade authorisation requests with pagination.");
@@ -405,7 +406,7 @@ std::uint32_t trade_authorisation_request_repository::get_total_trade_authorisat
     return execute_count_query<trade_authorisation_request_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), trade_authorisation_request_filter_condition(filter)),
         lg(),
         "Counting trade authorisation requests");
 }

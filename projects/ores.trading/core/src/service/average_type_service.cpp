@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::average_type> read_one(repository::average_type_repository& repo,
-                                           const ores::database::context& ctx,
-                                           const messaging::average_type_key& key) {
+std::vector<domain::average_type> average_type_read_one(repository::average_type_repository& repo,
+                                                        const ores::database::context& ctx,
+                                                        const messaging::average_type_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::average_type> read_one(repository::average_type_repository& 
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::average_type_key key_from(const domain::average_type& v) {
+messaging::average_type_key average_type_key_from(const domain::average_type& v) {
     messaging::average_type_key key;
     key.code = v.code;
     return key;
@@ -94,7 +94,7 @@ messaging::average_type_key key_from(const domain::average_type& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::average_type to_domain(const messaging::average_type_write& write) {
+domain::average_type average_type_to_domain(const messaging::average_type_write& write) {
     domain::average_type v;
     v.code = write.code;
     v.description = write.description;
@@ -139,7 +139,7 @@ average_type_service::list_average_types(const messaging::list_average_types_req
 messaging::get_average_type_response
 average_type_service::get_average_type(const messaging::get_average_type_request& request) {
     messaging::get_average_type_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = average_type_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "average_type"});
         return response;
@@ -158,7 +158,7 @@ messaging::get_many_average_types_response average_type_service::get_many_averag
     for (const auto& k : request.keys) {
         messaging::average_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = average_type_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.average_type = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -174,7 +174,7 @@ average_type_service::put_average_type(const messaging::put_average_type_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = average_type_read_one(repo_, ctx_, average_type_key_from(value));
     if (!written.empty())
         response.average_type = std::move(written.front());
     return response;
@@ -206,7 +206,7 @@ messaging::put_many_average_types_response average_type_service::put_many_averag
     repo_.write(ctx_, batch, claims);
     response.average_types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = average_type_read_one(repo_, ctx_, average_type_key_from(value));
         response.average_types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -239,7 +239,7 @@ average_type_service::delete_average_type(const messaging::delete_average_type_r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = average_type_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "average_type",
@@ -323,8 +323,8 @@ average_type_service::prepare_change(const messaging::average_type_change& chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = average_type_to_domain(change.write);
+    const auto current = average_type_read_one(repo_, ctx_, average_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

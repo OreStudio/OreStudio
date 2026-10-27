@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::vanilla_swap_instrument>
-read_one(repository::vanilla_swap_instrument_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::vanilla_swap_instrument_key& key) {
+vanilla_swap_instrument_read_one(repository::vanilla_swap_instrument_repository& repo,
+                                 const ores::database::context& ctx,
+                                 const messaging::vanilla_swap_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::vanilla_swap_instrument_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::vanilla_swap_instrument_key key_from(const domain::vanilla_swap_instrument& v) {
+messaging::vanilla_swap_instrument_key
+vanilla_swap_instrument_key_from(const domain::vanilla_swap_instrument& v) {
     messaging::vanilla_swap_instrument_key key;
     key.trade_id = v.trade_id;
     return key;
@@ -99,7 +100,8 @@ messaging::vanilla_swap_instrument_key key_from(const domain::vanilla_swap_instr
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::vanilla_swap_instrument to_domain(const messaging::vanilla_swap_instrument_write& write) {
+domain::vanilla_swap_instrument
+vanilla_swap_instrument_to_domain(const messaging::vanilla_swap_instrument_write& write) {
     domain::vanilla_swap_instrument v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
@@ -148,7 +150,7 @@ messaging::get_vanilla_swap_instrument_response
 vanilla_swap_instrument_service::get_vanilla_swap_instrument(
     const messaging::get_vanilla_swap_instrument_request& request) {
     messaging::get_vanilla_swap_instrument_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = vanilla_swap_instrument_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "vanilla_swap_instrument"});
         return response;
@@ -168,7 +170,7 @@ vanilla_swap_instrument_service::get_many_vanilla_swap_instruments(
     for (const auto& k : request.keys) {
         messaging::vanilla_swap_instrument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = vanilla_swap_instrument_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.vanilla_swap_instrument = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +187,8 @@ vanilla_swap_instrument_service::put_vanilla_swap_instrument(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        vanilla_swap_instrument_read_one(repo_, ctx_, vanilla_swap_instrument_key_from(value));
     if (!written.empty())
         response.vanilla_swap_instrument = std::move(written.front());
     return response;
@@ -218,7 +221,8 @@ vanilla_swap_instrument_service::put_many_vanilla_swap_instruments(
     repo_.write(ctx_, batch, claims);
     response.vanilla_swap_instruments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            vanilla_swap_instrument_read_one(repo_, ctx_, vanilla_swap_instrument_key_from(value));
         response.vanilla_swap_instruments.push_back(written.empty() ? value :
                                                                       std::move(written.front()));
     }
@@ -254,7 +258,7 @@ vanilla_swap_instrument_service::delete_vanilla_swap_instrument(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = vanilla_swap_instrument_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "vanilla_swap_instrument",
@@ -346,8 +350,9 @@ ores::utility::domain::result vanilla_swap_instrument_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = vanilla_swap_instrument_to_domain(change.write);
+    const auto current =
+        vanilla_swap_instrument_read_one(repo_, ctx_, vanilla_swap_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

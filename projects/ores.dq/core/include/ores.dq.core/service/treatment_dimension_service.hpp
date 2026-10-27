@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_treatment_dimensions_response
-    list_treatment_dimensions(const messaging::list_treatment_dimensions_request& request);
-    messaging::get_treatment_dimension_response
-    get_treatment_dimension(const messaging::get_treatment_dimension_request& request);
-    messaging::get_many_treatment_dimensions_response
-    get_many_treatment_dimensions(const messaging::get_many_treatment_dimensions_request& request);
-    messaging::put_treatment_dimension_response
-    put_treatment_dimension(const messaging::put_treatment_dimension_request& request);
-    messaging::put_many_treatment_dimensions_response
-    put_many_treatment_dimensions(const messaging::put_many_treatment_dimensions_request& request);
-    messaging::delete_treatment_dimension_response
-    delete_treatment_dimension(const messaging::delete_treatment_dimension_request& request);
-    messaging::delete_many_treatment_dimensions_response delete_many_treatment_dimensions(
-        const messaging::delete_many_treatment_dimensions_request& request);
-    messaging::list_treatment_dimension_versions_response list_treatment_dimension_versions(
-        const messaging::list_treatment_dimension_versions_request& request);
-    messaging::get_treatment_dimension_version_response get_treatment_dimension_version(
-        const messaging::get_treatment_dimension_version_request& request);
+    ::ores::dq::messaging::list_treatment_dimensions_response list_treatment_dimensions(
+        const ::ores::dq::messaging::list_treatment_dimensions_request& request);
+    ::ores::dq::messaging::get_treatment_dimension_response
+    get_treatment_dimension(const ::ores::dq::messaging::get_treatment_dimension_request& request);
+    ::ores::dq::messaging::get_many_treatment_dimensions_response get_many_treatment_dimensions(
+        const ::ores::dq::messaging::get_many_treatment_dimensions_request& request);
+    ::ores::dq::messaging::put_treatment_dimension_response
+    put_treatment_dimension(const ::ores::dq::messaging::put_treatment_dimension_request& request);
+    ::ores::dq::messaging::put_many_treatment_dimensions_response put_many_treatment_dimensions(
+        const ::ores::dq::messaging::put_many_treatment_dimensions_request& request);
+    ::ores::dq::messaging::delete_treatment_dimension_response delete_treatment_dimension(
+        const ::ores::dq::messaging::delete_treatment_dimension_request& request);
+    ::ores::dq::messaging::delete_many_treatment_dimensions_response
+    delete_many_treatment_dimensions(
+        const ::ores::dq::messaging::delete_many_treatment_dimensions_request& request);
+    ::ores::dq::messaging::list_treatment_dimension_versions_response
+    list_treatment_dimension_versions(
+        const ::ores::dq::messaging::list_treatment_dimension_versions_request& request);
+    ::ores::dq::messaging::get_treatment_dimension_version_response get_treatment_dimension_version(
+        const ::ores::dq::messaging::get_treatment_dimension_version_request& request);
     /**@}*/
 
     /**
@@ -188,7 +190,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::treatment_dimension_change& change,
+    prepare_change(const ::ores::dq::messaging::treatment_dimension_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::treatment_dimension& out);
 };

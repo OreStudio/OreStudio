@@ -59,8 +59,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::tenor_convention_resolution>
-read_one(repository::tenor_convention_resolution_repository& repo,
-         const messaging::tenor_convention_resolution_key& key) {
+tenor_convention_resolution_read_one(repository::tenor_convention_resolution_repository& repo,
+                                     const messaging::tenor_convention_resolution_key& key) {
     return repo.read_latest(key.convention_code, key.tenor_code);
 }
 
@@ -70,7 +70,8 @@ read_one(repository::tenor_convention_resolution_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::tenor_convention_resolution_key key_from(const domain::tenor_convention_resolution& v) {
+messaging::tenor_convention_resolution_key
+tenor_convention_resolution_key_from(const domain::tenor_convention_resolution& v) {
     messaging::tenor_convention_resolution_key key;
     key.convention_code = v.convention_code;
     key.tenor_code = v.tenor_code;
@@ -86,7 +87,7 @@ messaging::tenor_convention_resolution_key key_from(const domain::tenor_conventi
  * set after this conversion.
  */
 domain::tenor_convention_resolution
-to_domain(const messaging::tenor_convention_resolution_write& write) {
+tenor_convention_resolution_to_domain(const messaging::tenor_convention_resolution_write& write) {
     domain::tenor_convention_resolution v;
     v.convention_code = write.convention_code;
     v.tenor_code = write.tenor_code;
@@ -150,7 +151,7 @@ messaging::get_tenor_convention_resolution_response
 tenor_convention_resolution_service::get_tenor_convention_resolution(
     const messaging::get_tenor_convention_resolution_request& request) {
     messaging::get_tenor_convention_resolution_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = tenor_convention_resolution_read_one(repo_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "tenor_convention_resolution"});
@@ -171,7 +172,7 @@ tenor_convention_resolution_service::get_many_tenor_convention_resolutions(
     for (const auto& k : request.keys) {
         messaging::tenor_convention_resolution_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = tenor_convention_resolution_read_one(repo_, k);
         if (!found.empty())
             entry.tenor_convention_resolution = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -188,7 +189,8 @@ tenor_convention_resolution_service::put_tenor_convention_resolution(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written =
+        tenor_convention_resolution_read_one(repo_, tenor_convention_resolution_key_from(value));
     if (!written.empty())
         response.tenor_convention_resolution = std::move(written.front());
     return response;
@@ -221,7 +223,8 @@ tenor_convention_resolution_service::put_many_tenor_convention_resolutions(
     repo_.write(batch, claims);
     response.tenor_convention_resolutions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = tenor_convention_resolution_read_one(
+            repo_, tenor_convention_resolution_key_from(value));
         response.tenor_convention_resolutions.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -258,7 +261,7 @@ tenor_convention_resolution_service::delete_tenor_convention_resolution(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = tenor_convention_resolution_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "tenor_convention_resolution",
@@ -311,8 +314,9 @@ ores::utility::domain::result tenor_convention_resolution_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = tenor_convention_resolution_to_domain(change.write);
+    const auto current =
+        tenor_convention_resolution_read_one(repo_, tenor_convention_resolution_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

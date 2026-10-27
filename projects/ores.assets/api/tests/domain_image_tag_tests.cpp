@@ -20,22 +20,16 @@
 #include "ores.assets.api/domain/image_tag.hpp"
 #include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.assets.tests");
-const std::string tags("[domain][image_tag]");
-
-}
-
 using ores::assets::domain::image_tag;
 using namespace ores::logging;
 
-TEST_CASE("default_constructed_image_tag_has_empty_fields", tags) {
+TEST_CASE("default_constructed_image_tag_has_empty_fields", "[domain][image_tag]") {
     auto lg(make_logger(test_suite));
 
     const image_tag sut;
@@ -49,7 +43,7 @@ TEST_CASE("default_constructed_image_tag_has_empty_fields", tags) {
     CHECK(sut.assigned_at == std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("image_tag_assigned_by_can_be_set", tags) {
+TEST_CASE("image_tag_assigned_by_can_be_set", "[domain][image_tag]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator gen;
@@ -68,7 +62,7 @@ TEST_CASE("image_tag_assigned_by_can_be_set", tags) {
     CHECK(sut.assigned_by == "admin");
 }
 
-TEST_CASE("image_tag_json_output_contains_keys_and_actor", tags) {
+TEST_CASE("image_tag_json_output_contains_keys_and_actor", "[domain][image_tag]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator gen;

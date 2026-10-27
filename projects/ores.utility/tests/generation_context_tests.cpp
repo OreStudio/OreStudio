@@ -22,6 +22,7 @@
 #include "ores.utility/generation/generation_engine.hpp"
 #include "ores.utility/generation/generation_environment.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <array>
 #include <catch2/catch_test_macros.hpp>
@@ -33,17 +34,10 @@
 #include <string>
 #include <vector>
 
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[generation]");
-
-}
-
 using namespace ores::utility::generation;
 using namespace ores::logging;
 
-TEST_CASE("engine_repeats_itself_for_the_same_seed", tags) {
+TEST_CASE("engine_repeats_itself_for_the_same_seed", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine first(7);
@@ -56,7 +50,7 @@ TEST_CASE("engine_repeats_itself_for_the_same_seed", tags) {
         CHECK(first.random_int(1, 1000) == second.random_int(1, 1000));
 }
 
-TEST_CASE("engine_differs_for_a_different_seed", tags) {
+TEST_CASE("engine_differs_for_a_different_seed", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine first(7);
@@ -72,7 +66,7 @@ TEST_CASE("engine_differs_for_a_different_seed", tags) {
     CHECK(differs);
 }
 
-TEST_CASE("random_int_stays_inside_the_requested_bounds", tags) {
+TEST_CASE("random_int_stays_inside_the_requested_bounds", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine engine(3);
@@ -84,7 +78,7 @@ TEST_CASE("random_int_stays_inside_the_requested_bounds", tags) {
     }
 }
 
-TEST_CASE("random_bool_honours_the_certainty_boundaries", tags) {
+TEST_CASE("random_bool_honours_the_certainty_boundaries", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine engine(3);
@@ -95,7 +89,7 @@ TEST_CASE("random_bool_honours_the_certainty_boundaries", tags) {
     }
 }
 
-TEST_CASE("alphanumeric_returns_the_requested_alphanumeric_length", tags) {
+TEST_CASE("alphanumeric_returns_the_requested_alphanumeric_length", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine engine(3);
@@ -108,7 +102,7 @@ TEST_CASE("alphanumeric_returns_the_requested_alphanumeric_length", tags) {
         value.begin(), value.end(), [](unsigned char c) { return std::isalnum(c) != 0; }));
 }
 
-TEST_CASE("alphanumeric_of_zero_length_is_empty", tags) {
+TEST_CASE("alphanumeric_of_zero_length_is_empty", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine engine(3);
@@ -116,7 +110,7 @@ TEST_CASE("alphanumeric_of_zero_length_is_empty", tags) {
     CHECK(engine.alphanumeric(0).empty());
 }
 
-TEST_CASE("pick_returns_an_element_and_rejects_an_empty_vector", tags) {
+TEST_CASE("pick_returns_an_element_and_rejects_an_empty_vector", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine engine(3);
@@ -131,7 +125,7 @@ TEST_CASE("pick_returns_an_element_and_rejects_an_empty_vector", tags) {
     CHECK_THROWS_AS(engine.pick(std::vector<int>{}), std::out_of_range);
 }
 
-TEST_CASE("generate_uuid_carries_version_7_and_the_rfc_variant", tags) {
+TEST_CASE("generate_uuid_carries_version_7_and_the_rfc_variant", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_engine engine(3);
@@ -142,7 +136,7 @@ TEST_CASE("generate_uuid_carries_version_7_and_the_rfc_variant", tags) {
     CHECK(engine.generate_uuid() != uuid);
 }
 
-TEST_CASE("environment_reads_its_initial_entries", tags) {
+TEST_CASE("environment_reads_its_initial_entries", "[generation]") {
     auto lg(make_logger(test_suite));
 
     const generation_environment env({{"tenant_id", "abc"}, {"party_id", "42"}});
@@ -154,7 +148,7 @@ TEST_CASE("environment_reads_its_initial_entries", tags) {
     CHECK(!env.parent());
 }
 
-TEST_CASE("child_environment_inherits_and_overrides", tags) {
+TEST_CASE("child_environment_inherits_and_overrides", "[generation]") {
     auto lg(make_logger(test_suite));
 
     const auto parent = std::make_shared<generation_environment>(
@@ -166,7 +160,7 @@ TEST_CASE("child_environment_inherits_and_overrides", tags) {
     CHECK(child.parent() == std::shared_ptr<const generation_environment>(parent));
 }
 
-TEST_CASE("child_context_continues_the_parent_random_sequence", tags) {
+TEST_CASE("child_context_continues_the_parent_random_sequence", "[generation]") {
     auto lg(make_logger(test_suite));
 
     generation_context parent(11);
@@ -184,7 +178,7 @@ TEST_CASE("child_context_continues_the_parent_random_sequence", tags) {
     CHECK(fork.random_int(1, 1000000) == from_child);
 }
 
-TEST_CASE("context_exposes_its_seed_and_environment", tags) {
+TEST_CASE("context_exposes_its_seed_and_environment", "[generation]") {
     auto lg(make_logger(test_suite));
 
     const generation_context ctx(99, {{std::string(generation_keys::modified_by), "tester"}});
@@ -193,7 +187,7 @@ TEST_CASE("context_exposes_its_seed_and_environment", tags) {
     CHECK(ctx.env().get(generation_keys::modified_by) == std::optional<std::string>("tester"));
 }
 
-TEST_CASE("generation_keys_name_the_shared_entries", tags) {
+TEST_CASE("generation_keys_name_the_shared_entries", "[generation]") {
     auto lg(make_logger(test_suite));
 
     CHECK(generation_keys::modified_by == "modified_by");

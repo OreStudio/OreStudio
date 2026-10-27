@@ -21,19 +21,13 @@
 #include "ores.dq.api/domain/data_domain_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/data_domain_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::dq::domain::data_domain;
 using namespace ores::logging;
 
-TEST_CASE("create_data_domain_with_valid_fields", tags) {
+TEST_CASE("create_data_domain_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     data_domain sut;
@@ -51,7 +45,7 @@ TEST_CASE("create_data_domain_with_valid_fields", tags) {
     CHECK(sut.change_commentary == "Initial creation");
 }
 
-TEST_CASE("data_domain_convert_single_to_table", tags) {
+TEST_CASE("data_domain_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     data_domain dd;

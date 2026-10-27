@@ -119,6 +119,8 @@ writes it.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_convention_kind_terms_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Insert trigger

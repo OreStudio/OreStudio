@@ -27,18 +27,12 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
-
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party_id_scheme;
@@ -46,7 +40,7 @@ using ores::refdata::repository::party_id_scheme_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_party_id_scheme", tags) {
+TEST_CASE("write_single_party_id_scheme", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -65,7 +59,7 @@ TEST_CASE("write_single_party_id_scheme", tags) {
     CHECK(read_schemes[0].description == pis.description);
 }
 
-TEST_CASE("write_multiple_party_id_schemes", tags) {
+TEST_CASE("write_multiple_party_id_schemes", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -89,7 +83,7 @@ TEST_CASE("write_multiple_party_id_schemes", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_id_schemes", tags) {
+TEST_CASE("read_latest_party_id_schemes", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -116,7 +110,7 @@ TEST_CASE("read_latest_party_id_schemes", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_id_scheme_by_code", tags) {
+TEST_CASE("read_latest_party_id_scheme_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -140,7 +134,7 @@ TEST_CASE("read_latest_party_id_scheme_by_code", tags) {
     CHECK(read_party_id_schemes[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_party_id_scheme_code", tags) {
+TEST_CASE("read_nonexistent_party_id_scheme_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

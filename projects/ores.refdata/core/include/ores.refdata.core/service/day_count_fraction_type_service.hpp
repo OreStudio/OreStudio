@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_day_count_fraction_types_response
-    list_day_count_fraction_types(const messaging::list_day_count_fraction_types_request& request);
-    messaging::get_day_count_fraction_type_response
-    get_day_count_fraction_type(const messaging::get_day_count_fraction_type_request& request);
-    messaging::get_many_day_count_fraction_types_response get_many_day_count_fraction_types(
-        const messaging::get_many_day_count_fraction_types_request& request);
-    messaging::put_day_count_fraction_type_response
-    put_day_count_fraction_type(const messaging::put_day_count_fraction_type_request& request);
-    messaging::put_many_day_count_fraction_types_response put_many_day_count_fraction_types(
-        const messaging::put_many_day_count_fraction_types_request& request);
-    messaging::delete_day_count_fraction_type_response delete_day_count_fraction_type(
-        const messaging::delete_day_count_fraction_type_request& request);
-    messaging::delete_many_day_count_fraction_types_response delete_many_day_count_fraction_types(
-        const messaging::delete_many_day_count_fraction_types_request& request);
-    messaging::list_day_count_fraction_type_versions_response list_day_count_fraction_type_versions(
-        const messaging::list_day_count_fraction_type_versions_request& request);
-    messaging::get_day_count_fraction_type_version_response get_day_count_fraction_type_version(
-        const messaging::get_day_count_fraction_type_version_request& request);
+    ::ores::refdata::messaging::list_day_count_fraction_types_response
+    list_day_count_fraction_types(
+        const ::ores::refdata::messaging::list_day_count_fraction_types_request& request);
+    ::ores::refdata::messaging::get_day_count_fraction_type_response get_day_count_fraction_type(
+        const ::ores::refdata::messaging::get_day_count_fraction_type_request& request);
+    ::ores::refdata::messaging::get_many_day_count_fraction_types_response
+    get_many_day_count_fraction_types(
+        const ::ores::refdata::messaging::get_many_day_count_fraction_types_request& request);
+    ::ores::refdata::messaging::put_day_count_fraction_type_response put_day_count_fraction_type(
+        const ::ores::refdata::messaging::put_day_count_fraction_type_request& request);
+    ::ores::refdata::messaging::put_many_day_count_fraction_types_response
+    put_many_day_count_fraction_types(
+        const ::ores::refdata::messaging::put_many_day_count_fraction_types_request& request);
+    ::ores::refdata::messaging::delete_day_count_fraction_type_response
+    delete_day_count_fraction_type(
+        const ::ores::refdata::messaging::delete_day_count_fraction_type_request& request);
+    ::ores::refdata::messaging::delete_many_day_count_fraction_types_response
+    delete_many_day_count_fraction_types(
+        const ::ores::refdata::messaging::delete_many_day_count_fraction_types_request& request);
+    ::ores::refdata::messaging::list_day_count_fraction_type_versions_response
+    list_day_count_fraction_type_versions(
+        const ::ores::refdata::messaging::list_day_count_fraction_type_versions_request& request);
+    ::ores::refdata::messaging::get_day_count_fraction_type_version_response
+    get_day_count_fraction_type_version(
+        const ::ores::refdata::messaging::get_day_count_fraction_type_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +196,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::day_count_fraction_type_change& change,
+    prepare_change(const ::ores::refdata::messaging::day_count_fraction_type_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::day_count_fraction_type& out);
 };

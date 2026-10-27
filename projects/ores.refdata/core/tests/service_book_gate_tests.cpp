@@ -36,8 +36,6 @@
 
 namespace {
 
-const std::string tags("[book_gate]");
-
 using namespace ores::refdata::tests;
 using ores::refdata::service::book_proposal_service;
 using ores::refdata::service::book_service;
@@ -119,7 +117,8 @@ struct policy_row {
 
 }
 
-TEST_CASE("a_gated_put_with_no_request_writes_nothing_and_answers_approval_required", tags) {
+TEST_CASE("a_gated_put_with_no_request_writes_nothing_and_answers_approval_required",
+          "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -132,7 +131,8 @@ TEST_CASE("a_gated_put_with_no_request_writes_nothing_and_answers_approval_requi
     CHECK_FALSE(svc.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("a_change_to_a_gated_column_is_refused_and_the_live_row_is_left_as_it_was", tags) {
+TEST_CASE("a_change_to_a_gated_column_is_refused_and_the_live_row_is_left_as_it_was",
+          "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -150,7 +150,7 @@ TEST_CASE("a_change_to_a_gated_column_is_refused_and_the_live_row_is_left_as_it_
     CHECK(after->version == live.version);
 }
 
-TEST_CASE("a_change_to_a_column_no_policy_names_is_written_directly", tags) {
+TEST_CASE("a_change_to_a_column_no_policy_names_is_written_directly", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -165,7 +165,7 @@ TEST_CASE("a_change_to_a_column_no_policy_names_is_written_directly", tags) {
     CHECK(svc.get_book(live.id)->description == "Only the words change");
 }
 
-TEST_CASE("a_removal_is_written_directly_when_the_policy_names_no_part_for_it", tags) {
+TEST_CASE("a_removal_is_written_directly_when_the_policy_names_no_part_for_it", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -181,7 +181,7 @@ TEST_CASE("a_removal_is_written_directly_when_the_policy_names_no_part_for_it", 
     CHECK_FALSE(svc.get_book(live.id).has_value());
 }
 
-TEST_CASE("a_removal_the_policy_gates_is_refused_and_the_row_stays", tags) {
+TEST_CASE("a_removal_the_policy_gates_is_refused_and_the_row_stays", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -198,7 +198,7 @@ TEST_CASE("a_removal_the_policy_gates_is_refused_and_the_row_stays", tags) {
     CHECK(svc.get_book(live.id).has_value());
 }
 
-TEST_CASE("a_batch_removal_the_policy_gates_is_refused_and_the_rows_stay", tags) {
+TEST_CASE("a_batch_removal_the_policy_gates_is_refused_and_the_rows_stay", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -216,7 +216,7 @@ TEST_CASE("a_batch_removal_the_policy_gates_is_refused_and_the_rows_stay", tags)
     CHECK(svc.get_book(live.id).has_value());
 }
 
-TEST_CASE("an_approved_request_opens_the_gate_for_the_line_it_holds", tags) {
+TEST_CASE("an_approved_request_opens_the_gate_for_the_line_it_holds", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto line = new_book_line(h, w);
@@ -232,7 +232,7 @@ TEST_CASE("an_approved_request_opens_the_gate_for_the_line_it_holds", tags) {
     CHECK(svc.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", tags) {
+TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto line = new_book_line(h, w);
@@ -247,7 +247,7 @@ TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", tags) {
     CHECK_FALSE(svc.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("an_approved_request_opens_no_write_it_does_not_hold", tags) {
+TEST_CASE("an_approved_request_opens_no_write_it_does_not_hold", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto held = new_book_line(h, w);
@@ -264,7 +264,7 @@ TEST_CASE("an_approved_request_opens_no_write_it_does_not_hold", tags) {
     CHECK_FALSE(svc.get_book(other.entity_id).has_value());
 }
 
-TEST_CASE("an_approved_request_opens_no_write_that_claims_another_version", tags) {
+TEST_CASE("an_approved_request_opens_no_write_that_claims_another_version", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto created = new_book_line(h, w);
@@ -282,7 +282,7 @@ TEST_CASE("an_approved_request_opens_no_write_that_claims_another_version", tags
     CHECK(response.result.code == "approval_required");
 }
 
-TEST_CASE("a_line_opens_the_gate_once", tags) {
+TEST_CASE("a_line_opens_the_gate_once", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto line = new_book_line(h, w);
@@ -302,7 +302,7 @@ TEST_CASE("a_line_opens_the_gate_once", tags) {
     CHECK_FALSE(response.result.outcome == outcome::ok);
 }
 
-TEST_CASE("a_rehearsal_is_let_through_the_gate_and_leaves_nothing_behind", tags) {
+TEST_CASE("a_rehearsal_is_let_through_the_gate_and_leaves_nothing_behind", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto line = new_book_line(h, w);
@@ -320,7 +320,7 @@ TEST_CASE("a_rehearsal_is_let_through_the_gate_and_leaves_nothing_behind", tags)
     CHECK_FALSE(book_service(w.ctx).get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("the_in_process_save_and_remove_methods_are_refused_for_a_gated_entity", tags) {
+TEST_CASE("the_in_process_save_and_remove_methods_are_refused_for_a_gated_entity", "[book_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_service svc(w.ctx);
@@ -333,7 +333,8 @@ TEST_CASE("the_in_process_save_and_remove_methods_are_refused_for_a_gated_entity
     CHECK(svc.get_book(live.id).has_value());
 }
 
-TEST_CASE("the_policy_answers_free_required_or_approved_and_reads_a_bad_request_id_as_none", tags) {
+TEST_CASE("the_policy_answers_free_required_or_approved_and_reads_a_bad_request_id_as_none",
+          "[book_gate]") {
     using ores::service::messaging::gate_verdict;
     using ores::service::messaging::gate_verdict_of;
     ores::testing::scoped_database_helper h;

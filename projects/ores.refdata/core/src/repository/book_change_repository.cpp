@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy book_change_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!book_change_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::book_changes_filter>& filter) {
+book_change_filter_condition(const std::optional<messaging::book_changes_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -275,8 +275,8 @@ std::vector<domain::book_change> book_change_repository::read_latest_by_request_
     return execute_ordered_read_query<book_change_entity, domain::book_change>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        book_change_list_order(order, {"id"}, false),
+        book_change_filter_condition(filter),
         [](const auto& entities) { return book_change_mapper::map(entities); },
         lg(),
         "Reading latest book changes by request_id.");
@@ -295,8 +295,11 @@ std::uint32_t book_change_repository::get_total_book_change_count_by_request_id(
         sqlgen::read<std::vector<book_change_entity>> |
         where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value());
 
-    return execute_count_query<book_change_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting book changes by request_id");
+    return execute_count_query<book_change_entity>(ctx,
+                                                   query,
+                                                   book_change_filter_condition(filter),
+                                                   lg(),
+                                                   "Counting book changes by request_id");
 }
 
 
@@ -349,8 +352,8 @@ book_change_repository::read_latest(context ctx,
     return execute_ordered_read_query<book_change_entity, domain::book_change>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        book_change_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), book_change_filter_condition(filter)),
         [](const auto& entities) { return book_change_mapper::map(entities); },
         lg(),
         "Reading latest book changes with pagination.");
@@ -368,7 +371,7 @@ std::uint32_t book_change_repository::get_total_book_change_count(
     return execute_count_query<book_change_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), book_change_filter_condition(filter)),
         lg(),
         "Counting book changes");
 }

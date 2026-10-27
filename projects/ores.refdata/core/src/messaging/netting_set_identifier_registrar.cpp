@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view netting_set_identifier_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_netting_set_identifier_handlers(
@@ -51,45 +51,45 @@ std::vector<ores::nats::service::subscription> register_netting_set_identifier_h
         std::make_shared<netting_set_identifier_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_netting_set_identifiers_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->list_netting_set_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_netting_set_identifier_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_netting_set_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_netting_set_identifiers_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_many_netting_set_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_netting_set_identifier_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->put_netting_set_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_netting_set_identifiers_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->put_many_netting_set_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_netting_set_identifier_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->delete_netting_set_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_netting_set_identifiers_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->delete_many_netting_set_identifiers(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_netting_set_id_netting_set_identifiers_request::nats_subject,
-                             queue_group,
+                             netting_set_identifier_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_netting_set_id_netting_set_identifiers(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_netting_set_identifier_versions_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->list_netting_set_identifier_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_netting_set_identifier_version_request::nats_subject,
-        queue_group,
+        netting_set_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_netting_set_identifier_version(std::move(msg)); }));
     return subs;
 }

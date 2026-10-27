@@ -20,12 +20,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][importer]");
 
 std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
@@ -41,7 +39,7 @@ using namespace ores::logging;
 // validate_currency tests
 // =============================================================================
 
-TEST_CASE("validate_currency_with_all_required_fields", tags) {
+TEST_CASE("validate_currency_with_all_required_fields", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -57,7 +55,7 @@ TEST_CASE("validate_currency_with_all_required_fields", tags) {
     CHECK(errors.empty());
 }
 
-TEST_CASE("validate_currency_with_missing_name", tags) {
+TEST_CASE("validate_currency_with_missing_name", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -73,7 +71,7 @@ TEST_CASE("validate_currency_with_missing_name", tags) {
     CHECK(errors.contains("Name is required"));
 }
 
-TEST_CASE("validate_currency_with_missing_iso_code", tags) {
+TEST_CASE("validate_currency_with_missing_iso_code", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -89,7 +87,7 @@ TEST_CASE("validate_currency_with_missing_iso_code", tags) {
     CHECK(errors.contains("ISO code is required"));
 }
 
-TEST_CASE("validate_currency_with_missing_rounding_type", tags) {
+TEST_CASE("validate_currency_with_missing_rounding_type", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -105,7 +103,7 @@ TEST_CASE("validate_currency_with_missing_rounding_type", tags) {
     CHECK(errors.contains("Rounding type is required"));
 }
 
-TEST_CASE("validate_currency_with_zero_fractions_per_unit", tags) {
+TEST_CASE("validate_currency_with_zero_fractions_per_unit", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -122,7 +120,7 @@ TEST_CASE("validate_currency_with_zero_fractions_per_unit", tags) {
     CHECK(errors.contains("Fractions per unit must be positive"));
 }
 
-TEST_CASE("validate_currency_with_negative_rounding_precision", tags) {
+TEST_CASE("validate_currency_with_negative_rounding_precision", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -139,7 +137,7 @@ TEST_CASE("validate_currency_with_negative_rounding_precision", tags) {
     CHECK(errors.contains("Rounding precision must be non-negative"));
 }
 
-TEST_CASE("validate_currency_with_multiple_errors", tags) {
+TEST_CASE("validate_currency_with_multiple_errors", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     currency c{};
@@ -161,7 +159,7 @@ TEST_CASE("validate_currency_with_multiple_errors", tags) {
 // import_currency_config tests
 // =============================================================================
 
-TEST_CASE("import_currency_config_from_currencies_xml", tags) {
+TEST_CASE("import_currency_config_from_currencies_xml", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Input/currencies.xml");
@@ -184,7 +182,7 @@ TEST_CASE("import_currency_config_from_currencies_xml", tags) {
     CHECK(first.change_reason_code == "system.external_data_import");
 }
 
-TEST_CASE("import_currency_config_from_example_1", tags) {
+TEST_CASE("import_currency_config_from_example_1", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
@@ -206,7 +204,7 @@ TEST_CASE("import_currency_config_from_example_1", tags) {
     CHECK(first.monetary_nature.empty());
 }
 
-TEST_CASE("import_currency_config_maps_all_fields", tags) {
+TEST_CASE("import_currency_config_maps_all_fields", "[ore][xml][importer]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Input/currencies.xml");

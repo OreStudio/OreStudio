@@ -28,8 +28,6 @@
 
 namespace {
 
-const std::string tags("[identity]");
-
 namespace wf = ores::workflow::workflow;
 
 /**
@@ -62,7 +60,7 @@ wf::identity_step_request command_of(const ores::workflow::service::workflow_ste
 
 }
 
-TEST_CASE("identity_workflow_fills_in_every_omitted_step_field", tags) {
+TEST_CASE("identity_workflow_fills_in_every_omitted_step_field", "[identity]") {
     // Only the name is given. Every other member is optional on the wire, so the
     // step still arrives with a behaviour, no compensation and no delay.
     const auto steps = identity_steps(R"({"steps":[{"name":"one"}]})");
@@ -79,7 +77,7 @@ TEST_CASE("identity_workflow_fills_in_every_omitted_step_field", tags) {
     CHECK(command.delay() == 0);
 }
 
-TEST_CASE("identity_workflow_carries_the_behaviour_its_request_declares", tags) {
+TEST_CASE("identity_workflow_carries_the_behaviour_its_request_declares", "[identity]") {
     const auto steps = identity_steps(
         R"({"steps":[{"name":"flaky","behaviour":"fail","compensate":true,"delay_seconds":45}]})");
 
@@ -92,7 +90,7 @@ TEST_CASE("identity_workflow_carries_the_behaviour_its_request_declares", tags) 
     CHECK(command.delay() == 45);
 }
 
-TEST_CASE("identity_workflow_builds_one_step_per_declared_entry", tags) {
+TEST_CASE("identity_workflow_builds_one_step_per_declared_entry", "[identity]") {
     const auto steps = identity_steps(
         R"({"steps":[{"name":"one","behaviour":"warn"},{"name":"two"},{"name":"three"}]})");
 
@@ -104,7 +102,7 @@ TEST_CASE("identity_workflow_builds_one_step_per_declared_entry", tags) {
     CHECK(steps[2].name == "three");
 }
 
-TEST_CASE("identity_workflow_compensates_by_completing", tags) {
+TEST_CASE("identity_workflow_compensates_by_completing", "[identity]") {
     const auto steps = identity_steps(R"({"steps":[{"name":"one","compensate":true}]})");
 
     REQUIRE(steps.size() == 1);
@@ -115,7 +113,7 @@ TEST_CASE("identity_workflow_compensates_by_completing", tags) {
     CHECK(compensation->outcome() == "complete");
 }
 
-TEST_CASE("identity_workflow_builds_nothing_from_a_request_it_cannot_read", tags) {
+TEST_CASE("identity_workflow_builds_nothing_from_a_request_it_cannot_read", "[identity]") {
     // The engine reports an empty step list as "no steps", so a request that is
     // not a step list must not be mistaken for an empty workflow.
     CHECK(identity_steps("not json").empty());

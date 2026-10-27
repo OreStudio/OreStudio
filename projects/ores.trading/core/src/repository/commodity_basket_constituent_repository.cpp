@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+commodity_basket_constituent_list_order(const ores::utility::domain::order& order,
+                                        std::initializer_list<std::string> default_columns,
+                                        bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::commodity_basket_constituents_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> commodity_basket_constituent_filter_condition(
+    const std::optional<messaging::commodity_basket_constituents_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -309,8 +310,8 @@ commodity_basket_constituent_repository::read_latest_by_trade_id(
                                       domain::commodity_basket_constituent>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        commodity_basket_constituent_list_order(order, {"trade_id", "sequence_number"}, false),
+        commodity_basket_constituent_filter_condition(filter),
         [](const auto& entities) { return commodity_basket_constituent_mapper::map(entities); },
         lg(),
         "Reading latest commodity basket constituents by trade_id.");
@@ -333,7 +334,7 @@ commodity_basket_constituent_repository::get_total_commodity_basket_constituent_
     return execute_count_query<commodity_basket_constituent_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        commodity_basket_constituent_filter_condition(filter),
         lg(),
         "Counting commodity basket constituents by trade_id");
 }
@@ -398,8 +399,8 @@ commodity_basket_constituent_repository::read_latest(
                                       domain::commodity_basket_constituent>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        commodity_basket_constituent_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), commodity_basket_constituent_filter_condition(filter)),
         [](const auto& entities) { return commodity_basket_constituent_mapper::map(entities); },
         lg(),
         "Reading latest commodity basket constituents with pagination.");
@@ -418,7 +419,7 @@ std::uint32_t commodity_basket_constituent_repository::get_total_commodity_baske
     return execute_count_query<commodity_basket_constituent_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), commodity_basket_constituent_filter_condition(filter)),
         lg(),
         "Counting commodity basket constituents");
 }

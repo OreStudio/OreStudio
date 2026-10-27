@@ -1,0 +1,14 @@
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+
+# An edit of the run the provisioning produced, through the generated write
+# verb. Every field the record still carries is restated; the lifecycle stamps
+# are no longer tokens, so this is exactly the edit that used to erase them.
+# The JSON is passed as {} because the shell tokenises on whitespace and the
+# stored blobs contain it. The claim names the version the row is at, which is
+# what the store's arbiter reads.
+workflow_instances set 18249cfb-0b39-4f49-a338-7b8705996233 tenant_setup_workflow tenant f4da0a05-bcb6-46d6-90f2-38c1a0b02201 8b3c91ff-6e53-4a03-bed7-76be717828e3 {} {} {} eeb35180-1d20-42f2-87b6-8fa7fc25d090 tenant_admin 8 system.update "the erase-on-set check" --version 8
+
+# The list the shell reads, which must carry last_event_at.
+workflow instances --type_filter tenant_setup_workflow
+logout

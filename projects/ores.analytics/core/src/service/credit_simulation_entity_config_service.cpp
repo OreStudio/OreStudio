@@ -73,10 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::credit_simulation_entity_config>
-read_one(repository::credit_simulation_entity_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::credit_simulation_entity_config_key& key) {
+std::vector<domain::credit_simulation_entity_config> credit_simulation_entity_config_read_one(
+    repository::credit_simulation_entity_config_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::credit_simulation_entity_config_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -87,7 +87,7 @@ read_one(repository::credit_simulation_entity_config_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::credit_simulation_entity_config_key
-key_from(const domain::credit_simulation_entity_config& v) {
+credit_simulation_entity_config_key_from(const domain::credit_simulation_entity_config& v) {
     messaging::credit_simulation_entity_config_key key;
     key.name = v.name;
     return key;
@@ -100,8 +100,8 @@ key_from(const domain::credit_simulation_entity_config& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::credit_simulation_entity_config
-to_domain(const messaging::credit_simulation_entity_config_write& write) {
+domain::credit_simulation_entity_config credit_simulation_entity_config_to_domain(
+    const messaging::credit_simulation_entity_config_write& write) {
     domain::credit_simulation_entity_config v;
     v.id = write.id;
     v.credit_simulation_config_id = write.credit_simulation_config_id;
@@ -251,7 +251,7 @@ messaging::get_credit_simulation_entity_config_response
 credit_simulation_entity_config_service::get_credit_simulation_entity_config(
     const messaging::get_credit_simulation_entity_config_request& request) {
     messaging::get_credit_simulation_entity_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = credit_simulation_entity_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_entity_config"});
@@ -272,7 +272,7 @@ credit_simulation_entity_config_service::get_many_credit_simulation_entity_confi
     for (const auto& k : request.keys) {
         messaging::credit_simulation_entity_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = credit_simulation_entity_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.credit_simulation_entity_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -289,7 +289,8 @@ credit_simulation_entity_config_service::put_credit_simulation_entity_config(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = credit_simulation_entity_config_read_one(
+        repo_, ctx_, credit_simulation_entity_config_key_from(value));
     if (!written.empty())
         response.credit_simulation_entity_config = std::move(written.front());
     return response;
@@ -322,7 +323,8 @@ credit_simulation_entity_config_service::put_many_credit_simulation_entity_confi
     repo_.write(ctx_, batch, claims);
     response.entities.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = credit_simulation_entity_config_read_one(
+            repo_, ctx_, credit_simulation_entity_config_key_from(value));
         response.entities.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -346,7 +348,7 @@ credit_simulation_entity_config_service::delete_credit_simulation_entity_config(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = credit_simulation_entity_config_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_entity_config"});
@@ -364,7 +366,8 @@ credit_simulation_entity_config_service::delete_credit_simulation_entity_config(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                credit_simulation_entity_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "credit_simulation_entity_config",
@@ -406,7 +409,7 @@ credit_simulation_entity_config_service::delete_many_credit_simulation_entity_co
     std::vector<domain::credit_simulation_entity_config> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = credit_simulation_entity_config_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -435,7 +438,7 @@ credit_simulation_entity_config_service::list_credit_simulation_entity_config_ve
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = credit_simulation_entity_config_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_entity_config"});
@@ -460,7 +463,8 @@ credit_simulation_entity_config_service::get_credit_simulation_entity_config_ver
     messaging::get_credit_simulation_entity_config_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.credit_simulation_entity_config);
+    const auto named = credit_simulation_entity_config_read_one(
+        repo_, ctx_, request.key.credit_simulation_entity_config);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "credit_simulation_entity_config"});
@@ -484,8 +488,9 @@ ores::utility::domain::result credit_simulation_entity_config_service::prepare_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = credit_simulation_entity_config_to_domain(change.write);
+    const auto current = credit_simulation_entity_config_read_one(
+        repo_, ctx_, credit_simulation_entity_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -598,7 +603,7 @@ credit_simulation_entity_config_service::get_entity_by_name(const std::string& n
     BOOST_LOG_SEV(lg(), debug) << "Getting credit simulation entity by name: " << name;
     messaging::credit_simulation_entity_config_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = credit_simulation_entity_config_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

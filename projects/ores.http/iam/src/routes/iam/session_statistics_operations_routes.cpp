@@ -53,7 +53,7 @@ namespace {
  * it does not know is the caller's to see as unauthorised, which is what the
  * service means by any code it does not spell out here.
  */
-http_response error_response(const std::string& error) {
+http_response session_statistics_operations_error_response(const std::string& error) {
     if (error == "forbidden") {
         return http_response::forbidden(error);
     }
@@ -72,8 +72,9 @@ http_response error_response(const std::string& error) {
  * nothing; it states the subject the request already carries.
  */
 template <typename Request>
-boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+boost::asio::awaitable<http_response> session_statistics_operations_forward(const http_request& req,
+                                                                            nats_client& session,
+                                                                            const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -82,7 +83,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
                                             ores::nats::service::default_request_timeout);
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
-            co_return error_response(it->second);
+            co_return session_statistics_operations_error_response(it->second);
         }
         const auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
@@ -109,7 +110,7 @@ session_statistics_operations_routes::handle_get_session_statistics(const http_r
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await session_statistics_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

@@ -22,13 +22,11 @@
 #include "ores.dq.api/domain/dataset_table.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
 
 using ores::utility::faker::datetime;
 
@@ -37,7 +35,7 @@ using ores::utility::faker::datetime;
 using ores::dq::domain::dataset;
 using namespace ores::logging;
 
-TEST_CASE("create_dataset_with_valid_fields", tags) {
+TEST_CASE("create_dataset_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     dataset sut;
@@ -75,7 +73,7 @@ TEST_CASE("create_dataset_with_valid_fields", tags) {
     CHECK(sut.change_commentary == "Initial creation");
 }
 
-TEST_CASE("dataset_convert_single_to_table", tags) {
+TEST_CASE("dataset_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     dataset ds;
@@ -106,7 +104,7 @@ TEST_CASE("dataset_convert_single_to_table", tags) {
     CHECK(table.contains("Countries"));
 }
 
-TEST_CASE("dataset_with_lineage", tags) {
+TEST_CASE("dataset_with_lineage", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto source_id = boost::uuids::random_generator()();

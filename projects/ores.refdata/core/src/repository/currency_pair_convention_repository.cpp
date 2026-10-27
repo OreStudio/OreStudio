@@ -80,7 +80,8 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy
+currency_pair_convention_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::currency_pair_conventions_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> currency_pair_convention_filter_condition(
+    const std::optional<messaging::currency_pair_conventions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -319,8 +320,8 @@ std::vector<domain::currency_pair_convention> currency_pair_convention_repositor
                                       domain::currency_pair_convention>(
         ctx,
         query,
-        list_order(order, {"pair_code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        currency_pair_convention_list_order(order, {"pair_code"}, false),
+        narrowed(valid_at(as_of), currency_pair_convention_filter_condition(filter)),
         [](const auto& entities) { return currency_pair_convention_mapper::map(entities); },
         lg(),
         "Reading latest currency pair conventions with pagination.");
@@ -339,7 +340,7 @@ std::uint32_t currency_pair_convention_repository::get_total_convention_count(
     return execute_count_query<currency_pair_convention_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), currency_pair_convention_filter_condition(filter)),
         lg(),
         "Counting currency pair conventions");
 }

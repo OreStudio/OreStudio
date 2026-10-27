@@ -65,8 +65,6 @@
 
 namespace {
 
-const std::string tags("[feed_kind_registry]");
-
 const std::string test_secret("feed-kind-registry-test-secret");
 const std::string test_issuer("ores.iam.test");
 const std::string test_audience("ores.synthetic.service");
@@ -341,7 +339,7 @@ using ores::synthetic::service::feed_simulate_envelope;
 using ores::synthetic::service::feed_start_target;
 using ores::synthetic::service::feed_start_attempt;
 
-TEST_CASE("registry_register_kind_validates_what_a_kind_must_supply", tags) {
+TEST_CASE("registry_register_kind_validates_what_a_kind_must_supply", "[feed_kind_registry]") {
     auto factory = stub_factory();
     feed_kind_registry registry(feed_kind_registry::deps{.factory = &factory});
 
@@ -379,7 +377,8 @@ TEST_CASE("registry_register_kind_validates_what_a_kind_must_supply", tags) {
     CHECK_THROWS_AS(registry.register_kind(stub_kind(stub_permission)), std::invalid_argument);
 }
 
-TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations", tags) {
+TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations",
+          "[feed_kind_registry]") {
     stub_fixture f;
     feed_kind_registry registry(feed_kind_registry::deps{.factory = &f.factory});
     registry.register_kind(stub_kind(stub_permission));
@@ -403,7 +402,8 @@ TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations", tags
     CHECK(registry.permits_all_configs(f.ctx));
 }
 
-TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory", tags) {
+TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory",
+          "[feed_kind_registry]") {
     stub_fixture f;
     const auto registry = f.registry;
     const ores::synthetic::feed::feed_build_context bctx{f.nats, f.auth_nats};
@@ -432,7 +432,7 @@ TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory", 
     CHECK(refused.failure == "Feed config is not enabled: " + stub_id);
 }
 
-TEST_CASE("registry_resolve_and_rows_walk_the_registered_kinds", tags) {
+TEST_CASE("registry_resolve_and_rows_walk_the_registered_kinds", "[feed_kind_registry]") {
     stub_fixture f;
     const auto registry = f.registry;
 
@@ -449,7 +449,7 @@ TEST_CASE("registry_resolve_and_rows_walk_the_registered_kinds", tags) {
     CHECK(registry->rows(f.ctx).size() == 2);
 }
 
-TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
+TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", "[feed_kind_registry]") {
     const feed_simulate_envelope env{
         .num_ticks = 3, .num_paths = 2, .seed = 7, .make_process = [](std::uint32_t) {
             return std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process>(
@@ -497,7 +497,7 @@ TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     CHECK(failed.message.find("no process") == std::string::npos);
 }
 
-TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
+TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]") {
     stub_fixture f;
 
     // start: the verb reaches the stub kind's candidates and build_input, and
@@ -576,7 +576,8 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
     }
 }
 
-TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else", tags) {
+TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else",
+          "[feed_kind_registry]") {
     using ores::synthetic::service::client_message;
     CHECK(client_message(std::invalid_argument("The half-life must be longer than zero.")) ==
           "The half-life must be longer than zero.");
@@ -586,7 +587,7 @@ TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else", ta
     CHECK(client_message(std::out_of_range("vector::at")) == fixed);
 }
 
-TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
+TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", "[feed_kind_registry]") {
     stub_fixture f;
     const auto start = [&] {
         feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);

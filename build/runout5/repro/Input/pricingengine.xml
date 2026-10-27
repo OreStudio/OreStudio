@@ -1,0 +1,25 @@
+<PricingEngines>
+  <Product type="Swap">
+    <Model>DiscountedCashflows</Model>
+    <ModelParameters/>
+    <Engine>DiscountingSwapEngine</Engine>
+    <EngineParameters/>
+  </Product>
+  <Product type="FxForward">
+    <Model>DiscountedCashflows</Model>
+    <ModelParameters/>
+    <Engine>DiscountingFxForwardEngine</Engine>
+    <EngineParameters/>
+  </Product>
+  <Product type="Bond">
+    <Model>DiscountedCashflows</Model>
+    <ModelParameters/>
+    <Engine>DiscountingRiskyBondEngine</Engine>
+    <EngineParameters>
+      <Parameter name="TimestepPeriod">6M</Parameter>
+    </EngineParameters>
+  </Product>
+  <GlobalParameters>
+    <Parameter name="ContinueOnCalibrationError">true</Parameter>
+  </GlobalParameters>
+</PricingEngines>

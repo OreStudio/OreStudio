@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view instrument_strike_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_instrument_strike_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_instrument_strike_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<instrument_strike_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_instrument_strikes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_instrument_strikes(std::move(msg));
-        }));
+        list_instrument_strikes_request::nats_subject,
+        instrument_strike_queue_group,
+        [h](ores::nats::message msg) { h->list_instrument_strikes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_instrument_strike_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_instrument_strike(std::move(msg));
-        }));
+        get_instrument_strike_request::nats_subject,
+        instrument_strike_queue_group,
+        [h](ores::nats::message msg) { h->get_instrument_strike(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_instrument_strikes_request::nats_subject,
-        queue_group,
+        instrument_strike_queue_group,
         [h](ores::nats::message msg) { h->get_many_instrument_strikes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_instrument_strike_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_instrument_strike(std::move(msg));
-        }));
+        put_instrument_strike_request::nats_subject,
+        instrument_strike_queue_group,
+        [h](ores::nats::message msg) { h->put_instrument_strike(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_instrument_strikes_request::nats_subject,
-        queue_group,
+        instrument_strike_queue_group,
         [h](ores::nats::message msg) { h->put_many_instrument_strikes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_instrument_strike_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_instrument_strike(std::move(msg));
-        }));
+        delete_instrument_strike_request::nats_subject,
+        instrument_strike_queue_group,
+        [h](ores::nats::message msg) { h->delete_instrument_strike(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_instrument_strikes_request::nats_subject,
-        queue_group,
+        instrument_strike_queue_group,
         [h](ores::nats::message msg) { h->delete_many_instrument_strikes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_instrument_strike_versions_request::nats_subject,
-        queue_group,
+        instrument_strike_queue_group,
         [h](ores::nats::message msg) { h->list_instrument_strike_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_instrument_strike_version_request::nats_subject,
-        queue_group,
+        instrument_strike_queue_group,
         [h](ores::nats::message msg) { h->get_instrument_strike_version(std::move(msg)); }));
     return subs;
 }

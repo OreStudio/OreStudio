@@ -28,15 +28,11 @@
 
 using namespace ores::reporting::service;
 
-namespace {
-const std::string tags("[service][storage]");
-}
-
-TEST_CASE("the plan builds against the protocol's one bucket", tags) {
+TEST_CASE("the plan builds against the protocol's one bucket", "[service][storage]") {
     CHECK(ores::storage::api::object_keys::ores_bucket == "ores");
 }
 
-TEST_CASE("each gathered set lands under the instance that gathered it", tags) {
+TEST_CASE("each gathered set lands under the instance that gathered it", "[service][storage]") {
     const std::string instance("11111111-2222-3333-4444-555555555555");
     CHECK(trades_storage_key(instance) ==
           "reporting/runs/11111111-2222-3333-4444-555555555555/trades.msgpack");
@@ -48,7 +44,7 @@ TEST_CASE("each gathered set lands under the instance that gathered it", tags) {
           "reporting/runs/11111111-2222-3333-4444-555555555555/output.tar.gz");
 }
 
-TEST_CASE("every key the plan builds is one the protocol parses", tags) {
+TEST_CASE("every key the plan builds is one the protocol parses", "[service][storage]") {
     const std::string instance("11111111-2222-3333-4444-555555555555");
 
     const auto trades = ores::storage::api::object_keys::parse(trades_storage_key(instance));
@@ -64,11 +60,11 @@ TEST_CASE("every key the plan builds is one the protocol parses", tags) {
     CHECK(market_data->name == "market_data.txt");
 }
 
-TEST_CASE("the two sets one run gathers stay apart", tags) {
+TEST_CASE("the two sets one run gathers stay apart", "[service][storage]") {
     const std::string instance("11111111-2222-3333-4444-555555555555");
     CHECK(trades_storage_key(instance) != market_data_storage_key(instance));
 }
 
-TEST_CASE("two executions never share a key", tags) {
+TEST_CASE("two executions never share a key", "[service][storage]") {
     CHECK(trades_storage_key("a") != trades_storage_key("b"));
 }

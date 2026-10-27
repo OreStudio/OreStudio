@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_rate_card_components_response
-    list_rate_card_components(const messaging::list_rate_card_components_request& request);
-    messaging::get_rate_card_component_response
-    get_rate_card_component(const messaging::get_rate_card_component_request& request);
-    messaging::get_many_rate_card_components_response
-    get_many_rate_card_components(const messaging::get_many_rate_card_components_request& request);
-    messaging::put_rate_card_component_response
-    put_rate_card_component(const messaging::put_rate_card_component_request& request);
-    messaging::put_many_rate_card_components_response
-    put_many_rate_card_components(const messaging::put_many_rate_card_components_request& request);
-    messaging::delete_rate_card_component_response
-    delete_rate_card_component(const messaging::delete_rate_card_component_request& request);
-    messaging::delete_many_rate_card_components_response delete_many_rate_card_components(
-        const messaging::delete_many_rate_card_components_request& request);
-    messaging::list_rate_card_component_versions_response list_rate_card_component_versions(
-        const messaging::list_rate_card_component_versions_request& request);
-    messaging::get_rate_card_component_version_response get_rate_card_component_version(
-        const messaging::get_rate_card_component_version_request& request);
+    ::ores::marketdata::messaging::list_rate_card_components_response list_rate_card_components(
+        const ::ores::marketdata::messaging::list_rate_card_components_request& request);
+    ::ores::marketdata::messaging::get_rate_card_component_response get_rate_card_component(
+        const ::ores::marketdata::messaging::get_rate_card_component_request& request);
+    ::ores::marketdata::messaging::get_many_rate_card_components_response
+    get_many_rate_card_components(
+        const ::ores::marketdata::messaging::get_many_rate_card_components_request& request);
+    ::ores::marketdata::messaging::put_rate_card_component_response put_rate_card_component(
+        const ::ores::marketdata::messaging::put_rate_card_component_request& request);
+    ::ores::marketdata::messaging::put_many_rate_card_components_response
+    put_many_rate_card_components(
+        const ::ores::marketdata::messaging::put_many_rate_card_components_request& request);
+    ::ores::marketdata::messaging::delete_rate_card_component_response delete_rate_card_component(
+        const ::ores::marketdata::messaging::delete_rate_card_component_request& request);
+    ::ores::marketdata::messaging::delete_many_rate_card_components_response
+    delete_many_rate_card_components(
+        const ::ores::marketdata::messaging::delete_many_rate_card_components_request& request);
+    ::ores::marketdata::messaging::list_rate_card_component_versions_response
+    list_rate_card_component_versions(
+        const ::ores::marketdata::messaging::list_rate_card_component_versions_request& request);
+    ::ores::marketdata::messaging::get_rate_card_component_version_response
+    get_rate_card_component_version(
+        const ::ores::marketdata::messaging::get_rate_card_component_version_request& request);
     /**@}*/
 
     /**
@@ -211,7 +216,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::rate_card_component_change& change,
+    prepare_change(const ::ores::marketdata::messaging::rate_card_component_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::rate_card_component& out);
 };

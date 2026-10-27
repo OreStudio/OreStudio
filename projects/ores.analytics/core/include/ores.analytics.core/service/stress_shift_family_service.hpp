@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_stress_shift_families_response
-    list_stress_shift_families(const messaging::list_stress_shift_families_request& request);
-    messaging::get_stress_shift_family_response
-    get_stress_shift_family(const messaging::get_stress_shift_family_request& request);
-    messaging::get_many_stress_shift_families_response get_many_stress_shift_families(
-        const messaging::get_many_stress_shift_families_request& request);
-    messaging::put_stress_shift_family_response
-    put_stress_shift_family(const messaging::put_stress_shift_family_request& request);
-    messaging::put_many_stress_shift_families_response put_many_stress_shift_families(
-        const messaging::put_many_stress_shift_families_request& request);
-    messaging::delete_stress_shift_family_response
-    delete_stress_shift_family(const messaging::delete_stress_shift_family_request& request);
-    messaging::delete_many_stress_shift_families_response delete_many_stress_shift_families(
-        const messaging::delete_many_stress_shift_families_request& request);
-    messaging::list_stress_shift_family_versions_response list_stress_shift_family_versions(
-        const messaging::list_stress_shift_family_versions_request& request);
-    messaging::get_stress_shift_family_version_response get_stress_shift_family_version(
-        const messaging::get_stress_shift_family_version_request& request);
+    ::ores::analytics::messaging::list_stress_shift_families_response list_stress_shift_families(
+        const ::ores::analytics::messaging::list_stress_shift_families_request& request);
+    ::ores::analytics::messaging::get_stress_shift_family_response get_stress_shift_family(
+        const ::ores::analytics::messaging::get_stress_shift_family_request& request);
+    ::ores::analytics::messaging::get_many_stress_shift_families_response
+    get_many_stress_shift_families(
+        const ::ores::analytics::messaging::get_many_stress_shift_families_request& request);
+    ::ores::analytics::messaging::put_stress_shift_family_response put_stress_shift_family(
+        const ::ores::analytics::messaging::put_stress_shift_family_request& request);
+    ::ores::analytics::messaging::put_many_stress_shift_families_response
+    put_many_stress_shift_families(
+        const ::ores::analytics::messaging::put_many_stress_shift_families_request& request);
+    ::ores::analytics::messaging::delete_stress_shift_family_response delete_stress_shift_family(
+        const ::ores::analytics::messaging::delete_stress_shift_family_request& request);
+    ::ores::analytics::messaging::delete_many_stress_shift_families_response
+    delete_many_stress_shift_families(
+        const ::ores::analytics::messaging::delete_many_stress_shift_families_request& request);
+    ::ores::analytics::messaging::list_stress_shift_family_versions_response
+    list_stress_shift_family_versions(
+        const ::ores::analytics::messaging::list_stress_shift_family_versions_request& request);
+    ::ores::analytics::messaging::get_stress_shift_family_version_response
+    get_stress_shift_family_version(
+        const ::ores::analytics::messaging::get_stress_shift_family_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +194,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::stress_shift_family_change& change,
+    prepare_change(const ::ores::analytics::messaging::stress_shift_family_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::stress_shift_family& out);
 };

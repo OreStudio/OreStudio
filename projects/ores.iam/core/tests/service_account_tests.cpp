@@ -22,24 +22,18 @@
 #include "ores.iam.api/domain/account_type.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests.service_account");
-const std::string tags("[service_account]");
-
-}
 
 using ores::iam::domain::account;
 using ores::iam::domain::account_type;
 using ores::utility::uuid::tenant_id;
 using namespace ores::logging;
 
-TEST_CASE("create_service_account_with_no_password", tags) {
+TEST_CASE("create_service_account_with_no_password", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -57,7 +51,7 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     CHECK(sut.username == "ores.service.binary");
 }
 
-TEST_CASE("create_algorithm_account", tags) {
+TEST_CASE("create_algorithm_account", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -74,7 +68,7 @@ TEST_CASE("create_algorithm_account", tags) {
     CHECK(sut.account_type == "algorithm");
 }
 
-TEST_CASE("create_llm_account", tags) {
+TEST_CASE("create_llm_account", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -91,7 +85,7 @@ TEST_CASE("create_llm_account", tags) {
     CHECK(sut.account_type == "llm");
 }
 
-TEST_CASE("user_account_requires_password", tags) {
+TEST_CASE("user_account_requires_password", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -107,7 +101,7 @@ TEST_CASE("user_account_requires_password", tags) {
     CHECK(sut.account_type == "user");
 }
 
-TEST_CASE("account_type_defaults_to_user", tags) {
+TEST_CASE("account_type_defaults_to_user", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -117,7 +111,7 @@ TEST_CASE("account_type_defaults_to_user", tags) {
     CHECK(sut.account_type == "user");
 }
 
-TEST_CASE("account_type_domain_struct", tags) {
+TEST_CASE("account_type_domain_struct", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account_type sut;
@@ -135,7 +129,7 @@ TEST_CASE("account_type_domain_struct", tags) {
     CHECK(sut.display_order == 10);
 }
 
-TEST_CASE("account_performed_by_field", tags) {
+TEST_CASE("account_performed_by_field", "[service_account]") {
     auto lg(make_logger(test_suite));
 
     account sut;

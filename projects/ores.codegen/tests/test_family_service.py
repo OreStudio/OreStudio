@@ -238,3 +238,137 @@ def test_a_uuid_key_is_converted_to_the_text_the_repository_takes():
     assert view["read_key_expr"] == "boost::uuids::to_string(key.id)"
     assert view["pk_text_expr"] == "boost::uuids::to_string(row.id)"
 
+
+
+GROUPED_PART = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-000000000011
+:END:
+#+title: ores.refdata.tenor_basis_swap_pay_receive
+#+type: ores.codegen.entity
+#+component: refdata
+#+entity_singular: tenor_basis_swap_pay_receive
+#+entity_plural: tenor_basis_swap_pay_receives
+#+entity_title: Tenor Basis Swap Pay Receive
+#+brief: A grouped family part.
+
+* Flags
+:PROPERTIES:
+:schema: public
+:product: ores
+:component: refdata
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Key.
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The central row this part belongs to.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The party that owns the central row this part belongs to.
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:               ores_refdata_conventions_tbl
+:parent_entity:       convention
+:nullable:            false
+:error_message:       Invalid convention_id: %.
+:list_by:             true
+:list_by_uuid:        true
+:bump_parent_version: true
+:list_by_as_of:       true
+:END:
+
+* C++
+
+** Domain groups
+
+| member   | field_group                 |
+|----------+-----------------------------|
+| identity | ores.refdata.probe_identity |
+"""
+
+IDENTITY_GROUP = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-000000000012
+:END:
+#+title: ores.refdata.probe_identity
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: probe_identity
+#+namespace: ores::refdata::domain
+#+brief: The identity of a probe part.
+
+* Fields
+
+** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Key.
+
+** convention_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The central row this part belongs to.
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The party that owns the central row this part belongs to.
+"""
+
+
+def test_a_grouped_part_names_its_columns_through_the_group(tmp_path):
+    """A part may be a grouped entity.
+
+    The family service builds a domain object from the flat write record and
+    names the key and the party on both sides of an assignment, so on a grouped
+    part every one of those paths has to reach through the member the column
+    lives in. Rendering a flat path here would not compile.
+    """
+    path = family_model._modeling_dir(
+        tmp_path,
+        part_overrides={"tenor_basis_swap_pay_receive": GROUPED_PART},
+        party_id=True)
+    (tmp_path / "ores.refdata.probe_identity_field_group.org").write_text(
+        IDENTITY_GROUP, encoding="utf-8")
+
+    out = tmp_path / "out"
+    out.mkdir(exist_ok=True)
+    core.generate_from_model(
+        str(path), BASE_DIR / "library/data", BASE_DIR / "library/templates",
+        out, target_template=SERVICE_IMPL, target_output="service.cpp")
+    text = (out / "service.cpp").read_text(encoding="utf-8")
+
+    assert "v.identity.id = write.id;" in text
+    assert "row.identity.party_id = central.party_id;" in text
+    assert "w.identity.id == row.identity.id" in text

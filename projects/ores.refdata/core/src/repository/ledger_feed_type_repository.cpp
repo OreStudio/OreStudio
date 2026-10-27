@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+ledger_feed_type_list_order(const ores::utility::domain::order& order,
+                            std::initializer_list<std::string> default_columns,
+                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!ledger_feed_type_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::ledger_feed_types_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> ledger_feed_type_filter_condition(
+    const std::optional<messaging::ledger_feed_types_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -302,8 +303,8 @@ std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(
     return execute_ordered_read_query<ledger_feed_type_entity, domain::ledger_feed_type>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        ledger_feed_type_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), ledger_feed_type_filter_condition(filter)),
         [](const auto& entities) { return ledger_feed_type_mapper::map(entities); },
         lg(),
         "Reading latest ledger feed types with pagination.");
@@ -322,7 +323,7 @@ std::uint32_t ledger_feed_type_repository::get_total_type_count(
     return execute_count_query<ledger_feed_type_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), ledger_feed_type_filter_condition(filter)),
         lg(),
         "Counting ledger feed types");
 }

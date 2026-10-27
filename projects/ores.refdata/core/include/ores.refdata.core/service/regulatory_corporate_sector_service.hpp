@@ -76,27 +76,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_regulatory_corporate_sectors_response list_regulatory_corporate_sectors(
-        const messaging::list_regulatory_corporate_sectors_request& request);
-    messaging::get_regulatory_corporate_sector_response get_regulatory_corporate_sector(
-        const messaging::get_regulatory_corporate_sector_request& request);
-    messaging::get_many_regulatory_corporate_sectors_response get_many_regulatory_corporate_sectors(
-        const messaging::get_many_regulatory_corporate_sectors_request& request);
-    messaging::put_regulatory_corporate_sector_response put_regulatory_corporate_sector(
-        const messaging::put_regulatory_corporate_sector_request& request);
-    messaging::put_many_regulatory_corporate_sectors_response put_many_regulatory_corporate_sectors(
-        const messaging::put_many_regulatory_corporate_sectors_request& request);
-    messaging::delete_regulatory_corporate_sector_response delete_regulatory_corporate_sector(
-        const messaging::delete_regulatory_corporate_sector_request& request);
-    messaging::delete_many_regulatory_corporate_sectors_response
+    ::ores::refdata::messaging::list_regulatory_corporate_sectors_response
+    list_regulatory_corporate_sectors(
+        const ::ores::refdata::messaging::list_regulatory_corporate_sectors_request& request);
+    ::ores::refdata::messaging::get_regulatory_corporate_sector_response
+    get_regulatory_corporate_sector(
+        const ::ores::refdata::messaging::get_regulatory_corporate_sector_request& request);
+    ::ores::refdata::messaging::get_many_regulatory_corporate_sectors_response
+    get_many_regulatory_corporate_sectors(
+        const ::ores::refdata::messaging::get_many_regulatory_corporate_sectors_request& request);
+    ::ores::refdata::messaging::put_regulatory_corporate_sector_response
+    put_regulatory_corporate_sector(
+        const ::ores::refdata::messaging::put_regulatory_corporate_sector_request& request);
+    ::ores::refdata::messaging::put_many_regulatory_corporate_sectors_response
+    put_many_regulatory_corporate_sectors(
+        const ::ores::refdata::messaging::put_many_regulatory_corporate_sectors_request& request);
+    ::ores::refdata::messaging::delete_regulatory_corporate_sector_response
+    delete_regulatory_corporate_sector(
+        const ::ores::refdata::messaging::delete_regulatory_corporate_sector_request& request);
+    ::ores::refdata::messaging::delete_many_regulatory_corporate_sectors_response
     delete_many_regulatory_corporate_sectors(
-        const messaging::delete_many_regulatory_corporate_sectors_request& request);
-    messaging::list_regulatory_corporate_sector_versions_response
+        const ::ores::refdata::messaging::delete_many_regulatory_corporate_sectors_request&
+            request);
+    ::ores::refdata::messaging::list_regulatory_corporate_sector_versions_response
     list_regulatory_corporate_sector_versions(
-        const messaging::list_regulatory_corporate_sector_versions_request& request);
-    messaging::get_regulatory_corporate_sector_version_response
+        const ::ores::refdata::messaging::list_regulatory_corporate_sector_versions_request&
+            request);
+    ::ores::refdata::messaging::get_regulatory_corporate_sector_version_response
     get_regulatory_corporate_sector_version(
-        const messaging::get_regulatory_corporate_sector_version_request& request);
+        const ::ores::refdata::messaging::get_regulatory_corporate_sector_version_request& request);
     /**@}*/
 
     /**
@@ -197,7 +205,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::regulatory_corporate_sector_change& change,
+    prepare_change(const ::ores::refdata::messaging::regulatory_corporate_sector_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::regulatory_corporate_sector& out);
 };

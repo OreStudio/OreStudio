@@ -31,16 +31,10 @@
 #include "ores.refdata.api/generators/party_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
-
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::refdata::generators;
 using namespace ores::logging;
@@ -48,7 +42,7 @@ using ores::utility::generation::generation_context;
 
 // --- party ---
 
-TEST_CASE("party_generator_produces_valid_instance", tags) {
+TEST_CASE("party_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party(ctx);
@@ -68,7 +62,7 @@ TEST_CASE("party_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -87,7 +81,7 @@ TEST_CASE("party_generator_produces_multiple_instances", tags) {
 
 // --- counterparty ---
 
-TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
+TEST_CASE("counterparty_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_counterparty(ctx);
@@ -105,7 +99,7 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("counterparty_generator_produces_multiple_instances", tags) {
+TEST_CASE("counterparty_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -124,7 +118,7 @@ TEST_CASE("counterparty_generator_produces_multiple_instances", tags) {
 
 // --- contact_type ---
 
-TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
+TEST_CASE("contact_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_contact_type(ctx);
@@ -140,7 +134,7 @@ TEST_CASE("contact_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("contact_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("contact_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -158,7 +152,7 @@ TEST_CASE("contact_type_generator_produces_multiple_instances", tags) {
 
 // --- party_type ---
 
-TEST_CASE("party_type_generator_produces_valid_instance", tags) {
+TEST_CASE("party_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party_type(ctx);
@@ -174,7 +168,7 @@ TEST_CASE("party_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -192,7 +186,7 @@ TEST_CASE("party_type_generator_produces_multiple_instances", tags) {
 
 // --- party_status ---
 
-TEST_CASE("party_status_generator_produces_valid_instance", tags) {
+TEST_CASE("party_status_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party_status(ctx);
@@ -208,7 +202,7 @@ TEST_CASE("party_status_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_status_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_status_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -226,7 +220,7 @@ TEST_CASE("party_status_generator_produces_multiple_instances", tags) {
 
 // --- party_id_scheme ---
 
-TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
+TEST_CASE("party_id_scheme_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party_id_scheme(ctx);
@@ -243,7 +237,7 @@ TEST_CASE("party_id_scheme_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_id_scheme_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_id_scheme_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -261,7 +255,7 @@ TEST_CASE("party_id_scheme_generator_produces_multiple_instances", tags) {
 
 // --- party_identifier ---
 
-TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
+TEST_CASE("party_identifier_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party_identifier(ctx);
@@ -278,7 +272,7 @@ TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_identifier_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_identifier_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -297,7 +291,7 @@ TEST_CASE("party_identifier_generator_produces_multiple_instances", tags) {
 
 // --- counterparty_identifier ---
 
-TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
+TEST_CASE("counterparty_identifier_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_counterparty_identifier(ctx);
@@ -314,7 +308,7 @@ TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags) {
+TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -333,7 +327,7 @@ TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags)
 
 // --- netting_set_identifier ---
 
-TEST_CASE("netting_set_identifier_generator_produces_valid_instance", tags) {
+TEST_CASE("netting_set_identifier_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_netting_set_identifier(ctx);
@@ -348,7 +342,7 @@ TEST_CASE("netting_set_identifier_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("netting_set_identifier_generator_uses_only_netting_set_schemes", tags) {
+TEST_CASE("netting_set_identifier_generator_uses_only_netting_set_schemes", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 6;
@@ -368,7 +362,7 @@ TEST_CASE("netting_set_identifier_generator_uses_only_netting_set_schemes", tags
 
 // --- party_contact_information ---
 
-TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
+TEST_CASE("party_contact_information_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party_contact_information(ctx);
@@ -388,7 +382,7 @@ TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_contact_information_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_contact_information_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -407,7 +401,7 @@ TEST_CASE("party_contact_information_generator_produces_multiple_instances", tag
 
 // --- counterparty_contact_information ---
 
-TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", tags) {
+TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_counterparty_contact_information(ctx);
@@ -427,7 +421,8 @@ TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", 
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("counterparty_contact_information_generator_produces_multiple_instances", tags) {
+TEST_CASE("counterparty_contact_information_generator_produces_multiple_instances",
+          "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

@@ -28,8 +28,6 @@
 
 namespace {
 
-const std::string tags("[event_traits]");
-
 /**
  * An in-process domain event that is not an entity change, such as a role
  * being assigned. It has no NATS subject; the traits name it on the bus.
@@ -51,14 +49,14 @@ struct event_traits<probe_event> {
 
 using namespace ores::eventing::domain;
 
-TEST_CASE("event_traits_name_an_in_process_event", tags) {
+TEST_CASE("event_traits_name_an_in_process_event", "[event_traits]") {
     REQUIRE(event_traits<probe_event>::name == "ores.test.probe");
 
     // Verify the concept works
     STATIC_REQUIRE(has_event_traits<probe_event>);
 }
 
-TEST_CASE("entity_event_traits_state_the_events_subject_prefix", tags) {
+TEST_CASE("entity_event_traits_state_the_events_subject_prefix", "[event_traits]") {
     // A canonical event states the collection's prefix; the action completes
     // the subject, so one payload is addressed by three subjects.
     using event_type = ores::iam::messaging::tenant_type_event;

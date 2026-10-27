@@ -26,16 +26,10 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -43,7 +37,7 @@ using namespace ores::iam::generators;
 using ores::testing::database_helper;
 using ores::iam::repository::role_repository;
 
-TEST_CASE("write_single_role", tags) {
+TEST_CASE("write_single_role", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -56,7 +50,7 @@ TEST_CASE("write_single_role", tags) {
     CHECK_NOTHROW(repo.write(h.context(), r));
 }
 
-TEST_CASE("read_latest_roles", tags) {
+TEST_CASE("read_latest_roles", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -74,7 +68,7 @@ TEST_CASE("read_latest_roles", tags) {
     CHECK(!read_roles.empty());
 }
 
-TEST_CASE("read_latest_role_by_id", tags) {
+TEST_CASE("read_latest_role_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -105,7 +99,7 @@ TEST_CASE("read_latest_role_by_id", tags) {
  * Whether a member may ask for a role is a value the tenant sets, not a
  * constant: a role written as not askable comes back as not askable.
  */
-TEST_CASE("write_role_members_may_not_ask_for", tags) {
+TEST_CASE("write_role_members_may_not_ask_for", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -125,7 +119,7 @@ TEST_CASE("write_role_members_may_not_ask_for", tags) {
     CHECK_FALSE(read_roles[0].is_requestable);
 }
 
-TEST_CASE("read_nonexistent_role", tags) {
+TEST_CASE("read_nonexistent_role", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

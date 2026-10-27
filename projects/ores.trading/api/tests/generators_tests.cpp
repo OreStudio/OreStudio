@@ -27,15 +27,9 @@
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
 #include "ores.trading.api/generators/trade_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::trading::generators;
 using namespace ores::logging;
@@ -43,7 +37,7 @@ using ores::utility::generation::generation_context;
 
 // --- trade_type ---
 
-TEST_CASE("trade_type_generator_produces_valid_instance", tags) {
+TEST_CASE("trade_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_trade_type(ctx);
@@ -58,7 +52,7 @@ TEST_CASE("trade_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("trade_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("trade_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -73,7 +67,7 @@ TEST_CASE("trade_type_generator_produces_multiple_instances", tags) {
 
 // --- activity_type ---
 
-TEST_CASE("activity_type_generator_produces_valid_instance", tags) {
+TEST_CASE("activity_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_activity_type(ctx);
@@ -86,7 +80,7 @@ TEST_CASE("activity_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("activity_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("activity_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -101,7 +95,7 @@ TEST_CASE("activity_type_generator_produces_multiple_instances", tags) {
 
 // --- fpml_event_type ---
 
-TEST_CASE("fpml_event_type_generator_produces_valid_instance", tags) {
+TEST_CASE("fpml_event_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_fpml_event_type(ctx);
@@ -115,7 +109,7 @@ TEST_CASE("fpml_event_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("fpml_event_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("fpml_event_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -130,7 +124,7 @@ TEST_CASE("fpml_event_type_generator_produces_multiple_instances", tags) {
 
 // --- lifecycle_event ---
 
-TEST_CASE("lifecycle_event_generator_produces_valid_instance", tags) {
+TEST_CASE("lifecycle_event_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_lifecycle_event(ctx);
@@ -144,7 +138,7 @@ TEST_CASE("lifecycle_event_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("lifecycle_event_generator_produces_multiple_instances", tags) {
+TEST_CASE("lifecycle_event_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -159,7 +153,7 @@ TEST_CASE("lifecycle_event_generator_produces_multiple_instances", tags) {
 
 // --- party_role_type ---
 
-TEST_CASE("party_role_type_generator_produces_valid_instance", tags) {
+TEST_CASE("party_role_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_party_role_type(ctx);
@@ -173,7 +167,7 @@ TEST_CASE("party_role_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("party_role_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("party_role_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -188,7 +182,7 @@ TEST_CASE("party_role_type_generator_produces_multiple_instances", tags) {
 
 // --- trade_id_type ---
 
-TEST_CASE("trade_id_type_generator_produces_valid_instance", tags) {
+TEST_CASE("trade_id_type_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_trade_id_type(ctx);
@@ -202,7 +196,7 @@ TEST_CASE("trade_id_type_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("trade_id_type_generator_produces_multiple_instances", tags) {
+TEST_CASE("trade_id_type_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -217,7 +211,7 @@ TEST_CASE("trade_id_type_generator_produces_multiple_instances", tags) {
 
 // --- trade ---
 
-TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
+TEST_CASE("trade_identifier_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_trade_identifier(ctx);
@@ -231,7 +225,7 @@ TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("trade_identifier_generator_produces_multiple_instances", tags) {
+TEST_CASE("trade_identifier_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;
@@ -246,7 +240,7 @@ TEST_CASE("trade_identifier_generator_produces_multiple_instances", tags) {
 
 // --- trade_party_role ---
 
-TEST_CASE("trade_party_role_generator_produces_valid_instance", tags) {
+TEST_CASE("trade_party_role_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_trade_party_role(ctx);
@@ -259,7 +253,7 @@ TEST_CASE("trade_party_role_generator_produces_valid_instance", tags) {
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("trade_party_role_generator_produces_multiple_instances", tags) {
+TEST_CASE("trade_party_role_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

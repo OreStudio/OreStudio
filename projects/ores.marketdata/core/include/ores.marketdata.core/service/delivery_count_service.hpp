@@ -75,24 +75,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_delivery_counts_response
-    list_delivery_counts(const messaging::list_delivery_counts_request& request);
-    messaging::get_delivery_count_response
-    get_delivery_count(const messaging::get_delivery_count_request& request);
-    messaging::get_many_delivery_counts_response
-    get_many_delivery_counts(const messaging::get_many_delivery_counts_request& request);
-    messaging::put_delivery_count_response
-    put_delivery_count(const messaging::put_delivery_count_request& request);
-    messaging::put_many_delivery_counts_response
-    put_many_delivery_counts(const messaging::put_many_delivery_counts_request& request);
-    messaging::delete_delivery_count_response
-    delete_delivery_count(const messaging::delete_delivery_count_request& request);
-    messaging::delete_many_delivery_counts_response
-    delete_many_delivery_counts(const messaging::delete_many_delivery_counts_request& request);
-    messaging::list_delivery_count_versions_response
-    list_delivery_count_versions(const messaging::list_delivery_count_versions_request& request);
-    messaging::get_delivery_count_version_response
-    get_delivery_count_version(const messaging::get_delivery_count_version_request& request);
+    ::ores::marketdata::messaging::list_delivery_counts_response list_delivery_counts(
+        const ::ores::marketdata::messaging::list_delivery_counts_request& request);
+    ::ores::marketdata::messaging::get_delivery_count_response
+    get_delivery_count(const ::ores::marketdata::messaging::get_delivery_count_request& request);
+    ::ores::marketdata::messaging::get_many_delivery_counts_response get_many_delivery_counts(
+        const ::ores::marketdata::messaging::get_many_delivery_counts_request& request);
+    ::ores::marketdata::messaging::put_delivery_count_response
+    put_delivery_count(const ::ores::marketdata::messaging::put_delivery_count_request& request);
+    ::ores::marketdata::messaging::put_many_delivery_counts_response put_many_delivery_counts(
+        const ::ores::marketdata::messaging::put_many_delivery_counts_request& request);
+    ::ores::marketdata::messaging::delete_delivery_count_response delete_delivery_count(
+        const ::ores::marketdata::messaging::delete_delivery_count_request& request);
+    ::ores::marketdata::messaging::delete_many_delivery_counts_response delete_many_delivery_counts(
+        const ::ores::marketdata::messaging::delete_many_delivery_counts_request& request);
+    ::ores::marketdata::messaging::list_delivery_count_versions_response
+    list_delivery_count_versions(
+        const ::ores::marketdata::messaging::list_delivery_count_versions_request& request);
+    ::ores::marketdata::messaging::get_delivery_count_version_response get_delivery_count_version(
+        const ::ores::marketdata::messaging::get_delivery_count_version_request& request);
     /**@}*/
 
     /**
@@ -205,9 +206,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::delivery_count_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::delivery_count& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::delivery_count_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::delivery_count& out);
 };
 
 }

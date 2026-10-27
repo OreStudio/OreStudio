@@ -19,20 +19,14 @@
  */
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
-
-namespace {
-
-const std::string test_suite("ores.database.tests");
-const std::string tags("[database]");
-
-}
 
 using namespace ores::database;
 using namespace ores::logging;
 
-TEST_CASE("database_options_to_credentials", tags) {
+TEST_CASE("database_options_to_credentials", "[database]") {
     auto lg(make_logger(test_suite));
 
     database_options opts;
@@ -53,7 +47,7 @@ TEST_CASE("database_options_to_credentials", tags) {
     BOOST_LOG_SEV(lg, info) << "Database options to credentials test passed";
 }
 
-TEST_CASE("database_options_default_values", tags) {
+TEST_CASE("database_options_default_values", "[database]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing database_options default values";
 
@@ -66,7 +60,7 @@ TEST_CASE("database_options_default_values", tags) {
     CHECK(sut.pool_size == 2);
 }
 
-TEST_CASE("database_options_custom_values", tags) {
+TEST_CASE("database_options_custom_values", "[database]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing database_options with custom values";
 
@@ -83,7 +77,7 @@ TEST_CASE("database_options_custom_values", tags) {
     CHECK(sut.user == "app_user");
 }
 
-TEST_CASE("database_options_custom_pool_size", tags) {
+TEST_CASE("database_options_custom_pool_size", "[database]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing database_options with custom pool_size";
 
@@ -93,7 +87,7 @@ TEST_CASE("database_options_custom_pool_size", tags) {
     CHECK(sut.pool_size == 8);
 }
 
-TEST_CASE("database_options_streaming", tags) {
+TEST_CASE("database_options_streaming", "[database]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing database_options streaming";
 
@@ -116,7 +110,7 @@ TEST_CASE("database_options_streaming", tags) {
     CHECK(output.find("testuser") != std::string::npos);
 }
 
-TEST_CASE("database_options_to_credentials_with_defaults", tags) {
+TEST_CASE("database_options_to_credentials_with_defaults", "[database]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing to_credentials with default host/port";
 
@@ -134,7 +128,7 @@ TEST_CASE("database_options_to_credentials_with_defaults", tags) {
     CHECK(creds.password == "mypass");
 }
 
-TEST_CASE("database_options_to_credentials_different_port", tags) {
+TEST_CASE("database_options_to_credentials_different_port", "[database]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing to_credentials with non-standard port";
 

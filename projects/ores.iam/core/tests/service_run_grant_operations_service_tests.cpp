@@ -32,6 +32,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,9 +40,6 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests.run_grant_operations");
-const std::string tags("[service][run_grant]");
 
 using ores::database::context;
 using ores::iam::domain::account;
@@ -119,7 +117,8 @@ boost::uuids::uuid id_of(const std::string& s) {
 
 }
 
-TEST_CASE("create_run_grant_records_the_grant_for_a_role_the_person_holds", tags) {
+TEST_CASE("create_run_grant_records_the_grant_for_a_role_the_person_holds",
+          "[service][run_grant]") {
     auto lg(make_logger(test_suite));
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
@@ -143,7 +142,8 @@ TEST_CASE("create_run_grant_records_the_grant_for_a_role_the_person_holds", tags
     CHECK(stored->revoked_at == std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("create_run_grant_refuses_a_role_the_person_does_not_hold_in_full", tags) {
+TEST_CASE("create_run_grant_refuses_a_role_the_person_does_not_hold_in_full",
+          "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -157,7 +157,7 @@ TEST_CASE("create_run_grant_refuses_a_role_the_person_does_not_hold_in_full", ta
     CHECK_THAT(resp.message, ContainsSubstring(granted_code));
 }
 
-TEST_CASE("create_run_grant_refuses_a_session_that_acts_for_no_party", tags) {
+TEST_CASE("create_run_grant_refuses_a_session_that_acts_for_no_party", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -170,7 +170,8 @@ TEST_CASE("create_run_grant_refuses_a_session_that_acts_for_no_party", tags) {
     CHECK_THAT(resp.message, ContainsSubstring("party"));
 }
 
-TEST_CASE("create_run_grant_refuses_a_context_without_the_persons_permissions", tags) {
+TEST_CASE("create_run_grant_refuses_a_context_without_the_persons_permissions",
+          "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -184,7 +185,8 @@ TEST_CASE("create_run_grant_refuses_a_context_without_the_persons_permissions", 
     CHECK_THAT(resp.message, ContainsSubstring("permissions"));
 }
 
-TEST_CASE("create_run_grant_returns_the_active_grant_for_the_same_resource", tags) {
+TEST_CASE("create_run_grant_returns_the_active_grant_for_the_same_resource",
+          "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -201,7 +203,8 @@ TEST_CASE("create_run_grant_returns_the_active_grant_for_the_same_resource", tag
     CHECK(second.grant_id == first.grant_id);
 }
 
-TEST_CASE("revoke_run_grant_by_the_grantor_ends_the_grant_and_repeats_safely", tags) {
+TEST_CASE("revoke_run_grant_by_the_grantor_ends_the_grant_and_repeats_safely",
+          "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -227,7 +230,8 @@ TEST_CASE("revoke_run_grant_by_the_grantor_ends_the_grant_and_repeats_safely", t
     CHECK_THAT(again.message, ContainsSubstring("already"));
 }
 
-TEST_CASE("create_run_grant_reactivates_a_revoked_grant_under_the_same_id", tags) {
+TEST_CASE("create_run_grant_reactivates_a_revoked_grant_under_the_same_id",
+          "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -249,7 +253,7 @@ TEST_CASE("create_run_grant_reactivates_a_revoked_grant_under_the_same_id", tags
     CHECK(stored->revoked_at == std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", tags) {
+TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto grantor = write_account(h, gen);
@@ -272,7 +276,7 @@ TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", tags) {
     CHECK(allowed.success);
 }
 
-TEST_CASE("create_run_grant_renews_a_grant_past_its_not_after", tags) {
+TEST_CASE("create_run_grant_renews_a_grant_past_its_not_after", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -299,7 +303,7 @@ TEST_CASE("create_run_grant_renews_a_grant_past_its_not_after", tags) {
     CHECK(stored->not_after == std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("create_run_grant_replaces_an_active_grant_with_a_new_role", tags) {
+TEST_CASE("create_run_grant_replaces_an_active_grant_with_a_new_role", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto a = write_account(h, gen);
@@ -321,7 +325,8 @@ TEST_CASE("create_run_grant_replaces_an_active_grant_with_a_new_role", tags) {
     CHECK(stored->role_id == second_role.id);
 }
 
-TEST_CASE("revoke_run_grant_by_an_administrator_of_another_party_keeps_the_grants_party", tags) {
+TEST_CASE("revoke_run_grant_by_an_administrator_of_another_party_keeps_the_grants_party",
+          "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto grantor = write_account(h, gen);

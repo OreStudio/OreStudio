@@ -22,15 +22,13 @@
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
 
 using ores::utility::faker::datetime;
 
@@ -40,7 +38,7 @@ using ores::iam::domain::role;
 using namespace ores::iam::domain::roles;
 using namespace ores::logging;
 
-TEST_CASE("create_role_with_valid_fields", tags) {
+TEST_CASE("create_role_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -58,7 +56,7 @@ TEST_CASE("create_role_with_valid_fields", tags) {
     CHECK(sut.modified_by == "system");
 }
 
-TEST_CASE("create_trading_role", tags) {
+TEST_CASE("create_trading_role", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -73,7 +71,7 @@ TEST_CASE("create_trading_role", tags) {
     CHECK(sut.name == "Trading");
 }
 
-TEST_CASE("create_sales_role", tags) {
+TEST_CASE("create_sales_role", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -88,7 +86,7 @@ TEST_CASE("create_sales_role", tags) {
     CHECK(sut.name == "Sales");
 }
 
-TEST_CASE("create_operations_role", tags) {
+TEST_CASE("create_operations_role", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -103,7 +101,7 @@ TEST_CASE("create_operations_role", tags) {
     CHECK(sut.name == "Operations");
 }
 
-TEST_CASE("create_support_role", tags) {
+TEST_CASE("create_support_role", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -118,7 +116,7 @@ TEST_CASE("create_support_role", tags) {
     CHECK(sut.name == "Support");
 }
 
-TEST_CASE("role_with_specific_uuid", tags) {
+TEST_CASE("role_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -137,7 +135,7 @@ TEST_CASE("role_with_specific_uuid", tags) {
     CHECK(sut.name == "CustomRole");
 }
 
-TEST_CASE("role_serialization_to_json", tags) {
+TEST_CASE("role_serialization_to_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -158,7 +156,7 @@ TEST_CASE("role_serialization_to_json", tags) {
     CHECK(json_output.find("serialization testing") != std::string::npos);
 }
 
-TEST_CASE("role_fields_default_to_empty", tags) {
+TEST_CASE("role_fields_default_to_empty", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -171,7 +169,7 @@ TEST_CASE("role_fields_default_to_empty", tags) {
     CHECK(sut.change_commentary.empty());
 }
 
-TEST_CASE("create_role_with_faker", tags) {
+TEST_CASE("create_role_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;
@@ -190,7 +188,7 @@ TEST_CASE("create_role_with_faker", tags) {
     CHECK(!sut.modified_by.empty());
 }
 
-TEST_CASE("create_multiple_random_roles", tags) {
+TEST_CASE("create_multiple_random_roles", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> role_names = {super_admin, trading, sales, operations, support};
@@ -212,7 +210,7 @@ TEST_CASE("create_multiple_random_roles", tags) {
     }
 }
 
-TEST_CASE("well_known_role_names_are_consistent", tags) {
+TEST_CASE("well_known_role_names_are_consistent", "[domain]") {
     auto lg(make_logger(test_suite));
 
     CHECK(std::string(super_admin) == "SuperAdmin");
@@ -225,7 +223,7 @@ TEST_CASE("well_known_role_names_are_consistent", tags) {
     BOOST_LOG_SEV(lg, info) << "All well-known role names validated";
 }
 
-TEST_CASE("role_version_defaults_to_zero", tags) {
+TEST_CASE("role_version_defaults_to_zero", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role sut;

@@ -76,32 +76,42 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_configuration_market_bindings_response list_configuration_market_bindings(
-        const messaging::list_configuration_market_bindings_request& request);
-    messaging::get_configuration_market_binding_response get_configuration_market_binding(
-        const messaging::get_configuration_market_binding_request& request);
-    messaging::get_many_configuration_market_bindings_response
+    ::ores::reporting::messaging::list_configuration_market_bindings_response
+    list_configuration_market_bindings(
+        const ::ores::reporting::messaging::list_configuration_market_bindings_request& request);
+    ::ores::reporting::messaging::get_configuration_market_binding_response
+    get_configuration_market_binding(
+        const ::ores::reporting::messaging::get_configuration_market_binding_request& request);
+    ::ores::reporting::messaging::get_many_configuration_market_bindings_response
     get_many_configuration_market_bindings(
-        const messaging::get_many_configuration_market_bindings_request& request);
-    messaging::put_configuration_market_binding_response put_configuration_market_binding(
-        const messaging::put_configuration_market_binding_request& request);
-    messaging::put_many_configuration_market_bindings_response
+        const ::ores::reporting::messaging::get_many_configuration_market_bindings_request&
+            request);
+    ::ores::reporting::messaging::put_configuration_market_binding_response
+    put_configuration_market_binding(
+        const ::ores::reporting::messaging::put_configuration_market_binding_request& request);
+    ::ores::reporting::messaging::put_many_configuration_market_bindings_response
     put_many_configuration_market_bindings(
-        const messaging::put_many_configuration_market_bindings_request& request);
-    messaging::delete_configuration_market_binding_response delete_configuration_market_binding(
-        const messaging::delete_configuration_market_binding_request& request);
-    messaging::delete_many_configuration_market_bindings_response
+        const ::ores::reporting::messaging::put_many_configuration_market_bindings_request&
+            request);
+    ::ores::reporting::messaging::delete_configuration_market_binding_response
+    delete_configuration_market_binding(
+        const ::ores::reporting::messaging::delete_configuration_market_binding_request& request);
+    ::ores::reporting::messaging::delete_many_configuration_market_bindings_response
     delete_many_configuration_market_bindings(
-        const messaging::delete_many_configuration_market_bindings_request& request);
-    messaging::list_by_configuration_id_configuration_market_bindings_response
+        const ::ores::reporting::messaging::delete_many_configuration_market_bindings_request&
+            request);
+    ::ores::reporting::messaging::list_by_configuration_id_configuration_market_bindings_response
     list_by_configuration_id_configuration_market_bindings(
-        const messaging::list_by_configuration_id_configuration_market_bindings_request& request);
-    messaging::list_configuration_market_binding_versions_response
+        const ::ores::reporting::messaging::
+            list_by_configuration_id_configuration_market_bindings_request& request);
+    ::ores::reporting::messaging::list_configuration_market_binding_versions_response
     list_configuration_market_binding_versions(
-        const messaging::list_configuration_market_binding_versions_request& request);
-    messaging::get_configuration_market_binding_version_response
+        const ::ores::reporting::messaging::list_configuration_market_binding_versions_request&
+            request);
+    ::ores::reporting::messaging::get_configuration_market_binding_version_response
     get_configuration_market_binding_version(
-        const messaging::get_configuration_market_binding_version_request& request);
+        const ::ores::reporting::messaging::get_configuration_market_binding_version_request&
+            request);
     /**@}*/
 
     /**
@@ -222,7 +232,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::configuration_market_binding_change& change,
+    prepare_change(const ::ores::reporting::messaging::configuration_market_binding_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::configuration_market_binding& out);
 };

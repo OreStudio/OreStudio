@@ -92,6 +92,14 @@ struct approval_decision final {
     std::chrono::system_clock::time_point decided_at = {};
 
     /**
+     * @brief Why the request was parked, when the decision is a hold. FK reference to
+     * ores_inbox_hold_reasons_tbl, which the system tenant holds. Null on every decision that is
+     * not a hold, and on the holds taken before the lookup existed, whose words are the comment
+     * alone.
+     */
+    std::optional<std::string> hold_reason_code;
+
+    /**
      * @brief Why, in the decider's words. Empty when neither the decision type nor the kind asks
      * for one.
      */

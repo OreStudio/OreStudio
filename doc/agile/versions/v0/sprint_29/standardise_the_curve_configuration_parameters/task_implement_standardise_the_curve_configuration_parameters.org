@@ -70,6 +70,26 @@ task and name that file in the Command column.
   and the ER diagrams. The diagram run also picked up drift from merges after
   this branch's base, so diagrams the change does not concern move with it;
   leaving them stale keeps =er-diagram= red.
+- *The write check already exists; curves need a column map to reach it.*
+  =ores_reporting_value_in_set_fn= is the one rule, and
+  =refdata_convention_terms_validate_create.sql= is a generated trigger that
+  joins a column-to-leaf map (=convention_kind_term=) to the contract and the
+  setting links. A curve value in a typed column is therefore not enforced today
+  because no such map covers the curve tables. The cheapest route reuses the
+  generator's shape; the question it raises is whether the map table is
+  generalised (a rename and a migration, since it is named for conventions) or a
+  curve map is added beside it.
+- *The curve page has no editor to extend.* =ConfigurationPage= is read only and
+  shows a report configuration binding, not a kind's sections. The conventions
+  record page is the pattern to follow, and it composes =ParameterRow=,
+  =ParameterControl=, =ParameterDocuments= and =ParameterFilters=. A curve
+  section is a collection of curve entries rather than a flat group, so the page
+  needs the collection shape from the configuration standard, not the group one.
+- *A test now guards the value-set links.*
+  =reporting_ore_parameter_curve_value_sets_test.sql= asserts that every curve
+  link names a set that exists, that every documented curve leaf has a link,
+  that no curve set is orphaned, and that every catalogue a set draws on is
+  registered.
 - *Two of this task's original items are already delivered.* The value sets were
   carried by [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][their own task]], and the curve sections have been in the
   =curve_section= data since before this story, so the page reads them rather

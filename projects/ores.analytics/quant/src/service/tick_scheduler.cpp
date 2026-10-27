@@ -66,14 +66,18 @@ void tick_scheduler::advance_to(double seconds) {
 void tick_scheduler::record(trace_kind kind,
                             std::uint64_t series,
                             double operational_gap,
-                            double wall_gap) {
+                            double wall_gap,
+                            double compensated_gap) {
     trace_.record(trace_event{.kind = kind,
                               .series = series,
                               .at = market_.now(),
                               .tau = market_.tau(),
                               .operational_gap = operational_gap,
                               .wall_gap = wall_gap,
+                              .compensated_gap = compensated_gap,
                               .heat = market_.heat(),
+                              .multiplier = market_.multiplier(market_.state()),
+                              .pace = market_.pace(),
                               .state = market_.state()});
 }
 
@@ -125,16 +129,21 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
             market_.enrol(spec.arrival.ticks_per_hour / 3600.0);
             names_[spec.series] = spec.name;
             record(trace_kind::add, spec.series);
-            auto& s = series_
-                          .emplace(id,
-                                   series{.spec = spec,
-                                          .law = law,
-                                          .stream = stream,
-                                          .body = body,
-                                          .gap = 0.0,
-                                          .mark = 0.0,
-                                          .last_fired = market_.now()})
-                          .first->second;
+            auto& s =
+                series_
+                    .emplace(id,
+                             series{.spec = spec,
+                                    .law = law,
+                                    .stream = stream,
+                                    .body = body,
+                                    .gap = 0.0,
+                                    .mark = 0.0,
+                                    .last_fired = market_.now(),
+                                    .last_tau = market_.tau(),
+                                    .phase = std::holds_alternative<domain::periodic_law>(law) ?
+                                                 std::get<domain::periodic_law>(law).offset :
+                                                 0.0})
+                    .first->second;
             schedule(id, s);
         },
         false);
@@ -221,6 +230,28 @@ trace_page tick_scheduler::trace(std::optional<std::uint64_t> series,
     return page;
 }
 
+std::vector<series_state> tick_scheduler::series_states() const {
+    const auto guard = std::lock_guard(mutex_);
+    std::vector<series_state> out;
+    out.reserve(series_.size());
+    for (const auto& [id, s] : series_) {
+        const double sensitivity = s.spec.sensitivity;
+        const double elapsed = (market_.tau() - s.last_tau) * sensitivity;
+        const auto* hawkes = std::get_if<domain::hawkes_law>(&s.law);
+        out.push_back(series_state{
+            .name = s.spec.name,
+            .mode = s.spec.arrival.mode,
+            .rate = s.spec.arrival.ticks_per_hour / 3600.0,
+            .sensitivity = sensitivity,
+            .effective_rate =
+                domain::intensity_after(s.law, elapsed) * sensitivity * market_.pace(),
+            .phase = s.phase,
+            .excess = hawkes ? hawkes->excess * std::exp(-hawkes->decay * elapsed) : 0.0});
+    }
+    std::ranges::sort(out, {}, &series_state::name);
+    return out;
+}
+
 std::chrono::system_clock::time_point tick_scheduler::wall_at(double at) const {
     return clock_.wall(time_at(at));
 }
@@ -286,10 +317,12 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     auto& s = series_.at(id);
 
     market_.record_event();
+    const double compensated = domain::compensator(s.law, s.gap);
     domain::record_event(s.law, s.gap);
+    s.last_tau = market_.tau();
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due))};
-    record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds);
+    record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
     s.last_fired = *due;
     const fired_tick fired{.id = id, .at = *due, .tau = market_.tau()};

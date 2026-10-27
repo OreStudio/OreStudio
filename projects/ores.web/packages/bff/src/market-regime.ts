@@ -172,8 +172,22 @@ const traceEvent = z.object({
     tau: z.number(),
     operational_gap: z.number().default(0),
     wall_gap: z.number().default(0),
+    compensated_gap: z.number().default(0),
     heat: z.number(),
+    multiplier: z.number().default(1),
+    pace: z.number().default(1),
     state: stateSchema,
+});
+
+/** One running feed and the state of its arrival law now. */
+const seriesState = z.object({
+    source_name: z.string(),
+    mode: z.string(),
+    rate: z.number(),
+    sensitivity: z.number(),
+    effective_rate: z.number(),
+    phase: z.number().default(0),
+    excess: z.number().default(0),
 });
 
 const answeredTrace = z.object({
@@ -186,6 +200,7 @@ const answeredTrace = z.object({
     max_lateness_seconds: z.number(),
     series: z.coerce.number(),
     events: z.array(traceEvent),
+    series_states: z.array(seriesState).default([]),
 });
 
 const traceReply = z.union([answeredTrace, refusedRegime]);
@@ -243,8 +258,20 @@ export function registerMarketRegimeRoutes(
                 tau: e.tau,
                 operationalGap: e.operational_gap,
                 wallGap: e.wall_gap,
+                compensatedGap: e.compensated_gap,
                 heat: e.heat,
+                multiplier: e.multiplier,
+                pace: e.pace,
                 state: e.state,
+            })),
+            feeds: reply.series_states.map((f) => ({
+                sourceName: f.source_name,
+                mode: f.mode,
+                rate: f.rate,
+                sensitivity: f.sensitivity,
+                effectiveRate: f.effective_rate,
+                phase: f.phase,
+                excess: f.excess,
             })),
         };
     });

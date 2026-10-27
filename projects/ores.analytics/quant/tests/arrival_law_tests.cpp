@@ -265,3 +265,17 @@ TEST_CASE("make_arrival_law refuses what cannot work", "[arrival_law]") {
     CHECK_THROWS_AS(make_arrival_law(spec("poisson", 0.0), stream), std::invalid_argument);
     CHECK_THROWS_AS(make_arrival_law(spec("bursty", 1.0), stream), std::invalid_argument);
 }
+
+TEST_CASE("the compensator integrates each law's intensity over a gap", "[arrival_law]") {
+    auto stream = stream_for(8);
+    const auto hawkes = make_arrival_law(spec("hawkes", 10.0, 0.5, 4.0), stream);
+    const auto& h = std::get<hawkes_law>(hawkes);
+    CHECK(ores::analytics::quant::domain::compensator(hawkes, 0.3) ==
+          Catch::Approx(h.baseline * 0.3 + h.excess * (1.0 - std::exp(-h.decay * 0.3)) / h.decay));
+    CHECK(ores::analytics::quant::domain::intensity_after(hawkes, 0.0) ==
+          Catch::Approx(h.baseline + h.excess));
+
+    const auto poisson = make_arrival_law(spec("poisson", 8.0), stream);
+    CHECK(ores::analytics::quant::domain::compensator(poisson, 0.25) == Catch::Approx(2.0));
+    CHECK(ores::analytics::quant::domain::intensity_after(poisson, 3.0) == Catch::Approx(8.0));
+}

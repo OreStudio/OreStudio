@@ -21,7 +21,14 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { FeedRaster, MarketRegime, MarketState, RegimeMode } from '../../api/client.js';
+import type {
+    FeedRaster,
+    MarketRegime,
+    MarketState,
+    MarketTrace,
+    RegimeMode,
+    TraceEvent,
+} from '../../api/client.js';
 import type { StateSample } from './marketRaster.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketRegimePanel } from './MarketRegimeTab.js';
@@ -37,6 +44,11 @@ function regime(over: Partial<MarketRegime> = {}): MarketRegime {
         jump: 0.5,
         decay: 20,
         samples: [],
+        pace: 0.5,
+        tau: 30,
+        populationRate: 2,
+        loopGain: 0.025,
+        runSeed: 42,
         ...over,
     };
 }
@@ -268,5 +280,130 @@ describe('the market regime tab', () => {
             ],
         });
         expect(html).not.toContain('data-mark');
+    });
+});
+
+/** A tick or a decision of the scheduler, so many seconds before now. */
+function traced(secondsAgo: number, over: Partial<TraceEvent> = {}): TraceEvent {
+    return {
+        kind: 'tick',
+        sourceName: 'live.eurusd',
+        at: new Date(NOW - secondsAgo * 1000).toISOString(),
+        tau: 60 - secondsAgo / 2,
+        operationalGap: 1,
+        wallGap: 2,
+        compensatedGap: 1,
+        heat: 0.05,
+        multiplier: 0.5,
+        pace: 0.55,
+        state: 'calm',
+        ...over,
+    };
+}
+
+function trace(over: Partial<MarketTrace> = {}): MarketTrace {
+    return {
+        runSeed: 42,
+        ticksPerSecond: 12.5,
+        heapSize: 2,
+        latenessSeconds: 0.0025,
+        maxLatenessSeconds: 0.027,
+        series: 2,
+        events: [
+            traced(50, { kind: 'add', sourceName: 'live.eurusd' }),
+            traced(40),
+            traced(30, { kind: 'pin', sourceName: '', state: 'active', multiplier: 2, pace: 2.05 }),
+            traced(20, { state: 'active', multiplier: 2, pace: 2.05, compensatedGap: 0.8 }),
+            traced(10, { state: 'active', multiplier: 2, pace: 2.05, compensatedGap: 1.3 }),
+        ],
+        feeds: [
+            {
+                sourceName: 'live.eurusd',
+                mode: 'periodic',
+                rate: 1,
+                sensitivity: 1,
+                effectiveRate: 2.05,
+                phase: 0.37,
+                excess: 0,
+            },
+        ],
+        ...over,
+    };
+}
+
+function renderTraced(traceNow: MarketTrace = trace()): string {
+    return renderToStaticMarkup(
+        <TranslationProvider>
+            <MarketRegimePanel
+                regime={regime({ pace: 2.05, state: 'active', multiplier: 2, pinned: true })}
+                raster={raster()}
+                now={NOW}
+                pending={undefined}
+                error={null}
+                marked={null}
+                states={[]}
+                trace={traceNow}
+                onPin={() => undefined}
+            />
+        </TranslationProvider>,
+    );
+}
+
+describe('the market regime tab with the scheduler’s record', () => {
+    it('shows the pace, the run seed, the loop gain against one and the loop’s numbers', () => {
+        const html = renderTraced();
+        expect(html).toContain('×2.05');
+        expect(html).toContain('0.025 of 1');
+        expect(html).toContain('>42<');
+        expect(html).toContain('12.5');
+        expect(html).toContain('2.5 ms, at most 27.0 ms');
+    });
+
+    it('draws the pace stacked into the regime and the heat', () => {
+        const html = renderTraced();
+        expect(html).toContain('how fast market time runs');
+        expect(html.match(/data-pace/g)?.length).toBe(5);
+    });
+
+    it('shows each running feed’s law, rate, sensitivity, rate now and phase on its row', () => {
+        const html = renderTraced();
+        expect(html).toContain('Periodic 1.00/s ×1.00 → 2.05/s initial phase 0.37');
+    });
+
+    it('offers to place the marks by clock time or by market time', () => {
+        const html = renderTraced();
+        expect(html).toContain('Clock time');
+        expect(html).toContain('Market time τ');
+    });
+
+    it('sets each feed against its law and plots its rescaled gaps against Exp(1)', () => {
+        const html = renderTraced();
+        expect(html).toContain('Each feed against its law');
+        // Three ticks give two gaps, too few for a plot, so the tab says so instead.
+        expect(html).toContain('live.eurusd has too few ticks in the window for a plot');
+        expect(html).not.toContain('data-qq');
+    });
+
+    it('lists what the loop applied, newest first', () => {
+        const html = renderTraced();
+        const pinned = html.indexOf('pinned');
+        const added = html.indexOf('added');
+        expect(pinned).toBeGreaterThan(0);
+        expect(added).toBeGreaterThan(pinned);
+    });
+
+    it('draws none of it before the record is read', () => {
+        const html = render(regime());
+        expect(html).not.toContain('Each feed against its law');
+        expect(html).not.toContain('What the loop applied');
+    });
+});
+
+describe('the QQ plot of a busy feed', () => {
+    it('plots a feed with enough gaps against Exp(1)', () => {
+        const ticks = [60, 50, 40, 30, 20, 10, 5].map((ago) => traced(ago));
+        const html = renderTraced(trace({ events: ticks }));
+        expect(html).toContain('The rescaled gaps of live.eurusd against Exp(1)');
+        expect(html.match(/data-qq/g)?.length).toBe(6);
     });
 });

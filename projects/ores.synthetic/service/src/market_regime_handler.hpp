@@ -146,6 +146,7 @@ public:
         ores::synthetic::messaging::pin_market_regime_response response;
         response.success = true;
         fill(response);
+        fill_heat(response);
         reply(nats_, msg, response);
     }
 
@@ -201,9 +202,21 @@ public:
                 .tau = it->tau,
                 .operational_gap = it->operational_gap,
                 .wall_gap = it->wall_gap,
+                .compensated_gap = it->compensated_gap,
                 .heat = it->heat,
+                .multiplier = it->multiplier,
+                .pace = it->pace,
                 .state = it->state == quant::domain::market_state::active ? "active" : "calm"});
         }
+        for (const auto& state : scheduler_.series_states())
+            response.series_states.push_back(ores::synthetic::messaging::market_series_state{
+                .source_name = state.name,
+                .mode = state.mode,
+                .rate = state.rate,
+                .sensitivity = state.sensitivity,
+                .effective_rate = state.effective_rate,
+                .phase = state.phase,
+                .excess = state.excess});
         reply(nats_, msg, response);
     }
 
@@ -226,7 +239,8 @@ private:
      * service's own history bounds it: a reader asks for a window and receives at
      * most what the scheduler kept.
      */
-    void fill_heat(ores::synthetic::messaging::get_market_regime_response& response) const {
+    template <typename Response>
+    void fill_heat(Response& response) const {
         const auto market = scheduler_.snapshot();
         response.heat = market.heat;
         response.jump = market.jump;

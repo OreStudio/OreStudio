@@ -28,9 +28,9 @@ A publish request names its subject and authorises only that, and the applied pu
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Nothing.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                             |
 
 * Acceptance
@@ -120,7 +120,50 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value |
+|------+-------|
+| Publish detail table | ores_marketdata_curve_publishes_tbl, keyed by request_id |
+| Record columns | published_by, published_at, on the same row |
+| New publish cases | 11, in the market data service suite |
+| Suite | 175 cases, 173 passed; 2 known ingest-loop timing flakes |
+| Live | henry.jones raises, mark.reid approves, henry publishes, publisher and instant recorded |
+| Refusals | another curve, another as-of, another party, a reused request |
+
 * Result
+
+A publish request names its subject, and an applied publish records who
+published it and when.
+
+- The subject is one row of the marketdata.curve_publish detail, keyed by the
+  request. It holds the party, the bootstrap config, the output series and the
+  as-of, and the apply stamps the publisher and the instant on that row. The
+  row's history is the audit trail and names the request on every version.
+- The raise reads the subject out of the configuration, so a caller cannot state
+  what the configuration does not hold; a missing config or as-of is refused.
+- The gate refuses a wrong request, a wrong kind, a request with no subject, a
+  subject mismatch, an unapproved request and a reused request. The mismatch
+  message names both subjects.
+- A reused request is refused three ways: the published instant, the request id
+  as natural key, and the store's optimistic version check.
+- The publish answer and the curve snapshot state the publisher, the instant,
+  the as-of and the authorising request, and a decider reads the subject through
+  marketdata.v1.curve_publishes.list_by_request_id.
+
+Deviation: the subject is not on get_approval. The inbox is generic and the
+detail belongs to the owning component; the queue join that would carry each
+kind's subject stays a candidate.
+
+Open, stated in the journeys: no list of every published curve; no point-by-point
+delta against the published as-of; no withdrawal or superseded marker; no
+zero-approval path; no publish notification; the queue row carries no subject;
+and no maker/checker permission pair on the kind.
+
+Note: the provisioned database was a build behind the checkout, so the new
+table, trigger, change reason, permission and grants were applied by hand and
+are recorded in the evidence; a database recreate rebuilds them from the
+committed seed files.
 
 The two gaps are closed, and the model is one row rather than two.
 

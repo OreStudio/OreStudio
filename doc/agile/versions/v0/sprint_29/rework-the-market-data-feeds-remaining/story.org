@@ -67,7 +67,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:BBA008DA-8086-44C0-9369-4152AB75F6FB][Make the demo tenant exercise the system]] | DONE | 2026-10-26 | 2026-10-26 | Every screen must be reachable by the roles whose job it is, and Acme must hold the data to exercise them. |
 | [[id:8357A343-807A-467E-9725-7FF56BF9EF63][Add the demo approvers and document the market data setup]] | DONE | 2026-10-26 | 2026-10-26 | Every approval function needs a persona that can decide, and the Acme market data setup needs Zettelkasten documentation with UML flows. |
 | [[id:4491F016-B433-4A55-BBDE-7D4EE4D43071][Close the approval model gaps]] | DONE | 2026-10-27 | 2026-10-27 | The controller part is never asked for, a market data publish has no kind, a tenant-wide change names no decider, and a hold has no reason lookup. |
-| [[id:DC6BD897-8E19-4910-BD94-E3A0828DDA2A][Name the publish subject and record who published it]] | STARTED | 2026-10-27 | | A publish request authorises any subject, and a curve has no published marker or publisher. |
+| [[id:DC6BD897-8E19-4910-BD94-E3A0828DDA2A][Name the publish subject and record who published it]] | DONE | 2026-10-27 | 2026-10-27 | A publish request authorises any subject, and a curve has no published marker or publisher. |
 
 * Decisions
 

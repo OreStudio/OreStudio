@@ -63,6 +63,11 @@ create table if not exists "ores_refdata_tenor_basis_swap_long_shorts_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
+-- Unique convention_id for active records
+create unique index if not exists tenor_basis_swap_long_shorts_convention_id_uniq_idx
+on "ores_refdata_tenor_basis_swap_long_shorts_tbl" (tenant_id, convention_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists tenor_basis_swap_long_shorts_version_uniq_idx
 on "ores_refdata_tenor_basis_swap_long_shorts_tbl" (tenant_id, id, party_id, version)

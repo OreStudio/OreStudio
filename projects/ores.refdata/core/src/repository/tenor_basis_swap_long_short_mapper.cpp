@@ -48,6 +48,7 @@ tenor_basis_swap_long_short_mapper::map(const tenor_basis_swap_long_short_entity
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.identity.convention_id = boost::lexical_cast<boost::uuids::uuid>(v.convention_id);
+
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.long_leg.long_index = v.long_index;
     r.long_leg.long_pay_tenor = v.long_pay_tenor;
@@ -75,6 +76,7 @@ tenor_basis_swap_long_short_mapper::map(const domain::tenor_basis_swap_long_shor
     r.tenant_id = v.identity.tenant_id.to_string();
     r.version = v.identity.version;
     r.convention_id = boost::uuids::to_string(v.identity.convention_id);
+
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.long_index = v.long_leg.long_index;
     r.long_pay_tenor = v.long_leg.long_pay_tenor;

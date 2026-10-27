@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-curve-configuration-leaves-their-value-sets
-#+pr:
+#+pr: 3915
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -113,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3915][#3915]] | [sql] Give the curve configuration leaves their value sets |
 
 * Review
 

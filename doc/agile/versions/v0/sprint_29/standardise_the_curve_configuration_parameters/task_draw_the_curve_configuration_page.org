@@ -26,11 +26,11 @@ A person reads a curve configuration's sections and its curve entries with the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The page reads; it does not write.      |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The owner's read of the screen.        |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance

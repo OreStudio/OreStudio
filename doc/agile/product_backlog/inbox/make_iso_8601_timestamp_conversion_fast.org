@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: EDDA9476-7971-470C-A1A0-66208C25251E
+:END:
+#+title: Make ISO 8601 timestamp conversion fast
+#+description: datetime::to_iso8601_utc and from_iso8601_utc take 760-960 ns a call and are 80-90 percent of the cost of encoding or decoding a message with timestamps; a fixed-format writer and reader would take tens of nanoseconds.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Replace the conversion in =ores::platform::time::datetime::to_iso8601_utc= and
+=from_iso8601_utc= with a fixed-format writer and reader for the one wire shape
+the time architecture defines. Keep the same text, byte for byte, so that no
+message and no stored value changes.
+
+* Why
+
+The functions take 764 ns to format and 960 ns to parse a timestamp. Every
+message with a timestamp pays this for each one, through reflect-cpp and through
+a generated codec alike. For a list of 100 change reason categories, the
+conversions are 80–90% of the time to encode or decode the message. A
+fixed-format writer and reader would take tens of nanoseconds, so this one
+change could make every such message several times faster. The repository
+mappers use the same functions for each row they read.
+
+* References
+
+- [[id:830DD368-8670-4803-A8AA-CCEEF7820014][Compare generated JSON and MessagePack codecs with reflect-cpp]]: the
+  measurements, in its =* Notes= and =evidence/codec_bench/conversions.cpp=.
+
+* See also
+
+-

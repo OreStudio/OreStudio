@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,44 @@ Numbers for encode and decode speed of generated codecs against reflect-cpp, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- A generated codec for one real response type encodes JSON and MessagePack
+  byte-identical to reflect-cpp, and decodes reflect-cpp's output to the same
+  value.
+- Each operation has a time per message and an allocation count, for a small
+  and a large message.
+- Each codec's translation unit has a compile time and a peak memory.
+- The time each codec spends is split between the codec and the per-field
+  conversions both share.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The type is =ores::dq::messaging::list_change_reason_categories_response=: a
+=result= with its =field_failure= list, a vector of =change_reason_category=,
+and a total. It holds every wire shape the control plane uses: strings,
+integers, an enum by name, a =tenant_id= and a =time_point= as strings, nested
+objects and arrays. The benchmark is in =evidence/codec_bench/=.
+
+- =reflected_codec.cpp= calls =rfl::json= and =rfl::msgpack= with the project's
+  reflectors, as =ores::nats::wire_codec= does.
+- =generated_codec.cpp= is the code the generator would emit: one function a
+  type and a format, in the field order of the struct, over yyjson and
+  msgpack-c. It makes the same library calls as reflect-cpp, so the bytes
+  match, and it refuses a message that lacks a required field.
+- =main.cpp= proves the identity on a list of 1 and a list of 100. The text
+  holds a quote, a backslash, a tab and non-ASCII letters, so the check covers
+  escaping. Then it times each operation, median of 7 runs, and counts C++
+  allocations.
+- =conversions.cpp= times the per-field conversions both codecs share.
+- =build.py= compiles each codec as its own unit with the release flags.
 
 * Measurements
 
@@ -53,11 +75,64 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
+The machine was heavily loaded (load average 36–45 on 8 cores, from builds in
+other worktrees), so the absolute times are high. Each pair of numbers ran in
+the same window, so the ratios hold better than the times.
+
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Byte identity, JSON and MessagePack, list of 1 (557 and 481 bytes) and of 100 (35,585 and 32,145 bytes) | Identical, both directions | =evidence/codec_bench/main.cpp= | 0ca5ed46c2 |
+| List of 1: JSON encode, reflect-cpp / generated | 1,541 / 1,174 ns (1.31×), 5 / 4 allocations | same | 0ca5ed46c2 |
+| List of 1: JSON decode | 2,922 / 2,009 ns (1.45×), 19 / 15 allocations | same | 0ca5ed46c2 |
+| List of 1: MessagePack encode | 1,612 / 834 ns (1.93×), 5 / 4 allocations | same | 0ca5ed46c2 |
+| List of 1: MessagePack decode | 2,377 / 1,507 ns (1.58×), 19 / 15 allocations | same | 0ca5ed46c2 |
+| List of 100: JSON encode | 94.0 / 85.1 µs (1.10×), 302 / 301 allocations | same | 0ca5ed46c2 |
+| List of 100: JSON decode | 174.1 / 144.9 µs (1.20×), 1,214 / 1,104 allocations | same | 0ca5ed46c2 |
+| List of 100: MessagePack encode | 121.7 / 90.1 µs (1.35×), 302 / 301 allocations | same | 0ca5ed46c2 |
+| List of 100: MessagePack decode | 179.2 / 128.0 µs (1.40×), 1,214 / 1,104 allocations | same | 0ca5ed46c2 |
+| =datetime::to_iso8601_utc= | 764 ns a call | =evidence/codec_bench/conversions.cpp= | 0ca5ed46c2 |
+| =datetime::from_iso8601_utc= | 960 ns a call | same | 0ca5ed46c2 |
+| =tenant_id::to_string= / =from_string= | 11 / 51 ns a call | same | 0ca5ed46c2 |
+| Compile, =reflected_codec.cpp= | 13.1 s, 437 MiB | =evidence/codec_bench/build.py= | 0ca5ed46c2 |
+| Compile, =generated_codec.cpp= | 4.3 s, 195 MiB | same | 0ca5ed46c2 |
 
 * Notes
+
+** Where the time goes
+
+Both codecs convert each =time_point= and each =tenant_id= through the same
+functions. For a list of 100, those conversions cost about 77.5 µs to encode
+and about 101 µs to decode: 82–91% of the generated codec's time, and 55–82% of
+reflect-cpp's. With that shared cost taken out, the codec work alone compares
+as below. These figures are a subtraction of medians on a loaded machine, so
+they are estimates.
+
+| Codec work for a list of 100 | reflect-cpp | generated | Ratio |
+|------------------------------+-------------+-----------+-------|
+| JSON encode                  | 16.5 µs     | 7.6 µs    | 2.2×  |
+| MessagePack encode           | 44.2 µs     | 12.6 µs   | 3.5×  |
+| JSON decode                  | 73 µs       | 44 µs     | 1.7×  |
+| MessagePack decode           | 78 µs       | 27 µs     | 2.9×  |
+
+So a generated codec is 2–3.5 times faster than reflect-cpp at its own work,
+but a message that carries timestamps sees only 1.1–1.9 times, because the
+timestamp conversion is most of its cost. A timestamp takes 760–960 ns to
+format or parse; a fixed-format ISO 8601 writer and reader would take tens of
+nanoseconds. That is the larger lever for message speed, and it helps both
+codecs. It is outside this story, so it goes to the backlog.
+
+** Allocations
+
+The generated decoder allocates about 9% less: 1,104 against 1,214 for a list
+of 100. Most allocations in both are the strings of the decoded value, which
+neither codec can avoid while the domain types hold =std::string=.
+
+** Compile cost
+
+The reflect-cpp unit takes three times as long to compile as the generated
+unit, and 2.2 times as much memory. This repeats the result of the
+translation-unit task: the build-time gain of generated codecs is larger than
+their run-time gain.
 
 - MessagePack has no schema language: the entity models are the schema, and the
   generator writes msgpack-c packer and unpacker calls for each type in its own
@@ -92,3 +167,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A generated codec over yyjson and msgpack-c can reproduce today's wire format
+byte for byte, for both formats and in both directions, so a move needs no
+protocol change and no version bump. It does the codec work 2–3.5 times faster
+than reflect-cpp, but messages with timestamps gain only 1.1–1.9 times, because
+=datetime='s ISO 8601 conversion is 80–90% of their cost. Its translation unit
+compiles three times faster in half the memory. The case for generated codecs
+is build time first and run time second. A faster timestamp conversion is a
+separate win for both codecs.

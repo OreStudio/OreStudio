@@ -66,4 +66,19 @@ test.describe('the market regime tab', () => {
         ).toBeVisible();
         await expect(panel.getByText('synthetic.bloomberg.eurusd')).toBeVisible();
     });
+
+    test('shows how fast market time runs and each feed against its law', async ({ page }) => {
+        await openRegimeTab(page);
+        const panel = page.getByRole('region', { name: PANEL });
+        await expect(panel.getByText('Run seed', { exact: true })).toBeVisible();
+        await expect(panel.getByRole('img', { name: 'how fast market time runs' })).toBeVisible();
+        await expect(
+            panel.getByRole('region', { name: 'Each feed against its law' }),
+        ).toBeVisible();
+        await panel.getByRole('radio', { name: 'Market time τ' }).click();
+        await expect(panel.getByRole('radio', { name: 'Market time τ' })).toHaveAttribute(
+            'aria-checked',
+            'true',
+        );
+    });
 });

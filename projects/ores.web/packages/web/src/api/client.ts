@@ -439,9 +439,60 @@ const marketRegimeSchema = z.object({
     jump: z.number(),
     decay: z.number(),
     samples: z.array(heatSampleSchema),
+    /** How fast market time runs now: the multiplier plus the heat's share. */
+    pace: z.number().default(1),
+    /** The market's operational time since the run started. */
+    tau: z.number().default(0),
+    /** The summed mean rate of the running feeds, which the heat is shared over. */
+    populationRate: z.number().default(0),
+    /** Jump over decay; the heat settles while it is below one. */
+    loopGain: z.number().default(0),
+    runSeed: z.number().default(0),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;
+
+/** One decision of the scheduler's loop: a tick, a regime turn, a pin or a change of feeds. */
+const traceEventSchema = z.object({
+    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove']),
+    sourceName: z.string(),
+    at: z.string(),
+    tau: z.number(),
+    operationalGap: z.number(),
+    wallGap: z.number(),
+    compensatedGap: z.number(),
+    heat: z.number(),
+    multiplier: z.number(),
+    pace: z.number(),
+    state: marketStateSchema,
+});
+
+/** One running feed and the state of its arrival law now. */
+const traceFeedSchema = z.object({
+    sourceName: z.string(),
+    mode: z.string(),
+    rate: z.number(),
+    sensitivity: z.number(),
+    effectiveRate: z.number(),
+    phase: z.number(),
+    excess: z.number(),
+});
+
+/** The scheduler's recent decisions, its own numbers, and every running feed's law. */
+const marketTraceSchema = z.object({
+    runSeed: z.number(),
+    ticksPerSecond: z.number(),
+    heapSize: z.number(),
+    latenessSeconds: z.number(),
+    maxLatenessSeconds: z.number(),
+    series: z.number(),
+    events: z.array(traceEventSchema),
+    feeds: z.array(traceFeedSchema).default([]),
+});
+
+export type MarketTrace = z.infer<typeof marketTraceSchema>;
+export type TraceEvent = z.infer<typeof traceEventSchema>;
+export type TraceFeed = z.infer<typeof traceFeedSchema>;
 export type MarketState = z.infer<typeof marketStateSchema>;
 
 /** What the market switch may force: a state, or control handed back to the chain. */
@@ -2286,6 +2337,27 @@ export const api = {
                 headers: JSON_HEADERS,
                 body: JSON.stringify({ mode }),
             }),
+        );
+    },
+
+    /**
+     * The scheduler's decisions over the last window, with its own numbers and
+     * every running feed's law: one feed's events and the market's, or all.
+     */
+    async marketTrace(input: {
+        readonly seconds: number;
+        readonly source?: string | undefined;
+        readonly limit?: number | undefined;
+    }): Promise<MarketTrace> {
+        const query = new URLSearchParams({ seconds: String(input.seconds) });
+        if (input.source !== undefined && input.source !== '') {
+            query.set('source', input.source);
+        }
+        if (input.limit !== undefined) {
+            query.set('limit', String(input.limit));
+        }
+        return marketTraceSchema.parse(
+            await request(`/api/synthetic/market-trace?${query.toString()}`, { method: 'GET' }),
         );
     },
 

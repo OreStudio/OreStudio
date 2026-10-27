@@ -21,7 +21,7 @@
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { api, type MarketRegime } from '../../api/client.js';
+import { api, type MarketRegime, type MarketTrace } from '../../api/client.js';
 import { multiplierText, RASTER_SECONDS, type StateSample } from './marketRaster.js';
 
 /** How often the market state is read again, in milliseconds. */
@@ -43,6 +43,24 @@ export function useMarketRegimeQuery(): UseQueryResult<MarketRegime> {
         queryKey: REGIME_KEY,
         queryFn: () => api.marketRegime(),
         refetchInterval: REGIME_EVERY_MS,
+    });
+}
+
+/** How often the scheduler's trace is read again, in milliseconds. */
+export const TRACE_EVERY_MS = 4_000;
+
+/** The most events one read of the trace brings back; the newest are kept. */
+export const TRACE_LIMIT = 20_000;
+
+/**
+ * The scheduler's decisions over the window, its own numbers and every running feed's law:
+ * one feed's and the market's when a source is named, or all of them.
+ */
+export function useMarketTrace(source?: string): UseQueryResult<MarketTrace> {
+    return useQuery({
+        queryKey: ['market-trace', source ?? ''],
+        queryFn: () => api.marketTrace({ seconds: RASTER_SECONDS, source, limit: TRACE_LIMIT }),
+        refetchInterval: TRACE_EVERY_MS,
     });
 }
 

@@ -19,6 +19,7 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
@@ -45,9 +46,35 @@ i_run_clock::time_point tick_scheduler::time_at(double seconds) const {
 }
 
 void tick_scheduler::advance_to(double seconds) {
-    const double by = seconds - market_.now();
-    if (by > 0.0)
-        market_.advance(by);
+    // Step to each transition, so the trace stamps it with the instant it happened.
+    for (;;) {
+        const double by = seconds - market_.now();
+        if (by <= 0.0)
+            return;
+        const auto turn = market_.next_transition_in();
+        if (!turn || *turn > by) {
+            market_.advance(by);
+            return;
+        }
+        // A dwell is positive, but a zero one would not turn the chain and the loop would
+        // spin, so the step is never less than the smallest positive one.
+        market_.advance(std::max(*turn, std::numeric_limits<double>::denorm_min()));
+        record(trace_kind::transition, 0);
+    }
+}
+
+void tick_scheduler::record(trace_kind kind,
+                            std::uint64_t series,
+                            double operational_gap,
+                            double wall_gap) {
+    trace_.record(trace_event{.kind = kind,
+                              .series = series,
+                              .at = market_.now(),
+                              .tau = market_.tau(),
+                              .operational_gap = operational_gap,
+                              .wall_gap = wall_gap,
+                              .heat = market_.heat(),
+                              .state = market_.state()});
 }
 
 void tick_scheduler::post(command c, bool wait) {
@@ -96,6 +123,8 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
     post(
         [this, id, spec, law = std::move(law), stream, body = std::move(body)] {
             market_.enrol(spec.arrival.ticks_per_hour / 3600.0);
+            names_[spec.series] = spec.name;
+            record(trace_kind::add, spec.series);
             auto& s = series_
                           .emplace(id,
                                    series{.spec = spec,
@@ -119,6 +148,7 @@ void tick_scheduler::remove(std::size_t id) {
             if (it == series_.end())
                 return;
             market_.withdraw(it->second.spec.arrival.ticks_per_hour / 3600.0);
+            record(trace_kind::remove, it->second.spec.series);
             series_.erase(it);
             // A removed series leaves its mark in the heap until the mark surfaces. Once such
             // marks outnumber the live ones, the heap is rebuilt from the live series.
@@ -135,6 +165,7 @@ void tick_scheduler::pin(std::optional<domain::market_state> state) {
                 market_.pin(*state);
             else
                 market_.unpin();
+            record(state ? trace_kind::pin : trace_kind::unpin, 0);
         },
         true);
 }
@@ -169,10 +200,54 @@ std::size_t tick_scheduler::size() const {
     return series_.size();
 }
 
+trace_page tick_scheduler::trace(std::optional<std::uint64_t> series,
+                                 double seconds,
+                                 std::size_t limit) const {
+    const auto guard = std::lock_guard(mutex_);
+    const double from = market_.now() - seconds;
+    trace_page page;
+    page.events = trace_.copy_if(
+        [&](const trace_event& e) {
+            if (e.at < from)
+                return false;
+            // A series' own events, and every event of the market they all share.
+            return !series || is_market_event(e) || e.series == *series;
+        },
+        limit);
+    for (const auto& e : page.events)
+        if (!is_market_event(e))
+            if (const auto it = names_.find(e.series); it != names_.end())
+                page.names.emplace(e.series, it->second);
+    return page;
+}
+
+std::chrono::system_clock::time_point tick_scheduler::wall_at(double at) const {
+    return clock_.wall(time_at(at));
+}
+
+scheduler_stats tick_scheduler::stats() {
+    const auto guard = std::lock_guard(mutex_);
+    const scheduler_stats out{.ticks_per_second = ticks_per_second_,
+                              .heap_size = heap_.size(),
+                              .lateness_seconds = lateness_,
+                              .max_lateness_seconds = max_lateness_,
+                              .series = series_.size()};
+    max_lateness_ = 0.0;
+    return out;
+}
+
 void tick_scheduler::sample(i_run_clock::time_point t) {
     const auto at = clock_.wall(t);
     if (!history_.empty() && at - history_.back().at < sample_period)
         return;
+    // The rate over this sample, smoothed so a reading spans about a second.
+    const double now = seconds_at(t);
+    if (now > last_sample_) {
+        const double rate = static_cast<double>(fired_since_sample_) / (now - last_sample_);
+        ticks_per_second_ = history_.empty() ? rate : 0.7 * ticks_per_second_ + 0.3 * rate;
+    }
+    fired_since_sample_ = 0;
+    last_sample_ = now;
     history_.push_back(heat_reading{.at = at, .heat = market_.heat()});
     while (history_.size() > history_capacity)
         history_.pop_front();
@@ -214,6 +289,8 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     domain::record_event(s.law, s.gap);
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due))};
+    record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds);
+    ++fired_since_sample_;
     s.last_fired = *due;
     const fired_tick fired{.id = id, .at = *due, .tau = market_.tau()};
     auto body = s.body;
@@ -261,6 +338,9 @@ void tick_scheduler::run() {
         // Ticks due by now go first and in order, so a command never makes one
         // late; then the market moves to now and the commands apply there.
         for (auto due = next_due(); due && *due <= now; due = next_due()) {
+            const double late = now - *due;
+            lateness_ = 0.9 * lateness_ + 0.1 * late;
+            max_lateness_ = std::max(max_lateness_, late);
             fire(lock);
             if (stop_flag_.load(std::memory_order_relaxed))
                 break;

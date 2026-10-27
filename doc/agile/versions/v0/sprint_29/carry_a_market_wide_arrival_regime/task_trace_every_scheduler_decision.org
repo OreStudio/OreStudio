@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/trace-every-scheduler-decision
+#+pr: 3935
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The loop records every tick, regime transition, heat jump and applied command in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,26 @@ The loop records every tick, regime transition, heat jump and applied command in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =service/scheduler_trace.hpp= holds =trace_event= and =trace_ring=. The
+  event is trivially copyable. The ring allocates its slots once and
+  overwrites the oldest, so recording is one copy and allocates nothing.
+- The loop records while it already holds its own lock: a tick with the gap
+  its law drew and the wall gap it took, each regime turn, each pin and
+  unpin, and each add and remove. No record takes a lock of its own. A
+  reader copies a filtered slice under the scheduler's lock.
+- =advance_to= steps to each transition in turn, so a turn is stamped with
+  the instant it happened, not the instant the loop noticed it.
+- =series_spec= carries the feed's source name, so the trace names its
+  series. The service filters by source name through =series_key=.
+- The loop's numbers: ticks a second over each heat sample, smoothed; the
+  heap size; and lateness, the time the loop fires a tick less the time it
+  was due, smoothed, with the maximum since the last read.
+- =synthetic.v1.ops.get_market_trace= serves a window of the trace, newest
+  kept under a cap, with the numbers. The regime read also carries the
+  pace, tau, the enrolled rate, the loop gain and the run seed, for the
+  screen in the next task.
+- The BFF serves =GET /api/synthetic/market-trace?source=&seconds=&limit==,
+  and the shell has =synthetic regime trace [source|all] [seconds]=.
 
 * Measurements
 
@@ -58,7 +75,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trace tests | 7 cases, 591 assertions passed | =ores.analytics.quant.tests [scheduler_trace]= | 13a40d676c |
+| Scheduler tests | 13 cases, 3 of 3 runs clean | =ores.analytics.quant.tests [tick_scheduler]= | 13a40d676c |
+| BFF regime and trace tests | 15 passed | =npx vitest run src/market-regime.test.ts= | ce8099004f |
+| Live trace, all feeds, 30 s | 493 ticks, 99 series, 19.3 ticks a second, lateness 2.5 ms smoothed and 27 ms at most | shell =synthetic regime trace all 30= | 13a40d676c |
+| Live trace, one periodic feed | ticks 1.0 apart in tau; wall gaps 1.94 to 1.96 s at a pace of 0.505 | shell =synthetic regime trace synthetic.demo.eurusd 30= | 13a40d676c |
 
 * Notes
 
@@ -77,12 +98,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3935][#3935]] | [analytics] Trace every scheduler decision |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: series key zero doubles as the market sentinel. | tick_scheduler.cpp | Accept | Market events are known by their kind; tested with a series keyed zero. |
+| 2 | Bot: a ring of capacity zero divides by zero. | scheduler_trace.hpp | Accept | The constructor refuses it. |
+| 3 | Bot: a zero dwell would spin advance_to. | tick_scheduler.cpp | Accept | The step is at least the smallest positive double. |
+| 4 | Bot: two readers share the max-lateness window. | tick_scheduler.hpp | Accept | Documented on scheduler_stats. |
+| 5 | Bot: say lateness counts time spent on the batch. | tick_scheduler.hpp | Accept | Documented. |
+| 6 | Bot: the rate is a sample old and holds when idle. | tick_scheduler.hpp | Accept | Documented. |
+| 7 | Bot: a read copies the whole ring under the lock. | scheduler_trace.hpp | Accept | The ring walks back from the newest and stops at the limit; tested. |
+| 8 | Bot: trace_event has no default initialisers. | scheduler_trace.hpp | Accept | Added. |
+| 9 | Bot: test stats(), its reset and smoothing. | scheduler_trace_tests.cpp | Decline | Rate and lateness move only in the running loop; the live check reads them. |
 
 * Result
+
+The scheduler now says why ticks arrived, not only that they did. Every tick,
+regime turn, pin and change of the feeds is in a preallocated ring, stamped
+with clock time and tau, and a tick carries the gap its law drew and the wall
+gap it took. A test replays a fixed-seed run on the manual clock and asserts
+its trace exactly, across a pin. The loop reports its ticks a second, its heap
+size and its lateness. The trace and the numbers reach a reader through
+=synthetic.v1.ops.get_market_trace=, the BFF's =/api/synthetic/market-trace=,
+and the shell's =synthetic regime trace=. On the live run a periodic feed's
+ticks are exactly one unit of tau apart, and their wall gaps are one over the
+pace in force.

@@ -301,7 +301,7 @@ export function RunResultsPanel({
             </label>
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {results.isError && <p className="text-sm text-down">{t(`${field}.failed`)}</p>}
-            {results.isSuccess && problems.length > 0 && (
+            {results.isSuccess && !errors.isPending && problems.length > 0 && (
                 <Donut
                     title={t(`${field}.problemsTitle`)}
                     caption={t(`${field}.problemsCaption`)}

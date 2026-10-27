@@ -109,7 +109,9 @@ export interface BookRow {
  */
 export function bookSharesOf(rows: readonly BookRow[]): readonly Share[] | null {
     const books = rows.filter((row) => !row.is_group && !row.is_removed);
-    if (books.length < 2) {
+    // A ring stops telling parts apart once the colours repeat, so a level with
+    // more books than colours is read as a table rather than as a shape.
+    if (books.length < 2 || books.length > COLOURS.length) {
         return null;
     }
     const currencies = new Set(books.flatMap((row) => row.totals.map((money) => money.currency)));
@@ -205,7 +207,7 @@ export function Donut({
                             <span>{part.name}</span>
                             <span className="font-mono text-xs text-ink-muted">
                                 {format(part.value)}
-                                {whole > 0 ? ` · ${((part.value / whole) * 100).toFixed(0)}%` : ''}
+                                {whole > 0 ? ` · ${((part.value / whole) * 100).toFixed(1)}%` : ''}
                             </span>
                         </li>
                     ))}

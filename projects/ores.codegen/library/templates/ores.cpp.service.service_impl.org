@@ -212,7 +212,7 @@ std::vector<std::string> {{entity_singular}}{{^entity_singular}}{{name_singular}
  * request could open the gate for them. They are refused, and the protocol
  * operations are the only way to write.
  */
-[[noreturn]] void refuse_direct_write() {
+[[noreturn]] void {{entity_singular}}_refuse_direct_write() {
     throw std::logic_error(ores::database::domain::describe(outcome_code::approval_required,
                                                             {.entity = "{{entity_singular}}"}));
 }
@@ -1017,7 +1017,7 @@ std::vector<domain::{{entity_singular}}>
 
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#gated}}
-    refuse_direct_write();
+    {{entity_singular}}_refuse_direct_write();
 {{/gated}}
 {{#primary_key.columns}}
 {{^is_int}}
@@ -1046,7 +1046,7 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
 void {{entity_singular}}_service::save_{{entity_plural_short}}(
     const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
 {{#gated}}
-    refuse_direct_write();
+    {{entity_singular}}_refuse_direct_write();
 {{/gated}}
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
@@ -1078,7 +1078,7 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
 
 void {{entity_singular}}_service::delete_{{entity_singular_short}}({{{primary_key.typed_params}}}) {
 {{#gated}}
-    refuse_direct_write();
+    {{entity_singular}}_refuse_direct_write();
 {{/gated}}
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
     repo_.remove(ctx_, {{{primary_key.typed_args}}});
@@ -1088,7 +1088,7 @@ void {{entity_singular}}_service::delete_{{entity_singular_short}}({{{primary_ke
 
 void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::uuids::uuid& {{primary_key.column}}) {
 {{#gated}}
-    refuse_direct_write();
+    {{entity_singular}}_refuse_direct_write();
 {{/gated}}
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << "{{primary_key.column}}: " << {{primary_key.column}};
     repo_.remove(ctx_, boost::uuids::to_string({{primary_key.column}}));
@@ -1098,7 +1098,7 @@ void {{entity_singular}}_service::remove_{{entity_singular_short}}(const boost::
 
 void {{entity_singular}}_service::delete_{{entity_plural_short}}({{{primary_key.batch_params}}}) {
 {{#gated}}
-    refuse_direct_write();
+    {{entity_singular}}_refuse_direct_write();
 {{/gated}}
     repo_.remove(ctx_, {{{primary_key.batch_args}}});
 }

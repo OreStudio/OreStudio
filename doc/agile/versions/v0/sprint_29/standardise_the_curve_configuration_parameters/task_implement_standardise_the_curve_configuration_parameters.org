@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/implement-standardise-the-curve-configuration-parameters
-#+pr:
+#+pr: 3922
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3922][#3922]] | [doc] Call a curve configuration's leaves parameters, not settings |
 
 * Review
 

@@ -117,21 +117,6 @@ begin
     -- account row holds it, and a self write retires that row.
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
 
-    -- Bump ores_trading_structures_tbl's version alongside this write (composite entity
-    -- versioning — see the "Temporal composite entity versioning"
-    -- architecture doc). The touch function re-validates modified_by
-    -- itself; change_reason_code is passed through as-is since it was
-    -- already validated above.
-    perform ores_trading_structures_touch_version_fn(
-        NEW.tenant_id,
-        NEW.structure_id,
-        NEW.change_reason_code,
-        NEW.change_commentary,
-        NEW.modified_by,
-        NEW.performed_by,
-        'structure_identifier'
-    );
-
     -- Version management
     select version into current_version
     from "ores_trading_structure_identifiers_tbl"
@@ -195,15 +180,4 @@ on delete to "ores_trading_structure_identifiers_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and structure_id = OLD.structure_id and id_type = OLD.id_type
       and valid_to = ores_utility_infinity_timestamp_fn();
-    -- Bump ores_trading_structures_tbl's version on delete too (composite entity
-    -- versioning), symmetric with the insert-side call above.
-    select ores_trading_structures_touch_version_fn(
-        OLD.tenant_id,
-        OLD.structure_id,
-        OLD.change_reason_code,
-        OLD.change_commentary,
-        OLD.modified_by,
-        OLD.performed_by,
-        'structure_identifier'
-    );
 );

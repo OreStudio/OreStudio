@@ -120,7 +120,6 @@ std::nullopt
 :error_message: Invalid structure_id: %. No active structure found with this id.
 :nullable: false
 :list_by:  true
-:bump_parent_version: true
 :END:
 
 A database foreign key: the anchor is immutable.

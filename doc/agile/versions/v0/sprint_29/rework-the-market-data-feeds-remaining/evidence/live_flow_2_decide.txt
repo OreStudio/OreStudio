@@ -1,0 +1,26 @@
+🐚 /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/output/linux-clang-release-ninja/publish/bin/ores.shell --nats-tls-ca /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/keys/nats/ca.crt --nats-tls-cert /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/keys/nats/ores.shell.crt --nats-tls-key /home/marco/Development/OreStudio/ores_dev_eager_maxwell/build/keys/nats/ores.shell.key --login-username tenant_admin@acme_corporation --login-password ******** --load /home/marco/Development/OreStudio/ores_dev_eager_maxwell/doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/live_flow_2_decide.ores
+📝 Progress log: /tmp/ores_eager_maxwell_shell.log (tail -f to follow)
+✓ Connected to nats://localhost:21405
+✓ Logged in as: tenant_admin
+  Tenant: Acme Corporation (35479084-80b9-4362-8fc6-e108b2b7985a)
+  Party: Acme Corporation Plc
+ORE Studio Shell REPL v0.0.29
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> Loading script: /home/marco/Development/OreStudio/ores_dev_eager_maxwell/doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/live_flow_2_decide.ores
+> connect nats://localhost:21405
+✓ Connected to nats://localhost:21405
+> login mark.reid@acme_corporation Secure-Password-123
+✓ Login successful!
+  User: mark.reid
+  Tenant: Acme Corporation (35479084-80b9-4362-8fc6-e108b2b7985a)
+> curve_publishes by-request-id 01a17e25-7039-7e1e-995b-e224a0dd8136
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"curve_publishes":[{"version":1,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"02f65343-2eeb-4503-842a-aed3df4c9091","request_id":"01a17e25-7039-7e1e-995b-e224a0dd8136","party_id":"bac747d9-4a01-4a9b-9efa-0577548ee033","bootstrap_config_id":"d0e1f2a3-b4c5-4d6e-7f80-91a2b3c4d5e6","output_series_id":"c1a2b3c4-d5e6-4f70-8a9b-0c1d2e3f4a5b","as_of":"2026-10-27 12:00:00.000000Z","published_by":"","modified_by":"henry.jones","performed_by":"ores_eager_maxwell_marketdata_service","change_reason_code":"system.new_record","change_commentary":"The subject that publish request 01a17e25-7039-7e1e-995b-e224a0dd8136 authorises","recorded_at":"2026-10-27 16:15:45.000000Z"}],"total":1}
+> approval_operations get-approval 01a17e25-7039-7e1e-995b-e224a0dd8136
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"request":{"version":1,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17e25-7039-7e1e-995b-e224a0dd8136","kind_code":"marketdata.curve_publish","state_code":"waiting","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 16:15:45.209822Z","reason":"Today's USD SOFR curve, built from the two quotes","expires_at":"2026-11-10 16:15:45.000000Z","modified_by":"henry.jones","performed_by":"ores_eager_maxwell_marketdata_service","change_reason_code":"system.new_record","change_commentary":"","recorded_at":"2026-10-27 16:15:45.000000Z"}}
+> approval_operations decide-approval 01a17e25-7039-7e1e-995b-e224a0dd8136 approve "The quotes match the day's market" none --version 1
+{"result":{"outcome":"ok","code":"","message":"","fields":[]},"request":{"version":2,"tenant_id":"35479084-80b9-4362-8fc6-e108b2b7985a","id":"01a17e25-7039-7e1e-995b-e224a0dd8136","kind_code":"marketdata.curve_publish","state_code":"approved","requested_by":"31a8218b-5728-4e66-8b83-972f5f3e6d34","requested_at":"2026-10-27 16:15:45.209822Z","reason":"Today's USD SOFR curve, built from the two quotes","expires_at":"2026-11-10 16:15:45.000000Z","modified_by":"mark.reid","performed_by":"ores_eager_maxwell_inbox_service","change_reason_code":"system.update","change_commentary":"Decision: approve","recorded_at":"2026-10-27 16:15:49.000000Z"}}
+> logout
+✓ Logged out successfully.
+Script complete: 6 commands executed.
+ores-shell> Bye!

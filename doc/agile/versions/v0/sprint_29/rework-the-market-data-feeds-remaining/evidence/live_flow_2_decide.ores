@@ -1,0 +1,18 @@
+# The evidence script, step 2: the Market Risk decider answers the request.
+#
+# Run from the worktree with:
+#   ./compass.sh shell -l <this file>
+# The Operations role holds inbox::approvals:decide_market_risk, and the person
+# named here is not the one who raised the request, so four eyes hold.
+connect $ORES_NATS_URL
+
+login mark.reid@acme_corporation Secure-Password-123
+
+# The subject the request names, read by the kind's own read.
+curve_publishes by-request-id ${REQUEST_ID}
+
+approval_operations get-approval ${REQUEST_ID}
+
+approval_operations decide-approval ${REQUEST_ID} approve "The quotes match the day's market" none --version 1
+
+logout

@@ -113,30 +113,34 @@ public:
 private:
     /**
      * @brief Raises the request a publish waits on, or applies an approved one.
+     *
+     * Both halves read the subject out of the configuration the call names, so
+     * the party and the series are the configuration's and never the caller's.
      */
     static void answer(const ores::database::context& req_ctx,
                        const publish_curve_request& req,
                        publish_curve_response& resp) {
+        using namespace ores::marketdata::service::app;
+
         if (req.approval_request_id.empty()) {
-            if (req.reason.empty()) {
-                resp.message =
-                    "Say why the curve should be published, so the decider reads a reason.";
-                return;
-            }
-            const auto raised =
-                ores::marketdata::service::app::raise_publish_request(req_ctx, req.reason);
+            const auto subject =
+                resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
+            const auto raised = raise_publish_request(req_ctx, subject, req.reason);
             const auto id = boost::uuids::to_string(raised.id);
             resp.success = true;
             resp.approval_request_id = id;
             resp.state_code = raised.state_code;
             resp.message = "Raised. The publish waits on the decision.";
             BOOST_LOG_SEV(curve_publish_handler_lg(), info)
-                << "Raised publish request " << id << " for curve " << req.bootstrap_config_id;
+                << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
+                << " as of " << req.as_of;
             return;
         }
 
+        const auto attempted =
+            resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
         const auto verdict =
-            ores::marketdata::service::app::verdict_on_publish(req_ctx, req.approval_request_id);
+            verdict_on_publish(req_ctx, req.approval_request_id, attempted);
         resp.approval_request_id = req.approval_request_id;
         resp.state_code = verdict.state_code;
         if (!verdict.approved) {
@@ -144,11 +148,18 @@ private:
             return;
         }
 
-        const auto bootstrap_config_id =
-            boost::lexical_cast<boost::uuids::uuid>(req.bootstrap_config_id);
-        ores::marketdata::service::app::curve_republish_service::republish(
-            req_ctx, bootstrap_config_id, req.as_of);
+        curve_republish_service::republish(
+            req_ctx, attempted.bootstrap_config_id, attempted.as_of);
+        // The record is stamped after the set moved, so a failure to write the
+        // observations leaves the request unused rather than spent.
+        const auto published =
+            record_publication(req_ctx,
+                               *verdict.record,
+                               req_ctx.actor().empty() ? req_ctx.service_account()
+                                                       : req_ctx.actor());
         resp.success = true;
+        resp.published_at = published.published_at;
+        resp.published_by = published.published_by;
     }
 
     ores::nats::service::client& nats_;

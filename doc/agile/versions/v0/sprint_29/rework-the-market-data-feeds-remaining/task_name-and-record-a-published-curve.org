@@ -26,12 +26,12 @@ A publish request names its subject and authorises only that, and the applied pu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-27                             |
 
 * Acceptance
 
@@ -40,9 +40,31 @@ A publish request names its subject and authorises only that, and the applied pu
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two units, and the second is not optional: an approval request that may be used
+twice is not a control, and "used" is only knowable once the act is recorded. So
+the split is by what the reader sees, not by dependency.
+
+1. *Name the subject.* A new entity, =ores.marketdata.curve_publish=, is the
+   =marketdata.curve_publish= kind's detail row. It holds the subject — the curve
+   configuration, the series its output is written to, the as-of instant and the
+   party the configuration belongs to — and it holds the publication record's
+   two columns, =published_by= and =published_at=, empty until the act. The
+   raise reads the subject out of the configuration, so a caller cannot state a
+   party or a series the configuration does not hold, and writes the row. The
+   gate compares the publish with the row and refuses a different configuration,
+   as-of or party with a message that names both subjects; it refuses a request
+   whose row already carries a published instant, and the store's optimistic
+   version check refuses a second apply that raced the first. =request_id= is
+   the natural key, so one request cannot hold two rows.
+2. *Record the publication and serve it.* The apply stamps the row after the set
+   moves, so a failed write of the observations spends no request. The response
+   states the instant and the publisher the store holds, not the caller's clock.
+   The read that serves a curve — =marketdata.v1.curve_snapshot.get= — states
+   whether the series it serves is a published set, when, by whom, at which
+   as-of, and under which request, so a reader can tell a candidate from the set
+   in use. The subject read is the entity's own =list_by_request_id=, which the
+   decider takes, so the permission that read needs is seeded and granted to the
+   maker and the decider.
 
 * Measurements
 
@@ -56,7 +78,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve publish suite | 175 cases, 0 failed | =compass test run -- -R ores.marketdata.service.tests= | =unit 2= |
+| Market data core suite | 0 failed | =compass test run -- -R ores.marketdata.core.tests= | =unit 2= |
+| Market data api and shell suites | 0 failed | =compass test run -- -R 'ores.marketdata.api.tests|ores.shell.marketdata.tests'= | =unit 2= |
+| Schema and seeds from scratch | table, change reason, permission, 2 role grants present | =compass db setup ores_eager_maxwell_seedcheck= then =compass db drop= | =unit 2= |
+| Codegen checkers | 0 new subject, 0 new writer, 0 collision, 3665 columns 0 type mismatch | =check_subject_conformance.py=, =check_entity_table_writes.py=, =check_shell_menu_collisions.py=, =check_model_sql_types.py= | =unit 2= |
 
 * Notes
 
@@ -84,3 +110,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two gaps are closed, and the model is one row rather than two.
+
+*The subject.* =ores.marketdata.curve_publish= is the kind's detail row, keyed
+by =request_id=, and it names the curve configuration, the output series, the
+as-of instant and the party. The raise writes it, so a =marketdata.curve_publish=
+request that names no subject cannot exist, and the live database now refuses a
+request the previous build raised without one: "The request is a
+marketdata.curve_publish request that names no subject, so it authorises no
+publish." The gate compares the publish with the row and refuses another
+subject with both subjects spelled out. The reused request is refused three
+ways: the row's published instant, the natural key that stops a second row, and
+the store's optimistic version check, which is what a race hits.
+
+*The publication record.* The row is the record. The apply stamps =published_by=
+and =published_at= on the same row that names the subject, so the decision, the
+subject and the act are one bitemporal row and the history keeps every version;
+a second apply is a version conflict, not a second record. =curve_publish= being
+one row rather than one detail row plus one publication row is the smallest
+honest model here: the publication has no facts the request's row does not
+already carry except the two the apply writes, and a separate record would have
+to restate the subject or join to it to answer "which request authorised this
+published set".
+
+*The read.* =marketdata.v1.curve_snapshot.get= states =published_by=,
+=published_at=, =published_as_of= and =approval_request_id=, so a reader can
+tell a published set from a set nobody approved, and which decision the set in
+use stands on. =marketdata.v1.curve_publishes.list_by_request_id= is the subject
+read a decider takes, guarded by the new =marketdata::curve_publishes:read=
+permission.
+
+*Evidence.* =evidence/live_flow.txt= holds the three shell sessions against the
+provisioned Acme database: a Trading persona raises, an Operations persona reads
+the subject and approves, then the trader publishes the approved subject and the
+record names them, reuses the request and is refused naming both the publisher
+and the instant, and names another as-of and is refused naming both subjects.
+=evidence/acme_curve_config_seed.sql= seeds the curve those sessions publish and
+says why it belongs to ACME Corporation US Inc: a party sees only itself and its
+own children, and the Trading persona works in that office.
+
+*Open.* Nothing the model leaves undecided. The demo still has no read of every
+published curve and no delta against the published as-of, which the publish
+journey states as missing; the withdrawal journey still has no operation and no
+withdrawn marker.

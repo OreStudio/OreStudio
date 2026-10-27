@@ -141,6 +141,12 @@ keyed by the request:
 | =request_id= | PK part, FK to the role grant requests | The request |
 | =role_id= | PK part, FK to =ores_iam_roles_tbl= | One role asked for; a request may ask for many |
 
+| =ores_marketdata_curve_publishes_tbl= | Key | What it holds |
+|---------------------------------------+-----+---------------|
+| =request_id= | Natural key, FK to the requests | The request this is the detail of, and its single use |
+| =bootstrap_config_id=, =as_of=, =party_id= | | The subject: the curve, the instant and the party the request authorises |
+| =published_by=, =published_at= | | Empty while the request waits; the publisher and the instant once it is applied |
+
 The screen of the first build asks for one role at a time; the entity does not
 assume it. What a screen shows together is the journey's composition of these
 tables, not a column added to one of them.

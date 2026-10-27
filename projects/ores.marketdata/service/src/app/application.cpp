@@ -39,6 +39,7 @@
 #include "ores.marketdata.service/messaging/bill_handler.hpp"
 #include "ores.marketdata.service/messaging/composite_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/curve_publish_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_publish_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
@@ -192,6 +193,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         mdsm::register_observation_lineage_event_mapping(event_source, event_bus, nats);
     auto series_classification_rule_sub =
         mdsm::register_series_classification_rule_event_mapping(event_source, event_bus, nats);
+    auto curve_publish_sub =
+        mdsm::register_curve_publish_event_mapping(event_source, event_bus, nats);
 
     // A route, a subscription, a source, a vendor instrument or a mapping changes what the loop
     // maps and to whom it stores, and what each adapter is asked to publish. Each of them

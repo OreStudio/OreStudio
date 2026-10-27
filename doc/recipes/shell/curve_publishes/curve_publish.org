@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 2B9EFF40-8EFF-5E6B-A18C-63441FB72996
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_publishes commands from the shell?
+#+description: Every command the curve_publishes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_publishes:
+
+This file documents the curve_publishes resource at the shell, one section per command. Every command is a subcommand of =curve_publishes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 3246A137-5447-5FA4-885F-4888A8D54ECE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publishes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.curve_publishes.list=.
+
+#+name: curve_publishes-list
+#+begin_src ores-shell :tangle curve_publishes-list.ores :exports none
+curve_publishes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8512CD3F-87B3-5F3E-A156-FD19C0D0AA8B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publishes get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.curve_publishes.get=.
+
+#+name: curve_publishes-get
+#+begin_src ores-shell :tangle curve_publishes-get.ores :exports none
+curve_publishes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 38B11E5B-833D-58CD-B0EF-1C2C719B30E9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publishes get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.curve_publishes.get_many=.
+
+#+name: curve_publishes-get-many
+#+begin_src ores-shell :tangle curve_publishes-get-many.ores :exports none
+curve_publishes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: 3AF7608C-B01A-5837-A5ED-860F78493B11
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publishes by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.curve_publishes.list_by_request_id=.
+
+#+name: curve_publishes-by-request-id
+#+begin_src ores-shell :tangle curve_publishes-by-request-id.ores :exports none
+curve_publishes by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 09F817CC-68E8-5091-9E35-2E93F13E8E88
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publishes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.curve_publishes_versions.list=.
+
+#+name: curve_publishes-versions
+#+begin_src ores-shell :tangle curve_publishes-versions.ores :exports none
+curve_publishes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4E34D47F-34FE-5404-B112-3B358E7B6EC6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publishes version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.curve_publishes_versions.get=.
+
+#+name: curve_publishes-version
+#+begin_src ores-shell :tangle curve_publishes-version.ores :exports none
+curve_publishes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

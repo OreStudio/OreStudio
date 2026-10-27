@@ -101,9 +101,12 @@ Source: [[./acme_approval_request_and_decide.puml][=acme_approval_request_and_de
 The rule is enforced three times, at three levels, and each is worth knowing.
 
 1. *The queue.* The list of requests a person may decide is filtered by the
-   permission each kind names, and the person's own requests are cut from the page
-   before it is paged. A person does not see their own request in their queue at
-   all.
+   permission each kind names, and by the permission each of a request's parts
+   names while that part's turn has come, so a Controller or Finance persona finds
+   a book change in the queue when their part is the one waiting. The person's own
+   requests are left out by the same statement that pages the rest, so the total
+   the page reports is the number of rows the pages walk. A person does not see
+   their own request in their queue at all.
 2. *The decision.* The decisions table refuses a decision whose decider is the
    request's raiser, and the service answers =four_eyes= with the words "You asked
    for this request, so someone else decides it."
@@ -129,14 +132,9 @@ seed alone:
 
 ** What a person still cannot do, and what that leaves undecided
 
-The journeys and the seeds disagree in five places, and this page records the
+The journeys and the seeds disagree in four places, and this page records the
 disagreement rather than resolving it.
 
-- *A part decider reads an empty queue.* The queue filters by the kind's decide
-  code, and a Controller or Finance persona holds no kind's code, only a part's.
-  Such a person therefore learns of a request from the notice the raise sends and
-  must open it by identifier; the queue shows nothing. Whether the queue should
-  also list the requests whose parts a person may answer is an open question.
 - *No policy names the controller part.* The approval policies route a changed
   field to Finance, Market Risk or Operations, and the controller answers only an
   opening. No seeded policy row produces a controller part, so today no request

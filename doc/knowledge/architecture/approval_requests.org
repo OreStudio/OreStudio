@@ -180,7 +180,9 @@ kind:
   another desk.
 - *Who may decide.* Each kind names the permission a decider needs, such as
   =iam::roles:assign= for a role request, so the queue a person sees is the kinds
-  they may decide.
+  they may decide. A request that names parts is decided by part instead, and
+  each part names a permission of its own, so such a request is listed for the
+  people who may answer a part whose turn has come.
 - *Comments.* A kind states which decisions need a comment. A refusal always
   does, because the person who asked reads it.
 - *One open request per subject.* A second request for the same subject while one
@@ -241,10 +243,13 @@ area, and every component may register a kind. Decided on 2026-10-04.
 
 ** The queue
 
-The queue is one paged read of the record, filtered by kind, state and subject,
-ordered oldest first, and limited by row-level security and the decider's
-permissions. A screen shows a kind's own columns from its detail table. The trade
-queue's grouping, highlighted changes and reports are views over this read.
+The queue is one paged read of the record, filtered by state and subject and by
+what the caller may decide, ordered oldest first, and limited by row-level
+security. A caller may decide a request whose kind names a permission they hold,
+or a request that names a part whose permission they hold, while that part is
+open. Both cases are one statement, so the total it reports is the number of rows
+its pages walk. A screen shows a kind's own columns from its detail table. The
+trade queue's grouping, highlighted changes and reports are views over this read.
 
 ** The caution about trades
 

@@ -53,6 +53,7 @@ set(files
     "rate_tree_tests.cpp"
     "risk_recentering_tests.cpp"
     "rng_stream_tests.cpp"
+    "run_clock_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
     "shared_intensity_tests.cpp"

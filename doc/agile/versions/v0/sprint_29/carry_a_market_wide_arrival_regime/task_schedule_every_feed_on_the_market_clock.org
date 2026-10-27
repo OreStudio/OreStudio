@@ -42,6 +42,7 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 - Control operations reach the loop as commands applied at the clock's now.
 - set_baseline_multiplier and i_arrival_process are gone: the market reaches a law only through the clock.
 - The Arrivals panel help says a burst fades faster in a busy market, because a Hawkes law runs in operational time.
+- A tick's observation time comes from the run clock, not from system_clock::now().
 
 * Plan
 

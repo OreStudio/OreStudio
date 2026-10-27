@@ -135,6 +135,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/rate_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/rate_reciprocator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/risk_recentering.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/run_clock.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tenor_resolution_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_clock.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_scheduler.hpp"

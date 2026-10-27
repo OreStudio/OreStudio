@@ -76,16 +76,15 @@ TEST_CASE("a_hold_takes_a_reason_from_the_lookup_and_parks_the_request", "[appro
     // group by and the person who asked reads what the hold waits for.
     const auto decisions =
         ores::inbox::repository::approval_decision_repository{}.read_latest_by_request_id(
-            acting(h),
-            id,
-            0,
-            10);
+            acting(h), id, 0, 10);
     REQUIRE(decisions.size() == 1);
     CHECK(decisions.front().decision_code == "hold");
-    CHECK(decisions.front().hold_reason_code == std::optional<std::string>("awaiting.sales_ticket"));
+    CHECK(decisions.front().hold_reason_code ==
+          std::optional<std::string>("awaiting.sales_ticket"));
 }
 
-TEST_CASE("a_hold_naming_no_reason_is_refused_with_the_codes_the_lookup_holds", "[approval][hold]") {
+TEST_CASE("a_hold_naming_no_reason_is_refused_with_the_codes_the_lookup_holds",
+          "[approval][hold]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -96,7 +95,8 @@ TEST_CASE("a_hold_naming_no_reason_is_refused_with_the_codes_the_lookup_holds", 
     const auto raised = lifecycle.raise(*kind, "Release the trade on the desk", asker.id);
     const auto id = boost::uuids::to_string(raised.id);
 
-    const auto refused = lifecycle.decide(id, raised.version, "hold", decider.id, "Not yet", "", "");
+    const auto refused =
+        lifecycle.decide(id, raised.version, "hold", decider.id, "Not yet", "", "");
     CHECK(refused.outcome == "invalid");
     // The refusal lists what the lookup holds, so a person reads the answer
     // rather than guessing a code.
@@ -115,8 +115,8 @@ TEST_CASE("a_hold_naming_an_unknown_reason_is_refused_with_the_lookup_terms", "[
     const auto raised = lifecycle.raise(*kind, "Release the trade on the desk", asker.id);
     const auto id = boost::uuids::to_string(raised.id);
 
-    const auto refused = lifecycle.decide(
-        id, raised.version, "hold", decider.id, "Not yet", "", "made.up.reason");
+    const auto refused =
+        lifecycle.decide(id, raised.version, "hold", decider.id, "Not yet", "", "made.up.reason");
     CHECK(refused.outcome == "invalid");
     CHECK(refused.message.find("made.up.reason") != std::string::npos);
     CHECK(refused.message.find("exception.unconfirmed") != std::string::npos);

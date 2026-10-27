@@ -22,11 +22,8 @@
 #include "ores.analytics.quant/service/processes/arithmetic_gaussian_mixture_model_process.hpp"
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
 #include "ores.analytics.quant/service/processes/gaussian_mixture_model_process.hpp"
-#include "ores.analytics.quant/service/processes/hawkes_arrival_process.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
-#include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
-#include "ores.analytics.quant/service/processes/poisson_arrival_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
 #include <cmath>
 #include <stdexcept>
@@ -92,41 +89,6 @@ process_factory::make_yield_curve_process(const std::string& process_type,
     throw std::invalid_argument(
         "process_factory::make_yield_curve_process: unrecognised process_type '" + process_type +
         "'");
-}
-
-std::unique_ptr<ores::analytics::quant::domain::i_arrival_process>
-process_factory::make_arrival_process(const std::string& mode,
-                                      double ticks_per_hour,
-                                      double branching_ratio,
-                                      double decay,
-                                      std::uint32_t seed) {
-
-    const auto validation = ores::analytics::quant::domain::validate_arrival_process_parameters(
-        mode, ticks_per_hour, branching_ratio, decay);
-    if (!validation.valid)
-        throw std::invalid_argument("process_factory::make_arrival_process: " + validation.message);
-
-    // One conversion, here: the config speaks ticks per hour, every arrival
-    // process speaks arrivals per second.
-    constexpr double seconds_per_hour = 3600.0;
-    const double mean_rate = ticks_per_hour / seconds_per_hour;
-
-    if (mode == "periodic")
-        return std::make_unique<periodic_arrival_process>(mean_rate, seed);
-    if (mode == "poisson")
-        return std::make_unique<poisson_arrival_process>(mean_rate, seed);
-    if (mode == "hawkes")
-        return std::make_unique<hawkes_arrival_process>(mean_rate, branching_ratio, decay, seed);
-
-    throw std::invalid_argument("process_factory::make_arrival_process: unrecognised mode '" +
-                                mode + "'");
-}
-
-std::unique_ptr<ores::analytics::quant::domain::i_arrival_process>
-process_factory::make_arrival_process(const ores::analytics::quant::domain::arrival_spec& spec,
-                                      std::uint32_t seed) {
-    return make_arrival_process(
-        spec.mode, spec.ticks_per_hour, spec.branching_ratio, spec.decay, seed);
 }
 
 }

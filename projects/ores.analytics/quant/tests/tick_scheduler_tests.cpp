@@ -17,224 +17,360 @@
  *
  */
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
+#include <algorithm>
 #include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <string>
+#include <cmath>
+#include <cstddef>
+#include <map>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
-using ores::analytics::quant::domain::i_arrival_process;
-using ores::analytics::quant::domain::market_link;
+using namespace std::chrono_literals;
+using ores::analytics::quant::domain::arrival_spec;
+using ores::analytics::quant::domain::hawkes_law;
+using ores::analytics::quant::domain::market_config;
+using ores::analytics::quant::domain::market_state;
+using ores::analytics::quant::domain::periodic_law;
+using ores::analytics::quant::math::draw_purpose;
+using ores::analytics::quant::math::rng_stream;
+using ores::analytics::quant::math::stream_key;
+using ores::analytics::quant::service::manual_run_clock;
+using ores::analytics::quant::service::series_spec;
+using ores::analytics::quant::service::steady_run_clock;
+using ores::analytics::quant::service::tick_context;
 using ores::analytics::quant::service::tick_scheduler;
 
 namespace {
 
-/* A series with a fixed gap and a record of the rates it was asked for. */
-struct fixed_gap_process final : i_arrival_process {
-    explicit fixed_gap_process(double gap)
-        : gap_(gap) {}
+const auto scheduler_wall_origin = std::chrono::system_clock::time_point(std::chrono::days(20000));
 
-    double next_gap() override {
-        return gap_;
+/// A market with no heat, so tau is the multiplier times the time.
+const market_config no_heat{
+    .wake_rate = 2.0, .calm_rate = 3.0, .active_multiplier = 2.0, .jump = 0.0, .decay = 1.0};
+
+arrival_spec per_second(const char* mode, double rate, double n = 0.0, double decay = 1.0) {
+    return arrival_spec{
+        .mode = mode, .ticks_per_hour = rate * 3600.0, .branching_ratio = n, .decay = decay};
+}
+
+/// The law a scheduler with @p run_seed builds for @p spec, built again here.
+ores::analytics::quant::domain::arrival_law
+twin_law(std::uint64_t run_seed, const series_spec& spec, rng_stream& stream) {
+    stream = rng_stream(
+        stream_key{.run_seed = run_seed, .series = spec.series, .purpose = draw_purpose::arrival});
+    return ores::analytics::quant::domain::make_arrival_law(spec.arrival, stream);
+}
+
+std::string quiet(const tick_context&) {
+    return {};
+}
+
+double ks_exponential(std::vector<double> xs) {
+    std::ranges::sort(xs);
+    const auto n = static_cast<double>(xs.size());
+    double d = 0.0;
+    for (std::size_t i = 0; i < xs.size(); ++i) {
+        const double f = 1.0 - std::exp(-xs[i]);
+        d = std::max({d, f - static_cast<double>(i) / n, static_cast<double>(i + 1) / n - f});
     }
-    void set_baseline_multiplier(double multiplier) override {
-        multipliers.push_back(multiplier);
+    return d;
+}
+
+}
+
+TEST_CASE("the scheduler ticks an exact sequence across a pinned regime change",
+          "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 42);
+    scheduler.pin(market_state::calm);
+
+    const series_spec a{.series = 1, .arrival = per_second("periodic", 4.0), .sensitivity = 1.0};
+    const series_spec b{.series = 2, .arrival = per_second("periodic", 1.0), .sensitivity = 2.0};
+    const auto id_a = scheduler.add(a, quiet);
+    const auto id_b = scheduler.add(b, quiet);
+
+    rng_stream unused(stream_key{.run_seed = 0, .series = 0, .purpose = draw_purpose::arrival});
+    const double phase_a = std::get<periodic_law>(twin_law(42, a, unused)).offset;
+    const double phase_b = std::get<periodic_law>(twin_law(42, b, unused)).offset;
+
+    // In tau, a fires every quarter and b, twice as sensitive, every half.
+    std::vector<std::pair<double, std::size_t>> marks;
+    for (int k = 0; k < 40; ++k) {
+        marks.emplace_back((phase_a + k) / 4.0, id_a);
+        marks.emplace_back((phase_b + k) / 2.0, id_b);
+    }
+    std::ranges::sort(marks);
+
+    const double calm = 1.0 / 3.0;
+    const double active = 2.0;
+    double tau_at_pin = 0.0;
+    for (std::size_t i = 0; i < 30; ++i) {
+        // Pinned calm, tau runs at a third of the time; after ten ticks the pin
+        // moves to active, and from that tick's instant tau runs at two.
+        if (i == 10) {
+            tau_at_pin = marks[9].first;
+            scheduler.pin(market_state::active);
+        }
+        const auto fired = scheduler.step();
+        REQUIRE(fired);
+        const double tau = marks[i].first;
+        const double at = i < 10 ? tau / calm : tau_at_pin / calm + (tau - tau_at_pin) / active;
+        CHECK(fired->id == marks[i].second);
+        CHECK(fired->tau == Catch::Approx(tau).epsilon(1e-12));
+        CHECK(fired->at == Catch::Approx(at).epsilon(1e-12));
+    }
+}
+
+TEST_CASE("each series keeps its own law in operational time", "[tick_scheduler]") {
+    // A busy market with heat: the pace moves all the time, and each series'
+    // gaps in its own operational time must still be its law's gaps.
+    const market_config busy{
+        .wake_rate = 2.0, .calm_rate = 3.0, .active_multiplier = 2.0, .jump = 0.5, .decay = 2.0};
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, busy, 7);
+
+    const series_spec hawkes{
+        .series = 11, .arrival = per_second("hawkes", 50.0, 0.5, 10.0), .sensitivity = 2.0};
+    const series_spec poisson{
+        .series = 12, .arrival = per_second("poisson", 20.0), .sensitivity = 0.5};
+    const auto id_h = scheduler.add(hawkes, quiet);
+    scheduler.add(poisson, quiet);
+
+    std::map<std::size_t, std::vector<double>> taus;
+    for (int i = 0; i < 60000; ++i) {
+        const auto fired = scheduler.step();
+        taus[fired->id].push_back(fired->tau);
     }
 
-    double gap_;
-    std::vector<double> multipliers;
-};
-
+    rng_stream stream(stream_key{.run_seed = 0, .series = 0, .purpose = draw_purpose::arrival});
+    auto law = twin_law(7, hawkes, stream);
+    std::vector<double> compensated;
+    double last = 0.0;
+    for (const double tau : taus[id_h]) {
+        const double gap = ores::analytics::quant::domain::draw_gap(law, stream);
+        CHECK((tau - last) * hawkes.sensitivity == Catch::Approx(gap).margin(1e-9));
+        const auto& h = std::get<hawkes_law>(law);
+        compensated.push_back(h.baseline * gap +
+                              h.excess * (1.0 - std::exp(-h.decay * gap)) / h.decay);
+        ores::analytics::quant::domain::record_event(law, gap);
+        last = tau;
+    }
+    REQUIRE(compensated.size() > 10000);
+    CHECK(ks_exponential(compensated) < 1.63 / std::sqrt(static_cast<double>(compensated.size())));
 }
 
-TEST_CASE("the scheduler ticks the earliest series first", "[tick_scheduler]") {
-    fixed_gap_process slow(0.5);
-    fixed_gap_process fast(0.1);
-    tick_scheduler scheduler;
-    std::vector<std::string> order;
+TEST_CASE("a series ticks at its configured rate when the mean pace is one", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 3);
+    scheduler.add({.series = 5, .arrival = per_second("poisson", 10.0)}, quiet);
 
-    scheduler.add(slow, {}, [&](double) {
-        order.emplace_back("slow");
-        return std::string{"slow"};
-    });
-    scheduler.add(fast, {}, [&](double) {
-        order.emplace_back("fast");
-        return std::string{"fast"};
-    });
-
-    REQUIRE(scheduler.size() == 2);
-    for (int i = 0; i < 4; ++i)
-        scheduler.step();
-
-    // The fast series has the shorter gap, so it goes first and keeps going.
-    REQUIRE(order.size() == 4);
-    CHECK(order.front() == "fast");
-    CHECK(order[1] == "fast");
+    constexpr int ticks = 50000;
+    double at = 0.0;
+    for (int i = 0; i < ticks; ++i)
+        at = scheduler.step()->at;
+    CHECK(ticks / at == Catch::Approx(10.0).epsilon(0.03));
 }
 
-TEST_CASE("the scheduler hands each series the gap it waited", "[tick_scheduler]") {
-    fixed_gap_process process(0.25);
-    tick_scheduler scheduler;
-    std::vector<double> elapsed;
+TEST_CASE("a tick costs O(log n) in the number of series", "[tick_scheduler]") {
+    const auto cost_per_step = [](std::size_t n) {
+        manual_run_clock clock(scheduler_wall_origin);
+        tick_scheduler scheduler(clock, no_heat, 1);
+        for (std::size_t i = 0; i < n; ++i)
+            scheduler.add({.series = i, .arrival = per_second("poisson", 1.0)}, quiet);
+        constexpr int steps = 20000;
+        const auto start = std::chrono::steady_clock::now();
+        for (int i = 0; i < steps; ++i)
+            scheduler.step();
+        return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() /
+               steps;
+    };
 
-    scheduler.add(process, {}, [&](double seconds) {
-        elapsed.push_back(seconds);
-        return std::string{};
-    });
-
-    scheduler.step();
-    scheduler.step();
-
-    REQUIRE(elapsed.size() == 2);
-    for (const double e : elapsed)
-        CHECK(e == Catch::Approx(0.25));
+    // A hundred times the series would cost a hundred times as much in O(n). In O(log n) the
+    // comparisons grow by two thirds, and cache misses on a heap that no longer fits in cache
+    // add a few times more, so the bound sits well between the two.
+    const double small = cost_per_step(1000);
+    const double large = cost_per_step(100000);
+    INFO("seconds per step: " << small << " at 1,000 series, " << large << " at 100,000");
+    CHECK(large < 20.0 * small);
 }
 
-TEST_CASE("the scheduler re-rates a series from its link", "[tick_scheduler]") {
-    fixed_gap_process process(0.1);
-    tick_scheduler scheduler;
-    scheduler.add(process, market_link{.sensitivity = 2.0}, [](double) { return std::string{}; });
-
-    scheduler.step();
-    REQUIRE_FALSE(process.multipliers.empty());
-    // No factors, so the market term is one, and the row's sensitivity still
-    // applies to it: 2 * 1.
-    CHECK(process.multipliers.front() == Catch::Approx(2.0));
-}
-
-TEST_CASE("the scheduler survives a body that throws", "[tick_scheduler]") {
-    fixed_gap_process process(0.1);
-    tick_scheduler scheduler;
+TEST_CASE("a body that throws is reported and its series keeps ticking", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
     int failures = 0;
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [&](const std::exception&) { ++failures; });
-    scheduler.add(
-        process, {}, [](double) -> std::string { throw std::runtime_error("the body failed"); });
-
-    CHECK(scheduler.step().has_value());
-    CHECK(failures == 1);
-    CHECK(scheduler.publish_count() == 0);
-}
-
-TEST_CASE("the scheduler does nothing with no series", "[tick_scheduler]") {
-    tick_scheduler scheduler;
-    CHECK_FALSE(scheduler.step().has_value());
-    CHECK(scheduler.publish_count() == 0);
-}
-
-TEST_CASE("a series can join and leave while the scheduler runs", "[tick_scheduler]") {
-    fixed_gap_process process(0.25);
-    tick_scheduler scheduler;
     int calls = 0;
+    scheduler.add({.series = 1, .arrival = per_second("periodic", 1.0)},
+                  [&](const tick_context&) -> std::string {
+                      if (++calls == 1)
+                          throw std::runtime_error("first tick failed");
+                      return "ok";
+                  });
 
-    const auto first = scheduler.add(process, {}, [&](double) {
-        ++calls;
-        return std::string{};
-    });
     scheduler.step();
-    REQUIRE(calls == 1);
+    scheduler.step();
+    scheduler.step();
+    CHECK(calls == 3);
+    CHECK(failures == 1);
+    CHECK(scheduler.publish_count() == 2);
+}
 
-    scheduler.remove(first);
+TEST_CASE("a body is told the wall time and the wait from the run clock", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
+    scheduler.pin(market_state::active);
+    std::vector<tick_context> seen;
+    scheduler.add({.series = 1, .arrival = per_second("periodic", 1.0)},
+                  [&](const tick_context& c) {
+                      seen.push_back(c);
+                      return std::string{};
+                  });
+
+    const auto first = scheduler.step();
+    const auto second = scheduler.step();
+    // Active doubles the pace, so a one-second gap takes half a second.
+    CHECK(second->at - first->at == Catch::Approx(0.5));
+    CHECK(seen[1].elapsed_seconds == Catch::Approx(0.5));
+    CHECK(seen[1].observed_at - scheduler_wall_origin ==
+          std::chrono::duration_cast<std::chrono::system_clock::duration>(
+              std::chrono::duration<double>(second->at)));
+}
+
+TEST_CASE("an empty scheduler takes no tick", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
+    CHECK_FALSE(scheduler.step());
     CHECK(scheduler.size() == 0);
-    CHECK_FALSE(scheduler.step().has_value());
-    CHECK(calls == 1);
 }
 
-TEST_CASE("the scheduler ticks one series and leaves the rest pending", "[tick_scheduler]") {
-    fixed_gap_process fast(0.1);
-    fixed_gap_process slow(10.0);
-    tick_scheduler scheduler;
-    int fast_calls = 0;
-    int slow_calls = 0;
+TEST_CASE("a series leaves the population and the heap when removed", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
+    const auto gone = scheduler.add({.series = 1, .arrival = per_second("periodic", 4.0)}, quiet);
+    const auto kept = scheduler.add({.series = 2, .arrival = per_second("periodic", 1.0)}, quiet);
+    CHECK(scheduler.snapshot().population_rate == Catch::Approx(5.0));
 
-    scheduler.add(fast, {}, [&](double) {
-        ++fast_calls;
-        return std::string{};
-    });
-    scheduler.add(slow, {}, [&](double) {
-        ++slow_calls;
-        return std::string{};
-    });
-
+    scheduler.remove(gone);
+    CHECK(scheduler.size() == 1);
+    CHECK(scheduler.snapshot().population_rate == Catch::Approx(1.0));
     for (int i = 0; i < 5; ++i)
-        scheduler.step();
-
-    CHECK(fast_calls == 5);
-    CHECK(slow_calls == 0);
+        CHECK(scheduler.step()->id == kept);
 }
 
-TEST_CASE("the scheduler waits for its first series and stops when asked", "[tick_scheduler]") {
-    // A run starts its clock before its feeds exist, so an empty registry means
-    // "nothing yet": the thread must wait, not return.
-    fixed_gap_process process(0.001);
-    tick_scheduler scheduler;
-    std::atomic<int> ticks{0};
-
-    std::thread clock([&] { scheduler.run(); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    scheduler.add(process, {}, [&](double) {
-        ticks.fetch_add(1);
-        return std::string{};
-    });
-
-    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-    while (ticks.load() == 0 && std::chrono::steady_clock::now() < deadline)
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-
-    scheduler.stop();
-    clock.join();
-
-    CHECK(ticks.load() > 0);
-}
-
-TEST_CASE("a slow series reaches its turn while a faster one drives the clock",
+TEST_CASE("a running scheduler applies a pin and a removal from another thread",
           "[tick_scheduler]") {
-    // The refresh re-rates every series. A refresh that redrew the whole gap would restart the
-    // slow series' minute every time the fast one fired, and the slow one would never run.
-    fixed_gap_process slow(0.2);
-    fixed_gap_process fast(0.01);
-    tick_scheduler scheduler;
-    std::atomic<int> slow_ticks{0};
-    std::atomic<int> fast_ticks{0};
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    std::thread loop([&] { scheduler.run(); });
 
-    scheduler.add(slow, {}, [&](double) {
-        ++slow_ticks;
-        return std::string{};
-    });
-    scheduler.add(fast, {}, [&](double) {
-        ++fast_ticks;
-        return std::string{};
-    });
+    std::atomic<bool> in_body{false};
+    std::atomic<int> calls{0};
+    const auto id = scheduler.add({.series = 1, .arrival = per_second("poisson", 1000.0)},
+                                  [&](const tick_context&) {
+                                      in_body = true;
+                                      std::this_thread::sleep_for(1ms);
+                                      ++calls;
+                                      in_body = false;
+                                      return std::string{};
+                                  });
 
-    std::thread runner([&] { scheduler.run(std::chrono::milliseconds(10)); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    scheduler.pin(market_state::active);
+    const auto until = std::chrono::steady_clock::now() + 5s;
+    while ((!scheduler.snapshot().pinned || calls < 20) && std::chrono::steady_clock::now() < until)
+        std::this_thread::sleep_for(5ms);
+    CHECK(scheduler.snapshot().pinned);
+    CHECK(scheduler.snapshot().state == market_state::active);
+    CHECK(calls >= 20);
+
+    // Once remove returns the body is not running and never runs again.
+    scheduler.remove(id);
+    CHECK_FALSE(in_body);
+    const int after = calls;
+    std::this_thread::sleep_for(50ms);
+    CHECK(calls == after);
+
     scheduler.stop();
-    runner.join();
-
-    CHECK(fast_ticks > 10);
-    CHECK(slow_ticks >= 2);
+    loop.join();
 }
 
-TEST_CASE("a refresh keeps the part of its wait a series has already served", "[tick_scheduler]") {
-    // The series is half way through a gap of a fifth of a second. A re-rate at the same rate
-    // leaves it half way through, so its turn comes after about a tenth of a second more.
-    fixed_gap_process process(0.2);
-    tick_scheduler scheduler;
-    std::atomic<int> ticks{0};
-    scheduler.add(process, {}, [&](double) {
-        ++ticks;
-        return std::string{};
-    });
-
-    std::thread runner([&] { scheduler.run(std::chrono::milliseconds(5)); });
-    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+TEST_CASE("a running scheduler reads the heat on its sample period", "[tick_scheduler]") {
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    std::thread loop([&] { scheduler.run(); });
+    std::this_thread::sleep_for(350ms);
     scheduler.stop();
-    runner.join();
+    loop.join();
 
-    // At a fifth of a second a gap, six hundred milliseconds is three turns, and the refreshes
-    // neither cut them short nor add to them.
-    CHECK(ticks >= 2);
-    CHECK(ticks <= 4);
+    const auto readings = scheduler.readings_since(std::chrono::system_clock::time_point{});
+    CHECK(readings.size() >= 3);
+    CHECK(readings.size() <= 6);
+}
+
+TEST_CASE("a body may remove its own series", "[tick_scheduler]") {
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    std::thread loop([&] { scheduler.run(); });
+
+    std::atomic<int> calls{0};
+    std::atomic<std::size_t> own{0};
+    // A hundred a second leaves time for add to return the id before the third tick.
+    own = scheduler.add({.series = 1, .arrival = per_second("poisson", 100.0)},
+                        [&](const tick_context&) {
+                            if (++calls == 3)
+                                scheduler.remove(own);
+                            return std::string{};
+                        });
+
+    // The add is posted to the loop, so the size can read zero before it lands: wait for the
+    // third call itself.
+    const auto until = std::chrono::steady_clock::now() + 5s;
+    while (calls < 3 && std::chrono::steady_clock::now() < until)
+        std::this_thread::sleep_for(5ms);
+    std::this_thread::sleep_for(50ms);
+    CHECK(scheduler.size() == 0);
+    CHECK(calls == 3);
+
+    scheduler.stop();
+    loop.join();
+}
+
+TEST_CASE("a remove that waits on a busy loop returns when the loop stops", "[tick_scheduler]") {
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    std::thread loop([&] { scheduler.run(); });
+
+    std::atomic<bool> in_body{false};
+    const auto id = scheduler.add({.series = 1, .arrival = per_second("periodic", 1000.0)},
+                                  [&](const tick_context&) {
+                                      in_body = true;
+                                      std::this_thread::sleep_for(100ms);
+                                      return std::string{};
+                                  });
+    const auto until = std::chrono::steady_clock::now() + 5s;
+    while (!in_body && std::chrono::steady_clock::now() < until)
+        std::this_thread::sleep_for(1ms);
+
+    std::thread remover([&] { scheduler.remove(id); });
+    scheduler.stop();
+    remover.join();
+    loop.join();
+    CHECK(scheduler.size() == 0);
+}
+
+TEST_CASE("the heap drops the marks of removed series", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
+    const auto kept = scheduler.add({.series = 0, .arrival = per_second("poisson", 1.0)}, quiet);
+    for (std::size_t i = 1; i <= 1000; ++i)
+        scheduler.remove(
+            scheduler.add({.series = i, .arrival = per_second("poisson", 0.001)}, quiet));
+
+    CHECK(scheduler.size() == 1);
+    for (int i = 0; i < 10; ++i)
+        CHECK(scheduler.step()->id == kept);
 }

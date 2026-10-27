@@ -174,3 +174,27 @@ TEST_CASE("a non-periodic arrival needs a value process that can step by elapsed
     CHECK_FALSE(refused.valid);
     CHECK(refused.message.contains("periodic"));
 }
+
+TEST_CASE("an arrival with a branching ratio of one or more is refused",
+          "[process_parameter_validation]") {
+    const auto refused = ores::analytics::quant::domain::validate_arrival_process_parameters(
+        "hawkes", 3600.0, 1.0, 10.0);
+    CHECK_FALSE(refused.valid);
+    CHECK_FALSE(refused.message.empty());
+}
+
+TEST_CASE("the arrival rules refuse what cannot work", "[process_parameter_validation]") {
+    using ores::analytics::quant::domain::validate_arrival_process_parameters;
+
+    CHECK_FALSE(validate_arrival_process_parameters("periodic", 0.0, 0.0, 1.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("poisson", -1.0, 0.0, 1.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("hawkes", 3600.0, 0.5, 0.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("hawkes", 3600.0, -0.1, 10.0).valid);
+    CHECK_FALSE(validate_arrival_process_parameters("annual", 3600.0, 0.0, 1.0).valid);
+
+    // The two non-clustering modes ignore the clustering numbers.
+    CHECK(validate_arrival_process_parameters("periodic", 3600.0, 5.0, -1.0).valid);
+    CHECK(validate_arrival_process_parameters("poisson", 3600.0, 5.0, -1.0).valid);
+    CHECK(validate_arrival_process_parameters("hawkes", 3600.0, 0.5, 10.0).valid);
+    CHECK(validate_arrival_process_parameters("hawkes", 3600.0, 0.0, 10.0).valid);
+}

@@ -107,6 +107,14 @@ public:
     /// The bracket B: how fast tau moves now, per second.
     [[nodiscard]] double pace() const;
 
+    [[nodiscard]] double jump() const {
+        return config_.jump;
+    }
+
+    [[nodiscard]] double decay() const {
+        return config_.decay;
+    }
+
     /// The heat's loop gain, jump over decay. Below one, so the heat settles.
     [[nodiscard]] double loop_gain() const {
         return config_.jump / config_.decay;

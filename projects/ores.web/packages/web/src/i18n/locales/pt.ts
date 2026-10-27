@@ -4622,7 +4622,7 @@ const pt: SourceCatalogue = {
             ratioHelp: 'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um.',
             decay: 'Decaimento, por segundo',
             decayHelp:
-                'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
+                'Apenas Hawkes: com que rapidez uma rajada desaparece, por segundo de tempo de mercado. Uma rajada desaparece mais depressa num mercado agitado.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
             marketUnknown: 'o estado do mercado não está legível agora',
             unsaved: 'Alterações por guardar',

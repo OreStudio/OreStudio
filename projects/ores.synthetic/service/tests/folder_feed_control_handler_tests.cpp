@@ -20,6 +20,7 @@
 #include "../src/feed_selection_handler.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/generator_fleet.hpp"
+#include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -359,6 +360,7 @@ struct cascade_fixture {
     ores::testing::scoped_database_helper db;
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
+    ores::analytics::quant::service::running_scheduler run;
     ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     ores::synthetic::service::feed_kind_registry registry;
@@ -379,32 +381,32 @@ struct cascade_fixture {
 
         using ores::marketdata::messaging::start_feeds_under_folder_request;
         using ores::marketdata::messaging::stop_feeds_under_folder_request;
-        start_sub =
-            nats.queue_subscribe(folder_feed_control_handler_test_start_subject,
-                                 "ores.synthetic.service",
-                                 [this](ores::nats::message msg) {
-                                     ores::synthetic::service::folder_feed_control_handler h(
-                                         nats, fleet, auth_nats, db.context(), verifier, registry);
-                                     h.start(std::move(msg));
-                                 });
-        stop_sub =
-            nats.queue_subscribe(folder_feed_control_handler_test_stop_subject,
-                                 "ores.synthetic.service",
-                                 [this](ores::nats::message msg) {
-                                     ores::synthetic::service::folder_feed_control_handler h(
-                                         nats, fleet, auth_nats, db.context(), verifier, registry);
-                                     h.stop(std::move(msg));
-                                 });
+        start_sub = nats.queue_subscribe(
+            folder_feed_control_handler_test_start_subject,
+            "ores.synthetic.service",
+            [this](ores::nats::message msg) {
+                ores::synthetic::service::folder_feed_control_handler h(
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
+                h.start(std::move(msg));
+            });
+        stop_sub = nats.queue_subscribe(
+            folder_feed_control_handler_test_stop_subject,
+            "ores.synthetic.service",
+            [this](ores::nats::message msg) {
+                ores::synthetic::service::folder_feed_control_handler h(
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
+                h.stop(std::move(msg));
+            });
         select_start_sub = nats.queue_subscribe(
             test_select_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_selection_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
                 h.start(std::move(msg));
             });
         select_stop_sub = nats.queue_subscribe(
             test_select_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_selection_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
                 h.stop(std::move(msg));
             });
     }

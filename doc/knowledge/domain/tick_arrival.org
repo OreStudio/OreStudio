@@ -1,76 +1,101 @@
 :PROPERTIES:
 :ID: F135B9AF-902F-46C5-847C-0820D8C92D28
 :END:
-#+title: A tick clock draws its gaps from an arrival process
-#+description: How a synthetic feed decides when its next tick comes — the tick clock takes its gaps from an arrival process that is periodic, Poisson or Hawkes — and how the elapsed time reaches the price, so that bursts change when prices arrive and not the law of the price.
+#+title: One scheduler draws every feed's gaps from its arrival law
+#+description: How a synthetic feed decides when its next tick comes — one scheduler on the market's operational clock draws each series' gaps from an arrival law that is periodic, Poisson or Hawkes — and how the elapsed time reaches the price, so that bursts change when prices arrive and not the law of the price.
 #+type: knowledge
 #+level: cross
 #+filetags: :synthetic:producers:arrival:point_process:design:
 #+created: 2026-10-23
-#+updated: 2026-10-24
+#+updated: 2026-10-27
 
 * Summary
 
 A synthetic feed has two separate jobs. One job decides /what/ the next price
 is. The other decides /when/ it arrives. The
 [[id:E1C64302-FA31-4C25-8E92-38265013F644][generator library]] holds the first
-job: a value process whose =next()= returns a price. The *tick clock* holds the
+job: a value process whose =next()= returns a price. The *scheduler* holds the
 second. Both live in =ores.analytics.quant=.
 
-1. *The tick clock takes its gaps from an arrival process.* The arrival process
-   is periodic, Poisson or Hawkes. A periodic one gives equal gaps, so a feed
+1. *The scheduler draws each series' gaps from its arrival law.* The law
+   is periodic, Poisson or Hawkes, and its gaps are in the market's operational
+   time, so a busy market brings every series' ticks forward together. A periodic one gives equal gaps, so a feed
    can be fully regular. The other two give random and bursty gaps, as live
    ticks have.
-2. *The value process is told how much time has passed.* A bursty clock then
+2. *The value process is told how much time has passed.* A bursty law then
    changes when prices are seen, and does not change the law of the price in
    real time.
 
 * Detail
 
-** The tick clock
+** The scheduler
 
-The tick clock is the one clock every feed runs on. It takes an arrival
-process. Before each tick it asks the process for the next gap in seconds, and
-sleeps for the gap in slices of a hundred milliseconds, so that =stop()= is seen
-quickly. It then runs one tick body,
-counts the tick and passes it to a hook. A throw from the body goes to a failure
-hook and the tick is skipped, because a tick-loop thread has no caller to
-receive an exception. The clock is described from the feed's side in
-[[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][the FX spot producer]].
+One loop decides when every feed ticks: =tick_scheduler= in
+=service/tick_scheduler.hpp=. It owns the market and a heap of series, and a
+feed only registers its tick body with it at =start()= and leaves at =stop()=.
+The scheduler is a required dependency of every feed, so no feed keeps a clock
+of its own.
 
-The clock holds no database, messaging or logging code. It needs the arrival
-process interface and the standard library ( =<chrono>=, =<thread>=, =<atomic>=,
-=<functional>= ), so it keeps the rule of =ores.analytics.quant=:
-=service/tick_clock.hpp=, beside the processes it is driven by. The synthetic side holds only the feeds. A feed reads its mode and
-numbers from the generation config, asks the factory for an arrival process,
-builds a clock around it and gives the clock a tick body. Any
-other consumer, such as a calibration tool or =ores.marketdata=, can pace itself
-the same way without linking the synthetic service.
+The market scales every series by one bracket, the regime's multiplier plus
+the heat shared over the enrolled rate. So every series shares one
+operational time, tau, the integral of that bracket over wall time. The
+=operational_clock= in =domain/operational_clock.hpp= keeps it: it owns the
+regime chain, the heat and tau, advances tau in closed form between events,
+and says when tau will reach a mark.
+
+A series with sensitivity $s$ whose law draws a gap $g$ ticks when tau has
+moved by $g / s$. That mark is fixed when the gap is drawn. A heat jump, a pin
+or an enrolment changes how fast tau moves and moves no mark, so the series
+wait in one heap keyed on their marks, a tick costs O(log n), and a change in
+the market reaches every series at the instant it happens.
+
+The loop waits on a =i_run_clock= ( =service/run_clock.hpp= ): the steady clock
+in a service, a manual clock in a test, which then asserts exact event times
+without sleeping. A tick body is told the wall seconds since the series last
+ticked and the wall time of the tick, both from that clock. A throw from a body
+goes to a failure hook and the series keeps its place.
+
+Only the loop changes the market or the heap. A pin, an added series or a
+removed one from another thread is a command the loop applies at its clock's
+now. =remove= and =pin= return once the loop has applied them, so a feed may
+destroy what its body points at, and a reply to a pin shows the pin in force.
+
+The scheduler holds no database, messaging or logging code, so it keeps the
+rule of =ores.analytics.quant=. The synthetic side holds only the feeds. Any
+other consumer can pace itself the same way without linking the synthetic
+service.
 
 The note
 [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
 lists the modes a user may choose and the control panel that sets them. This
 page says where the choice lives in the code.
 
-** The arrival processes
+** The arrival laws
 
-=i_arrival_process= is the interface, beside =i_stochastic_process=. It has one
-method, =next_gap()=, that returns the time in seconds from the last tick to the
-next. A process owns its state and its random engine and is not thread-safe,
-like every value process.
+=arrival_law= in =domain/arrival_law.hpp= is a variant of three values. Each
+carries all the state that decides its next gap, in the series' own
+operational time.
 
-- =periodic_arrival_process= returns the same gap every time. It is the default.
-  A feed that wants no randomness uses it.
-- =poisson_arrival_process= returns an exponential gap
+- =periodic_law= gives the same gap every time, after a first gap that starts
+  part way in, at a phase it draws. It is the default. A feed that wants no
+  randomness uses it.
+- =poisson_law= gives an exponential gap
   ([[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]]).
-- =hawkes_arrival_process= returns a gap that depends on the earlier ones
-  ([[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]).
+- =hawkes_law= gives a gap that depends on the earlier ones
+  ([[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]). It starts
+  at its stationary excess, so a run starts at its long-run rate.
 
-=process_factory= has three entries: =make_process= for the value processes,
-=make_yield_curve_process= for the short-rate processes, and
-=make_arrival_process= for the arrival processes. The second and the third throw
-on a name they do not know. A silent fallback to a periodic timer would hide a
-mistyped mode as a feed that quietly stays regular.
+=draw_gap= takes the law as const, and only =record_event= moves it, so a gap
+that is drawn and not used leaves the law as it was. =make_arrival_law= builds
+the law a spec names and throws on a mode it does not know. A silent fallback
+to a periodic timer would hide a mistyped mode as a feed that quietly stays
+regular.
+
+Every draw comes from an =rng_stream= ( =math/rng_stream.hpp= ): Philox4x32-10
+keyed by the run seed, the series key from the source name, and the purpose. A
+series' draws do not depend on the thread, the order the feeds were made in,
+or how many there are. The run seed is the service's =--run-seed= option, and
+the service logs it when the run starts.
 
 *** Why "periodic"
 
@@ -79,7 +104,7 @@ The obvious word, "steady", is taken. =std::chrono::steady_clock= and the asio
 how far apart the ticks are. "Fixed" is vague about what is fixed. A point
 process with equal gaps is called *periodic* in the literature, and a reader of
 the code meets the same word. The "Fixed interval" label in the approach note
-is the periodic arrival process.
+is the periodic arrival law.
 
 ** The parameters
 
@@ -95,15 +120,17 @@ The Hawkes row uses the parametrisation in
 [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]: the mean rate
 $\bar\lambda$, the branching ratio $n$ and the decay $\beta$. The factory turns
 them into the baseline $\mu = \bar\lambda(1-n)$ and the jump $\alpha = n\beta$
-inside =hawkes_arrival_process=.
+inside =hawkes_law=. A Hawkes law runs in operational time, so its branching
+ratio is the same in a calm market and a busy one, and a burst fades faster in
+wall time when the market is busy.
 =ticks_per_hour= keeps its meaning in every mode. A person who switches from
 Periodic to Hawkes keeps the same load on the pipeline, and changes only how
 that load is spread in time. The approach note's $(\mu, \alpha, \beta)$ is the
 same process in other coordinates.
 
-The unit of the arrival process is the second, and =ticks_per_hour= is the
-unit of the config. The factory converts once. The second is the unit because
-the clock sleeps in wall time. The process has no notion of a unit, and a
+The unit of an arrival law is the operational second, and =ticks_per_hour= is
+the unit of the config. =make_arrival_law= converts once. At a pace of one, an
+operational second is a wall second. The process has no notion of a unit, and a
 template parameter would add noise for no gain.
 
 ** How the elapsed time reaches the price
@@ -116,9 +143,9 @@ step of one fixed length. The step takes the elapsed time:
   length the process is configured for: the length of one period at the feed's
   =ticks_per_hour=. It has no unit and it needs no calendar. =next()= means
   =next(1.0)=.
-- The clock turns a gap in seconds into nominal ticks by dividing by the
-  nominal period, and passes the result to the tick body. A periodic clock
-  passes exactly one. A Poisson or Hawkes clock at the same =ticks_per_hour=
+- The feed turns the wall seconds since its last tick into nominal ticks by
+  dividing by the nominal period. A periodic series in a market at a pace of one
+  passes exactly one. A Poisson or Hawkes series at the same =ticks_per_hour=
   passes numbers whose long-run mean is one.
 
 A process applies =elapsed= by the rule that is exact for its law:
@@ -182,18 +209,18 @@ the rules let through.
 Nothing changes after the feed. A tick carries its time, the marketdata ingest
 loop plans and stores it, and the rule in
 [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]]
-holds: the arrival process is a property of the generator and no later stage
+holds: the arrival law is a property of the generator and no later stage
 reads it.
 
 * See also
 
 - [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] — the market-wide factor: a calm/active state, a
-  shared intensity and one clock per run, so the whole market can speed up
+  shared intensity and one operational clock per run, so the whole market can speed up
   together.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] — the value processes and the factory that builds the arrival processes.
-- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] — the feed that runs on this clock.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] — the value processes and the factory that builds them.
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] — a feed that runs on this scheduler.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the list of modes and the control panel.
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub that carries the mathematics.
 - [[id:46CC91F8-3591-44EE-B19F-31CBC6D7AFA6][Point Process and Conditional Intensity]], [[id:A296C7C0-780D-46DD-A8B4-8B7998C17B8C][Poisson Process]] and [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — the mathematics of the three arrival processes.

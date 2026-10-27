@@ -4591,7 +4591,8 @@ export const en: SourceCatalogue = {
             ratio: 'Branching ratio',
             ratioHelp: 'Hawkes only: how many further ticks one tick causes, below one.',
             decay: 'Decay, per second',
-            decayHelp: 'Hawkes only: how fast a burst fades, in units of one over a second.',
+            decayHelp:
+                'Hawkes only: how fast a burst fades, per second of market time. A burst fades faster in a busy market.',
             market: 'Market now: {state}. It is read here and set on the Market regime tab.',
             marketUnknown: 'the market state is not readable right now',
             unsaved: 'Unsaved changes',

@@ -38,6 +38,8 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.logging.lib
     PRIVATE
+        ores.analytics.api.lib
+        ores.ore.api.lib
         ores.reporting.api.lib
         ores.platform.lib
         ores.utility.lib

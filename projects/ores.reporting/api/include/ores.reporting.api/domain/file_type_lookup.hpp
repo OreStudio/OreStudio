@@ -45,8 +45,49 @@ inline const file_type* setup_file_type_of(const std::vector<file_type>& types,
 /// The kind of file that holds a run's own data rather than a configuration.
 inline constexpr std::string_view data_file_kind = "data_file";
 
+/// The kind of file that is one ORE document: the file ORE reads as a whole.
+inline constexpr std::string_view input_document_kind = "input_document";
+
 /// The direction of a file the run reads.
 inline constexpr std::string_view input_direction = "input";
+
+/**
+ * @brief The file type that names the document a configuration type is written
+ * as: the one that is the configuration's whole ORE document (RS-ORE-01).
+ *
+ * A configuration type may name several files, so the row that is the default
+ * answers, and a row that is not the default answers only when no row is. The
+ * row names the document through its =name_pattern=, which is the name an
+ * export writes the file under.
+ */
+/**
+ * Whether a row states the name of a file.
+ *
+ * A row states the name with its pattern, and for an input document the pattern
+ * is the literal file name ORE is given. A row that names nothing does not
+ * answer.
+ */
+inline bool names_a_file(const std::string& pattern) {
+    return pattern.find_first_not_of(" \t\r\n") != std::string::npos;
+}
+
+inline const file_type* input_document_file_type_of(const std::vector<file_type>& types,
+                                                    std::string_view configuration_type_code) {
+    const file_type* found = nullptr;
+    for (const auto& type : types) {
+        if (type.kind != input_document_kind || type.direction != input_direction)
+            continue;
+        if (type.configuration_type_code != configuration_type_code)
+            continue;
+        if (!names_a_file(type.name_pattern))
+            continue;
+        if (type.is_default)
+            return &type;
+        if (found == nullptr)
+            found = &type;
+    }
+    return found;
+}
 
 /**
  * @brief The file types that name the run's own data files in the Setup block: the

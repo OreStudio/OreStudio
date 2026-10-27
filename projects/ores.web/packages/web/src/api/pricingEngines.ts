@@ -19,7 +19,7 @@
  */
 
 import { z } from 'zod';
-import { request } from './transport.js';
+import { request, requestFile, type ServedFile } from './transport.js';
 
 /**
  * The pricing engine configuration screens' reads and writes.
@@ -273,6 +273,16 @@ export interface PricingWrite {
 
 const ROOT = '/api/reporting/pricing-engines';
 
+/**
+ * The address the ORE document of one configuration is written at.
+ *
+ * The document is the ORE service's answer, so the screen asks for it and saves
+ * what comes back; it never states a name of its own.
+ */
+export function oreDocumentPath(id: string): string {
+    return `${ROOT}/${encodeURIComponent(id)}/ore-document`;
+}
+
 export const pricingEngines = {
     /** Every configuration the session's party holds. */
     async list(): Promise<readonly PricingSummary[]> {
@@ -292,6 +302,18 @@ export const pricingEngines = {
             .object({ versions: z.array(documentVersionSchema) })
             .parse(await request(`${ROOT}/${encodeURIComponent(id)}/history`, { method: 'GET' }))
             .versions;
+    },
+
+    /**
+     * The configuration as the ORE document ORE reads, under the name the server
+     * gives it.
+     *
+     * @param fallbackName The name the dialog stated, for a server that states
+     *                     none.
+     */
+    async oreDocument(id: string, fallbackName: string): Promise<ServedFile> {
+        const file = await requestFile(oreDocumentPath(id), { method: 'GET' });
+        return { name: file.name === '' ? fallbackName : file.name, content: file.content };
     },
 
     /** One configuration with its products and parameters. */

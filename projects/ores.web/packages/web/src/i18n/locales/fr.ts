@@ -4000,6 +4000,8 @@ const fr: SourceCatalogue = {
             exportNote:
                 "Le serveur écrit le document ; votre navigateur l'enregistre. Rien ne change ici.",
             exported: '{file} enregistré, {count} enregistrements.',
+            recordExportLead: 'Écrit {file} avec {what}.',
+            recordSaved: '{file} enregistré, avec {what}.',
             importTitle: 'Importer les {plural}',
             importLead:
                 "Apporter un document ORE. Le serveur le lit, vous relisez la différence, et rien n'est écrit avant la dernière étape.",
@@ -5336,6 +5338,7 @@ const fr: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produits',
         author: {
             next: 'Suivant',
             steps: {

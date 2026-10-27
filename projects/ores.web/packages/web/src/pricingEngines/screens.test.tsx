@@ -28,6 +28,7 @@ import { textOf } from '../textOf.js';
 import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { PricingEnginePage, VOCABULARY_KEY, pricingEngineKey } from './PricingEnginePage.js';
 import { PricingEngineJourney, HELD_KEY } from './PricingEngineJourney.js';
+import { RecordExportDialog } from '../ore/OreExchange.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
 import { PricingEnginesPage, pageOf } from './PricingEnginesPage.js';
 
@@ -742,5 +743,40 @@ describe('the value of a setting', () => {
         const html = setting('Training.Samples', '1024');
         expect(html).toContain('type="number"');
         expect(html).toContain('step="1"');
+    });
+});
+
+describe('the export of one pricing engine configuration', () => {
+    it('draws the button for a person who may read the configuration', () => {
+        expect(textOf(record(READ))).toContain('Export');
+        expect(textOf(record([]))).not.toContain('Export');
+    });
+
+    it('states the document it writes and how many products go in it', () => {
+        const html = renderRecords(
+            '/export',
+            [],
+            <Route
+                path="/export"
+                element={
+                    <RecordExportDialog
+                        document={{
+                            fileName: 'pricingengine.xml',
+                            what: '5 products',
+                            write: async () => ({
+                                name: 'pricingengine.xml',
+                                content: '<?xml version="1.0"?><PricingEngines />',
+                            }),
+                        }}
+                        onClose={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+        expect(textOf(html)).toContain('Writes pricingengine.xml with 5 products.');
+        expect(textOf(html)).toContain(
+            'The server writes the document; your browser saves it. Nothing changes here.',
+        );
     });
 });

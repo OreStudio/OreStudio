@@ -21,10 +21,12 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/messaging/currency_config_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include "ores.ore.service/messaging/currency_config_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
+#include "ores.ore.service/messaging/pricing_engines_handler.hpp"
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.ore.service/messaging/run_configuration_handler.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -78,6 +80,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         ores::ore::messaging::import_currency_config_request::nats_subject,
         qg,
         [cch](ores::nats::message msg) { cch->import_currency_config(std::move(msg)); }));
+
+    auto peh = std::make_shared<pricing_engines_handler>(nats, ctx, signer, outbound_nats);
+    subs.push_back(nats.queue_subscribe(
+        ores::ore::messaging::export_pricing_engines_request::nats_subject,
+        qg,
+        [peh](ores::nats::message msg) { peh->export_pricing_engines(std::move(msg)); }));
 
     auto rch =
         std::make_shared<run_configuration_handler>(nats, ctx, std::move(signer), outbound_nats);

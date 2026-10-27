@@ -71,15 +71,14 @@ fails when the committed tables differ from what the schemas produce.
 - =ores.dq.api=, =ores.history.core=, =ores.logging=, =ores.platform=,
   =ores.utility= and Boost — linked privately.
 
-XML parsing is the generated binding code, not a library: the component
-links neither =pugixml= nor =nats.c=.
+XML parsing is the generated binding code. The component links =pugixml=
+for the documents it writes and does not link =nats.c=.
 
 * Build dependencies
 
 What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
-
 
 * See also
 
@@ -127,6 +126,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.platform.lib
         ores.utility.lib
+        pugixml::pugixml
         Boost::boost)
 #+end_src
 

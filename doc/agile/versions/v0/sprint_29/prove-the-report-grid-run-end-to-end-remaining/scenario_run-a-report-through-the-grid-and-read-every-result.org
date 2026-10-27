@@ -1,0 +1,256 @@
+:PROPERTIES:
+:ID: 6171D630-64A0-4D98-85DA-07BB553CE79E
+:END:
+#+title: Test Scenario: Run a report through the grid and read every result
+#+description: One pass over the reporting area and the grid behind it: run a report, follow its batch and jobs, read its results at every level, compare two runs, and check the rows in the store.
+#+type: test_scenario
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+target_dialog: Reporting > Reports, the run page, and Operations > Grid
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: swift_curie
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] in [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- The database is this worktree's own, provisioned with Acme Corporation holding
+  group: =compass db status= reports the schema in sync and bootstrap finished,
+  and =compass services status= shows every unit running, the five
+  =ores.compute.wrapper= nodes included.
+- The currency quotes the report's yield curves need are seeded, following
+  [[id:1FC883F6-7EF7-46F8-A967-F2647E5F09EB][How do I seed currency quotes for a local report run?]].
+  Without them the run reaches the grid and the engine refuses every curve.
+- At least one run of the report has completed and at least one has failed, so
+  the comparison and the error display have something to read. This scenario
+  creates the second completed run in its own steps.
+- The result rows table exists and the reporting service may write it, which a
+  freshly recreated database grants through its prefix grant function.
+
+* Scenario Info
+
+| Field         | Value                                                              |
+|---------------+--------------------------------------------------------------------|
+| Verifies task | [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] |
+| Parent story  | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Target screen | Reporting > Reports, the run page, and Operations > Grid            |
+| Clients       |                                                                    |
+| Environment   | =swift_curie=, at =http://127.0.0.1:20202=                          |
+| State         | PENDING                                                            |
+
+* Steps
+
+** Sign in as the tenant administrator
+
+- Open =http://127.0.0.1:20202=.
+- Sign in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Choose the party =ACME Corporation HK Ltd= in the party picker.
+- Confirm =Reporting= appears in the main navigation.
+
+*** Result
+
+** Read the report list and open NPV
+
+- Go to =Reporting= then =Reports=.
+- Confirm the list states the reports the party runs, and open =NPV=.
+- Confirm the page states the definition first: the record details, the
+  last-changed line, the history of the record, and the tabs =Definition= and
+  =Runs=.
+- Confirm =Run= and =Refresh= sit at the top right, and =Edit= on the record.
+
+*** Result
+
+** Start a run from the definition
+
+- Press =Run=.
+- Confirm the page moves to a new run's page with the tabs =Run= and =Results=.
+- Confirm the run's state moves on its own, without a hand refresh, and that it
+  reaches =completed=.
+
+*** Result
+
+** Follow the run onto the grid
+
+- On the run's =Run= tab, follow the link that opens this run on the grid.
+- Confirm the grid's page names the run, its report and its batch; the same page
+  is at =/operations/grid/report-runs/<run id>= and is reachable from
+  =Operations= then =Grid=.
+- Confirm it names the run, its report and its compute batch, and that the batch
+  shows one workunit whose job is =Done=, and the errors tab states what the run
+  recorded, if anything.
+- Open the job, confirm it names the node that ran it and the outcome, then open
+  the node and confirm the host is registered and has reported recently.
+
+*** Result
+
+** Read the results at trade level
+
+- Open the run's =Results= tab.
+- Confirm the header states the trade count and the priced date, that the note
+  says these are the rows the post-processor loaded, and that one row per trade
+  is drawn.
+- Confirm the totals line states the trade count and the total NPV in the run's
+  currency.
+- Open one row and confirm it states that trade's NPV, its base-currency NPV, its
+  notional, its counterparty and any error the run recorded against it.
+
+*** Result
+
+** Follow a trade, a book and a counterparty
+
+- From the open row, follow the trade link and confirm it opens that trade's
+  record.
+- Back on the results, follow a book link and confirm it opens the book, and a
+  counterparty link and confirm it opens the counterparty.
+- Confirm the trades in the run name the same book and counterparty the record
+  pages state.
+
+*** Result
+
+** Roll the run up by book and by counterparty
+
+- Change =Aggregate by= to =Book=.
+- Confirm the books roll up under their portfolios, a portfolio under its parent,
+  and that the header still states the run's own trade count.
+- Change =Aggregate by= to =Counterparty= and confirm the rows roll up to
+  counterparties, with their groups where they have one.
+- Confirm the donut of each book's share is drawn at the book level when the run
+  has more than one book, and that every figure beside it matches the table.
+
+*** Result
+
+** Compare the run with an earlier one
+
+- Go back to the report, press =Run= once more, and wait for the second run to
+  complete.
+- On the second run's =Results= tab, choose the first run in =Compare to=.
+- Confirm each row states its change and change percentage, that a row the
+  earlier run had and this one does not is marked as gone, and that the summary
+  line names the earlier run's totals.
+- Confirm the plots state the run's problems by scope when the compared run
+  recorded any.
+
+*** Result
+
+** Read a run that failed
+
+- Go back to the report, open its =Runs= tab, and open a run in state =failed=.
+- Confirm the run page states the failure in the engine's own words, and that the
+  errors link lists them by scope.
+- Confirm the results tab states that the run shows no rows and why, rather than
+  an empty table.
+
+*** Result
+
+** Check the rows in the store
+
+- In a shell, run
+  =compass sql -- -c "set row_security=off; select measure, count(*) from ores_reporting_report_result_rows_tbl where report_instance_id='<run id>' group by 1;"=.
+- Confirm the run's rows are there, with the measures the report produced.
+- Confirm =select count(*) from ores_reporting_report_result_rows_tbl where report_instance_id='<run id>'=
+  equals the trades on the screen times the measures.
+- Confirm no row carries a measure the screen does not read, and that the
+  table answers as a hypertable:
+  =select * from timescaledb_information.hypertables where hypertable_name='ores_reporting_report_result_rows_tbl';=.
+
+*** Result
+
+* Results=.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned (state what tenant/data the
+  scenario needs, e.g. "via =--source acme=") — confirm via
+  =compass db status=, recreating only if stale: =compass db recreate
+  -y -k= then the relevant =compass shell -f= provisioning script.
+  Confirm the run completes with no failed steps before starting.
+
+* Scenario Info
+
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] |
+| Parent story  | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]]   |
+| Target screen | (UI screen under test, if any.)         |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. Record each step's PASS/FAIL/PENDING outcome and notes as
+a =*** Result= child heading directly under it.
+
+** Log in as <persona>
+
+# This must be the scenario's first step (only * Steps entries
+# carry a pass/fail outcome) -- name the *specific* persona this scenario
+# actually needs: the exact account to log in as and its password
+# (e.g. =tenant_admin@acme_corporation= / =Secure-Password-123=, or a
+# specific staff username -- see doc/agile/versions/.../
+# acme_corporation_holding_group/story.org for how generated staff
+# usernames work, they're randomised per provisioning run so look one
+# up via `accounts list` rather than assuming a fixed name). Assume
+# the system is already in the state * Before you start establishes --
+# this step is pure tester mechanics, not a readiness check. Never
+# leave the tester to guess credentials -- and never copy this
+# placeholder verbatim.
+
+** (Next manual step the tester should perform.)
+
+(Optional longer instructions for this step.)
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

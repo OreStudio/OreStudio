@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/schedule-every-feed-on-the-market-clock-v2
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,9 +26,9 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Built; live check next.                |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-27                               |
@@ -38,7 +38,7 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 - A tick costs O(log n) in the number of feeds, with a benchmark at 100,000 feeds.
 - On the manual clock with a fixed seed, a test asserts the exact sequence of feeds and event times across a pinned regime change.
 - The per-series checks still hold: mean rate, Fano factor and time rescaling.
-- The service-test fixtures and the adapter test run on a scheduler with the manual clock, and tick_clock is deleted.
+- The service-test fixtures and the adapter test run on a scheduler, the tests that assert times use the manual clock, and tick_clock is deleted.
 - Control operations reach the loop as commands applied at the clock's now.
 - set_baseline_multiplier and i_arrival_process are gone: the market reaches a law only through the clock.
 - The Arrivals panel help says a burst fades faster in a busy market, because a Hawkes law runs in operational time.
@@ -46,9 +46,31 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+This task and [[id:6207909E-FC52-4EC4-86DE-DA76CEDB8D98][Let one loop own the market]]
+land in one change. A scheduler keyed on tau has to own the operational
+clock, and owning it is the other task's change. Done apart, this task
+would need a bridge from the old market_regime to the scheduler, and the
+next change would delete it.
+
+- =tick_scheduler= is rewritten in place, so the feeds and handlers keep the
+  name. It owns the =operational_clock=, borrows an =i_run_clock=, and keeps
+  a min-heap of series keyed on the tau mark at which each fires.
+- A series with sensitivity s whose law draws a gap g fires when tau has
+  moved by g / s. The mark is fixed when the gap is drawn, so a change in
+  the market moves no heap entry. A removed series leaves its mark behind,
+  and the mark is dropped when it reaches the top.
+- The loop fires every tick due by now in order, then moves the market to
+  now and applies the queued commands, then waits for the next tick or the
+  next heat sample. A command therefore never makes a due tick late.
+- =remove= and =pin= wait until the loop has applied them; before the loop
+  runs, and on its own thread, a command applies at once.
+- =step()= takes the next tick without waiting, for tests on the manual
+  clock.
+- A feed takes the scheduler by reference, registers its body at start, and
+  is told the wall seconds since its last tick and the wall time of the
+  tick. The tick stamp comes from the run clock.
+- =running_scheduler= runs a scheduler on the steady clock for as long as it
+  lives, for the service tests that wait for ticks over NATS.
 
 * Measurements
 

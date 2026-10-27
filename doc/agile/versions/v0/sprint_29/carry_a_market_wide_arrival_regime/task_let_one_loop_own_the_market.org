@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/schedule-every-feed-on-the-market-clock-v2
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,9 +26,9 @@ The synthetic service runs one loop that owns the market and the feeds. The mark
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Built; live check next.                |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-27                               |
@@ -42,9 +42,20 @@ The synthetic service runs one loop that owns the market and the feeds. The mark
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Lands with [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]],
+whose plan says why.
+
+- The service runs one =tick_scheduler= on a =steady_run_clock= and no
+  market_owner thread. The scheduler's loop is the only writer of the
+  regime, the heat and tau.
+- The market regime handler pins through the scheduler, which applies the
+  pin before it returns, so the reply shows the pin in force. It reads the
+  state, the heat and the heat readings from the scheduler's snapshot.
+- The scheduler samples the heat every hundred milliseconds, so the Market
+  regime tab still draws its history.
+- =--run-seed= sets the seed every stream is keyed by, 42 by default, and
+  the service logs it when the run starts.
+- market_regime and shared_intensity are deleted.
 
 * Measurements
 

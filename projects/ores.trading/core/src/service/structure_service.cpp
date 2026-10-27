@@ -93,9 +93,6 @@ std::string reference_prefix(const std::string& kind) {
 void name_structure(const ores::database::context& ctx,
                     const ores::utility::domain::precondition& claim,
                     const domain::structure& value) {
-    if (claim.kind != ores::utility::domain::precondition_kind::must_not_exist)
-        return;
-
     domain::structure_identifier identifier;
     identifier.tenant_id = value.tenant_id;
     identifier.structure_id = value.id;
@@ -232,7 +229,13 @@ structure_service::put_structure(const messaging::put_structure_request& request
     response.result = prepare_change(request.change, request.intent, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
+    // Creation is decided by looking, not by the claim the caller stated: a
+    // caller may amend without saying so, and a structure that exists is not
+    // named a second time.
+    const auto existed = !structure_read_one(repo_, ctx_, structure_key_from(value)).empty();
     repo_.write(ctx_, value, request.change.precondition);
+    if (!existed)
+        name_structure(ctx_, request.change.precondition, value);
     auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
     if (!written.empty())
         response.structure = std::move(written.front());
@@ -262,9 +265,14 @@ structure_service::put_many_structures(const messaging::put_many_structures_requ
     claims.reserve(request.changes.size());
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
+    std::vector<bool> existed;
+    existed.reserve(batch.size());
+    for (const auto& value : batch)
+        existed.push_back(!structure_read_one(repo_, ctx_, structure_key_from(value)).empty());
     repo_.write(ctx_, batch, claims);
     for (std::size_t i = 0; i < batch.size(); ++i)
-        name_structure(ctx_, claims[i], batch[i]);
+        if (!existed[i])
+            name_structure(ctx_, claims[i], batch[i]);
     response.structures.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = structure_read_one(repo_, ctx_, structure_key_from(value));

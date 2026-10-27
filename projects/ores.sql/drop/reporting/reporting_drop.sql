@@ -23,6 +23,8 @@
 \ir ./reporting_report_error_events_notify_trigger_drop.sql
 \ir ./reporting_report_error_events_drop.sql
 \ir ./reporting_report_input_bundles_drop.sql
+\ir ./reporting_report_result_rows_notify_trigger_drop.sql
+\ir ./reporting_report_result_rows_drop.sql
 \ir ./reporting_report_instances_notify_trigger_drop.sql
 \ir ./reporting_report_instances_fsm_guard_drop.sql
 \ir ./reporting_report_instances_drop.sql

@@ -6,7 +6,7 @@
 #+type: test_scenario
 #+level: s1
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
-#+target_dialog:
+#+target_dialog: Reporting > Reports > one report
 #+created: 2026-10-27
 #+updated: 2026-10-27
 #+environment:
@@ -17,21 +17,126 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 * Before you start
 
-# System-readiness prerequisites (build, database state, provisioning)
-# belong here, performed by *you* (build/recreate/provision yourself,
-# never hand this to the tester) before opening the client with this
-# scenario -- not folded into Step 1 as a conditional the tester has to
-# evaluate. By the time the tester opens this doc, the system must
-# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
-# environment?]] for the standard confirm/recreate/provision sequence.
-# Delete this whole section if the scenario has no such prerequisites
-# (e.g. it only reads static reference data).
+- The database is the environment's own, provisioned with Acme Corporation
+  holding group: =compass db status= answers, and the fleet is up with
+  =compass services status= showing every unit running, including the five
+  =ores.compute.wrapper= nodes.
+- The report the scenario runs has market data for the date it prices at. If the
+  run fails on a missing quote, the run's page states which quote and at which
+  date; seed the quote ladder for that date before the scenario starts.
+- The result rows table answers the reporting service:
+  =grant select, insert, update, delete, truncate on
+  ores_reporting_report_result_rows_tbl to ores_swift_curie_reporting_service=
+  is applied, which a freshly recreated database grants through its prefix grant
+  function.
+- Open =http://127.0.0.1:20202= and sign in as
+  =tenant_admin@acme_corporation= / =Secure-Password-123=, then choose the party
+  =ACME Corporation HK Ltd= in the party picker.
 
-- The database must be freshly provisioned (state what tenant/data the
-  scenario needs, e.g. "via =--source acme=") — confirm via
-  =compass db status=, recreating only if stale: =compass db recreate
-  -y -k= then the relevant =compass shell -f= provisioning script.
-  Confirm the run completes with no failed steps before starting.
+* Scenario Info
+
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] |
+| Parent story  | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]]   |
+| Target screen | (UI screen under test, if any.)         |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Sign in at =http://127.0.0.1:20202= as =tenant_admin@acme_corporation= with
+  the password =Secure-Password-123=.
+- Choose the party =ACME Corporation HK Ltd= in the party picker at the top.
+- Confirm the =Reporting= area appears in the main navigation.
+
+*** Result
+
+** Open the NPV report definition
+
+- Go to =Reporting= then =Reports=.
+- Open the report named =NPV=.
+- Confirm the page states the definition first, with the tabs =Definition= and
+  =Runs=, and that =Run= and =Refresh= sit at the top right.
+
+*** Result
+
+** Start the run from the definition
+
+- Press =Run=.
+- Confirm the page moves to a new run's page, with the tabs =Run= and
+  =Results=.
+- Confirm the run's state moves from =queued= or =running= without the page
+  being reloaded by hand.
+
+*** Result
+
+** Follow the run to the grid
+
+- On the run's =Run= tab, confirm the run names its compute batch and that the
+  state moves through the pipeline rather than resting in one state.
+- Open =Operations= then the compute area, and confirm the batch and its jobs
+  are listed for this run, and that the jobs reach =Done=.
+- Return to the run's page and confirm its state is =completed=.
+
+*** Result
+
+** Read the run's results
+
+- Open the run's =Results= tab.
+- Confirm the header states the number of trades and the priced date, and that
+  one row per trade is drawn.
+- Confirm the note says the rows are the ones the post-processor loaded, not the
+  engine's file.
+- Change =Aggregate by= to =Book= and confirm the books roll up under their
+  portfolios, then to =Counterparty= and confirm the rows roll up by
+  counterparty.
+
+*** Result
+
+** Check the rows in the store
+
+- In a shell, run
+  =compass sql -- -c "set row_security=off; select measure, count(*) from ores_reporting_report_result_rows_tbl group by 1;"=.
+- Confirm the run's rows are there with the measures the report produced, and
+  that the count matches the trades on the screen times the measures.
+- Confirm =select count(*) from ores_reporting_report_result_rows_tbl= equals
+  the rows the screens draw and not a row more.
+
+*** Result
+
+* Results=.
+
+* Before you start
+
+- The database is the environment's own, provisioned with Acme Corporation
+  holding group: =compass db status= answers, and the fleet is up with
+  =compass services status= showing every unit running, including the five
+  =ores.compute.wrapper= nodes.
+- The report the scenario runs has market data for the date it prices at. If the
+  run fails on a missing quote, the run's page states which quote and at which
+  date; seed the quote ladder for that date before the scenario starts.
+- The result rows table answers the reporting service:
+  =grant select, insert, update, delete, truncate on
+  ores_reporting_report_result_rows_tbl to ores_swift_curie_reporting_service=
+  is applied, which a freshly recreated database grants through its prefix grant
+  function.
+- Open =http://127.0.0.1:20202= and sign in as
+  =tenant_admin@acme_corporation= / =Secure-Password-123=, then choose the party
+  =ACME Corporation HK Ltd= in the party picker.
 
 * Scenario Info
 

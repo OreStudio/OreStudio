@@ -282,6 +282,125 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % party ID schemes', v_copied_count;
 
+    /*
+     * The trading code lists a booked trade is read against: the type it is,
+     * the scheme its identifier is stated in, the kinds of link two trades can
+     * have, the activities that move it, and the structures it can be a leg of.
+     * Without them a tenant answers an empty list to every picker while the
+     * writes still accept the codes.
+     */
+    -- Trade types
+    insert into ores_trading_trade_types_tbl (
+        code, description, product_type, has_options, has_extension, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, description, product_type, has_options, has_extension, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_trade_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % trade types', v_copied_count;
+
+    -- Trade ID types
+    insert into ores_trading_trade_id_types_tbl (
+        code, description, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, description, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_trade_id_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % trade ID types', v_copied_count;
+
+    -- Trade link types
+    insert into ores_trading_trade_link_types_tbl (
+        code, description, from_role, to_role, has_economic_effect, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, description, from_role, to_role, has_economic_effect, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_trade_link_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % trade link types', v_copied_count;
+
+    -- Activity types
+    insert into ores_trading_activity_types_tbl (
+        code, category, requires_confirmation, is_economic, is_real, priority, description, fpml_event_type_code, fsm_transition_id, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, category, requires_confirmation, is_economic, is_real, priority, description, fpml_event_type_code, fsm_transition_id, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_activity_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % activity types', v_copied_count;
+
+    -- Structure kinds
+    insert into ores_trading_structure_kinds_tbl (
+        code, description, confirms_as_whole, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, description, confirms_as_whole, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_structure_kinds_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % structure kinds', v_copied_count;
+
+    -- Structure templates
+    insert into ores_trading_structure_templates_tbl (
+        code, description, kind, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, description, kind, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_structure_templates_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % structure templates', v_copied_count;
+
+    -- Structure template roles
+    insert into ores_trading_structure_template_roles_tbl (
+        template_code, role, min_legs, max_legs, description, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        template_code, role, min_legs, max_legs, description, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_trading_structure_template_roles_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % structure template roles', v_copied_count;
+
     -- Book statuses (e.g. Active, Closed)
     insert into ores_refdata_book_statuses_tbl (
         code, tenant_id, version, name, description, display_order,

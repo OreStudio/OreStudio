@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: D597D2C2-091C-47F8-8E1B-959425E35F29
+:END:
+#+title: Trash and recreate to test a schema or seed change
+#+description: A database change is verified by rebuilding the database from nothing, not by patching the running one.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+To test a schema or seed change, drop and recreate the database and provision it again. Do not migrate the running one, and do not hand-apply the delta to an existing tenant and call that verification.
+
+*Why:* A hand-applied delta proves that the delta is right against the state I happen to hold. It cannot prove that a tenant created from nothing gets the change: the provisioner runs only at creation, so the path every new environment takes is the one a patch never exercises. Migrations are not wanted here at all — the system is early enough that recreating is cheaper than writing, testing and keeping a migration, and a recreate also clears the debris of every experiment that came before.
+
+*How to apply:* Run: compass services stop, compass db recreate -y -k, compass services start, then the provisioning script (compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores). Verify the change on what comes out, and state in the PR that it was verified on a recreated database.

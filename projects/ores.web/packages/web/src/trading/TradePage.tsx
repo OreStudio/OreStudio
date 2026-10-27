@@ -131,7 +131,9 @@ function LinksTab({ record }: { readonly record: TradePageRecord }): ReactNode {
     const candidates = (others.data?.rows ?? []).filter(
         (row) => row.row_kind === 'trade' && row.id !== id,
     );
-    const truncated = (others.data?.total ?? 0) > candidates.length;
+    // The page's size, not the candidates: the trade being linked from is
+    // always filtered out, so comparing with it would always look truncated.
+    const truncated = (others.data?.total ?? 0) > (others.data?.rows.length ?? 0);
 
     return (
         <div className="space-y-5">
@@ -181,7 +183,7 @@ function LinksTab({ record }: { readonly record: TradePageRecord }): ReactNode {
                                 {...(truncated
                                     ? {
                                           hint: t('trading.page.linkPickerTruncated', {
-                                              shown: String(candidates.length),
+                                              shown: String(others.data?.rows.length ?? 0),
                                               total: String(others.data?.total ?? 0),
                                           }),
                                       }

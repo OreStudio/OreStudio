@@ -4398,6 +4398,15 @@ export const en: SourceCatalogue = {
                 notFound: 'There is no such convention.',
                 readFailed: 'The convention could not be read. {message}',
                 shared: 'Every party reads this convention. It is held once for the tenant.',
+                otherParty:
+                    'This convention belongs to another party. Switch to that party to change it.',
+                edit: 'Edit terms',
+                save: 'Save',
+                conflict:
+                    'This convention changed since you opened it. Read it again before you change it.',
+                reload: 'Read again',
+                notEditable:
+                    'The terms of this kind are held on two parts, so this page does not change them yet.',
             },
             search: 'Search kinds',
             assetClass: 'Asset class',
@@ -5868,6 +5877,11 @@ export const en: SourceCatalogue = {
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',
         defaultIs: 'Default: {text}',
+        defaultOption: 'Default ({value})',
+        changed: 'changed',
+        noChanges: 'No changes yet',
+        oneChange: '1 change',
+        changes: '{count} changes',
         schema: {
             xml: 'ORE XML',
             format: 'Format',

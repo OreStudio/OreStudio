@@ -717,4 +717,173 @@ describe('convention routes', () => {
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
     });
+
+    describe('the write of a convention from its record page', () => {
+        const termReplies = (put: unknown): Record<string, unknown> => ({
+            'refdata.v1.swap_conventions.list': {
+                result: ok,
+                swap_conventions: [
+                    { id: 'EUR-6M-SWAP', version: 3, fixed_frequency: 'A', eom: false },
+                ],
+            },
+            'refdata.v1.convention_kind_terms.list': {
+                result: ok,
+                terms: [
+                    {
+                        kind_code: 'SWAP',
+                        entity_name: 'swap_convention',
+                        column_name: 'fixed_frequency',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedFrequency',
+                        position: 0,
+                    },
+                    {
+                        kind_code: 'SWAP',
+                        entity_name: 'swap_convention',
+                        column_name: 'eom',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/EOM',
+                        position: 1,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameters.list': {
+                result: ok,
+                parameters: [
+                    {
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedFrequency',
+                        scope: 'Swap',
+                        name: 'FixedFrequency',
+                    },
+                    {
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/EOM',
+                        scope: 'Swap',
+                        name: 'EOM',
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameter_value_sets.list': {
+                result: ok,
+                sets: [{ code: 'convention.flag', source_kind: 'boolean' }],
+            },
+            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [
+                    { scope: 'Swap', name: 'EOM', value_set_code: 'convention.flag' },
+                ],
+            },
+            'refdata.v1.swap_conventions.put': put,
+        });
+
+        it('lays the changed terms over the row it reads, typed by their sets, against the version read', async () => {
+            const { server, sessionId, calls } = buildTestServer(
+                termReplies({ result: ok, swap_convention: { id: 'EUR-6M-SWAP', version: 4 } }),
+            );
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/swap/documents/EUR-6M-SWAP/terms',
+                { intent: INTENT, version: 3, changes: { fixed_frequency: 'Q', eom: 'true' } },
+            );
+            expect(response.statusCode).toBe(200);
+            expect(response.json().result.outcome).toBe('ok');
+            const put = calls.find((call) => call.subject === 'refdata.v1.swap_conventions.put');
+            expect(put?.body).toMatchObject({
+                change: {
+                    write: { id: 'EUR-6M-SWAP', version: 3, fixed_frequency: 'Q', eom: true },
+                    precondition: { kind: 'must_match_version', version: 3 },
+                },
+                intent: INTENT,
+            });
+        });
+
+        it('puts a refusal of the value set check on the term it names', async () => {
+            const sentence =
+                'Invalid value Fortnightly for Swap.FixedFrequency: the value is not in set convention.frequency.';
+            const message = `Repository error: Executing INSERT failed: ERROR:  ${sentence}\nCONTEXT:  PL/pgSQL function ores_refdata_validate_convention_terms_fn() line 27 at RAISE\n`;
+            const { server, sessionId } = buildTestServer(
+                termReplies({
+                    result: { outcome: 'failed', code: 'internal_error', message },
+                    swap_convention: null,
+                }),
+            );
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/swap/documents/EUR-6M-SWAP/terms',
+                { intent: INTENT, version: 3, changes: { fixed_frequency: 'Fortnightly' } },
+            );
+            expect(response.json().result.fields).toEqual([
+                { field: 'fixed_frequency', code: 'internal_error', message: sentence },
+            ]);
+        });
+
+        it('refuses a column that is not a term of the kind, and writes nothing', async () => {
+            const { server, sessionId, calls } = buildTestServer(termReplies({ result: ok }));
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/swap/documents/EUR-6M-SWAP/terms',
+                { intent: INTENT, version: 3, changes: { party_id: ID } },
+            );
+            expect(response.statusCode).toBe(400);
+            expect(calls.some((call) => call.subject.endsWith('.put'))).toBe(false);
+        });
+
+        it("refuses a row of a party the session does not act in, which the service would write as the acting party's", async () => {
+            const replies = termReplies({ result: ok });
+            replies['refdata.v1.swap_conventions.list'] = {
+                result: ok,
+                swap_conventions: [
+                    { id: 'EUR-6M-SWAP', version: 3, party_id: PR_ID, fixed_frequency: 'A' },
+                ],
+            };
+            const { server, sessionId, calls } = buildTestServer(replies);
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/swap/documents/EUR-6M-SWAP/terms',
+                { intent: INTENT, version: 3, party: PR_ID, changes: { fixed_frequency: 'Q' } },
+            );
+            expect(response.statusCode).toBe(400);
+            expect(calls.some((call) => call.subject.endsWith('.put'))).toBe(false);
+        });
+
+        it('answers a conflict, and writes nothing, when the row moved on since the page read it', async () => {
+            const { server, sessionId, calls } = buildTestServer(termReplies({ result: ok }));
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/swap/documents/EUR-6M-SWAP/terms',
+                { intent: INTENT, version: 2, changes: { fixed_frequency: 'Q' } },
+            );
+            expect(response.json().result).toMatchObject({
+                outcome: 'conflict',
+                code: 'version_conflict',
+            });
+            expect(calls.some((call) => call.subject.endsWith('.put'))).toBe(false);
+        });
+
+        it('refuses the terms of a composite, which are changed on its parts', async () => {
+            const { server, sessionId, calls } = buildTestServer({});
+            const response = await send(
+                server,
+                sessionId,
+                'PUT',
+                '/api/conventions/tenor-basis-swap/documents/AUD-BASIS/terms',
+                { intent: INTENT, version: 1, changes: {} },
+            );
+            expect(response.statusCode).toBe(400);
+            expect(calls).toHaveLength(0);
+        });
+    });
 });

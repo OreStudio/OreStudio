@@ -44,7 +44,7 @@ todays_market_collection_kind_mapper::map(const todays_market_collection_kind_en
     domain::todays_market_collection_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.entry_element = v.entry_element;
     r.key_attribute = v.key_attribute;
     r.key_attribute_2 = v.key_attribute_2;

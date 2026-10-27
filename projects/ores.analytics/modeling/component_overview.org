@@ -13,6 +13,7 @@
 #+brief: Analytics and pricing model component
 #+component_kind: composite
 #+parts: api core quant service
+#+repository_backend: libpq
 
 * Summary
 

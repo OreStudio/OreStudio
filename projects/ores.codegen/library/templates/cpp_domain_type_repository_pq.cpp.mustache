@@ -849,7 +849,7 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading latest {{entity_plural_words}} by ids.");
 {{#primary_key.is_compound}}
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if ({{{primary_key.batch_size_mismatch_check}}})
         throw std::invalid_argument(

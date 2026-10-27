@@ -44,7 +44,7 @@ pricing_pair_setting_mapper::map(const pricing_pair_setting_entity& v) {
     domain::pricing_pair_setting r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.model = v.model;
     r.engine = v.engine;
     r.pricing_engine_type_code = v.pricing_engine_type_code;

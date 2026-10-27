@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view equity_underlying_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_equity_underlying_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_equity_underlying_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<equity_underlying_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_equity_underlyings_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_equity_underlyings(std::move(msg));
-        }));
+        list_equity_underlyings_request::nats_subject,
+        equity_underlying_queue_group,
+        [h](ores::nats::message msg) { h->list_equity_underlyings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_equity_underlying_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_equity_underlying(std::move(msg));
-        }));
+        get_equity_underlying_request::nats_subject,
+        equity_underlying_queue_group,
+        [h](ores::nats::message msg) { h->get_equity_underlying(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_equity_underlyings_request::nats_subject,
-        queue_group,
+        equity_underlying_queue_group,
         [h](ores::nats::message msg) { h->get_many_equity_underlyings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_equity_underlying_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_equity_underlying(std::move(msg));
-        }));
+        put_equity_underlying_request::nats_subject,
+        equity_underlying_queue_group,
+        [h](ores::nats::message msg) { h->put_equity_underlying(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_equity_underlyings_request::nats_subject,
-        queue_group,
+        equity_underlying_queue_group,
         [h](ores::nats::message msg) { h->put_many_equity_underlyings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_equity_underlying_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_equity_underlying(std::move(msg));
-        }));
+        delete_equity_underlying_request::nats_subject,
+        equity_underlying_queue_group,
+        [h](ores::nats::message msg) { h->delete_equity_underlying(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_equity_underlyings_request::nats_subject,
-        queue_group,
+        equity_underlying_queue_group,
         [h](ores::nats::message msg) { h->delete_many_equity_underlyings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_equity_underlying_versions_request::nats_subject,
-        queue_group,
+        equity_underlying_queue_group,
         [h](ores::nats::message msg) { h->list_equity_underlying_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_equity_underlying_version_request::nats_subject,
-        queue_group,
+        equity_underlying_queue_group,
         [h](ores::nats::message msg) { h->get_equity_underlying_version(std::move(msg)); }));
     return subs;
 }

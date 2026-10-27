@@ -44,7 +44,7 @@ sensitivity_template_mapper::map(const sensitivity_template_entity& v) {
     domain::sensitivity_template r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.method_code = v.method_code;
     r.asset_class_code = v.asset_class_code.value_or("");
     r.description = v.description;

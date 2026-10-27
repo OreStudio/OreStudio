@@ -43,7 +43,7 @@ domain::pricing_method pricing_method_mapper::map(const pricing_method_entity& v
     domain::pricing_method r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.detail = v.detail.value_or("");
     r.source = v.source;

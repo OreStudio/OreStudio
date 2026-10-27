@@ -310,7 +310,7 @@ subject_area_repository::read_latest(context ctx,
         lg(),
         "Reading latest subject areas by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (domain_names.size() != names.size())
         throw std::invalid_argument(

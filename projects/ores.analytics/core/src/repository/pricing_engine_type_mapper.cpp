@@ -43,7 +43,7 @@ domain::pricing_engine_type pricing_engine_type_mapper::map(const pricing_engine
     domain::pricing_engine_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.instrument_type_code = v.instrument_type_code;
     r.modified_by = v.modified_by;

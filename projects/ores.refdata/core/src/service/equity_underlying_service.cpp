@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::equity_underlying> read_one(repository::equity_underlying_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::equity_underlying_key& key) {
+std::vector<domain::equity_underlying>
+equity_underlying_read_one(repository::equity_underlying_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::equity_underlying_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::equity_underlying> read_one(repository::equity_underlying_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::equity_underlying_key key_from(const domain::equity_underlying& v) {
+messaging::equity_underlying_key equity_underlying_key_from(const domain::equity_underlying& v) {
     messaging::equity_underlying_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,8 @@ messaging::equity_underlying_key key_from(const domain::equity_underlying& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::equity_underlying to_domain(const messaging::equity_underlying_write& write) {
+domain::equity_underlying
+equity_underlying_to_domain(const messaging::equity_underlying_write& write) {
     domain::equity_underlying v;
     v.code = write.code;
     v.name = write.name;
@@ -144,7 +146,7 @@ messaging::list_equity_underlyings_response equity_underlying_service::list_equi
 messaging::get_equity_underlying_response equity_underlying_service::get_equity_underlying(
     const messaging::get_equity_underlying_request& request) {
     messaging::get_equity_underlying_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = equity_underlying_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "equity_underlying"});
         return response;
@@ -164,7 +166,7 @@ equity_underlying_service::get_many_equity_underlyings(
     for (const auto& k : request.keys) {
         messaging::equity_underlying_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = equity_underlying_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.equity_underlying = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +182,7 @@ messaging::put_equity_underlying_response equity_underlying_service::put_equity_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = equity_underlying_read_one(repo_, ctx_, equity_underlying_key_from(value));
     if (!written.empty())
         response.equity_underlying = std::move(written.front());
     return response;
@@ -213,7 +215,7 @@ equity_underlying_service::put_many_equity_underlyings(
     repo_.write(ctx_, batch, claims);
     response.equity_underlyings.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = equity_underlying_read_one(repo_, ctx_, equity_underlying_key_from(value));
         response.equity_underlyings.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -246,7 +248,7 @@ messaging::delete_equity_underlying_response equity_underlying_service::delete_e
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = equity_underlying_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "equity_underlying",
@@ -335,8 +337,8 @@ equity_underlying_service::prepare_change(const messaging::equity_underlying_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = equity_underlying_to_domain(change.write);
+    const auto current = equity_underlying_read_one(repo_, ctx_, equity_underlying_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

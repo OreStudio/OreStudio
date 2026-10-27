@@ -19,7 +19,7 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
@@ -28,11 +28,8 @@
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_entity.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_mapper.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,14 @@
 
 namespace ores::analytics::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string pricing_model_product_parameter_repository::sql() {
-    return generate_create_table_sql<pricing_model_product_parameter_entity>(lg());
+    return query_builder::generate_create_table_sql<pricing_model_product_parameter_entity>(lg());
 }
 
 bool pricing_model_product_parameter_repository::is_sortable(std::string_view field) {
@@ -81,7 +69,7 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 pricing_model_product_parameter_list_order(const ores::utility::domain::order& order,
                                            std::initializer_list<std::string> default_columns,
                                            bool default_descending) {
@@ -97,13 +85,13 @@ pricing_model_product_parameter_list_order(const ores::utility::domain::order& o
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> pricing_model_product_parameter_filter_condition(
+std::optional<query_builder::condition> pricing_model_product_parameter_filter_condition(
     const std::optional<messaging::pricing_model_product_parameters_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
@@ -195,7 +183,7 @@ std::vector<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c);
 
@@ -214,7 +202,7 @@ pricing_model_product_parameter_repository::read_latest(context ctx, const std::
                                << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<pricing_model_product_parameter_entity,
@@ -233,7 +221,7 @@ pricing_model_product_parameter_repository::read_latest_by_parameter_name(
         << "Reading latest pricing model product parameter by parameter_name: " << parameter_name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "parameter_name"_c == parameter_name &&
                              "valid_to"_c == max.value());
 
@@ -258,7 +246,7 @@ pricing_model_product_parameter_repository::read_any_by_parameter_name(
     BOOST_LOG_SEV(lg(), debug) << "Reading any pricing model product parameter by parameter_name: "
                                << parameter_name;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "parameter_name"_c == parameter_name) |
                        order_by("valid_from"_c.desc());
 
@@ -287,7 +275,7 @@ pricing_model_product_parameter_repository::read_all(context ctx, const std::str
     BOOST_LOG_SEV(lg(), debug) << "Reading all pricing model product parameter versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -307,9 +295,9 @@ pricing_model_product_parameter_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading pricing model product parameter at version. "
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+                       query_builder::limit(1);
 
     const auto entities = execute_read_query<pricing_model_product_parameter_entity,
                                              domain::pricing_model_product_parameter>(
@@ -342,7 +330,7 @@ pricing_model_product_parameter_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<pricing_model_product_parameter_entity> |
+    const auto query = query_builder::delete_from<pricing_model_product_parameter_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -371,8 +359,9 @@ pricing_model_product_parameter_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product parameters with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
+                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     return execute_ordered_read_query<pricing_model_product_parameter_entity,
                                       domain::pricing_model_product_parameter>(
@@ -392,7 +381,7 @@ std::uint32_t pricing_model_product_parameter_repository::get_total_parameter_co
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active pricing model product parameter count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid);
 
     return execute_count_query<pricing_model_product_parameter_entity>(
@@ -410,7 +399,7 @@ pricing_model_product_parameter_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+    const auto query = query_builder::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<pricing_model_product_parameter_entity,
                                      domain::pricing_model_product_parameter>(
@@ -434,7 +423,7 @@ void pricing_model_product_parameter_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<pricing_model_product_parameter_entity> |
+    const auto query = query_builder::delete_from<pricing_model_product_parameter_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing pricing model product parameters.");
 }

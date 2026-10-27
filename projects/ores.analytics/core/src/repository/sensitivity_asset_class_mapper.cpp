@@ -43,7 +43,7 @@ sensitivity_asset_class_mapper::map(const sensitivity_asset_class_entity& v) {
     domain::sensitivity_asset_class r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.asset_class_code = v.asset_class_code.value();
+    r.asset_class_code = v.asset_class_code;
     r.template_prefix = v.template_prefix;
     r.name = v.name;
     r.description = v.description;

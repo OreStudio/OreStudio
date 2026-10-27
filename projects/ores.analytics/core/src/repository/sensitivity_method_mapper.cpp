@@ -42,7 +42,7 @@ domain::sensitivity_method sensitivity_method_mapper::map(const sensitivity_meth
     domain::sensitivity_method r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.needs_asset_class = v.needs_asset_class;

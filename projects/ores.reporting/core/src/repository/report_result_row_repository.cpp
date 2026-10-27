@@ -220,6 +220,23 @@ std::vector<domain::report_result_row> report_result_row_repository::read_latest
 }
 
 std::vector<domain::report_result_row>
+report_result_row_repository::read_by_run(context ctx, const std::string& run_id) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<report_result_row_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
+                             "report_instance_id"_c == run_id) |
+                       order_by("subject_id"_c);
+
+    return execute_read_query<report_result_row_entity, domain::report_result_row>(
+        ctx,
+        query,
+        [](const auto& entities) { return report_result_row_mapper::map(entities); },
+        lg(),
+        "Reading the rows of a run");
+}
+
+std::vector<domain::report_result_row>
 report_result_row_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest row. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

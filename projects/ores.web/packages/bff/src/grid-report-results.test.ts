@@ -23,84 +23,17 @@ import { describe, expect, it } from 'vitest';
 import {
     aggregateRows,
     comparedWith,
-    entriesOf,
-    rowsOf,
     withGroups,
     withPortfolioTree,
 } from './grid-report-results.js';
 import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
 /*
- * The run result file: the engine's npv.csv, read by column name.
+ * The rows a run's post-processor loaded, read from the result table.
  *
- * The header the engine writes starts with a hash, and a counterparty name can
- * hold a comma inside quotes, so both are checked against a file shaped the way
- * the engine writes it.
+ * The CSV the engine wrote is no longer read here: these tests state the rows the
+ * table holds, as the screen receives them.
  */
-
-const CSV = [
-    '#TradeId,TradeType,Maturity,MaturityTime,NPV,NpvCurrency,NPV(Base),BaseCurrency,Notional,NotionalCurrency,Notional(Base),NettingSet,CounterParty',
-    '247917c2-b008-5482-930e-8e776fb73aa8,Bond,2030-05-05,4.0,7076092.454615,GBP,7076092.454615,GBP,7087413.92,GBP,7087413.92,NS-1,"Northwind Capital, Ltd"',
-    '33bbf3d1-a35a-563a-b951-85f240c55db5,Bond,2031-05-05,5.0,1142973.707486,GBP,1142973.707486,GBP,1149669.91,GBP,1149669.91,NS-1,Acme Corporation Plc',
-].join('\n');
-
-/** A tar holding one file, in the plain ustar form the wrapper writes. */
-function tarOf(name: string, content: string): Buffer {
-    const body = Buffer.from(content, 'utf8');
-    const header = Buffer.alloc(512);
-    header.write(name, 0, 100, 'utf8');
-    header.write('0000644', 100, 8, 'utf8');
-    header.write(`${body.length.toString(8).padStart(11, '0')} `, 124, 12, 'utf8');
-    header.write('00000000000 ', 136, 12, 'utf8');
-    header.write('        ', 148, 8, 'utf8');
-    header.write('0', 156, 1, 'utf8');
-    header.write('ustar\0', 257, 6, 'utf8');
-    const padding = Buffer.alloc((512 - (body.length % 512)) % 512);
-    return Buffer.concat([header, body, padding, Buffer.alloc(1024)]);
-}
-
-describe('rowsOf', () => {
-    it('reads the figures by name, past the hash the engine writes first', () => {
-        const rows = rowsOf(CSV);
-
-        expect(rows).toHaveLength(2);
-        expect(rows?.[0]).toEqual({
-            trade_id: '247917c2-b008-5482-930e-8e776fb73aa8',
-            trade_type: 'Bond',
-            npv: '7076092.454615',
-            npv_currency: 'GBP',
-            npv_base: '7076092.454615',
-            notional: '7087413.92',
-            counterparty: 'Northwind Capital, Ltd',
-            counterparty_name: '',
-            notional_currency: 'GBP',
-            book_id: '',
-            book_name: '',
-        });
-        expect(rows?.[1]?.npv).toBe('1142973.707486');
-    });
-
-    it('reads a file that starts with a byte-order mark', () => {
-        expect(rowsOf(`\uFEFF${CSV}`)).toHaveLength(2);
-    });
-
-    it('reports nothing when the figures are not named in the header', () => {
-        expect(rowsOf('TradeType,Notional\nBond,1000')).toBeNull();
-    });
-
-    it('reads a file with a header and no rows as no result, not as a failure', () => {
-        expect(rowsOf('#TradeId,NPV\n')).toEqual([]);
-    });
-});
-
-describe('entriesOf', () => {
-    it('finds the file the engine writes inside the archive', () => {
-        const entries = entriesOf(tarOf('Output/npv.csv', CSV));
-
-        expect([...entries.keys()]).toEqual(['Output/npv.csv']);
-        expect(entries.get('Output/npv.csv')?.toString('utf8')).toBe(CSV);
-    });
-});
 
 describe('aggregateRows', () => {
     const row = (over: Partial<RunResultRow>): RunResultRow => ({

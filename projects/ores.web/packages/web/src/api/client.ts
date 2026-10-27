@@ -2953,6 +2953,20 @@ export const api = {
         return reply.trade ?? null;
     },
 
+    /**
+     * Runs a report definition on demand, and answers the run it created.
+     *
+     * The definition's concurrency policy decides whether a new run starts, so a
+     * refusal is an answer with a reason rather than a failure of the write.
+     */
+    async reportRunNow(id: string): Promise<string> {
+        const reply = (await request(`/api/reporting/reports/${id}/run`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+        })) as { runId?: string };
+        return reply.runId ?? '';
+    },
+
     /** The runs of one report, newest first. */
     async reportRuns(id: string): Promise<readonly unknown[]> {
         const reply = (await request(`/api/reporting/reports/${id}/runs`, {

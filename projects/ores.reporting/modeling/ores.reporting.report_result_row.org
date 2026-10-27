@@ -161,6 +161,15 @@ The file and the row the marshal read, for provenance.
 :subcomponent:  api
 :END:
 
+** Repository
+
+:PROPERTIES:
+:entity_singular_short: row
+:entity_plural_short:   rows
+:entity_singular_words: report result row
+:entity_plural_words:   report result rows
+:END:
+
 ** Table display
 
 | column       | header       |

@@ -51,6 +51,7 @@ const WORDS = {
     [PERMISSION.feedsRun]: 'permissionWords.feedsRun',
     [PERMISSION.reportDefinitionsRead]: 'permissionWords.reportDefinitionsRead',
     [PERMISSION.reportDefinitionsWrite]: 'permissionWords.reportDefinitionsWrite',
+    [PERMISSION.reportInstancesWrite]: 'permissionWords.reportInstancesWrite',
     [PERMISSION.pricingEnginesRead]: 'permissionWords.pricingEnginesRead',
     [PERMISSION.pricingEnginesWrite]: 'permissionWords.pricingEnginesWrite',
     [PERMISSION.pricingEnginesDelete]: 'permissionWords.pricingEnginesDelete',

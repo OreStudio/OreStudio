@@ -39,7 +39,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReportDetail, ReportNameChoice } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
@@ -181,9 +181,26 @@ function ReportBody(): ReactNode {
     const { t } = useTranslation();
     const holds = useHolds();
     const mayEdit = holds(PERMISSION.reportDefinitionsWrite);
+    const mayRun = holds(PERMISSION.reportInstancesWrite);
     const queries = useQueryClient();
     const navigate = useNavigate();
     const [editing, setEditing] = useState(false);
+    /**
+     * A run started from this page.
+     *
+     * The trigger answers the run it created and the dispatch is the service's,
+     * so the page moves to that run rather than waiting for it: the run page
+     * states the state it reaches, and the runs tab lists it beside the others.
+     */
+    const startRun = useMutation({
+        mutationFn: async (definitionId: string) => await api.reportRunNow(definitionId),
+        onSuccess: (runId) => {
+            void queries.invalidateQueries({ queryKey: reportKey('runs') });
+            if (runId !== '') {
+                void navigate(reportRunPath(runId));
+            }
+        },
+    });
     const area = useAreaRoot('reporting');
     /*
      * The address is whatever a link or a bookmark carried: an id, or the name
@@ -301,7 +318,23 @@ function ReportBody(): ReactNode {
                 version={definition.version}
                 subdued
                 access={null}
-                own={<RefreshButton onClick={reload} load={load} news={news} />}
+                own={
+                    <>
+                        {mayRun && (
+                            <button
+                                type="button"
+                                className="btn"
+                                disabled={startRun.isPending}
+                                onClick={() => startRun.mutate(definition.id)}
+                            >
+                                {startRun.isPending
+                                    ? t('reporting.run.starting')
+                                    : t('reporting.run.start')}
+                            </button>
+                        )}
+                        <RefreshButton onClick={reload} load={load} news={news} />
+                    </>
+                }
             />
             {bar}
             {tab === 'runs' && <ReportRuns definitionId={definition.id} />}

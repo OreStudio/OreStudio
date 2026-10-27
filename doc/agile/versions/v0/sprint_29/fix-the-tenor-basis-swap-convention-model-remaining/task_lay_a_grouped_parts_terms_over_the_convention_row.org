@@ -26,11 +26,11 @@ The convention record page shows a grouped part's terms exactly as it shows a fl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | The BFF flattens a grouped part's terms; the suite feeds the nested shape. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the BFF suite, then raise the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -85,3 +85,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A grouped part's terms reach the convention record page under their own
+column names. `flattenPart` walks one level of the part's groups, drops the
+link and audit fields wherever they sit, and the zip lays the leaves over the
+central row as before.
+
+The fixture now feeds the nested shape the server sends, so the case fails
+against the old flat-only zip and passes after the change. The BFF suite is
+79 files and 1046 tests, and `tsc --build` is clean.

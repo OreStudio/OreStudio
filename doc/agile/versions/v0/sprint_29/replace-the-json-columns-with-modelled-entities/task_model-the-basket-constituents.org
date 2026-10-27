@@ -8,7 +8,7 @@
 #+filetags: :replace-the-json-columns-with-modelled-entities:sprint_29:v0:
 #+owner: marco
 #+branch: feature/model-the-basket-constituents
-#+pr:
+#+pr: 3917
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3917][#3917]] | [trading] Model the basket, the prices and the levels as rows |
 
 * Review
 

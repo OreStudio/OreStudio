@@ -338,6 +338,9 @@ def main():
     text = curve_value_sets.text_of()
     print(f"{len(text)} curve configuration leaves take text, for example "
           f"{', '.join(text[:3])}.", file=sys.stderr)
+    for name, scopes in curve_value_sets.catalogue_scopes().items():
+        print(f"{name} is matched in {len(scopes)} sections: {', '.join(scopes)}.",
+              file=sys.stderr)
     problems = problems + validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)

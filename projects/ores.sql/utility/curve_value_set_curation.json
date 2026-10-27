@@ -1,20 +1,4 @@
 {
- "*|InterpolationMethod": {
-  "curator": "marco",
-  "date": "2026-10-27",
-  "link": "parseYieldCurveInterpolationMethod",
-  "reason": "Every curve family that carries an InterpolationMethod stores it as text, and ORE applies this one parser to the accessor in OREData/ored/marketdata/yieldcurve.cpp, so the same list serves YieldCurves, EquityCurves, InflationCurves, CommodityCurves and CapFloorVolatilities.",
-  "source": "ore_code",
-  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:258"
- },
- "*|InterpolationVariable": {
-  "curator": "marco",
-  "date": "2026-10-27",
-  "link": "parseYieldCurveInterpolationVariable",
-  "reason": "Stored as text by every curve family that carries it, and parsed by this function beside the interpolation method in the same header.",
-  "source": "ore_code",
-  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:260"
- },
  "FXVolatilities|TimeInterpolation": {
   "curator": "marco",
   "date": "2026-10-27",
@@ -38,5 +22,21 @@
   "reason": "Only the yield curve config carries ExtrapolationMethod, and ORE parses its accessor with this function.",
   "source": "ore_code",
   "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:259"
+ },
+ "YieldCurves|InterpolationMethod": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseYieldCurveInterpolationMethod",
+  "reason": "Only the yield curve config's InterpolationMethod is parsed by this function (yieldcurve.cpp:505). Equity, inflation, commodity and cap floor volatility configs carry a leaf of the same name, but ORE states no list for them here, so they stay text rather than take a list that is not theirs.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:258"
+ },
+ "YieldCurves|InterpolationVariable": {
+  "curator": "marco",
+  "date": "2026-10-27",
+  "link": "parseYieldCurveInterpolationVariable",
+  "reason": "Parsed by this function for the yield curve config only; the other families carry the name without an ORE list.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:260"
  }
 }

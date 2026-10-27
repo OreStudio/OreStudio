@@ -225,7 +225,7 @@ def data():
     import curve_parameter_rows
     documented = {(r["scope"], r["name"]) for r in curve_parameter_rows.rows()}
     sets = dict(OWN_SETS)
-    for kind, catalogue in CATALOGUE_OF.items():
+    for catalogue in CATALOGUE_OF.values():
         sets["curve." + catalogue.split(".", 1)[1]] = {
             "name": CATALOGUES[catalogue]["name"],
             "description": f"One of the {CATALOGUES[catalogue]['name'].lower()} "
@@ -245,6 +245,12 @@ def data():
         if links.get(key, code) != code:
             raise ValueError(f"{key} would take two sets, {links[key]} and {code}")
         links[key] = code
+    for key in curated:
+        section, _, name = key.partition("|")
+        if not any((section in ("", "*") or section == sec) and nm == name
+                   for sec, nm in documented):
+            raise ValueError(f"curation entry {key} matches no documented curve leaf; "
+                             "correct the key or drop the entry")
     named = set(links.values())
     sets = {code: entry for code, entry in sets.items() if code in named}
     catalogues = {code: entry for code, entry in CATALOGUES.items()

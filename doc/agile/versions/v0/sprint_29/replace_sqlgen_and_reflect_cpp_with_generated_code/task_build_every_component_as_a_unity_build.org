@@ -151,5 +151,28 @@ via its "Verifies task" field.
 | 2 | 27 test targets keep a hand-written =test_suite.hpp= | =projects/*/tests/test_suite.hpp= | Accept as is | Their =main.cpp= is hand-written too; the generator owns neither. |
 | 3 | The shell verb =list-role-permissions= is now =list-role-permissions-page= | =authorization_operations_commands.cpp= | Accept | It follows the message name, beside =list-roles-page=; the subject is unchanged. |
 | 4 | The repository-wide misspell check exits 1 | — | Decline here | The branch's own 3,809 files are clean; the hits are in files the branch does not touch. |
+| 5 | PR review: the collision check groups by directory, but a unity batch is per target | =build/scripts/check_unity_collisions.py= | Accept, defer | Real gap. The compiler still catches such a clash. Moved to [[id:6237A857-BD6E-431A-8B89-9F6F0452CA39][Close the gaps the unity build review found]] so the PR could merge. |
+| 6 | PR review: the type-name check reads only the first namespace and skips test headers | =build/scripts/check_unique_type_names.py= | Accept, defer | Same task. |
+| 7 | PR review: the excluded file of a group depends on sort order | =build/scripts/check_unity_collisions.py= | Accept, defer | Same task. |
+| 8 | PR review: =--record= drops relative paths | =build/scripts/check_unity_collisions.py= | Accept, defer | Same task. |
+| 9 | PR review: the exclusions need CMake 3.18 or newer | =CMakeLists.txt= | Accept, defer | Same task. |
+| 10 | PR review: lint crashes when git is missing | =projects/ores.compass/src/compass.py= | Accept, defer | Same task. |
+| 11 | PR review: the own-or-system RLS comment is hard to read | SQL entity template | Accept, defer | Same task. |
+| 12 | PR review: the build time is not measured | — | Accept | This task stays STARTED until it is measured. |
+| 13 | PR review: split the story and task files out of the PR | — | Decline | They are this work's record and belong on its PR. |
+| 14 | PR review: the message and shell class renames change wire and API names | IAM, shell | Accept as is | The subject is unchanged, so the wire is the same; docs and the TypeScript twin are updated. |
 
 * Result
+
+Merged in PR #3904. The whole tree builds as a unity build with batch 16, and
+=ORES_UNITY_BUILD=OFF= restores the old build. 207 hand-written sources are
+recorded in =cmake/unity_exclusions.cmake= and stay out of the unity units;
+[[id:B6121657-0FF2-4570-8CAF-EAF77E1AFDDF][Remove the unity build exclusions]] pays them down. Two new gate checks,
+=unity-collisions= and =unique-type-names=, keep new clashes out. Every test
+case keeps its name and tags, and every suite passes except main's
+=tick_clock= test. The merged units found five defects, all fixed here,
+among them an ODR clash that made the shell encode a message with the wrong
+layout.
+
+Not yet met: the full-build time without ccache is not measured, so the
+task stays STARTED until it is.

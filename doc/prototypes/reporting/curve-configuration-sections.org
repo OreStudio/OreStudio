@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: C85BC85B-ED42-47F1-96C3-8DEDA1AEBCC6
+:END:
+#+title: Curve configuration sections prototype
+#+description: The curve configuration record screen in the pricing engines products shape: one Curves tab, a searchable rail of curves grouped by their section, and the chosen curve's parameters beside it, over a one-, four- and sixteen-section document.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:refdata:curveconfig:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+| Item          | Where                                                            |
+|---------------+------------------------------------------------------------------|
+| Prototype     | [[file:curve-configuration-sections/][the prototype]]            |
+| Gemini review | none                                                             |
+| Group         | [[file:index.org][Reporting prototypes]]                        |
+
+* Summary
+
+The curve configuration page was drawn with one tab per section, and it does
+not work. A =curveconfig.xml= declares nineteen sections, one tab each does not
+fit a screen, and most of them are empty in any real document.
+
+This prototype asks a narrower question: does the shape the product pricing
+screen already uses for its products tab read here? That screen holds a
+document with a hundred product types and draws it as one tab, a searchable rail
+of the products grouped by asset class, and the chosen product's settings in a
+workbench beside it. The same shape for curves is one *Curves* tab, a rail of
+the curves grouped by the section that declares them, and the chosen curve's
+parameters beside it.
+
+It answers to the story
+[[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]],
+and to the page it argues about,
+[[id:FCD8EE04-D549-45B2-AE29-8C5FBBC66B74][Draw the curve configuration page with the shared leaf parts]].
+It is throwaway: it reads no service, writes nothing to one, and states what it
+does not draw.
+
+* Detail
+
+** The question the screen answers
+
+A person opens a curve configuration to read or check a curve: its currency, its
+discount curve, its interpolation, its tolerance, and the elements it holds. The
+section a curve belongs to matters, because the entry's table and its leaves
+differ per section, but it is not what the person came for. A tab per section
+asks them to find the section first; a rail of the curves asks them to find the
+curve.
+
+** The fixtures
+
+Three documents, behind =?sections=1|4|16=, because the navigation has to hold
+at both ends of what ORE ships:
+
+| Fixture | Sections that hold curves | Curves |
+|---------+---------------------------+--------|
+| 1       | YieldCurves               | 4      |
+| 4       | YieldCurves, DefaultCurves, FXVolatilities, SwaptionVolatilities | 45 |
+| 16      | all but three of the nineteen | 113 |
+
+The counts come from measuring the 89 =curveconfig*.xml= files ORE ships: the
+median document populates 3 of the 19 sections, the smallest 1, the largest 16,
+and 59 of the 89 populate five or fewer. A navigation that only works for a
+small document is a navigation for the wrong screen.
+
+** What the prototype asks
+
+1. *Is one tab for the curves right, with the sections in the rail?* The rail
+   keeps the section as the group a curve sits in, so the person still sees which
+   family a curve belongs to, and never opens a tab that holds nothing.
+2. *Do the sections that hold nothing earn a row?* They sit behind one
+   disclosure that names the count, so the document is complete and the rail is
+   short. The alternative is a rail that lists nineteen rows of which fifteen say
+   "empty".
+3. *Does the workbench carry the screen?* The chosen curve's parameters, their
+   documentation, the Simple and Advanced switch and the elements the curve
+   holds are all in the workbench, as a product's settings are.
+4. *Does the group and the curve read as one list?* The rail is a tree:
+   a section is a group, a curve is a row. A person who does not know the
+   section can type a curve or a currency and reach it, because the filter
+   matches both.
+
+** States the page draws
+
+- A document with one section, where the rail is a single group.
+- A document with sixteen, where the rail scrolls rather than overflows the page,
+  and the empty three are behind the disclosure.
+- A filter that matches no curve, which says so.
+- No curve chosen, which names what the workbench will hold.
+- A curve with a parameter the contract does not document, which shows the ORE
+  name and a note and never hides the value.
+
+** What is fake
+
+Every value. The sections and their order are =curveconfig.xsd='s own, and the
+descriptions are the seeded ones. The curves, the counts, the values and the
+documentation are fixtures written for this page. The save does not exist: the
+page is read only, as the screen is until the write path lands.
+
+** What the page does not draw
+
+The nested collections of an entry — Segments, Quotes, BootstrapConfig, Report —
+which are named with whether the entry states them and are not drawn. The
+proposed screen still owes them, and they are the task
+[[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][Draw the nested collections of a curve entry]].
+
+** Where the code lives
+
+=doc/prototypes/reporting/curve-configuration-sections/index.html= and
+=prototype.js= beside it. Plain HTML, CSS and JavaScript, the design tokens
+copied from =projects/ores.web/packages/web/src/styles.css=, no framework, no
+build and no backend.
+
+** What it argues
+
+That the section is the group and the curve is the row, and that the screen
+should read as the product pricing screen does rather than as a document with
+nineteen chapters. If that is agreed, the page keeps =Details=, replays the
+sections as groups in one *Curves* tab, and the standard's "one tab per section"
+is amended to "one tab for the collection, and the section as the group within
+it".

@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-a-report-and-read-its-rows
-#+pr:
+#+pr: 3929
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3929][#3929]] | [web] Run a report from its page and read its rows |
 
 * Review
 

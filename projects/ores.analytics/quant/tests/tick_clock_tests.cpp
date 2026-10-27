@@ -174,9 +174,12 @@ TEST_CASE("tick_clock hands the body the gap it waited", "[tick_clock]") {
         [](std::uint64_t, const std::string&) {},
         [](const std::exception&) {});
 
+    // A periodic stream starts part way into its first gap, at a phase it draws,
+    // and is exactly periodic after it.
     REQUIRE(gaps.size() == 3);
-    for (const double gap : gaps)
-        CHECK(gap == Catch::Approx(0.001).epsilon(1e-12));
+    CHECK(gaps[0] == Catch::Approx(0.001 * arrivals.phase()).epsilon(1e-12));
+    CHECK(gaps[1] == Catch::Approx(0.001).epsilon(1e-12));
+    CHECK(gaps[2] == Catch::Approx(0.001).epsilon(1e-12));
 }
 
 TEST_CASE("tick_clock scales the arrival rate by the market state and the row's sensitivity",

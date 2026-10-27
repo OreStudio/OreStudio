@@ -164,6 +164,9 @@ export function problemsOf(
  * The form is the prototype's rule: one whole in not more than about six parts
  * is a donut, and every part carries its exact figure in the legend beside it,
  * so the ring says the shape and the numbers say the value.
+ *
+ * The part count is the caller's to keep within the colours: this component
+ * draws whatever it is given, and repeats a colour past the sixth part.
  */
 export function Donut({
     title,
@@ -209,7 +212,10 @@ export function Donut({
                         className="fill-ink"
                         style={{ fontSize: 10 }}
                     >
-                        {format(whole)}
+                        {new Intl.NumberFormat('en-GB', {
+                            notation: 'compact',
+                            maximumFractionDigits: 1,
+                        }).format(whole)}
                     </text>
                 </svg>
                 <ul className="space-y-1 text-sm">

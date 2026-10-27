@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-the-run-a-clock-a-test-can-drive
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -70,8 +70,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Clock tests | 7 cases passed in each of 5 runs | =ores.analytics.quant.tests [run_clock]= | c0e7ee4099 |
-| Quant suite | 519 cases passed | =ores.analytics.quant.tests= | c0e7ee4099 |
+| Clock tests | 7 cases passed in each of 5 runs | =ores.analytics.quant.tests [run_clock]= | 7633300832 |
+| Quant suite | 519 cases passed | =ores.analytics.quant.tests= | 7633300832 |
 
 * Notes
 

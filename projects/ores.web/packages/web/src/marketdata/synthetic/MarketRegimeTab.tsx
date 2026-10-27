@@ -331,7 +331,13 @@ function FeedFits({ trace }: { readonly trace: MarketTrace }): ReactNode {
         return null;
     }
     const fits = trace.feeds.map((feed) => ({ feed, fit: feedFit(trace.events, feed, span) }));
-    const chosen = fits.find((entry) => entry.feed.sourceName === picked) ?? fits[0];
+    // Until a person picks one, the feed with the most ticks, whose plot says the most.
+    const busiest = fits.reduce<(typeof fits)[number] | undefined>(
+        (best, entry) =>
+            best === undefined || entry.fit.observed > best.fit.observed ? entry : best,
+        undefined,
+    );
+    const chosen = fits.find((entry) => entry.feed.sourceName === picked) ?? busiest;
     const points = chosen === undefined ? [] : exponentialQuantiles(chosen.fit.gaps);
     const top = points.reduce((high, point) => Math.max(high, point.expected, point.observed), 1);
     return (
@@ -343,41 +349,45 @@ function FeedFits({ trace }: { readonly trace: MarketTrace }): ReactNode {
                 {t('marketdata.marketRegime.fit.title')}
             </h3>
             <p className="text-[11px] text-ink-faint">{t('marketdata.marketRegime.fit.lead')}</p>
-            <div className="flex flex-wrap gap-4">
-                <table className="text-[11px]">
-                    <thead className="text-ink-faint">
-                        <tr>
-                            <th className="pr-3 text-left font-normal">
-                                {t('marketdata.marketRegime.fit.feed')}
-                            </th>
-                            <th className="pr-3 text-right font-normal">
-                                {t('marketdata.marketRegime.fit.observed')}
-                            </th>
-                            <th className="pr-3 text-right font-normal">
-                                {t('marketdata.marketRegime.fit.expected')}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {fits.map(({ feed, fit }) => (
-                            <tr
-                                key={feed.sourceName}
-                                className={`cursor-pointer ${
-                                    chosen?.feed.sourceName === feed.sourceName ? 'bg-ink/10' : ''
-                                }`}
-                                onClick={() => setPicked(feed.sourceName)}
-                            >
-                                <td className="pr-3">{feed.sourceName}</td>
-                                <td className="pr-3 text-right font-mono tabular-nums">
-                                    {fit.observed}
-                                </td>
-                                <td className="pr-3 text-right font-mono tabular-nums">
-                                    {fit.expected.toFixed(1)}
-                                </td>
+            <div className="flex flex-wrap items-start gap-4">
+                <div className="max-h-72 overflow-y-auto">
+                    <table className="text-[11px]">
+                        <thead className="text-ink-faint">
+                            <tr>
+                                <th className="pr-3 text-left font-normal">
+                                    {t('marketdata.marketRegime.fit.feed')}
+                                </th>
+                                <th className="pr-3 text-right font-normal">
+                                    {t('marketdata.marketRegime.fit.observed')}
+                                </th>
+                                <th className="pr-3 text-right font-normal">
+                                    {t('marketdata.marketRegime.fit.expected')}
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {fits.map(({ feed, fit }) => (
+                                <tr
+                                    key={feed.sourceName}
+                                    className={`cursor-pointer ${
+                                        chosen?.feed.sourceName === feed.sourceName
+                                            ? 'bg-ink/10'
+                                            : ''
+                                    }`}
+                                    onClick={() => setPicked(feed.sourceName)}
+                                >
+                                    <td className="pr-3">{feed.sourceName}</td>
+                                    <td className="pr-3 text-right font-mono tabular-nums">
+                                        {fit.observed}
+                                    </td>
+                                    <td className="pr-3 text-right font-mono tabular-nums">
+                                        {fit.expected.toFixed(1)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
                 {chosen === undefined || points.length < 2 ? null : (
                     <figure className="space-y-1">
                         <svg

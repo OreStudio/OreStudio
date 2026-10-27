@@ -35,7 +35,8 @@ test.describe('the market regime tab', () => {
         const panel = page.getByRole('region', { name: PANEL });
         await expect(panel).toBeVisible();
         await expect(panel.getByText('Set by', { exact: true })).toBeVisible();
-        await expect(panel.getByText(/^×\d/)).toBeVisible();
+        // The multiplier is the first factor the panel states; the pace beside it is another.
+        await expect(panel.getByText(/^×\d/).first()).toBeVisible();
         // One switch is in force, whichever it is.
         await expect(panel.getByRole('button', { pressed: true })).toHaveCount(1);
     });
@@ -48,7 +49,7 @@ test.describe('the market regime tab', () => {
 
         await active.click();
         await expect(active).toHaveAttribute('aria-pressed', 'true');
-        await expect(panel.getByText('×2')).toBeVisible();
+        await expect(panel.getByText('×2', { exact: true })).toBeVisible();
         await expect(
             panel.getByText('A person, and it holds until it is handed back'),
         ).toBeVisible();
@@ -62,7 +63,9 @@ test.describe('the market regime tab', () => {
         await openRegimeTab(page);
         const panel = page.getByRole('region', { name: PANEL });
         await expect(
-            panel.getByRole('img', { name: 'Tick arrivals of every running feed' }),
+            panel.getByRole('img', {
+                name: 'Tick arrivals of every feed, the feeds that run first',
+            }),
         ).toBeVisible();
         await expect(panel.getByText('synthetic.bloomberg.eurusd')).toBeVisible();
     });

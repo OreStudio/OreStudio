@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 8E8C4562-D97F-5913-8089-EE9689818E7C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the hold_reasons commands from the shell?
+#+description: Every command the hold_reasons submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:hold_reasons:
+
+This file documents the hold_reasons resource at the shell, one section per command. Every command is a subcommand of =hold_reasons=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DFA9BE04-A422-51A6-BB52-A994965CFBF6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.list=.
+
+#+name: hold_reasons-list
+#+begin_src ores-shell :tangle hold_reasons-list.ores :exports none
+hold_reasons list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B44B41A9-FFA4-5F14-868A-73DBF2B95713
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons get <code>
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.get=.
+
+#+name: hold_reasons-get
+#+begin_src ores-shell :tangle hold_reasons-get.ores :exports none
+hold_reasons get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DB7319EE-516E-55AC-AC7C-5C70D556C7F7
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons get-many <code>
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.get_many=.
+
+#+name: hold_reasons-get-many
+#+begin_src ores-shell :tangle hold_reasons-get-many.ores :exports none
+hold_reasons get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B701345C-486F-5749-9F4A-4C3E8C4350D7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.put=.
+
+#+name: hold_reasons-add
+#+begin_src ores-shell :tangle hold_reasons-add.ores :exports none
+hold_reasons add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 84DA1030-43F9-537B-AFB3-E22FBF3BEB0B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.put=.
+
+#+name: hold_reasons-set
+#+begin_src ores-shell :tangle hold_reasons-set.ores :exports none
+hold_reasons set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9D63E94D-B912-5799-A0BF-E55B34BE7F9C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.put_many=.
+
+#+name: hold_reasons-put-many
+#+begin_src ores-shell :tangle hold_reasons-put-many.ores :exports none
+hold_reasons put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 451987E9-3F27-543A-8080-85511AF0C8CF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.delete=.
+
+#+name: hold_reasons-delete
+#+begin_src ores-shell :tangle hold_reasons-delete.ores :exports none
+hold_reasons delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7E743908-291A-50BC-8AD9-B1AD142BA351
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons.delete_many=.
+
+#+name: hold_reasons-delete-many
+#+begin_src ores-shell :tangle hold_reasons-delete-many.ores :exports none
+hold_reasons delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C7F08521-737F-5756-9569-056937398339
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons_versions.list=.
+
+#+name: hold_reasons-versions
+#+begin_src ores-shell :tangle hold_reasons-versions.ores :exports none
+hold_reasons versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6F87D80B-6702-5177-B739-F68DEF347816
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+hold_reasons version <code> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.hold_reasons_versions.get=.
+
+#+name: hold_reasons-version
+#+begin_src ores-shell :tangle hold_reasons-version.ores :exports none
+hold_reasons version __none__ --version 1
+#+end_src
+

@@ -1811,3 +1811,11 @@ tangled into the runnable script library
 * Convention Kind Terms
 
 - [[id:94E1B3CC-AA96-594B-8A25-4D18153EAFE1][How do I run the convention_kind_terms commands from the shell?]]
+
+* Curve Publish Operations
+
+- [[id:E6C2CBA4-4A7D-5C61-B9A3-E146A1D9C973][How do I run the curve_publish_operations commands from the shell?]]
+
+* Hold Reasons
+
+- [[id:8E8C4562-D97F-5913-8089-EE9689818E7C][How do I run the hold_reasons commands from the shell?]]

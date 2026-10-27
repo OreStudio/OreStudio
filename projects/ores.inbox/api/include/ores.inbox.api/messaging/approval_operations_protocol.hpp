@@ -139,6 +139,15 @@ struct decide_approval_request_request {
      * the permission that part names.
      */
     std::string part_code;
+    /**
+     * @brief Why the request is parked, when the decision is a hold.
+     *
+     * One of the codes the hold reason lookup holds. A hold that names none, or a
+     * code the lookup does not hold, is refused with the codes it accepts, so a
+     * held request always says what it waits for in words a report can group by.
+     * Empty on every decision that is not a hold.
+     */
+    std::string hold_reason_code = "";
 };
 
 struct decide_approval_request_response {

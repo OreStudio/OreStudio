@@ -62,11 +62,43 @@ TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_
     REQUIRE(preview.lines.size() == 1);
     CHECK(preview.lines[0].refusal.empty());
     CHECK_FALSE(preview.refused());
-    const std::vector<std::string> expected{"finance", "market_risk", "operations"};
+    const std::vector<std::string> expected{"controller", "finance", "market_risk", "operations"};
     CHECK(preview.part_codes == expected);
 }
 
+TEST_CASE("an_opening_book_asks_the_controller_and_a_change_to_a_live_book_does_not", "[book_proposal]") {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    book_proposal_service svc(w.ctx);
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+
+    const auto opening = svc.raise({new_book_line(h, w)}, "Open the desk");
+    REQUIRE(opening.request);
+    std::vector<std::string> parts;
+    for (const auto& part : lifecycle.parts_of(boost::uuids::to_string(opening.request->id)))
+        parts.push_back(part.code);
+    const std::vector<std::string> expected{"controller", "finance", "market_risk", "operations"};
+    CHECK(parts == expected);
+    // The controller holds the first answer order, so it is the only part open.
+    const auto open = lifecycle.open_parts_of(boost::uuids::to_string(opening.request->id));
+    REQUIRE(open.size() == 1);
+    CHECK(open.front().code == "controller");
+
+    const auto created = new_book_line(h, w);
+    const auto live = make_live(w, created);
+    auto edit = edit_line(live, created);
+    edit.cost_center = live.cost_center == "CC-1" ? "CC-2" : "CC-1";
+
+    const auto change = svc.raise({edit}, "Move the cost centre");
+    REQUIRE(change.request);
+    std::vector<std::string> change_parts;
+    for (const auto& part : lifecycle.parts_of(boost::uuids::to_string(change.request->id)))
+        change_parts.push_back(part.code);
+    CHECK(std::ranges::find(change_parts, "controller") == change_parts.end());
+}
+
 TEST_CASE("a_preview_writes_nothing", "[book_proposal]") {
+
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -149,7 +181,10 @@ TEST_CASE("a_raise_writes_the_request_its_parts_and_its_lines_together", "[book_
     ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
     const auto id = boost::uuids::to_string(proposal.request->id);
     const auto parts = lifecycle.parts_of(id);
-    CHECK(parts.size() == 3);
+    // An opening asks the controller first and then the three functions that
+    // own the columns it writes.
+    CHECK(parts.size() == 4);
+    CHECK(parts.front().code == "controller");
 
     const auto rows = ores::refdata::repository::book_change_repository{}.read_latest(w.ctx);
     const auto mine = std::ranges::count_if(

@@ -37,6 +37,8 @@ import {
     type ListMyApprovalRequestsRequest,
     type WithdrawApprovalRequestRequest,
 } from './generated/inbox/protocol/approval_operations_protocol.js';
+import { subjects as approvalKindSubjects } from './generated/inbox/protocol/approval_kind_protocol.js';
+import { subjects as holdReasonSubjects } from './generated/inbox/protocol/hold_reason_protocol.js';
 import {
     subjects as notificationSubjects,
     type ClearNotificationsRequest,
@@ -58,6 +60,7 @@ import {
     type GetRequestRolesRequest,
     type RequestedRole,
 } from './generated/iam/protocol/role_request_operations_protocol.js';
+import { completeListRequest } from './list-requests.js';
 import { resultEnvelopeSchema } from './operations.js';
 import { nullableWireTimestampSchema, wireTimestampSchema, type WireTimestamp } from './time.js';
 import {
@@ -95,6 +98,8 @@ export const INBOX_SUBJECTS = {
     unreadCount: notificationSubjects.count_unread_notifications_request,
     markRead: notificationSubjects.mark_notifications_read_request,
     clear: notificationSubjects.clear_notifications_request,
+    holdReasons: holdReasonSubjects.list_hold_reasons_request,
+    approvalKinds: approvalKindSubjects.list_approval_kinds_request,
 } as const;
 
 /**
@@ -1221,6 +1226,11 @@ export async function decideRequest(
         readonly comment: string;
         /** The part the decider answers for; empty for a request that names none. */
         readonly partCode?: string;
+        /**
+         * Why the request is parked, when the decision is a hold: one of the
+         * codes the hold reason lookup holds. Empty on every other decision.
+         */
+        readonly holdReasonCode?: string;
     },
 ): Promise<void> {
     const request: DecideApprovalRequestRequest = {
@@ -1229,9 +1239,74 @@ export async function decideRequest(
         decision_code: input.decisionCode,
         comment: input.comment,
         part_code: input.partCode ?? '',
+        hold_reason_code: input.holdReasonCode ?? '',
     };
     const reply = await caller.callAuthenticated(INBOX_SUBJECTS.decide, request, resultReplySchema);
     ok(INBOX_SUBJECTS.decide, reply.result);
+}
+
+/**
+ * The reasons a decider may park a request with, in the order the lookup holds
+ * them.
+ *
+ * A hold names one of these codes rather than free text, so the screen offers
+ * the list and the record refuses a code it does not hold.
+ */
+export async function readHoldReasons(
+    caller: AuthenticatedCaller,
+): Promise<readonly { readonly code: string; readonly name: string; readonly description: string }[]> {
+    const reply = await caller.callAuthenticated(
+        INBOX_SUBJECTS.holdReasons,
+        completeListRequest(INBOX_SUBJECTS.holdReasons, {
+            filter: { code_one_of: null },
+            as_of: null,
+            offset: 0,
+            limit: JOIN_PAGE,
+            // The store orders a lookup by its key, and a screen asks for no
+            // order of its own: the codes group the reasons by what is awaited.
+            order: { field: '', descending: false },
+        }),
+        z.looseObject({ result: resultEnvelopeSchema, reasons: z.array(z.looseObject({})).default([]) }),
+    );
+    ok(INBOX_SUBJECTS.holdReasons, reply.result);
+    return reply.reasons.map((row) => ({
+        code: String(row['code'] ?? ''),
+        name: String(row['name'] ?? ''),
+        description: String(row['description'] ?? ''),
+    }));
+}
+
+/**
+ * Which kinds of request allow a hold.
+ *
+ * The rule is the kind's, not the screen's: a role request has no use for a
+ * hold and a trade does, so the panel offers the control only where the kind
+ * says it can park the request.
+ */
+export async function readKindHoldRules(
+    caller: AuthenticatedCaller,
+): Promise<Readonly<Record<string, boolean>>> {
+    const reply = await caller.callAuthenticated(
+        INBOX_SUBJECTS.approvalKinds,
+        completeListRequest(INBOX_SUBJECTS.approvalKinds, {
+            filter: { code_one_of: null },
+            as_of: null,
+            offset: 0,
+            limit: JOIN_PAGE,
+            order: { field: '', descending: false },
+        }),
+        z.looseObject({
+            result: resultEnvelopeSchema,
+            kinds: z.array(z.looseObject({})).default([]),
+        }),
+    );
+    ok(INBOX_SUBJECTS.approvalKinds, reply.result);
+    const rules: Record<string, boolean> = {};
+    for (const row of reply.kinds) {
+        const code = String(row['code'] ?? '');
+        if (code !== '') rules[code] = row['allows_hold'] === true;
+    }
+    return rules;
 }
 
 /** The signed-in person's notifications that they have not cleared, newest first. */

@@ -25,6 +25,7 @@ set(files
     "app_billing_tests.cpp"
     "app_composite_engine_tests.cpp"
     "app_crm_ingest_bridge_tests.cpp"
+    "app_curve_publish_gate_tests.cpp"
     "app_delivery_meter_tests.cpp"
     "app_demand_calculator_tests.cpp"
     "app_feed_ingest_loop_tests.cpp"

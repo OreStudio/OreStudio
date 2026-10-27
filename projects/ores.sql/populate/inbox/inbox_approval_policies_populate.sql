@@ -26,6 +26,12 @@
  * field decides the part, that field. The system tenant holds these rows. A
  * tenant may add parts, never remove them. This script runs after the parts and
  * is idempotent.
+ *
+ * The operation is the act the change performs, and =create= is one of them: it
+ * is the act that opens a row, as distinct from the =put= that changes one. A
+ * create names no field, because the opening check is of the act and not of a
+ * column the act writes. A write that puts a row which does not exist yet is
+ * both acts, so the handler reads the create rows beside the put rows.
  */
 
 \echo '--- Approval Policies ---'
@@ -35,6 +41,10 @@ insert into ores_inbox_approval_policies_tbl (
     field_name, part_code, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
+    (ores_utility_system_tenant_id_fn(), 'book.create', 0, 'Book opening',
+     'Opening a book needs the approval of the controller before any other part',
+     'book', 'create', null, 'controller', 5,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval policies'),
     (ores_utility_system_tenant_id_fn(), 'book.put.functional_currency', 0, 'Book functional currency',
      'A change needs the approval of finance', 'book', 'put', 'functional_currency', 'finance', 10,
      current_user, current_user, 'system.initial_load', 'Initial population of approval policies'),

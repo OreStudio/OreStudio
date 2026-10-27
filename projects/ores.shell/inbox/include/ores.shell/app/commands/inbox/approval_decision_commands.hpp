@@ -87,16 +87,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <request_id> <decision_code> <part_code> <decided_by> <decided_at> <comment>
-     * <reason> <commentary>
+     * @brief add <request_id> <decision_code> <part_code> <decided_by> <decided_at>
+     * <hold_reason_code> <comment> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <request_id> <decision_code> <part_code> <decided_by> <decided_at> <comment>
-     * <reason> <commentary> [--version <n>]
+     * @brief set <id> <request_id> <decision_code> <part_code> <decided_by> <decided_at>
+     * <hold_reason_code> <comment> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <request_id> <decision_code> <part_code> <decided_by>
-     * <decided_at> <comment> <reason> <commentary>
+     * <decided_at> <hold_reason_code> <comment> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

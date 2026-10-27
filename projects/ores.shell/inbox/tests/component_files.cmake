@@ -29,6 +29,7 @@ set(files
     "approval_request_commands_tests.cpp"
     "approval_request_part_commands_tests.cpp"
     "approval_request_state_commands_tests.cpp"
+    "hold_reason_commands_tests.cpp"
     "main.cpp"
     "notification_argument_commands_tests.cpp"
     "notification_channel_commands_tests.cpp"

@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: ea078e64-15a8-48d1-97d4-400a5bd669ee
+:END:
+#+title: ores.marketdata.curve_publish_operations
+#+description: Codegen operation model for the approval-gated publish of a curve: the ask that waits on a decision, and the publish that applies an approved one.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: curve_publish_operations
+#+namespace: ores::marketdata::messaging
+#+brief: The approval-gated curve publish.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+A publish is a request, not a save. The trader who owns the curve asks for the
+candidate set to become the curve the desk prices from, a person holding the
+permission the kind names decides it, and only an approved request publishes.
+
+The ask is the generic approval operation,
+=inbox.v1.ops.raise_approval=, raised with the kind =marketdata.curve_publish=.
+This operation is the other half: it refuses to publish unless it is given the
+approved request of that kind, and it publishes when it is. The publish it
+applies is =curve_republish_service::republish()=, the write
+=marketdata.v1.ops.republish_curve= already triggers; the difference is that
+this operation carries the decision.
+
+A request names the curve and the snapshot in its own detail table, and no such
+table exists yet. Until it does, the publish names the configuration and the
+as-of itself and the request authorises it, which is the gap the three market
+data journeys record.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+* Messages
+
+** publish_curve_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.publish_curve
+:response: publish_curve_response
+:END:
+
+The publish of an approved candidate set, or the refusal that states which
+decision it waits on.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Publishes a bootstrapped curve's output under the approval that
+ * permits it.
+ *
+ * The call is the second half of a decision: the person asking raised an
+ * approval request of the kind marketdata.curve_publish, somebody else
+ * decided it, and this names the approved request. A call that names no
+ * approved request publishes nothing, and the answer states the kind the
+ * request must be of.
+ */
+#+end_src
+
+*** bootstrap_config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The bootstrap configuration whose output is published.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The snapshot whose market observations the bootstrap reads.
+ */
+#+end_src
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approved request that permits this publish, or empty.
+ *
+ * Empty is the ask: the request is raised and nothing is published. Naming an
+ * approved request applies it.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the publish was asked for, which the decider reads.
+ *
+ * Required when the call raises a request, and ignored when it applies one.
+ */
+#+end_src
+
+** publish_curve_response
+:PROPERTIES:
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the published set moved.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the publish did not happen, or empty when it did.
+ */
+#+end_src
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The request the answer is about, as it was named or as it stands.
+ */
+#+end_src
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The state the request was in, so a caller reads waiting or refused
+ * rather than guessing.
+ */
+#+end_src
+
+* See also
+
+- [[id:76a0467e-3dd0-4516-924b-5c16a10b9bf7][ores.marketdata.operations]] — where republish_curve, the write this
+  operation gates, is declared.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the decision this operation waits on.

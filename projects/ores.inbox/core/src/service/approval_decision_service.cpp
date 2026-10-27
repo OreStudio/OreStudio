@@ -108,6 +108,7 @@ approval_decision_to_domain(const messaging::approval_decision_write& write) {
     v.part_code = write.part_code;
     v.decided_by = write.decided_by;
     v.decided_at = write.decided_at;
+    v.hold_reason_code = write.hold_reason_code;
     v.comment = write.comment;
     return v;
 }

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: E6C2CBA4-4A7D-5C61-B9A3-E146A1D9C973
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_publish_operations commands from the shell?
+#+description: Every command the curve_publish_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_publish_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> curve_publish_operations publish-curve=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =publish-curve=
+:PROPERTIES:
+:ID: 063DA302-A965-57F7-98EC-2004F1876C56
+:END:
+
+Sends =publish_curve_request= and prints =publish_curve_response=, so the shape is the protocol's and the meaning is the service's. It reads =bootstrap_config_id=, =as_of=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_publish_operations publish-curve <bootstrap_config_id> <as_of> [--approval_request_id <v>] [--reason <v>]
+#+end_example
+
+It is addressed at =marketdata.v1.ops.publish_curve=.
+
+#+name: curve_publish_operations-publish-curve
+#+begin_src ores-shell :tangle curve_publish_operations-publish-curve.ores :exports none
+curve_publish_operations publish-curve __none__ 1970-01-01T00:00:00Z
+#+end_src
+

@@ -37,6 +37,8 @@
 \ir ./inbox_approval_parts_notify_trigger_create.sql
 \ir ./inbox_approval_policies_create.sql
 \ir ./inbox_approval_policies_notify_trigger_create.sql
+\ir ./inbox_hold_reasons_create.sql
+\ir ./inbox_hold_reasons_notify_trigger_create.sql
 
 -- The request header every kind shares
 \ir ./inbox_approval_requests_create.sql

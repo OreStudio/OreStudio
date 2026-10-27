@@ -26,6 +26,8 @@ import {
     clearNotifications,
     decideRequest,
     markNotificationsRead,
+    readHoldReasons,
+    readKindHoldRules,
     readMyNotifications,
     readMyRequests,
     readRequest,
@@ -100,6 +102,18 @@ const decideBodySchema = intentBodySchema.extend({
         .trim()
         .max(100)
         .regex(/^[a-z][a-z0-9_]*$/)
+        .default(''),
+    /*
+     * Why the request is parked, when the decision is a hold: one of the codes
+     * the hold reason lookup holds. The shape is checked here so a typo is a
+     * 400; whether the lookup holds the code is the server's answer, and it
+     * names the codes it does hold.
+     */
+    holdReasonCode: z
+        .string()
+        .trim()
+        .max(100)
+        .regex(/^[a-z][a-z0-9_.]*$/)
         .default(''),
 });
 
@@ -331,8 +345,34 @@ export function registerInboxRoutes(
             decisionCode: body.data.decisionCode,
             comment: body.data.comment,
             partCode: body.data.partCode,
+            holdReasonCode: body.data.holdReasonCode,
         });
         return reply.code(204).send();
+    });
+
+    /**
+     * The reasons a decider may park a request with.
+     *
+     * A hold names a code from this list rather than free text, so the decision
+     * panel offers it. The list is a tenant-wide lookup and carries no personal
+     * data, so the route is gated on a session and on nothing else.
+     */
+    server.get('/api/hold-reasons', async (request) => {
+        const session = requireSession(request);
+        const holdReasons = await readHoldReasons(session.client);
+        /*
+         * The kinds' rules are a second read, and a person who may hold a
+         * request but not read the kind catalogue still gets the reasons: the
+         * panel then offers no hold, which is the failure that asks for a
+         * grant rather than one that reports a server fault.
+         */
+        let allowsHoldByKind: Readonly<Record<string, boolean>> = {};
+        try {
+            allowsHoldByKind = await readKindHoldRules(session.client);
+        } catch {
+            allowsHoldByKind = {};
+        }
+        return { holdReasons, allowsHoldByKind };
     });
 
     /** The signed-in person's notifications, newest first. */

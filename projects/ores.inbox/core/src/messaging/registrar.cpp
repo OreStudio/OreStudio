@@ -42,6 +42,7 @@
 #include "ores.inbox.core/messaging/approval_request_state_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_state_registrar.hpp"
 #include "ores.inbox.core/messaging/delivery_outcome_type_registrar.hpp"
+#include "ores.inbox.core/messaging/hold_reason_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_argument_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_argument_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_channel_history_provider_registrar.hpp"
@@ -56,6 +57,7 @@
 #include "ores.inbox.core/messaging/notification_preference_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_recipient_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_recipient_registrar.hpp"
+#include "ores.inbox.core/messaging/hold_reason_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_registrar.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
@@ -103,6 +105,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     add(register_approval_kind_handlers(nats, ctx, verifier));
     add(register_approval_part_handlers(nats, ctx, verifier));
     add(register_approval_policy_handlers(nats, ctx, verifier));
+    add(register_hold_reason_handlers(nats, ctx, verifier));
     add(register_approval_request_part_handlers(nats, ctx, verifier));
     add(register_approval_request_state_handlers(nats, ctx, verifier));
     add(register_approval_decision_type_handlers(nats, ctx, verifier));
@@ -212,6 +215,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto& hist_registry = history_registry();
         register_approval_kind_history_provider(hist_registry);
+        register_hold_reason_history_provider(hist_registry);
         register_approval_request_part_history_provider(hist_registry);
         register_notification_argument_history_provider(hist_registry);
         register_notification_recipient_history_provider(hist_registry);

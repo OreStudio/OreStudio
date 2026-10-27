@@ -50,6 +50,7 @@ struct approval_decision_entity {
     std::optional<std::string> part_code;
     std::string decided_by;
     std::string decided_at;
+    std::optional<std::string> hold_reason_code;
     std::string comment;
     std::string modified_by;
     std::string performed_by;

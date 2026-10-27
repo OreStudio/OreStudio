@@ -39,6 +39,7 @@ export interface ApprovalDecision {
     part_code: string | null;
     decided_by: string;
     decided_at: string;
+    hold_reason_code: string | null;
     comment: string;
     modified_by: string;
     performed_by: string;

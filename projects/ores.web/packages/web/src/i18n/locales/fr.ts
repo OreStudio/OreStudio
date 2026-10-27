@@ -433,6 +433,11 @@ const fr: SourceCatalogue = {
             reasonHint: '{who} la lit. Obligatoire pour refuser ; facultative pour accorder.',
             give: 'Accorder {role}',
             refuse: 'Refuser',
+            hold: 'Mettre en attente',
+            holdReason: 'Motif de la mise en attente',
+            holdReasonHint:
+                'Choisi dans la liste de référence, afin que le rapport des demandes en attente soit groupé par motif. Requis pour mettre en attente.',
+            chooseHoldReason: 'Choisir un motif',
             decided: 'Décidée',
             notFound:
                 "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",

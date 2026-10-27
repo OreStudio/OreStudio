@@ -432,6 +432,11 @@ export const en: SourceCatalogue = {
             reasonHint: '{who} reads it. Needed to refuse; optional to give.',
             give: 'Give {role}',
             refuse: 'Refuse',
+            hold: 'Hold',
+            holdReason: 'Why it is held',
+            holdReasonHint:
+                'Chosen from the lookup, so the held-over report groups by the reason. Needed to hold.',
+            chooseHoldReason: 'Choose a reason',
             decided: 'Decided',
             notFound:
                 'This request is not here. It may have been taken away, or it may not be yours to see.',

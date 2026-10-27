@@ -44,6 +44,7 @@ create table if not exists "ores_inbox_approval_decisions_tbl" (
     "part_code" text null,
     "decided_by" uuid not null,
     "decided_at" timestamp with time zone not null,
+    "hold_reason_code" text null,
     "comment" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -124,6 +125,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid part_code: %. No approval part found with this code.', NEW.part_code
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate hold_reason_code (optional soft FK to ores_inbox_hold_reasons_tbl)
+    if NEW.hold_reason_code is not null then
+        if not exists (
+            select 1 from ores_inbox_hold_reasons_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.hold_reason_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid hold_reason_code: %. No hold reason found with this code.', NEW.hold_reason_code
                 using errcode = '23503';
         end if;
     end if;

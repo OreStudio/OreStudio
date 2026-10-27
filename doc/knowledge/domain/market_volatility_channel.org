@@ -98,6 +98,13 @@ periodic feed at rate =r= steps by =Delta = v / r=.
   because they share tau.
 - A rate change changes sampling only, and so does a feed's sensitivity: more
   ticks in a unit of tau, each covering less of it.
+- The default =v= keeps a curve at one tick a minute stepping a calendar day, as
+  it always has. A spot feed deliberately speeds up to the run's =v=: at the
+  default, a tick covers 1440 times the simulated time it did, so its moves per
+  tick grow by about the square root of that, because that is the inconsistency
+  being removed. A spot feed's parameters state its moves per nominal tick, and
+  the Simple editor derives them from a move per hour, so a person sets them in
+  simulated time.
 - A busy market runs tau, and so the simulated world, faster in wall time.
   Volatility per unit of market time stays fixed; volatility per wall second
   rises with the pace. A busy market is busier in time, not rougher per tick.

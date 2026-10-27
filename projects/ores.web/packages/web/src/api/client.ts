@@ -500,7 +500,7 @@ const marketRegimeSchema = z.object({
     loopGain: z.number().default(0),
     runSeed: z.number().default(0),
     /** The simulated seconds one unit of market time spans: how fast the simulated world runs. */
-    speed: z.number().default(1),
+    speed: z.number().default(0),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;

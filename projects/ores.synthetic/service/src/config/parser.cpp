@@ -23,6 +23,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <cmath>
 #include <cstdint>
 #include <ostream>
 
@@ -91,6 +92,9 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.database = std_opts.database;
     r.run_seed = vm["run-seed"].as<std::uint64_t>();
     r.market_speed = vm["market-speed"].as<double>();
+    if (!std::isfinite(r.market_speed) || r.market_speed <= 0.0)
+        BOOST_THROW_EXCEPTION(
+            parser_exception("--market-speed must be a positive number of simulated seconds."));
     return r;
 }
 

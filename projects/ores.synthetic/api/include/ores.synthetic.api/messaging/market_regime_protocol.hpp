@@ -84,8 +84,8 @@ struct get_market_regime_response {
     double loop_gain = 0.0;
     /** @brief The seed every random stream of the run is keyed by. */
     std::uint64_t run_seed = 0;
-    /** @brief The simulated seconds one unit of market time spans. */
-    double speed = 1.0;
+    /** @brief The simulated seconds one unit of market time spans; zero when not reported. */
+    double speed = 0.0;
 };
 
 /**
@@ -200,7 +200,7 @@ struct pin_market_regime_response {
     double population_rate = 0.0;
     double loop_gain = 0.0;
     std::uint64_t run_seed = 0;
-    double speed = 1.0;
+    double speed = 0.0;
 };
 
 }

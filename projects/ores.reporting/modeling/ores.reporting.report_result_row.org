@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: F3A4F935-501C-4C55-9855-585B01E3526E
+:END:
+#+title: ores.reporting.report_result_row
+#+description: One figure a run produced, for one subject in one measure, at the run's priced date.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: 
+#+entity_singular: report_result_row
+#+entity_plural: report_result_rows
+#+entity_title: Report Result Row
+#+brief: One figure a run produced, for one subject in one measure, at the run's priced date.
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+(One or two paragraphs describing the modelled entity itself — what it
+represents in the domain, its key relationships, and any defining
+invariants.)
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: reporting
+:has_tenant_id:    true
+:has_party_id:     true
+:has_version:      false
+:has_valid_from:   false
+:has_valid_to:     false
+:is_immutable:     true
+:END:
+
+* Primary key
+:PROPERTIES:
+:column:   report_instance_id
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The run, which owns the rows: a result row is written once, with the run, and
+never edited. The table's identity is the run, the subject, the measure and the
+currency together, so a repeated row is a fault the key refuses rather than a
+correction.
+
+* Natural keys
+
+** report_result_row_key
+:PROPERTIES:
+:columns: report_instance_id, subject_type, subject_id, measure, currency
+:END:
+
+One row per subject, measure and currency within a run, which is the canonical
+row's guarantee.
+
+* Columns
+
+** report_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The report the run came from, so a definition's runs are one query.
+
+** as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The run's priced date, and the time column of the series.
+
+** subject_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The kind of record the figure is about: =trade=.
+
+** subject_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The engine's own identifier for the record.
+
+** measure
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
+=gamma=. Open, so a new analytic adds a value rather than a column.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The currency the figure is stated in, empty when the measure has none.
+
+** value
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:END:
+
+The figure, as the engine stated it and never formatted.
+
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The file and the row the marshal read, for provenance.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_result_rows_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short:
+:entity_plural_short:
+:entity_singular_words:
+:entity_plural_words:
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var:
+:END:
+
+** Table display
+
+| Column | Header |
+|--------+--------|
+
+** Paste blocks
+
+TODO -- one =***= sub-heading per custom repository method. See
+=Codegen entity meta-model — C++ repository= and =Paste blocks= for
+the mechanism and heading convention.
+
+* See also
+
+TODO -- link the component group overview and any related entities,
+e.g. =- [[id:<uuid>][ores.<component>]] — component group overview.=

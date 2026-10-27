@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ The work that follows the documentation task, and it owns the rest of the story.
 | Now          | The entity prose calls a curve configuration's leaves parameters, and the code, SQL and diagrams that read it are regenerated. The page and the write check remain. |
 | Waiting on   | Nothing.                               |
 | Next         | Draw the curve configuration page with the shared leaf parts, then check a value against its set on write. |
-| Last touched | 2026-10-26                               |
+| Last touched | 2026-10-27                               |
 
 * Acceptance
 
@@ -117,5 +117,18 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The test's `not in` would not flag a NULL scope or name, and a NULL code in the links would flag nothing at all. | the new test | Accept | Every `not in` is a `not exists` now, so a NULL cannot hide a row. |
+| 2 | Nothing checks the reverse: every curve link should point at a documented leaf. | the new test | Accept | Added, and the plan is 6. A link left behind after a leaf is removed now fails. |
+| 3 | `like 'curve.%'` treats `%` and `_` as wildcards. | the new test | Accept | Replaced with `starts_with(..., 'curve.')`. |
+| 4 | Keep the docstring bullets and the plan in step. | the new test | Accept | The bullet for the new assertion is added; six bullets, plan 6. |
+| 5 | The task's dates still say 26 October. | this task | Accept | Bumped to 2026-10-27. |
+| 6 | The link table is still named =..._setting_value_sets_tbl= while the prose moves to parameter. | the shared table | Decline | It links engine run settings and every leaf alike, so the name is wrong for more than curves. Renaming it is a migration of its own and belongs with that work, not here. |
+| 7 | The two red checks will stay red for anyone rebasing onto this. | er-diagram, cmake-sources | Accept | The trading table's missing row level security is captured in the inbox. cmake-sources is main's own drift and its fix sweeps every component list. |
+| 8 | The trading diagram churn is unrelated. | the diagrams | Decline | It is in its own commit, and the description names it. The generator draws every package at once, so the alternative is a stale diagram and a red check. |
 
 * Result

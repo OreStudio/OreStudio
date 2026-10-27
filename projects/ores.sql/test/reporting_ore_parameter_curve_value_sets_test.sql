@@ -27,6 +27,7 @@
  * - The curve leaves have links
  * - Every curve link names a value set that exists
  * - Every documented curve leaf has a link
+ * - Every curve link points at a documented curve leaf
  * - Every curve set has at least one leaf
  * - Every catalogue a curve set draws on is registered
  *
@@ -35,21 +36,21 @@
 
 begin;
 
-select plan(5);
+select plan(6);
 
 create temporary table t_links on commit drop as
 select l.code, l.scope, l.name, l.value_set_code
 from ores_reporting_ore_parameter_setting_value_sets_tbl l
 where l.valid_to = ores_utility_infinity_timestamp_fn()
   and l.tenant_id = ores_utility_system_tenant_id_fn()
-  and l.value_set_code like 'curve.%';
+  and starts_with(l.value_set_code, 'curve.');
 
 create temporary table t_sets on commit drop as
 select s.code, s.source_kind, s.catalogue_code
 from ores_reporting_ore_parameter_value_sets_tbl s
 where s.valid_to = ores_utility_infinity_timestamp_fn()
   and s.tenant_id = ores_utility_system_tenant_id_fn()
-  and s.code like 'curve.%';
+  and starts_with(s.code, 'curve.');
 
 create temporary table t_documented on commit drop as
 select d.scope, d.name
@@ -64,18 +65,25 @@ select cmp_ok(
     'the curve leaves have links');
 
 select is_empty(
-    $$select code, value_set_code from t_links
-      where value_set_code not in (select code from t_sets)$$,
+    $$select l.code, l.value_set_code from t_links l
+      where not exists (select 1 from t_sets s where s.code = l.value_set_code)$$,
     'every curve link names a set that exists');
 
 select is_empty(
-    $$select scope from t_documented
-      where scope || ':' || name not in (select code from t_links)$$,
+    $$select d.scope, d.name from t_documented d
+      where not exists (select 1 from t_links l
+                        where l.code = d.scope || ':' || d.name)$$,
     'every documented curve leaf has a link');
 
 select is_empty(
-    $$select code from t_sets
-      where code not in (select value_set_code from t_links)$$,
+    $$select l.code from t_links l
+      where not exists (select 1 from t_documented d
+                        where l.code = d.scope || ':' || d.name)$$,
+    'every curve link points at a documented curve leaf');
+
+select is_empty(
+    $$select s.code from t_sets s
+      where not exists (select 1 from t_links l where l.value_set_code = s.code)$$,
     'every curve set has at least one leaf');
 
 select is_empty(

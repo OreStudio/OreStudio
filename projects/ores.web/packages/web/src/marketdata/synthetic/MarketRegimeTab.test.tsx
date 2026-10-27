@@ -105,6 +105,7 @@ function render(
                 error={null}
                 marked={marked}
                 states={states}
+                mayPin
                 onPin={onPin}
             />
         </TranslationProvider>,
@@ -344,6 +345,7 @@ function renderTraced(traceNow: MarketTrace = trace()): string {
                 marked={null}
                 states={[]}
                 trace={traceNow}
+                mayPin
                 onPin={() => undefined}
             />
         </TranslationProvider>,
@@ -407,5 +409,31 @@ describe('the QQ plot of a busy feed', () => {
         const html = renderTraced(trace({ events: ticks }));
         expect(html).toContain('The rescaled gaps of live.eurusd against Exp(1)');
         expect(html.match(/data-qq/g)?.length).toBe(6);
+    });
+});
+
+describe('the market regime tab for a tenant', () => {
+    it('reads the market and offers no switch', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <MarketRegimePanel
+                    regime={regime()}
+                    raster={raster()}
+                    now={NOW}
+                    pending={undefined}
+                    error={null}
+                    marked={null}
+                    states={[]}
+                    mayPin={false}
+                    onPin={() => undefined}
+                />
+            </TranslationProvider>,
+        );
+        expect(html).toContain(
+            'The system administrator sets the market for the whole installation',
+        );
+        expect(html).not.toContain('>Auto</button>');
+        expect(html).not.toContain('>Active</button>');
+        expect(html).not.toContain('>Calm</button>');
     });
 });

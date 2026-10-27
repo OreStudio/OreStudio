@@ -7,9 +7,14 @@
 #+level: cross
 #+filetags: :marketdata:ui:raster:
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved by [[id:C8A8464C-BB32-46E6-8782-9D44FE6849D2][Show the market's pace and each feed's fit]]*
+(#3940, 2026-10-27): each raster row and the Arrivals panel show the feed's law,
+base rate, sensitivity, rate now, and its initial phase or Hawkes excitation, read
+from the scheduler's own record of every running feed.
 
 * What
 

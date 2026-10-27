@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The system administrator sets how the installation's market behaves while it
+runs, without restarting the synthetic service: how often the regime turns,
+how hard a panic spreads, and how fast the simulated world runs. Today the
+regime rates, the heat's jump and decay, and the market speed are fixed in the
+service at start.
 
 * Status
 
@@ -35,7 +39,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The scheduler takes a command that sets the regime's two transition rates,
+  the heat's jump and decay, and the market speed, applied at the clock's now
+  and recorded in the trace.
+- A set whose heat loop gain is one or more, or a speed that is not positive, is
+  refused with the number named.
+- A speed change reaches a curve's step when the curve next starts, and the tab
+  says so.
+- The Market regime tab offers the five numbers to a system session beside the
+  switch, and shows them read-only to a tenant.
 
 * Plan
 

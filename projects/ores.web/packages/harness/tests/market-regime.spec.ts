@@ -20,6 +20,8 @@
  */
 
 import { expect, test, type Page } from '@playwright/test';
+import { SUPER_ADMIN } from '../src/acme.js';
+import { signIn } from '../src/signIn.js';
 
 const PANEL = 'Market regime';
 
@@ -37,26 +39,11 @@ test.describe('the market regime tab', () => {
         await expect(panel.getByText('Set by', { exact: true })).toBeVisible();
         // The multiplier is the first factor the panel states; the pace beside it is another.
         await expect(panel.getByText(/^×\d/).first()).toBeVisible();
-        // One switch is in force, whichever it is.
-        await expect(panel.getByRole('button', { pressed: true })).toHaveCount(1);
-    });
-
-    test('forces the state, and hands it back to the chain', async ({ page }) => {
-        await openRegimeTab(page);
-        const panel = page.getByRole('region', { name: PANEL });
-        const active = panel.getByRole('button', { name: 'Active', exact: true });
-        const auto = panel.getByRole('button', { name: 'Auto', exact: true });
-
-        await active.click();
-        await expect(active).toHaveAttribute('aria-pressed', 'true');
-        await expect(panel.getByText('×2', { exact: true })).toBeVisible();
+        // A tenant reads the market and cannot set it: the installation's market is the system's.
+        await expect(panel.getByRole('button', { name: 'Active', exact: true })).toHaveCount(0);
         await expect(
-            panel.getByText('A person, and it holds until it is handed back'),
+            panel.getByText('The system administrator sets the market for the whole installation'),
         ).toBeVisible();
-
-        await auto.click();
-        await expect(auto).toHaveAttribute('aria-pressed', 'true');
-        await expect(panel.getByText('The chain, turning on its own')).toBeVisible();
     });
 
     test('draws a row for the feeds that run', async ({ page }) => {
@@ -83,5 +70,37 @@ test.describe('the market regime tab', () => {
             'aria-checked',
             'true',
         );
+    });
+});
+
+test.describe('the market regime tab, as the system administrator', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test.beforeEach(async ({ page }) => {
+        await signIn(page, SUPER_ADMIN);
+    });
+
+    test('offers the switch, with one state in force', async ({ page }) => {
+        await openRegimeTab(page);
+        const panel = page.getByRole('region', { name: PANEL });
+        await expect(panel.getByRole('button', { pressed: true })).toHaveCount(1);
+    });
+
+    test('forces the state, and hands it back to the chain', async ({ page }) => {
+        await openRegimeTab(page);
+        const panel = page.getByRole('region', { name: PANEL });
+        const active = panel.getByRole('button', { name: 'Active', exact: true });
+        const auto = panel.getByRole('button', { name: 'Auto', exact: true });
+
+        await active.click();
+        await expect(active).toHaveAttribute('aria-pressed', 'true');
+        await expect(panel.getByText('×2', { exact: true })).toBeVisible();
+        await expect(
+            panel.getByText('A person, and it holds until it is handed back'),
+        ).toBeVisible();
+
+        await auto.click();
+        await expect(auto).toHaveAttribute('aria-pressed', 'true');
+        await expect(panel.getByText('The chain, turning on its own')).toBeVisible();
     });
 });

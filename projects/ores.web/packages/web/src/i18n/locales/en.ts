@@ -4763,6 +4763,8 @@ export const en: SourceCatalogue = {
             heldBy: 'Set by',
             pinned: 'A person, and it holds until it is handed back',
             chain: 'The chain, turning on its own',
+            readOnly:
+                'The system administrator sets the market for the whole installation; this view reads it.',
             force: 'Force the state',
             forced: 'forced',
             set: { auto: 'Auto', calm: 'Calm', active: 'Active' },

@@ -4827,6 +4827,8 @@ const fr: SourceCatalogue = {
             heldBy: 'Défini par',
             pinned: 'Une personne, et il tient jusqu’à ce qu’on le rende',
             chain: 'La chaîne, qui tourne seule',
+            readOnly:
+                'L’administrateur système règle le marché pour toute l’installation ; cette vue le lit.',
             force: 'Forcer l’état',
             forced: 'forcé',
             set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },

@@ -236,8 +236,7 @@ structure_service::put_structure(const messaging::put_structure_request& request
     repo_.write(ctx_, value, request.change.precondition);
     if (!existed)
         name_structure(ctx_, request.change.precondition, value);
-    auto written =
-        of_acting_party(structure_read_one(repo_, ctx_, structure_key_from(value)), ctx_);
+    auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
     if (!written.empty())
         response.structure = std::move(written.front());
     return response;

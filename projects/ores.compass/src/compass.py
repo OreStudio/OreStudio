@@ -7577,6 +7577,11 @@ def cmd_shell(argv):
     ap.add_argument("-p", "--password", default="",
                     help="Login password (default: ORES_SHELL_LOGIN_PASSWORD "
                          "from .env or the process environment)")
+    ap.add_argument("--no-login", dest="no_login", action="store_true",
+                    help="Start logged out, ignoring the login defaults from "
+                         ".env. A scripted session that signs in itself needs "
+                         "this: a bootstrap refuses to run while a session is "
+                         "already open.")
     ap.add_argument("--preset", default="",
                     help="CMake preset locating the binary (default: "
                          "ORES_PRESET from .env)")
@@ -7626,10 +7631,12 @@ def cmd_shell(argv):
         if env.get(key):
             cmd += [flag, env[key]]
 
-    username = args.username or env.get("ORES_SHELL_LOGIN_USERNAME", "")
-    password = (args.password or
-                os.environ.get("ORES_SHELL_LOGIN_PASSWORD", "") or
-                env.get("ORES_SHELL_LOGIN_PASSWORD", ""))
+    username = "" if args.no_login else (
+        args.username or env.get("ORES_SHELL_LOGIN_USERNAME", ""))
+    password = "" if args.no_login else (
+        args.password or
+        os.environ.get("ORES_SHELL_LOGIN_PASSWORD", "") or
+        env.get("ORES_SHELL_LOGIN_PASSWORD", ""))
     if username:
         cmd += ["--login-username", username]
     if password:
@@ -7671,6 +7678,11 @@ def cmd_shell(argv):
     # NATS-only client): ores.shell's make_mapper("SHELL") parse_environment now
     # only sees registered nats-* options. CLI flags (passed above) win over env.
     child_env = {**os.environ, **env}
+    if args.no_login:
+        # ores.shell also reads these from its own environment (make_mapper
+        # "SHELL"), so skipping the flags is not enough to start logged out.
+        for key in ("ORES_SHELL_LOGIN_USERNAME", "ORES_SHELL_LOGIN_PASSWORD"):
+            child_env.pop(key, None)
 
     if not args.file:
         # Interactive REPL: inherit the terminal directly. Piping stdout

@@ -199,6 +199,10 @@ def _provision(root: Path, tenant: str, tenant_name: str, profile: str,
     The recipe's own script also publishes the vendored ORE engine packages.
     A ticks check does not need a compute package, so it runs the bootstrap
     step alone and keeps the check to the path it measures.
+
+    The session starts logged out: `bootstrap setup` refuses to run while a
+    session is open, and the .env login default points at the very tenant the
+    bootstrap is about to create.
     """
     script = (
         "connect $ORES_NATS_URL\n"
@@ -211,7 +215,7 @@ def _provision(root: Path, tenant: str, tenant_name: str, profile: str,
         handle.write(script)
         path = handle.name
     try:
-        return _run(["./compass.sh", "shell", "-l", path], root)
+        return _run(["./compass.sh", "shell", "--no-login", "-l", path], root)
     finally:
         Path(path).unlink(missing_ok=True)
 

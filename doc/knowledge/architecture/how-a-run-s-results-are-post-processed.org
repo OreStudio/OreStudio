@@ -106,11 +106,54 @@ declares the measures it emits, so the run can state what a screen may ask for.
 - The archive stays where it is, as the run's own record and the provenance of the
   rows. Nothing reads it in the request path.
 
+* Where the work happens: on the grid, not in the service
+
+The expensive work is reading what the engine wrote. It belongs where the engine
+already is: the compute wrapper, which runs on the worker beside the engine and is
+the only component that knows which analytics the package ran and what files they
+wrote. The wrapper marshals those files into one canonical result file before it
+uploads, and the service's post-processing step becomes download, validate, load.
+
+That split is what keeps the service scalable. A run's rows are written by a
+single =COPY= inside one transaction, so a hundred runs finishing at once are a
+hundred short inserts rather than a hundred parsers, and the work grows with the
+grid rather than with the reporting service's replica count. The queue group and
+the run grant already spread and limit the load; nothing new is needed to admit
+it.
+
+The marshal is a projection, not a parser, because the canonical columns are the
+engine's own words. =npv.csv= becomes rows by renaming its headings: =TradeId= to
+=subject_id=, =NPV= to a =value= with =measure='npv'=, =NpvCurrency= to
+=currency=. A file that states several measures in one row, as the sensitivity
+output does, is widened into one row per measure. Nothing is inferred, and a file
+whose headings the marshal does not know is refused with a stated reason rather
+than read on a guess.
+
+The service keeps a fallback: when a run's output has no canonical file, the
+registered readers may read the archive in the service, and the run records that
+it was read the old way. That is a migration path for the wrappers already
+deployed, not a second architecture.
+
+* The contract the screens see does not change
+
+A screen asks for a run's rows by measure and subject type. Whether those rows
+came from the wrapper's canonical file or from the service's fallback reader is
+not the screen's business, and the answer keeps the same shape. A new measure
+adds a selector, not a rewrite.
+
+* What that means for the result table's columns
+
+The columns are chosen to match the engine's output, not to suit a screen:
+=subject_id= is the engine's trade id, =measure= is the name of the column the
+engine wrote, =value= and =currency= are the figure and its currency, and
+=source= names the file and the row. A column that ORE does not write is not in
+the table, and a new analytic adds a measure value rather than a column.
+
 * What is not built
 
-- The result table, the readers and the post-processing step are designed here and
-  not yet built. Today the web tier parses =npv.csv= per request, which this page
-  replaces.
+- The canonical file, the wrapper marshal, the result table and the post-processing
+  step are designed here and not yet built. Today the web tier parses =npv.csv= per
+  request, which this page replaces.
 - The error path: a reader that refuses a file should record a run error with its
   own scope, so a failed post-processing reads differently from a failed
   retrieval. The scope table gains a value for it when the step is built.

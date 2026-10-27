@@ -39,15 +39,15 @@ namespace ores::trading::domain {
 /**
  * @brief An identifier of a structure under one scheme (UTI, USI, Internal, ORE).
  *
- * One identifier a trade is known by under one scheme: a UTI, a USI, the
- * firm's internal reference, or the id an ORE document gave it. Each scheme
- * is a [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] code, and a trade has at most one
- * value per scheme. The firm's own id is the anchor's UUID, the trade id, and is not repeated here.
+ * One identifier a structure is known by under one scheme: the deal reference
+ * a desk gives it, or the id an upstream document gave it. Each scheme is a
+ * trade id type code, and a structure has at most one value per scheme. The
+ * structure's own UUID is its identity and is not repeated here.
  *
- * The row is keyed by the trade and references the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade
- * anchor]] with a database foreign key. It copies the anchor's party, pinned to the anchor, because
- * row-level security needs the party on every row. The issuer is the party or counterparty that
- * issued the value, when it is known.
+ * The row is keyed by the structure and references the structure it names
+ * with a database foreign key. A structure holds no party of its own, so
+ * nothing is copied from its parent. The issuer is the party or
+ * counterparty that issued the value, when it is known.
  */
 struct structure_identifier final {
     /**
@@ -61,7 +61,7 @@ struct structure_identifier final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief The trade this identifier belongs to.
+     * @brief The structure this identifier belongs to.
      */
     boost::uuids::uuid structure_id;
 
@@ -81,7 +81,7 @@ struct structure_identifier final {
     std::optional<boost::uuids::uuid> issuing_party_id;
 
     /**
-     * @brief Username of the person who last modified this trade identifier.
+     * @brief Username of the person who last modified this structure identifier.
      */
     std::string modified_by;
 

@@ -73,9 +73,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::structure_identifier>
-read_one(repository::structure_identifier_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::structure_identifier_key& key) {
+structure_identifier_read_one(repository::structure_identifier_repository& repo,
+                              const ores::database::context& ctx,
+                              const messaging::structure_identifier_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.structure_id), key.id_type);
 }
 
@@ -85,7 +85,8 @@ read_one(repository::structure_identifier_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::structure_identifier_key key_from(const domain::structure_identifier& v) {
+messaging::structure_identifier_key
+structure_identifier_key_from(const domain::structure_identifier& v) {
     messaging::structure_identifier_key key;
     key.structure_id = v.structure_id;
     key.id_type = v.id_type;
@@ -99,7 +100,8 @@ messaging::structure_identifier_key key_from(const domain::structure_identifier&
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::structure_identifier to_domain(const messaging::structure_identifier_write& write) {
+domain::structure_identifier
+structure_identifier_to_domain(const messaging::structure_identifier_write& write) {
     domain::structure_identifier v;
     v.structure_id = write.structure_id;
     v.id_type = write.id_type;
@@ -176,7 +178,7 @@ structure_identifier_service::list_by_structure_id_structure_identifiers(
 messaging::get_structure_identifier_response structure_identifier_service::get_structure_identifier(
     const messaging::get_structure_identifier_request& request) {
     messaging::get_structure_identifier_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = structure_identifier_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "structure_identifier"});
         return response;
@@ -196,7 +198,7 @@ structure_identifier_service::get_many_structure_identifiers(
     for (const auto& k : request.keys) {
         messaging::structure_identifier_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = structure_identifier_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.structure_identifier = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -212,7 +214,7 @@ messaging::put_structure_identifier_response structure_identifier_service::put_s
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = structure_identifier_read_one(repo_, ctx_, structure_identifier_key_from(value));
     if (!written.empty())
         response.structure_identifier = std::move(written.front());
     return response;
@@ -245,7 +247,8 @@ structure_identifier_service::put_many_structure_identifiers(
     repo_.write(ctx_, batch, claims);
     response.identifiers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            structure_identifier_read_one(repo_, ctx_, structure_identifier_key_from(value));
         response.identifiers.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -282,7 +285,7 @@ structure_identifier_service::delete_structure_identifier(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = structure_identifier_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "structure_identifier",
@@ -379,8 +382,9 @@ structure_identifier_service::prepare_change(const messaging::structure_identifi
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = structure_identifier_to_domain(change.write);
+    const auto current =
+        structure_identifier_read_one(repo_, ctx_, structure_identifier_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -450,7 +454,7 @@ structure_identifier_service::count_identifiers_by_structure_id(const std::strin
 
 std::optional<domain::structure_identifier> structure_identifier_service::get_identifier_at_version(
     const std::string& structure_id, const std::string& id_type, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier at version. "
+    BOOST_LOG_SEV(lg(), debug) << "Getting structure identifier at version. "
                                << "structure_id: " << structure_id << " id_type: " << id_type
                                << " version: " << version;
     return repo_.read_at_version(ctx_, structure_id, id_type, version);
@@ -459,8 +463,8 @@ std::optional<domain::structure_identifier> structure_identifier_service::get_id
 std::optional<domain::structure_identifier>
 structure_identifier_service::get_identifier(const std::string& structure_id,
                                              const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier. " << "structure_id: " << structure_id
-                               << " id_type: " << id_type;
+    BOOST_LOG_SEV(lg(), debug) << "Getting structure identifier. "
+                               << "structure_id: " << structure_id << " id_type: " << id_type;
     auto results = repo_.read_latest(ctx_, structure_id, id_type);
     if (results.empty())
         return std::nullopt;
@@ -478,13 +482,13 @@ void structure_identifier_service::save_identifier(const domain::structure_ident
         throw std::invalid_argument("Structure Identifier structure_id cannot be empty.");
     if (v.id_type.empty())
         throw std::invalid_argument("Structure Identifier id_type cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade identifier. " << "structure_id: " << v.structure_id
-                               << " id_type: " << v.id_type;
+    BOOST_LOG_SEV(lg(), debug) << "Saving structure identifier. "
+                               << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade identifier. " << "structure_id: " << v.structure_id
-                              << " id_type: " << v.id_type;
+    BOOST_LOG_SEV(lg(), info) << "Saved structure identifier. "
+                              << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
 }
 
 void structure_identifier_service::save_identifiers(
@@ -505,11 +509,11 @@ void structure_identifier_service::save_identifiers(
 
 void structure_identifier_service::delete_identifier(const std::string& structure_id,
                                                      const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "structure_id: " << structure_id
-                               << " id_type: " << id_type;
+    BOOST_LOG_SEV(lg(), debug) << "Removing structure identifier. "
+                               << "structure_id: " << structure_id << " id_type: " << id_type;
     repo_.remove(ctx_, structure_id, id_type);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade identifier. " << "structure_id: " << structure_id
-                              << " id_type: " << id_type;
+    BOOST_LOG_SEV(lg(), info) << "Removed structure identifier. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type;
 }
 
 void structure_identifier_service::delete_identifiers(const std::vector<std::string>& structure_ids,
@@ -520,7 +524,7 @@ void structure_identifier_service::delete_identifiers(const std::vector<std::str
 std::vector<domain::structure_identifier>
 structure_identifier_service::get_identifier_history(const std::string& structure_id,
                                                      const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade identifier. "
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for structure identifier. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     return repo_.read_all(ctx_, structure_id, id_type);
 }

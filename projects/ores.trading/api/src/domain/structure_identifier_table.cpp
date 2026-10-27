@@ -33,11 +33,11 @@ std::string convert_to_table(const std::vector<structure_identifier>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Trade Id" << "ID Type" << "ID Value" << "Modified By" << "Version"
+    table << fort::header << "Structure Id" << "ID Type" << "ID Value" << "Modified By" << "Version"
           << fort::endr;
 
-    for ([[maybe_unused]] const auto& ti : v) {
-        table << ti.structure_id << ti.id_type << ti.id_value << ti.modified_by << ti.version
+    for ([[maybe_unused]] const auto& si : v) {
+        table << si.structure_id << si.id_type << si.id_value << si.modified_by << si.version
               << fort::endr;
     }
     return table.to_string();

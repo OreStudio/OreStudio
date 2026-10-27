@@ -77,7 +77,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Writes a trade identifier, honouring the claim it states.
+     * @brief Writes a structure identifier, honouring the claim it states.
      *
      * The claim is the version the caller read (@c must_match_version), that no
      * current row exists (@c must_not_exist), or neither (@c any, which
@@ -119,7 +119,7 @@ public:
     read_all(context ctx, const std::string& structure_id, const std::string& id_type);
 
     /**
-     * @brief Reads a single trade identifier as it stood at a specific
+     * @brief Reads a single structure identifier as it stood at a specific
      * version — the version's own [valid_from, valid_to) window is returned
      * verbatim, so the caller can compose child entities "as of" the same
      * window. See the "Temporal composite entity versioning" architecture
@@ -192,7 +192,7 @@ public:
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
-     * @brief Deletes a trade identifier by closing its temporal validity.
+     * @brief Deletes a structure identifier by closing its temporal validity.
      */
     void remove(context ctx, const std::string& structure_id, const std::string& id_type);
 
@@ -208,7 +208,7 @@ public:
     enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Removes a trade identifier, refusing a row that moved on.
+     * @brief Removes a structure identifier, refusing a row that moved on.
      *
      * A stated version is the version the caller read. The removal is refused
      * with @c conflicting when the current row carries another, so a caller

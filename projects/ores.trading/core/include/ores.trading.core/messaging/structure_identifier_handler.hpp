@@ -53,7 +53,7 @@ using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for trade identifier operations.
+ * @brief NATS message handler for structure identifier operations.
  */
 class structure_identifier_handler {
 public:

@@ -42,7 +42,7 @@ namespace ores::trading::service {
 /**
  * @brief Service for managing structure identifiers.
  *
- * Provides a higher-level interface for trade identifier operations,
+ * Provides a higher-level interface for structure identifier operations,
  * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT structure_identifier_service {
@@ -76,27 +76,33 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_structure_identifiers_response
-    list_structure_identifiers(const messaging::list_structure_identifiers_request& request);
-    messaging::get_structure_identifier_response
-    get_structure_identifier(const messaging::get_structure_identifier_request& request);
-    messaging::get_many_structure_identifiers_response get_many_structure_identifiers(
-        const messaging::get_many_structure_identifiers_request& request);
-    messaging::put_structure_identifier_response
-    put_structure_identifier(const messaging::put_structure_identifier_request& request);
-    messaging::put_many_structure_identifiers_response put_many_structure_identifiers(
-        const messaging::put_many_structure_identifiers_request& request);
-    messaging::delete_structure_identifier_response
-    delete_structure_identifier(const messaging::delete_structure_identifier_request& request);
-    messaging::delete_many_structure_identifiers_response delete_many_structure_identifiers(
-        const messaging::delete_many_structure_identifiers_request& request);
-    messaging::list_by_structure_id_structure_identifiers_response
+    ::ores::trading::messaging::list_structure_identifiers_response list_structure_identifiers(
+        const ::ores::trading::messaging::list_structure_identifiers_request& request);
+    ::ores::trading::messaging::get_structure_identifier_response get_structure_identifier(
+        const ::ores::trading::messaging::get_structure_identifier_request& request);
+    ::ores::trading::messaging::get_many_structure_identifiers_response
+    get_many_structure_identifiers(
+        const ::ores::trading::messaging::get_many_structure_identifiers_request& request);
+    ::ores::trading::messaging::put_structure_identifier_response put_structure_identifier(
+        const ::ores::trading::messaging::put_structure_identifier_request& request);
+    ::ores::trading::messaging::put_many_structure_identifiers_response
+    put_many_structure_identifiers(
+        const ::ores::trading::messaging::put_many_structure_identifiers_request& request);
+    ::ores::trading::messaging::delete_structure_identifier_response delete_structure_identifier(
+        const ::ores::trading::messaging::delete_structure_identifier_request& request);
+    ::ores::trading::messaging::delete_many_structure_identifiers_response
+    delete_many_structure_identifiers(
+        const ::ores::trading::messaging::delete_many_structure_identifiers_request& request);
+    ::ores::trading::messaging::list_by_structure_id_structure_identifiers_response
     list_by_structure_id_structure_identifiers(
-        const messaging::list_by_structure_id_structure_identifiers_request& request);
-    messaging::list_structure_identifier_versions_response list_structure_identifier_versions(
-        const messaging::list_structure_identifier_versions_request& request);
-    messaging::get_structure_identifier_version_response get_structure_identifier_version(
-        const messaging::get_structure_identifier_version_request& request);
+        const ::ores::trading::messaging::list_by_structure_id_structure_identifiers_request&
+            request);
+    ::ores::trading::messaging::list_structure_identifier_versions_response
+    list_structure_identifier_versions(
+        const ::ores::trading::messaging::list_structure_identifier_versions_request& request);
+    ::ores::trading::messaging::get_structure_identifier_version_response
+    get_structure_identifier_version(
+        const ::ores::trading::messaging::get_structure_identifier_version_request& request);
     /**@}*/
 
     /**
@@ -138,19 +144,19 @@ public:
 
 
     /**
-     * @brief Retrieves a single trade identifier as it stood at a specific
+     * @brief Retrieves a single structure identifier as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
      * @param version The version to fetch.
-     * @return The trade identifier at that version if found, std::nullopt otherwise.
+     * @return The structure identifier at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::structure_identifier> get_identifier_at_version(
         const std::string& structure_id, const std::string& id_type, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single trade identifier by its primary key.
+     * @brief Retrieves a single structure identifier by its primary key.
      *
-     * @return The trade identifier if found, std::nullopt otherwise.
+     * @return The structure identifier if found, std::nullopt otherwise.
      */
     std::optional<domain::structure_identifier> get_identifier(const std::string& structure_id,
                                                                const std::string& id_type);
@@ -163,9 +169,9 @@ public:
                     const std::vector<std::string>& id_types);
 
     /**
-     * @brief Saves a trade identifier (creates or updates).
+     * @brief Saves a structure identifier (creates or updates).
      *
-     * @param identifier The trade identifier to save.
+     * @param identifier The structure identifier to save.
      * @throws std::exception on failure.
      */
     void save_identifier(const domain::structure_identifier& identifier);
@@ -179,7 +185,7 @@ public:
     void save_identifiers(const std::vector<domain::structure_identifier>& identifiers);
 
     /**
-     * @brief Deletes a trade identifier by its primary key.
+     * @brief Deletes a structure identifier by its primary key.
      *
      * @throws std::exception on failure.
      */
@@ -192,7 +198,7 @@ public:
                             const std::vector<std::string>& id_types);
 
     /**
-     * @brief Retrieves all historical versions of a trade identifier.
+     * @brief Retrieves all historical versions of a structure identifier.
      *
      * Addressed by the entity's key, which is its storage key.
      */
@@ -217,7 +223,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::structure_identifier_change& change,
+    prepare_change(const ::ores::trading::messaging::structure_identifier_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::structure_identifier& out);
 };

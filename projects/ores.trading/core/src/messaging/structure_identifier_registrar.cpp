@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view structure_identifier_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_structure_identifier_handlers(
@@ -51,45 +51,45 @@ std::vector<ores::nats::service::subscription> register_structure_identifier_han
         std::make_shared<structure_identifier_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_structure_identifiers_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->list_structure_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_structure_identifier_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_structure_identifier(std::move(msg));
-        }));
+        get_structure_identifier_request::nats_subject,
+        structure_identifier_queue_group,
+        [h](ores::nats::message msg) { h->get_structure_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_structure_identifiers_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_many_structure_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_structure_identifier_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_structure_identifier(std::move(msg));
-        }));
+        put_structure_identifier_request::nats_subject,
+        structure_identifier_queue_group,
+        [h](ores::nats::message msg) { h->put_structure_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_structure_identifiers_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->put_many_structure_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_structure_identifier_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->delete_structure_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_structure_identifiers_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->delete_many_structure_identifiers(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_structure_id_structure_identifiers_request::nats_subject,
-                             queue_group,
+                             structure_identifier_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_structure_id_structure_identifiers(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_structure_identifier_versions_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->list_structure_identifier_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_structure_identifier_version_request::nats_subject,
-        queue_group,
+        structure_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_structure_identifier_version(std::move(msg)); }));
     return subs;
 }

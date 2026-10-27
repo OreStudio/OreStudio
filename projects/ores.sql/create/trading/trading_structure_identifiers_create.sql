@@ -24,16 +24,15 @@
  *
  * Structure Identifier Table
  *
- * One identifier a trade is known by under one scheme: a UTI, a USI, the
- * firm's internal reference, or the id an ORE document gave it. Each scheme
- * is a [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] code, and a trade has at most one value per scheme.
- * The firm's own id is the anchor's UUID, the trade id, and is not repeated
- * here.
+ * One identifier a structure is known by under one scheme: the deal reference
+ * a desk gives it, or the id an upstream document gave it. Each scheme is a
+ * trade id type code, and a structure has at most one value per scheme. The
+ * structure's own UUID is its identity and is not repeated here.
  *
- * The row is keyed by the trade and references the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]] with a
- * database foreign key. It copies the anchor's party, pinned to the anchor,
- * because row-level security needs the party on every row. The issuer is
- * the party or counterparty that issued the value, when it is known.
+ * The row is keyed by the structure and references the structure it names
+ * with a database foreign key. A structure holds no party of its own, so
+ * nothing is copied from its parent. The issuer is the party or
+ * counterparty that issued the value, when it is known.
  */
 
 create table if not exists "ores_trading_structure_identifiers_tbl" (
@@ -75,7 +74,7 @@ create index if not exists structure_identifiers_tenant_idx
 on "ores_trading_structure_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists structure_identifiers_value_idx
+create unique index if not exists structure_identifiers_value_idx
 on "ores_trading_structure_identifiers_tbl" (tenant_id, id_type, id_value)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

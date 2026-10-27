@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+structure_identifier_list_order(const ores::utility::domain::order& order,
+                                std::initializer_list<std::string> default_columns,
+                                bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"structure_id", "id_type"});
@@ -99,8 +100,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::structure_identifiers_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> structure_identifier_filter_condition(
+    const std::optional<messaging::structure_identifiers_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -171,11 +172,13 @@ void structure_identifier_repository::write(context ctx,
 void structure_identifier_repository::write(context ctx,
                                             const domain::structure_identifier& v,
                                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade identifier. " << "structure_id: " << v.structure_id
-                               << " id_type: " << v.id_type;
+    BOOST_LOG_SEV(lg(), debug) << "Writing structure identifier. "
+                               << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
-        ctx, structure_identifier_mapper::map(t), lg(), "Writing trade identifier to database.");
+    execute_write_query(ctx,
+                        structure_identifier_mapper::map(t),
+                        lg(),
+                        "Writing structure identifier to database.");
 }
 
 void structure_identifier_repository::write(
@@ -211,7 +214,7 @@ structure_identifier_repository::read_latest(context ctx) {
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_latest(
     context ctx, const std::string& structure_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. "
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest structure identifier. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
@@ -224,13 +227,13 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
         query,
         [](const auto& entities) { return structure_identifier_mapper::map(entities); },
         lg(),
-        "Reading latest trade identifier by structure_id.");
+        "Reading latest structure identifier by structure_id.");
 }
 
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_all(
     context ctx, const std::string& structure_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. "
+    BOOST_LOG_SEV(lg(), debug) << "Reading all structure identifier versions. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -243,7 +246,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
         query,
         [](const auto& entities) { return structure_identifier_mapper::map(entities); },
         lg(),
-        "Reading all trade identifier versions by structure_id.");
+        "Reading all structure identifier versions by structure_id.");
 }
 
 std::optional<domain::structure_identifier>
@@ -251,7 +254,7 @@ structure_identifier_repository::read_at_version(context ctx,
                                                  const std::string& structure_id,
                                                  const std::string& id_type,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading trade identifier at version. "
+    BOOST_LOG_SEV(lg(), debug) << "Reading structure identifier at version. "
                                << "structure_id: " << structure_id << " id_type: " << id_type
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -266,7 +269,7 @@ structure_identifier_repository::read_at_version(context ctx,
             query,
             [](const auto& entities) { return structure_identifier_mapper::map(entities); },
             lg(),
-            "Reading trade identifier at version.");
+            "Reading structure identifier at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -293,8 +296,8 @@ structure_identifier_repository::read_latest_by_structure_id(
     return execute_ordered_read_query<structure_identifier_entity, domain::structure_identifier>(
         ctx,
         query,
-        list_order(order, {"structure_id", "id_type"}, false),
-        filter_condition(filter),
+        structure_identifier_list_order(order, {"structure_id", "id_type"}, false),
+        structure_identifier_filter_condition(filter),
         [](const auto& entities) { return structure_identifier_mapper::map(entities); },
         lg(),
         "Reading latest structure identifiers by structure_id.");
@@ -316,7 +319,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count_by_str
     return execute_count_query<structure_identifier_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        structure_identifier_filter_condition(filter),
         lg(),
         "Counting structure identifiers by structure_id");
 }
@@ -327,8 +330,8 @@ structure_identifier_repository::remove(context ctx,
                                         const std::string& structure_id,
                                         const std::string& id_type,
                                         std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "structure_id: " << structure_id
-                               << " id_type: " << id_type;
+    BOOST_LOG_SEV(lg(), debug) << "Removing structure identifier. "
+                               << "structure_id: " << structure_id << " id_type: " << id_type;
     const auto current = read_latest(ctx, structure_id, id_type);
     if (current.empty())
         return remove_status::missing;
@@ -347,7 +350,7 @@ structure_identifier_repository::remove(context ctx,
         where("tenant_id"_c == tid && "structure_id"_c == structure_id && "id_type"_c == id_type &&
               "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing trade identifier from database.");
+    execute_delete_query(ctx, query, lg(), "Removing structure identifier from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -378,8 +381,8 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
     return execute_ordered_read_query<structure_identifier_entity, domain::structure_identifier>(
         ctx,
         query,
-        list_order(order, {"structure_id", "id_type"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        structure_identifier_list_order(order, {"structure_id", "id_type"}, false),
+        narrowed(valid_at(as_of), structure_identifier_filter_condition(filter)),
         [](const auto& entities) { return structure_identifier_mapper::map(entities); },
         lg(),
         "Reading latest structure identifiers with pagination.");
@@ -389,7 +392,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count(
     context ctx,
     const std::optional<messaging::structure_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifier count";
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure identifier count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -398,7 +401,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count(
     return execute_count_query<structure_identifier_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), structure_identifier_filter_condition(filter)),
         lg(),
         "Counting structure identifiers");
 }

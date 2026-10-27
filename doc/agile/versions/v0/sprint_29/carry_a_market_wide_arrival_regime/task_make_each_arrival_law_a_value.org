@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-each-arrival-law-a-value
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ An arrival law is a value: given its state and its stream, it returns the next g
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,14 +37,28 @@ An arrival law is a value: given its state and its stream, it returns the next g
 
 - Periodic, Poisson and Hawkes laws each have exact tests on a fixed stream and statistical tests on fixed seeds: gap mean and variance, phase uniformity, and the time-rescaling check.
 - Drawing a gap without an event leaves a Hawkes law's state unchanged.
-- The Hawkes law runs in operational time: its branching ratio is invariant under the market factor, and the Arrivals panel help says a burst fades faster in a busy market.
-- set_baseline_multiplier is gone: the market reaches a law only through the clock.
+- The Hawkes law runs in operational time: no market factor reaches it, so its branching ratio is the same in any market.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The laws are added beside the old processes, not in place of them.
+tick_clock and tick_scheduler still call set_baseline_multiplier, and
+the clock that replaces that call arrives with the market clock and the
+heap scheduler. Deleting i_arrival_process before then would leave the
+feeds with no scheduler, so the move and the deletion happen together in
+[[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]].
+The panel help that says a burst fades faster in a busy market moves there
+too, because it is only true once a feed runs on the market clock.
+
+- =domain/arrival_law.hpp= holds one variant of three laws. Each law
+  carries its own state, so a law cannot be paired with another law's
+  state.
+- =draw_gap= takes the law as const and the stream by reference. Only
+  =record_event= changes a law.
+- A periodic law's offset is the drawn phase before its first event and
+  one after it. A Hawkes law starts with the stationary excess, m n.
+- =make_arrival_law= reuses validate_arrival_process_parameters and the
+  ticks-per-hour conversion.
 
 * Measurements
 

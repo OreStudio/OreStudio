@@ -61,6 +61,16 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
 {{#primary_key.is_text}}
+{{#primary_key.no_generator_suffix}}
+    [[maybe_unused]] const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+{{#primary_key.generator_expr}}
+    r.{{{scaffold_prefix}}}{{primary_key.column}} = {{{primary_key.generator_expr}}};
+{{/primary_key.generator_expr}}
+{{^primary_key.generator_expr}}
+    r.{{{scaffold_prefix}}}{{primary_key.column}} = std::string(faker::word::noun());
+{{/primary_key.generator_expr}}
+{{/primary_key.no_generator_suffix}}
+{{^primary_key.no_generator_suffix}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{#primary_key.generator_expr}}
     r.{{{scaffold_prefix}}}{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
@@ -70,6 +80,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{{scaffold_prefix}}}{{primary_key.column}} = std::string(faker::word::noun()) + "-"
         + std::to_string(idx);
 {{/primary_key.generator_expr}}
+{{/primary_key.no_generator_suffix}}
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     r.{{{scaffold_prefix}}}{{primary_key.column}} = ctx.generate_uuid();

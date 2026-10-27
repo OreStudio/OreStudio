@@ -45,12 +45,12 @@ generate_synthetic_sensitivity_asset_class(utility::generation::generation_conte
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    [[maybe_unused]] const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.asset_class_code = [idx] {
         static constexpr std::string_view codes[] = {
             "interest_rates", "fx", "equity", "commodity", "credit"};
         return std::string(codes[static_cast<std::size_t>(idx) % std::size(codes)]);
-    }() + "-" + std::to_string(idx);
+    }();
     r.template_prefix = [&r] {
         static constexpr std::string_view codes[] = {
             "interest_rates", "fx", "equity", "commodity", "credit"};

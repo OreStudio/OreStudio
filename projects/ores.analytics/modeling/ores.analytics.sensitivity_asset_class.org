@@ -46,9 +46,10 @@ The rows are seeded for the system tenant and read by every tenant.
 
 ** asset_class_code
 :PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:primary_key:  true
+:type:               text
+:cpp_type:           std::string
+:primary_key:        true
+:no_generator_suffix: true
 :END:
 
 The reference data's asset class code: 'interest_rates', 'fx', 'equity',

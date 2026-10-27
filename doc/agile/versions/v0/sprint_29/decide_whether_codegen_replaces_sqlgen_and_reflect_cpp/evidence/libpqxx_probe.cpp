@@ -1,5 +1,5 @@
-#include <chrono>
 #include "ores.platform/environment/environment.hpp"
+#include <chrono>
 #include <iostream>
 #include <pqxx/pqxx>
 
@@ -10,11 +10,13 @@ static double ms_since(clk::time_point t) {
 }
 
 int main() {
-    pqxx::connection c{ores::platform::environment::environment::get_value_or_throw("PQXX_PROBE_CONN").c_str()};
+    pqxx::connection c{
+        ores::platform::environment::environment::get_value_or_throw("PQXX_PROBE_CONN").c_str()};
     std::cout << "libpqxx " << PQXX_VERSION << ", server " << c.server_version() << "\n";
 
     pqxx::nontransaction setup{c};
-    setup.exec("create temp table probe (id bigint primary key, code text not null, px double precision, at timestamptz)");
+    setup.exec("create temp table probe (id bigint primary key, code text not null, px double "
+               "precision, at timestamptz)");
     setup.commit();
 
     c.prepare("ins", "insert into probe values ($1, $2, $3, now())");
@@ -57,21 +59,25 @@ int main() {
                 sum += p.retrieve().second[0][0].as<double>();
         }
         w.commit();
-        std::cout << "pqxx::pipeline, 10000 point reads: " << ms_since(t) << " ms (sum " << sum << ")\n";
+        std::cout << "pqxx::pipeline, 10000 point reads: " << ms_since(t) << " ms (sum " << sum
+                  << ")\n";
     }
     {
         auto t = clk::now();
         pqxx::work w{c};
         double sum = 0;
-        for (auto [id, code, px] : w.query<long, std::string_view, double>("select id, code, px from probe"))
+        for (auto [id, code, px] :
+             w.query<long, std::string_view, double>("select id, code, px from probe"))
             sum += px;
         w.commit();
-        std::cout << "query<> 110000 rows into a tuple: " << ms_since(t) << " ms (sum " << sum << ")\n";
+        std::cout << "query<> 110000 rows into a tuple: " << ms_since(t) << " ms (sum " << sum
+                  << ")\n";
     }
     {
         pqxx::work w{c};
         auto r = w.exec("select 1::int4, 'x'::text, now()");
-        std::cout << "result column 0 type oid " << r.column_type(0) << ", text value '" << r[0][0].c_str() << "'\n";
+        std::cout << "result column 0 type oid " << r.column_type(0) << ", text value '"
+                  << r[0][0].c_str() << "'\n";
     }
     try {
         pqxx::work w{c};

@@ -1,8 +1,8 @@
 #include "clients.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <libpq-fe.h>
 #include <array>
 #include <charconv>
+#include <libpq-fe.h>
 #include <memory>
 #include <stdexcept>
 
@@ -11,10 +11,14 @@ namespace bench {
 namespace {
 
 struct conn_deleter {
-    void operator()(PGconn* c) const noexcept { PQfinish(c); }
+    void operator()(PGconn* c) const noexcept {
+        PQfinish(c);
+    }
 };
 struct result_deleter {
-    void operator()(PGresult* r) const noexcept { PQclear(r); }
+    void operator()(PGresult* r) const noexcept {
+        PQclear(r);
+    }
 };
 using conn_handle = std::unique_ptr<PGconn, conn_deleter>;
 using result_handle = std::unique_ptr<PGresult, result_deleter>;
@@ -40,7 +44,14 @@ std::vector<row> to_rows(PGresult* r) {
         int version = 0;
         const char* v = PQgetvalue(r, i, 2);
         std::from_chars(v, v + PQgetlength(r, i, 2), version);
-        out.push_back({text(0), text(1), version, text(3), text(4), text(5), text(6), text(7),
+        out.push_back({text(0),
+                       text(1),
+                       version,
+                       text(3),
+                       text(4),
+                       text(5),
+                       text(6),
+                       text(7),
                        ores::platform::time::datetime::from_iso8601_utc(text(8))});
     }
     return out;
@@ -52,16 +63,21 @@ std::vector<row> to_rows(PGresult* r) {
  */
 class libpq_client final : public client {
 public:
-    explicit libpq_client(const credentials& c) : conn_(PQconnectdb(c.conninfo().c_str())) {
+    explicit libpq_client(const credentials& c)
+        : conn_(PQconnectdb(c.conninfo().c_str())) {
         if (PQstatus(conn_.get()) != CONNECTION_OK)
             throw std::runtime_error(PQerrorMessage(conn_.get()));
         ensure(conn_.get(), result_handle(PQexec(conn_.get(), setup_sql)), "setup");
-        prepare("ins", "insert into bench_crc values ($1, $2::uuid, $3::int4, $4, $5, $6, $7, $8,"
-                       " $9::timestamptz, $10::timestamptz)", 10);
-        prepare("all", std::string(select_columns) +
-                           " where valid_to = $1::timestamptz order by code", 1);
-        prepare("one", std::string(select_columns) +
-                           " where code = $1 and valid_to = $2::timestamptz", 2);
+        prepare("ins",
+                "insert into bench_crc values ($1, $2::uuid, $3::int4, $4, $5, $6, $7, $8,"
+                " $9::timestamptz, $10::timestamptz)",
+                10);
+        prepare("all",
+                std::string(select_columns) + " where valid_to = $1::timestamptz order by code",
+                1);
+        prepare("one",
+                std::string(select_columns) + " where code = $1 and valid_to = $2::timestamptz",
+                2);
     }
 
     void reset() override {
@@ -74,10 +90,16 @@ public:
         PQsendQueryParams(c, "begin", 0, nullptr, nullptr, nullptr, nullptr, 0);
         for (const auto& v : rows) {
             const auto version = std::to_string(v.version);
-            const std::array<const char*, 10> values{
-                v.code.c_str(), v.tenant_id.c_str(), version.c_str(), v.description.c_str(),
-                v.modified_by.c_str(), v.performed_by.c_str(), v.change_reason_code.c_str(),
-                v.change_commentary.c_str(), recorded, open_end};
+            const std::array<const char*, 10> values{v.code.c_str(),
+                                                     v.tenant_id.c_str(),
+                                                     version.c_str(),
+                                                     v.description.c_str(),
+                                                     v.modified_by.c_str(),
+                                                     v.performed_by.c_str(),
+                                                     v.change_reason_code.c_str(),
+                                                     v.change_commentary.c_str(),
+                                                     recorded,
+                                                     open_end};
             PQsendQueryPrepared(c, "ins", 10, values.data(), nullptr, nullptr, 0);
         }
         PQsendQueryParams(c, "commit", 0, nullptr, nullptr, nullptr, nullptr, 0);
@@ -95,23 +117,22 @@ public:
 
     std::vector<row> read_latest() override {
         const std::array<const char*, 1> values{open_end};
-        result_handle r(
-            PQexecPrepared(conn_.get(), "all", 1, values.data(), nullptr, nullptr, 0));
+        result_handle r(PQexecPrepared(conn_.get(), "all", 1, values.data(), nullptr, nullptr, 0));
         ensure(conn_.get(), r, "read latest");
         return to_rows(r.get());
     }
 
     std::vector<row> read_latest(const std::string& code) override {
         const std::array<const char*, 2> values{code.c_str(), open_end};
-        result_handle r(
-            PQexecPrepared(conn_.get(), "one", 2, values.data(), nullptr, nullptr, 0));
+        result_handle r(PQexecPrepared(conn_.get(), "one", 2, values.data(), nullptr, nullptr, 0));
         ensure(conn_.get(), r, "read one");
         return to_rows(r.get());
     }
 
 private:
     void prepare(const char* name, const std::string& sql, int n) {
-        ensure(conn_.get(), result_handle(PQprepare(conn_.get(), name, sql.c_str(), n, nullptr)),
+        ensure(conn_.get(),
+               result_handle(PQprepare(conn_.get(), name, sql.c_str(), n, nullptr)),
                name);
     }
 

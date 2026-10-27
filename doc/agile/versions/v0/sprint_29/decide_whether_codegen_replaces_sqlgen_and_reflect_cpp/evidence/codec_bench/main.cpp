@@ -20,8 +20,12 @@ void* operator new(std::size_t n) {
         return p;
     throw std::bad_alloc();
 }
-void operator delete(void* p) noexcept { std::free(p); }
-void operator delete(void* p, std::size_t) noexcept { std::free(p); }
+void operator delete(void* p) noexcept {
+    std::free(p);
+}
+void operator delete(void* p, std::size_t) noexcept {
+    std::free(p);
+}
 
 namespace {
 
@@ -43,7 +47,8 @@ response make_response(int n) {
         ores::dq::domain::change_reason_category c;
         c.version = i % 7 + 1;
         c.code = "CATEGORY_" + std::to_string(i);
-        c.description = "Change reason category number " + std::to_string(i) + ", for the benchmark.";
+        c.description =
+            "Change reason category number " + std::to_string(i) + ", for the benchmark.";
         c.modified_by = "admin@acme.example";
         c.performed_by = "ores.dq.service";
         c.change_reason_code = "system.new";
@@ -108,17 +113,28 @@ void compare(const response& r, int iterations, const char* label) {
         {"JSON encode", [&] { (void)f::to_json(r); }, [&] { (void)g::to_json(r); }},
         {"JSON decode", [&] { (void)f::from_json(json); }, [&] { (void)g::from_json(json); }},
         {"MessagePack encode", [&] { (void)f::to_msgpack(r); }, [&] { (void)g::to_msgpack(r); }},
-        {"MessagePack decode", [&] { (void)f::from_msgpack(pack); },
+        {"MessagePack decode",
+         [&] { (void)f::from_msgpack(pack); },
          [&] { (void)g::from_msgpack(pack); }},
     };
     std::printf("== %s, median of 7 runs of %d\n", label, iterations);
-    std::printf("%-20s %14s %14s %8s %12s %12s\n", "operation", "reflect-cpp ns", "generated ns",
-                "speedup", "rfl allocs", "gen allocs");
+    std::printf("%-20s %14s %14s %8s %12s %12s\n",
+                "operation",
+                "reflect-cpp ns",
+                "generated ns",
+                "speedup",
+                "rfl allocs",
+                "gen allocs");
     for (const auto& o : ops) {
         const auto a = measure(iterations, o.reflected);
         const auto b = measure(iterations, o.generated);
-        std::printf("%-20s %14.0f %14.0f %7.2fx %12.1f %12.1f\n", o.name, a.ns, b.ns, a.ns / b.ns,
-                    a.allocs, b.allocs);
+        std::printf("%-20s %14.0f %14.0f %7.2fx %12.1f %12.1f\n",
+                    o.name,
+                    a.ns,
+                    b.ns,
+                    a.ns / b.ns,
+                    a.allocs,
+                    b.allocs);
     }
 }
 

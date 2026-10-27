@@ -37,8 +37,14 @@ std::vector<row> to_rows(const std::vector<crc_entity>& entities) {
     std::vector<row> r;
     r.reserve(entities.size());
     for (const auto& e : entities)
-        r.push_back({e.code.value(), e.tenant_id, e.version, e.description, e.modified_by,
-                     e.performed_by, e.change_reason_code, e.change_commentary,
+        r.push_back({e.code.value(),
+                     e.tenant_id,
+                     e.version,
+                     e.description,
+                     e.modified_by,
+                     e.performed_by,
+                     e.change_reason_code,
+                     e.change_commentary,
                      ores::platform::time::datetime::from_iso8601_utc(e.valid_from.str() + "+00")});
     return r;
 }
@@ -50,15 +56,24 @@ public:
         ensure(conn_->execute(setup_sql));
     }
 
-    void reset() override { ensure(conn_->execute("truncate bench_crc")); }
+    void reset() override {
+        ensure(conn_->execute("truncate bench_crc"));
+    }
 
     void write_batch(const std::vector<row>& rows) override {
         std::vector<crc_entity> entities;
         entities.reserve(rows.size());
         for (const auto& v : rows)
-            entities.push_back({v.code, v.tenant_id, v.version, v.description, v.modified_by,
-                                v.performed_by, v.change_reason_code, v.change_commentary,
-                                recorded, open_end});
+            entities.push_back({v.code,
+                                v.tenant_id,
+                                v.version,
+                                v.description,
+                                v.modified_by,
+                                v.performed_by,
+                                v.change_reason_code,
+                                v.change_commentary,
+                                recorded,
+                                open_end});
         ensure(sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>(conn_)
                    .and_then(sqlgen::begin_transaction)
                    .and_then(sqlgen::insert(entities))

@@ -20,8 +20,12 @@ void* operator new(std::size_t n) {
         return p;
     throw std::bad_alloc();
 }
-void operator delete(void* p) noexcept { std::free(p); }
-void operator delete(void* p, std::size_t) noexcept { std::free(p); }
+void operator delete(void* p) noexcept {
+    std::free(p);
+}
+void operator delete(void* p, std::size_t) noexcept {
+    std::free(p);
+}
 
 namespace {
 
@@ -34,9 +38,15 @@ std::vector<row> make_rows(int run) {
     r.reserve(rows_per_batch);
     for (int i = 0; i < rows_per_batch; ++i) {
         const auto code = "CRC_" + std::to_string(run) + "_" + std::to_string(i);
-        r.push_back({code, "00000000-0000-0000-0000-000000000001", 1,
-                     "Benchmark change reason category " + code, "bench", "bench", "system.new",
-                     "Created by the repository benchmark.", {}});
+        r.push_back({code,
+                     "00000000-0000-0000-0000-000000000001",
+                     1,
+                     "Benchmark change reason category " + code,
+                     "bench",
+                     "bench",
+                     "system.new",
+                     "Created by the repository benchmark.",
+                     {}});
     }
     return r;
 }
@@ -56,8 +66,13 @@ sample measure(const std::function<void()>& f) {
 
 void report(const char* client, const char* workload, std::vector<sample> s) {
     std::ranges::sort(s, {}, &sample::ms);
-    std::printf("%-12s %-28s median %8.2f ms  min %8.2f  max %8.2f  allocations %ld\n", client,
-                workload, s[s.size() / 2].ms, s.front().ms, s.back().ms, s[s.size() / 2].allocs);
+    std::printf("%-12s %-28s median %8.2f ms  min %8.2f  max %8.2f  allocations %ld\n",
+                client,
+                workload,
+                s[s.size() / 2].ms,
+                s.front().ms,
+                s.back().ms,
+                s[s.size() / 2].allocs);
 }
 
 void run(const char* name, std::unique_ptr<bench::client> c) {

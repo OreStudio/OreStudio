@@ -6,7 +6,9 @@
 
 namespace bench::reflected {
 
-std::string to_json(const response& v) { return rfl::json::write(v); }
+std::string to_json(const response& v) {
+    return rfl::json::write(v);
+}
 
 response from_json(std::string_view s) {
     auto r = rfl::json::read<response>(s);
@@ -15,7 +17,9 @@ response from_json(std::string_view s) {
     return std::move(*r);
 }
 
-std::vector<char> to_msgpack(const response& v) { return rfl::msgpack::write(v); }
+std::vector<char> to_msgpack(const response& v) {
+    return rfl::msgpack::write(v);
+}
 
 response from_msgpack(std::span<const char> b) {
     auto r = rfl::msgpack::read<response>(b.data(), b.size());

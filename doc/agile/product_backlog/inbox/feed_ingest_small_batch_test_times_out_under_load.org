@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 440A09AB-8EE5-4238-B2C7-ED00235A51A8
 :END:
-#+title: The feed ingest small batch test times out under load
-#+description: a_small_batch_does_not_pass_the_batches_that_are_in_the_stages waits a fixed time for every tick to reach the tap, so it fails when the machine is loaded and passes alone.
+#+title: The feed ingest small batch test fails in full suite runs
+#+description: a_small_batch_does_not_pass_the_batches_that_are_in_the_stages fails in full suite runs after its 60 s deadline and passes alone in about 3.5 s; the cause is not yet known.
 #+type: capture
 #+level: cross
 #+filetags: 

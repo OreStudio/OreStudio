@@ -6,14 +6,14 @@
  */
 #include "codecs.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <msgpack.h>
-#include <yyjson.h>
 #include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
+#include <msgpack.h>
 #include <stdexcept>
 #include <string_view>
+#include <yyjson.h>
 
 namespace bench::generated {
 
@@ -109,9 +109,16 @@ void each_member(yyjson_val* o, std::string_view what, F&& f) {
 void from_json(yyjson_val* o, field_failure& v) {
     unsigned seen = 0;
     each_member(o, "field_failure", [&](std::string_view k, yyjson_val* x) {
-        if (k == "field") { v.field = text(x, k); seen |= 1; }
-        else if (k == "code") { v.code = text(x, k); seen |= 2; }
-        else if (k == "message") { v.message = text(x, k); seen |= 4; }
+        if (k == "field") {
+            v.field = text(x, k);
+            seen |= 1;
+        } else if (k == "code") {
+            v.code = text(x, k);
+            seen |= 2;
+        } else if (k == "message") {
+            v.message = text(x, k);
+            seen |= 4;
+        }
     });
     if (seen != 7)
         fail("field_failure");
@@ -120,10 +127,16 @@ void from_json(yyjson_val* o, field_failure& v) {
 void from_json(yyjson_val* o, result& v) {
     unsigned seen = 0;
     each_member(o, "result", [&](std::string_view k, yyjson_val* x) {
-        if (k == "outcome") { v.outcome = outcome_from(text(x, k)); seen |= 1; }
-        else if (k == "code") { v.code = text(x, k); seen |= 2; }
-        else if (k == "message") { v.message = text(x, k); seen |= 4; }
-        else if (k == "fields") {
+        if (k == "outcome") {
+            v.outcome = outcome_from(text(x, k));
+            seen |= 1;
+        } else if (k == "code") {
+            v.code = text(x, k);
+            seen |= 2;
+        } else if (k == "message") {
+            v.message = text(x, k);
+            seen |= 4;
+        } else if (k == "fields") {
             if (!yyjson_is_arr(x))
                 fail(k);
             v.fields.resize(yyjson_arr_size(x));
@@ -153,14 +166,28 @@ void from_json(yyjson_val* o, change_reason_category& v) {
                 fail(k);
             v.tenant_id = *t;
             seen |= 2;
+        } else if (k == "code") {
+            v.code = text(x, k);
+            seen |= 4;
+        } else if (k == "description") {
+            v.description = text(x, k);
+            seen |= 8;
+        } else if (k == "modified_by") {
+            v.modified_by = text(x, k);
+            seen |= 16;
+        } else if (k == "performed_by") {
+            v.performed_by = text(x, k);
+            seen |= 32;
+        } else if (k == "change_reason_code") {
+            v.change_reason_code = text(x, k);
+            seen |= 64;
+        } else if (k == "change_commentary") {
+            v.change_commentary = text(x, k);
+            seen |= 128;
+        } else if (k == "recorded_at") {
+            v.recorded_at = datetime::from_iso8601_utc(text(x, k));
+            seen |= 256;
         }
-        else if (k == "code") { v.code = text(x, k); seen |= 4; }
-        else if (k == "description") { v.description = text(x, k); seen |= 8; }
-        else if (k == "modified_by") { v.modified_by = text(x, k); seen |= 16; }
-        else if (k == "performed_by") { v.performed_by = text(x, k); seen |= 32; }
-        else if (k == "change_reason_code") { v.change_reason_code = text(x, k); seen |= 64; }
-        else if (k == "change_commentary") { v.change_commentary = text(x, k); seen |= 128; }
-        else if (k == "recorded_at") { v.recorded_at = datetime::from_iso8601_utc(text(x, k)); seen |= 256; }
     });
     if (seen != 511)
         fail("change_reason_category");
@@ -176,16 +203,22 @@ void pack(msgpack_packer* p, std::string_view s) {
 
 void pack(msgpack_packer* p, const field_failure& v) {
     msgpack_pack_map(p, 3);
-    pack(p, "field"); pack(p, v.field);
-    pack(p, "code"); pack(p, v.code);
-    pack(p, "message"); pack(p, v.message);
+    pack(p, "field");
+    pack(p, v.field);
+    pack(p, "code");
+    pack(p, v.code);
+    pack(p, "message");
+    pack(p, v.message);
 }
 
 void pack(msgpack_packer* p, const result& v) {
     msgpack_pack_map(p, 4);
-    pack(p, "outcome"); pack(p, outcome_names[static_cast<std::size_t>(v.outcome)]);
-    pack(p, "code"); pack(p, v.code);
-    pack(p, "message"); pack(p, v.message);
+    pack(p, "outcome");
+    pack(p, outcome_names[static_cast<std::size_t>(v.outcome)]);
+    pack(p, "code");
+    pack(p, v.code);
+    pack(p, "message");
+    pack(p, v.message);
     pack(p, "fields");
     msgpack_pack_array(p, v.fields.size());
     for (const auto& f : v.fields)
@@ -194,15 +227,24 @@ void pack(msgpack_packer* p, const result& v) {
 
 void pack(msgpack_packer* p, const change_reason_category& v) {
     msgpack_pack_map(p, 9);
-    pack(p, "version"); msgpack_pack_int64(p, v.version);
-    pack(p, "tenant_id"); pack(p, v.tenant_id.to_string());
-    pack(p, "code"); pack(p, v.code);
-    pack(p, "description"); pack(p, v.description);
-    pack(p, "modified_by"); pack(p, v.modified_by);
-    pack(p, "performed_by"); pack(p, v.performed_by);
-    pack(p, "change_reason_code"); pack(p, v.change_reason_code);
-    pack(p, "change_commentary"); pack(p, v.change_commentary);
-    pack(p, "recorded_at"); pack(p, datetime::to_iso8601_utc(v.recorded_at));
+    pack(p, "version");
+    msgpack_pack_int64(p, v.version);
+    pack(p, "tenant_id");
+    pack(p, v.tenant_id.to_string());
+    pack(p, "code");
+    pack(p, v.code);
+    pack(p, "description");
+    pack(p, v.description);
+    pack(p, "modified_by");
+    pack(p, v.modified_by);
+    pack(p, "performed_by");
+    pack(p, v.performed_by);
+    pack(p, "change_reason_code");
+    pack(p, v.change_reason_code);
+    pack(p, "change_commentary");
+    pack(p, v.change_commentary);
+    pack(p, "recorded_at");
+    pack(p, datetime::to_iso8601_utc(v.recorded_at));
 }
 
 std::string text(const msgpack_object& o, std::string_view what) {
@@ -226,9 +268,16 @@ void each_member(const msgpack_object& o, std::string_view what, F&& f) {
 void unpack(const msgpack_object& o, field_failure& v) {
     unsigned seen = 0;
     each_member(o, "field_failure", [&](std::string_view k, const msgpack_object& x) {
-        if (k == "field") { v.field = text(x, k); seen |= 1; }
-        else if (k == "code") { v.code = text(x, k); seen |= 2; }
-        else if (k == "message") { v.message = text(x, k); seen |= 4; }
+        if (k == "field") {
+            v.field = text(x, k);
+            seen |= 1;
+        } else if (k == "code") {
+            v.code = text(x, k);
+            seen |= 2;
+        } else if (k == "message") {
+            v.message = text(x, k);
+            seen |= 4;
+        }
     });
     if (seen != 7)
         fail("field_failure");
@@ -237,10 +286,16 @@ void unpack(const msgpack_object& o, field_failure& v) {
 void unpack(const msgpack_object& o, result& v) {
     unsigned seen = 0;
     each_member(o, "result", [&](std::string_view k, const msgpack_object& x) {
-        if (k == "outcome") { v.outcome = outcome_from(text(x, k)); seen |= 1; }
-        else if (k == "code") { v.code = text(x, k); seen |= 2; }
-        else if (k == "message") { v.message = text(x, k); seen |= 4; }
-        else if (k == "fields") {
+        if (k == "outcome") {
+            v.outcome = outcome_from(text(x, k));
+            seen |= 1;
+        } else if (k == "code") {
+            v.code = text(x, k);
+            seen |= 2;
+        } else if (k == "message") {
+            v.message = text(x, k);
+            seen |= 4;
+        } else if (k == "fields") {
             if (x.type != MSGPACK_OBJECT_ARRAY)
                 fail(k);
             v.fields.resize(x.via.array.size);
@@ -270,24 +325,42 @@ void unpack(const msgpack_object& o, change_reason_category& v) {
                 fail(k);
             v.tenant_id = *t;
             seen |= 2;
+        } else if (k == "code") {
+            v.code = text(x, k);
+            seen |= 4;
+        } else if (k == "description") {
+            v.description = text(x, k);
+            seen |= 8;
+        } else if (k == "modified_by") {
+            v.modified_by = text(x, k);
+            seen |= 16;
+        } else if (k == "performed_by") {
+            v.performed_by = text(x, k);
+            seen |= 32;
+        } else if (k == "change_reason_code") {
+            v.change_reason_code = text(x, k);
+            seen |= 64;
+        } else if (k == "change_commentary") {
+            v.change_commentary = text(x, k);
+            seen |= 128;
+        } else if (k == "recorded_at") {
+            v.recorded_at = datetime::from_iso8601_utc(text(x, k));
+            seen |= 256;
         }
-        else if (k == "code") { v.code = text(x, k); seen |= 4; }
-        else if (k == "description") { v.description = text(x, k); seen |= 8; }
-        else if (k == "modified_by") { v.modified_by = text(x, k); seen |= 16; }
-        else if (k == "performed_by") { v.performed_by = text(x, k); seen |= 32; }
-        else if (k == "change_reason_code") { v.change_reason_code = text(x, k); seen |= 64; }
-        else if (k == "change_commentary") { v.change_commentary = text(x, k); seen |= 128; }
-        else if (k == "recorded_at") { v.recorded_at = datetime::from_iso8601_utc(text(x, k)); seen |= 256; }
     });
     if (seen != 511)
         fail("change_reason_category");
 }
 
 struct json_doc_deleter {
-    void operator()(yyjson_mut_doc* d) const noexcept { yyjson_mut_doc_free(d); }
+    void operator()(yyjson_mut_doc* d) const noexcept {
+        yyjson_mut_doc_free(d);
+    }
 };
 struct json_read_deleter {
-    void operator()(yyjson_doc* d) const noexcept { yyjson_doc_free(d); }
+    void operator()(yyjson_doc* d) const noexcept {
+        yyjson_doc_free(d);
+    }
 };
 
 }
@@ -311,15 +384,16 @@ std::string to_json(const response& v) {
 }
 
 response from_json(std::string_view s) {
-    std::unique_ptr<yyjson_doc, json_read_deleter> d(
-        yyjson_read(s.data(), s.size(), 0));
+    std::unique_ptr<yyjson_doc, json_read_deleter> d(yyjson_read(s.data(), s.size(), 0));
     if (!d)
         fail("JSON");
     response v;
     unsigned seen = 0;
     each_member(yyjson_doc_get_root(d.get()), "response", [&](std::string_view k, yyjson_val* x) {
-        if (k == "result") { from_json(x, v.result); seen |= 1; }
-        else if (k == "categories") {
+        if (k == "result") {
+            from_json(x, v.result);
+            seen |= 1;
+        } else if (k == "categories") {
             if (!yyjson_is_arr(x))
                 fail(k);
             v.categories.resize(yyjson_arr_size(x));
@@ -347,12 +421,14 @@ std::vector<char> to_msgpack(const response& v) {
     msgpack_packer p;
     msgpack_packer_init(&p, &sbuf, msgpack_sbuffer_write);
     msgpack_pack_map(&p, 3);
-    pack(&p, "result"); pack(&p, v.result);
+    pack(&p, "result");
+    pack(&p, v.result);
     pack(&p, "categories");
     msgpack_pack_array(&p, v.categories.size());
     for (const auto& c : v.categories)
         pack(&p, c);
-    pack(&p, "total"); msgpack_pack_uint64(&p, v.total);
+    pack(&p, "total");
+    msgpack_pack_uint64(&p, v.total);
     std::vector<char> r(sbuf.data, sbuf.data + sbuf.size);
     msgpack_sbuffer_destroy(&sbuf);
     return r;
@@ -371,8 +447,10 @@ response from_msgpack(std::span<const char> b) {
     unsigned seen = 0;
     try {
         each_member(root, "response", [&](std::string_view k, const msgpack_object& x) {
-            if (k == "result") { unpack(x, v.result); seen |= 1; }
-            else if (k == "categories") {
+            if (k == "result") {
+                unpack(x, v.result);
+                seen |= 1;
+            } else if (k == "categories") {
                 if (x.type != MSGPACK_OBJECT_ARRAY)
                     fail(k);
                 v.categories.resize(x.via.array.size);

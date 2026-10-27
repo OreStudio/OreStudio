@@ -147,6 +147,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =ORES_UNITY_BUILD= is on by default, so every build directory rebuilds in full on its next configure | =CMakeLists.txt= | Accept as is | The point of the change; the PR says so, and =-DORES_UNITY_BUILD=OFF= restores the old build. |
+| 2 | 27 test targets keep a hand-written =test_suite.hpp= | =projects/*/tests/test_suite.hpp= | Accept as is | Their =main.cpp= is hand-written too; the generator owns neither. |
+| 3 | The shell verb =list-role-permissions= is now =list-role-permissions-page= | =authorization_operations_commands.cpp= | Accept | It follows the message name, beside =list-roles-page=; the subject is unchanged. |
+| 4 | The repository-wide misspell check exits 1 | — | Decline here | The branch's own 3,809 files are clean; the hits are in files the branch does not touch. |
 
 * Result

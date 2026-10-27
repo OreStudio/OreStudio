@@ -96,6 +96,8 @@
 #include "ores.trading.core/messaging/risk_participation_agreement_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_registrar.hpp"
+#include "ores.trading.core/messaging/structure_identifier_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/structure_identifier_registrar.hpp"
 #include "ores.trading.core/messaging/synthetic_cdo_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_activity_registrar.hpp"
 #include "ores.trading.core/messaging/trade_additional_field_history_provider_registrar.hpp"
@@ -214,6 +216,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_authorisation_request_handlers(nats, ctx, verifier));
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));
+    append(register_structure_identifier_handlers(nats, ctx, verifier));
     append(register_trade_identifier_handlers(nats, ctx, verifier));
     append(register_trade_link_handlers(nats, ctx, verifier));
     append(register_trade_link_type_handlers(nats, ctx, verifier));
@@ -283,6 +286,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_trade_portfolio_history_provider(hist_registry);
     register_trade_booking_history_provider(hist_registry);
     register_trade_id_type_history_provider(hist_registry);
+    register_structure_identifier_history_provider(hist_registry);
     register_trade_identifier_history_provider(hist_registry);
     register_trade_party_role_history_provider(hist_registry);
     register_trade_state_history_provider(hist_registry);

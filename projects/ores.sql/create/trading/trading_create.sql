@@ -383,6 +383,11 @@
 \ir ./trading_structure_members_create.sql
 \ir ./trading_structure_members_notify_trigger_create.sql
 
+-- Structure identifiers (depend on the structure, and on the trade id types the
+-- scheme is chosen from)
+\ir ./trading_structure_identifiers_create.sql
+\ir ./trading_structure_identifiers_notify_trigger_create.sql
+
 -- Trade components (depend on the trade)
 \ir ./trading_trade_components_functions_create.sql
 

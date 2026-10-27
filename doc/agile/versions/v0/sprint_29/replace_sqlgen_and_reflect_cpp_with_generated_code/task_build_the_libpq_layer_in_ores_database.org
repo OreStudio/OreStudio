@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-libpq-layer
-#+pr:
+#+pr: 3932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3932][#3932]] | [database] Build the libpq layer to the data path's target |
 
 * Review
 

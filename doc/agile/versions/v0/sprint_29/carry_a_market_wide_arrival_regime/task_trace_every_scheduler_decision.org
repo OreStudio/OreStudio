@@ -26,11 +26,11 @@ The loop records every tick, regime transition, heat jump and applied command in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Built; live check next.                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -75,7 +75,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trace tests | 7 cases, 591 assertions passed | =ores.analytics.quant.tests [scheduler_trace]= | 13a40d676c |
+| Scheduler tests | 13 cases, 3 of 3 runs clean | =ores.analytics.quant.tests [tick_scheduler]= | 13a40d676c |
+| BFF regime and trace tests | 15 passed | =npx vitest run src/market-regime.test.ts= | ce8099004f |
+| Live trace, all feeds, 30 s | 493 ticks, 99 series, 19.3 ticks a second, lateness 2.5 ms smoothed and 27 ms at most | shell =synthetic regime trace all 30= | 13a40d676c |
+| Live trace, one periodic feed | ticks 1.0 apart in tau; wall gaps 1.94 to 1.96 s at a pace of 0.505 | shell =synthetic regime trace synthetic.demo.eurusd 30= | 13a40d676c |
 
 * Notes
 
@@ -100,6 +104,25 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: series key zero doubles as the market sentinel. | tick_scheduler.cpp | Accept | Market events are known by their kind; tested with a series keyed zero. |
+| 2 | Bot: a ring of capacity zero divides by zero. | scheduler_trace.hpp | Accept | The constructor refuses it. |
+| 3 | Bot: a zero dwell would spin advance_to. | tick_scheduler.cpp | Accept | The step is at least the smallest positive double. |
+| 4 | Bot: two readers share the max-lateness window. | tick_scheduler.hpp | Accept | Documented on scheduler_stats. |
+| 5 | Bot: say lateness counts time spent on the batch. | tick_scheduler.hpp | Accept | Documented. |
+| 6 | Bot: the rate is a sample old and holds when idle. | tick_scheduler.hpp | Accept | Documented. |
+| 7 | Bot: a read copies the whole ring under the lock. | scheduler_trace.hpp | Accept | The ring walks back from the newest and stops at the limit; tested. |
+| 8 | Bot: trace_event has no default initialisers. | scheduler_trace.hpp | Accept | Added. |
+| 9 | Bot: test stats(), its reset and smoothing. | scheduler_trace_tests.cpp | Decline | Rate and lateness move only in the running loop; the live check reads them. |
 
 * Result
+
+The scheduler now says why ticks arrived, not only that they did. Every tick,
+regime turn, pin and change of the feeds is in a preallocated ring, stamped
+with clock time and tau, and a tick carries the gap its law drew and the wall
+gap it took. A test replays a fixed-seed run on the manual clock and asserts
+its trace exactly, across a pin. The loop reports its ticks a second, its heap
+size and its lateness. The trace and the numbers reach a reader through
+=synthetic.v1.ops.get_market_trace=, the BFF's =/api/synthetic/market-trace=,
+and the shell's =synthetic regime trace=. On the live run a periodic feed's
+ticks are exactly one unit of tau apart, and their wall gaps are one over the
+pace in force.

@@ -97,10 +97,10 @@ export interface TradeLink {
     readonly other_label: string;
 }
 
-/** The deal a trade is a leg of, with the role it takes there. */
+/** The structure a trade is a leg of, with the role it takes there. */
 export interface TradeStructure {
     readonly structure_id: string;
-    /** The reference the deal is known by, or empty when it has none. */
+    /** The reference the structure is known by, or empty when it has none. */
     readonly reference: string;
     readonly role: string;
     readonly sequence_number: number;
@@ -124,7 +124,7 @@ export interface TradePageRecord {
     readonly roles: readonly TradePartyRole[];
     readonly booking: TradeBooking | null;
     readonly links: { readonly from: readonly TradeLink[]; readonly to: readonly TradeLink[] };
-    /** The deal this trade is a leg of, when it is one. */
+    /** The structure this trade is a leg of, when it is one. */
     readonly structures: readonly TradeStructure[];
     readonly history: readonly TradeVersion[];
 }

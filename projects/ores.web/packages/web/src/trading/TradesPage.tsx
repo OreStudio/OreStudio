@@ -232,7 +232,7 @@ function stateLabel(t: (key: string) => string, state: string): string {
 function IdentifierCell({ row }: { readonly row: TradeRow }): ReactNode {
     const { t } = useTranslation();
     if (row.row_kind === 'structure') {
-        // The deal's own reference, when it has one: a structure a desk grouped
+        // The structure's own reference, when it has one
         // is addressed by the reference it was given, not by its kind.
         return row.identifier === '' ? t('trading.trades.structureRow') : show(row.identifier);
     }

@@ -161,7 +161,7 @@ function send(
 }
 
 describe('the structure page route', () => {
-    it('reads a deal by the reference that names it and the trades that are its legs', async () => {
+    it('reads a structure by the reference that names it and the trades that are its legs', async () => {
         const { server, sessionId } = buildTestServer(repliesWith());
         const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}`);
 
@@ -175,7 +175,7 @@ describe('the structure page route', () => {
         expect(body.roles).toEqual(['leg']);
     });
 
-    it('answers 404 for a deal that is not there', async () => {
+    it('answers 404 for a structure that is not there', async () => {
         const { server, sessionId } = buildTestServer(repliesWith({ [lists.structures]: { result: ok, structures: [] } }));
         const answer = await send(server, sessionId, `/api/structures/${STRUCTURE}`);
         expect(answer.statusCode).toBe(404);
@@ -183,7 +183,7 @@ describe('the structure page route', () => {
 });
 
 describe('adding a leg', () => {
-    it('takes the next place in the deal and states the role it was given', async () => {
+    it('takes the next place in the structure and states the role it was given', async () => {
         const { server, sessionId, calls } = buildTestServer(
             repliesWith({
                 [lists.putMember]: { result: ok, structure_member: { trade_id: FREE_TRADE } },
@@ -204,7 +204,7 @@ describe('adding a leg', () => {
         });
     });
 
-    it('refuses a trade another deal already holds, and says which', async () => {
+    it('refuses a trade another structure already holds, and says which', async () => {
         const { server, sessionId, calls } = buildTestServer(
             repliesWith({
                 [lists.members]: {
@@ -233,7 +233,7 @@ describe('adding a leg', () => {
 });
 
 describe('the add-a-leg picker', () => {
-    it('offers the trades no deal has grouped, and not the ones that are legs', async () => {
+    it('offers the trades no structure has grouped, and not the ones that are legs', async () => {
         const { server, sessionId } = buildTestServer(
             repliesWith({
                 [lists.summaries]: {

@@ -53,7 +53,7 @@ function Frame({
     );
 }
 
-/** The legs of the deal, with the reference of each trade and the role it takes. */
+/** The legs of the structure, with the reference of each trade and the role it takes. */
 function LegTable({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -96,7 +96,7 @@ function LegTable({ record }: { readonly record: StructurePageRecord }): ReactNo
     );
 }
 
-/** The form that makes a trade a leg of this deal, in a role. */
+/** The form that makes a trade a leg of this structure, in a role. */
 function AddLegForm({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
@@ -165,7 +165,7 @@ function AddLegForm({ record }: { readonly record: StructurePageRecord }): React
 }
 
 /**
- * The page a deal opens on: what it is, and the trades grouped into it.
+ * The page a structure opens on: what it is, and the trades grouped into it.
  *
  * A structure is read by the reference the desk gave it, which is the name the
  * blotter shows, and not by its id: an id is not something a person says.

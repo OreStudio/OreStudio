@@ -40,9 +40,9 @@ import type { LiveSession } from './sessions.js';
 /**
  * The answer to a read the page can do without, or nothing.
  *
- * The deal a trade belongs to is supplementary to the trade: a caller who may
+ * The structure a trade belongs to is supplementary to the trade: a caller who may
  * read trades and not structures still gets the trade, and the page says nothing
- * about a deal rather than failing. Only this read is treated so; a read the
+ * about a structure rather than failing. Only this read is treated so; a read the
  * page is about still refuses loudly.
  */
 async function optionalRead(
@@ -372,7 +372,7 @@ function registerTradePageRoute(
             rows.map((row) => ({ ...row, other_label: labels.get(text(row[other])) ?? '' }));
 
         /*
-         * The deal this trade is a leg of, if any. A trade is a leg of one
+         * The structure this trade is a leg of, if any. A trade is a leg of one
          * structure at a time, which the store states by keying members on the
          * trade, so one read answers it.
          */
@@ -461,7 +461,7 @@ async function enrich(
     const counterpartyIds = distinct(summaries.map((entry) => text(entry['counterparty_id'])));
 
     /*
-     * A structure row is a deal in its own right, and the identifier that names
+     * A structure row is a row in its own right, and the identifier that names
      * it is its own: a trade's identifiers say nothing about it, so the rows are
      * read separately and the two meet on the row.
      */

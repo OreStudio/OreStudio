@@ -117,7 +117,7 @@ async function referencesOf(
 }
 
 /**
- * The trades that may become a leg of this deal.
+ * The trades that may become a leg of this structure.
  *
  * A trade is a leg of one structure at a time, so a trade already grouped
  * anywhere is not offered: a picker that offers it sets the desk up to be

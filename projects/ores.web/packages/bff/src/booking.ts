@@ -259,7 +259,7 @@ export function registerBookingRoutes(
      * A link is made by an activity, and the activity is the one that last
      * moved the trade: the state names it, so the client does not have to know
      * which write came last. The link type is the caller's, because whether a
-     * relationship is a hedge or a close-out is a fact about the deal.
+     * relationship is a hedge or a close-out is a fact about the structure.
      */
     server.post('/api/trades/:id/links', async (request) => {
         const session = requireSession(request);

@@ -2,14 +2,14 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './support/sign-in';
 
 /**
- * A structure's page: the deal the desk grouped, and the trades that are its legs.
+ * A structure's page: the structure the desk grouped, and the trades that are its legs.
  *
  * The case finds a grouped deal by its reference, opens it, reads the legs it
- * holds, and adds one more trade as a leg: the acceptance case for a deal whose
+ * holds, and adds one more trade as a leg: the acceptance case for a structure whose
  * parts are trades rather than rows invented for a screen.
  *
  * It needs a tenant whose population grouped trades, which the provisioned
- * environment has. The trade it adds is one the deal does not already hold, so
+ * environment has. The trade it adds is one the structure does not already hold, so
  * a second run adds a second leg rather than failing on a duplicate.
  */
 test('a structure shows its reference and its legs, and takes another leg', async ({ page }) => {
@@ -33,7 +33,7 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     });
 
     const legs = page.locator('section', {
-        has: page.getByRole('heading', { name: /legs of this deal/i }),
+        has: page.getByRole('heading', { name: /legs of this structure/i }),
     });
     const before = await legs.locator('tbody tr').count();
 
@@ -49,10 +49,10 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
 });
 
 /**
- * The trade page names the deal its trade is a leg of.
+ * The trade page names the structure its trade is a leg of.
  *
- * A person reading a trade should be able to reach the deal it belongs to
- * without knowing its id, so the link is found by the reference the deal shows.
+ * A person reading a trade should be able to reach the structure it belongs to
+ * without knowing its id, so the link is found by the reference the structure shows.
  */
 test('a trade names the structure it is a leg of', async ({ page }) => {
     await signIn(page);
@@ -63,10 +63,10 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
     const reference = (await row.locator('td').first().innerText()).trim();
     await row.locator('td').first().click();
 
-    // The leg's own link leads to the trade, and the trade names the deal it
-    // belongs to by the same reference the deal shows.
+    // The leg's own link leads to the trade, and the trade names the structure it
+    // belongs to by the same reference the structure shows.
     const legs = page.locator('section', {
-        has: page.getByRole('heading', { name: /legs of this deal/i }),
+        has: page.getByRole('heading', { name: /legs of this structure/i }),
     });
     await legs.locator('tbody tr').first().getByRole('link').first().click();
     await expect(page.getByRole('heading', { name: reference })).toBeHidden({ timeout: 20_000 });

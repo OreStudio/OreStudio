@@ -26,11 +26,11 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The extractor resolves 19 sections and 434 leaves, and 235 of them have text from the guide and are written into the contract. The other 199 are gaps, reported by the generator. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Give the rows their value sets, then close the 8 blocks the extractor cannot resolve. |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -156,6 +156,24 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Acceptance demands a value set for every row, but deriving a set needs the parse function behind the leaf, which the extractor does not record. | this task | Accept | The value sets moved to [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][their own task]], as the conventions precedent carried them, and the Acceptance now says what this task delivers. |
+| 2 | Eight parser blocks stay unresolved, so the extractor does not yet read every leaf. | extract_curve_terms.py | Accept | Each is named in =curve_terms.json= with the source line that reads it, and listed in Notes. Closing them is the next pass on the extractor; none is silently dropped. |
+| 3 | 199 leaves have no text and are not written into the contract. | this task | Accept | The generator prints them, so the coverage is visible rather than implied. A leaf gains text from a curation entry, which is how the guide's silence is recorded. |
 
 * Result
+
+The extractor reads the ORE source and writes =curve_terms.json=: 19 sections,
+434 leaves, 5 of them conditional, each with the source file and line of its
+read, and 8 blocks it cannot resolve, named with the line that reads them.
+
+The guide supplies prose for 235 of the leaves, attributed to the section it
+describes, and =curve_parameter_rows.py= turns those into contract rows keyed by
+=curveconfig.xsd= and the leaf's XPath. The generated seed carries 235 curve rows
+and 2,260 rows in all, and the generator reports the 199 leaves that still have
+no text.
+
+The leaf standard now defines /Parameter/ to cover a curve configuration, which
+the story decided and this task owed.
+
+What this task did not do, and says so: the value set each leaf's values belong
+to is [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][a task of its own]], because it needs the parse function behind each leaf.

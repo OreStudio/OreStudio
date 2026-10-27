@@ -46,7 +46,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:86EB0D6E-8BF5-4416-B578-84B0DC669D8C][Build every component as a unity build]] | STARTED | 2026-10-27 | | Make generated code and the test constants unity-safe, turn on a unity build of 16 for every target, keep the hand-written collisions out of it under a check, and measure the full build. |
 | [[id:B6121657-0FF2-4570-8CAF-EAF77E1AFDDF][Remove the unity build exclusions]] | DONE | 2026-10-27 | 2026-10-27 | Fix the hand-written file-local collisions recorded in cmake/unity_exclusions.cmake, component by component: share identical helpers, name different ones for what they do, and move file-local loggers into their classes. |
 | [[id:C80F7F1A-F761-42F5-8D86-C4D2EE3C52A4][Build the libpq layer in ores.database]] | DONE | 2026-10-27 | 2026-10-27 | A thin layer of our own over libpq: RAII handles, one ensure for results, SQLSTATE mapped to our exceptions, prepared statements, pipeline batches, COPY and the tenant session settings. |
-| [[id:FDB4F81B-421E-46AF-A2FD-F4EAF848CB9A][Generate repositories on libpq for ores.dq]] | BACKLOG | | | Change the repository templates to emit statements, typed parameters and row decoders on the libpq layer, behind the same repository interface, and regenerate ores.dq. |
+| [[id:FDB4F81B-421E-46AF-A2FD-F4EAF848CB9A][Generate repositories on libpq for ores.dq]] | DONE | 2026-10-27 | 2026-10-27 | Change the repository templates to emit statements, typed parameters and row decoders on the libpq layer, behind the same repository interface, and regenerate ores.dq. |
 | [[id:A9DC77BC-327A-4E51-A4E0-C3B6BA20A532][Move ores.refdata repositories to libpq]] | BACKLOG | | | Regenerate ores.refdata's repositories on the libpq layer and move its hand-written queries. |
 | [[id:8B46D41B-AC72-42CD-9469-B764A5996256][Move ores.trading repositories to libpq]] | BACKLOG | | | Regenerate ores.trading's repositories on the libpq layer and move its hand-written queries. |
 | [[id:DC215EA7-6398-4620-AFE8-CD6DE7AB146F][Move ores.reporting repositories to libpq]] | BACKLOG | | | Regenerate ores.reporting's repositories on the libpq layer and move its hand-written queries. |
@@ -126,6 +126,12 @@ Every component reads and writes the database through generated statements on a 
   - [[id:63AFAA9D-42F6-465E-9423-9A3FE81148A4][Hand repositories an open transaction, not credentials]]
   - [[id:B1575A54-4B73-4E3C-B958-0041E01D1625][Declare hand-written statements once, prepared and typed]]
   - [[id:E750C5F0-5A59-466D-A33A-538B90A1F1B9][Say in every store error whether to retry]]
+- *The repositories move through a query builder that matches sqlgen.* The
+  repository templates keep their sqlgen-shaped queries; =ores::database::q=
+  runs them on the libpq layer with sqlgen's names and SQL, and reads text into
+  the entity sqlgen filled. A component moves by stating
+  =#+repository_backend: libpq=. Typed binary rows and generated statements
+  follow sqlgen's removal.
 - *Generated code stays unity-safe.* Every file-local name in a generated file
   carries its entity's name.
 

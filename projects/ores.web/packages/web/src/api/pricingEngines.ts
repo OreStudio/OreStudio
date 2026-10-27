@@ -274,6 +274,63 @@ export interface PricingWrite {
 const ROOT = '/api/reporting/pricing-engines';
 
 /**
+ * What the server says importing a file would do: what the file holds, what the
+ * system does not know, and the difference against the target.
+ *
+ * The parse is the server's, so the browser never reads XML and the counts the
+ * screen draws are the ones the write will act on.
+ */
+const oreImportPreviewSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    root_element: z.string(),
+    in_file_products: z.int(),
+    in_file_parameters: z.int(),
+    products: z.array(
+        z.object({
+            type_code: z.string(),
+            model: z.string(),
+            engine: z.string(),
+            parameters: z.int(),
+        }),
+    ),
+    global_parameters: z.array(z.string()),
+    target_name: z.string(),
+    held: z.int(),
+    changed: z.int(),
+    added: z.int(),
+    removed: z.int(),
+    rows: z.array(
+        z.object({
+            key: z.string(),
+            entity: z.string(),
+            change: z.string(),
+            owner: z.string(),
+            name: z.string(),
+            what: z.string(),
+        }),
+    ),
+    issues: z.array(z.object({ kind: z.string(), subject: z.string(), detail: z.string() })),
+});
+
+export type PricingOrePreview = z.infer<typeof oreImportPreviewSchema>;
+
+/** What the import wrote, and the rows it could not write. */
+const oreImportResultSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    configuration_id: z.string(),
+    configuration_name: z.string(),
+    added: z.int(),
+    changed: z.int(),
+    deleted: z.int(),
+    kept: z.int(),
+    errors: z.array(z.object({ key: z.string(), message: z.string() })),
+});
+
+export type PricingOreImportResult = z.infer<typeof oreImportResultSchema>;
+
+/**
  * The address the ORE document of one configuration is written at.
  *
  * The document is the ORE service's answer, so the screen asks for it and saves
@@ -314,6 +371,49 @@ export const pricingEngines = {
     async oreDocument(id: string, fallbackName: string): Promise<ServedFile> {
         const file = await requestFile(oreDocumentPath(id), { method: 'GET' });
         return { name: file.name === '' ? fallbackName : file.name, content: file.content };
+    },
+
+    /**
+     * What importing an ORE pricing engines document would do.
+     *
+     * @param configurationId The configuration to compare it against, or null
+     *                        for a file that would create a new one.
+     */
+    async previewOreImport(
+        content: string,
+        configurationId: string | null,
+    ): Promise<PricingOrePreview> {
+        return oreImportPreviewSchema.parse(
+            await request(`${ROOT}/ore-import/preview`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ content, configurationId }),
+            }),
+        );
+    },
+
+    /**
+     * Writes an ORE pricing engines document with the person's choices.
+     *
+     * A new configuration carries its name and variant; an existing one carries
+     * its id. The removed rows the person kept are named, because a file that
+     * omits a row usually omits it by accident.
+     */
+    async importOre(options: {
+        readonly content: string;
+        readonly configurationId: string | null;
+        readonly newName: string;
+        readonly newVariant: string;
+        readonly removalsKept: readonly string[];
+        readonly intent: PricingIntent;
+    }): Promise<PricingOreImportResult> {
+        return oreImportResultSchema.parse(
+            await request(`${ROOT}/ore-import`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(options),
+            }),
+        );
     },
 
     /** One configuration with its products and parameters. */

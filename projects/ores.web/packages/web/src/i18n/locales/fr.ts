@@ -4037,6 +4037,19 @@ const fr: SourceCatalogue = {
                 review: 'La différence, et la relecture',
                 reviewLead:
                     "Ce que l'import écrit, les lignes supprimées d'abord. Un fichier qui omet un enregistrement l'oublie le plus souvent par accident, donc Garder est le choix par défaut.",
+                target: 'Où il va',
+                targetLead:
+                    "Un fichier vers une nouvelle configuration ne change rien de ce qui existe. Un fichier vers une configuration que vous détenez la change sur place, et son historique l'enregistre.",
+                targetNew: 'Une nouvelle configuration',
+                targetExisting: 'Une configuration que je détiens',
+                targetChoose: 'Choisir une configuration',
+                targetName: 'Nom',
+                targetVariant: 'Variante',
+                targetNote:
+                    "Rien n'est écrit avant la dernière étape. Une configuration officielle est une proposition dans la norme ; cet import écrit le changement directement, avec votre motif et votre commentaire.",
+                targetExistingNote:
+                    'Écrit sur {name}, sur place. Chaque ligne que le fichier omet est gardée sauf avis contraire, et l’historique enregistre le changement.',
+                targetNewNote: 'Crée la configuration {name}. Rien de ce qui existe ne change.',
             },
             counts: {
                 inFile: 'Dans le fichier',
@@ -4059,9 +4072,16 @@ const fr: SourceCatalogue = {
                 duplicate: 'Doublons',
                 duplicateLead:
                     'Un enregistrement nommé deux fois dans le fichier ; le premier est gardé.',
+                missing: 'Lignes que le fichier omet',
+                missingLead:
+                    "Une ligne sans laquelle une configuration ne peut pas être enregistrée ; l'import la nomme ici plutôt que de refuser tout le fichier.",
+                unknown_type: 'Types de produit que le vocabulaire ne contient pas',
+                unknown_typeLead:
+                    'Les écrans ne peuvent pas proposer ces types. Les lignes sont écrites telles que le fichier les énonce.',
             },
             noDifference: "Le fichier contient ce que le tenant détient. Il n'y a rien à écrire.",
             change: 'Changement',
+            record: 'Enregistrement',
             what: 'Quoi',
             choice: 'Choix',
             changes: { added: 'Ajouté', changed: 'Modifié', removed: 'Supprimé' },
@@ -4709,7 +4729,8 @@ const fr: SourceCatalogue = {
                 },
                 basisPoints: 'points de base',
                 noBaseline: 'Aucun jeu publié, donc aucune référence à comparer.',
-                noCandidate: 'La courbe {curve} n’a aucun candidat, donc rien à comparer au jeu publié.',
+                noCandidate:
+                    'La courbe {curve} n’a aucun candidat, donc rien à comparer au jeu publié.',
             },
         },
         subscriptions: {
@@ -5580,6 +5601,19 @@ const fr: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        importTargetDetail: '{variant} · {products} produits · {settings} paramètres',
+        importCounts: {
+            products: 'Produits dans le fichier',
+            settings: 'Paramètres dans le fichier',
+        },
+        importCountsNote:
+            'Un produit est écrit avec son modèle, son moteur et les paramètres que chacun prend. Les paramètres de la configuration elle-même sont écrits avec elle.',
+        importProduct: '{type} : modèle {model}, moteur {engine}, {settings} paramètre(s)',
+        importGlobal: 'Paramètre de configuration : {name}',
+        importSummary:
+            '{added} ajouté(s), {changed} modifié(s), {removed} supprimé(s), {held} déjà détenu(s).',
+        imported:
+            'Importé dans {name} : {added} ajouté(s), {changed} modifié(s), {deleted} supprimé(s), {kept} gardé(s).',
         productCount: '{count} produits',
         author: {
             next: 'Suivant',

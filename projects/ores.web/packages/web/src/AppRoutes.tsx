@@ -120,6 +120,7 @@ import { EngineSettingsPage } from './engineSettings/EngineSettingsPage.js';
 import { EngineSettingsRecordPage } from './engineSettings/EngineSettingsRecordPage.js';
 import { PricingEnginesPage } from './pricingEngines/PricingEnginesPage.js';
 import { PricingEnginePage } from './pricingEngines/PricingEnginePage.js';
+import { PricingEngineImportPage } from './pricingEngines/PricingEngineImportPage.js';
 import { PricingEngineJourney } from './pricingEngines/PricingEngineJourney.js';
 import { SensitivityTemplatesPage } from './sensitivityTemplates/SensitivityTemplatesPage.js';
 import { SensitivityTemplatePage } from './sensitivityTemplates/SensitivityTemplatePage.js';
@@ -875,6 +876,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PricingEnginesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.pricingEngines}/import`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PricingEngineImportPage />
                     ),
                     'workspace',
                 )}

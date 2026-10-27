@@ -248,22 +248,122 @@ export function RecordExportDialog({
     );
 }
 
-type Choice = 'take' | 'keep' | 'delete' | 'skip';
+/** One row of the difference, as the review draws it. */
+export interface OreImportReviewRow {
+    /** The row's identity within its configuration; a choice names it. */
+    readonly key: string;
+    /** One of added, changed, removed. */
+    readonly change: string;
+    /** The row as the review names it; the key when the kind has no better word. */
+    readonly name: string;
+    /** A second name the kind reads the row by, such as a currency's name. */
+    readonly detail?: string;
+    readonly what: string;
+}
 
-/** What the review offers for a row of the difference, and which is the default (RS-ORE-05). */
-const CHOICES: Record<string, readonly [Choice, Choice]> = {
-    removed: ['keep', 'delete'],
-    changed: ['take', 'keep'],
-    added: ['take', 'skip'],
-};
+/** One thing the file states and the system does not know. */
+export interface OreImportIssue {
+    readonly kind: string;
+    readonly subject: string;
+    readonly detail: string;
+}
+
+/** What the file holds, as the second step states it. */
+export interface OreImportHolds {
+    readonly counts: readonly {
+        readonly id: string;
+        readonly label: string;
+        readonly value: number;
+    }[];
+    /** The products or records the file carries, one line each. */
+    readonly lines: readonly string[];
+    /** What the counts mean, in the kind's own words. */
+    readonly note: string;
+}
+
+/** A configuration a file may be written into (RS-ORE-05, step 4). */
+export interface OreImportTarget {
+    readonly id: string;
+    readonly name: string;
+    readonly detail: string;
+}
+
+/** What the server answers a preview with, in the words the steps read. */
+export interface OreImportPreview {
+    readonly success: boolean;
+    readonly message: string;
+    /** The configuration the file was compared against, empty for none. */
+    readonly targetName: string;
+    readonly holds: OreImportHolds;
+    readonly rows: readonly OreImportReviewRow[];
+    readonly issues: readonly OreImportIssue[];
+    /** The difference in one line, for the review. */
+    readonly summary: string;
+}
+
+/** What the review offers for a row, the first being the default. */
+export interface OreImportChoice {
+    readonly id: string;
+    readonly label: string;
+}
+
+/** Where a file is put: a configuration that exists, or one the import makes. */
+export interface OreImportWriteTarget {
+    readonly id: string | null;
+    readonly newName: string;
+    readonly newVariant: string;
+}
+
+/** What an import answers. */
+export interface OreImportDone {
+    readonly success: boolean;
+    readonly message: string;
+    /** The reasons the write gave, one per row it could not write. */
+    readonly errors: readonly string[];
+    readonly summary: string;
+}
 
 /**
- * The Import steps of a table kind, at their own address: the file, what it
- * holds, what the system does not know, and the difference with the review.
- * The parse is the server's, and nothing is written before the last step
- * (RS-ORE-05, RS-ORE-06).
+ * A kind that ORE reads as one document, as the Import steps see it: the
+ * document it accepts, the configurations a file may be written into, what the
+ * file holds, and the two server operations behind the steps (RS-ORE-01,
+ * RS-ORE-05, RS-ORE-07).
+ *
+ * The words are the kind's own, so the shared dialog states a configuration's
+ * products where the currencies' states currencies, and no screen writes a
+ * dialog of its own.
  */
-export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): ReactNode {
+export interface OreImportKind {
+    /** The key of the kind's words: its plural. */
+    readonly words: string;
+    readonly rootElement: string;
+    readonly listPath: string;
+    /**
+     * What a file is written into: a configuration the person chooses, or the
+     * kind's table, which is the whole document and leaves the steps at four
+     * (RS-ORE-05).
+     */
+    readonly targetKind: 'configuration' | 'table';
+    /** The configurations a file may be written into; empty until they are read. */
+    readonly targets?: readonly OreImportTarget[];
+    readonly preview: (content: string, targetId: string | null) => Promise<OreImportPreview>;
+    /** The choices the review offers for one row; none where the file decides. */
+    readonly choicesFor: (row: OreImportReviewRow) => readonly OreImportChoice[];
+    readonly write: (request: {
+        readonly content: string;
+        readonly target: OreImportWriteTarget;
+        readonly choices: Readonly<Record<string, string>>;
+        readonly intent: { readonly reason_code: string; readonly commentary: string };
+    }) => Promise<OreImportDone>;
+}
+
+/**
+ * The Import steps of a kind, at their own address: the file, what it holds,
+ * what the system does not know, the target where the kind has one, and the
+ * difference with the review. The parse is the server's, and nothing is written
+ * before the last step (RS-ORE-05, RS-ORE-06).
+ */
+export function OreImportPage({ kind }: { readonly kind: OreImportKind }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queries = useQueryClient();
@@ -274,11 +374,20 @@ export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): Rea
     ];
     const [at, setAt] = useState(0);
     const [file, setFile] = useState<{ readonly name: string; readonly content: string }>();
-    const [preview, setPreview] = useState<OrePreview>();
-    const [choices, setChoices] = useState<Readonly<Record<string, Choice>>>({});
+    const [preview, setPreview] = useState<OreImportPreview>();
+    const [choices, setChoices] = useState<Readonly<Record<string, string>>>({});
     const [commentary, setCommentary] = useState('');
     const reason = useReason('amend', true);
     const missing = reason.needsCommentary && commentary.trim() === '';
+
+    // The target: a configuration the file would create, which writes nothing of
+    // the tenant's, or one it would change in place.
+    const [existing, setExisting] = useState(false);
+    const [targetId, setTargetId] = useState('');
+    const [newName, setNewName] = useState('');
+    const [newVariant, setNewVariant] = useState('');
+    const targets = kind.targets ?? [];
+    const picksTarget = kind.targetKind === 'configuration';
 
     const choose = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
         const picked = event.target.files?.[0];
@@ -289,8 +398,10 @@ export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): Rea
         setChoices({});
         setFile({ name: picked.name, content: await picked.text() });
     };
-    const choiceOf = (row: OrePreview['rows'][number]): Choice =>
-        choices[row.iso_code] ?? CHOICES[row.change]?.[0] ?? 'take';
+    const choiceOf = (row: OreImportReviewRow): string =>
+        choices[row.key] ?? kind.choicesFor(row)[0]?.id ?? '';
+    // A new configuration needs a name; an existing one needs to be chosen.
+    const targetComplete = !picksTarget || (existing ? targetId !== '' : newName.trim() !== '');
 
     const steps: readonly JourneyStep<ReactNode>[] = [
         {
@@ -325,7 +436,9 @@ export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): Rea
                     if (file === undefined) {
                         return;
                     }
-                    const result = await api.previewOreImport(kind.resource, file.content);
+                    // The first reading states what the file holds and what the
+                    // system does not know; the difference waits for the target.
+                    const result = await kind.preview(file.content, null);
                     if (!result.success) {
                         throw new Error(result.message);
                     }
@@ -337,30 +450,7 @@ export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): Rea
             id: 'holds',
             title: t('refdata.ore.steps.holds'),
             lead: t('refdata.ore.steps.holdsLead'),
-            body:
-                preview === undefined ? null : (
-                    <div className="space-y-3">
-                        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                            {(
-                                [
-                                    ['inFile', preview.in_file],
-                                    ['held', preview.held],
-                                    ['changed', preview.changed],
-                                    ['added', preview.added],
-                                    ['removed', preview.removed],
-                                ] as const
-                            ).map(([key, value]) => (
-                                <div key={key} className="rounded-md border border-line p-3">
-                                    <p className="text-xl font-semibold tabular-nums">{value}</p>
-                                    <p className="text-xs text-ink-muted">
-                                        {t(`refdata.ore.counts.${key}`)}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                        <p className="text-xs text-ink-faint">{t('refdata.ore.countsNote')}</p>
-                    </div>
-                ),
+            body: preview === undefined ? null : <OreImportHoldsBody holds={preview.holds} />,
             next: { label: t('refdata.ore.next'), enabled: preview !== undefined },
         },
         {
@@ -368,173 +458,100 @@ export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): Rea
             title: t('refdata.ore.steps.unknown'),
             lead: t('refdata.ore.steps.unknownLead'),
             body:
-                preview === undefined ? null : preview.issues.length === 0 ? (
-                    <Notice tone="success">{t('refdata.ore.nothingUnknown')}</Notice>
-                ) : (
-                    <div className="space-y-4">
-                        {(['value', 'dropped', 'duplicate'] as const).map((issueKind) => {
-                            const issues = preview.issues.filter(
-                                (issue) => issue.kind === issueKind,
-                            );
-                            if (issues.length === 0) {
-                                return null;
-                            }
-                            return (
-                                <section key={issueKind} className="space-y-2">
-                                    <h3 className="text-sm font-medium">
-                                        {t(`refdata.ore.issues.${issueKind}`)}
-                                    </h3>
-                                    <p className="text-xs text-ink-muted">
-                                        {t(`refdata.ore.issues.${issueKind}Lead`)}
-                                    </p>
-                                    <table className="w-full text-sm">
-                                        <tbody>
-                                            {issues.map((issue, index) => (
-                                                <tr
-                                                    key={`${issue.subject}-${String(index)}`}
-                                                    className="border-t border-line-subtle"
-                                                >
-                                                    <td className="py-2 pr-4 font-mono text-xs">
-                                                        {issue.subject}
-                                                    </td>
-                                                    <td className="py-2 text-ink-muted">
-                                                        {issue.detail}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </section>
-                            );
-                        })}
-                    </div>
+                preview === undefined ? null : (
+                    <OreImportUnknownBody
+                        issues={preview.issues}
+                        nothingUnknown={t('refdata.ore.nothingUnknown')}
+                    />
                 ),
             next: { label: t('refdata.ore.next'), enabled: preview !== undefined },
         },
+        ...(!picksTarget
+            ? []
+            : [
+                  {
+                      id: 'target',
+                      title: t('refdata.ore.steps.target'),
+                      lead: t('refdata.ore.steps.targetLead'),
+                      body: (
+                          <OreImportTargetBody
+                              targets={targets}
+                              existing={existing}
+                              onExisting={setExisting}
+                              targetId={targetId}
+                              onTargetId={setTargetId}
+                              name={newName}
+                              onName={setNewName}
+                              variant={newVariant}
+                              onVariant={setNewVariant}
+                          />
+                      ),
+                      next: {
+                          label: t('refdata.ore.next'),
+                          enabled: targetComplete,
+                          run: async () => {
+                              if (file === undefined) {
+                                  return;
+                              }
+                              // The difference is read against the target the
+                              // person chose, so the target is decided before it.
+                              const result = await kind.preview(
+                                  file.content,
+                                  existing ? targetId : null,
+                              );
+                              if (!result.success) {
+                                  throw new Error(result.message);
+                              }
+                              setPreview(result);
+                          },
+                      },
+                  },
+              ]),
         {
             id: 'review',
             title: t('refdata.ore.steps.review'),
             lead: t('refdata.ore.steps.reviewLead'),
             body:
                 preview === undefined ? null : (
-                    <div className="space-y-4">
-                        {preview.rows.length === 0 ? (
-                            <Notice tone="info">{t('refdata.ore.noDifference')}</Notice>
-                        ) : (
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="text-left text-xs text-ink-muted">
-                                        <th className="py-2 pr-4">{t('refdata.ore.change')}</th>
-                                        <th className="py-2 pr-4">
-                                            {t('refdata.fields.iso_code')}
-                                        </th>
-                                        <th className="py-2 pr-4">{t('refdata.fields.name')}</th>
-                                        <th className="py-2 pr-4">{t('refdata.ore.what')}</th>
-                                        <th className="py-2">{t('refdata.ore.choice')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {[...preview.rows]
-                                        .sort(
-                                            (a, b) =>
-                                                ['removed', 'changed', 'added'].indexOf(a.change) -
-                                                ['removed', 'changed', 'added'].indexOf(b.change),
-                                        )
-                                        .map((row) => (
-                                            <tr
-                                                key={row.iso_code}
-                                                className="border-t border-line-subtle"
-                                            >
-                                                <td className="py-2 pr-4">
-                                                    {t(`refdata.ore.changes.${row.change}`)}
-                                                </td>
-                                                <td className="py-2 pr-4 font-mono text-xs">
-                                                    {row.iso_code}
-                                                </td>
-                                                <td className="py-2 pr-4">{row.name}</td>
-                                                <td className="py-2 pr-4 text-ink-muted">
-                                                    {row.what}
-                                                </td>
-                                                <td className="py-2">
-                                                    <span className="flex flex-wrap gap-3">
-                                                        {(CHOICES[row.change] ?? []).map(
-                                                            (choice) => (
-                                                                <label
-                                                                    key={choice}
-                                                                    className="flex items-center gap-1"
-                                                                >
-                                                                    <input
-                                                                        type="radio"
-                                                                        name={`choice-${row.iso_code}`}
-                                                                        checked={
-                                                                            choiceOf(row) === choice
-                                                                        }
-                                                                        onChange={() =>
-                                                                            setChoices({
-                                                                                ...choices,
-                                                                                [row.iso_code]:
-                                                                                    choice,
-                                                                            })
-                                                                        }
-                                                                    />
-                                                                    {t(
-                                                                        `refdata.ore.choices.${choice}`,
-                                                                    )}
-                                                                </label>
-                                                            ),
-                                                        )}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                        )}
-                        <p className="text-xs text-ink-faint">{t('refdata.ore.reach')}</p>
-                        <ReasonFields
-                            reason={reason}
-                            commentary={commentary}
-                            onCommentary={setCommentary}
-                            missing={missing}
-                        />
-                    </div>
+                    <OreImportReviewBody
+                        kind={kind}
+                        preview={preview}
+                        choices={choices}
+                        onChoice={(key, id) => setChoices({ ...choices, [key]: id })}
+                        existing={existing}
+                        newName={newName}
+                        reason={reason}
+                        commentary={commentary}
+                        onCommentary={setCommentary}
+                        missing={missing}
+                    />
                 ),
             next: {
                 label: t('refdata.ore.import'),
-                enabled: preview !== undefined && !missing && reason.code !== '',
+                enabled: preview !== undefined && !missing && reason.code !== '' && targetComplete,
                 run: async () => {
                     if (file === undefined || preview === undefined) {
                         return;
                     }
-                    const result: OreImportResult = await api.importOre(kind.resource, {
+                    const result = await kind.write({
                         content: file.content,
-                        choices: preview.rows.map((row) => ({
-                            iso_code: row.iso_code,
-                            action: choiceOf(row),
-                        })),
-                        reasonCode: reason.code,
-                        commentary: commentary.trim(),
+                        target: {
+                            id: existing && targetId !== '' ? targetId : null,
+                            newName: newName.trim(),
+                            newVariant: newVariant.trim(),
+                        },
+                        choices,
+                        intent: { reason_code: reason.code, commentary: commentary.trim() },
                     });
                     markStale(queries, [['records'], ['history'], ['timeline']]);
                     if (!result.success) {
                         throw new Error(
-                            [
-                                result.message,
-                                ...result.errors.map((e) => `${e.iso_code}: ${e.message}`),
-                            ]
+                            [result.message, ...result.errors]
                                 .filter((line) => line !== '')
                                 .join('\n'),
                         );
                     }
-                    toast(
-                        t('refdata.ore.imported', {
-                            added: String(result.added),
-                            changed: String(result.changed),
-                            deleted: String(result.deleted),
-                            kept: String(result.kept),
-                        }),
-                        'info',
-                    );
+                    toast(result.summary, 'info');
                     void navigate(kind.listPath);
                 },
             },
@@ -556,4 +573,306 @@ export function OreImportPage({ kind }: { readonly kind: OreDocumentKind }): Rea
             <JourneyPage steps={steps} at={at} onMove={setAt} />
         </div>
     );
+}
+
+/**
+ * What the file holds: the counts the server states, then the products or
+ * records it carries, one line each, so the second step is a reading and not a
+ * promise (RS-ORE-05, step 2).
+ */
+export function OreImportHoldsBody({ holds }: { readonly holds: OreImportHolds }): ReactNode {
+    return (
+        <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {holds.counts.map((count) => (
+                    <div key={count.id} className="rounded-md border border-line p-3">
+                        <p className="text-xl font-semibold tabular-nums">{count.value}</p>
+                        <p className="text-xs text-ink-muted">{count.label}</p>
+                    </div>
+                ))}
+            </div>
+            {holds.lines.length > 0 && (
+                <ul className="space-y-1 text-sm text-ink-muted">
+                    {holds.lines.map((line, index) => (
+                        <li key={`${line}-${String(index)}`}>{line}</li>
+                    ))}
+                </ul>
+            )}
+            <p className="text-xs text-ink-faint">{holds.note}</p>
+        </div>
+    );
+}
+
+/**
+ * What the system does not know, one list for each kind of thing, and each list
+ * only when it holds something: a type with no vocabulary row, an element the
+ * tables cannot hold, a row the file states twice (RS-ORE-05, step 3).
+ */
+export function OreImportUnknownBody({
+    issues,
+    nothingUnknown = 'Everything in the file is known.',
+}: {
+    readonly issues: readonly OreImportIssue[];
+    readonly nothingUnknown?: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (issues.length === 0) {
+        return <Notice tone="success">{nothingUnknown}</Notice>;
+    }
+    return (
+        <div className="space-y-4">
+            {[...new Set(issues.map((issue) => issue.kind))].map((kind) => (
+                <section key={kind} className="space-y-2">
+                    <h3 className="text-sm font-medium">{t(`refdata.ore.issues.${kind}`)}</h3>
+                    <p className="text-xs text-ink-muted">{t(`refdata.ore.issues.${kind}Lead`)}</p>
+                    <table className="w-full text-sm">
+                        <tbody>
+                            {issues
+                                .filter((issue) => issue.kind === kind)
+                                .map((issue, index) => (
+                                    <tr
+                                        key={`${issue.subject}-${String(index)}`}
+                                        className="border-t border-line-subtle"
+                                    >
+                                        <td className="py-2 pr-4 font-mono text-xs">
+                                            {issue.subject}
+                                        </td>
+                                        <td className="py-2 text-ink-muted">{issue.detail}</td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                </section>
+            ))}
+        </div>
+    );
+}
+
+/**
+ * The target step: a configuration the file would create, which changes nothing
+ * that exists, or one it would change in place (RS-ORE-05, step 4).
+ */
+export function OreImportTargetBody({
+    targets,
+    existing,
+    onExisting,
+    targetId,
+    onTargetId,
+    name,
+    onName,
+    variant,
+    onVariant,
+}: {
+    readonly targets: readonly OreImportTarget[];
+    readonly existing: boolean;
+    readonly onExisting: (value: boolean) => void;
+    readonly targetId: string;
+    readonly onTargetId: (value: string) => void;
+    readonly name: string;
+    readonly onName: (value: string) => void;
+    readonly variant: string;
+    readonly onVariant: (value: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div className="space-y-4">
+            <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="radio"
+                        name="ore-target"
+                        checked={!existing}
+                        onChange={() => onExisting(false)}
+                    />
+                    {t('refdata.ore.steps.targetNew')}
+                </label>
+                {!existing && (
+                    <div className="ml-6 grid gap-3 sm:grid-cols-2">
+                        <label className="space-y-1 text-xs text-ink-muted">
+                            {t('refdata.ore.steps.targetName')}
+                            <input
+                                value={name}
+                                onChange={(event) => onName(event.target.value)}
+                                className="block w-full rounded-md border border-line px-2 py-1 text-sm text-ink"
+                            />
+                        </label>
+                        <label className="space-y-1 text-xs text-ink-muted">
+                            {t('refdata.ore.steps.targetVariant')}
+                            <input
+                                value={variant}
+                                onChange={(event) => onVariant(event.target.value)}
+                                className="block w-full rounded-md border border-line px-2 py-1 text-sm text-ink"
+                            />
+                        </label>
+                    </div>
+                )}
+            </div>
+            <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="radio"
+                        name="ore-target"
+                        checked={existing}
+                        onChange={() => onExisting(true)}
+                    />
+                    {t('refdata.ore.steps.targetExisting')}
+                </label>
+                {existing && (
+                    <select
+                        value={targetId}
+                        onChange={(event) => onTargetId(event.target.value)}
+                        className="ml-6 block rounded-md border border-line px-2 py-1 text-sm"
+                    >
+                        <option value="">{t('refdata.ore.steps.targetChoose')}</option>
+                        {targets.map((target) => (
+                            <option key={target.id} value={target.id}>
+                                {target.detail === ''
+                                    ? target.name
+                                    : `${target.name} · ${target.detail}`}
+                            </option>
+                        ))}
+                    </select>
+                )}
+            </div>
+            <p className="text-xs text-ink-faint">{t('refdata.ore.steps.targetNote')}</p>
+        </div>
+    );
+}
+
+/**
+ * The difference and the review: the removed rows first, each with the choice
+ * the review offers and Keep it first, the reach of the write, and the reason
+ * and commentary the write is made with (RS-ORE-05, step 5).
+ */
+export function OreImportReviewBody({
+    kind,
+    preview,
+    choices,
+    onChoice,
+    existing,
+    newName,
+    reason,
+    commentary,
+    onCommentary,
+    missing,
+}: {
+    readonly kind: OreImportKind;
+    readonly preview: OreImportPreview;
+    readonly choices: Readonly<Record<string, string>>;
+    readonly onChoice: (key: string, choice: string) => void;
+    readonly existing: boolean;
+    readonly newName: string;
+    readonly reason: ReturnType<typeof useReason>;
+    readonly commentary: string;
+    readonly onCommentary: (value: string) => void;
+    readonly missing: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    const choiceOf = (row: OreImportReviewRow): string =>
+        choices[row.key] ?? kind.choicesFor(row)[0]?.id ?? '';
+    const order = ['removed', 'changed', 'added'];
+    return (
+        <div className="space-y-4">
+            <TargetSentence
+                hasTargets={kind.targetKind === 'configuration'}
+                existing={existing}
+                targetName={preview.targetName}
+                newName={newName}
+            />
+            {preview.rows.length === 0 ? (
+                <Notice tone="info">{t('refdata.ore.noDifference')}</Notice>
+            ) : (
+                <>
+                    {preview.summary !== '' && (
+                        <p className="text-sm text-ink-muted">{preview.summary}</p>
+                    )}
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="text-left text-xs text-ink-muted">
+                                <th className="py-2 pr-4">{t('refdata.ore.change')}</th>
+                                <th className="py-2 pr-4">{t('refdata.ore.record')}</th>
+                                <th className="py-2 pr-4">{t('refdata.ore.what')}</th>
+                                <th className="py-2">{t('refdata.ore.choice')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...preview.rows]
+                                .sort((a, b) => order.indexOf(a.change) - order.indexOf(b.change))
+                                .map((row) => (
+                                    <tr key={row.key} className="border-t border-line-subtle">
+                                        <td className="py-2 pr-4">
+                                            {t(`refdata.ore.changes.${row.change}`)}
+                                        </td>
+                                        <td className="py-2 pr-4 font-mono text-xs">
+                                            {row.name === '' ? row.key : row.name}
+                                        </td>
+                                        <td className="py-2 pr-4 text-ink-muted">
+                                            {row.detail === undefined
+                                                ? row.what
+                                                : `${row.detail} · ${row.what}`}
+                                        </td>
+                                        <td className="py-2">
+                                            <span className="flex flex-wrap gap-3">
+                                                {kind.choicesFor(row).map((choice) => (
+                                                    <label
+                                                        key={choice.id}
+                                                        className="flex items-center gap-1"
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name={`choice-${row.key}`}
+                                                            checked={choiceOf(row) === choice.id}
+                                                            onChange={() =>
+                                                                onChoice(row.key, choice.id)
+                                                            }
+                                                        />
+                                                        {choice.label}
+                                                    </label>
+                                                ))}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                </>
+            )}
+            <p className="text-xs text-ink-faint">{t('refdata.ore.reach')}</p>
+            <ReasonFields
+                reason={reason}
+                commentary={commentary}
+                onCommentary={onCommentary}
+                missing={missing}
+            />
+        </div>
+    );
+}
+
+/**
+ * Where the file is about to be written, in one sentence: the configuration the
+ * person chose, named, so the last press states its reach (RS-ORE-05).
+ */
+function TargetSentence({
+    hasTargets,
+    existing,
+    targetName,
+    newName,
+}: {
+    readonly hasTargets: boolean;
+    readonly existing: boolean;
+    readonly targetName: string;
+    readonly newName: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    if (!hasTargets) {
+        return null;
+    }
+    if (existing) {
+        return (
+            <Notice tone="warn">
+                {t('refdata.ore.steps.targetExistingNote', { name: targetName })}
+            </Notice>
+        );
+    }
+    return <Notice tone="info">{t('refdata.ore.steps.targetNewNote', { name: newName })}</Notice>;
 }

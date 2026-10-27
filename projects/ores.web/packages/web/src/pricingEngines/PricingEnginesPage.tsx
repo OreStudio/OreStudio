@@ -41,12 +41,13 @@ import {
     type ListFilter,
 } from '../refdata/RecordList.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { pricingEnginePath } from '../shell/paths.js';
+import { PATHS, pricingEnginePath } from '../shell/paths.js';
 import { WorkflowMenu } from '../shell/WorkflowMenu.js';
 import { PARTY_COLUMN_ID, PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { Notice, Tag } from '../ui/Primitives.js';
+import { Icon } from '../ui/Icon.js';
+import { LinkButton, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 
 /** Where the services announce a change to a configuration, so the list can hear one. */
@@ -218,7 +219,17 @@ export function PricingEnginesPage(): ReactNode {
             crumbs={trail}
             columns={columns}
             pathOf={(row) => pricingEnginePath(row.id)}
-            actions={<WorkflowMenu on="pricingEngines" />}
+            // Import stands between Refresh and the workflows, because it brings
+            // records in (RS-ORE-02).
+            actions={
+                <>
+                    <LinkButton to={`${PATHS.pricingEngines}/import`}>
+                        <Icon name="import" />
+                        {t('refdata.ore.import')}
+                    </LinkButton>
+                    <WorkflowMenu on="pricingEngines" />
+                </>
+            }
         />
     );
 }

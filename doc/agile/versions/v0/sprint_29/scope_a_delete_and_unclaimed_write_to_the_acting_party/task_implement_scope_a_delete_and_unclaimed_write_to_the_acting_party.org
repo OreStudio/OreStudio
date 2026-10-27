@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 42320A2D-D416-4A31-A72B-E96E3C7B518B
+:END:
+#+title: Task: Scope the repository's key read and delete to the acting party
+#+description: Initial task for: Scope a delete and an unclaimed write to the acting party
+#+type: task
+#+level: s1
+#+filetags: :scope_a_delete_and_unclaimed_write_to_the_acting_party:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5][Scope a delete and an unclaimed write to the acting party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A write or a delete from a session that sees several parties acts on the acting party's row of the key, and only on that row. The repository makes the choice where it reads, so the service needs no filter after the read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5][Scope a delete and an unclaimed write to the acting party]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- read_latest by key prefers the acting party's rows, with the rule of_acting_party() has today: keep only the acting party's rows when one exists, otherwise keep the rows as read.
+- remove checks the version of the acting party's row and closes only that row: the delete names the party of the row it checked.
+- A write with no precondition states the version of the acting party's row.
+- The service template drops of_acting_party(); the helper and its tests go if nothing else uses them.
+- A test proves from a parent party that a delete and an unclaimed write of a convention key touch only the acting party's row.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

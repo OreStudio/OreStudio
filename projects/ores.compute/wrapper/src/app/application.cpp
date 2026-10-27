@@ -28,6 +28,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_run_verdict.hpp"
 #include "ores.ore.core/results/canonical_rows.hpp"
+#include "ores.utility/compression/gzip.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "ores.platform/system/system_info.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -489,13 +490,19 @@ void upload_canonical_rows(auto& lg,
     if (outcome.rows.empty())
         return;
 
-    const auto rows_file = output_dir.parent_path() / "results.csv";
+    // Storage holds blobs compressed, and the reader decompresses: the rows are
+    // gzipped here so the object's shape is the same whatever wrote it.
+    const auto rows_text = ores::ore::results::canonical_csv(outcome.rows);
+    const auto compressed = ores::utility::compression::gzip_compress(
+        std::span(reinterpret_cast<const char*>(rows_text.data()), rows_text.size()));
+
+    const auto rows_file = output_dir.parent_path() / "results.csv.gz";
     {
         std::ofstream out(rows_file, std::ios::binary);
-        out << ores::ore::results::canonical_csv(outcome.rows);
+        out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
     }
     BOOST_LOG_SEV(lg, info) << "Uploading " << outcome.rows.size() << " canonical rows for "
-                            << evt.result_id << " (" << fs::file_size(rows_file) << " bytes)";
+                            << evt.result_id << " (" << compressed.size() << " bytes)";
     ores::storage::net::http_client::put(
         make_url(cfg.http_base_url, evt.results_uri), rows_file, evt.storage_token);
 }

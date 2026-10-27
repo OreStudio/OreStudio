@@ -227,8 +227,8 @@ TEST_CASE("of_acting_party keeps a row with no party and drops another party's",
     const auto below = boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");
     const auto ctx = h.context().with_party(h.tenant_id(), acting, {acting, below}, "alice");
 
-    const auto kept = of_acting_party(
-        std::vector<optional_party_record>{{std::nullopt}, {below}, {acting}}, ctx);
+    const auto kept =
+        of_acting_party(std::vector<optional_party_record>{{std::nullopt}, {below}, {acting}}, ctx);
 
     REQUIRE(kept.size() == 2);
     REQUIRE_FALSE(kept.front().party_id.has_value());

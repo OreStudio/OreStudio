@@ -26,6 +26,10 @@
 -- - ores.iam (for tenant validation)
 -- - ores.dq (for change reason validation)
 
+-- The refusal behind a basket constituent's kind and code, which its table
+-- checks against, so the function must precede the table.
+\ir ./trading_basket_constituent_functions_create.sql
+
 -- Product type discriminator enum (must precede trade_types and instrument tables)
 \ir ./trading_product_type_create.sql
 

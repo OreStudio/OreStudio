@@ -91,6 +91,19 @@ struct equity_basket_constituent final {
     std::string underlying_name;
 
     /**
+     * @brief The vocabulary the constituent's code belongs to.
+     *
+     * ORE states the kind beside the name, as Underlying/Type, and the kind is not implied by the
+     * trade type: an EquityWorstOfBasketSwap in the corpus carries constituents whose kind is FX. A
+     * basket that could not state the kind would file a currency pair as an equity and have nothing
+     * to check the code against.
+     *
+     * The kinds are the vocabularies the store holds: equity, fx and commodity. The check below
+     * refuses a code the kind's catalogue does not hold.
+     */
+    std::string underlying_kind;
+
+    /**
      * @brief The member's weight in the basket, when the document states one.
      *
      * A weight is a continuous quantity and not money, so it is a binary float, as the position

@@ -8,12 +8,12 @@
 #+filetags: :replace-the-json-columns-with-modelled-entities:sprint_29:v0:
 #+owner: marco
 #+branch: feature/state-the-kind-of-a-basket-constituent
-#+pr:
+#+pr: 3948
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A constituent states its kind and the code it names, and a write is refused when
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,9 +42,43 @@ A constituent states its kind and the code it names, and a write is refused when
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the kind is for
+
+A constituent names a code, and a code means nothing without the vocabulary
+that holds it. The corpus proves the point twice over: =RIC:.SPX= is an equity
+because the equity catalogue holds it, and one =EquityWorstOfBasketSwap= in the
+examples carries constituents whose =Type= is =FX=. A table that stored only
+the code would file a currency pair as an equity and would have nothing to
+check the code against.
+
+** The shape
+
+1. *The column.* =underlying_kind= on =equity_basket_constituent=, text and not
+   null, generated as =equity= so an existing row keeps the meaning it had.
+2. *The refusal.* A check on the table calling
+   =ores_trading_basket_constituent_resolves_fn(kind, code)=, which looks the
+   code up in the catalogue the kind names and raises with both values when it
+   is absent. It raises rather than returning false so the operator reads the
+   kind and the code that disagree instead of a constraint name.
+3. *The projection.* The document's =Underlying/Type= is read into the column
+   and written back from it, so a round trip keeps the kind the document stated.
+4. *The tests.* A round trip that asserts the kind, and a write that the
+   catalogue must refuse.
+
+** Why the catalogues and not a list of kinds
+
+A kind is only meaningful if there is a catalogue behind it. Three exist today
+-- equities, currency pairs and commodities -- and each is tenant scoped and
+carries its own policies, so the function runs as the writing account and sees
+only the catalogues that account may see. A fourth vocabulary becomes a branch
+in one function rather than a change to the schema.
+
+** The trap this will hit
+
+The existing repository and eventing tests insert a generated constituent whose
+name comes from a faker, which no catalogue holds, so they are refused the
+moment the check exists. That is the check working, not a defect, and the tests
+have to publish an underlying before they can name one.
 
 * Measurements
 
@@ -58,7 +92,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Resolver outcomes proved | 5 | =compass sql -f tmp/kind_test.sql= | c12abc7458 |
+| ORE suite | 475,649 assertions, 406 cases | =ores.ore.core.tests= | c12abc7458 |
+| Trading suite | 1,416 assertions, 221 cases | =ores.trading.core.tests= | c12abc7458 |
+| Database recreate | exit 0, no errors | =compass db recreate= | c12abc7458 |
 
 * Notes
 
@@ -77,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3948][#3948]] | [trading] State the kind of a basket constituent |
 
 * Review
 
@@ -86,3 +123,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A constituent states its kind, and a write is refused when the kind's catalogue
+does not hold the code. Five outcomes were exercised against the database:
+
+| Kind and code | Outcome |
+|---------------+---------|
+| =equity=, =.SPX= | accepted |
+| =equity=, =RIC:.SPX= | accepted, which is the alias the catalogue resolves |
+| =equity=, =BOGUS= | refused: "names 'BOGUS', and the equity catalogue does not hold it" |
+| =nonsense=, =.SPX= | refused: "holds no such vocabulary. Known kinds: equity, fx, commodity" |
+| =fx=, =.SPX= | refused: an equity code named as a currency pair |
+
+The refusals raise rather than returning false, so the operator reads the kind
+and the code that disagree.
+
+The corpus decided the mechanism. ORE states the kind as =Underlying/Type=, and
+it is *text and not an enumeration*: reading it as a spelling threw
+=not an enumeration=, the mapping catch swallowed it, and the whole worst-of
+basket imported with no instrument at all. Reading it as text fixed it, and the
+corpus round trip passes with the kind asserted.
+
+The check needed the equity catalogue, which was not on main. It is now: it
+landed as its own PR, because a refusal that dereferences a table nobody has
+merged is a refusal that cannot run.
+
+Nothing writes a basket through the C++ repository yet, so the check is proved
+against SQL and not through the service. The next task that books a basket will
+be the first to exercise it in code.

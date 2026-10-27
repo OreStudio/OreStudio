@@ -86,6 +86,27 @@ Name of the equity underlying this constituent names.
 The ORE document states it in the =Underlying/Name= element; the column
 refuses an empty name.
 
+** underlying_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The vocabulary the constituent's code belongs to.
+
+ORE states the kind beside the name, as =Underlying/Type=, and the kind is not
+implied by the trade type: an =EquityWorstOfBasketSwap= in the corpus carries
+constituents whose kind is =FX=. A basket that could not state the kind would
+file a currency pair as an equity and have nothing to check the code against.
+
+The kinds are the vocabularies the store holds: =equity=, =fx= and =commodity=.
+The check below refuses a code the kind's catalogue does not hold.
+
+#+begin_src cpp :name generator
+std::string("equity")
+#+end_src
+
 ** weight
 :PROPERTIES:
 :type:           double precision
@@ -134,6 +155,7 @@ std::nullopt
 |------------------------|
 | "sequence_number" > 0  |
 | "underlying_name" <> '' |
+| ores_trading_basket_constituent_resolves_fn("underlying_kind", "underlying_name") |
 
 * C++
 

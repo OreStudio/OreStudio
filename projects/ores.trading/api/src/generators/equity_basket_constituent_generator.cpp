@@ -48,6 +48,7 @@ generate_synthetic_equity_basket_constituent(utility::generation::generation_con
     r.sequence_number = 0;
     r.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string(faker::word::noun());
+    r.underlying_kind = std::string("equity");
     r.initial_price = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -3182,6 +3182,8 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     // The basket is rows now, in the document's order, not an encoded string.
     REQUIRE(worst_of_data->basket_constituents.size() == 2);
     CHECK(worst_of_data->basket_constituents[0].underlying_name == "RIC:.SPX");
+    CHECK(worst_of_data->basket_constituents[0].underlying_kind == "Equity");
+    CHECK(worst_of_data->basket_constituents[1].underlying_kind == "Equity");
     CHECK(worst_of_data->basket_constituents[1].underlying_name == "RIC:.NDX");
     CHECK(worst_of_data->basket_constituents[0].sequence_number == 1);
     CHECK(worst_of_data->basket_constituents[1].sequence_number == 2);
@@ -3202,6 +3204,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     REQUIRE(worst_of_again != nullptr);
     REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
     CHECK(worst_of_again_data->basket_constituents[0].underlying_name == "RIC:.SPX");
+    CHECK(worst_of_again_data->basket_constituents[0].underlying_kind == "Equity");
     CHECK(worst_of_again_data->basket_constituents[1].underlying_name == "RIC:.NDX");
     REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
     CHECK(worst_of_again_data->basket_constituents[0].initial_price == 3200.0);

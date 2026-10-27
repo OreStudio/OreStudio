@@ -46,6 +46,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
+using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -72,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::equity_swap_period> read_one(repository::equity_swap_period_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::equity_swap_period_key& key) {
+std::vector<domain::equity_swap_period>
+equity_swap_period_read_one(repository::equity_swap_period_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::equity_swap_period_key& key) {
     return repo.read_latest(ctx,
                             boost::uuids::to_string(key.trade_id),
                             boost::uuids::to_string(key.trade_activity_id),
@@ -87,7 +89,7 @@ std::vector<domain::equity_swap_period> read_one(repository::equity_swap_period_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::equity_swap_period_key key_from(const domain::equity_swap_period& v) {
+messaging::equity_swap_period_key equity_swap_period_key_from(const domain::equity_swap_period& v) {
     messaging::equity_swap_period_key key;
     key.trade_id = v.trade_id;
     key.trade_activity_id = v.trade_activity_id;
@@ -102,7 +104,8 @@ messaging::equity_swap_period_key key_from(const domain::equity_swap_period& v) 
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::equity_swap_period to_domain(const messaging::equity_swap_period_write& write) {
+domain::equity_swap_period
+equity_swap_period_to_domain(const messaging::equity_swap_period_write& write) {
     domain::equity_swap_period v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
@@ -145,7 +148,7 @@ messaging::list_equity_swap_periods_response equity_swap_period_service::list_eq
 messaging::get_equity_swap_period_response equity_swap_period_service::get_equity_swap_period(
     const messaging::get_equity_swap_period_request& request) {
     messaging::get_equity_swap_period_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = equity_swap_period_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "equity_swap_period"});
         return response;
@@ -165,7 +168,7 @@ equity_swap_period_service::get_many_equity_swap_periods(
     for (const auto& k : request.keys) {
         messaging::equity_swap_period_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = equity_swap_period_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.equity_swap_period = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +184,8 @@ messaging::put_equity_swap_period_response equity_swap_period_service::put_equit
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = of_acting_party(
+        equity_swap_period_read_one(repo_, ctx_, equity_swap_period_key_from(value)), ctx_);
     if (!written.empty())
         response.equity_swap_period = std::move(written.front());
     return response;
@@ -214,7 +218,8 @@ equity_swap_period_service::put_many_equity_swap_periods(
     repo_.write(ctx_, batch, claims);
     response.equity_swap_periods.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = of_acting_party(
+            equity_swap_period_read_one(repo_, ctx_, equity_swap_period_key_from(value)), ctx_);
         response.equity_swap_periods.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -252,7 +257,7 @@ messaging::delete_equity_swap_period_response equity_swap_period_service::delete
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = equity_swap_period_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "equity_swap_period",
@@ -356,8 +361,11 @@ equity_swap_period_service::prepare_change(const messaging::equity_swap_period_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = equity_swap_period_to_domain(change.write);
+    // The write lands under the acting party, so its claim is checked against
+    // that party's row, not another visible party's row of the same key.
+    const auto current = of_acting_party(
+        equity_swap_period_read_one(repo_, ctx_, equity_swap_period_key_from(out)), ctx_);
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

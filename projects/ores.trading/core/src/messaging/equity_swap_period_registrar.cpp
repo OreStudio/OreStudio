@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view equity_swap_period_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_equity_swap_period_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_equity_swap_period_handl
     auto h =
         std::make_shared<equity_swap_period_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_equity_swap_periods_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_equity_swap_periods(std::move(msg));
-        }));
+        list_equity_swap_periods_request::nats_subject,
+        equity_swap_period_queue_group,
+        [h](ores::nats::message msg) { h->list_equity_swap_periods(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_equity_swap_period_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_equity_swap_period(std::move(msg));
-        }));
+        get_equity_swap_period_request::nats_subject,
+        equity_swap_period_queue_group,
+        [h](ores::nats::message msg) { h->get_equity_swap_period(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_equity_swap_periods_request::nats_subject,
-        queue_group,
+        equity_swap_period_queue_group,
         [h](ores::nats::message msg) { h->get_many_equity_swap_periods(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_equity_swap_period_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_equity_swap_period(std::move(msg));
-        }));
+        put_equity_swap_period_request::nats_subject,
+        equity_swap_period_queue_group,
+        [h](ores::nats::message msg) { h->put_equity_swap_period(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_equity_swap_periods_request::nats_subject,
-        queue_group,
+        equity_swap_period_queue_group,
         [h](ores::nats::message msg) { h->put_many_equity_swap_periods(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_equity_swap_period_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_equity_swap_period(std::move(msg));
-        }));
+        delete_equity_swap_period_request::nats_subject,
+        equity_swap_period_queue_group,
+        [h](ores::nats::message msg) { h->delete_equity_swap_period(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_equity_swap_periods_request::nats_subject,
-        queue_group,
+        equity_swap_period_queue_group,
         [h](ores::nats::message msg) { h->delete_many_equity_swap_periods(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_equity_swap_period_versions_request::nats_subject,
-        queue_group,
+        equity_swap_period_queue_group,
         [h](ores::nats::message msg) { h->list_equity_swap_period_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_equity_swap_period_version_request::nats_subject,
-        queue_group,
+        equity_swap_period_queue_group,
         [h](ores::nats::message msg) { h->get_equity_swap_period_version(std::move(msg)); }));
     return subs;
 }

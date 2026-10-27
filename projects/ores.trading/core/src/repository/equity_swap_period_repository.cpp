@@ -79,9 +79,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+equity_swap_period_list_order(const ores::utility::domain::order& order,
+                              std::initializer_list<std::string> default_columns,
+                              bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -329,7 +330,8 @@ equity_swap_period_repository::read_latest(context ctx,
     return execute_ordered_read_query<equity_swap_period_entity, domain::equity_swap_period>(
         ctx,
         query,
-        list_order(order, {"trade_id", "trade_activity_id", "sequence_number"}, false),
+        equity_swap_period_list_order(
+            order, {"trade_id", "trade_activity_id", "sequence_number"}, false),
         narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return equity_swap_period_mapper::map(entities); },
         lg(),

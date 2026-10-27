@@ -34,6 +34,8 @@
 #include <string_view>
 #include <vector>
 
+#include "test_suite.hpp"
+
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
 using ores::shell::app::commands::hold_reason_commands;
@@ -41,7 +43,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.inbox.tests");
 const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");

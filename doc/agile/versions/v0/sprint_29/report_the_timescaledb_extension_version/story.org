@@ -23,9 +23,9 @@ compass db status names the timescaledb version a database records, the versions
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | db status reports the recorded and installed timescaledb versions; the gate and the PR remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Merge, then close the task. |
 | Last touched  | 2026-10-27                               |
 
 * Acceptance

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :report_the_timescaledb_extension_version:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: hotfix/report-the-timescaledb-extension-version
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:651922B3-E3D0-413B-AC0E-ED713324AC71][Report when a database's timescaledb version is not on disk]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ compass db status names the timescaledb version a database records, the versions
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:651922B3-E3D0-413B-AC0E-ED713324AC71][Report when a database's timescaledb version is not on disk]] |
-| Now          | Not yet started.                       |
+| Now          | db status reports the recorded and installed timescaledb versions, with the fix named. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Pass the compass gate and raise the PR. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance

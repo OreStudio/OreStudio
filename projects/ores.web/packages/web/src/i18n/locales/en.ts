@@ -5488,6 +5488,7 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            unreadRows: '{count} rows could not be read and are not shown.',
             otherScopes: 'Other scopes',
             shareTitle: "Each book's share of the run",
             shareCaption:

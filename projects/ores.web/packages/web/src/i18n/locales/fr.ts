@@ -5573,6 +5573,7 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            unreadRows: "{count} lignes n'ont pas pu être lues et ne sont pas affichées.",
             otherScopes: 'Autres portées',
             shareTitle: "Part de chaque livre dans l'exécution",
             shareCaption:

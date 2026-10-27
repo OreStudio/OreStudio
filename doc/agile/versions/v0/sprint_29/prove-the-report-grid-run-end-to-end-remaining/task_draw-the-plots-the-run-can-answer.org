@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr: 3900
+#+pr: 3902
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -77,6 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3902][#3902]] | [web] Parse a run's results at the boundary |
 | [[https://github.com/OreStudio/OreStudio/pull/3900][#3900]] | [web] Draw the plots the run can answer |
 
 * Review

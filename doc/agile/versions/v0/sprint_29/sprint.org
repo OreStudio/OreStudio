@@ -105,6 +105,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] | DONE | 2026-10-23 | 2026-10-25 | A synthetic feed can draw the times of its ticks from a self-exciting Hawkes point process, ported from the tick library (BSD 3-clause, the tick developers, CMAP), so bursts of ticks follow bursts of ticks as they do in a live market. |
 | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] | BACKLOG | | | Let the whole market speed up together: an exogenous calm/active state and a shared endogenous intensity, driven by one clock per run, so a panic is representable and cross-series counts correlate. |
 | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] | STARTED | 2026-10-26 | | Analyse whether the generator should emit raw SQL, MessagePack and JSON code for every entity in place of sqlgen and reflect-cpp. |
+| [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] | BACKLOG | | | Generated statements on a thin libpq layer replace sqlgen, and generated JSON and MessagePack codecs replace reflect-cpp, in every component, until neither dependency is left. |
 
 *** Epic: One UX language for every screen
 

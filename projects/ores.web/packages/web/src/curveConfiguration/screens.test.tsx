@@ -95,6 +95,24 @@ const CURVE: CurveConfiguration = {
                     version: 2,
                     position: 0,
                     parameters: [
+                        leaf('CurveId', '/CurveConfiguration/YieldCurves/YieldCurve/CurveId', {
+                            entity: 'curve_definition',
+                            column: 'curve_id',
+                            value: 'USD-6M',
+                            documented: true,
+                            label: 'Curve id',
+                        }),
+                        leaf(
+                            'CurveDescription',
+                            '/CurveConfiguration/YieldCurves/YieldCurve/CurveDescription',
+                            {
+                                entity: 'curve_definition',
+                                column: 'description',
+                                value: 'USD discount curve',
+                                documented: true,
+                                label: 'Curve description',
+                            },
+                        ),
                         leaf('Currency', '/CurveConfiguration/YieldCurves/YieldCurve/Currency', {
                             value: 'USD',
                             required: true,
@@ -198,64 +216,61 @@ function page(tab = '', curve: CurveConfiguration = CURVE): string {
 }
 
 describe('the curve configuration page', () => {
-    it('draws the details first, a tab for each section in the order the data declares, then Used by and History', () => {
+    it('draws Details first and one Curves tab for the whole document, then Used by and History', () => {
         const html = page();
         const tabs = [...html.matchAll(/role="tab"[^>]*>([^<]*)</g)].map((match) => match[1]);
-        expect(tabs).toEqual([
-            'Details',
-            'YieldCurves',
-            'EquityCurves',
-            'CurveSettings',
-            'Used by',
-            'History',
-        ]);
+        expect(tabs).toEqual(['Details', 'Curves', 'Used by', 'History']);
     });
 
     it('names the configuration by the report configuration it fills', () => {
         expect(textOf(page())).toContain('HK standard curves');
     });
 
-    it('draws a leaf with its value, its words and the values it accepts', () => {
-        const words = textOf(page('section:YieldCurves'));
+    it('groups the curves by the sections the document fills, in the order it declares them', () => {
+        const html = page('curves');
+        const groups = [
+            ...html.matchAll(/<summary class="[^"]*">\s*<span>([A-Za-z]+)<\/span>/g),
+        ].map((match) => match[1]);
+        expect(groups).toEqual(['YieldCurves']);
+        const words = textOf(html);
+        expect(words).toContain('1 in 1 of 3 sections');
+        expect(words).toContain('2 sections hold no curve in this document');
+        expect(words).toContain('EquityCurves');
+        expect(words).toContain('CurveSettings');
+    });
+
+    it('draws the first curve in the workbench with its value, its words and the values it accepts', () => {
+        const words = textOf(page('curves'));
         expect(words).toContain('USD-6M');
         expect(words).toContain('USD discount curve');
         expect(words).toContain('Interpolation method');
         expect(words).toContain('Linear');
+        expect(words).toContain('The curve');
+        expect(words).toContain('Its parameters');
     });
 
-    it('counts the gaps of an entry and still shows the value of a leaf the contract does not document', () => {
-        const words = textOf(page('section:YieldCurves'));
+    it('counts the gaps of a curve and still shows the value of a leaf the contract does not document', () => {
+        const words = textOf(page('curves'));
         expect(words).toContain('Tolerance');
         expect(words).toContain('0.0001');
         expect(words).toContain('1 without documentation');
     });
 
     it('draws a flag as Yes or No', () => {
-        const words = textOf(page('section:YieldCurves'));
+        const words = textOf(page('curves'));
         expect(words).toContain('Include at the money');
         expect(words).toContain('Yes');
     });
 
-    it('names the child elements an entry holds', () => {
-        const words = textOf(page('section:YieldCurves'));
+    it('names the child elements a curve holds', () => {
+        const words = textOf(page('curves'));
         expect(words).toContain('Report');
         expect(words).toContain('Segments');
         expect(words).toContain('not recorded here');
     });
 
-    it('says a section holds no curve rather than drawing nothing', () => {
-        expect(textOf(page('section:EquityCurves'))).toContain('This section holds no curve.');
-    });
-
-    it('says a section the screen does not map shows the identifier alone', () => {
-        expect(textOf(page('section:CurveSettings'))).toContain(
-            'The columns of this section are not mapped yet',
-        );
-    });
-
-    it('names the report that binds the configuration', () => {
-        const words = textOf(page('usedBy'));
-        expect(words).toContain('HK daily VaR');
+    it('names the reports that bind the configuration', () => {
+        expect(textOf(page('usedBy'))).toContain('HK daily VaR');
     });
 
     it('reads the history as the record timeline draws it', () => {

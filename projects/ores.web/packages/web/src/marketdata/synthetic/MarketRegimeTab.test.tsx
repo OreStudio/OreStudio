@@ -49,6 +49,7 @@ function regime(over: Partial<MarketRegime> = {}): MarketRegime {
         populationRate: 2,
         loopGain: 0.025,
         runSeed: 42,
+        speed: 1440,
         ...over,
     };
 }
@@ -355,6 +356,7 @@ describe('the market regime tab with the scheduler’s record', () => {
         expect(html).toContain('×2.05');
         expect(html).toContain('0.025 of 1');
         expect(html).toContain('>42<');
+        expect(html).toContain('1440 simulated seconds a unit of market time');
         expect(html).toContain('12.5');
         expect(html).toContain('2.5 ms, at most 27.0 ms');
     });

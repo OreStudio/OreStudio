@@ -109,6 +109,7 @@ set(files
     "diary_entry_type_eventing_integration_tests.cpp"
     "entity_classification_eventing_integration_tests.cpp"
     "equity_curve_config_eventing_integration_tests.cpp"
+    "equity_underlying_eventing_integration_tests.cpp"
     "equity_volatility_config_eventing_integration_tests.cpp"
     "floating_index_type_eventing_integration_tests.cpp"
     "fra_convention_eventing_integration_tests.cpp"

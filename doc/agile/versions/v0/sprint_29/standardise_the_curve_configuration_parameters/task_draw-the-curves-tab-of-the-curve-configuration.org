@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: D0C00AD0-37FF-440D-9EEC-2311BFCB6B5A
+:END:
+#+title: Task: Draw the curves tab of the curve configuration
+#+description: The page draws one tab per section, nineteen of them and usually fifteen empty. Replace them with the shape the product pricing screen uses for its products: one Curves tab, a searchable rail of curves grouped by the section that declares them, and the chosen curve's parameters in a workbench beside it.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/draw-the-curves-tab-of-the-curve-configuration
+#+pr: 3950
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | The owner's read of the screen.        |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+1. Replace the nineteen section tabs with one *Curves* tab, drawn as the
+   product pricing screen draws its products: a rail on the left, a workbench on
+   the right.
+2. Group the rail by the section that declares each curve, because the section
+   decides the entry's table and its leaves even though it is not what a person
+   looks for.
+3. Name the sections that hold nothing once, at the foot of the rail, rather than
+   giving each a tab that opens empty.
+4. Draw the chosen curve in the workbench: its identity apart from its
+   parameters, its documentation, the filters and the elements it holds.
+5. Test the tabs, the grouping order and a rendered curve.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Browser tests | 9 | =npx vitest run --root packages/web src/curveConfiguration= | this branch |
+| Tabs the page draws | 4 | the same run | this branch |
+| Sections a curve document declares | 19 | =external/ore/xsd/curveconfig.xsd= | this branch |
+| Sections the median ORE example curveconfig.xml fills | 3 of 19 | =python3= over the 89 shipped files | this branch |
+
+* Notes
+
+- *Why the section is the group and not the tab.* The 89 =curveconfig*.xml=
+  files ORE ships fill a median of three sections, the smallest one and the
+  largest sixteen; the environment's four stored configurations fill one. A tab
+  per section therefore opens mostly empty, and asks a person to find the chapter
+  before the curve. As a group it still says which family a curve belongs to,
+  which is what decides its table and its leaves.
+- *The prototype is the argument.*
+  [[file:/doc/prototypes/reporting/curve-configuration-sections.org][Curve configuration sections]] draws the shape over a one-, four- and
+  sixteen-section document, and this task draws the page from it.
+- *The identity is drawn apart from the parameters.* A curve's =CurveId= and
+  =CurveDescription= live on =curve_definition=, which every family shares, and
+  the rest live on the section's own table. The workbench draws them as two
+  cards, as a product's workbench draws the product apart from its model and
+  engine settings.
+- *The standard needs an amendment.* The configuration screen standard states
+  one tab per section. This task breaks that rule deliberately, and the
+  amendment is "one tab for the collection, and the section is the group inside
+  it". It belongs to the story that owns the standard,
+  [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]], and is raised
+  there rather than changed around.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3950][#3950]] | [web] Draw the curves tab in the products shape |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The curve configuration page now draws Details, **Curves**, Used by and History.
+The Curves tab is the product pricing shape: a rail of the configuration's
+curves grouped by the section that declares each, with a count on every group, a
+filter that matches a curve's name, its description or its section, Expand all,
+and the sections that hold nothing named once at the foot. The chosen curve is
+read beside the rail: what it is, its identity, its parameters with their
+documentation and filters, and the elements it holds.
+
+The nine browser tests cover the four tabs, the grouping order, a rendered
+curve's value and words, a leaf the contract does not document, a flag read as
+Yes or No, the elements a curve holds, the reports that bind the configuration
+and the history. The nested collections of a curve are still named and not
+drawn, which is the task of their own.

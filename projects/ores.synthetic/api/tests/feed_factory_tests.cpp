@@ -38,6 +38,7 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdint>
@@ -526,4 +527,14 @@ TEST_CASE("one run seed draws the same prices for a series, and another seed or 
     CHECK(prices(42, "synthetic.demo.eurusd") == prices(42, "synthetic.demo.eurusd"));
     CHECK(prices(42, "synthetic.demo.eurusd") != prices(43, "synthetic.demo.eurusd"));
     CHECK(prices(42, "synthetic.demo.eurusd") != prices(42, "synthetic.demo.gbpusd"));
+}
+
+TEST_CASE("the default market speed keeps a curve at one tick a minute stepping a day",
+          "[feed_factory]") {
+    using ores::synthetic::feed::curve_step_years;
+    CHECK(curve_step_years(1440.0, 60.0) == Catch::Approx(1.0 / 365.0).epsilon(1e-12));
+    // The rate decides how often a curve looks: four times the rate is a quarter of the step.
+    CHECK(curve_step_years(1440.0, 240.0) == Catch::Approx(1.0 / 365.0 / 4.0).epsilon(1e-12));
+    // The speed decides how fast its calendar runs: a tenth of the speed is a tenth of the step.
+    CHECK(curve_step_years(144.0, 60.0) == Catch::Approx(1.0 / 3650.0).epsilon(1e-12));
 }

@@ -49,6 +49,7 @@ create table if not exists "ores_trading_equity_basket_constituents_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "underlying_name" text not null,
+    "underlying_kind" text not null,
     "weight" double precision null,
     "initial_price" double precision null,
     "modified_by" text not null,
@@ -67,7 +68,8 @@ create table if not exists "ores_trading_equity_basket_constituents_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("sequence_number" > 0),
-    check ("underlying_name" <> '')
+    check ("underlying_name" <> ''),
+    check (ores_trading_basket_constituent_resolves_fn("underlying_kind", "underlying_name"))
 );
 
 -- Version uniqueness for optimistic concurrency

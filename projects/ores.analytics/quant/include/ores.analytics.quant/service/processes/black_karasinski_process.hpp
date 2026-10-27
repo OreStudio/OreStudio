@@ -154,6 +154,21 @@ public:
                                       double dt = 1.0);
 
     double next() override;
+
+    /**
+     * @brief The largest step this scheme can take: a week of a year.
+     *
+     * The law is stepped by an Euler scheme, so the bound is a calibration
+     * choice rather than a property of the law; a week is the widest step the
+     * published error of the scheme still supports, and a caller that asks for
+     * more is refused rather than given a biased path.
+     */
+    [[nodiscard]] double max_step() const override {
+        return max_step_years;
+    }
+
+    /// The bound the scheme states, in years.
+    static constexpr double max_step_years = 1.0 / 52.0;
     double current() const override;
     double discount_factor(std::size_t ticks_ahead) const override;
 

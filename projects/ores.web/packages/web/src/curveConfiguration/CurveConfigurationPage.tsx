@@ -19,8 +19,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
+import type { ConfigurationDetail } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import {
     curveConfiguration,
@@ -30,37 +31,36 @@ import {
     type CurveSection,
 } from '../api/curveConfiguration.js';
 import { ApiFailure } from '../api/transport.js';
-import type { ConfigurationDetail } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { ParameterRow } from '../parameters/ParameterRow.js';
-import { shortDefault } from '../parameters/control.js';
-import { RecordTimeline } from '../refdata/RecordTimeline.js';
 import { configurationKey } from '../reporting/ConfigurationPage.js';
+import { TabPane } from '../refdata/parties.js';
+import { RecordTimeline } from '../refdata/RecordTimeline.js';
 import { Crumbs } from '../refdata/shared.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { configurationPath, reportPath } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
-import { Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { ParameterDocuments, ParameterFilters } from '../ui/OreParameter.js';
-import { TabPane } from '../refdata/parties.js';
+import { Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /**
- * One curve configuration, read-only: its details, one tab per section of the
- * ORE document and the entries of that section, the reports that bind it, and
- * its history.
+ * One curve configuration: its details, its curves, the reports that bind it
+ * and its history.
  *
- * Every word comes from the server. The sections and their entry elements come
- * from the curve section data, each leaf's label, meaning, default and value set
- * come from the ORE parameter contract, and each value comes from the entry's
- * own row. The screen holds no table that names a curve family and no ORE text,
- * so a family the data adds reaches the screen with no edit here.
+ * The curves are drawn as the product pricing screen draws its products,
+ * because the document has the same shape: many entries of a few kinds, where
+ * the kind is a group and the entry is the row a person looks for. One tab holds
+ * them, a searchable rail groups them by the section that declares them, and the
+ * chosen curve's parameters are read beside it. A section that holds nothing is
+ * named once at the foot of the rail, rather than given a tab that opens empty.
  *
- * The page reads and does not write. A curve configuration is one document of
- * thirty-four families, and a write that drew only the leaves this page knows
- * would drop the rows it does not: the write arrives with the guard that refuses
- * a value outside its leaf's set, so no client can store one.
+ * Every word comes from the server: the sections and their entry elements from
+ * the curve section data, each parameter's label, meaning, default and value set
+ * from the ORE parameter contract, and each value from the entry's own row. The
+ * page reads and does not write, because a save writes the whole thirty-four
+ * family document and the guard does not cover the curve tables yet.
  */
 
 /** The entity type the history of a curve configuration row is recorded under. */
@@ -71,7 +71,7 @@ export function curveConfigurationKey(configurationId: string): readonly unknown
     return ['curve-configuration', configurationId];
 }
 
-/** The documentation switch of one leaf of one entry, which the section opens and closes. */
+/** The documentation switch of one leaf of one curve, which the workbench opens. */
 function documentationKey(entryId: string, leaf: CurveParameter): string {
     return `${entryId}|${leaf.ore}`;
 }
@@ -79,6 +79,16 @@ function documentationKey(entryId: string, leaf: CurveParameter): string {
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
+}
+
+/** The sections that hold a curve, in the order the document declares them. */
+function filled(sections: readonly CurveSection[]): readonly CurveSection[] {
+    return sections.filter((section) => section.entries.length > 0);
+}
+
+/** Every curve of the document, in the order the document declares them. */
+function curvesOf(sections: readonly CurveSection[]): readonly CurveEntry[] {
+    return sections.flatMap((section) => section.entries);
 }
 
 export function CurveConfigurationPage(): ReactNode {
@@ -90,32 +100,25 @@ export function CurveConfigurationPage(): ReactNode {
         queryKey: curveConfigurationKey(id),
         queryFn: () => curveConfiguration.read(id),
     });
-    // The report configuration names the curve configuration and lists the
-    // reports that bind it. A read that fails leaves the leaves in view and says
-    // so, because the curve configuration is what the person came for.
+    /*
+     * The report configuration names the curve configuration and lists the
+     * reports that bind it. A read that fails leaves the curves in view and says
+     * so, because the document is what the person came for.
+     */
     const serving = useQuery({
         queryKey: configurationKey(id),
         queryFn: () => api.configuration(id),
     });
     // Every hook runs before the first return, because the page draws its
     // loading state, its refusal and its content from one component.
-    const sections = reading.data?.sections ?? [];
-    const tabs = [
-        'details',
-        ...sections.map((section) => `section:${section.code}`),
-        'usedBy',
-        'history',
-    ];
+    const tabs = ['details', 'curves', 'usedBy', 'history'];
     const panel = useTabs({
         label: t('curveConfiguration.tabs.label'),
         tabs,
-        titleOf: (tab) =>
-            tab.startsWith('section:')
-                ? tab.slice('section:'.length)
-                : t(`curveConfiguration.tabs.${tab}`),
+        titleOf: (tab) => t(`curveConfiguration.tabs.${tab}`),
     });
     // A tab the person opened stays drawn and hidden while another is open, so
-    // leaving a section never loses the documentation they opened in it.
+    // leaving the curves never loses the curve they were reading.
     const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([panel.tab]));
     useEffect(() => {
         setSeen((before) => (before.has(panel.tab) ? before : new Set(before).add(panel.tab)));
@@ -154,8 +157,8 @@ export function CurveConfigurationPage(): ReactNode {
     }
     const curve = reading.data;
     const name = serving.data?.configuration.name ?? curve.name;
-    const pane = (name: string, children: ReactNode): ReactNode => (
-        <TabPane name={name} tab={panel.tab} seen={seen}>
+    const pane = (paneName: string, children: ReactNode): ReactNode => (
+        <TabPane name={paneName} tab={panel.tab} seen={seen}>
             {children}
         </TabPane>
     );
@@ -174,11 +177,7 @@ export function CurveConfigurationPage(): ReactNode {
             />
             {panel.bar}
             {pane('details', <DetailsTab curve={curve} name={name} serving={serving.data} />)}
-            {curve.sections.map((section) => (
-                <Fragment key={section.code}>
-                    {pane(`section:${section.code}`, <SectionTab section={section} mode={mode} />)}
-                </Fragment>
-            ))}
+            {pane('curves', <CurvesTab curve={curve} mode={mode} />)}
             {pane('usedBy', <UsedByTab configurationId={id} />)}
             {pane(
                 'history',
@@ -192,276 +191,346 @@ export function CurveConfigurationPage(): ReactNode {
     );
 }
 
-/** What the configuration is, who holds it, and how much of it the contract documents. */
-function DetailsTab({
+/**
+ * The document's curves: a rail grouped by the section that declares each, and
+ * the chosen curve's parameters beside it.
+ *
+ * The rail is the document's own shape. A section is a group with its count, a
+ * curve is a row, and the sections that hold nothing are named together at the
+ * foot, so a person looking for a curve reads the curves and not the chapters.
+ */
+function CurvesTab({
     curve,
-    name,
-    serving,
+    mode,
 }: {
     readonly curve: CurveConfiguration;
-    readonly name: string;
-    readonly serving: ConfigurationDetail | undefined;
+    readonly mode: EditingMode;
 }): ReactNode {
     const { t } = useTranslation();
-    const entries = curve.sections.reduce((count, section) => count + section.entries.length, 0);
-    const party =
-        serving === undefined || serving.configuration.partyName === ''
-            ? curve.partyId
-            : serving.configuration.partyName;
+    const groups = filled(curve.sections);
+    const empty = curve.sections.filter((section) => section.entries.length === 0);
+    const everyEntry = curvesOf(curve.sections);
+    const [needle, setNeedle] = useState('');
+    const [chosen, setChosen] = useState<string>(() => everyEntry[0]?.id ?? '');
+    const [open, setOpen] = useState<ReadonlySet<string>>(
+        () => new Set(groups.slice(0, 1).map((section) => section.code)),
+    );
+    const search = needle.trim().toLowerCase();
+    const matches = (section: CurveSection, entry: CurveEntry): boolean =>
+        search === '' ||
+        entry.curveId.toLowerCase().includes(search) ||
+        entry.description.toLowerCase().includes(search) ||
+        section.code.toLowerCase().includes(search);
+    const shown = groups
+        .map((section) => ({
+            section,
+            entries: section.entries.filter((entry) => matches(section, entry)),
+        }))
+        .filter((group) => group.entries.length > 0);
+    const inView = shown.reduce((count, group) => count + group.entries.length, 0);
+    const selected = everyEntry.find((entry) => entry.id === chosen);
+    const opened = (code: string): boolean => search !== '' || open.has(code);
+    const allOpen = groups.length > 0 && open.size >= groups.length;
+    const toggleGroup = (code: string, isOpen: boolean): void => {
+        setOpen((before) => {
+            const next = new Set(before);
+            if (isOpen) {
+                next.add(code);
+            } else {
+                next.delete(code);
+            }
+            return next;
+        });
+    };
     return (
-        <section className="card space-y-4 p-4">
-            <h2 className="text-sm font-medium">{t('curveConfiguration.tabs.details')}</h2>
-            <p className="text-sm text-ink-muted">{t('curveConfiguration.details.lead')}</p>
-            <p className="text-sm">{t('curveConfiguration.details.decides')}</p>
-            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
-                <Detail label={t('curveConfiguration.fields.name')} value={name} />
-                <Detail
-                    label={t('curveConfiguration.fields.description')}
-                    value={curve.description === '' ? '—' : curve.description}
-                />
-                <Detail
-                    label={t('curveConfiguration.fields.version')}
-                    value={String(curve.version)}
-                />
-                <Detail
-                    label={t('curveConfiguration.fields.party')}
-                    value={party === '' ? '—' : party}
-                />
-                <Detail
-                    label={t('curveConfiguration.fields.sections')}
-                    value={String(curve.sections.length)}
-                />
-                <Detail label={t('curveConfiguration.fields.entries')} value={String(entries)} />
-                <Detail
-                    label={t('curveConfiguration.fields.documented')}
-                    value={t('curveConfiguration.fields.documentedValue', {
-                        documented: String(curve.documented),
-                        total: String(curve.total),
-                    })}
-                />
-                <Detail
-                    label={t('curveConfiguration.fields.lastChanged')}
-                    value={curve.recordedAt === '' ? '—' : curve.recordedAt}
-                />
-                <Detail
-                    label={t('curveConfiguration.fields.boundBy')}
-                    value={
-                        serving === undefined
-                            ? '—'
-                            : t('curveConfiguration.fields.boundByValue', {
-                                  count: String(serving.reports.length),
-                              })
-                    }
-                />
-            </dl>
-            <div className="space-y-1 border-t border-line-subtle pt-3">
-                <h3 className="text-xs text-ink-faint">
-                    {t('curveConfiguration.details.related')}
-                </h3>
-                <p className="text-sm">
-                    <Link
-                        to={configurationPath(curve.configurationId)}
-                        className="text-accent hover:text-accent-bright"
+        <div className="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
+            <aside className="card space-y-3 p-3">
+                <div className="space-y-1">
+                    <h2 className="text-sm font-medium">{t('curveConfiguration.curves.title')}</h2>
+                    <p className="text-xs text-ink-faint">
+                        {t('curveConfiguration.curves.count', {
+                            count: String(everyEntry.length),
+                            filled: String(groups.length),
+                            sections: String(curve.sections.length),
+                        })}
+                    </p>
+                </div>
+                {everyEntry.length > 0 && (
+                    <input
+                        value={needle}
+                        onChange={(event) => setNeedle(event.target.value)}
+                        placeholder={t('curveConfiguration.curves.filter')}
+                        aria-label={t('curveConfiguration.curves.filter')}
+                        className="w-full rounded border border-line bg-surface-base px-2 py-1 text-sm text-ink placeholder:text-ink-faint"
+                    />
+                )}
+                {groups.length > 0 && (
+                    <button
+                        type="button"
+                        className="px-1 text-xs text-accent hover:text-accent-bright"
+                        onClick={() =>
+                            setOpen(
+                                allOpen
+                                    ? new Set()
+                                    : new Set(groups.map((section) => section.code)),
+                            )
+                        }
                     >
-                        {serving === undefined
-                            ? shortId(curve.configurationId)
-                            : serving.configuration.name}
-                    </Link>
+                        {allOpen
+                            ? t('curveConfiguration.curves.collapseAll')
+                            : t('curveConfiguration.curves.expandAll')}
+                    </button>
+                )}
+                {everyEntry.length === 0 ? (
+                    <p className="text-sm text-ink-muted">{t('curveConfiguration.curves.none')}</p>
+                ) : shown.length === 0 ? (
+                    <p className="text-sm text-ink-muted">
+                        {t('curveConfiguration.curves.noMatch')}
+                    </p>
+                ) : (
+                    shown.map((group) => (
+                        <details
+                            key={group.section.code}
+                            open={opened(group.section.code)}
+                            onToggle={(event) =>
+                                toggleGroup(group.section.code, event.currentTarget.open)
+                            }
+                        >
+                            <summary className="flex cursor-pointer items-baseline justify-between gap-2 px-1 pt-2 text-[10px] tracking-wide text-ink-faint uppercase">
+                                <span>{group.section.code}</span>
+                                <span>{group.entries.length}</span>
+                            </summary>
+                            <div className="space-y-1 pt-1">
+                                {group.entries.map((entry) => (
+                                    <button
+                                        key={entry.id}
+                                        type="button"
+                                        title={
+                                            entry.description === ''
+                                                ? entry.curveId
+                                                : entry.description
+                                        }
+                                        onClick={() => setChosen(entry.id)}
+                                        className={
+                                            entry.id === selected?.id
+                                                ? 'block w-full rounded border-l-2 border-accent bg-panel-2 px-2 py-1 text-left text-sm break-words text-ink [overflow-wrap:anywhere]'
+                                                : 'block w-full rounded border-l-2 border-transparent px-2 py-1 text-left text-sm break-words text-ink-muted hover:text-ink [overflow-wrap:anywhere]'
+                                        }
+                                    >
+                                        {entry.curveId === '' ? shortId(entry.id) : entry.curveId}
+                                    </button>
+                                ))}
+                            </div>
+                        </details>
+                    ))
+                )}
+                {empty.length > 0 && (
+                    <details className="border-t border-line-subtle pt-2">
+                        <summary className="cursor-pointer px-1 text-xs text-ink-faint">
+                            {t('curveConfiguration.curves.emptySections', {
+                                count: String(empty.length),
+                            })}
+                        </summary>
+                        <ul className="space-y-1 pt-1">
+                            {empty.map((section) => (
+                                <li
+                                    key={section.code}
+                                    className="flex items-baseline justify-between gap-2 px-1 text-xs text-ink-faint"
+                                >
+                                    <span>{section.code}</span>
+                                    <span>{t('curveConfiguration.curves.empty')}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </details>
+                )}
+                <p className="border-t border-line-subtle pt-2 text-xs text-ink-faint">
+                    {t('curveConfiguration.curves.inView', {
+                        shown: String(inView),
+                        total: String(everyEntry.length),
+                    })}
                 </p>
-                <p className="text-xs text-ink-faint">
-                    {t('curveConfiguration.details.relatedLead')}
-                </p>
+            </aside>
+            <div className="space-y-4">
+                {selected === undefined ? (
+                    <section className="card p-4">
+                        <p className="text-sm text-ink-muted">
+                            {t('curveConfiguration.curves.choose')}
+                        </p>
+                    </section>
+                ) : (
+                    <CurveWorkbench
+                        key={selected.id}
+                        entry={selected}
+                        section={curve.sections.find((section) =>
+                            section.entries.some((entry) => entry.id === selected.id),
+                        )}
+                        mode={mode}
+                    />
+                )}
             </div>
-        </section>
+        </div>
     );
 }
 
-/** One section: its entries, each drawn as a collection row of leaves. */
-function SectionTab({
+/** One curve: what it is, its parameters and the elements it holds. */
+function CurveWorkbench({
+    entry,
     section,
     mode,
 }: {
-    readonly section: CurveSection;
+    readonly entry: CurveEntry;
+    readonly section: CurveSection | undefined;
     readonly mode: EditingMode;
 }): ReactNode {
     const { t } = useTranslation();
     const [setOnly, setSetOnly] = useState(false);
     const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
-    const leaves = section.entries.flatMap((entry) => entry.parameters);
-    const shown = leaves.filter((leaf) => leaf.value !== null);
+    /*
+     * A curve's identifier and description are its own; the rest are the
+     * parameters the section's entry carries, as a product's model and engine
+     * settings are the product's.
+     */
+    const identity = entry.parameters.filter((leaf) => leaf.entity === 'curve_definition');
+    const parameters = entry.parameters.filter((leaf) => leaf.entity !== 'curve_definition');
+    const visible = parameters.filter((leaf) => !setOnly || leaf.value !== null);
+    const gaps = parameters.filter((leaf) => !leaf.documented).length;
     const allOpen =
-        leaves.length > 0 &&
-        section.entries.every((entry) =>
-            entry.parameters.every((leaf) => opened.has(documentationKey(entry.id, leaf))),
+        parameters.length > 0 &&
+        parameters.every((leaf) => opened.has(documentationKey(entry.id, leaf)));
+    const leave = (leaf: CurveParameter): ReactNode => {
+        const key = documentationKey(entry.id, leaf);
+        return (
+            <LeafRow
+                key={key}
+                leaf={leaf}
+                mode={mode}
+                open={opened.has(key)}
+                onToggle={() =>
+                    setOpened((before) => {
+                        const next = new Set(before);
+                        if (!next.delete(key)) {
+                            next.add(key);
+                        }
+                        return next;
+                    })
+                }
+            />
         );
+    };
     return (
-        <section className="space-y-4">
-            <header className="space-y-1">
-                <h2 className="text-sm font-medium">
-                    {t('curveConfiguration.section.title', {
-                        section: section.code,
-                        entry: section.entryElement,
-                    })}
-                </h2>
-                {section.description !== '' && (
-                    <p className="text-sm text-ink-muted">{section.description}</p>
-                )}
-            </header>
-            {!section.mapped && (
-                <Notice tone="warn">{t('curveConfiguration.section.unmapped')}</Notice>
+        <div className="space-y-4">
+            <section className="card space-y-2 p-4">
+                <header className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="min-w-0">
+                        <h2 className="text-lg font-semibold">
+                            {entry.curveId === '' ? shortId(entry.id) : entry.curveId}
+                        </h2>
+                        <p className="text-xs text-ink-faint">
+                            {[
+                                section?.code ?? '',
+                                section?.entryElement ?? '',
+                                t('curveConfiguration.curves.position', {
+                                    position: String(entry.position),
+                                }),
+                            ]
+                                .filter((part) => part !== '')
+                                .join(' · ')}
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Tag small>
+                            {t('curveConfiguration.curves.parameters', {
+                                count: String(parameters.length),
+                            })}
+                        </Tag>
+                        {gaps > 0 && (
+                            <Tag small tone="warn">
+                                {t('curveConfiguration.curves.gaps', { count: String(gaps) })}
+                            </Tag>
+                        )}
+                    </div>
+                </header>
+                <p className="text-sm text-ink-muted">
+                    {entry.description === ''
+                        ? t('curveConfiguration.curves.noDescription', {
+                              entry: section?.entryElement ?? '',
+                          })
+                        : entry.description}
+                </p>
+            </section>
+            {identity.length > 0 && (
+                <section className="card space-y-2 p-4">
+                    <h3 className="text-sm font-medium">
+                        {t('curveConfiguration.curves.identity')}
+                    </h3>
+                    <ul className="divide-y divide-line-subtle">{identity.map(leave)}</ul>
+                </section>
             )}
-            <div className="flex flex-wrap items-center gap-2">
-                <ParameterFilters
-                    set={setOnly}
-                    onSet={() => setSetOnly((before) => !before)}
-                    shown={shown.length}
-                    total={leaves.length}
-                    noun={t('oreParameter.nouns.parameters')}
-                />
-                <span className="grow" />
-                {leaves.length > 0 && (
-                    <button
-                        type="button"
-                        className="text-xs text-accent hover:text-accent-bright"
-                        onClick={() =>
-                            setOpened(
-                                allOpen
-                                    ? new Set()
-                                    : new Set(
-                                          section.entries.flatMap((entry) =>
-                                              entry.parameters.map((leaf) =>
+            <section className="card space-y-2 p-4">
+                <header className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-medium">
+                        {t('curveConfiguration.curves.parametersTitle')}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <ParameterFilters
+                            set={setOnly}
+                            onSet={() => setSetOnly((before) => !before)}
+                            shown={visible.length}
+                            total={parameters.length}
+                            noun={t('oreParameter.nouns.parameters')}
+                        />
+                        <button
+                            type="button"
+                            className="text-xs text-accent hover:text-accent-bright"
+                            onClick={() =>
+                                setOpened(
+                                    allOpen
+                                        ? new Set()
+                                        : new Set(
+                                              parameters.map((leaf) =>
                                                   documentationKey(entry.id, leaf),
                                               ),
                                           ),
-                                      ),
-                            )
-                        }
-                    >
-                        {allOpen
-                            ? t('oreParameter.hideAllDocumentation')
-                            : t('oreParameter.showAllDocumentation')}
-                    </button>
-                )}
-            </div>
-            {setOnly && shown.length === 0 && (
-                <p className="text-sm text-ink-muted">
-                    {t('oreParameter.filters.none', { noun: t('oreParameter.nouns.parameters') })}
-                </p>
-            )}
-            {section.entries.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('curveConfiguration.section.empty')}</p>
-            ) : (
-                section.entries.map((entry) => (
-                    <EntryCard
-                        key={entry.id}
-                        entry={entry}
-                        section={section}
-                        mode={mode}
-                        setOnly={setOnly}
-                        opened={opened}
-                        onToggle={(key) =>
-                            setOpened((before) => {
-                                const next = new Set(before);
-                                if (!next.delete(key)) {
-                                    next.add(key);
-                                }
-                                return next;
-                            })
-                        }
-                    />
-                ))
-            )}
-        </section>
-    );
-}
-
-/** One entry: what it is, its parameters, and the child elements it holds. */
-function EntryCard({
-    entry,
-    section,
-    mode,
-    setOnly,
-    opened,
-    onToggle,
-}: {
-    readonly entry: CurveEntry;
-    readonly section: CurveSection;
-    readonly mode: EditingMode;
-    readonly setOnly: boolean;
-    readonly opened: ReadonlySet<string>;
-    readonly onToggle: (key: string) => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const visible = entry.parameters.filter((leaf) => !setOnly || leaf.value !== null);
-    const gaps = entry.parameters.filter((leaf) => !leaf.documented).length;
-    return (
-        <article className="card space-y-3 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <div className="min-w-0 space-y-1">
-                    <h3 className="text-sm font-medium">
-                        {entry.curveId === '' ? shortId(entry.id) : entry.curveId}
-                    </h3>
+                                )
+                            }
+                        >
+                            {allOpen
+                                ? t('oreParameter.hideAllDocumentation')
+                                : t('oreParameter.showAllDocumentation')}
+                        </button>
+                    </div>
+                </header>
+                {visible.length === 0 ? (
                     <p className="text-sm text-ink-muted">
-                        {entry.description === ''
-                            ? t('curveConfiguration.entry.noDescription', {
-                                  entry: section.entryElement,
-                              })
-                            : entry.description}
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    <Tag small>
-                        {t('curveConfiguration.entry.parameters', {
-                            count: String(entry.parameters.length),
+                        {t('oreParameter.filters.none', {
+                            noun: t('oreParameter.nouns.parameters'),
                         })}
-                    </Tag>
-                    {gaps > 0 && (
-                        <Tag small tone="warn">
-                            {t('curveConfiguration.entry.gaps', { count: String(gaps) })}
-                        </Tag>
-                    )}
-                </div>
-            </header>
-            {visible.length > 0 && (
-                <ul className="divide-y divide-line-subtle">
-                    {visible.map((leaf) => {
-                        const key = documentationKey(entry.id, leaf);
-                        return (
-                            <LeafRow
-                                key={key}
-                                leaf={leaf}
-                                mode={mode}
-                                open={opened.has(key)}
-                                onToggle={() => onToggle(key)}
-                            />
-                        );
-                    })}
-                </ul>
-            )}
-            {entry.blocks.length > 0 && (
-                <footer className="space-y-1 border-t border-line-subtle pt-3">
-                    <p className="text-xs text-ink-faint">{t('curveConfiguration.entry.blocks')}</p>
-                    <ul className="flex flex-wrap gap-2">
+                    </p>
+                ) : (
+                    <ul className="divide-y divide-line-subtle">{visible.map(leave)}</ul>
+                )}
+                {entry.blocks.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 border-t border-line-subtle pt-3">
+                        <span className="text-xs text-ink-faint">
+                            {t('curveConfiguration.curves.blocks')}
+                        </span>
                         {entry.blocks.map((block) => (
-                            <li key={block.element} className="flex items-center gap-1">
+                            <span key={block.element} className="flex items-center gap-1">
                                 <Tag small>{block.element}</Tag>
-                                {block.present === null ? (
-                                    <span className="text-xs text-ink-faint">
-                                        {t('curveConfiguration.entry.blockNotRecorded')}
-                                    </span>
-                                ) : (
-                                    <span className="text-xs text-ink-faint">
-                                        {block.present
-                                            ? t('curveConfiguration.entry.blockStated')
-                                            : t('curveConfiguration.entry.blockAbsent')}
-                                    </span>
-                                )}
-                            </li>
+                                <span className="text-xs text-ink-faint">
+                                    {block.present === null
+                                        ? t('curveConfiguration.curves.blockNotRecorded')
+                                        : block.present
+                                          ? t('curveConfiguration.curves.blockStated')
+                                          : t('curveConfiguration.curves.blockAbsent')}
+                                </span>
+                            </span>
                         ))}
-                    </ul>
-                </footer>
-            )}
-        </article>
+                    </div>
+                )}
+            </section>
+        </div>
     );
 }
 
@@ -522,6 +591,95 @@ function LeafRow({
                 onToggle={onToggle}
             />
         </li>
+    );
+}
+
+/** What the configuration is, who holds it, and how much of it the contract documents. */
+function DetailsTab({
+    curve,
+    name,
+    serving,
+}: {
+    readonly curve: CurveConfiguration;
+    readonly name: string;
+    readonly serving: ConfigurationDetail | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const party =
+        serving === undefined || serving.configuration.partyName === ''
+            ? curve.partyId
+            : serving.configuration.partyName;
+    return (
+        <section className="card space-y-4 p-4">
+            <h2 className="text-sm font-medium">{t('curveConfiguration.tabs.details')}</h2>
+            <p className="text-sm text-ink-muted">{t('curveConfiguration.details.lead')}</p>
+            <p className="text-sm">{t('curveConfiguration.details.decides')}</p>
+            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
+                <Detail label={t('curveConfiguration.fields.name')} value={name} />
+                <Detail
+                    label={t('curveConfiguration.fields.description')}
+                    value={curve.description === '' ? '—' : curve.description}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.version')}
+                    value={String(curve.version)}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.party')}
+                    value={party === '' ? '—' : party}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.sections')}
+                    value={t('curveConfiguration.fields.sectionsValue', {
+                        filled: String(filled(curve.sections).length),
+                        total: String(curve.sections.length),
+                    })}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.entries')}
+                    value={String(curvesOf(curve.sections).length)}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.documented')}
+                    value={t('curveConfiguration.fields.documentedValue', {
+                        documented: String(curve.documented),
+                        total: String(curve.total),
+                    })}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.lastChanged')}
+                    value={curve.recordedAt === '' ? '—' : curve.recordedAt}
+                />
+                <Detail
+                    label={t('curveConfiguration.fields.boundBy')}
+                    value={
+                        serving === undefined
+                            ? '—'
+                            : t('curveConfiguration.fields.boundByValue', {
+                                  count: String(serving.reports.length),
+                              })
+                    }
+                />
+            </dl>
+            <div className="space-y-1 border-t border-line-subtle pt-3">
+                <h3 className="text-xs text-ink-faint">
+                    {t('curveConfiguration.details.related')}
+                </h3>
+                <p className="text-sm">
+                    <Link
+                        to={configurationPath(curve.configurationId)}
+                        className="text-accent hover:text-accent-bright"
+                    >
+                        {serving === undefined
+                            ? shortId(curve.configurationId)
+                            : serving.configuration.name}
+                    </Link>
+                </p>
+                <p className="text-xs text-ink-faint">
+                    {t('curveConfiguration.details.relatedLead')}
+                </p>
+            </div>
+        </section>
     );
 }
 

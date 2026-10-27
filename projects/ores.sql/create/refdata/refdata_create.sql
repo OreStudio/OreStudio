@@ -32,6 +32,8 @@
 \ir ./refdata_calendar_types_create.sql
 \ir ./refdata_calendar_types_notify_trigger_create.sql
 \ir ./refdata_commodities_create.sql
+\ir ./refdata_equity_underlyings_create.sql
+\ir ./refdata_equity_underlyings_notify_trigger_create.sql
 \ir ./refdata_commodities_notify_trigger_create.sql
 
 -- Core reference data tables

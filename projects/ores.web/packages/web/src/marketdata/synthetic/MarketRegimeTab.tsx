@@ -292,7 +292,7 @@ function SchedulerFacts({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <dl className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <dl className="grid gap-4 sm:grid-cols-4 lg:grid-cols-7">
             <Fact label={t('marketdata.marketRegime.pace')} value={`×${regime.pace.toFixed(2)}`} />
             <Fact
                 label={t('marketdata.marketRegime.loopGain')}
@@ -301,6 +301,10 @@ function SchedulerFacts({
                 })}
             />
             <Fact label={t('marketdata.marketRegime.runSeed')} value={String(trace.runSeed)} />
+            <Fact
+                label={t('marketdata.marketRegime.speed')}
+                value={t('marketdata.marketRegime.speedValue', { speed: regime.speed })}
+            />
             <Fact
                 label={t('marketdata.marketRegime.ticksPerSecond')}
                 value={trace.ticksPerSecond.toFixed(1)}

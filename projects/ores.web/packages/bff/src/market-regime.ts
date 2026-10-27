@@ -69,6 +69,7 @@ const answeredRegime = z.object({
     population_rate: z.number().default(0),
     loop_gain: z.number().default(0),
     run_seed: z.coerce.number().default(0),
+    speed: z.number().default(0),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -137,6 +138,8 @@ interface Regime {
     /** Jump over decay; the heat settles while it is below one. */
     readonly loopGain: number;
     readonly runSeed: number;
+    /** The simulated seconds one unit of market time spans. */
+    readonly speed: number;
 }
 
 /**
@@ -161,6 +164,7 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
         populationRate: reply.population_rate,
         loopGain: reply.loop_gain,
         runSeed: reply.run_seed,
+        speed: reply.speed,
     };
 }
 

@@ -48,6 +48,7 @@ struct equity_basket_constituent_entity {
     int version = 0;
     std::string trade_activity_id;
     std::string underlying_name;
+    std::string underlying_kind;
     std::optional<double> weight;
     std::optional<double> initial_price;
     std::string modified_by;

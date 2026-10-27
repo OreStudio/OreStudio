@@ -39,6 +39,8 @@ double checked_calm_multiplier(const market_config& c) {
         throw std::invalid_argument("operational_clock: wake_rate and calm_rate must be positive");
     if (!positive(c.active_multiplier))
         throw std::invalid_argument("operational_clock: active_multiplier must be positive");
+    if (!positive(c.speed))
+        throw std::invalid_argument("operational_clock: speed must be positive");
     if (!std::isfinite(c.jump) || c.jump < 0.0 || !positive(c.decay))
         throw std::invalid_argument(
             "operational_clock: jump must be non-negative and decay positive");

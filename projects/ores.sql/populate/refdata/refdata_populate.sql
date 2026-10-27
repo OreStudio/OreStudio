@@ -51,6 +51,7 @@
 \echo ''
 \echo '--- Commodities Seed Data ---'
 \ir ./refdata_commodities_seed_populate.sql
+\ir ./refdata_equity_underlyings_seed_populate.sql
 
 \echo ''
 \echo '--- Calendars Seed Data ---'

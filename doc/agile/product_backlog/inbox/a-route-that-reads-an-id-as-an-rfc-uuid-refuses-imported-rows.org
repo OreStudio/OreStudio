@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 73572E55-07CE-46A6-9B33-A19FE0B4CB28
+:END:
+#+title: A route that reads an id as an RFC uuid refuses rows the ORE import writes
+#+description: The curve page returned 400 on a real configuration: the ORE bundle import mints ids whose RFC 4122 version and variant bits are not the ones z.uuid() accepts (90e6d408-aa8e-3e14-206b-d510eefb7c29 has variant 2), while every id the application mints is a v7 and passes. Any other route that parses an address with z.uuid() has the same hole, and only an end-to-end read of imported data finds it.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

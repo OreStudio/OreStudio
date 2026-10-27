@@ -51,7 +51,7 @@ begin
     elsif v_kind = 'fx' then
         select exists (
             select 1 from ores_refdata_currency_pairs_tbl p
-            where p.code = p_code
+            where p.pair_code = p_code
               and p.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_found;
     elsif v_kind = 'commodity' then

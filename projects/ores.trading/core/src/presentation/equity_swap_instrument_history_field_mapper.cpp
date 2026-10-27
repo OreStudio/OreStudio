@@ -43,10 +43,6 @@ render_equity_swap_instrument_fields(const domain::equity_swap_instrument& v) {
     fields.push_back({.name = "Trade Activity ID",
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
-    fields.push_back({.name = "Basket Json", .value = v.basket_json});
-    fields.push_back({.name = "Initial Prices Json", .value = v.initial_prices_json});
-    fields.push_back({.name = "Knock Out Levels Json", .value = v.knock_out_levels_json});
-    fields.push_back({.name = "Fixed Trigger Levels Json", .value = v.fixed_trigger_levels_json});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Return Type", .value = v.return_type});

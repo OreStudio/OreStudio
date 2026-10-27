@@ -61,6 +61,7 @@ export const PATHS = {
     pricingEngines: '/reporting/pricing-engines',
     pricingEngineAuthoring: '/reporting/pricing-engines/author',
     engineSettings: '/reporting/engine-settings',
+    curveConfigurations: '/reporting/curve-configurations',
     sensitivityTemplates: '/reporting/sensitivity-templates',
 } as const;
 
@@ -156,6 +157,11 @@ export function pricingEnginePath(id: string): string {
 /** The address of one engine settings configuration's page. */
 export function engineSettingsPath(id: string): string {
     return `${PATHS.engineSettings}/${encodeURIComponent(id)}`;
+}
+
+/** The address of one curve configuration's page, by the report configuration it fills. */
+export function curveConfigurationPath(configurationId: string): string {
+    return `${PATHS.curveConfigurations}/${encodeURIComponent(configurationId)}`;
 }
 
 /** The address of one sensitivity template's page. */

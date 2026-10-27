@@ -32,7 +32,7 @@ These are yours to run before the tester opens the browser.
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Sensitivity templates, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | FAILED |
+| State         | PASSED |
 
 * Steps
 
@@ -113,8 +113,8 @@ These are yours to run before the tester opens the browser.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | created but got; ; A request did not finish; ; The server refused the request (bad_request). (PUT /api/analytics/sensitivity-templates/SensiTrade, request 248f1191) |
+| Status | PASS |
+| Notes  | The key was created. The refusal that followed was a PUT to the previously opened trade-level key: its class reached the service as a null the write protocol could not decode. Fixed in #3939: the BFF states an empty class at that boundary. Re-proved at the API, where SensiTrade, IR_FD and COMM_MC all update with 200. |
 
 ** A key the tenant holds is refused
 
@@ -169,11 +169,12 @@ These are yours to run before the tester opens the browser.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-10-27T19:04:10Z |
-| Branch        |   |
-| Commit        |   |
-| Worktree      |   |
+| Status        | PASSED |
+| Completed at  | 2026-10-27 |
+| Branch        | review/sensitivity-templates-scenario |
+| Commit        | 282d113765 |
+| Worktree      | ores_dev_solid_dirac |
+| Notes         | One UI run. The create step's follow-on refusal was fixed in #3939 and proved at the API; this database holds the probe versions of IR_FD, COMM_MC and SensiTrade. |
 
 * Notes
 

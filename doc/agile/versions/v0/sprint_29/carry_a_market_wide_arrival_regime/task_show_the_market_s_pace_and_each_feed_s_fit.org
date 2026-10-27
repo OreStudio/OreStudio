@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/show-the-market-s-pace-and-each-feed-s-fit
+#+pr: 3940
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person watching the Market regime tab can see how fast market time runs and wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -44,9 +44,29 @@ A person watching the Market regime tab can see how fast market time runs and wh
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Everything the tab draws comes from the scheduler's own record, so the
+trace first carries what the screen needs.
+
+- Each trace event records the regime's multiplier and the pace after it,
+  so the pace is drawn as a step stacked into the regime's part and the
+  heat's, and the state bands come from the record rather than from the
+  screen's polling.
+- Each tick records its compensated gap, the law's intensity integrated
+  over the gap from the law's state before the event
+  (=domain::compensator=). By the time-rescaling theorem these are Exp(1)
+  for a feed that follows its law, so a QQ plot against Exp(1) checks every
+  law, a Hawkes one included; a periodic feed's are all one.
+- The trace reply lists every running feed's law: its mode, rate,
+  sensitivity, effective rate now (=domain::intensity_after= times the
+  sensitivity and the pace), periodic phase and Hawkes excess.
+- =marketTrace.ts= holds the pure functions: the pace steps, the bands, the
+  command log, the tau span and positions, each feed's fit, and the Exp(1)
+  quantiles. The tab and the Arrivals panel only draw them.
+- The raster switches between clock time and tau; in tau a periodic feed's
+  marks are evenly spaced. The switch is a radio group, so the regime switch
+  stays the one pressed button.
+- The fit expects the rate times the sensitivity times the tau the window
+  spans, and leaves out each feed's first gap, which began before it.
 
 * Measurements
 
@@ -60,7 +80,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant law and trace tests | 20 cases passed | =ores.analytics.quant.tests [scheduler_trace],[arrival_law]= | 968dbe59cb |
+| BFF regime and trace tests | 16 passed | =npx vitest run src/market-regime.test.ts= | 968dbe59cb |
+| Web synthetic tests | 198 passed | =npx vitest run src/marketdata/synthetic= | 693d213d67 |
+| Harness, market regime | 6 passed, the new one for the pace chart, the fit and the tau switch included | =npx playwright test tests/market-regime.spec.ts= | ed8f639cad |
+| Live fit | 123 seen against 123.1 expected for a feed at a tick a second; 4 against 4.1 for the quiet curves | screenshot of the fit section on Acme | ed8f639cad |
 
 * Notes
 
@@ -79,12 +103,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3940][#3940]] | [web] Show the market's pace and each feed's fit |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: a Hawkes decay of zero divides by zero in the compensator. | arrival_law.cpp | Decline | validate_arrival_process_parameters refuses a decay of zero or less, and make_arrival_law runs it first. |
+| 2 | Bot: the phase never changes, though it sits beside live numbers. | locales | Accept | Labelled initial phase. |
+| 3 | Bot: a quiet feed may show a false shortfall. | marketTrace.ts | Decline | The expectation is the rate over the window's market time, which is the time the feed's ticks could fill; live, the quiet curves show 4 seen against 4.1 expected. |
+| 4 | Bot: the log and the fit assume the events arrive in order. | marketTrace.ts | Accept | Both sort by tau. |
+| 5 | Bot: check algorithm and cmath are included. | tick_scheduler.cpp | Decline | Both are included directly. |
+| 6 | Bot: a QQ plot of one or two gaps says nothing. | MarketRegimeTab.tsx | Accept | Five gaps at least, else the tab says there are too few ticks; tested. |
+| 7 | Harness: a pin from the screen took effect and reported a failure. | market_regime_handler.hpp | Accept | Found on the live check and already on main: the pin reply lacked the heat and samples the BFF reads. It now carries the whole regime. |
+| 8 | Live check: the fit opened on a feed with one tick and drew no plot. | MarketRegimeTab.tsx | Accept | It opens on the busiest feed, and the table scrolls. |
 
 * Result
+
+A person watching the Market regime tab can now see how fast market time runs
+and why, and check each feed against its law while the run goes on. The tab
+draws the pace stacked into the regime and the heat, takes its state bands
+from the scheduler's own record, shows the run seed, the loop gain against one
+and the loop's numbers, and lists what the loop applied. The raster switches
+between clock time and tau, and in tau a periodic feed's marks are evenly
+spaced. Each row and the Arrivals panel show the feed's law, base rate,
+sensitivity, rate now, and its initial phase or its excitation. The fit sets
+each feed's count against its rate times its sensitivity times the market
+time that passed, and plots its rescaled gaps against Exp(1). On Acme a feed
+at a tick a second showed 123 ticks against 123.1 expected. The live check
+also found a fault that was already on main: a pin from the screen took effect
+and then reported a failure, because its reply lacked the heat the BFF reads.

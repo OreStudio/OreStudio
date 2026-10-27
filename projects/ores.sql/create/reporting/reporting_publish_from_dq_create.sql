@@ -239,7 +239,12 @@ begin
                 || 'where d.tenant_id = ores_utility_system_tenant_id_fn() '
                 || 'and d.scope = ''analytic'' and d.subtype = p.analytic_type_code '
                 || 'and d.name = a.parameter_name '
-                || 'and d.valid_to = ores_utility_infinity_timestamp_fn()')))
+                || 'and d.valid_to = ores_utility_infinity_timestamp_fn() '
+                -- A contract may hold a closed version window beside the live one,
+                -- and a generation whose id scheme changed leaves its row behind, so
+                -- the row this resolves to is chosen rather than assumed unique.
+                || 'order by d.introduced_in desc nulls last, d.valid_from desc '
+                || 'limit 1')))
     loop
         action := r.action;
         record_count := r.record_count;
@@ -536,6 +541,25 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
+    end if;
+
+    -- A live row that holds the same parameter under another id is superseded
+    -- first. The id is derived from the schema and the XPath, and that
+    -- derivation has changed before now; an id-keyed check cannot see the
+    -- generation it no longer reproduces, so the row would stay live beside the
+    -- new one and the dataset would hold the same parameter twice.
+    if p_mode = 'upsert' then
+        update ores_reporting_ore_parameters_tbl live
+        set valid_to = clock_timestamp()
+        where live.tenant_id = p_target_tenant_id
+          and live.valid_to = ores_utility_infinity_timestamp_fn()
+          and exists (
+              select 1 from ores_dq_ore_parameters_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn()
+                and dq.id <> live.id
+                and (dq.scope, dq.subtype, dq.name, dq.schema_name, dq.xpath)
+                    = (live.scope, live.subtype, live.name, live.schema_name, live.xpath));
     end if;
 
     for r in

@@ -27,7 +27,9 @@ import {
     type FeedRaster,
     type MarketRegime,
     type MarketState,
+    type MarketTrace,
     type RegimeMode,
+    type TraceFeed,
 } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Button, Fact, Notice, Tag } from '../../ui/Primitives.js';
@@ -43,7 +45,24 @@ import {
     stateBands,
     type StateSample,
 } from './marketRaster.js';
-import { REGIME_KEY, stateName, useMarketRegimeQuery, useStateTrace } from './useMarketRegime.js';
+import {
+    commandLog,
+    exponentialQuantiles,
+    feedFit,
+    lawText,
+    paceSteps,
+    QQ_MINIMUM_GAPS,
+    tauPositions,
+    tauSpan,
+    traceBands,
+} from './marketTrace.js';
+import {
+    REGIME_KEY,
+    stateName,
+    useMarketRegimeQuery,
+    useMarketTrace,
+    useStateTrace,
+} from './useMarketRegime.js';
 
 /** How often the raster is read again, in milliseconds. Slower than the state:
  * it carries a row for every running feed, and a mark that arrives two seconds
@@ -76,6 +95,7 @@ export function MarketRegimeTab(): ReactNode {
     } | null>(null);
     const regime = useMarketRegimeQuery();
     const states = useStateTrace(regime.dataUpdatedAt, regime.data?.state);
+    const trace = useMarketTrace();
     const raster = useQuery({
         queryKey: RASTER_KEY,
         queryFn: () => api.feedRaster({ seconds: RASTER_SECONDS }),
@@ -106,6 +126,7 @@ export function MarketRegimeTab(): ReactNode {
             error={pin.error === null ? null : pin.error.message}
             marked={marked}
             states={states}
+            trace={trace.data}
             onPin={(mode) => pin.mutate(mode)}
         />
     );
@@ -124,6 +145,7 @@ export function MarketRegimePanel({
     error,
     marked,
     states,
+    trace,
     onPin,
 }: {
     readonly regime: MarketRegime;
@@ -135,9 +157,12 @@ export function MarketRegimePanel({
     readonly marked: { readonly at: number; readonly state: MarketState } | null;
     /** The state over the window, so the arrivals sit under the market that produced them. */
     readonly states: readonly StateSample[];
+    /** The scheduler's own record, which the pace, the bands, the fit and the log are drawn from. */
+    readonly trace?: MarketTrace | undefined;
     readonly onPin: (mode: RegimeMode) => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const [axis, setAxis] = useState<'clock' | 'tau'>('clock');
     const forced = regime.pinned ? regime.state : 'auto';
     // A row is empty until its feed ticks after the tab opened, so a picture with
     // no mark at all says why rather than reading as a market at a standstill.
@@ -176,6 +201,8 @@ export function MarketRegimePanel({
                 />
             </dl>
 
+            {trace === undefined ? null : <SchedulerFacts regime={regime} trace={trace} />}
+
             {error === null ? null : <Notice tone="error">{error}</Notice>}
 
             <div className="flex flex-wrap items-center gap-2">
@@ -202,20 +229,45 @@ export function MarketRegimePanel({
                 seconds={raster?.seconds ?? RASTER_SECONDS}
                 now={now}
                 regime={regime}
+                trace={trace}
             />
 
             <div className="space-y-2">
-                <h3 className="text-xs uppercase tracking-wide text-ink-faint">
-                    {t('marketdata.marketRegime.raster.title', {
-                        seconds: raster?.seconds ?? RASTER_SECONDS,
-                    })}
-                </h3>
+                <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                        {t('marketdata.marketRegime.raster.title', {
+                            seconds: raster?.seconds ?? RASTER_SECONDS,
+                        })}
+                    </h3>
+                    {trace === undefined ? null : (
+                        <span
+                            role="radiogroup"
+                            aria-label={t('marketdata.marketRegime.raster.axis.label')}
+                            className="ml-auto flex items-center gap-1"
+                        >
+                            {(['clock', 'tau'] as const).map((option) => (
+                                <Button
+                                    key={option}
+                                    size="sm"
+                                    role="radio"
+                                    variant={axis === option ? 'primary' : 'secondary'}
+                                    aria-checked={axis === option}
+                                    onClick={() => setAxis(option)}
+                                >
+                                    {t(`marketdata.marketRegime.raster.axis.${option}`)}
+                                </Button>
+                            ))}
+                        </span>
+                    )}
+                </div>
                 <MarketRaster
                     feeds={raster?.feeds ?? []}
                     seconds={raster?.seconds ?? RASTER_SECONDS}
                     now={now}
                     marked={marked}
                     states={states}
+                    trace={trace}
+                    axis={axis}
                 />
                 {warming ? (
                     <p className="text-xs text-ink-faint">
@@ -223,6 +275,203 @@ export function MarketRegimePanel({
                     </p>
                 ) : null}
             </div>
+
+            {trace === undefined ? null : <FeedFits trace={trace} />}
+            {trace === undefined ? null : <CommandLog trace={trace} />}
+        </section>
+    );
+}
+
+/** The run's seed, the heat's loop gain against one, and how the scheduler's loop is doing. */
+function SchedulerFacts({
+    regime,
+    trace,
+}: {
+    readonly regime: MarketRegime;
+    readonly trace: MarketTrace;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <dl className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <Fact label={t('marketdata.marketRegime.pace')} value={`×${regime.pace.toFixed(2)}`} />
+            <Fact
+                label={t('marketdata.marketRegime.loopGain')}
+                value={t('marketdata.marketRegime.loopGainValue', {
+                    gain: regime.loopGain.toFixed(3),
+                })}
+            />
+            <Fact label={t('marketdata.marketRegime.runSeed')} value={String(trace.runSeed)} />
+            <Fact
+                label={t('marketdata.marketRegime.ticksPerSecond')}
+                value={trace.ticksPerSecond.toFixed(1)}
+            />
+            <Fact label={t('marketdata.marketRegime.heapSize')} value={String(trace.heapSize)} />
+            <Fact
+                label={t('marketdata.marketRegime.lateness')}
+                value={t('marketdata.marketRegime.latenessValue', {
+                    smoothed: (trace.latenessSeconds * 1000).toFixed(1),
+                    most: (trace.maxLatenessSeconds * 1000).toFixed(1),
+                })}
+            />
+        </dl>
+    );
+}
+
+/** The pixels a QQ plot takes on each side. */
+const QQ_SIZE = 160;
+
+/**
+ * Each feed's ticks over the window against its law: how many it made and how many its law
+ * asks for, and for the feed a person picks, its compensated gaps against Exp(1).
+ */
+function FeedFits({ trace }: { readonly trace: MarketTrace }): ReactNode {
+    const { t } = useTranslation();
+    const [picked, setPicked] = useState<string | undefined>(undefined);
+    const span = tauSpan(trace.events);
+    if (span === undefined || trace.feeds.length === 0) {
+        return null;
+    }
+    const fits = trace.feeds.map((feed) => ({ feed, fit: feedFit(trace.events, feed, span) }));
+    // Until a person picks one, the feed with the most ticks, whose plot says the most.
+    const busiest = fits.reduce<(typeof fits)[number] | undefined>(
+        (best, entry) =>
+            best === undefined || entry.fit.observed > best.fit.observed ? entry : best,
+        undefined,
+    );
+    const chosen = fits.find((entry) => entry.feed.sourceName === picked) ?? busiest;
+    const points = chosen === undefined ? [] : exponentialQuantiles(chosen.fit.gaps);
+    const top = points.reduce((high, point) => Math.max(high, point.expected, point.observed), 1);
+    return (
+        <section
+            aria-label={t('marketdata.marketRegime.fit.title')}
+            className="space-y-2 rounded-md border border-line bg-surface-base p-3"
+        >
+            <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                {t('marketdata.marketRegime.fit.title')}
+            </h3>
+            <p className="text-[11px] text-ink-faint">{t('marketdata.marketRegime.fit.lead')}</p>
+            <div className="flex flex-wrap items-start gap-4">
+                <div className="max-h-72 overflow-y-auto">
+                    <table className="text-[11px]">
+                        <thead className="text-ink-faint">
+                            <tr>
+                                <th className="pr-3 text-left font-normal">
+                                    {t('marketdata.marketRegime.fit.feed')}
+                                </th>
+                                <th className="pr-3 text-right font-normal">
+                                    {t('marketdata.marketRegime.fit.observed')}
+                                </th>
+                                <th className="pr-3 text-right font-normal">
+                                    {t('marketdata.marketRegime.fit.expected')}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {fits.map(({ feed, fit }) => (
+                                <tr
+                                    key={feed.sourceName}
+                                    className={`cursor-pointer ${
+                                        chosen?.feed.sourceName === feed.sourceName
+                                            ? 'bg-ink/10'
+                                            : ''
+                                    }`}
+                                    onClick={() => setPicked(feed.sourceName)}
+                                >
+                                    <td className="pr-3">{feed.sourceName}</td>
+                                    <td className="pr-3 text-right font-mono tabular-nums">
+                                        {fit.observed}
+                                    </td>
+                                    <td className="pr-3 text-right font-mono tabular-nums">
+                                        {fit.expected.toFixed(1)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {chosen === undefined ? null : points.length < QQ_MINIMUM_GAPS ? (
+                    <p className="max-w-[160px] text-[10px] text-ink-faint">
+                        {t('marketdata.marketRegime.fit.tooFew', {
+                            feed: chosen.feed.sourceName,
+                            minimum: QQ_MINIMUM_GAPS,
+                        })}
+                    </p>
+                ) : (
+                    <figure className="space-y-1">
+                        <svg
+                            role="img"
+                            aria-label={t('marketdata.marketRegime.fit.qq', {
+                                feed: chosen.feed.sourceName,
+                            })}
+                            width={QQ_SIZE}
+                            height={QQ_SIZE}
+                            viewBox={`0 0 ${String(QQ_SIZE)} ${String(QQ_SIZE)}`}
+                            className="text-flow"
+                        >
+                            <line
+                                x1={0}
+                                y1={QQ_SIZE}
+                                x2={QQ_SIZE}
+                                y2={0}
+                                className="stroke-ink/30"
+                                strokeDasharray="3 3"
+                            />
+                            {points.map((point, index) => (
+                                <circle
+                                    key={index}
+                                    data-qq
+                                    cx={(point.expected / top) * QQ_SIZE}
+                                    cy={QQ_SIZE - (point.observed / top) * QQ_SIZE}
+                                    r={2}
+                                    fill="currentColor"
+                                />
+                            ))}
+                        </svg>
+                        <figcaption className="max-w-[160px] text-[10px] text-ink-faint">
+                            {t('marketdata.marketRegime.fit.qqCaption', {
+                                feed: chosen.feed.sourceName,
+                            })}
+                        </figcaption>
+                    </figure>
+                )}
+            </div>
+        </section>
+    );
+}
+
+/** The pins and the changes of the feeds over the window, newest first. */
+function CommandLog({ trace }: { readonly trace: MarketTrace }): ReactNode {
+    const { t } = useTranslation();
+    const log = commandLog(trace.events);
+    return (
+        <section
+            aria-label={t('marketdata.marketRegime.log.title')}
+            className="space-y-1 rounded-md border border-line bg-surface-base p-3"
+        >
+            <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                {t('marketdata.marketRegime.log.title')}
+            </h3>
+            {log.length === 0 ? (
+                <p className="text-[11px] text-ink-faint">
+                    {t('marketdata.marketRegime.log.none')}
+                </p>
+            ) : (
+                <ul className="space-y-0.5 text-[11px]">
+                    {log.map((event, index) => (
+                        <li key={index} className="flex gap-3 font-mono tabular-nums">
+                            <span className="text-ink-faint">
+                                {new Date(event.at).toLocaleTimeString()}
+                            </span>
+                            <span>{t(`marketdata.marketRegime.log.${event.kind}`)}</span>
+                            <span className="text-ink-muted">
+                                {event.sourceName === ''
+                                    ? stateName(event.state, t)
+                                    : event.sourceName}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </section>
     );
 }
@@ -241,18 +490,23 @@ export function FactorCharts({
     seconds,
     now,
     regime,
+    trace,
 }: {
     readonly feeds: FeedRaster['feeds'];
     readonly seconds: number;
     readonly now: number;
     /** The factor in force, which carries the heat the service sampled. */
     readonly regime: MarketRegime;
+    /** The scheduler's record, which carries the pace at every decision. */
+    readonly trace?: MarketTrace | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const rates = rateCurves(feeds, seconds, now);
     const heat = heatSeries(regime.samples, seconds, now);
     const heatPeak = heat.reduce((high, value) => Math.max(high, value), 0);
-    if (heat.length < 2 && rates.curves.length === 0) {
+    const pace =
+        trace === undefined ? { steps: [], peak: 0 } : paceSteps(trace.events, seconds, now);
+    if (heat.length < 2 && rates.curves.length === 0 && pace.steps.length === 0) {
         return null;
     }
     return (
@@ -263,6 +517,56 @@ export function FactorCharts({
             <h3 className="text-xs uppercase tracking-wide text-ink-faint">
                 {t('marketdata.marketRegime.charts.title')}
             </h3>
+            {pace.steps.length === 0 ? null : (
+                <div className="flex items-stretch gap-3" style={{ height: CHART_HEIGHT }}>
+                    <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
+                        {t('marketdata.marketRegime.charts.pace')}
+                        <span className="mt-1 flex flex-col gap-0.5">
+                            <span className="flex items-center gap-1">
+                                <span className="h-2 w-3 rounded-sm bg-ink/30" />
+                                {t('marketdata.marketRegime.charts.paceRegime')}
+                            </span>
+                            <span className="flex items-center gap-1">
+                                <span className="h-2 w-3 rounded-sm bg-flow/60" />
+                                {t('marketdata.marketRegime.charts.paceHeat')}
+                            </span>
+                        </span>
+                    </span>
+                    <svg
+                        role="img"
+                        aria-label={t('marketdata.marketRegime.charts.pace')}
+                        className="flex-1"
+                        viewBox="0 0 100 1"
+                        preserveAspectRatio="none"
+                    >
+                        {pace.steps.map((step, index) => {
+                            const regimeHeight = step.multiplier / pace.peak;
+                            const heatHeight = step.heat / pace.peak;
+                            return (
+                                <g key={index} data-pace>
+                                    <rect
+                                        x={step.from}
+                                        width={Math.max(0, step.to - step.from)}
+                                        y={1 - regimeHeight}
+                                        height={regimeHeight}
+                                        className="fill-ink/30"
+                                    />
+                                    <rect
+                                        x={step.from}
+                                        width={Math.max(0, step.to - step.from)}
+                                        y={1 - regimeHeight - heatHeight}
+                                        height={heatHeight}
+                                        className="fill-flow/60"
+                                    />
+                                </g>
+                            );
+                        })}
+                    </svg>
+                    <span className="w-12 shrink-0 self-end pb-1 text-right font-mono text-[10px] tabular-nums text-ink-faint">
+                        {`×${regime.pace.toFixed(2)}`}
+                    </span>
+                </div>
+            )}
             {heat.length < 2 ? null : (
                 <div className="flex items-stretch gap-3" style={{ height: CHART_HEIGHT }}>
                     <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
@@ -348,6 +652,8 @@ export function MarketRaster({
     now,
     marked,
     states,
+    trace,
+    axis = 'clock',
 }: {
     readonly feeds: FeedRaster['feeds'];
     /** The window the rows were read over, which is what the marks are placed in. */
@@ -356,16 +662,32 @@ export function MarketRaster({
     readonly marked: { readonly at: number; readonly state: MarketState } | null;
     /** The state over the window, drawn as the band the arrivals sit on. */
     readonly states: readonly StateSample[];
+    /** The scheduler's record: the bands, the market-time marks and each feed's law. */
+    readonly trace?: MarketTrace | undefined;
+    /** Whether the marks are placed by clock time or by market time, tau. */
+    readonly axis?: 'clock' | 'tau';
 }): ReactNode {
     const { t } = useTranslation();
     if (feeds.length === 0) {
         return <Notice tone="info">{t('marketdata.marketRegime.raster.none')}</Notice>;
     }
+    const span = trace === undefined ? undefined : tauSpan(trace.events);
+    const byTau = axis === 'tau' && trace !== undefined && span !== undefined;
     const markAt =
-        marked === null
+        marked === null || byTau
             ? undefined
             : arrivalPositions([new Date(marked.at).toISOString()], seconds, now)[0];
-    const bands = stateBands(states, seconds, now);
+    // In market time the clock's bands do not line up with the marks, so none are drawn.
+    const bands = byTau
+        ? []
+        : trace === undefined
+          ? stateBands(states, seconds, now)
+          : traceBands(trace.events, seconds, now);
+    const laws = new Map((trace?.feeds ?? []).map((feed) => [feed.sourceName, feed]));
+    const positionsOf = (sourceName: string): readonly number[] | undefined =>
+        byTau && trace !== undefined && span !== undefined
+            ? tauPositions(trace.events, sourceName, span)
+            : undefined;
     const running = feeds.filter((feed) => feed.running);
     const stopped = feeds.filter((feed) => !feed.running);
     return (
@@ -382,6 +704,9 @@ export function MarketRaster({
                     now={now}
                     markAt={markAt}
                     bands={bands}
+                    positions={positionsOf(feed.sourceName)}
+                    law={laws.get(feed.sourceName)}
+                    showLaw={trace !== undefined}
                 />
             ))}
             {stopped.length === 0 ? null : (
@@ -399,18 +724,31 @@ export function MarketRaster({
                             now={now}
                             markAt={markAt}
                             bands={bands}
+                            showLaw={trace !== undefined}
                         />
                     ))}
                 </details>
             )}
             <div className="flex items-center gap-3 px-3 pt-1">
                 <span className="w-44 shrink-0" />
-                <span className="flex flex-1 justify-between font-mono text-[10px] text-ink-faint">
-                    <span>{`\u2212${String(seconds)}s`}</span>
-                    <span>{`\u2212${String(Math.round((seconds * 2) / 3))}s`}</span>
-                    <span>{`\u2212${String(Math.round(seconds / 3))}s`}</span>
-                    <span>{t('marketdata.marketRegime.raster.now')}</span>
-                </span>
+                {byTau && span !== undefined ? (
+                    <span className="flex flex-1 justify-between font-mono text-[10px] text-ink-faint">
+                        <span>{`\u03c4 ${span.from.toFixed(1)}`}</span>
+                        <span>{`\u03c4 ${span.to.toFixed(1)}`}</span>
+                    </span>
+                ) : (
+                    <span className="flex flex-1 justify-between font-mono text-[10px] text-ink-faint">
+                        <span>{`\u2212${String(seconds)}s`}</span>
+                        <span>{`\u2212${String(Math.round((seconds * 2) / 3))}s`}</span>
+                        <span>{`\u2212${String(Math.round(seconds / 3))}s`}</span>
+                        <span>{t('marketdata.marketRegime.raster.now')}</span>
+                    </span>
+                )}
+                {trace === undefined ? null : (
+                    <span className="w-56 shrink-0 text-[9px] text-ink-faint">
+                        {t('marketdata.marketRegime.raster.lawColumn')}
+                    </span>
+                )}
                 <span className="w-10 shrink-0 text-right text-[9px] text-ink-faint">
                     {t('marketdata.marketRegime.raster.seen')}
                 </span>
@@ -451,6 +789,9 @@ function RasterRow({
     now,
     markAt,
     bands,
+    positions,
+    law,
+    showLaw = false,
 }: {
     readonly feed: FeedRaster['feeds'][number];
     readonly seconds: number;
@@ -461,9 +802,18 @@ function RasterRow({
         readonly to: number;
         readonly state: MarketState;
     }[];
+    /** The marks placed by market time, which replace the clock's when they are given. */
+    readonly positions?: readonly number[] | undefined;
+    /** The feed's law and its state now, when the scheduler's record is read. */
+    readonly law?: TraceFeed | undefined;
+    /** Whether the raster has a law column, which a row keeps even when it has no law. */
+    readonly showLaw?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
-    const groups = markGroups(feed.ticks, seconds, now);
+    const groups =
+        positions === undefined
+            ? markGroups(feed.ticks, seconds, now)
+            : positions.map((position) => ({ position, count: 1 }));
     return (
         <div
             className="flex items-center gap-3 px-3"
@@ -517,6 +867,15 @@ function RasterRow({
                     />
                 )}
             </span>
+            {showLaw ? (
+                <span
+                    data-law
+                    className="w-56 shrink-0 truncate font-mono text-[10px] text-ink-faint"
+                    title={law === undefined ? undefined : lawText(law, t)}
+                >
+                    {law === undefined ? '' : lawText(law, t)}
+                </span>
+            ) : null}
             <span className="w-10 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint">
                 {feed.running ? groups.length : t('marketdata.marketRegime.raster.stopped')}
             </span>

@@ -3458,7 +3458,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.basket_json = instr.basket_json;
                                 req.change.write.currency = instr.currency;
                                 req.change.write.notional = instr.notional;
                                 req.change.write.return_type = instr.return_type;

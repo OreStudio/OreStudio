@@ -95,6 +95,20 @@ ORES_ANALYTICS_QUANT_EXPORT arrival_law make_arrival_law(const arrival_spec& spe
 ORES_ANALYTICS_QUANT_EXPORT double draw_gap(const arrival_law& law, math::rng_stream& stream);
 
 /**
+ * @brief The intensity integrated over @p gap from the law's state at the last event.
+ *
+ * Call it before record_event moves the law past the event the gap ended in. By the
+ * time-rescaling theorem the compensated gaps of a stream that follows its law are
+ * independent and Exp(1); a periodic law's are all one.
+ */
+ORES_ANALYTICS_QUANT_EXPORT double compensator(const arrival_law& law, double gap);
+
+/**
+ * @brief The law's intensity @p elapsed operational seconds after its last event.
+ */
+ORES_ANALYTICS_QUANT_EXPORT double intensity_after(const arrival_law& law, double elapsed);
+
+/**
  * @brief Move a law past an event that came one gap after the last.
  *
  * @param gap the operational time that actually passed since the last event:

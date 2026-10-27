@@ -38,6 +38,7 @@ import type { FeedTickBuffers } from './feed-ticks.js';
  */
 const getSubject = 'synthetic.v1.ops.get_market_regime';
 const pinSubject = 'synthetic.v1.ops.pin_market_regime';
+const traceSubject = 'synthetic.v1.ops.get_market_trace';
 
 /** What a switch may force: a state, or control handed back to the chain. */
 export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
@@ -63,6 +64,11 @@ const answeredRegime = z.object({
     jump: z.number(),
     decay: z.number(),
     samples: z.array(heatSample),
+    pace: z.number().default(1),
+    tau: z.number().default(0),
+    population_rate: z.number().default(0),
+    loop_gain: z.number().default(0),
+    run_seed: z.coerce.number().default(0),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -122,6 +128,15 @@ interface Regime {
     readonly jump: number;
     readonly decay: number;
     readonly samples: z.infer<typeof heatSample>[];
+    /** How fast market time runs now: the multiplier plus the heat's share. */
+    readonly pace: number;
+    /** The market's operational time since the run started. */
+    readonly tau: number;
+    /** The summed mean rate of the running feeds, a second, which the heat is shared over. */
+    readonly populationRate: number;
+    /** Jump over decay; the heat settles while it is below one. */
+    readonly loopGain: number;
+    readonly runSeed: number;
 }
 
 /**
@@ -141,8 +156,57 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
         jump: reply.jump,
         decay: reply.decay,
         samples: reply.samples,
+        pace: reply.pace,
+        tau: reply.tau,
+        populationRate: reply.population_rate,
+        loopGain: reply.loop_gain,
+        runSeed: reply.run_seed,
     };
 }
+
+/** One decision of the scheduler's loop, as the service reports it. */
+const traceEvent = z.object({
+    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove']),
+    source_name: z.string().default(''),
+    at: z.string(),
+    tau: z.number(),
+    operational_gap: z.number().default(0),
+    wall_gap: z.number().default(0),
+    compensated_gap: z.number().default(0),
+    heat: z.number(),
+    multiplier: z.number().default(1),
+    pace: z.number().default(1),
+    state: stateSchema,
+});
+
+/** One running feed and the state of its arrival law now. */
+const seriesState = z.object({
+    source_name: z.string(),
+    mode: z.string(),
+    rate: z.number(),
+    sensitivity: z.number(),
+    effective_rate: z.number(),
+    phase: z.number().default(0),
+    excess: z.number().default(0),
+});
+
+const answeredTrace = z.object({
+    success: z.literal(true),
+    message: z.string().default(''),
+    run_seed: z.coerce.number().default(0),
+    ticks_per_second: z.number(),
+    heap_size: z.coerce.number(),
+    lateness_seconds: z.number(),
+    max_lateness_seconds: z.number(),
+    series: z.coerce.number(),
+    events: z.array(traceEvent),
+    series_states: z.array(seriesState).default([]),
+});
+
+const traceReply = z.union([answeredTrace, refusedRegime]);
+
+/** The most events one read returns; the newest are kept. */
+export const TRACE_LIMIT = 20000;
 
 export function registerMarketRegimeRoutes(
     server: FastifyInstance,
@@ -153,6 +217,63 @@ export function registerMarketRegimeRoutes(
     server.get('/api/synthetic/market-regime', async (request) => {
         const session = requireSession(request);
         return answered(await session.client.callAuthenticated(getSubject, {}, regimeReply));
+    });
+
+    /**
+     * The scheduler's recent decisions and its own numbers: every tick with the gap its law
+     * drew and the wall gap it took, every regime turn, pin and change of the feeds, each with
+     * its clock time and its market time. One feed's events and the market's, or all of them.
+     */
+    server.get('/api/synthetic/market-trace', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z
+                .object({
+                    source: z.string().max(256).default(''),
+                    seconds: z.coerce.number().min(1).max(3600).default(120),
+                    limit: z.coerce.number().int().min(1).max(TRACE_LIMIT).default(5000),
+                })
+                .strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            traceSubject,
+            { source_name: query.source, seconds: query.seconds, limit: query.limit },
+            traceReply,
+        );
+        if (!reply.success) {
+            throw upstreamFailure(reply.message || 'The synthetic service refused the trace read.');
+        }
+        return {
+            runSeed: reply.run_seed,
+            ticksPerSecond: reply.ticks_per_second,
+            heapSize: reply.heap_size,
+            latenessSeconds: reply.lateness_seconds,
+            maxLatenessSeconds: reply.max_lateness_seconds,
+            series: reply.series,
+            events: reply.events.map((e) => ({
+                kind: e.kind,
+                sourceName: e.source_name,
+                at: e.at,
+                tau: e.tau,
+                operationalGap: e.operational_gap,
+                wallGap: e.wall_gap,
+                compensatedGap: e.compensated_gap,
+                heat: e.heat,
+                multiplier: e.multiplier,
+                pace: e.pace,
+                state: e.state,
+            })),
+            feeds: reply.series_states.map((f) => ({
+                sourceName: f.source_name,
+                mode: f.mode,
+                rate: f.rate,
+                sensitivity: f.sensitivity,
+                effectiveRate: f.effective_rate,
+                phase: f.phase,
+                excess: f.excess,
+            })),
+        };
     });
 
     /**

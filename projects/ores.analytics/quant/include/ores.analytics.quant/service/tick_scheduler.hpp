@@ -25,6 +25,7 @@
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/run_clock.hpp"
+#include "ores.analytics.quant/service/scheduler_trace.hpp"
 #include <queue>
 #include <atomic>
 #include <chrono>
@@ -33,6 +34,7 @@
 #include <deque>
 #include <exception>
 #include <functional>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -57,6 +59,8 @@ struct series_spec final {
     domain::arrival_spec arrival;
     /// How strongly the series follows the market, one being the average.
     double sensitivity = 1.0;
+    /// What a reader of the trace calls the series: its source name.
+    std::string name;
 };
 
 /// One tick the scheduler took.
@@ -80,6 +84,49 @@ struct market_snapshot final {
     double decay;
     double loop_gain;
     double population_rate;
+};
+
+/**
+ * @brief How the loop itself is doing.
+ *
+ * Lateness is the time the loop fires a tick less the time it was due. It counts the wake-up
+ * jitter and any time spent on commands or on earlier ticks of the same batch, because that
+ * is how late the tick reached its feed.
+ */
+struct scheduler_stats final {
+    /// Ticks a second, taken at each heat sample and smoothed, so it is a sample period old
+    /// at most and holds its last value while the loop is idle.
+    double ticks_per_second;
+    /// Entries in the heap, live and stale.
+    std::size_t heap_size;
+    /// Lateness smoothed over about the last ten ticks.
+    double lateness_seconds;
+    /// The latest tick since the last read of these numbers. Every read starts a new window,
+    /// so two readers share it.
+    double max_lateness_seconds;
+    std::size_t series;
+};
+
+/// One running series and the state of its law now.
+struct series_state final {
+    std::string name;
+    /// "periodic", "poisson" or "hawkes".
+    std::string mode;
+    /// The configured mean rate, a second.
+    double rate;
+    double sensitivity;
+    /// The rate it ticks at now: its law's intensity, times its sensitivity and the pace.
+    double effective_rate;
+    /// For a periodic law: the fraction of its first gap it started at.
+    double phase;
+    /// For a Hawkes law: the excess intensity now, above the baseline.
+    double excess;
+};
+
+/// A slice of the trace, with the name of every series it mentions.
+struct trace_page final {
+    std::vector<trace_event> events;
+    std::map<std::uint64_t, std::string> names;
 };
 
 /// The heat at one instant, for a screen to draw.
@@ -118,6 +165,9 @@ public:
     /// How many heat readings the history keeps.
     static constexpr std::size_t history_capacity = 2048;
 
+    /// How many decisions the trace keeps.
+    static constexpr std::size_t trace_capacity = 65536;
+
     /**
      * @param clock the run's time, borrowed and outliving the scheduler.
      * @param market how the market's pace moves.
@@ -152,6 +202,26 @@ public:
 
     [[nodiscard]] std::size_t size() const;
 
+    /**
+     * @brief The decisions of the last @p seconds of the run, oldest first.
+     *
+     * @param series only this series' events, and every market event, when set.
+     * @param limit the most events to return; the newest are kept.
+     */
+    [[nodiscard]] trace_page
+    trace(std::optional<std::uint64_t> series,
+          double seconds,
+          std::size_t limit = std::numeric_limits<std::size_t>::max()) const;
+
+    /// Every running series and the state of its law now, in name order.
+    [[nodiscard]] std::vector<series_state> series_states() const;
+
+    /// The wall time of an instant of the run, as a trace event gives it.
+    [[nodiscard]] std::chrono::system_clock::time_point wall_at(double at) const;
+
+    /// The loop's own numbers. Reading them starts a new window for the maximum lateness.
+    [[nodiscard]] scheduler_stats stats();
+
     [[nodiscard]] std::uint64_t run_seed() const {
         return run_seed_;
     }
@@ -184,6 +254,10 @@ private:
         double gap;
         double mark;
         double last_fired;
+        /// The market's tau at the series' last event, or when it was added.
+        double last_tau;
+        /// The phase a periodic law drew when the series was added.
+        double phase;
     };
 
     struct pending final {
@@ -206,6 +280,11 @@ private:
     void schedule(std::size_t id, series& s);
     void sample(i_run_clock::time_point t);
     void rebuild_heap();
+    void record(trace_kind kind,
+                std::uint64_t series,
+                double operational_gap = 0.0,
+                double wall_gap = 0.0,
+                double compensated_gap = 0.0);
 
     /// The run time at which the next series is due, or nothing.
     [[nodiscard]] std::optional<double> next_due();
@@ -222,6 +301,13 @@ private:
     std::map<std::size_t, series> series_;
     std::priority_queue<pending, std::vector<pending>, std::greater<>> heap_;
     std::deque<heat_reading> history_;
+    trace_ring trace_{trace_capacity};
+    std::map<std::uint64_t, std::string> names_;
+    std::uint64_t fired_since_sample_ = 0;
+    double last_sample_ = 0.0;
+    double ticks_per_second_ = 0.0;
+    double lateness_ = 0.0;
+    double max_lateness_ = 0.0;
     std::vector<command> commands_;
     std::condition_variable applied_;
     std::uint64_t applied_count_ = 0;

@@ -133,6 +133,7 @@ function send(
 
 const GET_SUBJECT = 'synthetic.v1.ops.get_market_regime';
 const PIN_SUBJECT = 'synthetic.v1.ops.pin_market_regime';
+const TRACE_SUBJECT = 'synthetic.v1.ops.get_market_trace';
 
 /** What the service answers with when nothing has moved the heat. */
 const NO_HEAT = { heat: 0, jump: 0.5, decay: 20, samples: [] };
@@ -161,7 +162,7 @@ describe('the market regime', () => {
         const response = await send(server, sessionId, 'GET', '/api/synthetic/market-regime');
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
+        expect(response.json()).toMatchObject({
             state: 'active',
             multiplier: 2,
             pinned: false,
@@ -216,7 +217,7 @@ describe('the market regime', () => {
 
         const response = await send(server, sessionId, 'GET', '/api/synthetic/market-regime');
 
-        expect(response.json()).toEqual({
+        expect(response.json()).toMatchObject({
             state: 'active',
             multiplier: 2,
             pinned: false,
@@ -237,7 +238,7 @@ describe('the market regime', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
+        expect(response.json()).toMatchObject({
             state: 'calm',
             multiplier: 0.5,
             pinned: true,
@@ -470,5 +471,182 @@ describe('the market regime', () => {
                 },
             ],
         });
+    });
+});
+
+describe('the market trace', () => {
+    const TRACE = {
+        success: true,
+        message: '',
+        run_seed: 42,
+        ticks_per_second: 31.5,
+        heap_size: 99,
+        lateness_seconds: 0.0004,
+        max_lateness_seconds: 0.002,
+        series: 99,
+        events: [
+            {
+                kind: 'transition',
+                source_name: '',
+                at: '2026-10-27T18:00:00Z',
+                tau: 30.6,
+                operational_gap: 0,
+                wall_gap: 0,
+                heat: 1.2,
+                state: 'active',
+            },
+            {
+                kind: 'tick',
+                source_name: 'synthetic.demo.eurusd',
+                at: '2026-10-27T18:00:01Z',
+                tau: 32.6,
+                operational_gap: 1,
+                wall_gap: 0.49,
+                heat: 1.7,
+                state: 'active',
+            },
+        ],
+    };
+
+    it('serves the decisions and the loop numbers the service reports', async () => {
+        const { server, sessionId } = buildTestServer({ [TRACE_SUBJECT]: TRACE });
+
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/market-trace');
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body).toMatchObject({
+            runSeed: 42,
+            ticksPerSecond: 31.5,
+            heapSize: 99,
+            series: 99,
+        });
+        expect(body.events).toHaveLength(2);
+        expect(body.events[1]).toEqual({
+            kind: 'tick',
+            sourceName: 'synthetic.demo.eurusd',
+            at: '2026-10-27T18:00:01Z',
+            tau: 32.6,
+            operationalGap: 1,
+            wallGap: 0.49,
+            compensatedGap: 0,
+            heat: 1.7,
+            multiplier: 1,
+            pace: 1,
+            state: 'active',
+        });
+        expect(body.feeds).toEqual([]);
+    });
+
+    it('asks the service for one feed and a window', async () => {
+        const { server, sessionId, calls } = buildTestServer({ [TRACE_SUBJECT]: TRACE });
+
+        await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-trace?source=synthetic.demo.eurusd&seconds=30&limit=100',
+        );
+
+        expect(calls).toEqual([
+            {
+                subject: TRACE_SUBJECT,
+                body: { source_name: 'synthetic.demo.eurusd', seconds: 30, limit: 100 },
+            },
+        ]);
+    });
+
+    it('refuses a window it would not read', async () => {
+        const { server, sessionId } = buildTestServer({ [TRACE_SUBJECT]: TRACE });
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-trace?seconds=100000',
+        );
+
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('carries the pace, tau, the enrolled rate, the loop gain and the seed on the regime read', async () => {
+        const { server, sessionId } = buildTestServer({
+            [GET_SUBJECT]: {
+                ...ACTIVE,
+                pace: 2.06,
+                tau: 128.6,
+                population_rate: 31.8,
+                loop_gain: 0.025,
+                run_seed: 42,
+            },
+        });
+
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/market-regime');
+
+        expect(response.json()).toMatchObject({
+            pace: 2.06,
+            tau: 128.6,
+            populationRate: 31.8,
+            loopGain: 0.025,
+            runSeed: 42,
+        });
+    });
+});
+
+describe('the market trace feeds', () => {
+    it("carries each feed's law, rates, phase and excess, and each tick's pace parts", async () => {
+        const { server, sessionId } = buildTestServer({
+            ['synthetic.v1.ops.get_market_trace']: {
+                success: true,
+                message: '',
+                run_seed: 42,
+                ticks_per_second: 1,
+                heap_size: 1,
+                lateness_seconds: 0,
+                max_lateness_seconds: 0,
+                series: 1,
+                events: [
+                    {
+                        kind: 'tick',
+                        source_name: 'synthetic.demo.eurusd',
+                        at: '2026-10-27T18:00:01Z',
+                        tau: 3,
+                        operational_gap: 1,
+                        wall_gap: 0.5,
+                        compensated_gap: 1,
+                        heat: 0.5,
+                        multiplier: 2,
+                        pace: 2.02,
+                        state: 'active',
+                    },
+                ],
+                series_states: [
+                    {
+                        source_name: 'synthetic.demo.eurusd',
+                        mode: 'periodic',
+                        rate: 1,
+                        sensitivity: 1,
+                        effective_rate: 2.02,
+                        phase: 0.37,
+                        excess: 0,
+                    },
+                ],
+            },
+        });
+
+        const body = (await send(server, sessionId, 'GET', '/api/synthetic/market-trace')).json();
+
+        expect(body.events[0]).toMatchObject({ compensatedGap: 1, multiplier: 2, pace: 2.02 });
+        expect(body.feeds).toEqual([
+            {
+                sourceName: 'synthetic.demo.eurusd',
+                mode: 'periodic',
+                rate: 1,
+                sensitivity: 1,
+                effectiveRate: 2.02,
+                phase: 0.37,
+                excess: 0,
+            },
+        ]);
     });
 });

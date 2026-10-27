@@ -55,6 +55,8 @@ import type { CompositeLeg } from './domain/composite_leg.js';
 import type { CreditBasketConstituent } from './domain/credit_basket_constituent.js';
 import type { CreditDefaultSwapInstrument } from './domain/credit_default_swap_instrument.js';
 import type { CreditLinkedSwapInstrument } from './domain/credit_linked_swap_instrument.js';
+import type { EquityBasketConstituent } from './domain/equity_basket_constituent.js';
+import type { EquitySwapPeriod } from './domain/equity_swap_period.js';
 import type { EquityPositionOptionUnderlying } from './domain/equity_position_option_underlying.js';
 import type { FlexiSwapInstrument } from './domain/flexi_swap_instrument.js';
 import type { FlexiSwapLowerNotional } from './domain/flexi_swap_lower_notional.js';
@@ -122,6 +124,8 @@ export interface InstrumentBatch {
     credit_basket_constituents: CreditBasketConstituent[];
     credit_default_swap_instruments: CreditDefaultSwapInstrument[];
     credit_linked_swap_instruments: CreditLinkedSwapInstrument[];
+    equity_basket_constituents: EquityBasketConstituent[];
+    equity_swap_periods: EquitySwapPeriod[];
     equity_position_option_underlyings: EquityPositionOptionUnderlying[];
     flexi_swap_instruments: FlexiSwapInstrument[];
     flexi_swap_lower_notionals: FlexiSwapLowerNotional[];

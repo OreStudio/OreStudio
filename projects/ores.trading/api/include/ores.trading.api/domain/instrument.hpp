@@ -31,6 +31,8 @@
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_basket_constituent.hpp"
+#include "ores.trading.api/domain/equity_swap_period.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
@@ -289,6 +291,28 @@ auto visit_credit_facts(Visitor&& visitor, const credit_instrument_data& data) {
 struct equity_instrument_data {
     equity_instrument_variant instrument;
     std::vector<equity_position_option_underlying> underlyings;
+    /**
+     * @brief The constituents of a worst-of basket, in the document's order.
+     *
+     * A plain swap states one underlying on its facts and leaves this empty; a
+     * basket swap states the list here and leaves the fact null. The order is
+     * the document's, carried by each row's ordinal.
+     */
+    std::vector<equity_basket_constituent> basket_constituents;
+    /**
+     * @brief The determination periods of a worst-of basket swap.
+     *
+     * The level lists run one per date, so a period row holds the date's two
+     * levels and its ordinal pairs them with the schedule.
+     */
+    std::vector<equity_swap_period> periods;
+    /**
+     * @brief The range bounds an equity accumulator pays on.
+     *
+     * A bound is a row of the shared table rather than a column, so the
+     * accumulator states them beside its facts as the FX accumulator does.
+     */
+    std::vector<range_bound> range_bounds;
 };
 
 /**
@@ -591,6 +615,17 @@ inline void stamp_ids(equity_instrument_data& data,
                       boost::uuids::uuid trade_id,
                       boost::uuids::uuid activity_id = {}) {
     stamp_ids(data.instrument, trade_id, activity_id);
+    /*
+     * A basket constituent is a child of the trade like any other, so it states
+     * the trade it belongs to. A row left unstamped belongs to no trade and the
+     * export cannot find it by the key it looks up.
+     */
+    for (auto& constituent : data.basket_constituents)
+        stamp_ids(constituent, trade_id, activity_id);
+    for (auto& period : data.periods)
+        stamp_ids(period, trade_id, activity_id);
+    for (auto& bound : data.range_bounds)
+        stamp_ids(bound, trade_id, activity_id);
     for (auto& underlying : data.underlyings) {
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;

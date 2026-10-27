@@ -20,10 +20,11 @@
 
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from '../../i18n/Provider.js';
-import { api, type MarketRegime, type RecordRow } from '../../api/client.js';
+import { api, type MarketRegime, type RecordRow, type TraceFeed } from '../../api/client.js';
 import { show } from '../../refdata/records.js';
 import { Notice } from '../../ui/Primitives.js';
-import { regimeLabel, useMarketRegime } from './useMarketRegime.js';
+import { lawText } from './marketTrace.js';
+import { regimeLabel, useMarketRegime, useMarketTrace } from './useMarketRegime.js';
 
 /** The models a feed's ticks can arrive under. */
 const MODELS = ['periodic', 'poisson', 'hawkes'] as const;
@@ -44,12 +45,15 @@ type Model = (typeof MODELS)[number];
 export function ArrivalsPanel({
     feed,
     market,
+    law,
     mayWriteFeed,
     save,
 }: {
     readonly feed: RecordRow;
     /** The market in force, or undefined while it is not read. The panel states it and cannot set it. */
     readonly market: MarketRegime | undefined;
+    /** The feed's law as the scheduler runs it now, or undefined when the feed does not run. */
+    readonly law?: TraceFeed | undefined;
     readonly mayWriteFeed: boolean;
     readonly save: (
         model: Model,
@@ -145,6 +149,12 @@ export function ArrivalsPanel({
                 })}
             </p>
 
+            <p data-running-law className="font-mono text-xs text-ink-muted">
+                {law === undefined
+                    ? t('marketdata.arrivals.notRunning')
+                    : t('marketdata.arrivals.runningLaw', { law: lawText(law, t) })}
+            </p>
+
             {error === null ? null : <Notice tone="error">{error}</Notice>}
 
             <div className="flex items-center gap-2">
@@ -189,10 +199,13 @@ export function ArrivalsTab({
         intent: { readonly reasonCode: string; readonly commentary: string },
     ) => Promise<void>;
 }): ReactNode {
+    const source = show(feed['source_name']);
+    const trace = useMarketTrace(source);
     return (
         <ArrivalsPanel
             feed={feed}
             market={useMarketRegime()}
+            law={trace.data?.feeds.find((running) => running.sourceName === source)}
             mayWriteFeed={mayWriteFeed}
             save={save}
         />

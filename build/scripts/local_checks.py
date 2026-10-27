@@ -653,6 +653,24 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_convention_kind_terms.py and commit the populate script.",
     ),
     Check(
+        id="curve-sections-wiring",
+        title="The curve screen's column wiring is the projection's",
+        argv=(
+            "python3",
+            "projects/ores.sql/utility/generate_curve_section_parameters.py",
+            "--check",
+        ),
+        classes=("sql", "web", "cpp"),
+        paths=(
+            "projects/ores.web/packages/bff/src/curve-sections.generated.ts",
+            "projects/ores.sql/utility/generate_curve_section_parameters.py",
+            "projects/ores.ore/core/src/domain/curve_configuration_projection.cpp",
+            "external/ore/xsd/curveconfig.xsd",
+        ),
+        fix="Run projects/ores.sql/utility/generate_curve_section_parameters.py"
+            " and commit the module.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),

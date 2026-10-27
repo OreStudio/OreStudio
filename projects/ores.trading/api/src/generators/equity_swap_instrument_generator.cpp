@@ -50,7 +50,6 @@ generate_synthetic_equity_swap_instrument(utility::generation::generation_contex
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string("ACME Corp");
-    r.basket_json = std::string("");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.return_type = std::string("Total");

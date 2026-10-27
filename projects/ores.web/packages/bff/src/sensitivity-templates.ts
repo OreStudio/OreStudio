@@ -168,7 +168,14 @@ const reasonSchema = z.object({
 
 const templateBodySchema = z.object({
     methodCode: z.string().trim().min(1).max(100),
-    assetClassCode: codeSchema.nullable().default(null),
+    // A trade-level key states no class, and a client that read one back as an
+    // empty string must be able to save it without stating a class it has not.
+    assetClassCode: z
+        .string()
+        .trim()
+        .nullable()
+        .default(null)
+        .transform((value) => (value === '' ? null : value)),
     description: textSchema,
 });
 
@@ -378,7 +385,7 @@ export function registerSensitivityTemplateRoutes(
                     write: {
                         code: body.code,
                         method_code: pair.methodCode,
-                        asset_class_code: pair.assetClassCode,
+                        asset_class_code: pair.assetClassCode ?? '',
                         description: body.description,
                     },
                     precondition: { kind: 'must_not_exist', version: null },
@@ -417,7 +424,7 @@ export function registerSensitivityTemplateRoutes(
                     write: {
                         code,
                         method_code: pair.methodCode,
-                        asset_class_code: pair.assetClassCode,
+                        asset_class_code: pair.assetClassCode ?? '',
                         description: body.description,
                     },
                     precondition: { kind: 'must_match_version', version: body.version },

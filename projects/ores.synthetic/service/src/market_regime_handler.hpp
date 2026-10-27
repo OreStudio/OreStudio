@@ -24,6 +24,8 @@
 #include "ores.synthetic.api/messaging/market_regime_protocol.hpp"
 #include <boost/log/trivial.hpp>
 #include <chrono>
+#include <cmath>
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <utility>
@@ -144,6 +146,77 @@ public:
         ores::synthetic::messaging::pin_market_regime_response response;
         response.success = true;
         fill(response);
+        fill_heat(response);
+        reply(nats_, msg, response);
+    }
+
+    /**
+     * Replies with the scheduler's recent decisions, one feed's and the market's or all of
+     * them, and the loop's own numbers.
+     */
+    void trace(ores::nats::message msg) {
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+        namespace quant = ores::analytics::quant;
+
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting get_market_trace request: auth failed.";
+            error_reply(nats_, msg, ctx.error());
+            return;
+        }
+        const auto decoded =
+            ores::nats::default_wire_codec()
+                .decode<ores::synthetic::messaging::get_market_trace_request>(msg.data);
+        if (!decoded || !std::isfinite(decoded->seconds) || decoded->seconds <= 0.0) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting get_market_trace request: the payload did not decode or names no "
+                   "window.";
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        const auto series = decoded->source_name.empty() ?
+                                std::nullopt :
+                                std::optional(quant::math::series_key(decoded->source_name));
+        const auto page = scheduler_.trace(series, decoded->seconds, decoded->limit);
+        const auto stats = scheduler_.stats();
+
+        ores::synthetic::messaging::get_market_trace_response response;
+        response.success = true;
+        response.run_seed = scheduler_.run_seed();
+        response.ticks_per_second = stats.ticks_per_second;
+        response.heap_size = stats.heap_size;
+        response.lateness_seconds = stats.lateness_seconds;
+        response.max_lateness_seconds = stats.max_lateness_seconds;
+        response.series = stats.series;
+        response.events.reserve(page.events.size());
+        for (auto it = page.events.begin(); it != page.events.end(); ++it) {
+            const auto name = page.names.find(it->series);
+            response.events.push_back(ores::synthetic::messaging::market_trace_event{
+                .kind = std::string(quant::service::to_string(it->kind)),
+                .source_name = name != page.names.end() ? name->second : std::string{},
+                .at = scheduler_.wall_at(it->at),
+                .tau = it->tau,
+                .operational_gap = it->operational_gap,
+                .wall_gap = it->wall_gap,
+                .compensated_gap = it->compensated_gap,
+                .heat = it->heat,
+                .multiplier = it->multiplier,
+                .pace = it->pace,
+                .state = it->state == quant::domain::market_state::active ? "active" : "calm"});
+        }
+        for (const auto& state : scheduler_.series_states())
+            response.series_states.push_back(ores::synthetic::messaging::market_series_state{
+                .source_name = state.name,
+                .mode = state.mode,
+                .rate = state.rate,
+                .sensitivity = state.sensitivity,
+                .effective_rate = state.effective_rate,
+                .phase = state.phase,
+                .excess = state.excess});
         reply(nats_, msg, response);
     }
 
@@ -166,11 +239,17 @@ private:
      * service's own history bounds it: a reader asks for a window and receives at
      * most what the scheduler kept.
      */
-    void fill_heat(ores::synthetic::messaging::get_market_regime_response& response) const {
+    template <typename Response>
+    void fill_heat(Response& response) const {
         const auto market = scheduler_.snapshot();
         response.heat = market.heat;
         response.jump = market.jump;
         response.decay = market.decay;
+        response.pace = market.pace;
+        response.tau = market.tau;
+        response.population_rate = market.population_rate;
+        response.loop_gain = market.loop_gain;
+        response.run_seed = scheduler_.run_seed();
         constexpr auto window = std::chrono::minutes(2);
         const auto from = std::chrono::system_clock::now() - window;
         for (const auto& reading : scheduler_.readings_since(from)) {

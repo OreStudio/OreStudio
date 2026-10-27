@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: AEDB5184-E99F-4ADC-A799-3036E6621B29
+:END:
+#+title: compass build can report errors for source content that is n…
+#+description: compass build can report errors for source content that is no longer on disk, and the same build directory compiles cleanly under ninja.
+
+Seen on feature/model-the-basket-constituents after a rebase. A helper called json_escape and another called parse_range_bounds had been deleted from projects/ores.ore/core/src/domain/equity_instrument_projection.cpp, and grep found no trace of either string in the file. compass build failed four times with 'unused function json_escape' at line 214 and quoted the deleted signature with a caret. Line 214 of the file was blank and md5sum of the file was stable. The same target built under ninja in build/output/linux-clang-release-ninja, ran, and passed.
+
+Three things were tried and none changed the result: deleting the unity object and its dependency file, touching the source, and CCACHE_DISABLE=1. The failing object was projects/ores.ore/core/src/CMakeFiles/ores.ore.core.lib.dir/Unity/unity_2_cxx.cxx.o, and the unity file included the correct absolute path.
+
+The consequence is that a red compass build cannot be trusted as evidence that the tree is broken, and a green ninja build is not the documented path. This cost an hour and it is the second time in this work that a build result disagreed with the source.
+
+The requirement: compass build should fail in a way a reader can check, and when it reports an error in a file, the file should contain the line it quotes.
+#+type: capture
+#+level: cross
+#+filetags: :compass:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* Why this is discarded
+
+The capture claimed a tool defect: that =compass build= reported a deleted
+function at a line the file did not contain, while =ninja= built the same
+target cleanly.
+
+It does not reproduce. With the tree clean, =compass build= of all three
+targets exits 0, so the tool is not broken and the claim is withdrawn.
+
+What actually happened is narrower and is a mistake of mine. A build failed
+while the source was being edited, its log was read after the source had
+already changed, and the mismatch between the quoted line and the file was
+taken as evidence of a defect rather than as a reason to re-run. The lesson
+is to establish which run a build log belongs to, and to reproduce before
+recording a cause. It is not a product backlog item.

@@ -38,6 +38,7 @@ export interface EquityBasketConstituent {
     trade_activity_id: string;
     underlying_name: string;
     weight: number | null;
+    initial_price: number | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

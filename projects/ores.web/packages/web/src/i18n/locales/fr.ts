@@ -4654,6 +4654,8 @@ const fr: SourceCatalogue = {
             ratioHelp:
                 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
+            notRunning: 'À l’arrêt : l’ordonnanceur n’a pas de loi pour ce flux maintenant.',
+            runningLaw: 'En cours : {law}',
             decayHelp:
                 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, par seconde de temps de marché. Une rafale s’estompe plus vite dans un marché animé.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
@@ -4673,10 +4675,50 @@ const fr: SourceCatalogue = {
             force: 'Forcer l’état',
             forced: 'forcé',
             set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
+            pace: 'Allure',
+            loopGain: 'Gain de boucle de la chaleur',
+            loopGainValue: '{gain} sur 1',
+            runSeed: 'Graine du run',
+            ticksPerSecond: 'Ticks par seconde',
+            heapSize: 'Taille du tas',
+            lateness: 'Retard',
+            latenessValue: '{smoothed} ms, au plus {most} ms',
+            modes: { periodic: 'Périodique', poisson: 'Poisson', hawkes: 'Hawkes' },
+            law: '{mode} {rate}/s ×{sensitivity} → {now}/s',
+            phase: 'phase initiale {phase}',
+            excess: 'excitation {excess}',
             charts: {
+                pace: 'la vitesse du temps de marché',
+                paceRegime: 'le régime',
+                paceHeat: 'la chaleur',
                 title: 'Le facteur sur la fenêtre',
             },
+            fit: {
+                title: 'Chaque flux face à sa loi',
+                lead: 'Les ticks qu’un flux a émis sur la fenêtre face au nombre que sa loi demande : son taux fois sa sensibilité fois le temps de marché écoulé. Choisissez un flux pour voir ses écarts, normalisés par sa loi, face à Exp(1) : un flux qui suit sa loi reste sur la diagonale.',
+                feed: 'Flux',
+                observed: 'vus',
+                expected: 'attendus',
+                qq: 'Les écarts normalisés de {feed} face à Exp(1)',
+                tooFew: '{feed} a trop peu de ticks dans la fenêtre pour un graphique : il faut {minimum} écarts.',
+                qqCaption:
+                    '{feed} : écarts normalisés face à Exp(1). Les écarts d’un flux périodique valent tous un.',
+            },
+            log: {
+                title: 'Ce que la boucle a appliqué',
+                none: 'Rien n’a été fixé, ajouté ou retiré dans la fenêtre.',
+                pin: 'fixé',
+                unpin: 'rendu',
+                add: 'ajouté',
+                remove: 'retiré',
+            },
             raster: {
+                axis: {
+                    clock: 'Heure',
+                    tau: 'Temps de marché τ',
+                    label: 'Placer les marques selon',
+                },
+                lawColumn: 'loi, taux, sensibilité → maintenant',
                 seen: 'vus',
                 asked: 'demandé',
                 heat: 'la chaleur partagée',
@@ -5823,6 +5865,10 @@ const fr: SourceCatalogue = {
             off: 'Désactivée',
             usedBy: 'Rapports qui l’utilisent',
             noReports: 'Aucun rapport que vous pouvez voir n’utilise cette configuration.',
+            curveDocument: 'Configuration des courbes',
+            curveDocumentLead:
+                'Cette configuration est remplie par un document de configuration des courbes ORE. Ses sections et leurs courbes se lisent feuille par feuille.',
+            openCurveDocument: 'Ouvrir la configuration des courbes',
             none: 'Ce rapport ne lie aucune configuration.',
             refused: 'Vous ne pouvez pas voir les configurations de ce rapport.',
         },
@@ -5988,6 +6034,66 @@ const fr: SourceCatalogue = {
         retry: 'Réessayer',
         cancel: 'Annuler',
     },
+    curveConfiguration: {
+        title: 'Configurations de courbes',
+        lead: 'Comment chaque courbe est définie et calibrée, tel que le document de configuration des courbes ORE le déclare.',
+        recordLead:
+            'Version {version}. {documented} des {total} paramètres portent une documentation issue du contrat de paramètres ORE.',
+        tabs: {
+            label: 'Sections de la configuration des courbes',
+            details: 'Détails',
+            usedBy: 'Utilisée par',
+            history: 'Historique',
+        },
+        details: {
+            lead: "Ce qu'est la configuration, qui la détient, et quelle part en décrit le contrat de documentation unique.",
+            decides:
+                "Elle décide comment chaque courbe est définie et calibrée : ses cotations, ses segments et son interpolation. Elle ne décide ni le marché qu'une exécution lit, ni les données de transaction.",
+            related: 'Configurations liées',
+            relatedLead:
+                'La configuration de rapport que cette configuration de courbes remplit. Un rapport lie cette ligne, et une modification ici atteint sa prochaine exécution.',
+        },
+        fields: {
+            name: 'Nom',
+            party: 'Partie',
+            version: 'Version',
+            sections: 'Sections',
+            entries: 'Courbes',
+            documented: 'Documenté',
+            documentedValue: '{documented} des {total} paramètres',
+            lastChanged: 'Dernière modification',
+            description: 'Description',
+            boundBy: 'Utilisée par les rapports',
+            boundByValue: '{count} rapports',
+            configuration: 'Configuration de rapport',
+        },
+        section: {
+            title: '{section}, qui contient les entrées {entry}',
+            unmapped:
+                "Les colonnes de cette section ne sont pas encore mappées : ses courbes n'affichent que leur identifiant.",
+            empty: 'Cette section ne contient aucune courbe.',
+        },
+        entry: {
+            noDescription: 'Une entrée {entry} du document.',
+            parameters: '{count} paramètres',
+            gaps: '{count} sans documentation',
+            blocks: 'Détenu comme élément propre :',
+            blockStated: 'déclaré',
+            blockAbsent: 'non déclaré',
+            blockNotRecorded: 'non enregistré ici',
+        },
+        usedBy: {
+            lead: 'Une modification atteint la prochaine exécution de chaque rapport ci-dessous. Une exécution déjà produite garde ce avec quoi elle a couru.',
+            none: 'Aucun rapport ne lie cette configuration.',
+            refused: 'Vous ne pouvez pas voir les rapports qui lient cette configuration.',
+            unread: "Les rapports qui lient cette configuration n'ont pas pu être lus. {message}",
+        },
+        history: {
+            lead: "Chaque version de la configuration, la plus récente d'abord, avec ce qui a changé dans chacune.",
+        },
+        missing: 'Aucun document de configuration des courbes ne remplit cette configuration.',
+        readFailed: "La configuration des courbes n'a pas pu être lue. {message}",
+    },
     oreParameter: {
         mode: {
             label: 'Niveau de détail',
@@ -5997,6 +6103,8 @@ const fr: SourceCatalogue = {
         showAllDocumentation: 'Afficher toute la documentation',
         hideAllDocumentation: 'Masquer toute la documentation',
         required: 'Obligatoire',
+        yes: 'Oui',
+        no: 'Non',
         nouns: {
             parameters: 'paramètres',
             settings: 'réglages',

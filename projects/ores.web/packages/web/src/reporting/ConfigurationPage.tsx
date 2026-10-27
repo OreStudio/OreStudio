@@ -331,7 +331,11 @@ function BindingList({
                     <dt className="text-xs text-ink-faint">{binding.typeName}</dt>
                     <dd className="mt-0.5 text-sm">
                         <Link
-                            to={configurationPath(binding.configurationId)}
+                            to={
+                                binding.typeCode === 'curve_configuration'
+                                    ? curveConfigurationPath(binding.configurationId)
+                                    : configurationPath(binding.configurationId)
+                            }
                             className="text-accent hover:text-accent-bright"
                         >
                             {binding.name === '' ? shortId(binding.configurationId) : binding.name}

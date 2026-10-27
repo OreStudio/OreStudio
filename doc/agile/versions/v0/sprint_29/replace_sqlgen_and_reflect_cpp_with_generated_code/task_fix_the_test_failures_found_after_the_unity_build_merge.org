@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: fix/vendor-catalogue-test-floors
-#+pr:
+#+pr: 3909
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3909][#3909]] | [marketdata] Set each provider's floor in the catalogue test |
 
 * Review
 

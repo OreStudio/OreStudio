@@ -220,6 +220,8 @@
 -- Equity basket constituents (child rows drop on their own)
 \ir ./trading_equity_basket_constituents_notify_trigger_drop.sql
 \ir ./trading_equity_basket_constituents_drop.sql
+\ir ./trading_equity_swap_periods_notify_trigger_drop.sql
+\ir ./trading_equity_swap_periods_drop.sql
 
 -- Equity position option underlyings (child rows drop on their own)
 \ir ./trading_equity_position_option_underlyings_notify_trigger_drop.sql

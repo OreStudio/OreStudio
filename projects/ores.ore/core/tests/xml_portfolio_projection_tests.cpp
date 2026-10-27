@@ -2762,8 +2762,17 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     CHECK(accumulator->start_date == date_of(2025, 2, 5));
     REQUIRE(accumulator->knock_out_level.has_value());
     CHECK(accumulator->knock_out_level->to_string() == "3500");
-    // The accumulator's range bounds were a blob and the column is gone; the
-    // rows that replace them are not wired yet, so nothing is asserted here.
+    // A bound is a row, so the two ranges the document states are two rows.
+    REQUIRE(accumulator_data->range_bounds.size() == 2);
+    CHECK_FALSE(accumulator_data->range_bounds[0].range_from.has_value());
+    REQUIRE(accumulator_data->range_bounds[0].range_to.has_value());
+    CHECK(accumulator_data->range_bounds[0].range_to->to_string() == "4000");
+    REQUIRE(accumulator_data->range_bounds[0].leverage.has_value());
+    CHECK(accumulator_data->range_bounds[0].leverage.value() == 1.0);
+    REQUIRE(accumulator_data->range_bounds[1].range_from.has_value());
+    CHECK(accumulator_data->range_bounds[1].range_from->to_string() == "4000");
+    REQUIRE(accumulator_data->range_bounds[1].leverage.has_value());
+    CHECK(accumulator_data->range_bounds[1].leverage.value() == 2.0);
 
     const auto barrier_again = rebuild(items[0]);
     const auto* barrier_round_data =
@@ -2799,6 +2808,16 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     CHECK(round->fixing_amount.to_string() == "30");
     CHECK(round->strike.to_string() == "4000");
     CHECK(round->start_date == date_of(2025, 2, 5));
+    // The bounds survive the write and the read, so the round trip keeps them.
+    REQUIRE(round_data->range_bounds.size() == 2);
+    REQUIRE(round_data->range_bounds[0].range_to.has_value());
+    CHECK(round_data->range_bounds[0].range_to->to_string() == "4000");
+    REQUIRE(round_data->range_bounds[0].leverage.has_value());
+    CHECK(round_data->range_bounds[0].leverage.value() == 1.0);
+    REQUIRE(round_data->range_bounds[1].range_from.has_value());
+    CHECK(round_data->range_bounds[1].range_from->to_string() == "4000");
+    REQUIRE(round_data->range_bounds[1].leverage.has_value());
+    CHECK(round_data->range_bounds[1].leverage.value() == 2.0);
 }
 
 TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swap",

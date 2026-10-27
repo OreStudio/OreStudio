@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-27
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,9 +25,9 @@ and the per-series laws survive it.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Scoped by the Market Arrival Regime note. Authored, not started. |
-| Waiting on    | The per-series arrival parameters (the previous story). |
-| Next          | Carry a shared market state and one clock. |
+| Now           | Redesign scoped: one operational clock, keyed streams and a traced scheduler. |
+| Waiting on    | Nothing.                               |
+| Next          | Pin the phase in the tick_clock test, then draw every random number from a keyed stream. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -56,8 +56,17 @@ and the per-series laws survive it.
 | [[id:B12C5D02-2CC8-48A5-9ABB-805AE2C901D6][Carry a shared market state and one clock]] | DONE | 2026-10-25 | 2026-10-25 | Add a calm/active market state, a per-series sensitivity, and a single shared clock that schedules every feed, so the market can speed up together. |
 | [[id:FA7CE833-E35F-4CEE-A039-E527AD353AFB][Carry the shared endogenous intensity]] | DONE | 2026-10-25 | 2026-10-25 | Let any event raise a common intensity that decays, so a panic spreads rather than being switched on, and prove it with cross-series correlation. |
 | [[id:5D4A9369-BA25-436A-8845-80810041BC9A][Configure the market regime from the feeds screen]] | DONE | 2026-10-25 | 2026-10-26 | A control panel on the feeds screen that shows the current market state and lets a user set the regime: auto, pinned calm or pinned active, the transition rate, and the shared intensity's jump and decay, with the sensitivity per feed. |
-| [[id:984E768C-0685-4C4D-BD44-114A152D6D7D][Delete the per-feed clock]] | BACKLOG | | | The feeds still carry a tick_clock for the case where no scheduler is given: unreachable in production and untested. Make the scheduler a required feed dependency and migrate the callers — the five service-test fixtures and the adapter test each need a scheduler and a thread, and the tick_clock cases move to the scheduler before the clock is deleted. |
+| [[id:984E768C-0685-4C4D-BD44-114A152D6D7D][Delete the per-feed clock]] | ABANDONED | | | The feeds still carry a tick_clock for the case where no scheduler is given: unreachable in production and untested. Make the scheduler a required feed dependency and migrate the callers — the five service-test fixtures and the adapter test each need a scheduler and a thread, and the tick_clock cases move to the scheduler before the clock is deleted. |
 | [[id:4A5C7202-6D31-43BE-8E06-42BE74FD1A5C][Set the market's chain and heat]] | BACKLOG | | | Give the market regime verbs that set the chain's transition rates and the shared intensity's jump and decay, and put those three numbers on the Market regime tab beside the switch, so a tester can choose how often the market turns and how hard a panic spreads without editing a row. |
+| [[id:B1468788-0CDB-415B-A332-32BAD9D92E95][Pin the phase in the tick_clock test]] | BACKLOG | | | The tick_clock test asserts that every gap equals the nominal gap, and has failed on main since a periodic feed started at a random phase: the first gap is the phase times the gap. Read the phase from the process and assert the first gap against it, so the test states the law instead of an accident of the default seed. |
+| [[id:70C86F9D-7552-4062-9848-C344C1350590][Draw every random number from a keyed stream]] | BACKLOG | | | Each process owns an mt19937 seeded by a default argument, and a price process is seeded from random_device, so determinism is an accident and a run cannot be reproduced. Add a counter-based stream (Philox4x32-10) keyed by the run seed, the series key and the purpose, so a feed's draws do not depend on thread, creation order or feed count. |
+| [[id:0557CE11-2592-437E-9A34-E4713DE8FB13][Make each arrival law a value with visible state]] | BACKLOG | | | An arrival process hides its state: the periodic phase is a first-call flag, and a Hawkes draw mutates its excitation whether or not an event happened, so every scheduler refresh adds a phantom jump. Replace i_arrival_process with laws that return the next gap in the series' own operational time, with their state explicit and their start stationary. |
+| [[id:C829BDC9-5F36-419E-8026-CADBCD080C4C][Give the run a clock a test can drive]] | BACKLOG | | | The scheduler and the market sleep in wall time and stamp ticks with system_clock::now(), so a timing test either sleeps for real or depends on machine load. Put time behind an interface with a steady-clock implementation and a manual one, and give the wait a stop that interrupts it. |
+| [[id:F7612668-3084-467B-8A99-8441203A608B][Run the market on one operational clock]] | BACKLOG | | | The bracket M(t) + C(t)/R that scales every feed is shared, so all feeds share one operational time tau, the integral of the bracket. Build the market clock that owns the regime chain and the heat, advances tau in closed form between events, and answers when tau will reach a mark. |
+| [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]] | BACKLOG | | | The scheduler scans every series per tick, subtracts each gap from every series, and redraws all of them on a refresh period, so a tick costs O(n) and a regime change is late by up to a period. Replace it with one heap keyed on tau, delete tick_clock and the refresh, and make the scheduler a required dependency of every feed. |
+| [[id:6207909E-FC52-4EC4-86DE-DA76CEDB8D98][Let one loop own the market]] | BACKLOG | | | The synthetic service runs a market_owner thread that advances the regime and fades the heat on its own 100 ms period, beside the scheduler's thread, so the market keeps two times. Move the market into the scheduler's loop and make the pin and config handlers post commands to it. |
+| [[id:7F0FDC5C-6E8E-4E93-92A6-9F0B90A2C1E0][Trace every scheduler decision]] | BACKLOG | | | The screens infer the market from stored ticks and from polling the state, so a reader can see that ticks arrived but not why. Record every decision the loop takes in a bounded trace, with its clock time and its tau, and serve it through the BFF. |
+| [[id:C8A8464C-BB32-46E6-8782-9D44FE6849D2][Show the market's pace and each feed's fit]] | BACKLOG | | | The Market regime tab draws the raw heat and polled state bands, and nothing on screen shows whether a feed's arrivals follow its law. Draw the bracket every rate is multiplied by, the exact regime, the seed, the stability, a raster in market time, and a fit check for each feed from the trace. |
 
 * Decisions
 
@@ -77,6 +86,31 @@ and the per-series laws survive it.
   run uses, and the panel shows which state is in force.
 - /The design is the note:/ =doc/knowledge/domain/market_arrival_regime.org=
   states the intensity, the rank-one result, the scheduler and the checks.
+- /One operational clock, decided 2026-10-27:/ the bracket M(t) + C(t)/R is
+  shared by every series, so every feed runs on one operational time tau, the
+  integral of the bracket. A feed fires when tau reaches its next mark over its
+  sensitivity times its base rate, so one heap keyed on tau schedules every feed
+  and a market change moves no entry. This replaces the scan, the refresh and
+  re_rate, and the per-feed clock goes with them.
+- /A law is a value, its state visible:/ an arrival law returns the next gap in
+  operational time and changes state only on an event. The periodic phase is an
+  explicit start offset, and Hawkes starts at its stationary intensity. A draw
+  with no event no longer adds a phantom jump.
+- /Hawkes is time-changed:/ the whole law runs in operational time, so in a
+  busy market a burst excites and fades faster in wall time and the branching
+  ratio is invariant. Before, the market scaled the baseline only.
+- /Randomness is keyed, never defaulted:/ every draw comes from a counter-based
+  Philox stream keyed by the run seed, the series key and the purpose. The run
+  seed comes from configuration. Philox is written in-house.
+- /One owner of time:/ the scheduler's loop owns the regime, the heat and tau
+  behind a clock interface, so a test drives a manual clock with no sleeping and
+  the market_owner thread goes.
+- /Transparency is a trace:/ the loop records every decision with its clock time
+  and tau, and the screens draw from the trace rather than inferring the market
+  from stored ticks.
+- /Why this story and not the data path:/ this story already asks for one clock
+  per run, no clock in the feeds, and refusal of an unstable set. The data path
+  story builds the store side and reads the scheduler's numbers.
 
 * Out of scope
 

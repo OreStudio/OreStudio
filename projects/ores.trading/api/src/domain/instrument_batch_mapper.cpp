@@ -129,7 +129,8 @@ equity_instrument_data
 as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid trade_id) {
     return equity_instrument_data{equity_instrument_variant{leaf},
                                   find_all(batch.equity_position_option_underlyings, trade_id),
-                                  find_all(batch.equity_basket_constituents, trade_id)};
+                                  find_all(batch.equity_basket_constituents, trade_id),
+                                  find_all(batch.equity_swap_periods, trade_id)};
 }
 
 /**
@@ -249,6 +250,9 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.equity_basket_constituents.end(),
                     v.basket_constituents.begin(),
                     v.basket_constituents.end());
+                batch.equity_swap_periods.insert(batch.equity_swap_periods.end(),
+                                                 v.periods.begin(),
+                                                 v.periods.end());
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 append(batch, v.instrument);
                 batch.commodity_basket_constituents.insert(

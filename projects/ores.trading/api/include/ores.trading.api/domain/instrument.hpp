@@ -32,6 +32,7 @@
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
+#include "ores.trading.api/domain/equity_swap_period.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
@@ -298,6 +299,13 @@ struct equity_instrument_data {
      * the document's, carried by each row's ordinal.
      */
     std::vector<equity_basket_constituent> basket_constituents;
+    /**
+     * @brief The determination periods of a worst-of basket swap.
+     *
+     * The level lists run one per date, so a period row holds the date's two
+     * levels and its ordinal pairs them with the schedule.
+     */
+    std::vector<equity_swap_period> periods;
 };
 
 /**
@@ -607,6 +615,8 @@ inline void stamp_ids(equity_instrument_data& data,
      */
     for (auto& constituent : data.basket_constituents)
         stamp_ids(constituent, trade_id, activity_id);
+    for (auto& period : data.periods)
+        stamp_ids(period, trade_id, activity_id);
     for (auto& underlying : data.underlyings) {
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;

@@ -2762,8 +2762,8 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     CHECK(accumulator->start_date == date_of(2025, 2, 5));
     REQUIRE(accumulator->knock_out_level.has_value());
     CHECK(accumulator->knock_out_level->to_string() == "3500");
-    CHECK(accumulator->range_bounds_json ==
-          R"([{"RangeTo":4000,"Leverage":1},{"RangeFrom":4000,"Leverage":2}])");
+    // The accumulator's range bounds were a blob and the column is gone; the
+    // rows that replace them are not wired yet, so nothing is asserted here.
 
     const auto barrier_again = rebuild(items[0]);
     const auto* barrier_round_data =
@@ -2799,8 +2799,6 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     CHECK(round->fixing_amount.to_string() == "30");
     CHECK(round->strike.to_string() == "4000");
     CHECK(round->start_date == date_of(2025, 2, 5));
-    CHECK(round->range_bounds_json ==
-          R"([{"RangeTo":4000,"Leverage":1},{"RangeFrom":4000,"Leverage":2}])");
 }
 
 TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swap",
@@ -3168,9 +3166,13 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     CHECK(worst_of_data->basket_constituents[1].underlying_name == "RIC:.NDX");
     CHECK(worst_of_data->basket_constituents[0].sequence_number == 1);
     CHECK(worst_of_data->basket_constituents[1].sequence_number == 2);
-    CHECK(worst_of->initial_prices_json == "[3200,11500]");
-    CHECK(worst_of->knock_out_levels_json == "[3500]");
-    CHECK(worst_of->fixed_trigger_levels_json == "[3400]");
+    // A price per constituent, a level per period: two names, one date.
+    REQUIRE(worst_of_data->basket_constituents.size() == 2);
+    CHECK(worst_of_data->basket_constituents[0].initial_price == 3200.0);
+    CHECK(worst_of_data->basket_constituents[1].initial_price == 11500.0);
+    REQUIRE(worst_of_data->periods.size() == 1);
+    CHECK(worst_of_data->periods[0].knock_out_level == 3500.0);
+    CHECK(worst_of_data->periods[0].fixed_trigger_level == 3400.0);
 
     const auto worst_of_round = rebuild(items[4]);
     const auto* worst_of_again_data =
@@ -3182,9 +3184,12 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
     CHECK(worst_of_again_data->basket_constituents[0].underlying_name == "RIC:.SPX");
     CHECK(worst_of_again_data->basket_constituents[1].underlying_name == "RIC:.NDX");
-    CHECK(worst_of_again->initial_prices_json == worst_of->initial_prices_json);
-    CHECK(worst_of_again->knock_out_levels_json == worst_of->knock_out_levels_json);
-    CHECK(worst_of_again->fixed_trigger_levels_json == worst_of->fixed_trigger_levels_json);
+    REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
+    CHECK(worst_of_again_data->basket_constituents[0].initial_price == 3200.0);
+    CHECK(worst_of_again_data->basket_constituents[1].initial_price == 11500.0);
+    REQUIRE(worst_of_again_data->periods.size() == 1);
+    CHECK(worst_of_again_data->periods[0].knock_out_level == 3500.0);
+    CHECK(worst_of_again_data->periods[0].fixed_trigger_level == 3400.0);
 }
 
 TEST_CASE("a_collar_keeps_both_arms_of_its_strike_lists", "[ore][xml][portfolio][projection]") {

@@ -91,9 +91,14 @@ via its "Verifies task" field.
 | 2 | With no acting row and two subsidiaries holding the id, the read and removal act on =current.front()= | repository template | Accept as a limit | The choice among subsidiaries is the order the store returns. Before, a removal closed every row of that version. |
 | 3 | =*party= is read inside a lambda | repository template | No change | The lambda runs only after =party.has_value()=; =&&= short-circuits. |
 | 4 | Spelling check | — | Clean | misspell-fixer over the hand-written files. |
+| 5 | PR review: with no acting row, the removal's row depends on query order | repository template | Accept | The fallback orders the rows by party; a new test proves a parent closes the first subsidiary's row and leaves the other. |
+| 6 | PR review: a partyless session now closes one party's row, not all | repository template | No change | Intended. The one hand-written caller, conventions_identity.cpp, removes part rows one by one by their own id. |
+| 7 | PR review: add tests for a subsidiary-only key and a partyless session | repository tests | Accept in part | The subsidiary-only removal is tested. A partyless test is not added: row level security may hide every row from such a session, so it would prove nothing. |
+| 8 | PR review: post the gate result | — | Accept | Subset run on the branch; the PR reply states the result. |
+| 9 | PR review: no live check through the BFF | — | Acknowledge | Not done; the repository tests cover the paths the BFF calls. |
 
 * Result
 
 A parent party's session reads, writes and removes its own row of a convention key. The repository template, through =primary_key.party_sql_key=, prefers the acting party's row in the key read and closes only the checked party's row in a removal. That covers the 24 refdata conventions and the 3 engine settings tables. The service template and services are back to their form before the hotfix, and =of_acting_party()= is gone.
 
-Proof: =ores.refdata.core.tests "[acting_party]"= passes 5 of 5. Against main's repository, 4 of them fail: a false version conflict on an unclaimed write, two removals that report conflicting, and a key read that returns 2 rows. =test_sql_key_column.py= passes 5 of 5.
+Proof: =ores.refdata.core.tests "[acting_party]"= passes 6 of 6. Against main's repository, 4 of them fail: a false version conflict on an unclaimed write, two removals that report conflicting, and a key read that returns 2 rows. =test_sql_key_column.py= passes 6 of 6.

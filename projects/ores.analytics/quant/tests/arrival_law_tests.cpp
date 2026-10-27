@@ -36,6 +36,7 @@ using ores::analytics::quant::domain::periodic_law;
 using ores::analytics::quant::domain::poisson_law;
 using ores::analytics::quant::domain::record_event;
 using ores::analytics::quant::math::draw_purpose;
+using ores::analytics::quant::math::open_uniform;
 using ores::analytics::quant::math::rng_stream;
 using ores::analytics::quant::math::stream_key;
 
@@ -43,10 +44,6 @@ namespace {
 
 rng_stream stream_for(std::uint64_t seed) {
     return rng_stream(stream_key{.run_seed = seed, .series = 1, .purpose = draw_purpose::arrival});
-}
-
-double open_uniform(rng_stream& stream) {
-    return static_cast<double>((stream() >> 11) + 1) * 0x1.0p-53;
 }
 
 arrival_spec spec(const char* mode, double per_second, double n = 0.0, double decay = 1.0) {

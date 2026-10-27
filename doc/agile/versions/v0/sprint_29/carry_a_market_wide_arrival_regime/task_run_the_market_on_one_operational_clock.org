@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-the-market-on-one-operational-clock
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ One object owns the market's time: the regime chain, the heat and tau. It advanc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

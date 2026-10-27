@@ -152,6 +152,16 @@ private:
     std::array<std::uint32_t, 4> block_{};
 };
 
+/**
+ * @brief A uniform draw on (0, 1], so its logarithm is always finite.
+ *
+ * The top 53 bits of one draw, shifted up by one step, which is what an
+ * exponential gap needs.
+ */
+inline double open_uniform(rng_stream& stream) {
+    return static_cast<double>((stream() >> 11) + 1) * 0x1.0p-53;
+}
+
 }
 
 #endif

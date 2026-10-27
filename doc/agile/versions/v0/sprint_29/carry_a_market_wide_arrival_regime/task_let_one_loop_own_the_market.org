@@ -38,6 +38,7 @@ The synthetic service runs one loop that owns the market and the feeds. The mark
 - No thread but the loop writes the regime, the heat or tau.
 - A pin from the screen or the shell is in force at the next instant of the loop, with no refresh period.
 - The run seed comes from configuration and is logged when the run starts.
+- market_regime and shared_intensity are deleted: the loop owns one operational_clock.
 
 * Plan
 

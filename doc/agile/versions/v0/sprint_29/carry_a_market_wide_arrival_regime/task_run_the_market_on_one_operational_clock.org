@@ -26,11 +26,11 @@ One object owns the market's time: the regime chain, the heat and tau. It advanc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -38,13 +38,26 @@ One object owns the market's time: the regime chain, the heat and tau. It advanc
 - advance and time_to_reach are exact inverses across a regime transition and a heat decay, to a stated tolerance.
 - A pinned state, an enrolment and a heat jump each change only how fast tau moves from that instant.
 - The heat's loop gain is checked when the market is built, and a set whose gain is one or more is refused with the gain named.
-- The chain and the heat take their draws from the keyed stream.
+- The chain takes its draws from the keyed stream. The heat draws nothing.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=domain/operational_clock.hpp= sits beside market_regime and
+shared_intensity. The scheduler and the service still use those two, and
+the loop that will own the new clock comes in
+[[id:6207909E-FC52-4EC4-86DE-DA76CEDB8D98][Let one loop own the market]],
+which deletes them. The class is not named market_clock, because
+marketdata.api already has a market_clock for another purpose.
+
+- One loop owns the clock, so it holds plain values and no atomics.
+- Between events the pace is M plus a heat share that decays, so tau has a
+  closed form. time_to_reach inverts it with Newton's method from below.
+  The function is increasing and concave, so the method does not overshoot.
+- Each dwell is a unit exponential drawn in order and kept in a queue. The
+  k-th transition uses the k-th draw, whether time_to_reach or advance asks
+  for it first, so the two agree across transitions.
+- The chain starts in its stationary distribution. The loop gain,
+  jump over decay, is checked when the clock is built.
 
 * Measurements
 
@@ -58,7 +71,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Clock tests | 8 cases, 444 assertions passed | =ores.analytics.quant.tests [operational_clock]= | 262514f3c3 |
+| Quant suite | 527 cases passed | =ores.analytics.quant.tests= | 262514f3c3 |
+| advance draws a fresh dwell instead of the queued one | the inverse test fails | scratch mutant of operational_clock.cpp against operational_clock_tests.cpp | 262514f3c3 |
 
 * Notes
 
@@ -86,3 +101,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=domain/operational_clock.hpp= gives the market one clock. Over 400 targets
+that cross more than fifty transitions while the heat decays, time_to_reach
+and advance agree to one part in 10^12. A pin, a heat jump and an
+enrolment leave tau where it was and change only its slope from that
+instant. A heat whose loop gain is 1.25 is refused, and the message names
+the gain. The chain spends two fifths of its time active as configured, and
+the mean pace over 20,000 seconds is one. The loop takes this clock over,
+and the old market types go, in
+[[id:6207909E-FC52-4EC4-86DE-DA76CEDB8D98][Let one loop own the market]].

@@ -62,7 +62,18 @@ const DEFINITION_ENTITY = 'curve_definition';
 /** The value a row carries for a party the caller does not state. */
 const NO_PARTY = '';
 
-const documentQuerySchema = z.object({ party: z.uuid().optional() });
+/**
+ * The identifier of a configuration row.
+ *
+ * A uuid the application mints carries the RFC version and variant bits, and the
+ * rows an ORE bundle import writes do not: =90e6d408-aa8e-3e14-206b-...= is a
+ * variant the RFC does not define, so =z.uuid()= refuses it and the page cannot
+ * open a curve configuration the import created. The address therefore takes any
+ * well-formed guid, as the report configuration route does.
+ */
+const idSchema = z.guid();
+
+const documentQuerySchema = z.object({ party: idSchema.optional() });
 
 /** The value set fields of one leaf, as the contract and the set tables state them. */
 type ValueSetOf = (
@@ -324,7 +335,7 @@ export function registerCurveConfigurationRoutes(
 ): void {
     server.get('/api/refdata/curve-configurations/:id', async (request) => {
         const session = requireSession(request);
-        const configurationId = input(z.uuid(), (request.params as { id: string }).id);
+        const configurationId = input(idSchema, (request.params as { id: string }).id);
         const { party } = input(documentQuerySchema, request.query);
         const document = await readDocument(session, configurationId, party);
         const header = z.looseObject({}).parse(document['config']);

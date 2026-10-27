@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 5A1AF641-D1AD-48F9-BB20-28A18037E798
+:END:
+#+title: Task: Let a signed-in person open a curve configuration
+#+description: The curve page is merged, but a person who signs in cannot open it: the read of a curve document is refused, and the address refuses the identifier the ORE import mints. Grant the reads a person's screen needs, accept the identifiers the import writes, and test both.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-a-signed-in-person-open-a-curve-configuration
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+1. Sign in against the running environment and read the page's route, to find
+   what a person meets rather than what the tests assert.
+2. Grant the two reads the screen needs to a role a person holds, in the seed
+   the tenant is provisioned from.
+3. Accept the identifier the ORE import mints, and guard it with a test.
+4. Re-read the route against the data the environment holds.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Curve configurations the environment holds | 4 | =select count(*) from ores_refdata_curve_configurations_tbl= | 17817ebbab |
+| Curve entries in one configuration | 4 yield curves | the page's route on =90e6d408-aa8e-3e14-206b-d510eefb7c29= | this branch |
+| Parameters the contract documents in that configuration | 48 of 48 | the same read | this branch |
+| BFF tests | 6 | =npx vitest run --root packages/bff src/curve-configuration.test.ts= | this branch |
+
+* Notes
+
+- *The page was merged without ever being opened.* Its tests seeded the render,
+  so they could not see either fault below. Signing in to the running
+  environment and reading the route found both within minutes.
+- *A person could not read a curve document.* The document's read checks
+  =refdata::curve_configurations:read=, and only =OreService= and =ReportRun=
+  held it: a human session got =403=. The sections' read,
+  =refdata::curve_sections:read=, was held by no role at all. Both are reads a
+  person's screen needs, so the Member role now holds them beside the engine
+  settings reads, and the rows stay party-scoped by row-level security.
+- *The seed grants reach a tenant at provisioning.* Granting to the system
+  tenant alone changed nothing for the demo tenant, which holds its own copy of
+  the roles; the environment a person tests needs a recreate or the same grant in
+  its own tenant. =compass db recreate -y -k= applies the seed.
+- *The import mints identifiers that are not RFC uuids.* The route parsed the
+  address with =z.uuid()=, which enforces the RFC's version and variant bits, and
+  the ORE bundle import writes ids that carry neither
+  (=90e6d408-aa8e-3e14-206b-d510eefb7c29= has variant 2). The whole product's own
+  ids are v7 and passed, so only imported data showed it. The route now takes any
+  well-formed guid, as the report configuration route does, and a test reads a
+  configuration by such an id.
+- *What the live read showed.* The Group curve configuration holds four yield
+  curves and no entry in any other section; the first is =GBP1D=, a GBP discount
+  curve bootstrapped from GBP-SONIA swaps, with its currency, interpolation,
+  day counter and tolerance read from its own row. All 48 of its parameters are
+  documented, because the sections it uses are the ones the extractor read in
+  full. The walk found the gap of the contract in other configurations rather than
+  in this one.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A signed-in person can open the curve configuration the environment holds, and
+the two faults that stopped them are fixed:
+
+- The Member role holds =refdata::curve_sections:read= and
+  =refdata::curve_configurations:read=, so the page's reads are permitted for a
+  person's session and not only for the services.
+- The route takes a guid rather than an RFC uuid, so it opens a configuration by
+  the identifier the ORE bundle import minted for it. A BFF test reads one by
+  such an id.
+
+The change was found and proved against the running stack: the route answered
+=200= for =90e6d408-aa8e-3e14-206b-d510eefb7c29= with four yield curves and 48
+documented parameters, after the grant and the identifier fix. The environment
+in this checkout carries the grant because it was applied to its tenant by hand;
+a recreated environment takes it from the seed.

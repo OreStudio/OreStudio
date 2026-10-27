@@ -290,6 +290,13 @@ BEGIN
     -- security, like the report definitions above.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_parameters:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_parameter_value_domains:read');
+    -- The curve configuration screen reads a curve document, which the ORE bundle
+    -- import writes as the party's own rows and the report configuration binds.
+    -- The sections are the vocabulary the document is built from, so both are
+    -- reads a person's screen needs. The rows are party-scoped by row-level
+    -- security, like the engine settings above.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::curve_sections:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::curve_configurations:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_fixings:read');

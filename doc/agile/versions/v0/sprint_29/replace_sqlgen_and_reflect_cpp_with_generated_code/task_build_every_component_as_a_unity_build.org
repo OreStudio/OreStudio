@@ -2,18 +2,18 @@
 :ID: 86EB0D6E-8BF5-4416-B578-84B0DC669D8C
 :END:
 #+title: Task: Build every component as a unity build
-#+description: Rename the hand-written file-local names that collide, turn on UNITY_BUILD with a batch of 16 in the component CMake template, and measure the full build.
+#+description: Make generated code and the test constants unity-safe, turn on a unity build of 16 for every target, keep the hand-written collisions out of it under a check, and measure the full build.
 #+type: task
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,25 +26,44 @@ Step 1 of 7. Every component builds as a unity build of 16, and the full build t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Tree builds and suites pass as unity.  |
+| Waiting on   | A quiet machine for the measurement.   |
+| Next         | Measure the full build; close.         |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
-- No two files of a component define the same file-local name; the generator stays unity-safe.
-- The component CMake template sets UNITY_BUILD with a batch size of 16 for every component.
+- Generated code defines no file-local name that another generated file of its directory also
+  defines, including the generated tests.
+- A test target defines its logger name once, in =test_suite.hpp=, and no test file defines
+  =test_suite=, =tags= or =valid_party_id= of its own.
+- The top-level build sets a unity build of 16 for every target, behind =ORES_UNITY_BUILD=.
+- The hand-written sources that collide are kept out of the unity build by
+  =cmake/unity_exclusions.cmake=, which =build/scripts/check_unity_collisions.py= keeps from
+  growing.
 - The whole tree builds and every suite passes as a unity build.
 - A full build without ccache, on a quiet machine, measured against the baseline of about 17.2 CPU hours, with the command and commit.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Make the test targets unity-safe without renaming in bulk: one
+   =test_suite.hpp= per target, the tag literal in each =TEST_CASE=, and
+   =valid_party_id= in =ores.testing=. A script does the change on the test
+   files and the test templates, and a second script pins it: every test
+   case keeps its name and its tags.
+2. Prefix the generated helpers the first pass missed, and fully qualify the
+   service header's protocol types.
+3. Turn the unity build on once, at the top level, and keep the hand-written
+   sources that do not build in a merged unit out of it, recorded in
+   =cmake/unity_exclusions.cmake=. The record comes from a scan of
+   file-local names and from the compiler: a loop builds with =-k 0=, records
+   the hand-written files the errors blame, and repeats until green. A
+   generated file is never recorded; its template is fixed.
+4. Fix, not record, what the merged units show to be defects.
+5. Run every suite from the unity build.
+6. Measure the full build on a quiet machine.
 
 * Measurements
 
@@ -58,9 +77,54 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Test cases with the same name and tags before and after | 11,469 of 11,469, in 1,298 files | =pin_tests.py= against HEAD, in the session scratchpad | 2b2df3251e |
+| Unity build of the whole tree, batch 16 | Green: every unit compiles and every binary links | =cmake --build build/output/unity-16 -j 3 -- -k 0= | f8db250eca |
+| Hand-written sources kept out of the unity build | 206 of about 8,000 (2.6%) | =build/scripts/check_unity_collisions.py= | 3f2b94020d |
+| Suites from the unity build | 94 run: 79 pass, 13 hold no tests, 2 failed; one failure was a defect, now fixed, and one is a timing failure captured in the backlog | =cmake --build build/output/unity-16 --target rat -- -k 0= | 3f2b94020d |
+| =ores.shell.iam.tests= after the fix | 466 of 466 test cases pass | =test_ores.shell.iam.tests= | f984ea776e |
+| Full build without ccache, against the baseline of about 17.2 CPU hours | Not measured yet: needs a quiet machine | | |
 
 * Notes
+
+** What the merged units found
+
+A unity build puts a target's files into one unit, and that showed defects the
+tree already had. Each one is fixed, not recorded:
+
+- Two =ores::iam::messaging::list_role_permissions_request= types with
+  different members. They shared reflect-cpp's instantiations at link time,
+  so the shell encoded one with the other's layout once the linker kept the
+  other copy. The operation's message is now
+  =list_role_permissions_page_request=, and =check_unique_type_names.py=
+  keeps a second such pair out.
+- Two =ores::shell::app::commands::subscription_commands= classes, one
+  hand-written and one generated. The hand-written one is now
+  =event_channel_commands=.
+- The UUID and tenant parsers read an error value through =->=. Their read
+  path had never compiled.
+- The health monitor logged with Boost.Log's trivial severities, and its
+  severity aliases shadowed the project's in a merged unit. It now uses
+  =ores.logging=.
+- Six model fragments used the old unprefixed queue group, so the first
+  template pass did not compile for those registrars; the earlier byte check
+  proved the renames but not that they compiled.
+
+** What is recorded, not fixed
+
+The 206 recorded files fall into two groups: names the scan sees, such as
+duplicated helpers in the ORE projections, and clashes only the compiler
+sees, such as types in anonymous namespaces and namespace aliases. The task
+[[id:B6121657-0FF2-4570-8CAF-EAF77E1AFDDF][Remove the unity build exclusions]] pays them down. The check refuses a new
+collision outside the record and refuses to record a generated file.
+
+** Test failures that are not this change's
+
+- =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= failed in
+  both full runs and passed five times out of five alone.
+- Three tenant tests in =ores.iam.core.tests= pass on a fresh run and fail on
+  a second run against the same database, on a duplicate tenant code.
+
+Both are captured in the backlog inbox.
 
 * Test Scenarios
 

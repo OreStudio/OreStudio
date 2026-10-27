@@ -85,8 +85,15 @@ class Curation:
                                      "settings.json not_a_setting")
         self.models = self._load("models.json", ("description", "detail"))
         self.engines = self._load("engines.json", ("description", "detail"))
+        # A template states the class it belongs to and the method it is priced
+        # by, as the codes the two lookup tables hold. The class is null on a
+        # trade-level template, so the key is required to be present and its
+        # value is not required to be a code.
         self.templates = self._load("templates.json",
-                                    ("asset_class", "method", "description"))
+                                    ("method_code", "description"))
+        for code, entry in self.templates.items():
+            if "asset_class_code" not in entry:
+                raise CurationError(f"templates.json: {code} has no asset_class_code")
         self.code_settings = self._load("settings-code.json",
                                         ("scope", "description", "source_ref"))
         for name, entry in self.code_settings.items():

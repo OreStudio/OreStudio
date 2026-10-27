@@ -47,8 +47,23 @@ generate_synthetic_sensitivity_template(utility::generation::generation_context&
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.asset_class = std::string("IR");
-    r.method = std::string("Analytical");
+    r.method_code = [idx] {
+        static constexpr std::string_view codes[] = {
+            "Analytical", "Semianalytical", "FD", "MC", "Trade"};
+        return std::string(codes[static_cast<std::size_t>(idx) % std::size(codes)]);
+    }();
+    r.asset_class_code = [&r] {
+        if (r.method_code == "Trade")
+            return std::string();
+        static constexpr std::string_view method_codes[] = {
+            "Analytical", "Semianalytical", "FD", "MC"};
+        static constexpr std::string_view classes[] = {
+            "interest_rates", "equity", "commodity", "credit"};
+        for (std::size_t i = 0; i < std::size(method_codes); ++i)
+            if (r.method_code == method_codes[i])
+                return std::string(classes[i]);
+        return std::string("interest_rates");
+    }();
     r.description = std::string("Interest rate products priced by a closed formula.");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

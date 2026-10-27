@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: 5C7E2B41-9D3A-4F58-8B21-6E4A0C9D7F13
+:END:
+#+title: ores.analytics.sensitivity_method
+#+description: Codegen entity model for the analytics =sensitivity_method= table. How ORE prices the products that carry a sensitivity template key.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: How the products carrying a template key are priced, as the token a key spells and the words a person reads.
+#+entity_singular: sensitivity_method
+#+entity_plural: sensitivity_methods
+#+entity_title: Sensitivity Method
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+A sensitivity template key spells how its products are priced, in one of the five
+forms ORE defines: =Analytical=, =Semianalytical=, =FD=, =MC= and =Trade=. The key
+carries the token -- =IR_FD= -- and a person reads the name beside it.
+
+The method decides whether a template has an asset class at all. Four of the five
+are a way of pricing a class of product, so a template that states one states the
+class too. =Trade= is the exception: a trade-level template is the one ORE defines
+without a class, because the sensitivities come from the trade itself rather than
+from shifting a class of market data. =needs_asset_class= states that, and the
+screen reads it rather than repeating the exception.
+
+The methods are seeded for the system tenant and read by every tenant, so a
+template that names a method ORE does not have is refused.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The method as ORE spells it in a template key: 'Analytical', 'Semianalytical',
+'FD', 'MC' or 'Trade'.
+
+#+begin_src cpp :name generator
+[idx]{
+    static constexpr std::string_view codes[] = {
+        "Analytical", "Semianalytical", "FD", "MC", "Trade"};
+    return std::string(codes[static_cast<std::size_t>(idx) % std::size(codes)]);
+}()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The method in the words a person reads: 'Analytical', 'Semianalytical', 'Finite
+difference', 'Monte Carlo' or 'Trade level'.
+
+#+begin_src cpp :name generator
+[&r]{
+    if (r.code == "FD")
+        return std::string("Finite difference");
+    if (r.code == "MC")
+        return std::string("Monte Carlo");
+    if (r.code == "Trade")
+        return std::string("Trade level");
+    return r.code;
+}()
+#+end_src
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What the method means, in one line, for a reader who does not know ORE.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** needs_asset_class
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:default:      true
+:END:
+
+Whether a template that states this method also states an asset class.
+
+Four of the five methods price a class of product, so their templates state the
+class. The trade-level method is the one ORE defines without a class, so it is the
+one row that states false.
+
+#+begin_src cpp :name generator
+[&r]{ return r.code != std::string("Trade"); }()
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:default:      0
+:END:
+
+The order the methods are offered in, which is the order ORE's own documentation
+lists them in.
+
+#+begin_src cpp :name generator
+static_cast<int>(idx)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_sensitivity_methods_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function           |
+|--------------------+-------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: method
+:entity_plural_short:   methods
+:entity_singular_words: sensitivity method
+:entity_plural_words:   sensitivity methods
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sm
+:END:
+
+** Table display
+
+| column             | header            |
+|--------------------+-------------------|
+| code               | Code              |
+| name               | Name              |
+| description        | Description       |
+| needs_asset_class  | Needs asset class |
+| display_order      | Order             |
+| modified_by        | Modified By       |
+| version            | Version           |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  methods
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field             | label             | widget            | type      | is_key | is_required | placeholder                       |
+|-------------------+-------------------+-------------------+-----------+--------+-------------+-----------------------------------|
+| code              | Code              | codeEdit          | line_edit | true   | true        | Analytical, Semianalytical, FD, MC or Trade |
+| name              | Name              | nameEdit          | line_edit |        | true        | Enter the words a person reads    |
+| description       | Description       | descriptionEdit   | text_edit |        | true        | Enter a description               |
+| needs_asset_class | Needs asset class | needsAssetClassEdit | check_box |      | true        |                                   |
+| display_order     | Order             | displayOrderEdit  | spin_box  |        | true        |                                   |
+
+*** Columns
+
+| enum_name      | field             | header            | type    | width |
+|----------------+-------------------+-------------------+---------+-------|
+| Code           | code              | Code              | string  | 140   |
+| Name           | name              | Name              | string  | 180   |
+| Description    | description       | Description       | string  | 320   |
+| NeedsAssetClass | needs_asset_class | Needs asset class | boolean | 120   |
+| DisplayOrder   | display_order     | Order             | int     | 70    |
+| ModifiedBy     | modified_by       | Modified By       | string  | 120   |
+| RecordedAt     | recorded_at       | Recorded At       | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

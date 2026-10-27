@@ -26,6 +26,8 @@
 #include "ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_model_product_parameter_event_registrar.hpp"
 #include "ores.analytics.service/messaging/pricing_pair_setting_event_registrar.hpp"
+#include "ores.analytics.service/messaging/sensitivity_asset_class_event_registrar.hpp"
+#include "ores.analytics.service/messaging/sensitivity_method_event_registrar.hpp"
 #include "ores.analytics.service/messaging/sensitivity_template_event_registrar.hpp"
 
 namespace ores::analytics::service::messaging {
@@ -44,6 +46,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_pricing_pair_setting_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_pricing_model_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_pricing_method_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_sensitivity_method_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_sensitivity_asset_class_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_sensitivity_template_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_pricing_model_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_pricing_model_product_event_mapping(event_source, event_bus, nats));

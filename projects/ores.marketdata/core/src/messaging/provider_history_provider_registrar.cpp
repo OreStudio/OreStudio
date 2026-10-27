@@ -28,6 +28,7 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.core/presentation/provider_history_field_mapper.hpp"
 #include "ores.marketdata.core/service/provider_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::marketdata::messaging {
 
@@ -36,7 +37,12 @@ void register_provider_history_provider(ores::history::service::dispatch_registr
         "ores.marketdata.provider",
         "marketdata::providers:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-            service::provider_service svc(scoped_ctx);
+            // The rows are the registry's, held by the system tenant, so the
+            // read is scoped there. A read in the caller's tenant answers an
+            // empty history for a row the caller may read.
+            const auto sys_ctx = scoped_ctx.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                        scoped_ctx.actor());
+            service::provider_service svc(sys_ctx);
             auto versions = svc.get_provider_history(entity_id);
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_provider_fields);

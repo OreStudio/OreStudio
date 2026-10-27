@@ -38,6 +38,7 @@ import { registerTradeRoutes } from './trades.js';
 import { registerConventionRoutes } from './conventions.js';
 import { registerEngineSettingsRoutes } from './engine-settings.js';
 import { registerPricingEngineRoutes } from './pricing-engines.js';
+import { registerSensitivityTemplateRoutes } from './sensitivity-templates.js';
 import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerMarketRegimeRoutes } from './market-regime.js';
@@ -2674,6 +2675,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerBookChangeRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);
     registerPricingEngineRoutes(server, requireSession);
+    registerSensitivityTemplateRoutes(server, requireSession);
     registerEngineSettingsRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
     registerAdapterRoutes(server, requireSession);

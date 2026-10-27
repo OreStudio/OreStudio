@@ -101,8 +101,8 @@ domain::sensitivity_template
 sensitivity_template_to_domain(const messaging::sensitivity_template_write& write) {
     domain::sensitivity_template v;
     v.code = write.code;
-    v.asset_class = write.asset_class;
-    v.method = write.method;
+    v.method_code = write.method_code;
+    v.asset_class_code = write.asset_class_code;
     v.description = write.description;
     return v;
 }
@@ -124,6 +124,11 @@ sensitivity_template_service::list_sensitivity_templates(
         request.filter->code_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

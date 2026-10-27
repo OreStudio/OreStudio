@@ -28,6 +28,7 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.reporting.core/presentation/concurrency_policy_history_field_mapper.hpp"
 #include "ores.reporting.core/service/concurrency_policy_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -37,7 +38,12 @@ void register_concurrency_policy_history_provider(
         "ores.reporting.concurrency_policy",
         "reporting::concurrency_policies:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-            service::concurrency_policy_service svc(scoped_ctx);
+            // The rows are the registry's, held by the system tenant, so the
+            // read is scoped there. A read in the caller's tenant answers an
+            // empty history for a row the caller may read.
+            const auto sys_ctx = scoped_ctx.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                        scoped_ctx.actor());
+            service::concurrency_policy_service svc(sys_ctx);
             auto versions = svc.get_policy_history(entity_id);
             return ores::history::service::build_entity_history_versions(
                 versions, presentation::render_concurrency_policy_fields);

@@ -34,8 +34,8 @@ export interface SensitivityTemplateKey {
 
 export interface SensitivityTemplateWrite {
     code: string;
-    asset_class: string;
-    method: string;
+    method_code: string;
+    asset_class_code: string;
     description: string;
 }
 
@@ -56,6 +56,7 @@ export interface SensitivityTemplateLookup {
 
 export interface SensitivityTemplatesFilter {
     code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface SensitivityTemplateEvent {

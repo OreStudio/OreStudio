@@ -221,18 +221,35 @@ TEST_CASE("of_acting_party keeps every row when there is no party to keep", "[ha
     REQUIRE(of_acting_party(std::vector<record>(2), ctx).size() == 2);
 }
 
-TEST_CASE("of_acting_party keeps a row with no party and drops another party's", "[handler_helpers]") {
+TEST_CASE("of_acting_party keeps the acting party's row over rows with no party", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto acting = boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
     const auto below = boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");
     const auto ctx = h.context().with_party(h.tenant_id(), acting, {acting, below}, "alice");
 
-    const auto kept =
+    const auto optional =
         of_acting_party(std::vector<optional_party_record>{{std::nullopt}, {below}, {acting}}, ctx);
+    REQUIRE(optional.size() == 1);
+    REQUIRE(optional.front().party_id == acting);
 
-    REQUIRE(kept.size() == 2);
-    REQUIRE_FALSE(kept.front().party_id.has_value());
-    REQUIRE(kept.back().party_id == acting);
+    const auto nil = of_acting_party(
+        std::vector<party_scoped_record>{{.party_id = boost::uuids::uuid{}}, {.party_id = acting}},
+        ctx);
+    REQUIRE(nil.size() == 1);
+    REQUIRE(nil.front().party_id == acting);
+}
+
+TEST_CASE("of_acting_party keeps a key's rows as read when none is the acting party's", "[handler_helpers]") {
+    ores::testing::database_helper h;
+    const auto acting = boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
+    const auto below = boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");
+    const auto ctx = h.context().with_party(h.tenant_id(), acting, {acting, below}, "alice");
+
+    // A table that holds an id once per tenant: the one row is the row a write
+    // replaces, whichever party holds it, or none.
+    REQUIRE(of_acting_party(std::vector<optional_party_record>{{below}}, ctx).size() == 1);
+    REQUIRE(of_acting_party(std::vector<optional_party_record>{{std::nullopt}}, ctx).size() == 1);
+    REQUIRE(of_acting_party(std::vector<text_party_record>{{"EUR-6M", ""}}, ctx).size() == 1);
 }
 
 TEST_CASE("stamp_document stamps every row of a document, however deep", "[handler_helpers]") {

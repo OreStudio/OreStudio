@@ -33,6 +33,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <optional>
 #include <rfl.hpp>
 #include <span>
@@ -194,14 +195,19 @@ void stamp(T& obj,
 }
 
 /**
- * @brief The rows of the caller's acting party, from rows read by a key.
+ * @brief The acting party's rows of a key, when the key names one in each party.
  *
  * A key that names a row by its id alone finds that id's row in every party
- * the session sees, and a session of a parent party sees its subsidiaries,
- * which may hold the same id. A write lands under the acting party, as stamp()
- * states, so the row it replaces, and the row it reads back, is the acting
- * party's. A type with no party_id, or a context with no party, keeps every
- * row.
+ * the session sees, and a session of a parent party sees its subsidiaries.
+ * Where a table holds an id once per party, as conventions do, the row a
+ * write replaces is the acting party's, because stamp() writes the acting
+ * party and the store finds the current row by tenant, id and party. So when
+ * any row is the acting party's, only those rows are kept.
+ *
+ * Where a table holds an id once per tenant, the one row the key finds is the
+ * row a write replaces, whichever party holds it, so rows of which none is the
+ * acting party's are kept as read. A type with no party_id, or a context with
+ * no party, keeps every row.
  *
  * The same caution as stamp() holds: a type whose party_id names something
  * other than the row's own scope must not be filtered by it.
@@ -212,20 +218,21 @@ std::vector<T> of_acting_party(std::vector<T> rows, const ores::database::contex
         const auto pid = ctx.party_id();
         if (!pid.has_value())
             return rows;
-        const auto other = [&](const auto& party) {
+        const auto same = [&](const auto& party) {
             using P = std::decay_t<decltype(party)>;
             if constexpr (std::is_convertible_v<P, boost::uuids::uuid>)
-                return boost::uuids::uuid(party) != *pid;
+                return boost::uuids::uuid(party) == *pid;
             else
-                return std::string(party) != boost::uuids::to_string(*pid);
+                return std::string(party) == boost::uuids::to_string(*pid);
         };
-        // A row with no party belongs to no other party, so it is kept.
-        std::erase_if(rows, [&](const T& row) {
+        const auto acting = [&](const T& row) {
             if constexpr (requires { row.party_id.has_value(); })
-                return row.party_id.has_value() && other(*row.party_id);
+                return row.party_id.has_value() && same(*row.party_id);
             else
-                return other(row.party_id);
-        });
+                return same(row.party_id);
+        };
+        if (std::ranges::any_of(rows, acting))
+            std::erase_if(rows, [&](const T& row) { return !acting(row); });
     }
     return rows;
 }

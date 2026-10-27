@@ -560,6 +560,7 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
             equity_basket_constituent row;
             row.sequence_number = static_cast<int>(ordinal++);
             row.underlying_name = equity_instrument_projection_text_of(underlying, "Name");
+            row.underlying_kind = equity_instrument_projection_text_of(underlying, "Type");
             constituents.push_back(std::move(row));
         }
     }
@@ -962,23 +963,27 @@ void write_equity_worst_of_basket_swap(
     std::sort(ordered_rows.begin(), ordered_rows.end(), [](const auto& lhs, const auto& rhs) {
         return lhs.sequence_number < rhs.sequence_number;
     });
-    std::vector<std::string> names;
+    struct named_constituent {
+        std::string name;
+        std::string kind;
+    };
+    std::vector<named_constituent> members;
     std::vector<decimal> prices;
     for (const auto& row : ordered_rows) {
         if (row.underlying_name.empty())
             continue;
-        names.push_back(row.underlying_name);
+        members.push_back({row.underlying_name, row.underlying_kind});
         if (row.initial_price.has_value())
             prices.push_back(decimal::from_double(*row.initial_price).value());
     }
-    if (names.empty() && !v.underlying_name.empty())
-        names.push_back(v.underlying_name);
-    if (!names.empty()) {
+    if (members.empty() && !v.underlying_name.empty())
+        members.push_back({v.underlying_name, "Equity"});
+    if (!members.empty()) {
         auto underlyings = data.child("Underlyings");
-        for (const auto& name : names) {
+        for (const auto& member : members) {
             auto underlying = underlyings.append("Underlying");
-            underlying.set_text("Name", name);
-            underlying.set_text("Type", "Equity");
+            underlying.set_text("Name", member.name);
+            underlying.set_text("Type", member.kind);
         }
     }
 

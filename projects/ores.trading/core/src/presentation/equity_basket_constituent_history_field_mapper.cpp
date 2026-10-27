@@ -42,6 +42,7 @@ render_equity_basket_constituent_fields(const domain::equity_basket_constituent&
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
+    fields.push_back({.name = "Underlying Kind", .value = v.underlying_kind});
     fields.push_back(
         {.name = "Weight", .value = v.weight ? std::to_string(*v.weight) : std::string{}});
     fields.push_back({.name = "Initial Price",

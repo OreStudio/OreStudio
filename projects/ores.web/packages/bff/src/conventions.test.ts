@@ -421,9 +421,11 @@ describe('convention routes', () => {
                         key: { id: '33333333-3333-4333-8333-333333333333' },
                         long_short: [
                             {
-                                id: 'part',
-                                convention_id: '33333333-3333-4333-8333-333333333333',
-                                long_index: 'GBP-LIBOR-12M',
+                                identity: {
+                                    id: 'part',
+                                    convention_id: '33333333-3333-4333-8333-333333333333',
+                                },
+                                long_leg: { long_index: 'GBP-LIBOR-12M' },
                             },
                         ],
                     },

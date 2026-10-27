@@ -1122,4 +1122,217 @@ describe('pricing engine routes', () => {
             );
         });
     });
+
+    describe('the ORE document import', () => {
+        const PREVIEW_SUBJECT = 'ore.v1.ops.preview_pricing_engines_import';
+        const IMPORT_SUBJECT = 'ore.v1.ops.import_pricing_engines';
+
+        const preview = {
+            success: true,
+            message: 'The file holds 1 products and 1 settings.',
+            root_element: 'PricingEngines',
+            in_file_products: 1,
+            in_file_parameters: 1,
+            products: [
+                {
+                    type_code: 'BermudanSwaption',
+                    model: 'LGM',
+                    engine: 'Grid',
+                    parameters: 1,
+                },
+            ],
+            global_parameters: [],
+            target_name: 'EOD pricing',
+            held: 0,
+            added: 1,
+            changed: 0,
+            removed: 0,
+            rows: [
+                {
+                    key: 'BermudanSwaption#0',
+                    entity: 'product',
+                    change: 'added',
+                    owner: '',
+                    name: '',
+                    what: 'Model LGM, engine Grid',
+                },
+            ],
+            issues: [],
+        };
+
+        const imported = {
+            success: true,
+            message: 'Imported: 1 added, 0 changed, 0 deleted, 0 kept.',
+            configuration_id: CONFIG_ID,
+            configuration_name: 'EOD pricing',
+            added: 1,
+            changed: 0,
+            deleted: 0,
+            kept: 0,
+            errors: [],
+        };
+
+        it('previews the file against the reporting configuration of the target', async () => {
+            const { server, sessionId, calls } = buildTestServer({
+                ...reads,
+                [PREVIEW_SUBJECT]: preview,
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import/preview',
+                { content: '<PricingEngines/>', configurationId: CONFIG_ID },
+            );
+            expect(response.statusCode).toBe(200);
+            expect(response.json()).toMatchObject({
+                success: true,
+                root_element: 'PricingEngines',
+            });
+            expect(calls.find((call) => call.subject === PREVIEW_SUBJECT)?.body).toEqual({
+                content: '<PricingEngines/>',
+                target_configuration_id: HEADER_ID,
+            });
+        });
+
+        it('previews a file for a configuration that does not exist yet', async () => {
+            const { server, sessionId, calls } = buildTestServer({
+                ...reads,
+                [PREVIEW_SUBJECT]: preview,
+            });
+            await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import/preview',
+                {
+                    content: '<PricingEngines/>',
+                },
+            );
+            expect(calls.find((call) => call.subject === PREVIEW_SUBJECT)?.body).toEqual({
+                content: '<PricingEngines/>',
+                target_configuration_id: '',
+            });
+        });
+
+        it('answers the service words when the file is another document', async () => {
+            const { server, sessionId } = buildTestServer({
+                ...reads,
+                [PREVIEW_SUBJECT]: {
+                    ...preview,
+                    success: false,
+                    root_element: 'CurrencyConfig',
+                    message:
+                        'This file is not a pricing engine configuration: its root element is ' +
+                        'CurrencyConfig. Choose a PricingEngines file.',
+                },
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import/preview',
+                { content: '<CurrencyConfig/>' },
+            );
+            expect(response.statusCode).toBe(200);
+            expect(response.json()).toMatchObject({
+                success: false,
+                root_element: 'CurrencyConfig',
+            });
+        });
+
+        it('refuses a preview with no file', async () => {
+            const { server, sessionId } = buildTestServer(reads);
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import/preview',
+                {},
+            );
+            expect(response.statusCode).toBe(400);
+        });
+
+        it('imports into a new configuration, with the name and the reason', async () => {
+            const { server, sessionId, calls } = buildTestServer({
+                ...reads,
+                [IMPORT_SUBJECT]: imported,
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import',
+                {
+                    content: '<PricingEngines/>',
+                    newName: 'From ORE',
+                    newVariant: 'imported',
+                    removalsKept: ['Bond#0'],
+                    intent: { reason_code: 'common.correction', commentary: 'Brought in from ORE' },
+                },
+            );
+            expect(response.statusCode).toBe(200);
+            expect(response.json()).toMatchObject({ success: true, configuration_id: CONFIG_ID });
+            expect(calls.find((call) => call.subject === IMPORT_SUBJECT)?.body).toEqual({
+                content: '<PricingEngines/>',
+                target_configuration_id: '',
+                new_configuration_name: 'From ORE',
+                new_configuration_variant: 'imported',
+                removals_kept: ['Bond#0'],
+                reason_code: 'common.correction',
+                commentary: 'Brought in from ORE',
+            });
+        });
+
+        it('imports into a configuration the person holds, naming it', async () => {
+            const { server, sessionId, calls } = buildTestServer({
+                ...reads,
+                [IMPORT_SUBJECT]: imported,
+            });
+            await send(server, sessionId, 'POST', '/api/reporting/pricing-engines/ore-import', {
+                content: '<PricingEngines/>',
+                configurationId: CONFIG_ID,
+                intent: { reason_code: 'common.correction', commentary: '' },
+            });
+            expect(calls.find((call) => call.subject === IMPORT_SUBJECT)?.body).toMatchObject({
+                target_configuration_id: HEADER_ID,
+                new_configuration_name: '',
+                removals_kept: [],
+            });
+        });
+
+        it('refuses an import into a configuration that does not exist', async () => {
+            const { server, sessionId } = buildTestServer({
+                ...reads,
+                'analytics.v1.pricing_model_configs.list': { result: ok, configs: [] },
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import',
+                {
+                    content: '<PricingEngines/>',
+                    configurationId: CONFIG_ID,
+                    intent: { reason_code: 'common.correction', commentary: '' },
+                },
+            );
+            expect(response.statusCode).toBe(404);
+        });
+
+        it('refuses an import with no reason', async () => {
+            const { server, sessionId } = buildTestServer(reads);
+            const response = await send(
+                server,
+                sessionId,
+                'POST',
+                '/api/reporting/pricing-engines/ore-import',
+                {
+                    content: '<PricingEngines/>',
+                    intent: { reason_code: '', commentary: '' },
+                },
+            );
+            expect(response.statusCode).toBe(400);
+        });
+    });
 });

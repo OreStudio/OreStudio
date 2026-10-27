@@ -122,6 +122,86 @@ const oreExportSchema = z.looseObject({
     files: z.array(z.object({ name: z.string(), content: z.string() })).default([]),
 });
 
+/**
+ * What a pricing engines document holds, as the preview states it: one row per
+ * product the file carries, with the model, the engine and how many settings it
+ * holds.
+ */
+const previewProductSchema = z.object({
+    type_code: z.string(),
+    model: z.string(),
+    engine: z.string(),
+    parameters: z.int().default(0),
+});
+
+/** One row of the difference, named by the key the import's choices carry. */
+const previewRowSchema = z.object({
+    key: z.string(),
+    entity: z.string(),
+    change: z.string(),
+    owner: z.string().default(''),
+    name: z.string().default(''),
+    what: z.string().default(''),
+});
+
+/** Something in the file the system does not know, in the service's own words. */
+const previewIssueSchema = z.object({
+    kind: z.string(),
+    subject: z.string(),
+    detail: z.string().default(''),
+});
+
+/** The preview's answer: what the file holds, what is unknown, and the difference. */
+const oreImportPreviewSchema = z.looseObject({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    root_element: z.string().default(''),
+    in_file_products: z.int().default(0),
+    in_file_parameters: z.int().default(0),
+    products: z.array(previewProductSchema).default([]),
+    global_parameters: z.array(z.string()).default([]),
+    target_name: z.string().default(''),
+    held: z.int().default(0),
+    added: z.int().default(0),
+    changed: z.int().default(0),
+    removed: z.int().default(0),
+    rows: z.array(previewRowSchema).default([]),
+    issues: z.array(previewIssueSchema).default([]),
+});
+
+/** The import's answer: what it saved, and the rows it could not write. */
+const oreImportResultSchema = z.looseObject({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    configuration_id: z.string().default(''),
+    configuration_name: z.string().default(''),
+    added: z.int().default(0),
+    changed: z.int().default(0),
+    deleted: z.int().default(0),
+    kept: z.int().default(0),
+    errors: z.array(z.object({ key: z.string(), message: z.string() })).default([]),
+});
+
+/**
+ * The preview's body: the file's text and the configuration to compare it
+ * against, or nothing for a configuration the file would create.
+ */
+const oreImportPreviewBodySchema = z.object({
+    content: z.string().min(1),
+    configurationId: idSchema.nullable().default(null),
+});
+
+/**
+ * The import's body: the same file, the target, the removed rows the person
+ * kept, and the reason the write is theirs.
+ */
+const oreImportBodySchema = oreImportPreviewBodySchema.extend({
+    newName: z.string().trim().max(200).default(''),
+    newVariant: z.string().trim().max(200).default(''),
+    removalsKept: z.array(z.string()).default([]),
+    intent: intentSchema,
+});
+
 type DocumentBody = z.infer<typeof documentBodySchema>;
 
 /** The rows of one configuration, as the three tables hold them. */
@@ -970,6 +1050,69 @@ export function registerPricingEngineRoutes(
             ...updated,
             reports: await readBoundReports(session, text(updated['configurationId'])),
         };
+    });
+
+    /**
+     * The standard Import, first step (RS-ORE-05, RS-ORE-06): the ORE service
+     * parses the file and says what importing it would do. Nothing is written,
+     * and the answer is the service's own words, a refusal included, because the
+     * person reads the reason on the step.
+     *
+     * The configuration the file would be written into is named by the id the
+     * screen shows; the service reads a document by the reporting configuration
+     * the record fills, so the two ids are joined here.
+     */
+    server.post('/api/reporting/pricing-engines/ore-import/preview', async (request) => {
+        const session = requireSession(request);
+        const body = input(oreImportPreviewBodySchema, request.body);
+        // The screen's id names the configuration; the service reads a document
+        // by the reporting configuration the record fills.
+        const configurationId =
+            body.configurationId === null
+                ? ''
+                : text(
+                      (await readStored(session, body.configurationId)).config['configuration_id'],
+                  );
+        return session.client.callAuthenticated(
+            orePricingSubjects.preview_pricing_engines_import_request,
+            { content: body.content, target_configuration_id: configurationId },
+            oreImportPreviewSchema,
+        );
+    });
+
+    /**
+     * The standard Import, last step (RS-ORE-05, RS-ORE-06): the ORE service
+     * writes the document through the save this screen itself uses, so the
+     * validation and the history are the screen's, and answers with what it
+     * saved and the rows it could not write.
+     *
+     * A new configuration is registered and written by the service, in the order
+     * the screen's create takes, so a client does not carry that order twice.
+     */
+    server.post('/api/reporting/pricing-engines/ore-import', async (request) => {
+        const session = requireSession(request);
+        const body = input(oreImportBodySchema, request.body);
+        // The screen's id names the configuration; the service reads a document
+        // by the reporting configuration the record fills.
+        const configurationId =
+            body.configurationId === null
+                ? ''
+                : text(
+                      (await readStored(session, body.configurationId)).config['configuration_id'],
+                  );
+        return session.client.callAuthenticated(
+            orePricingSubjects.import_pricing_engines_request,
+            {
+                content: body.content,
+                target_configuration_id: configurationId,
+                new_configuration_name: body.newName,
+                new_configuration_variant: body.newVariant,
+                removals_kept: body.removalsKept,
+                reason_code: body.intent.reason_code,
+                commentary: body.intent.commentary,
+            },
+            oreImportResultSchema,
+        );
     });
 
     server.delete('/api/reporting/pricing-engines/:id', async (request, reply) => {

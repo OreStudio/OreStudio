@@ -22,14 +22,14 @@
 
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/export.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/cancellation_signal.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
-#include <boost/log/trivial.hpp>
 #include <atomic>
 #include <chrono>
 #include <functional>
 #include <mutex>
+#include <string_view>
 #include <string>
 
 namespace ores::database {
@@ -58,12 +58,11 @@ namespace ores::database {
  */
 class ORES_DATABASE_EXPORT health_monitor final {
 private:
-    using severity_level = boost::log::trivial::severity_level;
-    using logger_type =
-        boost::log::sources::severity_channel_logger_mt<severity_level, std::string>;
+    inline static std::string_view logger_name = "ores.database.health_monitor";
 
-    [[nodiscard]] static logger_type& lg() {
-        static logger_type instance(boost::log::keywords::channel = "ores.database.health_monitor");
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 

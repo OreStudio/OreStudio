@@ -20,6 +20,7 @@
 #define ORES_ANALYTICS_QUANT_MATH_RNG_STREAM_HPP
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string_view>

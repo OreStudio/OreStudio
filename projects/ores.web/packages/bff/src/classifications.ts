@@ -102,6 +102,9 @@ const HISTORY_TYPES = new Set([
     'ores.reporting.report_definition',
     // A pricing engine configuration is analytics' own record, and its versions are served there.
     'ores.analytics.pricing_model_config',
+    // A curve configuration is refdata's own record and is reached through the
+    // report configuration it fills, not through the record table.
+    'ores.refdata.curve_configuration',
     // Parties and counterparties are not in the record table; their screens read their versions here.
     'ores.refdata.party',
     'ores.refdata.party_identifier',

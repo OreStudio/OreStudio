@@ -5788,6 +5788,10 @@ const fr: SourceCatalogue = {
             off: 'Désactivée',
             usedBy: 'Rapports qui l’utilisent',
             noReports: 'Aucun rapport que vous pouvez voir n’utilise cette configuration.',
+            curveDocument: 'Configuration des courbes',
+            curveDocumentLead:
+                'Cette configuration est remplie par un document de configuration des courbes ORE. Ses sections et leurs courbes se lisent feuille par feuille.',
+            openCurveDocument: 'Ouvrir la configuration des courbes',
             none: 'Ce rapport ne lie aucune configuration.',
             refused: 'Vous ne pouvez pas voir les configurations de ce rapport.',
         },
@@ -5949,6 +5953,62 @@ const fr: SourceCatalogue = {
         continue: 'Continuer',
         retry: 'Réessayer',
         cancel: 'Annuler',
+    },
+    curveConfiguration: {
+        title: 'Configurations de courbes',
+        lead: 'Comment chaque courbe est définie et calibrée, tel que le document de configuration des courbes ORE le déclare.',
+        recordLead:
+            'Version {version}. {documented} des {total} paramètres portent une documentation issue du contrat de paramètres ORE.',
+        tabs: {
+            label: 'Sections de la configuration des courbes',
+            details: 'Détails',
+            usedBy: 'Utilisée par',
+            history: 'Historique',
+        },
+        details: {
+            lead: "Ce qu'est la configuration, qui la détient, et quelle part en décrit le contrat de documentation unique.",
+        },
+        fields: {
+            name: 'Nom',
+            party: 'Partie',
+            version: 'Version',
+            sections: 'Sections',
+            entries: 'Courbes',
+            documented: 'Documenté',
+            documentedValue: '{documented} des {total} paramètres',
+            lastChanged: 'Dernière modification',
+            curveConfiguration: 'Configuration des courbes',
+        },
+        section: {
+            title: '{section}, qui contient les entrées {entry}',
+            unmapped:
+                "Les colonnes de cette section ne sont pas encore mappées : ses courbes n'affichent que leur identifiant.",
+            empty: 'Cette section ne contient aucune courbe.',
+        },
+        entry: {
+            noDescription: 'Une entrée {entry} du document.',
+            parameters: '{count} paramètres',
+            gaps: '{count} sans documentation',
+            blocks: 'Détenu comme élément propre :',
+            blockStated: 'déclaré',
+            blockAbsent: 'non déclaré',
+            blockNotRecorded: 'non enregistré ici',
+        },
+        leaf: {
+            notSet: 'Non défini',
+            gap: 'Aucune documentation',
+        },
+        usedBy: {
+            lead: 'Une modification atteint la prochaine exécution de chaque rapport ci-dessous. Une exécution déjà produite garde ce avec quoi elle a couru.',
+            none: 'Aucun rapport ne lie cette configuration.',
+            refused: 'Vous ne pouvez pas voir les rapports qui lient cette configuration.',
+            unread: "Les rapports qui lient cette configuration n'ont pas pu être lus. {message}",
+        },
+        history: {
+            lead: "Chaque version de la configuration, la plus récente d'abord, avec ce qui a changé dans chacune.",
+        },
+        missing: 'Aucun document de configuration des courbes ne remplit cette configuration.',
+        readFailed: "La configuration des courbes n'a pas pu être lue. {message}",
     },
     oreParameter: {
         mode: {

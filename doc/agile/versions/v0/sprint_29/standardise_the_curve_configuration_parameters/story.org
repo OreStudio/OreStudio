@@ -46,6 +46,8 @@ A curve configuration is drawn like every other configuration that comes off an 
 | [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][Give the curve configuration leaves their value sets]] | DONE | | 2026-10-27 | Link every documented curve configuration leaf to a value set: a currency, a calendar, a day counter or an index draws on a refdata catalogue, a value an ORE parser maps takes that parser's list, and the rest take their type, so a screen draws the control from it and the write path can refuse a value outside it. |
 | [[id:FCD8EE04-D549-45B2-AE29-8C5FBBC66B74][Draw the curve configuration page with the shared leaf parts]] | STARTED | 2026-10-27 | | Give the curve configuration a page that follows the configuration screen standard: Details, one tab per section in the declared order, Used by and History, each curve entry drawn as a collection row whose leaves use the shared switch, documentation panel, value in force and control. The sections come from curve_section, so the page restates nothing about a family. |
 | [[id:050CE731-4FE6-4158-840B-E5DFB006B30A][Map the curve configuration columns to their leaves]] | BACKLOG | | | The value-set guard already exists: ores_reporting_value_in_set_fn is the one rule and a generated trigger joins a column-to-leaf map to it. No map covers the curve tables, so a curve value in a typed column is unchecked. Add the map and attach the trigger, so a curve value outside its leaf's set is refused on write. |
+| [[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][Draw the nested collections of a curve entry]] | BACKLOG | | | A curve entry holds child elements of its own: Segments, Quotes, BootstrapConfig, Report, VolatilityConfig and their parts. The page names each block and stops there. Give each block the collection shape the configuration screen standard states, so its rows are read with the same leaf parts. |
+| [[id:CA40C9B0-01FB-4B3E-B0CE-348313A6BB04][Let a person change a curve parameter]] | BACKLOG | | | The curve configuration page reads a document of thirty-four families and writes nothing. A write must change one leaf without dropping the rows the page does not draw, refuse a value outside its leaf's set, and follow the lifecycle the configuration screen standard states. Give the page its edit path once the guard covers the curve tables. |
 
 * Decisions
 
@@ -98,6 +100,27 @@ A curve configuration is drawn like every other configuration that comes off an 
   and that is [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]].
   The two tasks meet at the same document and do not block each other, because
   the contract is keyed by schema and XPath and not by the aggregate.
+
+- *The column a leaf travels in is generated from the projection*, decided
+  2026-10-27. A curve entry is spread over =curve_definition= and one family
+  table, and the projection that reads and writes =curveconfig.xml= is the only
+  code that knows which column holds which element. The screen reads that fact
+  from =bff/src/curve-sections.generated.ts=, which
+  =generate_curve_section_parameters.py= writes out of the projection and checks
+  against =curveconfig.xsd=: 250 columns of 22 tables across the 19 sections.
+  The alternative, deriving the column from the element's name, is wrong for
+  =CurveId= (a =curve_id=) and for =YieldCurveDayCounter= (a =day_counter=), and
+  a hand-written table would drift from the projection in silence. The guard task
+  emits the same map for the trigger, so one source serves both.
+
+- *The curve page reads before it writes*, decided 2026-10-27. A curve
+  configuration is one document of thirty-four families and a save writes it
+  whole, so a page that drew the leaves of one section and saved would drop every
+  row it does not draw. No guard covers the curve tables yet either. The page
+  therefore reads, and two tasks carry the rest:
+  [[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][the nested collections]] and
+  [[id:CA40C9B0-01FB-4B3E-B0CE-348313A6BB04][the write]], which waits for the
+  guard so that no client can store a value outside its leaf's set.
 
 * Out of scope
 

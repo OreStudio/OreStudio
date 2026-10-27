@@ -42,7 +42,7 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS, configurationPath, reportPath } from '../shell/paths.js';
+import { PATHS, configurationPath, curveConfigurationPath, reportPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Notice, Tag } from '../ui/Primitives.js';
@@ -187,6 +187,22 @@ export function ConfigurationPage(): ReactNode {
                         ],
                     ]}
                 />
+                {configuration.typeCode === 'curve_configuration' && (
+                    <section className="card space-y-3 p-4">
+                        <h2 className="text-sm font-medium">
+                            {t('reporting.configurations.curveDocument')}
+                        </h2>
+                        <p className="text-sm text-ink-muted">
+                            {t('reporting.configurations.curveDocumentLead')}
+                        </p>
+                        <Link
+                            to={curveConfigurationPath(configuration.id)}
+                            className="text-sm text-accent hover:text-accent-bright"
+                        >
+                            {t('reporting.configurations.openCurveDocument')}
+                        </Link>
+                    </section>
+                )}
                 <section className="card space-y-3 p-4">
                     <header className="flex flex-wrap items-baseline justify-between gap-2">
                         <h2 className="text-sm font-medium">

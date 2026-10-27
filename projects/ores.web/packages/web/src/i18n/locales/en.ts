@@ -5703,6 +5703,10 @@ export const en: SourceCatalogue = {
             off: 'Off',
             usedBy: 'Reports that use it',
             noReports: 'No report that you may see uses this configuration.',
+            curveDocument: 'Curve configuration',
+            curveDocumentLead:
+                'This configuration is filled by an ORE curve configuration document. Its sections and their curves are drawn leaf by leaf.',
+            openCurveDocument: 'Open the curve configuration',
             none: 'This report binds no configuration.',
             refused: 'You may not see the configurations of this report.',
         },
@@ -5863,6 +5867,62 @@ export const en: SourceCatalogue = {
         continue: 'Continue',
         retry: 'Retry',
         cancel: 'Cancel',
+    },
+    curveConfiguration: {
+        title: 'Curve configurations',
+        lead: 'How each curve is defined and bootstrapped, as the ORE curve configuration document states it.',
+        recordLead:
+            'Version {version}. {documented} of {total} parameters carry documentation from the ORE parameter contract.',
+        tabs: {
+            label: 'Curve configuration sections',
+            details: 'Details',
+            usedBy: 'Used by',
+            history: 'History',
+        },
+        details: {
+            lead: 'What the configuration is, who holds it, and how much of it the one documentation contract describes.',
+        },
+        fields: {
+            name: 'Name',
+            party: 'Party',
+            version: 'Version',
+            sections: 'Sections',
+            entries: 'Curves',
+            documented: 'Documented',
+            documentedValue: '{documented} of {total} parameters',
+            lastChanged: 'Last changed',
+            curveConfiguration: 'Curve configuration',
+        },
+        section: {
+            title: '{section}, holding {entry} entries',
+            unmapped:
+                'The columns of this section are not mapped yet, so its curves show their identifier alone.',
+            empty: 'This section holds no curve.',
+        },
+        entry: {
+            noDescription: 'One {entry} of the document.',
+            parameters: '{count} parameters',
+            gaps: '{count} without documentation',
+            blocks: 'Held as its own element:',
+            blockStated: 'stated',
+            blockAbsent: 'not stated',
+            blockNotRecorded: 'not recorded here',
+        },
+        leaf: {
+            notSet: 'Not set',
+            gap: 'No documentation',
+        },
+        usedBy: {
+            lead: 'A change reaches the next run of each report below. A run already produced keeps what it ran with.',
+            none: 'No report binds this configuration.',
+            refused: 'You may not see the reports that bind this configuration.',
+            unread: 'The reports that bind this configuration could not be read. {message}',
+        },
+        history: {
+            lead: 'Every version of the configuration, newest first, with what changed in each.',
+        },
+        missing: 'No curve configuration document fills this configuration.',
+        readFailed: 'The curve configuration could not be read. {message}',
     },
     oreParameter: {
         mode: {

@@ -35,7 +35,7 @@ A curve configuration value outside the set its leaf names is refused on write, 
 
 * Acceptance
 
-- A map names, for each curve table and column, the leaf it holds by schema and XPath, and it is enough for the existing trigger to check the value.
+- The map names, for each curve table and column, the leaf it holds by schema and XPath, and it is enough for the existing trigger to check the value. The map exists: =generate_curve_section_parameters.py= writes it for the screen, and this task emits it for the trigger from the same source.
 - The trigger is attached to every curve table that holds a checked leaf, generated rather than hand-written.
 - A pgTAP test writes a value outside its set and sees the refusal, and a value inside it and sees the write.
 - A column with no leaf, or a leaf with no set, admits every value, as it does for a convention term.
@@ -61,6 +61,15 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- *The map is already generated.*
+  [[id:FCD8EE04-D549-45B2-AE29-8C5FBBC66B74][The page task]] had to join every
+  column to its leaf to read a value, so it built
+  =generate_curve_section_parameters.py=, which reads
+  =curve_configuration_projection.cpp= and checks every element against
+  =curveconfig.xsd=. It maps 250 columns of 22 tables across the 19 sections.
+  This task emits the same map as the trigger's table and attaches the trigger;
+  it does not re-derive the mapping by hand.
 
 * Test Scenarios
 

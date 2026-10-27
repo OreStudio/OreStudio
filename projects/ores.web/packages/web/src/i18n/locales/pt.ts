@@ -5746,6 +5746,10 @@ const pt: SourceCatalogue = {
             off: 'Desativada',
             usedBy: 'Relatórios que a usam',
             noReports: 'Nenhum relatório que possa ver usa esta configuração.',
+            curveDocument: 'Configuração de curvas',
+            curveDocumentLead:
+                'Esta configuração é preenchida por um documento de configuração de curvas do ORE. As suas secções e curvas leem-se folha a folha.',
+            openCurveDocument: 'Abrir a configuração de curvas',
             none: 'Este relatório não associa nenhuma configuração.',
             refused: 'Não pode ver as configurações deste relatório.',
         },
@@ -5906,6 +5910,62 @@ const pt: SourceCatalogue = {
         continue: 'Continuar',
         retry: 'Tentar novamente',
         cancel: 'Cancelar',
+    },
+    curveConfiguration: {
+        title: 'Configurações de curvas',
+        lead: 'Como cada curva é definida e calibrada, tal como o documento de configuração de curvas do ORE o declara.',
+        recordLead:
+            'Versão {version}. {documented} dos {total} parâmetros têm documentação do contrato de parâmetros do ORE.',
+        tabs: {
+            label: 'Secções da configuração de curvas',
+            details: 'Detalhes',
+            usedBy: 'Usada por',
+            history: 'Histórico',
+        },
+        details: {
+            lead: 'O que a configuração é, quem a detém, e quanto dela o contrato de documentação único descreve.',
+        },
+        fields: {
+            name: 'Nome',
+            party: 'Parte',
+            version: 'Versão',
+            sections: 'Secções',
+            entries: 'Curvas',
+            documented: 'Documentado',
+            documentedValue: '{documented} de {total} parâmetros',
+            lastChanged: 'Última alteração',
+            curveConfiguration: 'Configuração de curvas',
+        },
+        section: {
+            title: '{section}, com entradas {entry}',
+            unmapped:
+                'As colunas desta secção ainda não estão mapeadas, pelo que as suas curvas mostram apenas o identificador.',
+            empty: 'Esta secção não tem nenhuma curva.',
+        },
+        entry: {
+            noDescription: 'Uma entrada {entry} do documento.',
+            parameters: '{count} parâmetros',
+            gaps: '{count} sem documentação',
+            blocks: 'Mantido como elemento próprio:',
+            blockStated: 'declarado',
+            blockAbsent: 'não declarado',
+            blockNotRecorded: 'não registado aqui',
+        },
+        leaf: {
+            notSet: 'Não definido',
+            gap: 'Sem documentação',
+        },
+        usedBy: {
+            lead: 'Uma alteração chega à próxima execução de cada relatório abaixo. Uma execução já produzida mantém aquilo com que correu.',
+            none: 'Nenhum relatório liga esta configuração.',
+            refused: 'Não pode ver os relatórios que ligam esta configuração.',
+            unread: 'Não foi possível ler os relatórios que ligam esta configuração. {message}',
+        },
+        history: {
+            lead: 'Cada versão da configuração, da mais recente para a mais antiga, com o que mudou em cada uma.',
+        },
+        missing: 'Nenhum documento de configuração de curvas preenche esta configuração.',
+        readFailed: 'Não foi possível ler a configuração de curvas. {message}',
     },
     oreParameter: {
         mode: {

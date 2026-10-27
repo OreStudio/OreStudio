@@ -28,9 +28,9 @@ A person reads a curve configuration's sections and its curve entries with the s
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | The page reads; it does not write.      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The owner's read of the screen.        |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,23 +42,34 @@ A person reads a curve configuration's sections and its curve entries with the s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the column wiring out of the projection that reads and writes
+   =curveconfig.xml=, and write it as a generated TypeScript module, so the
+   screen joins a leaf to its column from generated data and not from a name.
+   Check every element the projection reads against the ORE schema, which is the
+   authority on the children an entry holds.
+2. Add one BFF route that reads the document whole, the sections, the ORE
+   parameter contract and the value sets, and answers the sections in the order
+   the schema declares them, each with its entries and their leaves.
+3. Add the page: Details, one tab per section, the reports that bind it and its
+   history. A curve entry is a collection row, and its leaves use the shared row,
+   switches, documentation panel, filters and value in force.
+4. Reach it from the report configuration the document fills, and from its own
+   address.
+5. Test the section order and a rendered leaf in the BFF and in the browser, and
+   record the numbers.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Sections the screen draws | 19 | =python3 projects/ores.sql/utility/generate_curve_section_parameters.py= | 6d10d7576c |
+| Entry columns the screen joins to a leaf | 250 | the same run | 6d10d7576c |
+| Tables the entries are stored in | 22 | the same run | 6d10d7576c |
+| Child elements an entry names | 31 | the same run | 6d10d7576c |
+| Columns the contract documents by the same XPath | 172 of 250 | =python3= comparison of the module with the seed | 6d10d7576c |
+| Columns that show as a gap | 78 | the same command | 6d10d7576c |
+| BFF tests | 5 | =npx vitest run --root packages/bff src/curve-configuration.test.ts= | this branch |
+| Browser tests | 9 | =npx vitest run --root packages/web src/curveConfiguration/screens.test.tsx= | this branch |
 
 * Notes
 
@@ -85,6 +96,52 @@ task and name that file in the Command column.
   the card and the dialog come from the configuration standard's collection
   shape rather than its group shape.
 
+- *The page's data source is the projection, not a name.* A curve entry is not
+  one row: =curve_definition= holds the identifier and the description every
+  family shares, and one family table per section holds the rest, keyed back by
+  =curve_definition_id=. Which column holds which element is a fact of
+  =curve_configuration_projection.cpp=, because that is the code the import and
+  the export run. =generate_curve_section_parameters.py= reads that projection
+  and writes =bff/src/curve-sections.generated.ts=, so the screen never guesses
+  a column from an element's name. Two idioms made the guess wrong: =CurveId=
+  is =curve_id= and =YieldCurveDayCounter= is =day_counter=.
+- *The schema checks the wiring.* The generator reads
+  =external/ore/xsd/curveconfig.xsd=, follows the section's wrapper type to its
+  entry element and that element's type to its children, and fails on a column
+  the schema does not declare there. It also fails when the projection's section
+  list and the schema's differ, so a section added to one and not the other
+  stops the build instead of drawing half a page. This caught six elements the
+  projection reads and my first parser missed, because the schema declares them
+  inline rather than with a type attribute.
+- *The section order is the schema's.* The projection's section table is in the
+  order =curveconfig.xsd= declares the sections, and the seed follows it. The
+  page orders the rows it reads from =curve_section= by that order and places a
+  section the wiring does not know last, named and marked, so a new family shows
+  instead of vanishing.
+- *A block is not a parameter.* The projection records whether a child element is
+  present in a =has_*= column, such as =has_report=. The element is a child the
+  entry holds, not a leaf of the entry, so the page names the block and its
+  presence and does not draw the flag as a parameter.
+- *The page reads and does not write.* A curve configuration is one document of
+  thirty-four families. A save writes the document whole, so a page that drew
+  only the leaves it knows and saved would drop the rest, and no guard covers the
+  curve tables yet. The write is
+  [[id:CA40C9B0-01FB-4B3E-B0CE-348313A6BB04][a task of its own]], and so is
+  [[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][drawing the nested collections]].
+- *78 of the 250 columns show as a gap.* The contract documents 172 of them by
+  the same XPath. The rest are leaves the extractor did not read, or leaves the
+  guide does not describe, and the screen shows each with its ORE name and the
+  words the leaf standard fixes for a gap. Five of them, such as =Deltas=, are
+  documented under =Report/=, which is ORE's report configuration: the extractor
+  read the report's leaf and missed the entry's, so the two leaves share a name
+  and not a path.
+- *The leaf's XPath keys the contract.* The module writes the XPath without its
+  leading slash and the route adds it, so the lookup is one string compare
+  against =ore_parameter.xpath=.
+- *The history reads under =ores.refdata.curve_configuration=*, which the refdata
+  history provider registers, so the page asked the BFF to serve that type and
+  the timeline drew it with no new wire message.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -109,3 +166,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The curve configuration now has a page at
+=/reporting/curve-configurations/:id=, reached from the report configuration the
+curve document fills and from its own address. It draws Details, one tab per
+section in the order =curveconfig.xsd= declares them, the reports that bind the
+configuration, and its history.
+
+- A curve entry is a collection row: a card that names the curve and its
+  description, its parameters in the order the projection reads them, and the
+  child elements it holds with whether the entry states each one.
+- Every parameter shows its value in force, or the default the contract states
+  when the document leaves it empty, its documentation under the shared switch in
+  Simple or Advanced, the values its value set offers, and a mark and a note when
+  the contract does not describe it. 172 of the 250 columns are documented; the
+  other 78 show as a gap rather than disappearing.
+- The sections and their entry elements come from =curve_section=; the words come
+  from the ORE parameter contract; the values come from the entry's own row. No
+  screen holds a table that names a family and no screen holds ORE text.
+- The column wiring is generated from =curve_configuration_projection.cpp= and
+  checked against the ORE schema, so it cannot drift from the code that reads and
+  writes the document without the generator failing.
+- The page reads and does not write. A curve configuration is one document of
+  thirty-four families, and no guard covers the curve tables yet, so a save from
+  this page would drop the rows it does not draw. The write is
+  [[id:CA40C9B0-01FB-4B3E-B0CE-348313A6BB04][a task of its own]] and the nested
+  collections are [[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][another]].
+
+The BFF suite passes with five new cases, and the browser suite with nine. The
+=curve-sections-wiring= check passes. The =web= check fails on three files this
+branch does not change -- =wire-protocol/src/inbox.ts=, =pnpm-lock.yaml= and
+=pnpm-workspace.yaml= -- and they fail on =origin/main= too, at =e05ed3b24d=.

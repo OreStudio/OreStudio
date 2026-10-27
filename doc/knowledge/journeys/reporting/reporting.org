@@ -115,8 +115,10 @@ definition affects the next run and no earlier one.
 
 Six phases run in order: Pre-processing, Submission, Execution, Retrieval,
 Post-processing and Finalisation. Pre-processing is four workflow steps rather
-than one, and retrieval and post-processing are one step rather than two, so the
-workflow has seven steps while the pipeline has six phases. Execution runs on a
+than one, so the workflow has seven steps while the pipeline has six phases.
+Retrieval and post-processing are one step today, =collect_compute_results=, and
+are to become two: the design, the canonical row and where the work happens are
+on [[file:../../architecture/report_post_processing.org][report post processing]]. Execution runs on a
 worker node and is not a step any ORE Studio service performs: the services
 submit the work and wait. Only finalisation touches the state machine. No phase
 calls another; the workflow engine invokes each step, and each step is handed

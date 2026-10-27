@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
@@ -27,7 +28,10 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
+#include "ores.reporting.api/domain/report_result_row.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
+#include "ores.reporting.core/repository/report_result_row_repository.hpp"
+#include "ores.reporting.core/results/canonical_reader.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/engine_error_log.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
@@ -797,6 +801,200 @@ void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
     result.tarball_uris = {req.prepared_input_key};
     wf->complete(rfl::json::write(result));
     ack.accept();
+}
+
+
+namespace {
+
+/** The reasons a read refused, as one sentence that names each of them. */
+std::string reasons_of(const std::vector<std::string>& refusals) {
+    std::string reasons;
+    for (const auto& refusal : refusals) {
+        if (!reasons.empty())
+            reasons += " ";
+        reasons += refusal;
+    }
+    return reasons;
+}
+
+}
+
+void report_execution_handler::post_process_results(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+    auto wf = workflow_step_context::from_message(nats_, msg);
+    if (!wf) {
+        ack.reject();
+        return;
+    }
+
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto parsed = rfl::json::read<post_process_results_request>(sv);
+    if (!parsed) {
+        wf->fail("Failed to decode post_process_results_request");
+        ack.accept();
+        return;
+    }
+    const auto& req = *parsed;
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
+
+    BOOST_LOG_SEV(lg(), info) << "post_process_results starting | instance="
+                              << req.report_instance_id << " batch=" << req.batch_id;
+
+    const auto refuse = [&](const std::string& failure) {
+        mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+        wf->fail(failure);
+        ack.accept();
+    };
+
+    try {
+        boost::uuids::string_generator sg;
+        std::string err;
+
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
+        service::report_instance_service inst_svc(tenant_ctx);
+        const auto instance = inst_svc.get_instance(sg(req.report_instance_id));
+        if (!instance) {
+            refuse("Report instance not found: " + req.report_instance_id);
+            return;
+        }
+
+        const auto ask = [&](const auto& request, std::string& error) {
+            using request_type = std::decay_t<decltype(request)>;
+            auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, error);
+            std::optional<typename request_type::response_type> response;
+            if (owner)
+                response = nats_call(*owner, request, error);
+            if (!response && error.find("token_expired") != std::string::npos) {
+                error.clear();
+                owner = run_token_client(req.tenant_id, req.report_instance_id, true, error);
+                if (owner)
+                    response = nats_call(*owner, request, error);
+            }
+            return response;
+        };
+
+        ores::compute::messaging::list_by_batch_id_workunits_request units_req;
+        units_req.batch_id = sg(req.batch_id);
+        const auto units = ask(units_req, err);
+        if (!units) {
+            refuse("Reading the run's compute workunits failed: " + err);
+            return;
+        }
+
+        std::vector<std::string> result_ids;
+        for (const auto& workunit : units->workunits) {
+            ores::compute::messaging::list_by_workunit_id_results_request results_req;
+            results_req.workunit_id = workunit.id;
+            const auto results = ask(results_req, err);
+            if (!results) {
+                refuse("Reading a compute result failed: " + err);
+                return;
+            }
+            for (const auto& one : results->results) {
+                if (one.outcome != compute_outcome_success) {
+                    refuse(std::format("The run's compute job failed with outcome {}: {}",
+                                       one.outcome,
+                                       one.error_message.empty() ? "(no message)" :
+                                                                   one.error_message));
+                    return;
+                }
+                result_ids.push_back(boost::uuids::to_string(one.id));
+            }
+        }
+
+        if (result_ids.empty()) {
+            refuse("The run's compute batch names no result, so there are no rows to load.");
+            return;
+        }
+
+        const auto run_token_value = run_token(req.tenant_id, req.report_instance_id, err);
+        if (run_token_value.empty()) {
+            refuse("Loading the run's rows needs a run token: " + err);
+            return;
+        }
+
+        results::read_outcome outcome;
+        ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
+        for (const auto& result_id : result_ids) {
+            const auto uri = ores::compute::net::compute_storage::results_path(result_id);
+            std::string bucket;
+            std::string key;
+            if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
+                refuse(std::format("The result {} names no readable rows location.", result_id));
+                return;
+            }
+            std::vector<char> body;
+            try {
+                body = transfer.download_blob(bucket, key);
+            } catch (const std::exception& read) {
+                refuse(std::format("The rows of result {} were not read: {}", result_id,
+                                   read.what()));
+                return;
+            }
+            auto read_rows =
+                results::read_canonical_csv(std::string_view(body.data(), body.size()));
+            if (!read_rows.refusals.empty()) {
+                refuse("The run's rows were refused: " + reasons_of(read_rows.refusals));
+                return;
+            }
+            outcome.rows.insert(outcome.rows.end(),
+                                std::make_move_iterator(read_rows.rows.begin()),
+                                std::make_move_iterator(read_rows.rows.end()));
+        }
+
+        if (outcome.rows.empty()) {
+            refuse("The run's rows state no figure, so there is nothing to load.");
+            return;
+        }
+
+        const auto as_of =
+            instance->priced_at.value_or(std::chrono::system_clock::now());
+        std::vector<domain::report_result_row> rows;
+        rows.reserve(outcome.rows.size());
+        for (const auto& row : outcome.rows) {
+            boost::uuids::uuid subject;
+            try {
+                subject = sg(row.subject_id);
+            } catch (const std::exception&) {
+                refuse(std::format("The run's rows state a subject '{}' that is not a record id.",
+                                   row.subject_id));
+                return;
+            }
+            rows.push_back(domain::report_result_row{
+                .id = boost::uuids::random_generator()(),
+                .party_id = instance->party_id,
+                .report_instance_id = sg(req.report_instance_id),
+                .as_of = as_of,
+                .subject_type = row.subject_type,
+                .subject_id = subject,
+                .measure = row.measure,
+                .currency = row.currency,
+                .report_definition_id = instance->definition_id,
+                .figure = row.figure,
+                .source = row.source});
+        }
+
+        repository::report_result_row_repository repo;
+        repo.insert(tenant_ctx, rows);
+
+        post_process_results_result result;
+        result.success = true;
+        result.rows_loaded = static_cast<int>(rows.size());
+        result.message = std::format("Loaded {} rows for run {}", rows.size(),
+                                     req.report_instance_id);
+
+        BOOST_LOG_SEV(lg(), info) << "post_process_results complete | instance="
+                                  << req.report_instance_id << " rows=" << rows.size();
+
+        wf->complete(rfl::json::write(result));
+        ack.accept();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "post_process_results failed: " << e.what();
+        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        wf->fail(e.what());
+        ack.accept();
+    }
 }
 
 void report_execution_handler::ignore_compute_results(ores::nats::message msg) {

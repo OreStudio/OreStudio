@@ -386,6 +386,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [reh](ores::nats::message msg) { reh->resolve_prepared_input(std::move(msg)); })
         .on(collect_compute_results_request::nats_subject,
             [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); })
+        .on(post_process_results_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->post_process_results(std::move(msg)); })
         .on(ignore_compute_results_request::nats_subject,
             [reh](ores::nats::message msg) { reh->ignore_compute_results(std::move(msg)); })
         .on(finalise_report_request::nats_subject,

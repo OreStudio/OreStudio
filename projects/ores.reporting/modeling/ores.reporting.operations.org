@@ -826,6 +826,53 @@ Step 5: collect and persist compute results.
 :cpp_type: std::string
 :END:
 
+** post_process_results_request
+:PROPERTIES:
+:subject: reporting.v1.ops.post_process_results
+:response: post_process_results_result
+:END:
+
+Step 6: load the rows the run's node marshalled into the result table.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** batch_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** post_process_results_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** rows_loaded
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
 ** finalise_report_request
 :PROPERTIES:
 :subject: reporting.v1.ops.finalise_report

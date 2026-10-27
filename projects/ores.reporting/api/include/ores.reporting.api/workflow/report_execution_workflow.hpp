@@ -392,6 +392,46 @@ template <typename Command>
 }
 
 /**
+ * @brief Post-processing: the rows the node marshalled are loaded.
+ *
+ * Retrieval fetched the archive and answered where the run's output is; this
+ * step answers what the run says, by reading the canonical rows and writing
+ * them to the result table in one statement.
+ */
+[[nodiscard]] inline workflow_step_def make_post_process_results() {
+    using namespace ores::reporting::messaging;
+    workflow_step_def s;
+    s.name = "post_process_results";
+    s.description = "Load the run's canonical rows into the result table.";
+    s.command_subject = std::string(post_process_results_request::nats_subject);
+    s.timeout = compute_step_timeout;
+    s.compensation_subject = std::string(fail_report_request::nats_subject);
+    // The batch is named by the submission, which is what the rows are about.
+    s.consumes = {"submit_compute"};
+
+    s.build_command = [](const std::string& request_json,
+                         const workflow_step_results& prev) -> std::string {
+        const auto req = require_run_request(request_json, "post_process_results");
+        const auto submitted = require_step_result<submit_compute_result>(
+            prev, "submit_compute", "post_process_results");
+
+        return rfl::json::write(
+            post_process_results_request{.report_instance_id = req.report_instance_id,
+                                         .tenant_id = req.tenant_id,
+                                         .correlation_id = req.correlation_id,
+                                         .batch_id = submitted.batch_id});
+    };
+
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<post_process_results_request>(cmd_json, failure);
+    };
+
+    return s;
+}
+
+/**
  * @brief Post-processing, substituted: the batch is named and not read.
  */
 [[nodiscard]] inline workflow_step_def make_ignore_compute_results() {
@@ -538,8 +578,9 @@ register_report_execution_workflow(ores::workflow::service::workflow_registry& r
             results_step = "ignore_compute_results";
             steps.push_back(detail::make_ignore_compute_results());
         } else if (req.post_processing == post_processing_execute) {
-            results_step = "collect_compute_results";
+            results_step = "post_process_results";
             steps.push_back(detail::make_collect_compute_results());
+            steps.push_back(detail::make_post_process_results());
         } else {
             throw std::runtime_error("report_execution_workflow: unknown post-processing '" +
                                      req.post_processing + "'");

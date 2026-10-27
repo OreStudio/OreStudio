@@ -65,6 +65,132 @@ The cost of the shortest path should be stated rather than discovered: results
 landing in reporting's database make them a reporting asset, so moving them to a
 domain later is a migration.
 
+** The canonical row
+
+Every file the engine writes is marshalled into rows of one shape before anything
+loads them. The shape is the contract between the grid, the store and the screens:
+
+| Column | Read from | Notes |
+|--------+-----------+-------|
+| =subject_type= | the marshal, from the file | =trade= |
+| =subject_id= | =TradeId= | the engine's own identifier |
+| =measure= | the file's heading | =npv=, =npv_base=, =notional=, =delta=, =gamma= |
+| =currency= | =NpvCurrency=, =NotionalCurrency= | empty when the measure has none |
+| =value= | the figure's column | a decimal, never formatted |
+| =source= | the marshal | the file and the row it came from |
+
+The run, its definition, its party and tenant, and =as_of= are not in the file:
+they belong to the run, and the load fills them.
+
+A file stating one measure in one row projects one row. A file stating several
+measures in one row, as the sensitivity output does, widens to one row per measure.
+That rule is stated per analytic in the marshal and nowhere else.
+
+A marshal refuses rather than guesses: a file whose headings it does not know,
+naming the headings it found; a row with no subject id; a figure it cannot read as
+a decimal; a measure whose currency it cannot state when the measure has one. A
+refusal is a run error naming the file and the heading, and it fails the
+post-processing rather than writing part of a result.
+
+The screens rely on one row per subject, measure and currency per run — a repeated
+row is a fault the store's key refuses — on =value= being a decimal whose
+formatting is theirs, on =measure= being open so a new analytic adds a value rather
+than a column, and on a run's rows arriving together.
+
+This refines *The result store* above: the families stay apart, and a family whose
+files state several measures carries the measure as a dimension. Each is a
+time-series table keyed and chunked on the run's priced date, in the form the
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][tick ingest pipeline]] gives its
+hypertables.
+
+** Where the work happens
+
+The expensive half is reading what the engine wrote, and it belongs where the
+engine is: the compute wrapper, on the worker beside it. The wrapper is the only
+component that knows which analytics the package ran and what files they wrote, so
+it marshals them into the canonical rows before it uploads, for the same reason the
+package is prepared where the engine reads it. The reporting service's step is to
+fetch, validate and load.
+
+That split is what keeps the service scalable: a run's rows are written by a single
+=COPY= inside one transaction, so many runs finishing together are many short
+inserts rather than many parsers, and the work grows with the grid rather than with
+the reporting service's replicas. The queue group spreads the load and the run
+grant admits it.
+
+The diagram draws the two calls: retrieval answers where the output is, the wrapper
+marshals the engine's files into canonical rows beside the engine, and
+post-processing answers what the run says.
+
+#+caption: Report post-processing: the workflow asks for retrieval, which fetches the run's archive and keeps it as provenance; the wrapper marshals each analytic's file into canonical rows, uploads them to the results location the claim gave it, and uploads the archive beside them; the workflow asks for post-processing, which fetches the rows, copies them into the result tables in one transaction and answers with the run's summary.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_post_processing_interaction.png]]
+
+Source: [[proj:doc/knowledge/architecture/report_post_processing_interaction.puml][=report_post_processing_interaction.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_post_processing_interaction.puml=.
+
+** How the rows reach the results table
+
+The node does not post to the reporting service, and nothing writes the results
+table but the reporting service. The rows travel over the channel the node already
+has — object storage, over HTTP, with the token of the claim it holds — and the
+service fetches them in its own step.
+
+| Step | Who | Where the rows are |
++------+-----+--------------------+
+| Marshal | the wrapper, after the engine exits | in the job directory |
+| Upload | the wrapper, with the claim's token | object storage, at =results_uri= |
+| Upload | the wrapper, with the claim's token | object storage, at =output_uri=, the archive as provenance |
+| Load | the reporting service, on =post_process_results= | copied into the result table, in one transaction |
+
+The claim therefore carries two locations, not one: =output_uri= for the archive
+the grid already uploads, and =results_uri= for the canonical rows. The node
+composes neither key and names neither bucket; it writes to the two locations the
+claim gave it, which is what keeps a node's authority to exactly what it was
+granted for that job.
+
+A reporting endpoint that accepted rows from a node would add a write surface into
+reporting's data for a caller that holds no user's authority, and it would not
+save the validation the service has to do anyway: the rows still have to be read,
+checked against the contract, and written in one transaction by the component that
+owns the run. Storage is where a node is allowed to put things it produced; the
+service is what turns them into results.
+
+** What a node may reach
+
+The marshal fits because a node already holds everything it needs, and nothing
+more. [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][The job lifecycle]] has the detail;
+in short, when a node claims a job it is given a work directory, an
+=output_uri=, a =storage_token= and the storage HTTP base URL, and it talks to the
+rest of the system over the trusted machine channel of =compute.v1.ops=:
+
+| Reach | Why |
++-------+-----+
+| the job directory | the package is extracted there and the engine writes =Output/= there |
+| object storage, over HTTP with the claim's token | to upload the archive and the canonical rows |
+| =compute.v1.ops= claim, heartbeat and submit | to take work and to say what happened |
+| the database | not at all |
+| a user session, or a user's token | not at all |
+
+So the marshal reads and writes inside the job directory, and the canonical rows
+travel in the same archive the node uploads with the same token. It adds no
+access, no credential and no round trip, and it keeps the rule that a node holds
+no user's authority.
+
+** What the node does not decide
+
+The marshal projects; it does not interpret. It knows the headings of the files the
+package's analytics write, and it refuses a file it does not know rather than guess
+at one. Everything a reader would call judgement -- which run this is, which party
+owns it, what date it priced at, whether the rows load at all -- is decided by the
+reporting service on the other side, which holds the run.
+
+Retrieval and post-processing are two calls from the workflow because they answer
+two questions: *where the output is*, and *what it says*. A transport failure and a
+contract failure read differently, and the errors a person sees say which. The
+pipeline keeps its six phases; [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][the
+reporting note]] states the workflow's steps.
+
 ** What is not bound to ORE
 
 The result files are delimited tables, not an ORE document. Their shape — a

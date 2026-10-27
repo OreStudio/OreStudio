@@ -19,12 +19,10 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/relative_time_formatter.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[time][relative_time_formatter]");
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -45,7 +43,7 @@ using namespace ores::logging;
 // Tests for format(value, unit) with automatic style
 // =============================================================================
 
-TEST_CASE("format_value_unit_automatic_zero_values", tags) {
+TEST_CASE("format_value_unit_automatic_zero_values", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -61,7 +59,7 @@ TEST_CASE("format_value_unit_automatic_zero_values", tags) {
     CHECK(fmt.format(0, time_unit::year) == "this year");
 }
 
-TEST_CASE("format_value_unit_automatic_past_singular", tags) {
+TEST_CASE("format_value_unit_automatic_past_singular", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -77,7 +75,7 @@ TEST_CASE("format_value_unit_automatic_past_singular", tags) {
     CHECK(fmt.format(-1, time_unit::year) == "last year");
 }
 
-TEST_CASE("format_value_unit_automatic_future_singular", tags) {
+TEST_CASE("format_value_unit_automatic_future_singular", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -93,7 +91,7 @@ TEST_CASE("format_value_unit_automatic_future_singular", tags) {
     CHECK(fmt.format(1, time_unit::year) == "next year");
 }
 
-TEST_CASE("format_value_unit_automatic_past_plural", tags) {
+TEST_CASE("format_value_unit_automatic_past_plural", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -109,7 +107,7 @@ TEST_CASE("format_value_unit_automatic_past_plural", tags) {
     CHECK(fmt.format(-3, time_unit::year) == "3 years ago");
 }
 
-TEST_CASE("format_value_unit_automatic_future_plural", tags) {
+TEST_CASE("format_value_unit_automatic_future_plural", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -129,7 +127,7 @@ TEST_CASE("format_value_unit_automatic_future_plural", tags) {
 // Tests for format(value, unit) with always style
 // =============================================================================
 
-TEST_CASE("format_value_unit_always_zero_values", tags) {
+TEST_CASE("format_value_unit_always_zero_values", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
@@ -140,7 +138,7 @@ TEST_CASE("format_value_unit_always_zero_values", tags) {
     CHECK(fmt.format(0, time_unit::day) == "now");
 }
 
-TEST_CASE("format_value_unit_always_past_singular", tags) {
+TEST_CASE("format_value_unit_always_past_singular", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
@@ -156,7 +154,7 @@ TEST_CASE("format_value_unit_always_past_singular", tags) {
     CHECK(fmt.format(-1, time_unit::year) == "1 year ago");
 }
 
-TEST_CASE("format_value_unit_always_future_singular", tags) {
+TEST_CASE("format_value_unit_always_future_singular", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
@@ -176,7 +174,7 @@ TEST_CASE("format_value_unit_always_future_singular", tags) {
 // Tests for format(time_point, reference) - auto detection of units
 // =============================================================================
 
-TEST_CASE("format_time_point_just_now", tags) {
+TEST_CASE("format_time_point_just_now", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -190,7 +188,7 @@ TEST_CASE("format_time_point_just_now", tags) {
     CHECK(result == "just now");
 }
 
-TEST_CASE("format_time_point_seconds_ago", tags) {
+TEST_CASE("format_time_point_seconds_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -204,7 +202,7 @@ TEST_CASE("format_time_point_seconds_ago", tags) {
     CHECK(result == "30 seconds ago");
 }
 
-TEST_CASE("format_time_point_minutes_ago", tags) {
+TEST_CASE("format_time_point_minutes_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -218,7 +216,7 @@ TEST_CASE("format_time_point_minutes_ago", tags) {
     CHECK(result == "5 minutes ago");
 }
 
-TEST_CASE("format_time_point_one_minute_ago", tags) {
+TEST_CASE("format_time_point_one_minute_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -232,7 +230,7 @@ TEST_CASE("format_time_point_one_minute_ago", tags) {
     CHECK(result == "1 minute ago");
 }
 
-TEST_CASE("format_time_point_hours_ago", tags) {
+TEST_CASE("format_time_point_hours_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -246,7 +244,7 @@ TEST_CASE("format_time_point_hours_ago", tags) {
     CHECK(result == "3 hours ago");
 }
 
-TEST_CASE("format_time_point_one_hour_ago", tags) {
+TEST_CASE("format_time_point_one_hour_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -260,7 +258,7 @@ TEST_CASE("format_time_point_one_hour_ago", tags) {
     CHECK(result == "1 hour ago");
 }
 
-TEST_CASE("format_time_point_yesterday", tags) {
+TEST_CASE("format_time_point_yesterday", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -274,7 +272,7 @@ TEST_CASE("format_time_point_yesterday", tags) {
     CHECK(result == "yesterday");
 }
 
-TEST_CASE("format_time_point_days_ago", tags) {
+TEST_CASE("format_time_point_days_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -288,7 +286,7 @@ TEST_CASE("format_time_point_days_ago", tags) {
     CHECK(result == "3 days ago");
 }
 
-TEST_CASE("format_time_point_last_week", tags) {
+TEST_CASE("format_time_point_last_week", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -302,7 +300,7 @@ TEST_CASE("format_time_point_last_week", tags) {
     CHECK(result == "last week");
 }
 
-TEST_CASE("format_time_point_weeks_ago", tags) {
+TEST_CASE("format_time_point_weeks_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -316,7 +314,7 @@ TEST_CASE("format_time_point_weeks_ago", tags) {
     CHECK(result == "3 weeks ago");
 }
 
-TEST_CASE("format_time_point_last_month", tags) {
+TEST_CASE("format_time_point_last_month", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -331,7 +329,7 @@ TEST_CASE("format_time_point_last_month", tags) {
     CHECK(result == "last month");
 }
 
-TEST_CASE("format_time_point_months_ago", tags) {
+TEST_CASE("format_time_point_months_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -346,7 +344,7 @@ TEST_CASE("format_time_point_months_ago", tags) {
     CHECK(result == "2 months ago");
 }
 
-TEST_CASE("format_time_point_last_year", tags) {
+TEST_CASE("format_time_point_last_year", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -361,7 +359,7 @@ TEST_CASE("format_time_point_last_year", tags) {
     CHECK(result == "last year");
 }
 
-TEST_CASE("format_time_point_years_ago", tags) {
+TEST_CASE("format_time_point_years_ago", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -380,7 +378,7 @@ TEST_CASE("format_time_point_years_ago", tags) {
 // Tests for future times
 // =============================================================================
 
-TEST_CASE("format_time_point_in_seconds", tags) {
+TEST_CASE("format_time_point_in_seconds", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -394,7 +392,7 @@ TEST_CASE("format_time_point_in_seconds", tags) {
     CHECK(result == "in 30 seconds");
 }
 
-TEST_CASE("format_time_point_in_minutes", tags) {
+TEST_CASE("format_time_point_in_minutes", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -408,7 +406,7 @@ TEST_CASE("format_time_point_in_minutes", tags) {
     CHECK(result == "in 10 minutes");
 }
 
-TEST_CASE("format_time_point_tomorrow", tags) {
+TEST_CASE("format_time_point_tomorrow", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -422,7 +420,7 @@ TEST_CASE("format_time_point_tomorrow", tags) {
     CHECK(result == "tomorrow");
 }
 
-TEST_CASE("format_time_point_next_week", tags) {
+TEST_CASE("format_time_point_next_week", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -436,7 +434,7 @@ TEST_CASE("format_time_point_next_week", tags) {
     CHECK(result == "next week");
 }
 
-TEST_CASE("format_time_point_next_month", tags) {
+TEST_CASE("format_time_point_next_month", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -450,7 +448,7 @@ TEST_CASE("format_time_point_next_month", tags) {
     CHECK(result == "next month");
 }
 
-TEST_CASE("format_time_point_next_year", tags) {
+TEST_CASE("format_time_point_next_year", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::automatic);
 
@@ -468,7 +466,7 @@ TEST_CASE("format_time_point_next_year", tags) {
 // Tests for numeric style with time points
 // =============================================================================
 
-TEST_CASE("format_time_point_numeric_style_yesterday", tags) {
+TEST_CASE("format_time_point_numeric_style_yesterday", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
@@ -482,7 +480,7 @@ TEST_CASE("format_time_point_numeric_style_yesterday", tags) {
     CHECK(result == "1 day ago");
 }
 
-TEST_CASE("format_time_point_numeric_style_tomorrow", tags) {
+TEST_CASE("format_time_point_numeric_style_tomorrow", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
@@ -496,7 +494,7 @@ TEST_CASE("format_time_point_numeric_style_tomorrow", tags) {
     CHECK(result == "in 1 day");
 }
 
-TEST_CASE("format_time_point_numeric_style_short_time", tags) {
+TEST_CASE("format_time_point_numeric_style_short_time", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt(numeric_style::always);
 
@@ -515,7 +513,7 @@ TEST_CASE("format_time_point_numeric_style_short_time", tags) {
 // Table-driven tests
 // =============================================================================
 
-TEST_CASE("format_value_unit_table_driven", tags) {
+TEST_CASE("format_value_unit_table_driven", "[time][relative_time_formatter]") {
     auto lg(make_logger(test_suite));
     relative_time_formatter fmt_auto(numeric_style::automatic);
     relative_time_formatter fmt_always(numeric_style::always);

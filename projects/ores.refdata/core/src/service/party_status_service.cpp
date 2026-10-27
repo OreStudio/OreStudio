@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::party_status> read_one(repository::party_status_repository& repo,
-                                           const ores::database::context& ctx,
-                                           const messaging::party_status_key& key) {
+std::vector<domain::party_status> party_status_read_one(repository::party_status_repository& repo,
+                                                        const ores::database::context& ctx,
+                                                        const messaging::party_status_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::party_status> read_one(repository::party_status_repository& 
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::party_status_key key_from(const domain::party_status& v) {
+messaging::party_status_key party_status_key_from(const domain::party_status& v) {
     messaging::party_status_key key;
     key.code = v.code;
     return key;
@@ -94,7 +94,7 @@ messaging::party_status_key key_from(const domain::party_status& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::party_status to_domain(const messaging::party_status_write& write) {
+domain::party_status party_status_to_domain(const messaging::party_status_write& write) {
     domain::party_status v;
     v.code = write.code;
     v.name = write.name;
@@ -141,7 +141,7 @@ party_status_service::list_party_statuses(const messaging::list_party_statuses_r
 messaging::get_party_status_response
 party_status_service::get_party_status(const messaging::get_party_status_request& request) {
     messaging::get_party_status_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = party_status_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_status"});
         return response;
@@ -160,7 +160,7 @@ messaging::get_many_party_statuses_response party_status_service::get_many_party
     for (const auto& k : request.keys) {
         messaging::party_status_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = party_status_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.party_status = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -176,7 +176,7 @@ party_status_service::put_party_status(const messaging::put_party_status_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = party_status_read_one(repo_, ctx_, party_status_key_from(value));
     if (!written.empty())
         response.party_status = std::move(written.front());
     return response;
@@ -208,7 +208,7 @@ messaging::put_many_party_statuses_response party_status_service::put_many_party
     repo_.write(ctx_, batch, claims);
     response.statuses.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = party_status_read_one(repo_, ctx_, party_status_key_from(value));
         response.statuses.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -241,7 +241,7 @@ party_status_service::delete_party_status(const messaging::delete_party_status_r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = party_status_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "party_status",
@@ -325,8 +325,8 @@ party_status_service::prepare_change(const messaging::party_status_change& chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = party_status_to_domain(change.write);
+    const auto current = party_status_read_one(repo_, ctx_, party_status_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::change_reason> read_one(repository::change_reason_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::change_reason_key& key) {
+std::vector<domain::change_reason>
+change_reason_read_one(repository::change_reason_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::change_reason_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::change_reason> read_one(repository::change_reason_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::change_reason_key key_from(const domain::change_reason& v) {
+messaging::change_reason_key change_reason_key_from(const domain::change_reason& v) {
     messaging::change_reason_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,7 @@ messaging::change_reason_key key_from(const domain::change_reason& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::change_reason to_domain(const messaging::change_reason_write& write) {
+domain::change_reason change_reason_to_domain(const messaging::change_reason_write& write) {
     domain::change_reason v;
     v.code = write.code;
     v.description = write.description;
@@ -145,7 +146,7 @@ change_reason_service::list_change_reasons(const messaging::list_change_reasons_
 messaging::get_change_reason_response
 change_reason_service::get_change_reason(const messaging::get_change_reason_request& request) {
     messaging::get_change_reason_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = change_reason_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "change_reason"});
         return response;
@@ -164,7 +165,7 @@ messaging::get_many_change_reasons_response change_reason_service::get_many_chan
     for (const auto& k : request.keys) {
         messaging::change_reason_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = change_reason_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.change_reason = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +181,7 @@ change_reason_service::put_change_reason(const messaging::put_change_reason_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = change_reason_read_one(repo_, ctx_, change_reason_key_from(value));
     if (!written.empty())
         response.change_reason = std::move(written.front());
     return response;
@@ -212,7 +213,7 @@ messaging::put_many_change_reasons_response change_reason_service::put_many_chan
     repo_.write(ctx_, batch, claims);
     response.reasons.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = change_reason_read_one(repo_, ctx_, change_reason_key_from(value));
         response.reasons.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -245,7 +246,7 @@ messaging::delete_change_reason_response change_reason_service::delete_change_re
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = change_reason_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "change_reason",
@@ -329,8 +330,8 @@ change_reason_service::prepare_change(const messaging::change_reason_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = change_reason_to_domain(change.write);
+    const auto current = change_reason_read_one(repo_, ctx_, change_reason_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

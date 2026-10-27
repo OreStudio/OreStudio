@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::account_credential> read_one(repository::account_credential_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::account_credential_key& key) {
+std::vector<domain::account_credential>
+account_credential_read_one(repository::account_credential_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::account_credential_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -155,7 +156,7 @@ account_credential_service::list_by_account_id_account_credentials(
 messaging::get_account_credential_response account_credential_service::get_account_credential(
     const messaging::get_account_credential_request& request) {
     messaging::get_account_credential_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = account_credential_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "account_credential"});
         return response;
@@ -175,7 +176,7 @@ account_credential_service::get_many_account_credentials(
     for (const auto& k : request.keys) {
         messaging::account_credential_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = account_credential_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.account_credential = std::move(found.front());
         response.entries.push_back(std::move(entry));

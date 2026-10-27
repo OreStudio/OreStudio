@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bond_issue_leg_schedules_response
-    list_bond_issue_leg_schedules(const messaging::list_bond_issue_leg_schedules_request& request);
-    messaging::get_bond_issue_leg_schedule_response
-    get_bond_issue_leg_schedule(const messaging::get_bond_issue_leg_schedule_request& request);
-    messaging::get_many_bond_issue_leg_schedules_response get_many_bond_issue_leg_schedules(
-        const messaging::get_many_bond_issue_leg_schedules_request& request);
-    messaging::put_bond_issue_leg_schedule_response
-    put_bond_issue_leg_schedule(const messaging::put_bond_issue_leg_schedule_request& request);
-    messaging::put_many_bond_issue_leg_schedules_response put_many_bond_issue_leg_schedules(
-        const messaging::put_many_bond_issue_leg_schedules_request& request);
-    messaging::delete_bond_issue_leg_schedule_response delete_bond_issue_leg_schedule(
-        const messaging::delete_bond_issue_leg_schedule_request& request);
-    messaging::delete_many_bond_issue_leg_schedules_response delete_many_bond_issue_leg_schedules(
-        const messaging::delete_many_bond_issue_leg_schedules_request& request);
-    messaging::list_bond_issue_leg_schedule_versions_response list_bond_issue_leg_schedule_versions(
-        const messaging::list_bond_issue_leg_schedule_versions_request& request);
-    messaging::get_bond_issue_leg_schedule_version_response get_bond_issue_leg_schedule_version(
-        const messaging::get_bond_issue_leg_schedule_version_request& request);
+    ::ores::trading::messaging::list_bond_issue_leg_schedules_response
+    list_bond_issue_leg_schedules(
+        const ::ores::trading::messaging::list_bond_issue_leg_schedules_request& request);
+    ::ores::trading::messaging::get_bond_issue_leg_schedule_response get_bond_issue_leg_schedule(
+        const ::ores::trading::messaging::get_bond_issue_leg_schedule_request& request);
+    ::ores::trading::messaging::get_many_bond_issue_leg_schedules_response
+    get_many_bond_issue_leg_schedules(
+        const ::ores::trading::messaging::get_many_bond_issue_leg_schedules_request& request);
+    ::ores::trading::messaging::put_bond_issue_leg_schedule_response put_bond_issue_leg_schedule(
+        const ::ores::trading::messaging::put_bond_issue_leg_schedule_request& request);
+    ::ores::trading::messaging::put_many_bond_issue_leg_schedules_response
+    put_many_bond_issue_leg_schedules(
+        const ::ores::trading::messaging::put_many_bond_issue_leg_schedules_request& request);
+    ::ores::trading::messaging::delete_bond_issue_leg_schedule_response
+    delete_bond_issue_leg_schedule(
+        const ::ores::trading::messaging::delete_bond_issue_leg_schedule_request& request);
+    ::ores::trading::messaging::delete_many_bond_issue_leg_schedules_response
+    delete_many_bond_issue_leg_schedules(
+        const ::ores::trading::messaging::delete_many_bond_issue_leg_schedules_request& request);
+    ::ores::trading::messaging::list_bond_issue_leg_schedule_versions_response
+    list_bond_issue_leg_schedule_versions(
+        const ::ores::trading::messaging::list_bond_issue_leg_schedule_versions_request& request);
+    ::ores::trading::messaging::get_bond_issue_leg_schedule_version_response
+    get_bond_issue_leg_schedule_version(
+        const ::ores::trading::messaging::get_bond_issue_leg_schedule_version_request& request);
     /**@}*/
 
     /**
@@ -213,7 +220,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::bond_issue_leg_schedule_change& change,
+    prepare_change(const ::ores::trading::messaging::bond_issue_leg_schedule_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::bond_issue_leg_schedule& out);
 };

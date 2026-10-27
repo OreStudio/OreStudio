@@ -58,8 +58,9 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::badge_mapping> read_one(repository::badge_mapping_repository& repo,
-                                            const messaging::badge_mapping_key& key) {
+std::vector<domain::badge_mapping>
+badge_mapping_read_one(repository::badge_mapping_repository& repo,
+                       const messaging::badge_mapping_key& key) {
     return repo.read_latest(key.code_domain_code, key.entity_code);
 }
 
@@ -69,7 +70,7 @@ std::vector<domain::badge_mapping> read_one(repository::badge_mapping_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::badge_mapping_key key_from(const domain::badge_mapping& v) {
+messaging::badge_mapping_key badge_mapping_key_from(const domain::badge_mapping& v) {
     messaging::badge_mapping_key key;
     key.code_domain_code = v.code_domain_code;
     key.entity_code = v.entity_code;
@@ -84,7 +85,7 @@ messaging::badge_mapping_key key_from(const domain::badge_mapping& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::badge_mapping to_domain(const messaging::badge_mapping_write& write) {
+domain::badge_mapping badge_mapping_to_domain(const messaging::badge_mapping_write& write) {
     domain::badge_mapping v;
     v.code_domain_code = write.code_domain_code;
     v.entity_code = write.entity_code;
@@ -137,7 +138,7 @@ badge_mapping_service::list_by_code_domain_code_badge_mappings(
 messaging::get_badge_mapping_response
 badge_mapping_service::get_badge_mapping(const messaging::get_badge_mapping_request& request) {
     messaging::get_badge_mapping_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = badge_mapping_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "badge_mapping"});
         return response;
@@ -156,7 +157,7 @@ messaging::get_many_badge_mappings_response badge_mapping_service::get_many_badg
     for (const auto& k : request.keys) {
         messaging::badge_mapping_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = badge_mapping_read_one(repo_, k);
         if (!found.empty())
             entry.badge_mapping = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -172,7 +173,7 @@ badge_mapping_service::put_badge_mapping(const messaging::put_badge_mapping_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = badge_mapping_read_one(repo_, badge_mapping_key_from(value));
     if (!written.empty())
         response.badge_mapping = std::move(written.front());
     return response;
@@ -204,7 +205,7 @@ messaging::put_many_badge_mappings_response badge_mapping_service::put_many_badg
     repo_.write(batch, claims);
     response.badge_mappings.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = badge_mapping_read_one(repo_, badge_mapping_key_from(value));
         response.badge_mappings.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -238,7 +239,7 @@ messaging::delete_badge_mapping_response badge_mapping_service::delete_badge_map
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = badge_mapping_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "badge_mapping",
@@ -290,8 +291,8 @@ badge_mapping_service::prepare_change(const messaging::badge_mapping_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = badge_mapping_to_domain(change.write);
+    const auto current = badge_mapping_read_one(repo_, badge_mapping_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::pricing_model_engine_pair>
-read_one(repository::pricing_model_engine_pair_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::pricing_model_engine_pair_key& key) {
+pricing_model_engine_pair_read_one(repository::pricing_model_engine_pair_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const messaging::pricing_model_engine_pair_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::pricing_model_engine_pair_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::pricing_model_engine_pair_key key_from(const domain::pricing_model_engine_pair& v) {
+messaging::pricing_model_engine_pair_key
+pricing_model_engine_pair_key_from(const domain::pricing_model_engine_pair& v) {
     messaging::pricing_model_engine_pair_key key;
     key.code = v.code;
     return key;
@@ -96,7 +97,7 @@ messaging::pricing_model_engine_pair_key key_from(const domain::pricing_model_en
  * database's to state, and are set after this conversion.
  */
 domain::pricing_model_engine_pair
-to_domain(const messaging::pricing_model_engine_pair_write& write) {
+pricing_model_engine_pair_to_domain(const messaging::pricing_model_engine_pair_write& write) {
     domain::pricing_model_engine_pair v;
     v.code = write.code;
     v.model = write.model;
@@ -148,7 +149,7 @@ messaging::get_pricing_model_engine_pair_response
 pricing_model_engine_pair_service::get_pricing_model_engine_pair(
     const messaging::get_pricing_model_engine_pair_request& request) {
     messaging::get_pricing_model_engine_pair_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = pricing_model_engine_pair_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "pricing_model_engine_pair"});
         return response;
@@ -168,7 +169,7 @@ pricing_model_engine_pair_service::get_many_pricing_model_engine_pairs(
     for (const auto& k : request.keys) {
         messaging::pricing_model_engine_pair_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = pricing_model_engine_pair_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.pricing_model_engine_pair = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +186,8 @@ pricing_model_engine_pair_service::put_pricing_model_engine_pair(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        pricing_model_engine_pair_read_one(repo_, ctx_, pricing_model_engine_pair_key_from(value));
     if (!written.empty())
         response.pricing_model_engine_pair = std::move(written.front());
     return response;
@@ -218,7 +220,8 @@ pricing_model_engine_pair_service::put_many_pricing_model_engine_pairs(
     repo_.write(ctx_, batch, claims);
     response.pairs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = pricing_model_engine_pair_read_one(
+            repo_, ctx_, pricing_model_engine_pair_key_from(value));
         response.pairs.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -253,7 +256,7 @@ pricing_model_engine_pair_service::delete_pricing_model_engine_pair(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = pricing_model_engine_pair_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "pricing_model_engine_pair",
@@ -343,8 +346,9 @@ ores::utility::domain::result pricing_model_engine_pair_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = pricing_model_engine_pair_to_domain(change.write);
+    const auto current =
+        pricing_model_engine_pair_read_one(repo_, ctx_, pricing_model_engine_pair_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

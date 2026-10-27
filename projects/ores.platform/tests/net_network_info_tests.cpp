@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/net/network_info.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
@@ -32,9 +33,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[net]");
 
 #if defined(__linux__)
 /**
@@ -85,7 +83,7 @@ std::string mac_bytes_from_string(const std::string& formatted) {
 using namespace ores::platform::net;
 using namespace ores::logging;
 
-TEST_CASE("get_hostname_matches_the_operating_system", tags) {
+TEST_CASE("get_hostname_matches_the_operating_system", "[net]") {
     auto lg(make_logger(test_suite));
 
     char os_hostname[256] = {};
@@ -97,7 +95,7 @@ TEST_CASE("get_hostname_matches_the_operating_system", tags) {
     CHECK(hostname == os_hostname);
 }
 
-TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", tags) {
+TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", "[net]") {
 #if defined(__linux__)
     auto lg(make_logger(test_suite));
 
@@ -117,7 +115,7 @@ TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", tags) {
 #endif
 }
 
-TEST_CASE("get_primary_mac_address_bytes_are_the_first_kernel_address", tags) {
+TEST_CASE("get_primary_mac_address_bytes_are_the_first_kernel_address", "[net]") {
 #if defined(__linux__)
     const auto kernel_macs = kernel_mac_addresses();
     if (kernel_macs.empty())
@@ -137,7 +135,7 @@ TEST_CASE("get_primary_mac_address_bytes_are_the_first_kernel_address", tags) {
 #endif
 }
 
-TEST_CASE("derive_machine_id_is_the_hex_hash_of_hostname_and_formatted_mac", tags) {
+TEST_CASE("derive_machine_id_is_the_hex_hash_of_hostname_and_formatted_mac", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto machine_id = derive_machine_id();
@@ -151,7 +149,7 @@ TEST_CASE("derive_machine_id_is_the_hex_hash_of_hostname_and_formatted_mac", tag
     CHECK(machine_id == expected.str());
 }
 
-TEST_CASE("derive_machine_id_hash_is_the_low_sixteen_bits_of_hostname_and_raw_mac", tags) {
+TEST_CASE("derive_machine_id_hash_is_the_low_sixteen_bits_of_hostname_and_raw_mac", "[net]") {
     const auto combined = get_hostname() + get_primary_mac_address_bytes().value_or("");
     const std::size_t expected_hash = std::hash<std::string>{}(combined);
 

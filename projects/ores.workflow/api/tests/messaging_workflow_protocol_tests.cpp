@@ -32,8 +32,6 @@
 
 namespace {
 
-const std::string tags("[messaging]");
-
 /**
  * @brief Reads a hex fixture the TypeScript client wrote, as wire bytes.
  *
@@ -68,7 +66,7 @@ using ores::workflow::messaging::list_workflow_instance_summaries_request;
  * struct requires fails here, which is how a hand-written client once failed
  * every request at run time with "Invalid request payload".
  */
-TEST_CASE("the instances list request the web client sends decodes", tags) {
+TEST_CASE("the instances list request the web client sends decodes", "[messaging]") {
     const auto bytes = read_hex_fixture("list_workflow_instance_summaries_request.msgpack.hex");
 
     const auto decoded = rfl::msgpack::read<list_workflow_instance_summaries_request>(

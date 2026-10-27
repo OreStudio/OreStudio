@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view shift_type_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_shift_type_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<shift_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_shift_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_shift_types(std::move(msg));
-        }));
+        list_shift_types_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->list_shift_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_shift_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_shift_type_request::nats_subject, shift_type_queue_group, [h](ores::nats::message msg) {
             h->get_shift_type(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_shift_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_shift_types(std::move(msg));
-        }));
+        get_many_shift_types_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->get_many_shift_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_shift_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_shift_type_request::nats_subject, shift_type_queue_group, [h](ores::nats::message msg) {
             h->put_shift_type(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_shift_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_shift_types(std::move(msg));
-        }));
+        put_many_shift_types_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->put_many_shift_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_shift_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_shift_type(std::move(msg));
-        }));
+        delete_shift_type_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->delete_shift_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_shift_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_shift_types(std::move(msg));
-        }));
+        delete_many_shift_types_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_shift_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_shift_type_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_shift_type_versions(std::move(msg));
-        }));
+        list_shift_type_versions_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->list_shift_type_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_shift_type_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_shift_type_version(std::move(msg));
-        }));
+        get_shift_type_version_request::nats_subject,
+        shift_type_queue_group,
+        [h](ores::nats::message msg) { h->get_shift_type_version(std::move(msg)); }));
     return subs;
 }
 

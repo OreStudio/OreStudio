@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::bond_option> read_one(repository::bond_option_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::bond_option_key& key) {
+std::vector<domain::bond_option> bond_option_read_one(repository::bond_option_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::bond_option_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::bond_option> read_one(repository::bond_option_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::bond_option_key key_from(const domain::bond_option& v) {
+messaging::bond_option_key bond_option_key_from(const domain::bond_option& v) {
     messaging::bond_option_key key;
     key.trade_id = v.trade_id;
     return key;
@@ -98,7 +98,7 @@ messaging::bond_option_key key_from(const domain::bond_option& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::bond_option to_domain(const messaging::bond_option_write& write) {
+domain::bond_option bond_option_to_domain(const messaging::bond_option_write& write) {
     domain::bond_option v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
@@ -148,7 +148,7 @@ bond_option_service::list_bond_options(const messaging::list_bond_options_reques
 messaging::get_bond_option_response
 bond_option_service::get_bond_option(const messaging::get_bond_option_request& request) {
     messaging::get_bond_option_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = bond_option_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "bond_option"});
         return response;
@@ -167,7 +167,7 @@ messaging::get_many_bond_options_response bond_option_service::get_many_bond_opt
     for (const auto& k : request.keys) {
         messaging::bond_option_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = bond_option_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.bond_option = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +183,7 @@ bond_option_service::put_bond_option(const messaging::put_bond_option_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = bond_option_read_one(repo_, ctx_, bond_option_key_from(value));
     if (!written.empty())
         response.bond_option = std::move(written.front());
     return response;
@@ -215,7 +215,7 @@ messaging::put_many_bond_options_response bond_option_service::put_many_bond_opt
     repo_.write(ctx_, batch, claims);
     response.options.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = bond_option_read_one(repo_, ctx_, bond_option_key_from(value));
         response.options.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -248,7 +248,7 @@ bond_option_service::delete_bond_option(const messaging::delete_bond_option_requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = bond_option_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "bond_option",
@@ -333,8 +333,8 @@ bond_option_service::prepare_change(const messaging::bond_option_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = bond_option_to_domain(change.write);
+    const auto current = bond_option_read_one(repo_, ctx_, bond_option_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

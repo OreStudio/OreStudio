@@ -23,19 +23,17 @@
 
 namespace {
 
-const std::string tags("[domain]");
-
 using namespace ores::dq::domain;
 
 }
 
-TEST_CASE("to_string_converts_all_publication_modes", tags) {
+TEST_CASE("to_string_converts_all_publication_modes", "[domain]") {
     CHECK(to_string(publication_mode::upsert) == "upsert");
     CHECK(to_string(publication_mode::insert_only) == "insert_only");
     CHECK(to_string(publication_mode::replace_all) == "replace_all");
 }
 
-TEST_CASE("publication_mode_from_string_converts_all_valid_strings", tags) {
+TEST_CASE("publication_mode_from_string_converts_all_valid_strings", "[domain]") {
     auto upsert = publication_mode_from_string("upsert");
     REQUIRE(upsert.has_value());
     CHECK(*upsert == publication_mode::upsert);
@@ -49,14 +47,14 @@ TEST_CASE("publication_mode_from_string_converts_all_valid_strings", tags) {
     CHECK(*replace_all == publication_mode::replace_all);
 }
 
-TEST_CASE("publication_mode_from_string_returns_nullopt_for_invalid", tags) {
+TEST_CASE("publication_mode_from_string_returns_nullopt_for_invalid", "[domain]") {
     CHECK(!publication_mode_from_string("").has_value());
     CHECK(!publication_mode_from_string("invalid").has_value());
     CHECK(!publication_mode_from_string("UPSERT").has_value());
     CHECK(!publication_mode_from_string("Upsert").has_value());
 }
 
-TEST_CASE("publication_mode_round_trips_through_string", tags) {
+TEST_CASE("publication_mode_round_trips_through_string", "[domain]") {
     auto modes = {
         publication_mode::upsert, publication_mode::insert_only, publication_mode::replace_all};
 
@@ -68,7 +66,7 @@ TEST_CASE("publication_mode_round_trips_through_string", tags) {
     }
 }
 
-TEST_CASE("publication_mode_stream_insertion_matches_to_string", tags) {
+TEST_CASE("publication_mode_stream_insertion_matches_to_string", "[domain]") {
     auto modes = {
         publication_mode::upsert, publication_mode::insert_only, publication_mode::replace_all};
 

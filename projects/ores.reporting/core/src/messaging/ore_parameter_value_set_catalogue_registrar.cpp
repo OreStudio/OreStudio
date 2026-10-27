@@ -39,7 +39,8 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view ore_parameter_value_set_catalogue_queue_group =
+    "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_ore_parameter_value_set_catalogue_handlers(
@@ -51,55 +52,55 @@ std::vector<ores::nats::service::subscription> register_ore_parameter_value_set_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_ore_parameter_value_set_catalogues_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_ore_parameter_value_set_catalogues(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(get_ore_parameter_value_set_catalogue_request::nats_subject,
-                                        queue_group,
+                                        ore_parameter_value_set_catalogue_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_ore_parameter_value_set_catalogue(
                                                 std::move(msg));
                                         }));
     subs.push_back(
         nats.queue_subscribe(get_many_ore_parameter_value_set_catalogues_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_ore_parameter_value_set_catalogues(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(put_ore_parameter_value_set_catalogue_request::nats_subject,
-                                        queue_group,
+                                        ore_parameter_value_set_catalogue_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_ore_parameter_value_set_catalogue(
                                                 std::move(msg));
                                         }));
     subs.push_back(
         nats.queue_subscribe(put_many_ore_parameter_value_set_catalogues_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_ore_parameter_value_set_catalogues(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_ore_parameter_value_set_catalogue_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_ore_parameter_value_set_catalogue(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_many_ore_parameter_value_set_catalogues_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_ore_parameter_value_set_catalogues(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_ore_parameter_value_set_catalogue_versions_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_ore_parameter_value_set_catalogue_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_ore_parameter_value_set_catalogue_version_request::nats_subject,
-                             queue_group,
+                             ore_parameter_value_set_catalogue_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_ore_parameter_value_set_catalogue_version(std::move(msg));
                              }));

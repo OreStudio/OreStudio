@@ -75,12 +75,13 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_delivery_outcome_types_response
-    list_delivery_outcome_types(const messaging::list_delivery_outcome_types_request& request);
-    messaging::get_delivery_outcome_type_response
-    get_delivery_outcome_type(const messaging::get_delivery_outcome_type_request& request);
-    messaging::get_many_delivery_outcome_types_response get_many_delivery_outcome_types(
-        const messaging::get_many_delivery_outcome_types_request& request);
+    ::ores::inbox::messaging::list_delivery_outcome_types_response list_delivery_outcome_types(
+        const ::ores::inbox::messaging::list_delivery_outcome_types_request& request);
+    ::ores::inbox::messaging::get_delivery_outcome_type_response get_delivery_outcome_type(
+        const ::ores::inbox::messaging::get_delivery_outcome_type_request& request);
+    ::ores::inbox::messaging::get_many_delivery_outcome_types_response
+    get_many_delivery_outcome_types(
+        const ::ores::inbox::messaging::get_many_delivery_outcome_types_request& request);
     /**@}*/
 
     /**

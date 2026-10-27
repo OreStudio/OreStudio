@@ -36,8 +36,6 @@
 
 namespace {
 
-const std::string tags("[repository][floating_point]");
-
 using ores::refdata::repository::commodity_forward_convention_repository;
 
 double round_trip(ores::testing::scoped_database_helper& h, double value) {
@@ -57,17 +55,19 @@ double round_trip(ores::testing::scoped_database_helper& h, double value) {
 
 }
 
-TEST_CASE("a value smaller than a millionth survives the database", tags) {
+TEST_CASE("a value smaller than a millionth survives the database",
+          "[repository][floating_point]") {
     ores::testing::scoped_database_helper h;
     CHECK(round_trip(h, 1e-12) == 1e-12);
 }
 
-TEST_CASE("a value with more than six decimal places survives the database", tags) {
+TEST_CASE("a value with more than six decimal places survives the database",
+          "[repository][floating_point]") {
     ores::testing::scoped_database_helper h;
     CHECK(round_trip(h, 0.0123456789) == 0.0123456789);
 }
 
-TEST_CASE("a large value survives the database", tags) {
+TEST_CASE("a large value survives the database", "[repository][floating_point]") {
     ores::testing::scoped_database_helper h;
     CHECK(round_trip(h, 123456789.123456789) == 123456789.123456789);
 }

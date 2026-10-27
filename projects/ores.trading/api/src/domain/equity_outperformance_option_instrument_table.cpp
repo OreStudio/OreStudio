@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string equity_outperformance_option_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -53,7 +53,8 @@ std::string convert_to_table(const std::vector<equity_outperformance_option_inst
         table << outperformance.underlying1_name << outperformance.underlying2_name
               << outperformance.currency << outperformance.notional << outperformance.strike_return
               << outperformance.initial_price1 << outperformance.initial_price2
-              << opt_str(outperformance.knock_in_price) << fort::endr;
+              << equity_outperformance_option_instrument_opt_str(outperformance.knock_in_price)
+              << fort::endr;
     }
     return table.to_string();
 }

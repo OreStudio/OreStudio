@@ -76,27 +76,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_curve_configuration_sections_response list_curve_configuration_sections(
-        const messaging::list_curve_configuration_sections_request& request);
-    messaging::get_curve_configuration_section_response get_curve_configuration_section(
-        const messaging::get_curve_configuration_section_request& request);
-    messaging::get_many_curve_configuration_sections_response get_many_curve_configuration_sections(
-        const messaging::get_many_curve_configuration_sections_request& request);
-    messaging::put_curve_configuration_section_response put_curve_configuration_section(
-        const messaging::put_curve_configuration_section_request& request);
-    messaging::put_many_curve_configuration_sections_response put_many_curve_configuration_sections(
-        const messaging::put_many_curve_configuration_sections_request& request);
-    messaging::delete_curve_configuration_section_response delete_curve_configuration_section(
-        const messaging::delete_curve_configuration_section_request& request);
-    messaging::delete_many_curve_configuration_sections_response
+    ::ores::refdata::messaging::list_curve_configuration_sections_response
+    list_curve_configuration_sections(
+        const ::ores::refdata::messaging::list_curve_configuration_sections_request& request);
+    ::ores::refdata::messaging::get_curve_configuration_section_response
+    get_curve_configuration_section(
+        const ::ores::refdata::messaging::get_curve_configuration_section_request& request);
+    ::ores::refdata::messaging::get_many_curve_configuration_sections_response
+    get_many_curve_configuration_sections(
+        const ::ores::refdata::messaging::get_many_curve_configuration_sections_request& request);
+    ::ores::refdata::messaging::put_curve_configuration_section_response
+    put_curve_configuration_section(
+        const ::ores::refdata::messaging::put_curve_configuration_section_request& request);
+    ::ores::refdata::messaging::put_many_curve_configuration_sections_response
+    put_many_curve_configuration_sections(
+        const ::ores::refdata::messaging::put_many_curve_configuration_sections_request& request);
+    ::ores::refdata::messaging::delete_curve_configuration_section_response
+    delete_curve_configuration_section(
+        const ::ores::refdata::messaging::delete_curve_configuration_section_request& request);
+    ::ores::refdata::messaging::delete_many_curve_configuration_sections_response
     delete_many_curve_configuration_sections(
-        const messaging::delete_many_curve_configuration_sections_request& request);
-    messaging::list_curve_configuration_section_versions_response
+        const ::ores::refdata::messaging::delete_many_curve_configuration_sections_request&
+            request);
+    ::ores::refdata::messaging::list_curve_configuration_section_versions_response
     list_curve_configuration_section_versions(
-        const messaging::list_curve_configuration_section_versions_request& request);
-    messaging::get_curve_configuration_section_version_response
+        const ::ores::refdata::messaging::list_curve_configuration_section_versions_request&
+            request);
+    ::ores::refdata::messaging::get_curve_configuration_section_version_response
     get_curve_configuration_section_version(
-        const messaging::get_curve_configuration_section_version_request& request);
+        const ::ores::refdata::messaging::get_curve_configuration_section_version_request& request);
     /**@}*/
 
     /**
@@ -196,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::curve_configuration_section_change& change,
+    prepare_change(const ::ores::refdata::messaging::curve_configuration_section_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::curve_configuration_section& out);
 };

@@ -39,6 +39,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -47,9 +48,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests.authorization_access");
-const std::string tags("[authorization]");
 
 using ores::iam::domain::account;
 using ores::iam::domain::role;
@@ -139,7 +137,7 @@ std::string unique_area(const std::string& prefix) {
 
 }
 
-TEST_CASE("read_own_access_returns_roles_with_permissions_and_assignment_tail", tags) {
+TEST_CASE("read_own_access_returns_roles_with_permissions_and_assignment_tail", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -168,7 +166,7 @@ TEST_CASE("read_own_access_returns_roles_with_permissions_and_assignment_tail", 
     CHECK(entry.assigned_at.time_since_epoch().count() != 0);
 }
 
-TEST_CASE("read_account_access_is_denied_for_a_caller_holding_only_member", tags) {
+TEST_CASE("read_account_access_is_denied_for_a_caller_holding_only_member", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -196,7 +194,7 @@ TEST_CASE("read_account_access_is_denied_for_a_caller_holding_only_member", tags
     CHECK(access.roles.empty());
 }
 
-TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
+TEST_CASE("read_account_access_is_denied_without_the_read_permission", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -225,7 +223,8 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
     CHECK(access.roles.empty());
 }
 
-TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permission", tags) {
+TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permission",
+          "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -255,7 +254,7 @@ TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permissi
     CHECK(entry.assigned_at.time_since_epoch().count() != 0);
 }
 
-TEST_CASE("read_own_access_for_an_account_holding_nothing_is_ok_and_empty", tags) {
+TEST_CASE("read_own_access_for_an_account_holding_nothing_is_ok_and_empty", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -278,7 +277,7 @@ TEST_CASE("read_own_access_for_an_account_holding_nothing_is_ok_and_empty", tags
  * failed every live request, so the resolution is tested on its own rather
  * than through a read whose answer would look the same.
  */
-TEST_CASE("caller_account_resolves_the_context_actor_to_their_account", tags) {
+TEST_CASE("caller_account_resolves_the_context_actor_to_their_account", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -296,7 +295,7 @@ TEST_CASE("caller_account_resolves_the_context_actor_to_their_account", tags) {
     CHECK(*resolved == caller.id);
 }
 
-TEST_CASE("caller_account_is_empty_when_no_account_carries_the_actor", tags) {
+TEST_CASE("caller_account_is_empty_when_no_account_carries_the_actor", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -324,7 +323,7 @@ account caller_who_may_shape_roles(database_helper& h, generation_context& gen) 
 
 }
 
-TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", tags) {
+TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -360,7 +359,7 @@ TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", tags) {
     CHECK(rows.front().recorded_at.time_since_epoch().count() != 0);
 }
 
-TEST_CASE("replace_role_permissions_is_denied_without_the_update_permission", tags) {
+TEST_CASE("replace_role_permissions_is_denied_without_the_update_permission", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -385,7 +384,7 @@ TEST_CASE("replace_role_permissions_is_denied_without_the_update_permission", ta
     CHECK(stored.front() == permissions::accounts_read);
 }
 
-TEST_CASE("replace_role_permissions_refuses_a_code_that_is_not_a_permission", tags) {
+TEST_CASE("replace_role_permissions_refuses_a_code_that_is_not_a_permission", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -406,7 +405,7 @@ TEST_CASE("replace_role_permissions_refuses_a_code_that_is_not_a_permission", ta
     CHECK(stored.front() == permissions::accounts_read);
 }
 
-TEST_CASE("replace_role_permissions_refuses_a_role_that_does_not_exist", tags) {
+TEST_CASE("replace_role_permissions_refuses_a_role_that_does_not_exist", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -422,7 +421,7 @@ TEST_CASE("replace_role_permissions_refuses_a_role_that_does_not_exist", tags) {
     CHECK_FALSE(answer.result.message.empty());
 }
 
-TEST_CASE("replace_role_permissions_can_empty_a_bundle", tags) {
+TEST_CASE("replace_role_permissions_can_empty_a_bundle", "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -443,7 +442,7 @@ TEST_CASE("replace_role_permissions_can_empty_a_bundle", tags) {
  * Giving a role records why. The reason is the administrator's, from the
  * access category, and the grant row carries it beside who gave the role.
  */
-TEST_CASE("assign_role_records_the_reason_it_was_given_for", tags) {
+TEST_CASE("assign_role_records_the_reason_it_was_given_for", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -461,7 +460,7 @@ TEST_CASE("assign_role_records_the_reason_it_was_given_for", tags) {
     CHECK(access.roles.front().change_commentary == "Covers the settlement desk");
 }
 
-TEST_CASE("assign_role_without_a_reason_records_a_new_record", tags) {
+TEST_CASE("assign_role_without_a_reason_records_a_new_record", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -476,7 +475,7 @@ TEST_CASE("assign_role_without_a_reason_records_a_new_record", tags) {
     CHECK(access.roles.front().change_reason_code == "system.new_record");
 }
 
-TEST_CASE("assign_role_refuses_a_reason_nobody_defined", tags) {
+TEST_CASE("assign_role_refuses_a_reason_nobody_defined", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -489,7 +488,7 @@ TEST_CASE("assign_role_refuses_a_reason_nobody_defined", tags) {
     CHECK(assigned(svc.read_own_access(member.id)).roles.empty());
 }
 
-TEST_CASE("nobody_takes_a_role_away_from_themselves", tags) {
+TEST_CASE("nobody_takes_a_role_away_from_themselves", "[authorization]") {
     using ores::iam::messaging::authorization_revoke_refusal;
     const auto me = boost::uuids::random_generator()();
     const auto colleague = boost::uuids::random_generator()();
@@ -503,7 +502,7 @@ TEST_CASE("nobody_takes_a_role_away_from_themselves", tags) {
  * time. The area here is made up, so the rows are exactly those the test wrote
  * whatever else the database's catalogue holds.
  */
-TEST_CASE("read_own_permissions_pages_the_resources_of_one_area", tags) {
+TEST_CASE("read_own_permissions_pages_the_resources_of_one_area", "[authorization]") {
     database_helper h;
     const auto zzpage_name = unique_area("zzpage");
     auto gen = ores::testing::make_generation_context(h);
@@ -533,7 +532,8 @@ TEST_CASE("read_own_permissions_pages_the_resources_of_one_area", tags) {
     CHECK(second.rows.front().resource == "alpha_two");
 }
 
-TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them", tags) {
+TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them",
+          "[authorization]") {
     database_helper h;
     const auto zzheld_name = unique_area("zzheld");
     auto gen = ores::testing::make_generation_context(h);
@@ -550,7 +550,8 @@ TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them"
     CHECK(page.rows.front().roles == std::vector<std::string>{r.name});
 }
 
-TEST_CASE("read_own_permissions_lists_only_areas_the_account_holds_something_in", tags) {
+TEST_CASE("read_own_permissions_lists_only_areas_the_account_holds_something_in",
+          "[authorization]") {
     database_helper h;
     const auto zzonly_name = unique_area("zzonly");
     const auto zznothing_name = unique_area("zznothing");
@@ -576,7 +577,7 @@ TEST_CASE("read_own_permissions_lists_only_areas_the_account_holds_something_in"
     CHECK(page.area == page.areas.front().component);
 }
 
-TEST_CASE("read_account_permissions_is_refused_without_roles_read", tags) {
+TEST_CASE("read_account_permissions_is_refused_without_roles_read", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -594,7 +595,7 @@ TEST_CASE("read_account_permissions_is_refused_without_roles_read", tags) {
  * The role editor must offer every permission to tick, so its page carries the
  * rows the role does not grant too, and says which of them it holds.
  */
-TEST_CASE("read_role_permissions_includes_unheld_rows_for_the_editor", tags) {
+TEST_CASE("read_role_permissions_includes_unheld_rows_for_the_editor", "[authorization]") {
     database_helper h;
     const auto zzedit_name = unique_area("zzedit");
     auto gen = ores::testing::make_generation_context(h);
@@ -620,7 +621,7 @@ TEST_CASE("read_role_permissions_includes_unheld_rows_for_the_editor", tags) {
     CHECK(held_rows == 1);
 }
 
-TEST_CASE("read_role_permissions_is_refused_without_roles_read", tags) {
+TEST_CASE("read_role_permissions_is_refused_without_roles_read", "[authorization]") {
     database_helper h;
     const auto zzedit_name = unique_area("zzedit");
     auto gen = ores::testing::make_generation_context(h);
@@ -634,7 +635,7 @@ TEST_CASE("read_role_permissions_is_refused_without_roles_read", tags) {
     CHECK(page.result.outcome == outcome::denied);
 }
 
-TEST_CASE("read_roles_page_pages_filters_by_area_and_leaves_service_roles_out", tags) {
+TEST_CASE("read_roles_page_pages_filters_by_area_and_leaves_service_roles_out", "[authorization]") {
     database_helper h;
     const auto zznowhere_name = unique_area("zznowhere");
     const auto zzlist_name = unique_area("zzlist");
@@ -671,7 +672,7 @@ TEST_CASE("read_roles_page_pages_filters_by_area_and_leaves_service_roles_out", 
     CHECK(one.total_count == 1);
 }
 
-TEST_CASE("read_roles_page_is_refused_without_roles_read", tags) {
+TEST_CASE("read_roles_page_is_refused_without_roles_read", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -681,7 +682,7 @@ TEST_CASE("read_roles_page_is_refused_without_roles_read", tags) {
     CHECK(svc.read_roles_page(caller.id, {}).result.outcome == outcome::denied);
 }
 
-TEST_CASE("read_role_holders_pages_the_people_who_hold_a_role_by_name", tags) {
+TEST_CASE("read_role_holders_pages_the_people_who_hold_a_role_by_name", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -709,7 +710,7 @@ TEST_CASE("read_role_holders_pages_the_people_who_hold_a_role_by_name", tags) {
     CHECK(!page_one.holders.front().username.empty());
 }
 
-TEST_CASE("read_role_holders_is_refused_without_roles_read", tags) {
+TEST_CASE("read_role_holders_is_refused_without_roles_read", "[authorization]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 

@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::inflation_seasonality_factor>
-read_one(repository::inflation_seasonality_factor_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::inflation_seasonality_factor_key& key) {
+inflation_seasonality_factor_read_one(repository::inflation_seasonality_factor_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const messaging::inflation_seasonality_factor_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -87,7 +87,7 @@ read_one(repository::inflation_seasonality_factor_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::inflation_seasonality_factor_key
-key_from(const domain::inflation_seasonality_factor& v) {
+inflation_seasonality_factor_key_from(const domain::inflation_seasonality_factor& v) {
     messaging::inflation_seasonality_factor_key key;
     key.id = v.id;
     return key;
@@ -101,7 +101,7 @@ key_from(const domain::inflation_seasonality_factor& v) {
  * database's to state, and are set after this conversion.
  */
 domain::inflation_seasonality_factor
-to_domain(const messaging::inflation_seasonality_factor_write& write) {
+inflation_seasonality_factor_to_domain(const messaging::inflation_seasonality_factor_write& write) {
     domain::inflation_seasonality_factor v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -150,7 +150,7 @@ messaging::get_inflation_seasonality_factor_response
 inflation_seasonality_factor_service::get_inflation_seasonality_factor(
     const messaging::get_inflation_seasonality_factor_request& request) {
     messaging::get_inflation_seasonality_factor_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = inflation_seasonality_factor_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "inflation_seasonality_factor"});
@@ -171,7 +171,7 @@ inflation_seasonality_factor_service::get_many_inflation_seasonality_factors(
     for (const auto& k : request.keys) {
         messaging::inflation_seasonality_factor_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = inflation_seasonality_factor_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.inflation_seasonality_factor = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -188,7 +188,8 @@ inflation_seasonality_factor_service::put_inflation_seasonality_factor(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = inflation_seasonality_factor_read_one(
+        repo_, ctx_, inflation_seasonality_factor_key_from(value));
     if (!written.empty())
         response.inflation_seasonality_factor = std::move(written.front());
     return response;
@@ -221,7 +222,8 @@ inflation_seasonality_factor_service::put_many_inflation_seasonality_factors(
     repo_.write(ctx_, batch, claims);
     response.seasonality_factors.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = inflation_seasonality_factor_read_one(
+            repo_, ctx_, inflation_seasonality_factor_key_from(value));
         response.seasonality_factors.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -257,7 +259,8 @@ inflation_seasonality_factor_service::delete_inflation_seasonality_factor(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                inflation_seasonality_factor_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "inflation_seasonality_factor",
@@ -350,8 +353,9 @@ ores::utility::domain::result inflation_seasonality_factor_service::prepare_chan
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = inflation_seasonality_factor_to_domain(change.write);
+    const auto current = inflation_seasonality_factor_read_one(
+        repo_, ctx_, inflation_seasonality_factor_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::book_purpose_type> read_one(repository::book_purpose_type_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::book_purpose_type_key& key) {
+std::vector<domain::book_purpose_type>
+book_purpose_type_read_one(repository::book_purpose_type_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::book_purpose_type_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::book_purpose_type> read_one(repository::book_purpose_type_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::book_purpose_type_key key_from(const domain::book_purpose_type& v) {
+messaging::book_purpose_type_key book_purpose_type_key_from(const domain::book_purpose_type& v) {
     messaging::book_purpose_type_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,8 @@ messaging::book_purpose_type_key key_from(const domain::book_purpose_type& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::book_purpose_type to_domain(const messaging::book_purpose_type_write& write) {
+domain::book_purpose_type
+book_purpose_type_to_domain(const messaging::book_purpose_type_write& write) {
     domain::book_purpose_type v;
     v.code = write.code;
     v.name = write.name;
@@ -141,7 +143,7 @@ messaging::list_book_purpose_types_response book_purpose_type_service::list_book
 messaging::get_book_purpose_type_response book_purpose_type_service::get_book_purpose_type(
     const messaging::get_book_purpose_type_request& request) {
     messaging::get_book_purpose_type_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = book_purpose_type_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book_purpose_type"});
         return response;
@@ -161,7 +163,7 @@ book_purpose_type_service::get_many_book_purpose_types(
     for (const auto& k : request.keys) {
         messaging::book_purpose_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = book_purpose_type_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.book_purpose_type = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -177,7 +179,7 @@ messaging::put_book_purpose_type_response book_purpose_type_service::put_book_pu
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = book_purpose_type_read_one(repo_, ctx_, book_purpose_type_key_from(value));
     if (!written.empty())
         response.book_purpose_type = std::move(written.front());
     return response;
@@ -210,7 +212,7 @@ book_purpose_type_service::put_many_book_purpose_types(
     repo_.write(ctx_, batch, claims);
     response.types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = book_purpose_type_read_one(repo_, ctx_, book_purpose_type_key_from(value));
         response.types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -243,7 +245,7 @@ messaging::delete_book_purpose_type_response book_purpose_type_service::delete_b
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = book_purpose_type_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "book_purpose_type",
@@ -332,8 +334,8 @@ book_purpose_type_service::prepare_change(const messaging::book_purpose_type_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = book_purpose_type_to_domain(change.write);
+    const auto current = book_purpose_type_read_one(repo_, ctx_, book_purpose_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
+#include "test_suite.hpp"
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <charconv>
@@ -27,16 +28,13 @@
 
 namespace {
 
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[numeric][floating_point]");
-
 using ores::platform::numeric::parse_double;
 
 }
 
 using namespace ores::logging;
 
-TEST_CASE("a_complete_number_parses_to_its_value", tags) {
+TEST_CASE("a_complete_number_parses_to_its_value", "[numeric][floating_point]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parse_double("1.5") == 1.5);
@@ -46,7 +44,7 @@ TEST_CASE("a_complete_number_parses_to_its_value", tags) {
     CHECK(parse_double("6.02E-2") == 0.0602);
 }
 
-TEST_CASE("anything_but_the_number_is_refused", tags) {
+TEST_CASE("anything_but_the_number_is_refused", "[numeric][floating_point]") {
     auto lg(make_logger(test_suite));
 
     // The contract is from_chars', not strtod's: the whole input is the
@@ -62,7 +60,7 @@ TEST_CASE("anything_but_the_number_is_refused", tags) {
     CHECK(parse_double("1.5.2") == std::nullopt);
 }
 
-TEST_CASE("a_comma_is_not_a_decimal_point_whatever_the_locale_is", tags) {
+TEST_CASE("a_comma_is_not_a_decimal_point_whatever_the_locale_is", "[numeric][floating_point]") {
     auto lg(make_logger(test_suite));
 
     // The parser must not follow the program's locale: a value written with
@@ -70,7 +68,7 @@ TEST_CASE("a_comma_is_not_a_decimal_point_whatever_the_locale_is", tags) {
     CHECK(parse_double("1,5") == std::nullopt);
 }
 
-TEST_CASE("a_value_outside_the_range_of_a_double_is_refused", tags) {
+TEST_CASE("a_value_outside_the_range_of_a_double_is_refused", "[numeric][floating_point]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parse_double("1e400") == std::nullopt);
@@ -81,7 +79,7 @@ TEST_CASE("a_value_outside_the_range_of_a_double_is_refused", tags) {
     CHECK(parse_double("1e-400") == std::nullopt);
 }
 
-TEST_CASE("a_subnormal_is_a_value_and_not_a_range_error", tags) {
+TEST_CASE("a_subnormal_is_a_value_and_not_a_range_error", "[numeric][floating_point]") {
     auto lg(make_logger(test_suite));
 
     // 5e-324 is the shortest decimal that rounds to the smallest denormal a
@@ -94,7 +92,7 @@ TEST_CASE("a_subnormal_is_a_value_and_not_a_range_error", tags) {
     CHECK(parse_double("1e-320").has_value());
 }
 
-TEST_CASE("every_formatted_double_parses_back_to_itself", tags) {
+TEST_CASE("every_formatted_double_parses_back_to_itself", "[numeric][floating_point]") {
     auto lg(make_logger(test_suite));
 
     // The estate formats doubles with the floating-point to_chars, which

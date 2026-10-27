@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+report_configuration_list_order(const ores::utility::domain::order& order,
+                                std::initializer_list<std::string> default_columns,
+                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!report_configuration_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::report_configurations_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> report_configuration_filter_condition(
+    const std::optional<messaging::report_configurations_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -361,8 +362,8 @@ report_configuration_repository::read_latest_by_report_definition_id(
     return execute_ordered_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        report_configuration_list_order(order, {"id"}, false),
+        report_configuration_filter_condition(filter),
         [](const auto& entities) { return report_configuration_mapper::map(entities); },
         lg(),
         "Reading latest report configurations by report_definition_id.");
@@ -387,7 +388,7 @@ report_configuration_repository::get_total_report_configuration_count_by_report_
     return execute_count_query<report_configuration_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        report_configuration_filter_condition(filter),
         lg(),
         "Counting report configurations by report_definition_id");
 }
@@ -415,8 +416,8 @@ report_configuration_repository::read_latest_by_configuration_type_code(
     return execute_ordered_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        report_configuration_list_order(order, {"id"}, false),
+        report_configuration_filter_condition(filter),
         [](const auto& entities) { return report_configuration_mapper::map(entities); },
         lg(),
         "Reading latest report configurations by configuration_type_code.");
@@ -441,7 +442,7 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     return execute_count_query<report_configuration_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        report_configuration_filter_condition(filter),
         lg(),
         "Counting report configurations by configuration_type_code");
 }
@@ -467,8 +468,8 @@ report_configuration_repository::read_latest_by_configuration_id(
     return execute_ordered_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        report_configuration_list_order(order, {"id"}, false),
+        report_configuration_filter_condition(filter),
         [](const auto& entities) { return report_configuration_mapper::map(entities); },
         lg(),
         "Reading latest report configurations by configuration_id.");
@@ -492,7 +493,7 @@ report_configuration_repository::get_total_report_configuration_count_by_configu
     return execute_count_query<report_configuration_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        report_configuration_filter_condition(filter),
         lg(),
         "Counting report configurations by configuration_id");
 }
@@ -547,8 +548,8 @@ std::vector<domain::report_configuration> report_configuration_repository::read_
     return execute_ordered_read_query<report_configuration_entity, domain::report_configuration>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        report_configuration_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), report_configuration_filter_condition(filter)),
         [](const auto& entities) { return report_configuration_mapper::map(entities); },
         lg(),
         "Reading latest report configurations with pagination.");
@@ -567,7 +568,7 @@ std::uint32_t report_configuration_repository::get_total_report_configuration_co
     return execute_count_query<report_configuration_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), report_configuration_filter_condition(filter)),
         lg(),
         "Counting report configurations");
 }

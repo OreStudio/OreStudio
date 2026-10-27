@@ -78,27 +78,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_counterparty_identifiers_response
-    list_counterparty_identifiers(const messaging::list_counterparty_identifiers_request& request);
-    messaging::get_counterparty_identifier_response
-    get_counterparty_identifier(const messaging::get_counterparty_identifier_request& request);
-    messaging::get_many_counterparty_identifiers_response get_many_counterparty_identifiers(
-        const messaging::get_many_counterparty_identifiers_request& request);
-    messaging::put_counterparty_identifier_response
-    put_counterparty_identifier(const messaging::put_counterparty_identifier_request& request);
-    messaging::put_many_counterparty_identifiers_response put_many_counterparty_identifiers(
-        const messaging::put_many_counterparty_identifiers_request& request);
-    messaging::delete_counterparty_identifier_response delete_counterparty_identifier(
-        const messaging::delete_counterparty_identifier_request& request);
-    messaging::delete_many_counterparty_identifiers_response delete_many_counterparty_identifiers(
-        const messaging::delete_many_counterparty_identifiers_request& request);
-    messaging::list_by_counterparty_id_counterparty_identifiers_response
+    ::ores::refdata::messaging::list_counterparty_identifiers_response
+    list_counterparty_identifiers(
+        const ::ores::refdata::messaging::list_counterparty_identifiers_request& request);
+    ::ores::refdata::messaging::get_counterparty_identifier_response get_counterparty_identifier(
+        const ::ores::refdata::messaging::get_counterparty_identifier_request& request);
+    ::ores::refdata::messaging::get_many_counterparty_identifiers_response
+    get_many_counterparty_identifiers(
+        const ::ores::refdata::messaging::get_many_counterparty_identifiers_request& request);
+    ::ores::refdata::messaging::put_counterparty_identifier_response put_counterparty_identifier(
+        const ::ores::refdata::messaging::put_counterparty_identifier_request& request);
+    ::ores::refdata::messaging::put_many_counterparty_identifiers_response
+    put_many_counterparty_identifiers(
+        const ::ores::refdata::messaging::put_many_counterparty_identifiers_request& request);
+    ::ores::refdata::messaging::delete_counterparty_identifier_response
+    delete_counterparty_identifier(
+        const ::ores::refdata::messaging::delete_counterparty_identifier_request& request);
+    ::ores::refdata::messaging::delete_many_counterparty_identifiers_response
+    delete_many_counterparty_identifiers(
+        const ::ores::refdata::messaging::delete_many_counterparty_identifiers_request& request);
+    ::ores::refdata::messaging::list_by_counterparty_id_counterparty_identifiers_response
     list_by_counterparty_id_counterparty_identifiers(
-        const messaging::list_by_counterparty_id_counterparty_identifiers_request& request);
-    messaging::list_counterparty_identifier_versions_response list_counterparty_identifier_versions(
-        const messaging::list_counterparty_identifier_versions_request& request);
-    messaging::get_counterparty_identifier_version_response get_counterparty_identifier_version(
-        const messaging::get_counterparty_identifier_version_request& request);
+        const ::ores::refdata::messaging::list_by_counterparty_id_counterparty_identifiers_request&
+            request);
+    ::ores::refdata::messaging::list_counterparty_identifier_versions_response
+    list_counterparty_identifier_versions(
+        const ::ores::refdata::messaging::list_counterparty_identifier_versions_request& request);
+    ::ores::refdata::messaging::get_counterparty_identifier_version_response
+    get_counterparty_identifier_version(
+        const ::ores::refdata::messaging::get_counterparty_identifier_version_request& request);
     /**@}*/
 
     /**
@@ -128,7 +136,7 @@ public:
      * column.
      */
     std::vector<std::string>
-    changed_columns(const messaging::counterparty_identifier_write& proposed);
+    changed_columns(const ::ores::refdata::messaging::counterparty_identifier_write& proposed);
 
     /**
      * @brief Lists counterparty identifiers with pagination support.
@@ -336,7 +344,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::counterparty_identifier_change& change,
+    prepare_change(const ::ores::refdata::messaging::counterparty_identifier_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::counterparty_identifier& out);
 

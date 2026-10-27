@@ -44,8 +44,6 @@
 
 namespace {
 
-const std::string tags("[refdata][conventions][bundle][database]");
-
 // A bundle belongs to a party, so each case writes one and acts for it.
 ores::database::context party_context(ores::testing::scoped_database_helper& h) {
     auto gen = ores::testing::make_generation_context(h);
@@ -63,7 +61,8 @@ ores::database::context party_context(ores::testing::scoped_database_helper& h) 
 
 }
 
-TEST_CASE("a bundle resolves the identity the party already holds", tags) {
+TEST_CASE("a bundle resolves the identity the party already holds",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -135,7 +134,8 @@ TEST_CASE("a bundle resolves the identity the party already holds", tags) {
     CHECK(held_parts.front().version > resolved_part.version);
 }
 
-TEST_CASE("a bundle that changes leg form closes the other form", tags) {
+TEST_CASE("a bundle that changes leg form closes the other form",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -187,7 +187,8 @@ TEST_CASE("a bundle that changes leg form closes the other form", tags) {
     CHECK(held_long_shorts.front().convention_id == held_conventions.front().id);
 }
 
-TEST_CASE("applying a party's convention again replaces it", tags) {
+TEST_CASE("applying a party's convention again replaces it",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     auto gen = ores::testing::make_generation_context(h);
@@ -213,7 +214,8 @@ TEST_CASE("applying a party's convention again replaces it", tags) {
     CHECK(copies == 1);
 }
 
-TEST_CASE("a world convention the tenant holds is left as it is", tags) {
+TEST_CASE("a world convention the tenant holds is left as it is",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     auto gen = ores::testing::make_generation_context(h);
@@ -245,7 +247,8 @@ TEST_CASE("a world convention the tenant holds is left as it is", tags) {
     CHECK(version_held(service.read()) == version);
 }
 
-TEST_CASE("a bundle refuses a family the registry does not know", tags) {
+TEST_CASE("a bundle refuses a family the registry does not know",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
 
@@ -256,7 +259,8 @@ TEST_CASE("a bundle refuses a family the registry does not know", tags) {
                     std::runtime_error);
 }
 
-TEST_CASE("a bundle whose part comes first still writes the central row first", tags) {
+TEST_CASE("a bundle whose part comes first still writes the central row first",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -293,7 +297,8 @@ TEST_CASE("a bundle whose part comes first still writes the central row first", 
     CHECK(held_parts.front().convention_id == held.front().id);
 }
 
-TEST_CASE("a bundle reads back the rows an apply wrote", tags) {
+TEST_CASE("a bundle reads back the rows an apply wrote",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -349,7 +354,8 @@ TEST_CASE("a bundle reads back the rows an apply wrote", tags) {
     CHECK(read_part->pay_index == std::optional<std::string>("CHF-LIBOR-6M"));
 }
 
-TEST_CASE("the shared convention family reads back only the kind the bundle covers", tags) {
+TEST_CASE("the shared convention family reads back only the kind the bundle covers",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -391,7 +397,8 @@ TEST_CASE("the shared convention family reads back only the kind the bundle cove
     CHECK(central_names.front() == "NOK-3M-6M-BASIS");
 }
 
-TEST_CASE("a read bundle applies into another party unchanged", tags) {
+TEST_CASE("a read bundle applies into another party unchanged",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto first = party_context(h);
     const auto second = party_context(h);
@@ -454,7 +461,8 @@ TEST_CASE("a read bundle applies into another party unchanged", tags) {
     CHECK(copied_part->convention_id == copied_central->id);
 }
 
-TEST_CASE("a bundle read carries a row for every family an apply wrote", tags) {
+TEST_CASE("a bundle read carries a row for every family an apply wrote",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -509,7 +517,8 @@ TEST_CASE("a bundle read carries a row for every family an apply wrote", tags) {
     CHECK(rows_of("ibor_index") >= 1);
 }
 
-TEST_CASE("the bundle read drops a part whose central row it does not carry", tags) {
+TEST_CASE("the bundle read drops a part whose central row it does not carry",
+          "[refdata][conventions][bundle][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;

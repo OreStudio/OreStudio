@@ -76,29 +76,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ore_parameter_value_set_values_response list_ore_parameter_value_set_values(
-        const messaging::list_ore_parameter_value_set_values_request& request);
-    messaging::get_ore_parameter_value_set_value_response get_ore_parameter_value_set_value(
-        const messaging::get_ore_parameter_value_set_value_request& request);
-    messaging::get_many_ore_parameter_value_set_values_response
+    ::ores::reporting::messaging::list_ore_parameter_value_set_values_response
+    list_ore_parameter_value_set_values(
+        const ::ores::reporting::messaging::list_ore_parameter_value_set_values_request& request);
+    ::ores::reporting::messaging::get_ore_parameter_value_set_value_response
+    get_ore_parameter_value_set_value(
+        const ::ores::reporting::messaging::get_ore_parameter_value_set_value_request& request);
+    ::ores::reporting::messaging::get_many_ore_parameter_value_set_values_response
     get_many_ore_parameter_value_set_values(
-        const messaging::get_many_ore_parameter_value_set_values_request& request);
-    messaging::put_ore_parameter_value_set_value_response put_ore_parameter_value_set_value(
-        const messaging::put_ore_parameter_value_set_value_request& request);
-    messaging::put_many_ore_parameter_value_set_values_response
+        const ::ores::reporting::messaging::get_many_ore_parameter_value_set_values_request&
+            request);
+    ::ores::reporting::messaging::put_ore_parameter_value_set_value_response
+    put_ore_parameter_value_set_value(
+        const ::ores::reporting::messaging::put_ore_parameter_value_set_value_request& request);
+    ::ores::reporting::messaging::put_many_ore_parameter_value_set_values_response
     put_many_ore_parameter_value_set_values(
-        const messaging::put_many_ore_parameter_value_set_values_request& request);
-    messaging::delete_ore_parameter_value_set_value_response delete_ore_parameter_value_set_value(
-        const messaging::delete_ore_parameter_value_set_value_request& request);
-    messaging::delete_many_ore_parameter_value_set_values_response
+        const ::ores::reporting::messaging::put_many_ore_parameter_value_set_values_request&
+            request);
+    ::ores::reporting::messaging::delete_ore_parameter_value_set_value_response
+    delete_ore_parameter_value_set_value(
+        const ::ores::reporting::messaging::delete_ore_parameter_value_set_value_request& request);
+    ::ores::reporting::messaging::delete_many_ore_parameter_value_set_values_response
     delete_many_ore_parameter_value_set_values(
-        const messaging::delete_many_ore_parameter_value_set_values_request& request);
-    messaging::list_ore_parameter_value_set_value_versions_response
+        const ::ores::reporting::messaging::delete_many_ore_parameter_value_set_values_request&
+            request);
+    ::ores::reporting::messaging::list_ore_parameter_value_set_value_versions_response
     list_ore_parameter_value_set_value_versions(
-        const messaging::list_ore_parameter_value_set_value_versions_request& request);
-    messaging::get_ore_parameter_value_set_value_version_response
+        const ::ores::reporting::messaging::list_ore_parameter_value_set_value_versions_request&
+            request);
+    ::ores::reporting::messaging::get_ore_parameter_value_set_value_version_response
     get_ore_parameter_value_set_value_version(
-        const messaging::get_ore_parameter_value_set_value_version_request& request);
+        const ::ores::reporting::messaging::get_ore_parameter_value_set_value_version_request&
+            request);
     /**@}*/
 
     /**
@@ -195,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::ore_parameter_value_set_value_change& change,
+    prepare_change(const ::ores::reporting::messaging::ore_parameter_value_set_value_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::ore_parameter_value_set_value& out);
 };

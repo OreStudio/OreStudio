@@ -27,8 +27,6 @@
 
 namespace {
 
-const std::string tags("[concurrency][stoppable_thread]");
-
 using namespace std::chrono_literals;
 
 // A wait this long that returns in a fraction of it was woken.
@@ -62,7 +60,7 @@ struct selected_kit {
 }
 
 TEMPLATE_TEST_CASE("a_wait_returns_false_when_the_span_passes_with_no_stop",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     typename TestType::source source;
@@ -74,7 +72,7 @@ TEMPLATE_TEST_CASE("a_wait_returns_false_when_the_span_passes_with_no_stop",
 }
 
 TEMPLATE_TEST_CASE("a_wait_returns_at_once_when_a_stop_was_requested_before_it",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     typename TestType::source source;
@@ -85,7 +83,10 @@ TEMPLATE_TEST_CASE("a_wait_returns_at_once_when_a_stop_was_requested_before_it",
     CHECK(std::chrono::steady_clock::now() - started < woken_within);
 }
 
-TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", tags, portable_kit, selected_kit) {
+TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress",
+                   "[concurrency][stoppable_thread]",
+                   portable_kit,
+                   selected_kit) {
     typename TestType::source source;
     auto waiter = std::async(std::launch::async, [token = source.get_token()] {
         const auto started = std::chrono::steady_clock::now();
@@ -102,7 +103,10 @@ TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", tags, portable_kit
     CHECK(waited < woken_within);
 }
 
-TEMPLATE_TEST_CASE("tokens_of_one_source_share_its_state", tags, portable_kit, selected_kit) {
+TEMPLATE_TEST_CASE("tokens_of_one_source_share_its_state",
+                   "[concurrency][stoppable_thread]",
+                   portable_kit,
+                   selected_kit) {
     typename TestType::source source;
     const auto first = source.get_token();
     const auto second = source.get_token();
@@ -116,7 +120,7 @@ TEMPLATE_TEST_CASE("tokens_of_one_source_share_its_state", tags, portable_kit, s
 }
 
 TEMPLATE_TEST_CASE("a_token_with_no_state_is_never_stopped_and_waits_the_span",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     const typename TestType::token none;
@@ -128,7 +132,10 @@ TEMPLATE_TEST_CASE("a_token_with_no_state_is_never_stopped_and_waits_the_span",
     CHECK_FALSE(none.stop_possible());
 }
 
-TEMPLATE_TEST_CASE("a_moved_from_source_does_nothing", tags, portable_kit, selected_kit) {
+TEMPLATE_TEST_CASE("a_moved_from_source_does_nothing",
+                   "[concurrency][stoppable_thread]",
+                   portable_kit,
+                   selected_kit) {
     typename TestType::source source;
     const typename TestType::source taken = std::move(source);
 
@@ -138,7 +145,7 @@ TEMPLATE_TEST_CASE("a_moved_from_source_does_nothing", tags, portable_kit, selec
 }
 
 TEMPLATE_TEST_CASE("the_destructor_stops_a_waiting_thread_and_joins_it",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     std::atomic<bool> left_the_wait = false;
@@ -156,7 +163,7 @@ TEMPLATE_TEST_CASE("the_destructor_stops_a_waiting_thread_and_joins_it",
 }
 
 TEMPLATE_TEST_CASE("request_stop_on_the_thread_reaches_the_callable",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     std::promise<bool> answer;
@@ -173,7 +180,7 @@ TEMPLATE_TEST_CASE("request_stop_on_the_thread_reaches_the_callable",
 }
 
 TEMPLATE_TEST_CASE("a_callable_that_takes_no_token_runs_and_joins",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     std::atomic<bool> ran = false;
@@ -185,7 +192,7 @@ TEMPLATE_TEST_CASE("a_callable_that_takes_no_token_runs_and_joins",
 }
 
 TEMPLATE_TEST_CASE("assigning_over_a_running_thread_stops_and_joins_it_first",
-                   tags,
+                   "[concurrency][stoppable_thread]",
                    portable_kit,
                    selected_kit) {
     std::atomic<int> finished = 0;

@@ -62,8 +62,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::market_series_asset_class>
-read_one(repository::market_series_asset_class_repository& repo,
-         const messaging::market_series_asset_class_key& key) {
+market_series_asset_class_read_one(repository::market_series_asset_class_repository& repo,
+                                   const messaging::market_series_asset_class_key& key) {
     return repo.read_latest(key.market_series_id, key.asset_class_code);
 }
 
@@ -73,7 +73,8 @@ read_one(repository::market_series_asset_class_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::market_series_asset_class_key key_from(const domain::market_series_asset_class& v) {
+messaging::market_series_asset_class_key
+market_series_asset_class_key_from(const domain::market_series_asset_class& v) {
     messaging::market_series_asset_class_key key;
     key.market_series_id = v.market_series_id;
     key.asset_class_code = v.asset_class_code;
@@ -89,7 +90,7 @@ messaging::market_series_asset_class_key key_from(const domain::market_series_as
  * set after this conversion.
  */
 domain::market_series_asset_class
-to_domain(const messaging::market_series_asset_class_write& write) {
+market_series_asset_class_to_domain(const messaging::market_series_asset_class_write& write) {
     domain::market_series_asset_class v;
     v.market_series_id = write.market_series_id;
     v.asset_class_code = write.asset_class_code;
@@ -148,7 +149,7 @@ messaging::get_market_series_asset_class_response
 market_series_asset_class_service::get_market_series_asset_class(
     const messaging::get_market_series_asset_class_request& request) {
     messaging::get_market_series_asset_class_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = market_series_asset_class_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "market_series_asset_class"});
         return response;
@@ -168,7 +169,7 @@ market_series_asset_class_service::get_many_market_series_asset_classes(
     for (const auto& k : request.keys) {
         messaging::market_series_asset_class_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = market_series_asset_class_read_one(repo_, k);
         if (!found.empty())
             entry.market_series_asset_class = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +186,8 @@ market_series_asset_class_service::put_market_series_asset_class(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written =
+        market_series_asset_class_read_one(repo_, market_series_asset_class_key_from(value));
     if (!written.empty())
         response.market_series_asset_class = std::move(written.front());
     return response;
@@ -218,7 +220,8 @@ market_series_asset_class_service::put_many_market_series_asset_classes(
     repo_.write(batch, claims);
     response.market_series_asset_classes.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written =
+            market_series_asset_class_read_one(repo_, market_series_asset_class_key_from(value));
         response.market_series_asset_classes.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -255,7 +258,7 @@ market_series_asset_class_service::delete_market_series_asset_class(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = market_series_asset_class_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "market_series_asset_class",
@@ -308,8 +311,9 @@ ores::utility::domain::result market_series_asset_class_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = market_series_asset_class_to_domain(change.write);
+    const auto current =
+        market_series_asset_class_read_one(repo_, market_series_asset_class_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

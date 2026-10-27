@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_methodologies_response
-    list_methodologies(const messaging::list_methodologies_request& request);
-    messaging::get_methodology_response
-    get_methodology(const messaging::get_methodology_request& request);
-    messaging::get_many_methodologies_response
-    get_many_methodologies(const messaging::get_many_methodologies_request& request);
-    messaging::put_methodology_response
-    put_methodology(const messaging::put_methodology_request& request);
-    messaging::put_many_methodologies_response
-    put_many_methodologies(const messaging::put_many_methodologies_request& request);
-    messaging::delete_methodology_response
-    delete_methodology(const messaging::delete_methodology_request& request);
-    messaging::delete_many_methodologies_response
-    delete_many_methodologies(const messaging::delete_many_methodologies_request& request);
-    messaging::list_methodology_versions_response
-    list_methodology_versions(const messaging::list_methodology_versions_request& request);
-    messaging::get_methodology_version_response
-    get_methodology_version(const messaging::get_methodology_version_request& request);
+    ::ores::dq::messaging::list_methodologies_response
+    list_methodologies(const ::ores::dq::messaging::list_methodologies_request& request);
+    ::ores::dq::messaging::get_methodology_response
+    get_methodology(const ::ores::dq::messaging::get_methodology_request& request);
+    ::ores::dq::messaging::get_many_methodologies_response
+    get_many_methodologies(const ::ores::dq::messaging::get_many_methodologies_request& request);
+    ::ores::dq::messaging::put_methodology_response
+    put_methodology(const ::ores::dq::messaging::put_methodology_request& request);
+    ::ores::dq::messaging::put_many_methodologies_response
+    put_many_methodologies(const ::ores::dq::messaging::put_many_methodologies_request& request);
+    ::ores::dq::messaging::delete_methodology_response
+    delete_methodology(const ::ores::dq::messaging::delete_methodology_request& request);
+    ::ores::dq::messaging::delete_many_methodologies_response delete_many_methodologies(
+        const ::ores::dq::messaging::delete_many_methodologies_request& request);
+    ::ores::dq::messaging::list_methodology_versions_response list_methodology_versions(
+        const ::ores::dq::messaging::list_methodology_versions_request& request);
+    ::ores::dq::messaging::get_methodology_version_response
+    get_methodology_version(const ::ores::dq::messaging::get_methodology_version_request& request);
     /**@}*/
 
     /**
@@ -203,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::methodology_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::methodology& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::methodology_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::methodology& out);
 };
 
 }

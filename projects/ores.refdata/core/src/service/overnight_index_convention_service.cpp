@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::overnight_index_convention>
-read_one(repository::overnight_index_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::overnight_index_convention_key& key) {
+overnight_index_convention_read_one(repository::overnight_index_convention_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const messaging::overnight_index_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::overnight_index_convention_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::overnight_index_convention_key key_from(const domain::overnight_index_convention& v) {
+messaging::overnight_index_convention_key
+overnight_index_convention_key_from(const domain::overnight_index_convention& v) {
     messaging::overnight_index_convention_key key;
     key.id = v.id;
     return key;
@@ -96,7 +97,7 @@ messaging::overnight_index_convention_key key_from(const domain::overnight_index
  * database's to state, and are set after this conversion.
  */
 domain::overnight_index_convention
-to_domain(const messaging::overnight_index_convention_write& write) {
+overnight_index_convention_to_domain(const messaging::overnight_index_convention_write& write) {
     domain::overnight_index_convention v;
     v.id = write.id;
     v.fixing_calendar = write.fixing_calendar;
@@ -146,7 +147,7 @@ messaging::get_overnight_index_convention_response
 overnight_index_convention_service::get_overnight_index_convention(
     const messaging::get_overnight_index_convention_request& request) {
     messaging::get_overnight_index_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = overnight_index_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "overnight_index_convention"});
         return response;
@@ -166,7 +167,7 @@ overnight_index_convention_service::get_many_overnight_index_conventions(
     for (const auto& k : request.keys) {
         messaging::overnight_index_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = overnight_index_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.overnight_index_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +184,8 @@ overnight_index_convention_service::put_overnight_index_convention(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = overnight_index_convention_read_one(
+        repo_, ctx_, overnight_index_convention_key_from(value));
     if (!written.empty())
         response.overnight_index_convention = std::move(written.front());
     return response;
@@ -216,7 +218,8 @@ overnight_index_convention_service::put_many_overnight_index_conventions(
     repo_.write(ctx_, batch, claims);
     response.overnight_index_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = overnight_index_convention_read_one(
+            repo_, ctx_, overnight_index_convention_key_from(value));
         response.overnight_index_conventions.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -252,7 +255,7 @@ overnight_index_convention_service::delete_overnight_index_convention(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = overnight_index_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "overnight_index_convention",
@@ -342,8 +345,9 @@ ores::utility::domain::result overnight_index_convention_service::prepare_change
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = overnight_index_convention_to_domain(change.write);
+    const auto current =
+        overnight_index_convention_read_one(repo_, ctx_, overnight_index_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

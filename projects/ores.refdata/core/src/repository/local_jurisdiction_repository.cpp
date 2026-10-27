@@ -78,9 +78,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+local_jurisdiction_list_order(const ores::utility::domain::order& order,
+                              std::initializer_list<std::string> default_columns,
+                              bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -303,7 +304,7 @@ local_jurisdiction_repository::read_latest(context ctx,
     return execute_ordered_read_query<local_jurisdiction_entity, domain::local_jurisdiction>(
         ctx,
         query,
-        list_order(order, {"code", "coding_scheme_code"}, false),
+        local_jurisdiction_list_order(order, {"code", "coding_scheme_code"}, false),
         narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return local_jurisdiction_mapper::map(entities); },
         lg(),

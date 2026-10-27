@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/party_role_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/party_role_type_table.hpp"
 #include "ores.trading.api/domain/party_role_type_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
@@ -29,9 +30,6 @@
 namespace {
 
 using ores::trading::domain::party_role_type;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 party_role_type make_party_role_type(const std::string& code, const std::string& description = "") {
     party_role_type prt;
@@ -51,7 +49,7 @@ party_role_type make_party_role_type(const std::string& code, const std::string&
 using ores::trading::domain::party_role_type;
 using namespace ores::logging;
 
-TEST_CASE("create_party_role_type_with_valid_fields", tags) {
+TEST_CASE("create_party_role_type_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_party_role_type("Counterparty", "Primary counterparty on a trade");
@@ -66,7 +64,7 @@ TEST_CASE("create_party_role_type_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("party_role_type_insertion_operator", tags) {
+TEST_CASE("party_role_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_party_role_type("CalculationAgent", "Calculation agent for the trade");
@@ -80,7 +78,7 @@ TEST_CASE("party_role_type_insertion_operator", tags) {
     CHECK(json_output.find("CalculationAgent") != std::string::npos);
 }
 
-TEST_CASE("create_party_role_type_with_faker", tags) {
+TEST_CASE("create_party_role_type_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     party_role_type sut;
@@ -99,7 +97,7 @@ TEST_CASE("create_party_role_type_with_faker", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("create_multiple_random_party_role_types", tags) {
+TEST_CASE("create_multiple_random_party_role_types", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> codes = {
@@ -111,7 +109,7 @@ TEST_CASE("create_multiple_random_party_role_types", tags) {
     }
 }
 
-TEST_CASE("party_role_type_convert_single_to_table", tags) {
+TEST_CASE("party_role_type_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<party_role_type> items = {
@@ -124,7 +122,7 @@ TEST_CASE("party_role_type_convert_single_to_table", tags) {
     CHECK(table.find("ExecutingBroker") != std::string::npos);
 }
 
-TEST_CASE("party_role_type_convert_multiple_to_table", tags) {
+TEST_CASE("party_role_type_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<party_role_type> items;
@@ -141,7 +139,7 @@ TEST_CASE("party_role_type_convert_multiple_to_table", tags) {
     CHECK(table.find("Role2") != std::string::npos);
 }
 
-TEST_CASE("party_role_type_convert_empty_vector_to_table", tags) {
+TEST_CASE("party_role_type_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<party_role_type> items;
@@ -152,7 +150,7 @@ TEST_CASE("party_role_type_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Version") != std::string::npos);
 }
 
-TEST_CASE("party_role_type_table_with_faker_data", tags) {
+TEST_CASE("party_role_type_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<party_role_type> items;

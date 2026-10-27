@@ -19,20 +19,14 @@
  */
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
-
-namespace {
-
-const std::string test_suite("ores.http.tests");
-const std::string tags("[http_server_options]");
-
-}
 
 using namespace ores::http::net;
 using namespace ores::logging;
 
-TEST_CASE("http_server_options_default_construction", tags) {
+TEST_CASE("http_server_options_default_construction", "[http_server_options]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing http_server_options default construction";
 
@@ -53,7 +47,7 @@ TEST_CASE("http_server_options_default_construction", tags) {
     CHECK(sut.server_identifier == "ores-http-server");
 }
 
-TEST_CASE("http_server_options_custom_values", tags) {
+TEST_CASE("http_server_options_custom_values", "[http_server_options]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing http_server_options with custom values";
 
@@ -81,7 +75,7 @@ TEST_CASE("http_server_options_custom_values", tags) {
     CHECK(sut.server_identifier == "my-server");
 }
 
-TEST_CASE("http_server_options_streaming", tags) {
+TEST_CASE("http_server_options_streaming", "[http_server_options]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing http_server_options streaming operator";
 
@@ -102,7 +96,7 @@ TEST_CASE("http_server_options_streaming", tags) {
     CHECK(output.find("true") != std::string::npos);
 }
 
-TEST_CASE("http_server_options_streaming_contains_all_fields", tags) {
+TEST_CASE("http_server_options_streaming_contains_all_fields", "[http_server_options]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing http_server_options streaming contains all fields";
 

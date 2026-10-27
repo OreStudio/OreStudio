@@ -75,24 +75,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_crm_driver_pairs_response
-    list_crm_driver_pairs(const messaging::list_crm_driver_pairs_request& request);
-    messaging::get_crm_driver_pair_response
-    get_crm_driver_pair(const messaging::get_crm_driver_pair_request& request);
-    messaging::get_many_crm_driver_pairs_response
-    get_many_crm_driver_pairs(const messaging::get_many_crm_driver_pairs_request& request);
-    messaging::put_crm_driver_pair_response
-    put_crm_driver_pair(const messaging::put_crm_driver_pair_request& request);
-    messaging::put_many_crm_driver_pairs_response
-    put_many_crm_driver_pairs(const messaging::put_many_crm_driver_pairs_request& request);
-    messaging::delete_crm_driver_pair_response
-    delete_crm_driver_pair(const messaging::delete_crm_driver_pair_request& request);
-    messaging::delete_many_crm_driver_pairs_response
-    delete_many_crm_driver_pairs(const messaging::delete_many_crm_driver_pairs_request& request);
-    messaging::list_crm_driver_pair_versions_response
-    list_crm_driver_pair_versions(const messaging::list_crm_driver_pair_versions_request& request);
-    messaging::get_crm_driver_pair_version_response
-    get_crm_driver_pair_version(const messaging::get_crm_driver_pair_version_request& request);
+    ::ores::refdata::messaging::list_crm_driver_pairs_response
+    list_crm_driver_pairs(const ::ores::refdata::messaging::list_crm_driver_pairs_request& request);
+    ::ores::refdata::messaging::get_crm_driver_pair_response
+    get_crm_driver_pair(const ::ores::refdata::messaging::get_crm_driver_pair_request& request);
+    ::ores::refdata::messaging::get_many_crm_driver_pairs_response get_many_crm_driver_pairs(
+        const ::ores::refdata::messaging::get_many_crm_driver_pairs_request& request);
+    ::ores::refdata::messaging::put_crm_driver_pair_response
+    put_crm_driver_pair(const ::ores::refdata::messaging::put_crm_driver_pair_request& request);
+    ::ores::refdata::messaging::put_many_crm_driver_pairs_response put_many_crm_driver_pairs(
+        const ::ores::refdata::messaging::put_many_crm_driver_pairs_request& request);
+    ::ores::refdata::messaging::delete_crm_driver_pair_response delete_crm_driver_pair(
+        const ::ores::refdata::messaging::delete_crm_driver_pair_request& request);
+    ::ores::refdata::messaging::delete_many_crm_driver_pairs_response delete_many_crm_driver_pairs(
+        const ::ores::refdata::messaging::delete_many_crm_driver_pairs_request& request);
+    ::ores::refdata::messaging::list_crm_driver_pair_versions_response
+    list_crm_driver_pair_versions(
+        const ::ores::refdata::messaging::list_crm_driver_pair_versions_request& request);
+    ::ores::refdata::messaging::get_crm_driver_pair_version_response get_crm_driver_pair_version(
+        const ::ores::refdata::messaging::get_crm_driver_pair_version_request& request);
     /**@}*/
 
     /**
@@ -190,9 +191,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::crm_driver_pair_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::crm_driver_pair& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::crm_driver_pair_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::crm_driver_pair& out);
 };
 
 }

@@ -39,7 +39,7 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view report_error_scope_queue_group = "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_report_error_scope_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_report_error_scope_handl
     auto h =
         std::make_shared<report_error_scope_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_report_error_scopes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_report_error_scopes(std::move(msg));
-        }));
+        list_report_error_scopes_request::nats_subject,
+        report_error_scope_queue_group,
+        [h](ores::nats::message msg) { h->list_report_error_scopes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_report_error_scope_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_report_error_scope(std::move(msg));
-        }));
+        get_report_error_scope_request::nats_subject,
+        report_error_scope_queue_group,
+        [h](ores::nats::message msg) { h->get_report_error_scope(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_report_error_scopes_request::nats_subject,
-        queue_group,
+        report_error_scope_queue_group,
         [h](ores::nats::message msg) { h->get_many_report_error_scopes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_report_error_scope_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_report_error_scope(std::move(msg));
-        }));
+        put_report_error_scope_request::nats_subject,
+        report_error_scope_queue_group,
+        [h](ores::nats::message msg) { h->put_report_error_scope(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_report_error_scopes_request::nats_subject,
-        queue_group,
+        report_error_scope_queue_group,
         [h](ores::nats::message msg) { h->put_many_report_error_scopes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_report_error_scope_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_report_error_scope(std::move(msg));
-        }));
+        delete_report_error_scope_request::nats_subject,
+        report_error_scope_queue_group,
+        [h](ores::nats::message msg) { h->delete_report_error_scope(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_report_error_scopes_request::nats_subject,
-        queue_group,
+        report_error_scope_queue_group,
         [h](ores::nats::message msg) { h->delete_many_report_error_scopes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_report_error_scope_versions_request::nats_subject,
-        queue_group,
+        report_error_scope_queue_group,
         [h](ores::nats::message msg) { h->list_report_error_scope_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_report_error_scope_version_request::nats_subject,
-        queue_group,
+        report_error_scope_queue_group,
         [h](ores::nats::message msg) { h->get_report_error_scope_version(std::move(msg)); }));
     return subs;
 }

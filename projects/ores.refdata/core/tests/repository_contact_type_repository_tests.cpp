@@ -27,18 +27,12 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
-
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::contact_type;
@@ -46,7 +40,7 @@ using ores::refdata::repository::contact_type_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_contact_type", tags) {
+TEST_CASE("write_single_contact_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -63,7 +57,7 @@ TEST_CASE("write_single_contact_type", tags) {
     CHECK(read_contact_types[0].name == ct.name);
 }
 
-TEST_CASE("write_multiple_contact_types", tags) {
+TEST_CASE("write_multiple_contact_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -86,7 +80,7 @@ TEST_CASE("write_multiple_contact_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_contact_types", tags) {
+TEST_CASE("read_latest_contact_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -111,7 +105,7 @@ TEST_CASE("read_latest_contact_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_contact_type_by_code", tags) {
+TEST_CASE("read_latest_contact_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -135,7 +129,7 @@ TEST_CASE("read_latest_contact_type_by_code", tags) {
     CHECK(read_contact_types[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_contact_type_code", tags) {
+TEST_CASE("read_nonexistent_contact_type_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

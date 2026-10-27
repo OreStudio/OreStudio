@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string activity_type_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<activity_type>& v) {
 
     for ([[maybe_unused]] const auto& at : v) {
         table << at.code << at.category << (at.requires_confirmation ? "true" : "false")
-              << at.description << at.fpml_event_type_code << opt_str(at.fsm_transition_id)
-              << at.modified_by << at.version << fort::endr;
+              << at.description << at.fpml_event_type_code
+              << activity_type_opt_str(at.fsm_transition_id) << at.modified_by << at.version
+              << fort::endr;
     }
     return table.to_string();
 }

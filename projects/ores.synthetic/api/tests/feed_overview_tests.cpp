@@ -24,8 +24,6 @@
 
 namespace {
 
-const std::string tags("[feed_overview]");
-
 using ores::synthetic::feed::children_with_counts;
 using ores::synthetic::feed::folder_feed_count;
 using ores::synthetic::messaging::feed_folder;
@@ -52,7 +50,7 @@ const std::vector<folder_feed_count> counts{
 
 }
 
-TEST_CASE("feed_overview wants the roots when no folder is named", tags) {
+TEST_CASE("feed_overview wants the roots when no folder is named", "[feed_overview]") {
     const auto roots = children_with_counts(hierarchy, counts, "");
     REQUIRE(roots.size() == 1);
     CHECK(roots[0].name == "Synthetic");
@@ -62,7 +60,7 @@ TEST_CASE("feed_overview wants the roots when no folder is named", tags) {
     CHECK(roots[0].has_children);
 }
 
-TEST_CASE("feed_overview adds the feeds of every folder below a child", tags) {
+TEST_CASE("feed_overview adds the feeds of every folder below a child", "[feed_overview]") {
     const auto kids = children_with_counts(hierarchy, counts, "root");
     REQUIRE(kids.size() == 2);
     CHECK(kids[0].name == "Bloomberg");
@@ -74,7 +72,7 @@ TEST_CASE("feed_overview adds the feeds of every folder below a child", tags) {
     CHECK(kids[1].ir_feeds == 0);
 }
 
-TEST_CASE("feed_overview says which children have folders of their own", tags) {
+TEST_CASE("feed_overview says which children have folders of their own", "[feed_overview]") {
     const auto kids = children_with_counts(hierarchy, counts, "b");
     REQUIRE(kids.size() == 2);
     CHECK_FALSE(kids[0].has_children);
@@ -82,7 +80,7 @@ TEST_CASE("feed_overview says which children have folders of their own", tags) {
     CHECK(children_with_counts(hierarchy, counts, "root")[0].has_children);
 }
 
-TEST_CASE("feed_overview puts the children in name order, then by id", tags) {
+TEST_CASE("feed_overview puts the children in name order, then by id", "[feed_overview]") {
     const std::vector<feed_folder> same{folder("2", "", "Same", "root"),
                                         folder("1", "", "Same", "root")};
     const auto roots = children_with_counts(same, {}, "");
@@ -91,7 +89,7 @@ TEST_CASE("feed_overview puts the children in name order, then by id", tags) {
     CHECK(roots[1].id == "2");
 }
 
-TEST_CASE("feed_overview counts nothing for a folder with no feeds", tags) {
+TEST_CASE("feed_overview counts nothing for a folder with no feeds", "[feed_overview]") {
     const auto kids = children_with_counts(hierarchy, {}, "root");
     for (const auto& kid : kids) {
         CHECK(kid.fx_feeds == 0);
@@ -100,11 +98,11 @@ TEST_CASE("feed_overview counts nothing for a folder with no feeds", tags) {
     }
 }
 
-TEST_CASE("feed_overview has no children for a folder that is not there", tags) {
+TEST_CASE("feed_overview has no children for a folder that is not there", "[feed_overview]") {
     CHECK(children_with_counts(hierarchy, counts, "nowhere").empty());
 }
 
-TEST_CASE("feed_overview orders the names without regard to case", tags) {
+TEST_CASE("feed_overview orders the names without regard to case", "[feed_overview]") {
     const std::vector<feed_folder> mixed{folder("1", "", "beta", "root"),
                                          folder("2", "", "Alpha", "root"),
                                          folder("3", "", "Gamma", "root")};
@@ -115,14 +113,14 @@ TEST_CASE("feed_overview orders the names without regard to case", tags) {
     CHECK(roots[2].name == "Gamma");
 }
 
-TEST_CASE("feed_overview splits a search into lower case words", tags) {
+TEST_CASE("feed_overview splits a search into lower case words", "[feed_overview]") {
     using ores::synthetic::feed::search_terms;
     CHECK(search_terms("  USD   SOFR ") == std::vector<std::string>{"usd", "sofr"});
     CHECK(search_terms("").empty());
     CHECK(search_terms("   \t ").empty());
 }
 
-TEST_CASE("feed_overview bounds a search", tags) {
+TEST_CASE("feed_overview bounds a search", "[feed_overview]") {
     using ores::synthetic::feed::search_terms;
     const auto many = search_terms("a b c d e f g h i j k l");
     CHECK(many.size() == 8);
@@ -131,7 +129,7 @@ TEST_CASE("feed_overview bounds a search", tags) {
     CHECK(long_word[0].size() == 64);
 }
 
-TEST_CASE("feed_overview accepts only a UUID as a folder id", tags) {
+TEST_CASE("feed_overview accepts only a UUID as a folder id", "[feed_overview]") {
     using ores::synthetic::feed::is_folder_id;
     CHECK(is_folder_id("0a32284a-5f8c-4a99-9539-34923631ded3"));
     CHECK(is_folder_id("0A32284A-5F8C-4A99-9539-34923631DED3"));

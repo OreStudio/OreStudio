@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+configuration_analytic_list_order(const ores::utility::domain::order& order,
+                                  std::initializer_list<std::string> default_columns,
+                                  bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!configuration_analytic_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::configuration_analytics_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> configuration_analytic_filter_condition(
+    const std::optional<messaging::configuration_analytics_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -298,8 +299,8 @@ configuration_analytic_repository::read_latest_by_configuration_id(
                                       domain::configuration_analytic>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        configuration_analytic_list_order(order, {"id"}, false),
+        configuration_analytic_filter_condition(filter),
         [](const auto& entities) { return configuration_analytic_mapper::map(entities); },
         lg(),
         "Reading latest configuration analytics by configuration_id.");
@@ -322,7 +323,7 @@ std::uint32_t configuration_analytic_repository::get_total_analytic_count_by_con
     return execute_count_query<configuration_analytic_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        configuration_analytic_filter_condition(filter),
         lg(),
         "Counting configuration analytics by configuration_id");
 }
@@ -350,8 +351,8 @@ configuration_analytic_repository::read_latest_by_analytic_type_code(
                                       domain::configuration_analytic>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        configuration_analytic_list_order(order, {"id"}, false),
+        configuration_analytic_filter_condition(filter),
         [](const auto& entities) { return configuration_analytic_mapper::map(entities); },
         lg(),
         "Reading latest configuration analytics by analytic_type_code.");
@@ -374,7 +375,7 @@ std::uint32_t configuration_analytic_repository::get_total_analytic_count_by_ana
     return execute_count_query<configuration_analytic_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        configuration_analytic_filter_condition(filter),
         lg(),
         "Counting configuration analytics by analytic_type_code");
 }
@@ -430,8 +431,8 @@ std::vector<domain::configuration_analytic> configuration_analytic_repository::r
                                       domain::configuration_analytic>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        configuration_analytic_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), configuration_analytic_filter_condition(filter)),
         [](const auto& entities) { return configuration_analytic_mapper::map(entities); },
         lg(),
         "Reading latest configuration analytics with pagination.");
@@ -450,7 +451,7 @@ std::uint32_t configuration_analytic_repository::get_total_analytic_count(
     return execute_count_query<configuration_analytic_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), configuration_analytic_filter_condition(filter)),
         lg(),
         "Counting configuration analytics");
 }

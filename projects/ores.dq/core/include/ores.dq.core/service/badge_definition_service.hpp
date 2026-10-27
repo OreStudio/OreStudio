@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_badge_definitions_response
-    list_badge_definitions(const messaging::list_badge_definitions_request& request);
-    messaging::get_badge_definition_response
-    get_badge_definition(const messaging::get_badge_definition_request& request);
-    messaging::get_many_badge_definitions_response
-    get_many_badge_definitions(const messaging::get_many_badge_definitions_request& request);
-    messaging::put_badge_definition_response
-    put_badge_definition(const messaging::put_badge_definition_request& request);
-    messaging::put_many_badge_definitions_response
-    put_many_badge_definitions(const messaging::put_many_badge_definitions_request& request);
-    messaging::delete_badge_definition_response
-    delete_badge_definition(const messaging::delete_badge_definition_request& request);
-    messaging::delete_many_badge_definitions_response
-    delete_many_badge_definitions(const messaging::delete_many_badge_definitions_request& request);
-    messaging::list_badge_definition_versions_response list_badge_definition_versions(
-        const messaging::list_badge_definition_versions_request& request);
-    messaging::get_badge_definition_version_response
-    get_badge_definition_version(const messaging::get_badge_definition_version_request& request);
+    ::ores::dq::messaging::list_badge_definitions_response
+    list_badge_definitions(const ::ores::dq::messaging::list_badge_definitions_request& request);
+    ::ores::dq::messaging::get_badge_definition_response
+    get_badge_definition(const ::ores::dq::messaging::get_badge_definition_request& request);
+    ::ores::dq::messaging::get_many_badge_definitions_response get_many_badge_definitions(
+        const ::ores::dq::messaging::get_many_badge_definitions_request& request);
+    ::ores::dq::messaging::put_badge_definition_response
+    put_badge_definition(const ::ores::dq::messaging::put_badge_definition_request& request);
+    ::ores::dq::messaging::put_many_badge_definitions_response put_many_badge_definitions(
+        const ::ores::dq::messaging::put_many_badge_definitions_request& request);
+    ::ores::dq::messaging::delete_badge_definition_response
+    delete_badge_definition(const ::ores::dq::messaging::delete_badge_definition_request& request);
+    ::ores::dq::messaging::delete_many_badge_definitions_response delete_many_badge_definitions(
+        const ::ores::dq::messaging::delete_many_badge_definitions_request& request);
+    ::ores::dq::messaging::list_badge_definition_versions_response list_badge_definition_versions(
+        const ::ores::dq::messaging::list_badge_definition_versions_request& request);
+    ::ores::dq::messaging::get_badge_definition_version_response get_badge_definition_version(
+        const ::ores::dq::messaging::get_badge_definition_version_request& request);
     /**@}*/
 
     /**
@@ -187,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::badge_definition_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::badge_definition& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::badge_definition_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::badge_definition& out);
 };
 
 }

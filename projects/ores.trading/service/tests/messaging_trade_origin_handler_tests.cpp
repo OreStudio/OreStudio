@@ -56,8 +56,6 @@
 
 namespace {
 
-const std::string tags("[trade_origin_handler][integration]");
-
 const std::string test_subject("ores.test.trade_operations.book_trade");
 const std::string write_permission("trading::trades:write");
 const std::string service_origin_permission("trading::trades:write_service_origin");
@@ -184,7 +182,8 @@ bool refused_forbidden(const ores::nats::message& reply) {
 
 }
 
-TEST_CASE("a_token_without_the_service_origin_permission_may_not_state_synthetic", tags) {
+TEST_CASE("a_token_without_the_service_origin_permission_may_not_state_synthetic",
+          "[trade_origin_handler][integration]") {
     handler_fixture f;
     auto req = f.request();
     req.anchor.origin = ores::trading::domain::origin::synthetic;
@@ -196,7 +195,8 @@ TEST_CASE("a_token_without_the_service_origin_permission_may_not_state_synthetic
     CHECK_FALSE(f.stored(req.anchor.id));
 }
 
-TEST_CASE("a_token_without_the_service_origin_permission_may_not_state_ore_import", tags) {
+TEST_CASE("a_token_without_the_service_origin_permission_may_not_state_ore_import",
+          "[trade_origin_handler][integration]") {
     handler_fixture f;
     auto req = f.request();
     req.anchor.origin = ores::trading::domain::origin::ore_import;
@@ -208,7 +208,8 @@ TEST_CASE("a_token_without_the_service_origin_permission_may_not_state_ore_impor
     CHECK_FALSE(f.stored(req.anchor.id));
 }
 
-TEST_CASE("a_token_with_the_service_origin_permission_may_state_synthetic", tags) {
+TEST_CASE("a_token_with_the_service_origin_permission_may_state_synthetic",
+          "[trade_origin_handler][integration]") {
     handler_fixture f;
     auto req = f.request();
     req.anchor.origin = ores::trading::domain::origin::synthetic;
@@ -228,7 +229,8 @@ TEST_CASE("a_token_with_the_service_origin_permission_may_state_synthetic", tags
     CHECK(rows.front().origin_reference == "11111111-2222-3333-4444-555555555555");
 }
 
-TEST_CASE("a_token_without_the_service_origin_permission_may_state_api", tags) {
+TEST_CASE("a_token_without_the_service_origin_permission_may_state_api",
+          "[trade_origin_handler][integration]") {
     handler_fixture f;
     auto req = f.request();
     req.anchor.origin = ores::trading::domain::origin::api;

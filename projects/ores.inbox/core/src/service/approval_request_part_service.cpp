@@ -62,8 +62,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::approval_request_part>
-read_one(repository::approval_request_part_repository& repo,
-         const messaging::approval_request_part_key& key) {
+approval_request_part_read_one(repository::approval_request_part_repository& repo,
+                               const messaging::approval_request_part_key& key) {
     return repo.read_latest(key.request_id, key.part_code);
 }
 
@@ -73,7 +73,8 @@ read_one(repository::approval_request_part_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::approval_request_part_key key_from(const domain::approval_request_part& v) {
+messaging::approval_request_part_key
+approval_request_part_key_from(const domain::approval_request_part& v) {
     messaging::approval_request_part_key key;
     key.request_id = v.request_id;
     key.part_code = v.part_code;
@@ -88,7 +89,8 @@ messaging::approval_request_part_key key_from(const domain::approval_request_par
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::approval_request_part to_domain(const messaging::approval_request_part_write& write) {
+domain::approval_request_part
+approval_request_part_to_domain(const messaging::approval_request_part_write& write) {
     domain::approval_request_part v;
     v.request_id = write.request_id;
     v.part_code = write.part_code;
@@ -147,7 +149,7 @@ messaging::get_approval_request_part_response
 approval_request_part_service::get_approval_request_part(
     const messaging::get_approval_request_part_request& request) {
     messaging::get_approval_request_part_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = approval_request_part_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "approval_request_part"});
         return response;
@@ -167,7 +169,7 @@ approval_request_part_service::get_many_approval_request_parts(
     for (const auto& k : request.keys) {
         messaging::approval_request_part_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = approval_request_part_read_one(repo_, k);
         if (!found.empty())
             entry.approval_request_part = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -184,7 +186,7 @@ approval_request_part_service::put_approval_request_part(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = approval_request_part_read_one(repo_, approval_request_part_key_from(value));
     if (!written.empty())
         response.approval_request_part = std::move(written.front());
     return response;
@@ -217,7 +219,7 @@ approval_request_part_service::put_many_approval_request_parts(
     repo_.write(batch, claims);
     response.approval_request_parts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = approval_request_part_read_one(repo_, approval_request_part_key_from(value));
         response.approval_request_parts.push_back(written.empty() ? value :
                                                                     std::move(written.front()));
     }
@@ -252,7 +254,7 @@ approval_request_part_service::delete_approval_request_part(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = approval_request_part_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "approval_request_part",
@@ -305,8 +307,8 @@ approval_request_part_service::prepare_change(const messaging::approval_request_
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = approval_request_part_to_domain(change.write);
+    const auto current = approval_request_part_read_one(repo_, approval_request_part_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

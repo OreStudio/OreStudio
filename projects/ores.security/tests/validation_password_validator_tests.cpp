@@ -19,19 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/validation/password_validator.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.security.tests");
-const std::string tags("[validation]");
-
-}
 
 using ores::security::validation::password_validator;
 using namespace ores::logging;
 
-TEST_CASE("valid_password_passes_validation", tags) {
+TEST_CASE("valid_password_passes_validation", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "ValidPass123!";
@@ -42,7 +36,7 @@ TEST_CASE("valid_password_passes_validation", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("valid_password_with_all_special_chars", tags) {
+TEST_CASE("valid_password_with_all_special_chars", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "P@ssw0rd!#$%";
@@ -53,7 +47,7 @@ TEST_CASE("valid_password_with_all_special_chars", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("password_exactly_12_chars_passes", tags) {
+TEST_CASE("password_exactly_12_chars_passes", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Pass1234567!";
@@ -64,7 +58,7 @@ TEST_CASE("password_exactly_12_chars_passes", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("password_too_short_fails", tags) {
+TEST_CASE("password_too_short_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Pass123!";
@@ -75,7 +69,7 @@ TEST_CASE("password_too_short_fails", tags) {
     CHECK(result.error_message.find("at least 12 characters") != std::string::npos);
 }
 
-TEST_CASE("password_without_uppercase_fails", tags) {
+TEST_CASE("password_without_uppercase_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "lowercase123!";
@@ -86,7 +80,7 @@ TEST_CASE("password_without_uppercase_fails", tags) {
     CHECK(result.error_message.find("uppercase") != std::string::npos);
 }
 
-TEST_CASE("password_without_lowercase_fails", tags) {
+TEST_CASE("password_without_lowercase_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "UPPERCASE123!";
@@ -97,7 +91,7 @@ TEST_CASE("password_without_lowercase_fails", tags) {
     CHECK(result.error_message.find("lowercase") != std::string::npos);
 }
 
-TEST_CASE("password_without_digit_fails", tags) {
+TEST_CASE("password_without_digit_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "PasswordOnly!";
@@ -108,7 +102,7 @@ TEST_CASE("password_without_digit_fails", tags) {
     CHECK(result.error_message.find("digit") != std::string::npos);
 }
 
-TEST_CASE("password_without_special_char_fails", tags) {
+TEST_CASE("password_without_special_char_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Password1234";
@@ -119,7 +113,7 @@ TEST_CASE("password_without_special_char_fails", tags) {
     CHECK(result.error_message.find("special") != std::string::npos);
 }
 
-TEST_CASE("empty_password_fails", tags) {
+TEST_CASE("empty_password_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "";
@@ -130,7 +124,7 @@ TEST_CASE("empty_password_fails", tags) {
     CHECK(result.error_message.find("at least 12 characters") != std::string::npos);
 }
 
-TEST_CASE("password_with_all_special_chars_types", tags) {
+TEST_CASE("password_with_all_special_chars_types", "[validation]") {
     auto lg(make_logger(test_suite));
 
     std::string password = "Pass123" + std::string("!@#$%^&*()_+-=[]{}|;:,.<>?");
@@ -141,7 +135,7 @@ TEST_CASE("password_with_all_special_chars_types", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("long_valid_password_passes", tags) {
+TEST_CASE("long_valid_password_passes", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "VeryLongPassword123!WithManyCharacters";
@@ -152,7 +146,7 @@ TEST_CASE("long_valid_password_passes", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("password_with_spaces_passes_if_valid", tags) {
+TEST_CASE("password_with_spaces_passes_if_valid", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Pass Word 123!";
@@ -163,7 +157,7 @@ TEST_CASE("password_with_spaces_passes_if_valid", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("weak_password_passes_when_validation_disabled", tags) {
+TEST_CASE("weak_password_passes_when_validation_disabled", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string weak_password = "weak";
@@ -175,7 +169,7 @@ TEST_CASE("weak_password_passes_when_validation_disabled", tags) {
     CHECK(result.error_message.empty());
 }
 
-TEST_CASE("validation_enabled_by_default", tags) {
+TEST_CASE("validation_enabled_by_default", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string weak_password = "weak";
@@ -187,7 +181,7 @@ TEST_CASE("validation_enabled_by_default", tags) {
     CHECK(!result.error_message.empty());
 }
 
-TEST_CASE("the policy a caller reads is the policy the validator enforces", tags) {
+TEST_CASE("the policy a caller reads is the policy the validator enforces", "[validation]") {
     auto lg(make_logger(test_suite));
 
     // The rules are stated once, in policy(), and validate() applies that

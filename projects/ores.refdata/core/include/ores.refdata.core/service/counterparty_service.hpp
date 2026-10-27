@@ -78,24 +78,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_counterparties_response
-    list_counterparties(const messaging::list_counterparties_request& request);
-    messaging::get_counterparty_response
-    get_counterparty(const messaging::get_counterparty_request& request);
-    messaging::get_many_counterparties_response
-    get_many_counterparties(const messaging::get_many_counterparties_request& request);
-    messaging::put_counterparty_response
-    put_counterparty(const messaging::put_counterparty_request& request);
-    messaging::put_many_counterparties_response
-    put_many_counterparties(const messaging::put_many_counterparties_request& request);
-    messaging::delete_counterparty_response
-    delete_counterparty(const messaging::delete_counterparty_request& request);
-    messaging::delete_many_counterparties_response
-    delete_many_counterparties(const messaging::delete_many_counterparties_request& request);
-    messaging::list_counterparty_versions_response
-    list_counterparty_versions(const messaging::list_counterparty_versions_request& request);
-    messaging::get_counterparty_version_response
-    get_counterparty_version(const messaging::get_counterparty_version_request& request);
+    ::ores::refdata::messaging::list_counterparties_response
+    list_counterparties(const ::ores::refdata::messaging::list_counterparties_request& request);
+    ::ores::refdata::messaging::get_counterparty_response
+    get_counterparty(const ::ores::refdata::messaging::get_counterparty_request& request);
+    ::ores::refdata::messaging::get_many_counterparties_response get_many_counterparties(
+        const ::ores::refdata::messaging::get_many_counterparties_request& request);
+    ::ores::refdata::messaging::put_counterparty_response
+    put_counterparty(const ::ores::refdata::messaging::put_counterparty_request& request);
+    ::ores::refdata::messaging::put_many_counterparties_response put_many_counterparties(
+        const ::ores::refdata::messaging::put_many_counterparties_request& request);
+    ::ores::refdata::messaging::delete_counterparty_response
+    delete_counterparty(const ::ores::refdata::messaging::delete_counterparty_request& request);
+    ::ores::refdata::messaging::delete_many_counterparties_response delete_many_counterparties(
+        const ::ores::refdata::messaging::delete_many_counterparties_request& request);
+    ::ores::refdata::messaging::list_counterparty_versions_response list_counterparty_versions(
+        const ::ores::refdata::messaging::list_counterparty_versions_request& request);
+    ::ores::refdata::messaging::get_counterparty_version_response get_counterparty_version(
+        const ::ores::refdata::messaging::get_counterparty_version_request& request);
     /**@}*/
 
     /**
@@ -124,7 +124,8 @@ public:
      * is the one the gate gives. A write that creates a row changes every
      * column.
      */
-    std::vector<std::string> changed_columns(const messaging::counterparty_write& proposed);
+    std::vector<std::string>
+    changed_columns(const ::ores::refdata::messaging::counterparty_write& proposed);
 
     /**
      * @brief Lists counterparties with pagination support.
@@ -275,9 +276,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::counterparty_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::counterparty& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::counterparty_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::counterparty& out);
 
     ores::service::messaging::write_pass pass_;
 

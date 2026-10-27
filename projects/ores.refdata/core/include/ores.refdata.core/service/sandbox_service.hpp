@@ -76,24 +76,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_sandboxes_response
-    list_sandboxes(const messaging::list_sandboxes_request& request);
-    messaging::get_sandbox_response get_sandbox(const messaging::get_sandbox_request& request);
-    messaging::get_many_sandboxes_response
-    get_many_sandboxes(const messaging::get_many_sandboxes_request& request);
-    messaging::put_sandbox_response put_sandbox(const messaging::put_sandbox_request& request);
-    messaging::put_many_sandboxes_response
-    put_many_sandboxes(const messaging::put_many_sandboxes_request& request);
-    messaging::delete_sandbox_response
-    delete_sandbox(const messaging::delete_sandbox_request& request);
-    messaging::delete_many_sandboxes_response
-    delete_many_sandboxes(const messaging::delete_many_sandboxes_request& request);
-    messaging::list_by_anchor_portfolio_id_sandboxes_response list_by_anchor_portfolio_id_sandboxes(
-        const messaging::list_by_anchor_portfolio_id_sandboxes_request& request);
-    messaging::list_sandbox_versions_response
-    list_sandbox_versions(const messaging::list_sandbox_versions_request& request);
-    messaging::get_sandbox_version_response
-    get_sandbox_version(const messaging::get_sandbox_version_request& request);
+    ::ores::refdata::messaging::list_sandboxes_response
+    list_sandboxes(const ::ores::refdata::messaging::list_sandboxes_request& request);
+    ::ores::refdata::messaging::get_sandbox_response
+    get_sandbox(const ::ores::refdata::messaging::get_sandbox_request& request);
+    ::ores::refdata::messaging::get_many_sandboxes_response
+    get_many_sandboxes(const ::ores::refdata::messaging::get_many_sandboxes_request& request);
+    ::ores::refdata::messaging::put_sandbox_response
+    put_sandbox(const ::ores::refdata::messaging::put_sandbox_request& request);
+    ::ores::refdata::messaging::put_many_sandboxes_response
+    put_many_sandboxes(const ::ores::refdata::messaging::put_many_sandboxes_request& request);
+    ::ores::refdata::messaging::delete_sandbox_response
+    delete_sandbox(const ::ores::refdata::messaging::delete_sandbox_request& request);
+    ::ores::refdata::messaging::delete_many_sandboxes_response
+    delete_many_sandboxes(const ::ores::refdata::messaging::delete_many_sandboxes_request& request);
+    ::ores::refdata::messaging::list_by_anchor_portfolio_id_sandboxes_response
+    list_by_anchor_portfolio_id_sandboxes(
+        const ::ores::refdata::messaging::list_by_anchor_portfolio_id_sandboxes_request& request);
+    ::ores::refdata::messaging::list_sandbox_versions_response
+    list_sandbox_versions(const ::ores::refdata::messaging::list_sandbox_versions_request& request);
+    ::ores::refdata::messaging::get_sandbox_version_response
+    get_sandbox_version(const ::ores::refdata::messaging::get_sandbox_version_request& request);
     /**@}*/
 
     /**
@@ -264,9 +267,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::sandbox_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::sandbox& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::sandbox_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::sandbox& out);
 };
 
 }

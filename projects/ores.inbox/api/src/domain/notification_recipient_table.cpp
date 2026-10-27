@@ -31,7 +31,7 @@ namespace ores::inbox::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string notification_recipient_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<notification_recipient>& v) {
 
     for ([[maybe_unused]] const auto& nr : v) {
         table << boost::uuids::to_string(nr.notification_id)
-              << boost::uuids::to_string(nr.account_id) << opt_str(nr.read_at)
-              << opt_str(nr.cleared_at) << nr.version << fort::endr;
+              << boost::uuids::to_string(nr.account_id)
+              << notification_recipient_opt_str(nr.read_at)
+              << notification_recipient_opt_str(nr.cleared_at) << nr.version << fort::endr;
     }
     return table.to_string();
 }

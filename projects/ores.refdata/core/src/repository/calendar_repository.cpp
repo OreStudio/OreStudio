@@ -85,9 +85,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy calendar_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!calendar_repository::is_sortable(order.field))
@@ -101,7 +101,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::calendars_filter>& filter) {
+calendar_filter_condition(const std::optional<messaging::calendars_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -302,8 +302,8 @@ calendar_repository::read_latest(context ctx,
     return execute_ordered_read_query<calendar_entity, domain::calendar>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        calendar_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), calendar_filter_condition(filter)),
         [](const auto& entities) { return calendar_mapper::map(entities); },
         lg(),
         "Reading latest calendars with pagination.");
@@ -318,11 +318,12 @@ std::uint32_t calendar_repository::get_total_calendar_count(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<calendar_entity>(ctx,
-                                                query,
-                                                narrowed(valid_at(as_of), filter_condition(filter)),
-                                                lg(),
-                                                "Counting calendars");
+    return execute_count_query<calendar_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), calendar_filter_condition(filter)),
+        lg(),
+        "Counting calendars");
 }
 
 std::vector<domain::calendar>

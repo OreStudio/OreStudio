@@ -20,22 +20,16 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
-
-namespace {
-
-const std::string test_suite("ores.http.tests");
-const std::string tags("[router]");
-
-}
 
 using namespace ores::http::net;
 using namespace ores::http::domain;
 using namespace ores::logging;
 
-TEST_CASE("router_matches_simple_path", tags) {
+TEST_CASE("router_matches_simple_path", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing simple path matching";
 
@@ -56,7 +50,7 @@ TEST_CASE("router_matches_simple_path", tags) {
     REQUIRE(params.empty());
 }
 
-TEST_CASE("router_matches_path_with_parameter", tags) {
+TEST_CASE("router_matches_path_with_parameter", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing path parameter matching";
 
@@ -78,7 +72,7 @@ TEST_CASE("router_matches_path_with_parameter", tags) {
     REQUIRE(params["id"] == "123");
 }
 
-TEST_CASE("router_matches_path_with_multiple_parameters", tags) {
+TEST_CASE("router_matches_path_with_multiple_parameters", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing multiple path parameters";
 
@@ -100,7 +94,7 @@ TEST_CASE("router_matches_path_with_multiple_parameters", tags) {
     REQUIRE(params["postId"] == "100");
 }
 
-TEST_CASE("router_returns_empty_for_unmatched_path", tags) {
+TEST_CASE("router_returns_empty_for_unmatched_path", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing unmatched path";
 
@@ -117,7 +111,7 @@ TEST_CASE("router_returns_empty_for_unmatched_path", tags) {
     REQUIRE_FALSE(match.has_value());
 }
 
-TEST_CASE("router_distinguishes_methods", tags) {
+TEST_CASE("router_distinguishes_methods", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing method distinction";
 
@@ -147,7 +141,7 @@ TEST_CASE("router_distinguishes_methods", tags) {
     REQUIRE_FALSE(put_match.has_value());
 }
 
-TEST_CASE("route_build_refuses_a_route_with_no_auth_position", tags) {
+TEST_CASE("route_build_refuses_a_route_with_no_auth_position", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that an undeclared auth position is refused";
 
@@ -168,7 +162,7 @@ TEST_CASE("route_build_refuses_a_route_with_no_auth_position", tags) {
     }
 }
 
-TEST_CASE("router_refuses_a_route_assembled_without_a_builder", tags) {
+TEST_CASE("router_refuses_a_route_assembled_without_a_builder", "[router]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a hand-assembled route is refused";
 

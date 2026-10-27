@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[marketdata][datum][ore_index_codec]");
-
 using namespace ores::marketdata::datum;
 using ores::marketdata::test::accepted_by_ore;
 using ores::marketdata::test::catalogue_index_corpus;
@@ -240,20 +238,23 @@ std::vector<market_index> corpus_indices() {
 
 }
 
-TEST_CASE("the_index_codec_reads_every_documented_index_form_as_ore_does", tags) {
+TEST_CASE("the_index_codec_reads_every_documented_index_form_as_ore_does",
+          "[marketdata][datum][ore_index_codec]") {
     const auto t = check(catalogue_index_forms());
     CHECK(t.lines == catalogue_index_forms().size());
     CHECK(t.read > 40);
     report(t);
 }
 
-TEST_CASE("the_index_codec_reads_every_corpus_index_name_as_ore_does", tags) {
+TEST_CASE("the_index_codec_reads_every_corpus_index_name_as_ore_does",
+          "[marketdata][datum][ore_index_codec]") {
     const auto t = check(catalogue_index_corpus());
     CHECK(t.read == catalogue_index_corpus().size());
     report(t);
 }
 
-TEST_CASE("every_index_round_trips_through_its_fixing_uri", tags) {
+TEST_CASE("every_index_round_trips_through_its_fixing_uri",
+          "[marketdata][datum][ore_index_codec]") {
     std::vector<std::string> failures;
     std::set<std::string> uris;
     std::set<std::string> names;
@@ -276,7 +277,7 @@ TEST_CASE("every_index_round_trips_through_its_fixing_uri", tags) {
     CHECK(uris.size() == names.size());
 }
 
-TEST_CASE("a_fixing_uri_has_the_agreed_shape", tags) {
+TEST_CASE("a_fixing_uri_has_the_agreed_shape", "[marketdata][datum][ore_index_codec]") {
     const std::map<std::string, std::string> expected{
         {"EUR-EURIBOR-6M", "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M"},
         {"USD-SOFR", "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR"},
@@ -299,7 +300,8 @@ TEST_CASE("a_fixing_uri_has_the_agreed_shape", tags) {
     }
 }
 
-TEST_CASE("the_fixing_uri_reader_refuses_a_uri_that_breaks_the_contract", tags) {
+TEST_CASE("the_fixing_uri_reader_refuses_a_uri_that_breaks_the_contract",
+          "[marketdata][datum][ore_index_codec]") {
     for (const auto* uri :
          {"oresmd://ir/EUR?type=fixing&index=ibor&tenor=6M",
           "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M&colour=blue",
@@ -313,7 +315,8 @@ TEST_CASE("the_fixing_uri_reader_refuses_a_uri_that_breaks_the_contract", tags) 
     }
 }
 
-TEST_CASE("every_committed_index_map_row_round_trips_through_the_codecs", tags) {
+TEST_CASE("every_committed_index_map_row_round_trips_through_the_codecs",
+          "[marketdata][datum][ore_index_codec]") {
     // tools/ore_conventions/oresmd_index_map.tsv is generated once from the
     // codecs and committed, so the seed generator needs no C++ binding. That
     // makes it data that can rot under a codec change: this is the guard. Every

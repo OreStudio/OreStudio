@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
@@ -50,9 +51,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][exporter]");
 
 std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
@@ -108,7 +106,7 @@ using namespace ores::logging;
 // export_currency_config tests
 // =============================================================================
 
-TEST_CASE("export_single_currency_to_xml", tags) {
+TEST_CASE("export_single_currency_to_xml", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -139,7 +137,7 @@ TEST_CASE("export_single_currency_to_xml", tags) {
     CHECK(xml.contains("<CurrencyType>Major</CurrencyType>"));
 }
 
-TEST_CASE("export_multiple_currencies_to_xml", tags) {
+TEST_CASE("export_multiple_currencies_to_xml", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     currency usd;
@@ -163,7 +161,7 @@ TEST_CASE("export_multiple_currencies_to_xml", tags) {
     CHECK(xml.contains("<ISOCode>EUR</ISOCode>"));
 }
 
-TEST_CASE("export_empty_currency_list_to_xml", tags) {
+TEST_CASE("export_empty_currency_list_to_xml", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_currency_config({});
@@ -173,7 +171,7 @@ TEST_CASE("export_empty_currency_list_to_xml", tags) {
     CHECK(xml.contains("CurrencyConfig"));
 }
 
-TEST_CASE("export_currency_without_optional_fields", tags) {
+TEST_CASE("export_currency_without_optional_fields", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     currency c;
@@ -196,7 +194,7 @@ TEST_CASE("export_currency_without_optional_fields", tags) {
 // import/export roundtrip tests
 // =============================================================================
 
-TEST_CASE("import_export_roundtrip_preserves_currency_fields", tags) {
+TEST_CASE("import_export_roundtrip_preserves_currency_fields", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Input/currencies.xml");
@@ -222,7 +220,7 @@ TEST_CASE("import_export_roundtrip_preserves_currency_fields", tags) {
     CHECK(xml.contains("<RoundingType>" + usd.rounding_type + "</RoundingType>"));
 }
 
-TEST_CASE("export_all_rounding_types", tags) {
+TEST_CASE("export_all_rounding_types", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> rounding_types = {"Up", "Down", "Closest", "Floor", "Ceiling"};
@@ -250,7 +248,7 @@ TEST_CASE("export_all_rounding_types", tags) {
 // export_portfolio roundtrip tests
 // =============================================================================
 
-TEST_CASE("export_portfolio_empty_items_produces_valid_xml", tags) {
+TEST_CASE("export_portfolio_empty_items_produces_valid_xml", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_portfolio({}, {});
@@ -260,7 +258,7 @@ TEST_CASE("export_portfolio_empty_items_produces_valid_xml", tags) {
     CHECK(xml.contains("Portfolio"));
 }
 
-TEST_CASE("export_portfolio_swap_roundtrip", tags) {
+TEST_CASE("export_portfolio_swap_roundtrip", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("IR_Swap_Vanilla.xml");
@@ -278,7 +276,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     CHECK(xml.contains(imported.front().ore_id));
 }
 
-TEST_CASE("a_rate_trade_without_a_fact_row_exports_without_its_legs", tags) {
+TEST_CASE("a_rate_trade_without_a_fact_row_exports_without_its_legs", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     /*
@@ -363,7 +361,7 @@ TEST_CASE("a_rate_trade_without_a_fact_row_exports_without_its_legs", tags) {
     CHECK_FALSE(xml.contains("GBP-SONIA"));
 }
 
-TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", tags) {
+TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("IR_Swap_Vanilla.xml");
@@ -442,7 +440,8 @@ TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", tags) {
     CHECK(xml.find("<LegData>") != std::string::npos);
 }
 
-TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states", tags) {
+TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     /*
@@ -541,7 +540,7 @@ struct fx_export final {
     }
 };
 
-TEST_CASE("a_forward_exports_its_two_currencies", tags) {
+TEST_CASE("a_forward_exports_its_two_currencies", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxForward");
     ores::trading::domain::fx_forward_instrument row;
@@ -562,7 +561,7 @@ TEST_CASE("a_forward_exports_its_two_currencies", tags) {
     CHECK(xml.contains("GBP"));
 }
 
-TEST_CASE("a_vanilla_option_exports_its_expiry_and_style", tags) {
+TEST_CASE("a_vanilla_option_exports_its_expiry_and_style", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxOption");
     ores::trading::domain::fx_vanilla_option_instrument row;
@@ -586,7 +585,7 @@ TEST_CASE("a_vanilla_option_exports_its_expiry_and_style", tags) {
     CHECK(xml.contains("2026-07-15"));
 }
 
-TEST_CASE("a_barrier_option_exports_its_barrier", tags) {
+TEST_CASE("a_barrier_option_exports_its_barrier", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxBarrierOption");
     ores::trading::domain::fx_barrier_option_instrument row;
@@ -612,7 +611,7 @@ TEST_CASE("a_barrier_option_exports_its_barrier", tags) {
     CHECK(xml.contains("KnockOut"));
 }
 
-TEST_CASE("a_digital_exports_its_payoff", tags) {
+TEST_CASE("a_digital_exports_its_payoff", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxDigitalOption");
     ores::trading::domain::fx_digital_option_instrument row;
@@ -634,7 +633,7 @@ TEST_CASE("a_digital_exports_its_payoff", tags) {
     CHECK(xml.contains("GBP"));
 }
 
-TEST_CASE("an_average_forward_exports_its_index", tags) {
+TEST_CASE("an_average_forward_exports_its_index", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxAverageForward");
     ores::trading::domain::fx_asian_forward_instrument row;
@@ -658,7 +657,7 @@ TEST_CASE("an_average_forward_exports_its_index", tags) {
     CHECK(xml.contains("EUR/GBP"));
 }
 
-TEST_CASE("a_variance_swap_exports_its_strike", tags) {
+TEST_CASE("a_variance_swap_exports_its_strike", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxVarianceSwap");
     ores::trading::domain::fx_variance_swap_instrument row;
@@ -680,7 +679,7 @@ TEST_CASE("a_variance_swap_exports_its_strike", tags) {
     CHECK(xml.contains("0.09"));
 }
 
-TEST_CASE("an_accumulator_exports_its_knock_out", tags) {
+TEST_CASE("an_accumulator_exports_its_knock_out", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
     fx_export f("FxAccumulator");
     ores::trading::domain::fx_accumulator_instrument row;
@@ -711,7 +710,8 @@ TEST_CASE("an_accumulator_exports_its_knock_out", tags) {
     CHECK(xml.contains("EUR/GBP"));
 }
 
-TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags) {
+TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     // The schema states a plain swap and a cross-currency swap in an element
@@ -747,7 +747,7 @@ TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags
     CHECK(xml.contains("<CrossCurrencySwapData>"));
 }
 
-TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
+TEST_CASE("export_portfolio_fx_forward_roundtrip", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("FX_Forward.xml");
@@ -764,7 +764,7 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     CHECK(xml.contains(imported.front().ore_id));
 }
 
-TEST_CASE("export_portfolio_roundtrips_every_fx_product", tags) {
+TEST_CASE("export_portfolio_roundtrips_every_fx_product", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     // The FX carrier states one array per product, and the batch joins it by
@@ -809,7 +809,7 @@ TEST_CASE("export_portfolio_roundtrips_every_fx_product", tags) {
     }
 }
 
-TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
+TEST_CASE("export_portfolio_ascot_roundtrip", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("Cash_Ascot.xml");
@@ -826,7 +826,7 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
     CHECK(xml.contains(imported.front().ore_id));
 }
 
-TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
+TEST_CASE("export_portfolio_bond_future_roundtrip", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     // The trade-side BondFutureData holds only these three required
@@ -866,7 +866,7 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     CHECK(xml.contains("Euro-Bund-Future"));
 }
 
-TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", tags) {
+TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     trade_export_item item;
@@ -891,7 +891,7 @@ TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", tags) {
     CHECK(!xml.contains("<SwapData>"));
 }
 
-TEST_CASE("export_portfolio_unknown_type_is_skipped", tags) {
+TEST_CASE("export_portfolio_unknown_type_is_skipped", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     trade_export_item item;
@@ -907,7 +907,8 @@ TEST_CASE("export_portfolio_unknown_type_is_skipped", tags) {
     CHECK(!xml.contains("UnmappedTrade001"));
 }
 
-TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards", tags) {
+TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     /*
@@ -992,7 +993,7 @@ ores::analytics::messaging::pricing_engines_document swap_configuration() {
 
 }
 
-TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", tags) {
+TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_pricing_engines(swap_configuration());
@@ -1015,7 +1016,7 @@ TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", tags) {
 )");
 }
 
-TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", tags) {
+TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;
@@ -1030,7 +1031,8 @@ TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", tags) 
     CHECK(xml.find("BondTRS") < xml.find("ForwardBond"));
 }
 
-TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_scope", tags) {
+TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_scope",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;
@@ -1057,7 +1059,7 @@ TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_
     CHECK(engine_at < timestep_at);
 }
 
-TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", tags) {
+TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;
@@ -1082,7 +1084,8 @@ TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", tags) {
     CHECK(parameters.front().value == R"(x < 1 && y > 2 && s == "z")");
 }
 
-TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_sections", tags) {
+TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_sections",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml =
@@ -1096,7 +1099,8 @@ TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_section
 )");
 }
 
-TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states", tags) {
+TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto configuration = swap_configuration();
@@ -1114,7 +1118,8 @@ TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states", ta
     CHECK(from_round_trip == from_rows);
 }
 
-TEST_CASE("export_pricing_engines_refuses_a_row_the_document_has_no_place_for", tags) {
+TEST_CASE("export_pricing_engines_refuses_a_row_the_document_has_no_place_for",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;

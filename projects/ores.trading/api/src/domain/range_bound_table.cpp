@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string range_bound_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<range_bound>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& bound : v) {
-        table << bound.sequence_number << opt_str(bound.range_from) << opt_str(bound.range_to)
-              << opt_str(bound.leverage) << bound.modified_by << bound.version << fort::endr;
+        table << bound.sequence_number << range_bound_opt_str(bound.range_from)
+              << range_bound_opt_str(bound.range_to) << range_bound_opt_str(bound.leverage)
+              << bound.modified_by << bound.version << fort::endr;
     }
     return table.to_string();
 }

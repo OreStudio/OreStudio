@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view permission_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,33 +49,33 @@ register_permission_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<permission_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_permissions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_permissions(std::move(msg));
-        }));
+        list_permissions_request::nats_subject,
+        permission_queue_group,
+        [h](ores::nats::message msg) { h->list_permissions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_permission_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_permission_request::nats_subject, permission_queue_group, [h](ores::nats::message msg) {
             h->get_permission(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_permissions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_permissions(std::move(msg));
-        }));
+        get_many_permissions_request::nats_subject,
+        permission_queue_group,
+        [h](ores::nats::message msg) { h->get_many_permissions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_permission_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_permission_request::nats_subject, permission_queue_group, [h](ores::nats::message msg) {
             h->put_permission(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_permissions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_permissions(std::move(msg));
-        }));
+        put_many_permissions_request::nats_subject,
+        permission_queue_group,
+        [h](ores::nats::message msg) { h->put_many_permissions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_permission_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_permission(std::move(msg));
-        }));
+        delete_permission_request::nats_subject,
+        permission_queue_group,
+        [h](ores::nats::message msg) { h->delete_permission(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_permissions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_permissions(std::move(msg));
-        }));
+        delete_many_permissions_request::nats_subject,
+        permission_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_permissions(std::move(msg)); }));
     return subs;
 }
 

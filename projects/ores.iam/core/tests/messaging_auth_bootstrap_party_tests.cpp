@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[login]");
-
 using ores::iam::messaging::auth_bootstrap_party_id;
 using ores::iam::messaging::party_summary;
 
@@ -47,7 +45,7 @@ party_summary party(const std::string& id, const std::string& category) {
  * must sit there and no choice may be offered.
  */
 
-TEST_CASE("a_tenant_being_set_up_signs_in_to_its_system_party", tags) {
+TEST_CASE("a_tenant_being_set_up_signs_in_to_its_system_party", "[login]") {
     const auto chosen =
         auth_bootstrap_party_id(true, {party(trading_id, "Trading"), party(system_id, "System")});
 
@@ -55,7 +53,7 @@ TEST_CASE("a_tenant_being_set_up_signs_in_to_its_system_party", tags) {
     CHECK(boost::uuids::to_string(*chosen) == system_id);
 }
 
-TEST_CASE("a_tenant_being_set_up_whose_only_party_is_the_system_one_signs_in_to_it", tags) {
+TEST_CASE("a_tenant_being_set_up_whose_only_party_is_the_system_one_signs_in_to_it", "[login]") {
     const auto chosen = auth_bootstrap_party_id(true, {party(system_id, "System")});
 
     REQUIRE(chosen.has_value());
@@ -64,12 +62,12 @@ TEST_CASE("a_tenant_being_set_up_whose_only_party_is_the_system_one_signs_in_to_
 
 TEST_CASE(
     "a_tenant_being_set_up_without_a_system_party_among_the_accounts_parties_offers_the_choice",
-    tags) {
+    "[login]") {
     CHECK_FALSE(auth_bootstrap_party_id(true, {party(trading_id, "Trading")}).has_value());
 }
 
 TEST_CASE("an_ordinary_sign_in_offers_the_choice_even_when_the_account_holds_the_system_party",
-          tags) {
+          "[login]") {
     CHECK_FALSE(
         auth_bootstrap_party_id(false, {party(trading_id, "Trading"), party(system_id, "System")})
             .has_value());

@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_market_data_mappings_response
-    list_market_data_mappings(const messaging::list_market_data_mappings_request& request);
-    messaging::get_market_data_mapping_response
-    get_market_data_mapping(const messaging::get_market_data_mapping_request& request);
-    messaging::get_many_market_data_mappings_response
-    get_many_market_data_mappings(const messaging::get_many_market_data_mappings_request& request);
-    messaging::put_market_data_mapping_response
-    put_market_data_mapping(const messaging::put_market_data_mapping_request& request);
-    messaging::put_many_market_data_mappings_response
-    put_many_market_data_mappings(const messaging::put_many_market_data_mappings_request& request);
-    messaging::delete_market_data_mapping_response
-    delete_market_data_mapping(const messaging::delete_market_data_mapping_request& request);
-    messaging::delete_many_market_data_mappings_response delete_many_market_data_mappings(
-        const messaging::delete_many_market_data_mappings_request& request);
-    messaging::list_market_data_mapping_versions_response list_market_data_mapping_versions(
-        const messaging::list_market_data_mapping_versions_request& request);
-    messaging::get_market_data_mapping_version_response get_market_data_mapping_version(
-        const messaging::get_market_data_mapping_version_request& request);
+    ::ores::marketdata::messaging::list_market_data_mappings_response list_market_data_mappings(
+        const ::ores::marketdata::messaging::list_market_data_mappings_request& request);
+    ::ores::marketdata::messaging::get_market_data_mapping_response get_market_data_mapping(
+        const ::ores::marketdata::messaging::get_market_data_mapping_request& request);
+    ::ores::marketdata::messaging::get_many_market_data_mappings_response
+    get_many_market_data_mappings(
+        const ::ores::marketdata::messaging::get_many_market_data_mappings_request& request);
+    ::ores::marketdata::messaging::put_market_data_mapping_response put_market_data_mapping(
+        const ::ores::marketdata::messaging::put_market_data_mapping_request& request);
+    ::ores::marketdata::messaging::put_many_market_data_mappings_response
+    put_many_market_data_mappings(
+        const ::ores::marketdata::messaging::put_many_market_data_mappings_request& request);
+    ::ores::marketdata::messaging::delete_market_data_mapping_response delete_market_data_mapping(
+        const ::ores::marketdata::messaging::delete_market_data_mapping_request& request);
+    ::ores::marketdata::messaging::delete_many_market_data_mappings_response
+    delete_many_market_data_mappings(
+        const ::ores::marketdata::messaging::delete_many_market_data_mappings_request& request);
+    ::ores::marketdata::messaging::list_market_data_mapping_versions_response
+    list_market_data_mapping_versions(
+        const ::ores::marketdata::messaging::list_market_data_mapping_versions_request& request);
+    ::ores::marketdata::messaging::get_market_data_mapping_version_response
+    get_market_data_mapping_version(
+        const ::ores::marketdata::messaging::get_market_data_mapping_version_request& request);
     /**@}*/
 
     /**
@@ -207,7 +212,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::market_data_mapping_change& change,
+    prepare_change(const ::ores::marketdata::messaging::market_data_mapping_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::market_data_mapping& out);
 };

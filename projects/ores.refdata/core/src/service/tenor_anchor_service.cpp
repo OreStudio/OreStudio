@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::tenor_anchor> read_one(repository::tenor_anchor_repository& repo,
-                                           const ores::database::context& ctx,
-                                           const messaging::tenor_anchor_key& key) {
+std::vector<domain::tenor_anchor> tenor_anchor_read_one(repository::tenor_anchor_repository& repo,
+                                                        const ores::database::context& ctx,
+                                                        const messaging::tenor_anchor_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::tenor_anchor> read_one(repository::tenor_anchor_repository& 
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::tenor_anchor_key key_from(const domain::tenor_anchor& v) {
+messaging::tenor_anchor_key tenor_anchor_key_from(const domain::tenor_anchor& v) {
     messaging::tenor_anchor_key key;
     key.code = v.code;
     return key;
@@ -94,7 +94,7 @@ messaging::tenor_anchor_key key_from(const domain::tenor_anchor& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::tenor_anchor to_domain(const messaging::tenor_anchor_write& write) {
+domain::tenor_anchor tenor_anchor_to_domain(const messaging::tenor_anchor_write& write) {
     domain::tenor_anchor v;
     v.code = write.code;
     v.description = write.description;
@@ -140,7 +140,7 @@ tenor_anchor_service::list_tenor_anchors(const messaging::list_tenor_anchors_req
 messaging::get_tenor_anchor_response
 tenor_anchor_service::get_tenor_anchor(const messaging::get_tenor_anchor_request& request) {
     messaging::get_tenor_anchor_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = tenor_anchor_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "tenor_anchor"});
         return response;
@@ -159,7 +159,7 @@ messaging::get_many_tenor_anchors_response tenor_anchor_service::get_many_tenor_
     for (const auto& k : request.keys) {
         messaging::tenor_anchor_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = tenor_anchor_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.tenor_anchor = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -175,7 +175,7 @@ tenor_anchor_service::put_tenor_anchor(const messaging::put_tenor_anchor_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = tenor_anchor_read_one(repo_, ctx_, tenor_anchor_key_from(value));
     if (!written.empty())
         response.tenor_anchor = std::move(written.front());
     return response;
@@ -207,7 +207,7 @@ messaging::put_many_tenor_anchors_response tenor_anchor_service::put_many_tenor_
     repo_.write(ctx_, batch, claims);
     response.anchors.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = tenor_anchor_read_one(repo_, ctx_, tenor_anchor_key_from(value));
         response.anchors.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -240,7 +240,7 @@ tenor_anchor_service::delete_tenor_anchor(const messaging::delete_tenor_anchor_r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = tenor_anchor_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "tenor_anchor",
@@ -324,8 +324,8 @@ tenor_anchor_service::prepare_change(const messaging::tenor_anchor_change& chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = tenor_anchor_to_domain(change.write);
+    const auto current = tenor_anchor_read_one(repo_, ctx_, tenor_anchor_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -76,29 +76,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_market_data_generation_configs_response list_market_data_generation_configs(
-        const messaging::list_market_data_generation_configs_request& request);
-    messaging::get_market_data_generation_config_response get_market_data_generation_config(
-        const messaging::get_market_data_generation_config_request& request);
-    messaging::get_many_market_data_generation_configs_response
+    ::ores::synthetic::messaging::list_market_data_generation_configs_response
+    list_market_data_generation_configs(
+        const ::ores::synthetic::messaging::list_market_data_generation_configs_request& request);
+    ::ores::synthetic::messaging::get_market_data_generation_config_response
+    get_market_data_generation_config(
+        const ::ores::synthetic::messaging::get_market_data_generation_config_request& request);
+    ::ores::synthetic::messaging::get_many_market_data_generation_configs_response
     get_many_market_data_generation_configs(
-        const messaging::get_many_market_data_generation_configs_request& request);
-    messaging::put_market_data_generation_config_response put_market_data_generation_config(
-        const messaging::put_market_data_generation_config_request& request);
-    messaging::put_many_market_data_generation_configs_response
+        const ::ores::synthetic::messaging::get_many_market_data_generation_configs_request&
+            request);
+    ::ores::synthetic::messaging::put_market_data_generation_config_response
+    put_market_data_generation_config(
+        const ::ores::synthetic::messaging::put_market_data_generation_config_request& request);
+    ::ores::synthetic::messaging::put_many_market_data_generation_configs_response
     put_many_market_data_generation_configs(
-        const messaging::put_many_market_data_generation_configs_request& request);
-    messaging::delete_market_data_generation_config_response delete_market_data_generation_config(
-        const messaging::delete_market_data_generation_config_request& request);
-    messaging::delete_many_market_data_generation_configs_response
+        const ::ores::synthetic::messaging::put_many_market_data_generation_configs_request&
+            request);
+    ::ores::synthetic::messaging::delete_market_data_generation_config_response
+    delete_market_data_generation_config(
+        const ::ores::synthetic::messaging::delete_market_data_generation_config_request& request);
+    ::ores::synthetic::messaging::delete_many_market_data_generation_configs_response
     delete_many_market_data_generation_configs(
-        const messaging::delete_many_market_data_generation_configs_request& request);
-    messaging::list_market_data_generation_config_versions_response
+        const ::ores::synthetic::messaging::delete_many_market_data_generation_configs_request&
+            request);
+    ::ores::synthetic::messaging::list_market_data_generation_config_versions_response
     list_market_data_generation_config_versions(
-        const messaging::list_market_data_generation_config_versions_request& request);
-    messaging::get_market_data_generation_config_version_response
+        const ::ores::synthetic::messaging::list_market_data_generation_config_versions_request&
+            request);
+    ::ores::synthetic::messaging::get_market_data_generation_config_version_response
     get_market_data_generation_config_version(
-        const messaging::get_market_data_generation_config_version_request& request);
+        const ::ores::synthetic::messaging::get_market_data_generation_config_version_request&
+            request);
     /**@}*/
 
     /**
@@ -203,7 +212,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::market_data_generation_config_change& change,
+    prepare_change(const ::ores::synthetic::messaging::market_data_generation_config_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::market_data_generation_config& out);
 };

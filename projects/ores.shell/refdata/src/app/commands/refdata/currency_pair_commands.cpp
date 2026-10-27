@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void currency_pair_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void currency_pair_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -219,7 +219,7 @@ void currency_pair_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        currency_pair_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -267,7 +267,7 @@ void currency_pair_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.pair_code, parsed->positionals[next++], "pair_code");
+        currency_pair_read_token(req.key.pair_code, parsed->positionals[next++], "pair_code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -312,7 +312,7 @@ void currency_pair_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::currency_pair_key key;
-            read_token(key.pair_code, parsed->positionals[i + 0], "pair_code");
+            currency_pair_read_token(key.pair_code, parsed->positionals[i + 0], "pair_code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -357,10 +357,14 @@ void currency_pair_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.pair_code, parsed->positionals[next++], "pair_code");
-        read_token(req.change.write.base_currency, parsed->positionals[next++], "base_currency");
-        read_token(req.change.write.quote_currency, parsed->positionals[next++], "quote_currency");
-        read_token(req.change.write.classification, parsed->positionals[next++], "classification");
+        currency_pair_read_token(
+            req.change.write.pair_code, parsed->positionals[next++], "pair_code");
+        currency_pair_read_token(
+            req.change.write.base_currency, parsed->positionals[next++], "base_currency");
+        currency_pair_read_token(
+            req.change.write.quote_currency, parsed->positionals[next++], "quote_currency");
+        currency_pair_read_token(
+            req.change.write.classification, parsed->positionals[next++], "classification");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -408,10 +412,14 @@ void currency_pair_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.pair_code, parsed->positionals[next++], "pair_code");
-        read_token(req.change.write.base_currency, parsed->positionals[next++], "base_currency");
-        read_token(req.change.write.quote_currency, parsed->positionals[next++], "quote_currency");
-        read_token(req.change.write.classification, parsed->positionals[next++], "classification");
+        currency_pair_read_token(
+            req.change.write.pair_code, parsed->positionals[next++], "pair_code");
+        currency_pair_read_token(
+            req.change.write.base_currency, parsed->positionals[next++], "base_currency");
+        currency_pair_read_token(
+            req.change.write.quote_currency, parsed->positionals[next++], "quote_currency");
+        currency_pair_read_token(
+            req.change.write.classification, parsed->positionals[next++], "classification");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -473,10 +481,14 @@ void currency_pair_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::currency_pair_change change;
-            read_token(change.write.pair_code, parsed->positionals[next++], "pair_code");
-            read_token(change.write.base_currency, parsed->positionals[next++], "base_currency");
-            read_token(change.write.quote_currency, parsed->positionals[next++], "quote_currency");
-            read_token(change.write.classification, parsed->positionals[next++], "classification");
+            currency_pair_read_token(
+                change.write.pair_code, parsed->positionals[next++], "pair_code");
+            currency_pair_read_token(
+                change.write.base_currency, parsed->positionals[next++], "base_currency");
+            currency_pair_read_token(
+                change.write.quote_currency, parsed->positionals[next++], "quote_currency");
+            currency_pair_read_token(
+                change.write.classification, parsed->positionals[next++], "classification");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -526,7 +538,8 @@ void currency_pair_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.pair_code, parsed->positionals[next++], "pair_code");
+        currency_pair_read_token(
+            req.removal.key.pair_code, parsed->positionals[next++], "pair_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -580,7 +593,7 @@ void currency_pair_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::currency_pair_key key;
-            read_token(key.pair_code, parsed->positionals[i * 1 + 0], "pair_code");
+            currency_pair_read_token(key.pair_code, parsed->positionals[i * 1 + 0], "pair_code");
             req.removals.push_back(messaging::currency_pair_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -632,8 +645,8 @@ void currency_pair_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.pair_code, parsed->positionals[next++], "pair_code");
-        apply_page(req, *parsed);
+        currency_pair_read_token(req.key.pair_code, parsed->positionals[next++], "pair_code");
+        currency_pair_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -678,7 +691,8 @@ void currency_pair_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.currency_pair.pair_code, parsed->positionals[next++], "pair_code");
+        currency_pair_read_token(
+            req.key.currency_pair.pair_code, parsed->positionals[next++], "pair_code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

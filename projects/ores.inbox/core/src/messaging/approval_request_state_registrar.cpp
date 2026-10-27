@@ -39,7 +39,7 @@
 namespace ores::inbox::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.inbox.service";
+static constexpr std::string_view approval_request_state_queue_group = "ores.inbox.service";
 }
 
 std::vector<ores::nats::service::subscription> register_approval_request_state_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_approval_request_state_h
         std::make_shared<approval_request_state_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_approval_request_states_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->list_approval_request_states(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_approval_request_state_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->get_approval_request_state(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_approval_request_states_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->get_many_approval_request_states(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_approval_request_state_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->put_approval_request_state(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_approval_request_states_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->put_many_approval_request_states(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_approval_request_state_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->delete_approval_request_state(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_approval_request_states_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->delete_many_approval_request_states(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_approval_request_state_versions_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->list_approval_request_state_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_approval_request_state_version_request::nats_subject,
-        queue_group,
+        approval_request_state_queue_group,
         [h](ores::nats::message msg) { h->get_approval_request_state_version(std::move(msg)); }));
     return subs;
 }

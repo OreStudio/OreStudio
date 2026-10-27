@@ -75,9 +75,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::party_contact_information>
-read_one(repository::party_contact_information_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::party_contact_information_key& key) {
+party_contact_information_read_one(repository::party_contact_information_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const messaging::party_contact_information_key& key) {
     return repo.read_latest_by_contact_type(ctx, key.contact_type);
 }
 
@@ -87,7 +87,8 @@ read_one(repository::party_contact_information_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::party_contact_information_key key_from(const domain::party_contact_information& v) {
+messaging::party_contact_information_key
+party_contact_information_key_from(const domain::party_contact_information& v) {
     messaging::party_contact_information_key key;
     key.contact_type = v.contact_type;
     return key;
@@ -101,7 +102,7 @@ messaging::party_contact_information_key key_from(const domain::party_contact_in
  * database's to state, and are set after this conversion.
  */
 domain::party_contact_information
-to_domain(const messaging::party_contact_information_write& write) {
+party_contact_information_to_domain(const messaging::party_contact_information_write& write) {
     domain::party_contact_information v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -200,7 +201,7 @@ messaging::get_party_contact_information_response
 party_contact_information_service::get_party_contact_information(
     const messaging::get_party_contact_information_request& request) {
     messaging::get_party_contact_information_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = party_contact_information_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_contact_information"});
         return response;
@@ -220,7 +221,7 @@ party_contact_information_service::get_many_party_contact_informations(
     for (const auto& k : request.keys) {
         messaging::party_contact_information_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = party_contact_information_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.party_contact_information = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -237,7 +238,8 @@ party_contact_information_service::put_party_contact_information(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        party_contact_information_read_one(repo_, ctx_, party_contact_information_key_from(value));
     if (!written.empty())
         response.party_contact_information = std::move(written.front());
     return response;
@@ -270,7 +272,8 @@ party_contact_information_service::put_many_party_contact_informations(
     repo_.write(ctx_, batch, claims);
     response.party_contact_informations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = party_contact_information_read_one(
+            repo_, ctx_, party_contact_information_key_from(value));
         response.party_contact_informations.push_back(written.empty() ? value :
                                                                         std::move(written.front()));
     }
@@ -295,7 +298,7 @@ party_contact_information_service::delete_party_contact_information(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = party_contact_information_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_contact_information"});
         return response;
@@ -312,7 +315,7 @@ party_contact_information_service::delete_party_contact_information(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = party_contact_information_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "party_contact_information",
@@ -354,7 +357,7 @@ party_contact_information_service::delete_many_party_contact_informations(
     std::vector<domain::party_contact_information> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = party_contact_information_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -383,7 +386,7 @@ party_contact_information_service::list_party_contact_information_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = party_contact_information_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_contact_information"});
         return response;
@@ -407,7 +410,8 @@ party_contact_information_service::get_party_contact_information_version(
     messaging::get_party_contact_information_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.party_contact_information);
+    const auto named =
+        party_contact_information_read_one(repo_, ctx_, request.key.party_contact_information);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_contact_information"});
         return response;
@@ -429,8 +433,9 @@ ores::utility::domain::result party_contact_information_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = party_contact_information_to_domain(change.write);
+    const auto current =
+        party_contact_information_read_one(repo_, ctx_, party_contact_information_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -547,7 +552,7 @@ party_contact_information_service::get_party_contact_information_by_contact_type
                                << contact_type;
     messaging::party_contact_information_key k;
     k.contact_type = contact_type;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = party_contact_information_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

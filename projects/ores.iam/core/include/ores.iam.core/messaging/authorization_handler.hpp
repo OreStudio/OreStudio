@@ -381,7 +381,7 @@ public:
     void role_permissions_page(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);
-        auto req = decode<list_role_permissions_request>(msg);
+        auto req = decode<list_role_permissions_page_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;

@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::subject_area> read_one(repository::subject_area_repository& repo,
-                                           const ores::database::context& ctx,
-                                           const messaging::subject_area_key& key) {
+std::vector<domain::subject_area> subject_area_read_one(repository::subject_area_repository& repo,
+                                                        const ores::database::context& ctx,
+                                                        const messaging::subject_area_key& key) {
     return repo.read_latest(ctx, key.name, key.domain_name);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::subject_area> read_one(repository::subject_area_repository& 
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::subject_area_key key_from(const domain::subject_area& v) {
+messaging::subject_area_key subject_area_key_from(const domain::subject_area& v) {
     messaging::subject_area_key key;
     key.name = v.name;
     key.domain_name = v.domain_name;
@@ -95,7 +95,7 @@ messaging::subject_area_key key_from(const domain::subject_area& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::subject_area to_domain(const messaging::subject_area_write& write) {
+domain::subject_area subject_area_to_domain(const messaging::subject_area_write& write) {
     domain::subject_area v;
     v.name = write.name;
     v.domain_name = write.domain_name;
@@ -134,7 +134,7 @@ subject_area_service::list_subject_areas(const messaging::list_subject_areas_req
 messaging::get_subject_area_response
 subject_area_service::get_subject_area(const messaging::get_subject_area_request& request) {
     messaging::get_subject_area_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = subject_area_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "subject_area"});
         return response;
@@ -153,7 +153,7 @@ messaging::get_many_subject_areas_response subject_area_service::get_many_subjec
     for (const auto& k : request.keys) {
         messaging::subject_area_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = subject_area_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.subject_area = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -169,7 +169,7 @@ subject_area_service::put_subject_area(const messaging::put_subject_area_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = subject_area_read_one(repo_, ctx_, subject_area_key_from(value));
     if (!written.empty())
         response.subject_area = std::move(written.front());
     return response;
@@ -201,7 +201,7 @@ messaging::put_many_subject_areas_response subject_area_service::put_many_subjec
     repo_.write(ctx_, batch, claims);
     response.areas.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = subject_area_read_one(repo_, ctx_, subject_area_key_from(value));
         response.areas.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -235,7 +235,7 @@ subject_area_service::delete_subject_area(const messaging::delete_subject_area_r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = subject_area_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "subject_area",
@@ -326,8 +326,8 @@ subject_area_service::prepare_change(const messaging::subject_area_change& chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = subject_area_to_domain(change.write);
+    const auto current = subject_area_read_one(repo_, ctx_, subject_area_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

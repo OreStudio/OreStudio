@@ -26,6 +26,7 @@
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -34,9 +35,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][emitter]");
 
 namespace fs = std::filesystem;
 using namespace ores::logging;
@@ -71,9 +69,8 @@ auto read_file(const fs::path& path) -> std::string {
  * either the text or the values.
  */
 template <typename Record>
-auto write_back(const document_type& doc,
-                std::string_view text,
-                Record& record) -> std::expected<std::string, std::string> {
+auto write_back(const document_type& doc, std::string_view text, Record& record)
+    -> std::expected<std::string, std::string> {
     const auto bound = binder::bind(doc, text, &record);
     if (!bound)
         return std::unexpected("the document does not bind: " + bound.error().message);
@@ -145,7 +142,7 @@ auto sweep_family(const fs::path& root,
 
 }
 
-TEST_CASE("a_bound_document_writes_back_in_schema_order", tags) {
+TEST_CASE("a_bound_document_writes_back_in_schema_order", "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<CalendarAdjustments>"
@@ -173,7 +170,7 @@ TEST_CASE("a_bound_document_writes_back_in_schema_order", tags) {
     CHECK(*written == expected);
 }
 
-TEST_CASE("a_repeated_choice_member_writes_one_element_per_value", tags) {
+TEST_CASE("a_repeated_choice_member_writes_one_element_per_value", "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     // The schema states Conventions as one choice that repeats, so the same
@@ -207,7 +204,7 @@ TEST_CASE("a_repeated_choice_member_writes_one_element_per_value", tags) {
     CHECK(deposits == 2);
 }
 
-TEST_CASE("text_that_needs_escaping_round_trips_unchanged", tags) {
+TEST_CASE("text_that_needs_escaping_round_trips_unchanged", "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     // A calendar name is an attribute; the base calendar is element text. Both
@@ -229,7 +226,7 @@ TEST_CASE("text_that_needs_escaping_round_trips_unchanged", tags) {
     CHECK(written->find("x &lt; y &amp;&amp; z &gt; w") != std::string::npos);
 }
 
-TEST_CASE("a_decimal_writes_as_plain_text_and_never_as_an_exponent", tags) {
+TEST_CASE("a_decimal_writes_as_plain_text_and_never_as_an_exponent", "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     // Spread is money in our model and xs:float in the schema. The document
@@ -253,7 +250,7 @@ TEST_CASE("a_decimal_writes_as_plain_text_and_never_as_an_exponent", tags) {
     CHECK(written->substr(open + 8, close - (open + 8)) == "0.0000000001");
 }
 
-TEST_CASE("a_required_element_that_is_absent_is_refused", tags) {
+TEST_CASE("a_required_element_that_is_absent_is_refused", "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     // A record built by hand rather than bound: the Currency element arrived
@@ -271,7 +268,7 @@ TEST_CASE("a_required_element_that_is_absent_is_refused", tags) {
     CHECK(written.empty());
 }
 
-TEST_CASE("an_enumeration_index_past_its_spellings_is_refused", tags) {
+TEST_CASE("an_enumeration_index_past_its_spellings_is_refused", "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<CurrencyConfig><Currency>"
@@ -294,7 +291,8 @@ TEST_CASE("an_enumeration_index_past_its_spellings_is_refused", tags) {
     CHECK(emitted.error().message.find("spelling") != std::string::npos);
 }
 
-TEST_CASE("every_generated_family_writes_back_every_document_in_the_corpus", tags) {
+TEST_CASE("every_generated_family_writes_back_every_document_in_the_corpus",
+          "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";

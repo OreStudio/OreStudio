@@ -46,8 +46,6 @@
 
 namespace {
 
-const std::string tags("[ore][xml][roundtrip][todaysmarket]");
-
 using ores::ore::domain::todays_market_projection;
 namespace xg = ores::ore::xml::generated::todays_market;
 
@@ -187,7 +185,8 @@ xg::todaysmarket round_trip(const xg::todaysmarket& original) {
 
 }
 
-TEST_CASE("every today's market document in the corpus round trips", tags) {
+TEST_CASE("every today's market document in the corpus round trips",
+          "[ore][xml][roundtrip][todaysmarket]") {
     const auto root = ores::testing::project_root::resolve("external/ore/examples");
     REQUIRE(std::filesystem::is_directory(root));
 
@@ -214,7 +213,8 @@ TEST_CASE("every today's market document in the corpus round trips", tags) {
     CHECK(files == 99);
 }
 
-TEST_CASE("a document with every collection and every binding round trips", tags) {
+TEST_CASE("a document with every collection and every binding round trips",
+          "[ore][xml][roundtrip][todaysmarket]") {
     const auto original = todays_market_projection::read(every_collection());
     const auto mapped = todays_market_projection::map(original);
 
@@ -234,7 +234,8 @@ TEST_CASE("a document with every collection and every binding round trips", tags
     CHECK_FALSE(found);
 }
 
-TEST_CASE("an optional attribute left out is stored as null, and one written empty is not", tags) {
+TEST_CASE("an optional attribute left out is stored as null, and one written empty is not",
+          "[ore][xml][roundtrip][todaysmarket]") {
     const auto mapped =
         todays_market_projection::map(todays_market_projection::read(every_collection()));
 
@@ -257,7 +258,8 @@ TEST_CASE("an optional attribute left out is stored as null, and one written emp
     }
 }
 
-TEST_CASE("a collection or a binding the projection does not know is an error", tags) {
+TEST_CASE("a collection or a binding the projection does not know is an error",
+          "[ore][xml][roundtrip][todaysmarket]") {
     const auto mapped =
         todays_market_projection::map(todays_market_projection::read(every_collection()));
 
@@ -270,7 +272,8 @@ TEST_CASE("a collection or a binding the projection does not know is an error", 
     CHECK_THROWS_AS(todays_market_projection::reverse(bad_binding), std::runtime_error);
 }
 
-TEST_CASE("an entry without the key its collection requires is refused", tags) {
+TEST_CASE("an entry without the key its collection requires is refused",
+          "[ore][xml][roundtrip][todaysmarket]") {
     auto mapped = todays_market_projection::map(todays_market_projection::read(every_collection()));
     for (auto& e : mapped.entries) {
         if (e.target == "Yield/EUR/EUR1D" && e.key_value == std::optional<std::string>("EUR1D")) {

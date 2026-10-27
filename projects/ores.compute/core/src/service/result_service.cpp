@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::result> read_one(repository::result_repository& repo,
-                                     const ores::database::context& ctx,
-                                     const messaging::result_key& key) {
+std::vector<domain::result> result_read_one(repository::result_repository& repo,
+                                            const ores::database::context& ctx,
+                                            const messaging::result_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::result> read_one(repository::result_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::result_key key_from(const domain::result& v) {
+messaging::result_key result_key_from(const domain::result& v) {
     messaging::result_key key;
     key.id = v.id;
     return key;
@@ -98,7 +98,7 @@ messaging::result_key key_from(const domain::result& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::result to_domain(const messaging::result_write& write) {
+domain::result result_to_domain(const messaging::result_write& write) {
     domain::result v;
     v.id = write.id;
     v.workunit_id = write.workunit_id;
@@ -198,7 +198,7 @@ messaging::list_by_workunit_id_results_response result_service::list_by_workunit
 messaging::get_result_response
 result_service::get_result(const messaging::get_result_request& request) {
     messaging::get_result_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = result_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "result"});
         return response;
@@ -217,7 +217,7 @@ result_service::get_many_results(const messaging::get_many_results_request& requ
     for (const auto& k : request.keys) {
         messaging::result_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = result_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.result = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -233,7 +233,7 @@ result_service::put_result(const messaging::put_result_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = result_read_one(repo_, ctx_, result_key_from(value));
     if (!written.empty())
         response.result_value = std::move(written.front());
     return response;
@@ -265,7 +265,7 @@ result_service::put_many_results(const messaging::put_many_results_request& requ
     repo_.write(ctx_, batch, claims);
     response.results.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = result_read_one(repo_, ctx_, result_key_from(value));
         response.results.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -298,7 +298,7 @@ result_service::delete_result(const messaging::delete_result_request& request) {
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = result_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "result",
@@ -383,8 +383,8 @@ result_service::prepare_change(const messaging::result_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = result_to_domain(change.write);
+    const auto current = result_read_one(repo_, ctx_, result_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

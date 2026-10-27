@@ -45,6 +45,7 @@
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/service/ir_curve_generation_config_process_parameter_value_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 // Soft-FK parent seeding (ores_synthetic_ir_curve_generation_configs_tbl): the parent may live in
 // another component, so its own component names the headers. A system-tenant parent is read rather
 // than generated, so it needs no generator.
@@ -80,13 +81,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("synthetic.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::synthetic::generators;
 using ores::synthetic::domain::ir_curve_generation_config_process_parameter_value;
@@ -94,7 +88,8 @@ using ores::synthetic::repository::ir_curve_generation_config_process_parameter_
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an_event", tags) {
+TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an_event",
+          "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

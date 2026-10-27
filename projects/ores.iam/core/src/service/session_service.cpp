@@ -71,9 +71,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::session> read_one(repository::session_repository& repo,
-                                      const ores::database::context& ctx,
-                                      const messaging::session_key& key) {
+std::vector<domain::session> session_read_one(repository::session_repository& repo,
+                                              const ores::database::context& ctx,
+                                              const messaging::session_key& key) {
     return repo.read_latest_by_id(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -83,7 +83,7 @@ std::vector<domain::session> read_one(repository::session_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::session_key key_from(const domain::session& v) {
+messaging::session_key session_key_from(const domain::session& v) {
     messaging::session_key key;
     key.id = v.id;
     return key;
@@ -96,7 +96,7 @@ messaging::session_key key_from(const domain::session& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::session to_domain(const messaging::session_write& write) {
+domain::session session_to_domain(const messaging::session_write& write) {
     domain::session v;
     v.id = write.id;
     v.start_time = write.start_time;
@@ -140,7 +140,7 @@ session_service::list_sessions(const messaging::list_sessions_request& request) 
 messaging::get_session_response
 session_service::get_session(const messaging::get_session_request& request) {
     messaging::get_session_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = session_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "session"});
         return response;
@@ -159,7 +159,7 @@ session_service::get_many_sessions(const messaging::get_many_sessions_request& r
     for (const auto& k : request.keys) {
         messaging::session_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = session_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.session = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -175,7 +175,7 @@ session_service::put_session(const messaging::put_session_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = session_read_one(repo_, ctx_, session_key_from(value));
     if (!written.empty())
         response.session = std::move(written.front());
     return response;
@@ -207,7 +207,7 @@ session_service::put_many_sessions(const messaging::put_many_sessions_request& r
     repo_.write(ctx_, batch, claims);
     response.sessions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = session_read_one(repo_, ctx_, session_key_from(value));
         response.sessions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -230,7 +230,7 @@ session_service::delete_session(const messaging::delete_session_request& request
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = session_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "session"});
         return response;
@@ -287,7 +287,7 @@ session_service::delete_many_sessions(const messaging::delete_many_sessions_requ
     std::vector<domain::session> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = session_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -310,8 +310,8 @@ session_service::prepare_change(const messaging::session_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = session_to_domain(change.write);
+    const auto current = session_read_one(repo_, ctx_, session_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -361,7 +361,7 @@ std::optional<domain::session> session_service::get_session_by_id(const std::str
     BOOST_LOG_SEV(lg(), debug) << "Getting session by id: " << id;
     messaging::session_key k;
     k.id = boost::lexical_cast<boost::uuids::uuid>(id);
-    auto found = read_one(repo_, ctx_, k);
+    auto found = session_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

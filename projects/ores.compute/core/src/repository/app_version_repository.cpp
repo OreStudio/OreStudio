@@ -82,9 +82,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy app_version_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!app_version_repository::is_sortable(order.field))
@@ -98,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::app_versions_filter>& filter) {
+app_version_filter_condition(const std::optional<messaging::app_versions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -284,8 +284,8 @@ std::vector<domain::app_version> app_version_repository::read_latest_by_app_id(
     return execute_ordered_read_query<app_version_entity, domain::app_version>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        app_version_list_order(order, {"id"}, false),
+        app_version_filter_condition(filter),
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(),
         "Reading latest app versions by app_id.");
@@ -305,7 +305,7 @@ std::uint32_t app_version_repository::get_total_app_version_count_by_app_id(
                              "app_id"_c == app_id && "valid_to"_c == max.value());
 
     return execute_count_query<app_version_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting app versions by app_id");
+        ctx, query, app_version_filter_condition(filter), lg(), "Counting app versions by app_id");
 }
 
 
@@ -360,8 +360,8 @@ app_version_repository::read_latest(context ctx,
     return execute_ordered_read_query<app_version_entity, domain::app_version>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        app_version_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), app_version_filter_condition(filter)),
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(),
         "Reading latest app versions with pagination.");
@@ -381,7 +381,7 @@ std::uint32_t app_version_repository::get_total_app_version_count(
     return execute_count_query<app_version_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), app_version_filter_condition(filter)),
         lg(),
         "Counting app versions");
 }

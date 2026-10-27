@@ -83,9 +83,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy lei_entity_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"lei"});
     if (!lei_entity_repository::is_sortable(order.field))
@@ -99,7 +99,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::lei_entities_filter>& filter) {
+lei_entity_filter_condition(const std::optional<messaging::lei_entities_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -251,8 +251,8 @@ lei_entity_repository::read_latest(context ctx,
     return execute_ordered_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
-        list_order(order, {"lei"}, false),
-        filter_condition(filter),
+        lei_entity_list_order(order, {"lei"}, false),
+        lei_entity_filter_condition(filter),
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
         lg(),
         "Reading latest LEI entities with pagination.");
@@ -265,7 +265,7 @@ std::uint32_t lei_entity_repository::get_total_entity_count(
     const auto query = sqlgen::read<std::vector<lei_entity_entity>>;
 
     return execute_count_query<lei_entity_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting LEI entities");
+        ctx, query, lei_entity_filter_condition(filter), lg(), "Counting LEI entities");
 }
 
 std::vector<domain::lei_entity>

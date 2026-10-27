@@ -28,17 +28,11 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::marketdata::generators;
@@ -70,8 +64,7 @@ ores::marketdata::domain::market_series make_identity_test_series(database_helpe
     return s;
 }
 
-
-TEST_CASE("write_single_market_series", tags) {
+TEST_CASE("write_single_market_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -84,7 +77,7 @@ TEST_CASE("write_single_market_series", tags) {
     CHECK_NOTHROW(repo.write(h.context(), s));
 }
 
-TEST_CASE("write_multiple_market_series", tags) {
+TEST_CASE("write_multiple_market_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -97,7 +90,7 @@ TEST_CASE("write_multiple_market_series", tags) {
     CHECK_NOTHROW(repo.write(h.context(), series));
 }
 
-TEST_CASE("read_latest_market_series", tags) {
+TEST_CASE("read_latest_market_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -115,7 +108,7 @@ TEST_CASE("read_latest_market_series", tags) {
     CHECK(read.size() >= written.size());
 }
 
-TEST_CASE("read_latest_market_series_by_id", tags) {
+TEST_CASE("read_latest_market_series_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -134,7 +127,7 @@ TEST_CASE("read_latest_market_series_by_id", tags) {
     CHECK(read[0].series_subclass == target.series_subclass);
 }
 
-TEST_CASE("read_latest_market_series_by_identity", tags) {
+TEST_CASE("read_latest_market_series_by_identity", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -154,7 +147,7 @@ TEST_CASE("read_latest_market_series_by_identity", tags) {
     CHECK(read[0].oresmd_uri == s.oresmd_uri);
 }
 
-TEST_CASE("read_all_versions_of_market_series", tags) {
+TEST_CASE("read_all_versions_of_market_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -173,7 +166,7 @@ TEST_CASE("read_all_versions_of_market_series", tags) {
     CHECK(all.size() >= 2);
 }
 
-TEST_CASE("remove_market_series", tags) {
+TEST_CASE("remove_market_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -193,7 +186,7 @@ TEST_CASE("remove_market_series", tags) {
     CHECK(after.empty());
 }
 
-TEST_CASE("two_series_in_one_party_cannot_share_an_identity", tags) {
+TEST_CASE("two_series_in_one_party_cannot_share_an_identity", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -211,7 +204,7 @@ TEST_CASE("two_series_in_one_party_cannot_share_an_identity", tags) {
     CHECK_THROWS(repo.write(h.context(), second));
 }
 
-TEST_CASE("two_parties_may_each_hold_one_identity", tags) {
+TEST_CASE("two_parties_may_each_hold_one_identity", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -254,7 +247,7 @@ ores::marketdata::domain::market_series make_fixing_test_series(database_helper&
     return s;
 }
 
-TEST_CASE("a_fixing_series_projects_its_identity_fields", tags) {
+TEST_CASE("a_fixing_series_projects_its_identity_fields", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -284,7 +277,7 @@ TEST_CASE("a_fixing_series_projects_its_identity_fields", tags) {
     CHECK(rows[0].quote_type.empty());
 }
 
-TEST_CASE("reprojecting_repairs_a_fixing_row_and_changes_nothing_after", tags) {
+TEST_CASE("reprojecting_repairs_a_fixing_row_and_changes_nothing_after", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -328,7 +321,7 @@ TEST_CASE("reprojecting_repairs_a_fixing_row_and_changes_nothing_after", tags) {
     CHECK(rows[0].tenor == "6M");
 }
 
-TEST_CASE("an_fx_fixing_projects_its_source", tags) {
+TEST_CASE("an_fx_fixing_projects_its_source", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -351,7 +344,7 @@ TEST_CASE("an_fx_fixing_projects_its_source", tags) {
     CHECK(rows[0].source == "ECB");
 }
 
-TEST_CASE("two_fx_fixings_that_differ_only_in_source_project_apart", tags) {
+TEST_CASE("two_fx_fixings_that_differ_only_in_source_project_apart", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -383,7 +376,7 @@ TEST_CASE("two_fx_fixings_that_differ_only_in_source_project_apart", tags) {
     CHECK(b[0].source == "TR20H");
 }
 
-TEST_CASE("a_dated_fixing_projects_its_expiry", tags) {
+TEST_CASE("a_dated_fixing_projects_its_expiry", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -412,7 +405,7 @@ TEST_CASE("a_dated_fixing_projects_its_expiry", tags) {
     CHECK(b[0].expiry == "2025-01");
 }
 
-TEST_CASE("a_power_fixing_projects_its_delivery_window", tags) {
+TEST_CASE("a_power_fixing_projects_its_delivery_window", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -435,7 +428,7 @@ TEST_CASE("a_power_fixing_projects_its_delivery_window", tags) {
     CHECK(rows[0].delivery_end == "14400");
 }
 
-TEST_CASE("a_cmb_fixing_projects_its_family", tags) {
+TEST_CASE("a_cmb_fixing_projects_its_family", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -455,7 +448,7 @@ TEST_CASE("a_cmb_fixing_projects_its_family", tags) {
     CHECK(rows[0].tenor == "10Y");
 }
 
-TEST_CASE("two_market_series_identities_cannot_spell_one_identity", tags) {
+TEST_CASE("two_market_series_identities_cannot_spell_one_identity", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -482,7 +475,7 @@ TEST_CASE("two_market_series_identities_cannot_spell_one_identity", tags) {
     CHECK_THROWS(repo.write(h.context(), second));
 }
 
-TEST_CASE("reprojecting_fills_a_new_column_an_earlier_projection_left_empty", tags) {
+TEST_CASE("reprojecting_fills_a_new_column_an_earlier_projection_left_empty", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -524,7 +517,7 @@ TEST_CASE("reprojecting_fills_a_new_column_an_earlier_projection_left_empty", ta
     CHECK(second.unchanged == 1);
 }
 
-TEST_CASE("two_providers_keep_two_series_for_one_item_and_party", tags) {
+TEST_CASE("two_providers_keep_two_series_for_one_item_and_party", "[repository]") {
     database_helper h;
     market_series_repository repo;
     const auto party = boost::uuids::random_generator{}();
@@ -549,7 +542,7 @@ TEST_CASE("two_providers_keep_two_series_for_one_item_and_party", tags) {
     CHECK(from_lseg.front().id == lseg.id);
 }
 
-TEST_CASE("one_provider_keeps_one_series_for_one_item_and_party", tags) {
+TEST_CASE("one_provider_keeps_one_series_for_one_item_and_party", "[repository]") {
     database_helper h;
     market_series_repository repo;
     const auto party = boost::uuids::random_generator{}();
@@ -565,7 +558,7 @@ TEST_CASE("one_provider_keeps_one_series_for_one_item_and_party", tags) {
         Catch::Matchers::ContainsSubstring("duplicate key value violates unique constraint"));
 }
 
-TEST_CASE("a_series_needs_a_provider_in_the_catalogue", tags) {
+TEST_CASE("a_series_needs_a_provider_in_the_catalogue", "[repository]") {
     database_helper h;
     market_series_repository repo;
 

@@ -39,7 +39,7 @@
 namespace ores::compute::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.compute.service";
+static constexpr std::string_view app_version_platform_queue_group = "ores.compute.service";
 }
 
 std::vector<ores::nats::service::subscription> register_app_version_platform_handlers(
@@ -51,35 +51,35 @@ std::vector<ores::nats::service::subscription> register_app_version_platform_han
         std::make_shared<app_version_platform_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_app_version_platforms_request::nats_subject,
-        queue_group,
+        app_version_platform_queue_group,
         [h](ores::nats::message msg) { h->list_app_version_platforms(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_app_version_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_app_version_platform(std::move(msg));
-        }));
+        get_app_version_platform_request::nats_subject,
+        app_version_platform_queue_group,
+        [h](ores::nats::message msg) { h->get_app_version_platform(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_app_version_platforms_request::nats_subject,
-        queue_group,
+        app_version_platform_queue_group,
         [h](ores::nats::message msg) { h->get_many_app_version_platforms(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_app_version_platform_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_app_version_platform(std::move(msg));
-        }));
+        put_app_version_platform_request::nats_subject,
+        app_version_platform_queue_group,
+        [h](ores::nats::message msg) { h->put_app_version_platform(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_app_version_platforms_request::nats_subject,
-        queue_group,
+        app_version_platform_queue_group,
         [h](ores::nats::message msg) { h->put_many_app_version_platforms(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_app_version_platform_request::nats_subject,
-        queue_group,
+        app_version_platform_queue_group,
         [h](ores::nats::message msg) { h->delete_app_version_platform(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_app_version_platforms_request::nats_subject,
-        queue_group,
+        app_version_platform_queue_group,
         [h](ores::nats::message msg) { h->delete_many_app_version_platforms(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_app_version_id_app_version_platforms_request::nats_subject,
-                             queue_group,
+                             app_version_platform_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_app_version_id_app_version_platforms(std::move(msg));
                              }));

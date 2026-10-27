@@ -58,8 +58,9 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::currency_calendar> read_one(repository::currency_calendar_repository& repo,
-                                                const messaging::currency_calendar_key& key) {
+std::vector<domain::currency_calendar>
+currency_calendar_read_one(repository::currency_calendar_repository& repo,
+                           const messaging::currency_calendar_key& key) {
     return repo.read_latest(key.currency_iso_code, key.calendar_code);
 }
 
@@ -69,7 +70,7 @@ std::vector<domain::currency_calendar> read_one(repository::currency_calendar_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::currency_calendar_key key_from(const domain::currency_calendar& v) {
+messaging::currency_calendar_key currency_calendar_key_from(const domain::currency_calendar& v) {
     messaging::currency_calendar_key key;
     key.currency_iso_code = v.currency_iso_code;
     key.calendar_code = v.calendar_code;
@@ -84,7 +85,8 @@ messaging::currency_calendar_key key_from(const domain::currency_calendar& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::currency_calendar to_domain(const messaging::currency_calendar_write& write) {
+domain::currency_calendar
+currency_calendar_to_domain(const messaging::currency_calendar_write& write) {
     domain::currency_calendar v;
     v.currency_iso_code = write.currency_iso_code;
     v.calendar_code = write.calendar_code;
@@ -139,7 +141,7 @@ currency_calendar_service::list_by_currency_iso_code_currency_calendars(
 messaging::get_currency_calendar_response currency_calendar_service::get_currency_calendar(
     const messaging::get_currency_calendar_request& request) {
     messaging::get_currency_calendar_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = currency_calendar_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "currency_calendar"});
         return response;
@@ -159,7 +161,7 @@ currency_calendar_service::get_many_currency_calendars(
     for (const auto& k : request.keys) {
         messaging::currency_calendar_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = currency_calendar_read_one(repo_, k);
         if (!found.empty())
             entry.currency_calendar = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -175,7 +177,7 @@ messaging::put_currency_calendar_response currency_calendar_service::put_currenc
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = currency_calendar_read_one(repo_, currency_calendar_key_from(value));
     if (!written.empty())
         response.currency_calendar = std::move(written.front());
     return response;
@@ -208,7 +210,7 @@ currency_calendar_service::put_many_currency_calendars(
     repo_.write(batch, claims);
     response.currency_calendars.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = currency_calendar_read_one(repo_, currency_calendar_key_from(value));
         response.currency_calendars.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -242,7 +244,7 @@ messaging::delete_currency_calendar_response currency_calendar_service::delete_c
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = currency_calendar_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "currency_calendar",
@@ -295,8 +297,8 @@ currency_calendar_service::prepare_change(const messaging::currency_calendar_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = currency_calendar_to_domain(change.write);
+    const auto current = currency_calendar_read_one(repo_, currency_calendar_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

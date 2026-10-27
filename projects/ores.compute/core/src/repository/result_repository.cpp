@@ -82,7 +82,7 @@ namespace {
  * The stored column behind a sortable field. A field is named as the wire
  * names it, which is the column itself except for the recording time.
  */
-std::string sort_column(std::string_view field) {
+std::string result_sort_column(std::string_view field) {
     const std::initializer_list<std::pair<std::string_view, std::string_view>> columns = {
         {"recorded_at", "valid_from"},
     };
@@ -98,15 +98,15 @@ std::string sort_column(std::string_view field) {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy result_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!result_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of compute results cannot be ordered by " +
                                     order.field + ".");
-    return make_order({sort_column(order.field)}, order.descending, {"id"});
+    return make_order({result_sort_column(order.field)}, order.descending, {"id"});
 }
 
 /*
@@ -114,7 +114,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::results_filter>& filter) {
+result_filter_condition(const std::optional<messaging::results_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -299,8 +299,8 @@ std::vector<domain::result> result_repository::read_latest_by_workunit_id(
     return execute_ordered_read_query<result_entity, domain::result>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        result_list_order(order, {"id"}, false),
+        result_filter_condition(filter),
         [](const auto& entities) { return result_mapper::map(entities); },
         lg(),
         "Reading latest compute results by workunit_id.");
@@ -319,8 +319,11 @@ std::uint32_t result_repository::get_total_result_count_by_workunit_id(
                        where("tenant_id"_c == tid && "workunit_id"_c == workunit_id &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<result_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting compute results by workunit_id");
+    return execute_count_query<result_entity>(ctx,
+                                              query,
+                                              result_filter_condition(filter),
+                                              lg(),
+                                              "Counting compute results by workunit_id");
 }
 
 
@@ -374,8 +377,8 @@ result_repository::read_latest(context ctx,
     return execute_ordered_read_query<result_entity, domain::result>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        result_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), result_filter_condition(filter)),
         [](const auto& entities) { return result_mapper::map(entities); },
         lg(),
         "Reading latest compute results with pagination.");
@@ -390,11 +393,12 @@ result_repository::get_total_result_count(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<result_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<result_entity>(ctx,
-                                              query,
-                                              narrowed(valid_at(as_of), filter_condition(filter)),
-                                              lg(),
-                                              "Counting compute results");
+    return execute_count_query<result_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), result_filter_condition(filter)),
+        lg(),
+        "Counting compute results");
 }
 
 std::vector<domain::result> result_repository::read_latest(context ctx,

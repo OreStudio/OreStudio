@@ -22,12 +22,6 @@
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
-
-const std::string tags("[domain][entity_type]");
-
-}
-
 using ores::refdata::domain::country;
 using ores::refdata::domain::currency;
 using ores::refdata::domain::currency_pair;
@@ -42,18 +36,18 @@ using ores::refdata::domain::entity_type_of;
 // entity_type_of() to test here — a pre-existing gap, not introduced
 // by this change.
 
-TEST_CASE("entity_type_of_returns_the_component_qualified_identifier", tags) {
+TEST_CASE("entity_type_of_returns_the_component_qualified_identifier", "[domain][entity_type]") {
     CHECK(entity_type_of(currency{}) == "ores.refdata.currency");
     CHECK(entity_type_of(country{}) == "ores.refdata.country");
     CHECK(entity_type_of(currency_pair{}) == "ores.refdata.currency_pair");
 }
 
-TEST_CASE("entity_type_of_is_distinct_per_entity", tags) {
+TEST_CASE("entity_type_of_is_distinct_per_entity", "[domain][entity_type]") {
     CHECK(entity_type_of(currency{}) != entity_type_of(country{}));
     CHECK(entity_type_of(currency{}) != entity_type_of(currency_pair{}));
 }
 
-TEST_CASE("entity_type_of_is_stable_across_distinct_instances", tags) {
+TEST_CASE("entity_type_of_is_stable_across_distinct_instances", "[domain][entity_type]") {
     currency a;
     a.iso_code = "USD";
     currency b;

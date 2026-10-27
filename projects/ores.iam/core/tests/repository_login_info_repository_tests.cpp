@@ -26,16 +26,10 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -43,7 +37,7 @@ using namespace ores::iam::generators;
 using ores::testing::database_helper;
 using ores::iam::repository::login_info_repository;
 
-TEST_CASE("write_login_infos", tags) {
+TEST_CASE("write_login_infos", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -56,7 +50,7 @@ TEST_CASE("write_login_infos", tags) {
     CHECK_NOTHROW(repo.write(h.context(), lis));
 }
 
-TEST_CASE("read_login_infos", tags) {
+TEST_CASE("read_login_infos", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -77,7 +71,7 @@ TEST_CASE("read_login_infos", tags) {
     CHECK(read_lis[0].account_id == target_account_id);
 }
 
-TEST_CASE("a_login_record_that_never_signed_in_keeps_no_instant", tags) {
+TEST_CASE("a_login_record_that_never_signed_in_keeps_no_instant", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -96,7 +90,7 @@ TEST_CASE("a_login_record_that_never_signed_in_keeps_no_instant", tags) {
     CHECK_FALSE(read_lis[0].last_login.has_value());
 }
 
-TEST_CASE("read_nonexistent_login_info", tags) {
+TEST_CASE("read_nonexistent_login_info", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

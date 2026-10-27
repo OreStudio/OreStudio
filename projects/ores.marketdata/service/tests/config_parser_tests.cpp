@@ -24,15 +24,9 @@
 #include <string>
 #include <vector>
 
-namespace {
-
-const std::string tags("[config]");
-
-}
-
 using ores::marketdata::service::config::parser;
 
-TEST_CASE("parse_defaults_returns_expected_values", tags) {
+TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     // Local ctest loads .env into the test process, so the shared NATS and
     // service variables are cleared to assert the compiled-in defaults.
     const ores::testing::scoped_environment_override env_guard(
@@ -52,7 +46,7 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     CHECK_FALSE(result->logging.has_value());
 }
 
-TEST_CASE("parse_custom_http_base_url", tags) {
+TEST_CASE("parse_custom_http_base_url", "[config]") {
     const std::vector<std::string> args{"--http-base-url", "https://ores.example:8443"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
@@ -61,7 +55,7 @@ TEST_CASE("parse_custom_http_base_url", tags) {
     CHECK(result->http_base_url == "https://ores.example:8443");
 }
 
-TEST_CASE("parse_custom_nats_and_database", tags) {
+TEST_CASE("parse_custom_nats_and_database", "[config]") {
     const std::vector<std::string> args{"--nats-url",
                                         "nats://myserver:5555",
                                         "--db-host",
@@ -77,7 +71,7 @@ TEST_CASE("parse_custom_nats_and_database", tags) {
     CHECK(result->database.port == 5433);
 }
 
-TEST_CASE("parse_help_prints_usage_and_returns_nothing", tags) {
+TEST_CASE("parse_help_prints_usage_and_returns_nothing", "[config]") {
     const std::vector<std::string> args{"--help"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
@@ -86,7 +80,7 @@ TEST_CASE("parse_help_prints_usage_and_returns_nothing", tags) {
     CHECK(info.str().find("http-base-url") != std::string::npos);
 }
 
-TEST_CASE("parse_tick_writer_role", tags) {
+TEST_CASE("parse_tick_writer_role", "[config]") {
     const ores::testing::scoped_environment_override env_guard(
         {},
         {"ORES_MARKETDATA_SERVICE_WRITER_DB_USER", "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD"});

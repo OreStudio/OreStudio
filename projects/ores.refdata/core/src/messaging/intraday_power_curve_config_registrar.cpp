@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view intraday_power_curve_config_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_intraday_power_curve_config_handlers(
@@ -51,47 +51,47 @@ std::vector<ores::nats::service::subscription> register_intraday_power_curve_con
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_intraday_power_curve_configs_request::nats_subject,
-        queue_group,
+        intraday_power_curve_config_queue_group,
         [h](ores::nats::message msg) { h->list_intraday_power_curve_configs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_intraday_power_curve_config_request::nats_subject,
-        queue_group,
+        intraday_power_curve_config_queue_group,
         [h](ores::nats::message msg) { h->get_intraday_power_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_intraday_power_curve_configs_request::nats_subject,
-                                        queue_group,
+                                        intraday_power_curve_config_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_intraday_power_curve_configs(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_intraday_power_curve_config_request::nats_subject,
-        queue_group,
+        intraday_power_curve_config_queue_group,
         [h](ores::nats::message msg) { h->put_intraday_power_curve_config(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_intraday_power_curve_configs_request::nats_subject,
-                                        queue_group,
+                                        intraday_power_curve_config_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_intraday_power_curve_configs(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         delete_intraday_power_curve_config_request::nats_subject,
-        queue_group,
+        intraday_power_curve_config_queue_group,
         [h](ores::nats::message msg) { h->delete_intraday_power_curve_config(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_intraday_power_curve_configs_request::nats_subject,
-                             queue_group,
+                             intraday_power_curve_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_intraday_power_curve_configs(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_intraday_power_curve_config_versions_request::nats_subject,
-                             queue_group,
+                             intraday_power_curve_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_intraday_power_curve_config_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_intraday_power_curve_config_version_request::nats_subject,
-                             queue_group,
+                             intraday_power_curve_config_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_intraday_power_curve_config_version(std::move(msg));
                              }));

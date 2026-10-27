@@ -75,12 +75,12 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_summaries_response
-    list_trade_summaries(const messaging::list_trade_summaries_request& request);
-    messaging::get_trade_summary_response
-    get_trade_summary(const messaging::get_trade_summary_request& request);
-    messaging::get_many_trade_summaries_response
-    get_many_trade_summaries(const messaging::get_many_trade_summaries_request& request);
+    ::ores::trading::messaging::list_trade_summaries_response
+    list_trade_summaries(const ::ores::trading::messaging::list_trade_summaries_request& request);
+    ::ores::trading::messaging::get_trade_summary_response
+    get_trade_summary(const ::ores::trading::messaging::get_trade_summary_request& request);
+    ::ores::trading::messaging::get_many_trade_summaries_response get_many_trade_summaries(
+        const ::ores::trading::messaging::get_many_trade_summaries_request& request);
     /**@}*/
 
     /**

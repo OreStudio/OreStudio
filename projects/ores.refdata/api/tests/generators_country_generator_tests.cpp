@@ -23,22 +23,16 @@
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
-
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::refdata::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
+TEST_CASE("generate_fictional_countries_returns_all_when_no_count", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -60,7 +54,7 @@ TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
     CHECK(last->numeric_code == "10050");
 }
 
-TEST_CASE("generate_fictional_countries_returns_requested_count", tags) {
+TEST_CASE("generate_fictional_countries_returns_requested_count", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -74,7 +68,7 @@ TEST_CASE("generate_fictional_countries_returns_requested_count", tags) {
     CHECK(countries[4].name == "Calandria");
 }
 
-TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available", tags) {
+TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -90,7 +84,7 @@ TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available
     CHECK(last->official_name == "Empire of Zephyria");
 }
 
-TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", tags) {
+TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -105,7 +99,7 @@ TEST_CASE("generate_fictional_countries_has_unique_alpha2_codes", tags) {
     CHECK(codes.count("ZE") == 1); // Zephyria
 }
 
-TEST_CASE("generate_fictional_countries_has_expected_first_country", tags) {
+TEST_CASE("generate_fictional_countries_has_expected_first_country", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -119,7 +113,7 @@ TEST_CASE("generate_fictional_countries_has_expected_first_country", tags) {
     CHECK(countries[0].recorded_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("generate_fictional_countries_contains_known_countries", tags) {
+TEST_CASE("generate_fictional_countries_contains_known_countries", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 

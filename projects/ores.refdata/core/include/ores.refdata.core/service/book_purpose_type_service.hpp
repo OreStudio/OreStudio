@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_book_purpose_types_response
-    list_book_purpose_types(const messaging::list_book_purpose_types_request& request);
-    messaging::get_book_purpose_type_response
-    get_book_purpose_type(const messaging::get_book_purpose_type_request& request);
-    messaging::get_many_book_purpose_types_response
-    get_many_book_purpose_types(const messaging::get_many_book_purpose_types_request& request);
-    messaging::put_book_purpose_type_response
-    put_book_purpose_type(const messaging::put_book_purpose_type_request& request);
-    messaging::put_many_book_purpose_types_response
-    put_many_book_purpose_types(const messaging::put_many_book_purpose_types_request& request);
-    messaging::delete_book_purpose_type_response
-    delete_book_purpose_type(const messaging::delete_book_purpose_type_request& request);
-    messaging::delete_many_book_purpose_types_response delete_many_book_purpose_types(
-        const messaging::delete_many_book_purpose_types_request& request);
-    messaging::list_book_purpose_type_versions_response list_book_purpose_type_versions(
-        const messaging::list_book_purpose_type_versions_request& request);
-    messaging::get_book_purpose_type_version_response
-    get_book_purpose_type_version(const messaging::get_book_purpose_type_version_request& request);
+    ::ores::refdata::messaging::list_book_purpose_types_response list_book_purpose_types(
+        const ::ores::refdata::messaging::list_book_purpose_types_request& request);
+    ::ores::refdata::messaging::get_book_purpose_type_response
+    get_book_purpose_type(const ::ores::refdata::messaging::get_book_purpose_type_request& request);
+    ::ores::refdata::messaging::get_many_book_purpose_types_response get_many_book_purpose_types(
+        const ::ores::refdata::messaging::get_many_book_purpose_types_request& request);
+    ::ores::refdata::messaging::put_book_purpose_type_response
+    put_book_purpose_type(const ::ores::refdata::messaging::put_book_purpose_type_request& request);
+    ::ores::refdata::messaging::put_many_book_purpose_types_response put_many_book_purpose_types(
+        const ::ores::refdata::messaging::put_many_book_purpose_types_request& request);
+    ::ores::refdata::messaging::delete_book_purpose_type_response delete_book_purpose_type(
+        const ::ores::refdata::messaging::delete_book_purpose_type_request& request);
+    ::ores::refdata::messaging::delete_many_book_purpose_types_response
+    delete_many_book_purpose_types(
+        const ::ores::refdata::messaging::delete_many_book_purpose_types_request& request);
+    ::ores::refdata::messaging::list_book_purpose_type_versions_response
+    list_book_purpose_type_versions(
+        const ::ores::refdata::messaging::list_book_purpose_type_versions_request& request);
+    ::ores::refdata::messaging::get_book_purpose_type_version_response
+    get_book_purpose_type_version(
+        const ::ores::refdata::messaging::get_book_purpose_type_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +189,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::book_purpose_type_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::book_purpose_type& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::book_purpose_type_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::book_purpose_type& out);
 };
 
 }

@@ -21,6 +21,7 @@
 #include "ores.logging/logging_exception.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -31,9 +32,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.logging.tests");
-const std::string tags("[logging]");
 
 const std::string default_log_file("app.log");
 
@@ -53,7 +51,7 @@ std::optional<ores::logging::logging_options> read_options(const std::vector<std
 using ores::logging::logging_configuration;
 using ores::logging::logging_exception;
 
-TEST_CASE("read_options_returns_nullopt_without_log_enabled", tags) {
+TEST_CASE("read_options_returns_nullopt_without_log_enabled", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args;
@@ -63,7 +61,7 @@ TEST_CASE("read_options_returns_nullopt_without_log_enabled", tags) {
     CHECK_FALSE(result.has_value());
 }
 
-TEST_CASE("make_options_description_lists_every_logging_option", tags) {
+TEST_CASE("make_options_description_lists_every_logging_option", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     std::ostringstream os;
@@ -80,7 +78,7 @@ TEST_CASE("make_options_description_lists_every_logging_option", tags) {
     CHECK(description.contains("log-replica-index"));
 }
 
-TEST_CASE("read_options_returns_defaults_when_logging_enabled", tags) {
+TEST_CASE("read_options_returns_defaults_when_logging_enabled", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--log-enabled", "--log-level", "debug"};
@@ -99,7 +97,7 @@ TEST_CASE("read_options_returns_defaults_when_logging_enabled", tags) {
     CHECK_FALSE(result->replica_index.has_value());
 }
 
-TEST_CASE("read_options_reads_console_pid_and_replica_index", tags) {
+TEST_CASE("read_options_reads_console_pid_and_replica_index", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{
@@ -113,7 +111,7 @@ TEST_CASE("read_options_reads_console_pid_and_replica_index", tags) {
     CHECK(result->replica_index == 3);
 }
 
-TEST_CASE("read_options_rejects_invalid_log_level", tags) {
+TEST_CASE("read_options_rejects_invalid_log_level", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--log-enabled", "--log-level", "fatal"};

@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::host> read_one(repository::host_repository& repo,
-                                   const ores::database::context& ctx,
-                                   const messaging::host_key& key) {
+std::vector<domain::host> host_read_one(repository::host_repository& repo,
+                                        const ores::database::context& ctx,
+                                        const messaging::host_key& key) {
     return repo.read_latest_by_external_id(ctx, key.external_id);
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::host> read_one(repository::host_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::host_key key_from(const domain::host& v) {
+messaging::host_key host_key_from(const domain::host& v) {
     messaging::host_key key;
     key.external_id = v.external_id;
     return key;
@@ -98,7 +98,7 @@ messaging::host_key key_from(const domain::host& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::host to_domain(const messaging::host_write& write) {
+domain::host host_to_domain(const messaging::host_write& write) {
     domain::host v;
     v.id = write.id;
     v.external_id = write.external_id;
@@ -147,7 +147,7 @@ host_service::list_hosts(const messaging::list_hosts_request& request) {
 
 messaging::get_host_response host_service::get_host(const messaging::get_host_request& request) {
     messaging::get_host_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = host_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "host"});
         return response;
@@ -166,7 +166,7 @@ host_service::get_many_hosts(const messaging::get_many_hosts_request& request) {
     for (const auto& k : request.keys) {
         messaging::host_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = host_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.host = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +181,7 @@ messaging::put_host_response host_service::put_host(const messaging::put_host_re
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = host_read_one(repo_, ctx_, host_key_from(value));
     if (!written.empty())
         response.host = std::move(written.front());
     return response;
@@ -213,7 +213,7 @@ host_service::put_many_hosts(const messaging::put_many_hosts_request& request) {
     repo_.write(ctx_, batch, claims);
     response.hosts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = host_read_one(repo_, ctx_, host_key_from(value));
         response.hosts.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -236,7 +236,7 @@ host_service::delete_host(const messaging::delete_host_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = host_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "host"});
         return response;
@@ -252,7 +252,7 @@ host_service::delete_host(const messaging::delete_host_request& request) {
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = host_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "host",
@@ -293,7 +293,7 @@ host_service::delete_many_hosts(const messaging::delete_many_hosts_request& requ
     std::vector<domain::host> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = host_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -319,7 +319,7 @@ host_service::list_host_versions(const messaging::list_host_versions_request& re
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = host_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "host"});
         return response;
@@ -342,7 +342,7 @@ host_service::get_host_version(const messaging::get_host_version_request& reques
     messaging::get_host_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.host);
+    const auto named = host_read_one(repo_, ctx_, request.key.host);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "host"});
         return response;
@@ -364,8 +364,8 @@ host_service::prepare_change(const messaging::host_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = host_to_domain(change.write);
+    const auto current = host_read_one(repo_, ctx_, host_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -434,7 +434,7 @@ std::optional<domain::host> host_service::get_host_by_external_id(const std::str
     BOOST_LOG_SEV(lg(), debug) << "Getting compute host by external_id: " << external_id;
     messaging::host_key k;
     k.external_id = external_id;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = host_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

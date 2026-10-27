@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view swap_index_convention_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_swap_index_convention_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_swap_index_convention_ha
         std::make_shared<swap_index_convention_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_swap_index_conventions_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->list_swap_index_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_swap_index_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_swap_index_convention(std::move(msg));
-        }));
+        get_swap_index_convention_request::nats_subject,
+        swap_index_convention_queue_group,
+        [h](ores::nats::message msg) { h->get_swap_index_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_swap_index_conventions_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->get_many_swap_index_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_swap_index_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_swap_index_convention(std::move(msg));
-        }));
+        put_swap_index_convention_request::nats_subject,
+        swap_index_convention_queue_group,
+        [h](ores::nats::message msg) { h->put_swap_index_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_swap_index_conventions_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->put_many_swap_index_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_swap_index_convention_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_swap_index_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_swap_index_conventions_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_many_swap_index_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_swap_index_convention_versions_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->list_swap_index_convention_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_swap_index_convention_version_request::nats_subject,
-        queue_group,
+        swap_index_convention_queue_group,
         [h](ores::nats::message msg) { h->get_swap_index_convention_version(std::move(msg)); }));
     return subs;
 }

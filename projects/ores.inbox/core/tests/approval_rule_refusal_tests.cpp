@@ -21,16 +21,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 
-namespace {
-
-const std::string tags("[approval]");
-
-}
-
 using ores::inbox::messaging::rule_refusal;
 using ores::utility::domain::outcome;
 
-TEST_CASE("a_decision_by_the_asker_reads_as_a_four_eyes_conflict", tags) {
+TEST_CASE("a_decision_by_the_asker_reads_as_a_four_eyes_conflict", "[approval]") {
     const auto r = rule_refusal(
         std::runtime_error("ERROR:  The person who asked cannot decide request 1111."));
     REQUIRE(r);
@@ -38,7 +32,7 @@ TEST_CASE("a_decision_by_the_asker_reads_as_a_four_eyes_conflict", tags) {
     CHECK(r->code == "four_eyes");
 }
 
-TEST_CASE("a_second_approval_reads_as_already_approved", tags) {
+TEST_CASE("a_second_approval_reads_as_already_approved", "[approval]") {
     const auto r =
         rule_refusal(std::runtime_error("ERROR:  duplicate key value violates unique constraint "
                                         "\"approval_decisions_one_approval_per_person_idx\""));
@@ -47,13 +41,13 @@ TEST_CASE("a_second_approval_reads_as_already_approved", tags) {
     CHECK(r->code == "already_approved");
 }
 
-TEST_CASE("a_withdrawal_by_someone_else_reads_as_denied", tags) {
+TEST_CASE("a_withdrawal_by_someone_else_reads_as_denied", "[approval]") {
     const auto r = rule_refusal(
         std::runtime_error("ERROR:  Only the person who asked can withdraw request 1111."));
     REQUIRE(r);
     CHECK(r->outcome == outcome::denied);
 }
 
-TEST_CASE("any_other_error_is_not_a_rule_and_keeps_its_text_out_of_the_reply", tags) {
+TEST_CASE("any_other_error_is_not_a_rule_and_keeps_its_text_out_of_the_reply", "[approval]") {
     CHECK_FALSE(rule_refusal(std::runtime_error("server closed the connection unexpectedly")));
 }

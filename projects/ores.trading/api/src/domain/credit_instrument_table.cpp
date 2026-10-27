@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string credit_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,7 +51,8 @@ std::string convert_to_table(const std::vector<credit_instrument>& v) {
 
     for ([[maybe_unused]] const auto& ci : v) {
         table << ci.identity.trade_id << ci.identity.trade_type_code << ci.reference_entity
-              << opt_str(ci.start_date) << opt_str(ci.maturity_date) << ci.description
+              << credit_instrument_opt_str(ci.start_date)
+              << credit_instrument_opt_str(ci.maturity_date) << ci.description
               << ci.identity.version << ci.audit.recorded_at << fort::endr;
     }
     return table.to_string();

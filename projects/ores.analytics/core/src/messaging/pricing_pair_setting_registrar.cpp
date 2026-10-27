@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view pricing_pair_setting_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_pricing_pair_setting_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_pricing_pair_setting_han
         std::make_shared<pricing_pair_setting_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_pricing_pair_settings_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->list_pricing_pair_settings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_pricing_pair_setting_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_pricing_pair_setting(std::move(msg));
-        }));
+        get_pricing_pair_setting_request::nats_subject,
+        pricing_pair_setting_queue_group,
+        [h](ores::nats::message msg) { h->get_pricing_pair_setting(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_pricing_pair_settings_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->get_many_pricing_pair_settings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_pricing_pair_setting_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_pricing_pair_setting(std::move(msg));
-        }));
+        put_pricing_pair_setting_request::nats_subject,
+        pricing_pair_setting_queue_group,
+        [h](ores::nats::message msg) { h->put_pricing_pair_setting(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_pricing_pair_settings_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->put_many_pricing_pair_settings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_pricing_pair_setting_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->delete_pricing_pair_setting(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_pricing_pair_settings_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->delete_many_pricing_pair_settings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_pricing_pair_setting_versions_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->list_pricing_pair_setting_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_pricing_pair_setting_version_request::nats_subject,
-        queue_group,
+        pricing_pair_setting_queue_group,
         [h](ores::nats::message msg) { h->get_pricing_pair_setting_version(std::move(msg)); }));
     return subs;
 }

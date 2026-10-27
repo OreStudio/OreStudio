@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void yield_curve_process_parameter_definition_read_token(T& target,
+                                                         const std::string& raw,
+                                                         const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void yield_curve_process_parameter_definition_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -223,7 +225,7 @@ void yield_curve_process_parameter_definition_commands::process_list(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        yield_curve_process_parameter_definition_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -271,7 +273,8 @@ void yield_curve_process_parameter_definition_commands::process_get(
                       << std::endl;
             return;
         }
-        read_token(req.key.parameter_name, parsed->positionals[next++], "parameter_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.key.parameter_name, parsed->positionals[next++], "parameter_name");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -315,7 +318,8 @@ void yield_curve_process_parameter_definition_commands::process_get_many(
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::yield_curve_process_parameter_definition_key key;
-            read_token(key.parameter_name, parsed->positionals[i + 0], "parameter_name");
+            yield_curve_process_parameter_definition_read_token(
+                key.parameter_name, parsed->positionals[i + 0], "parameter_name");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -361,18 +365,28 @@ void yield_curve_process_parameter_definition_commands::process_add(
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(
+        yield_curve_process_parameter_definition_read_token(
             req.change.write.process_type_code, parsed->positionals[next++], "process_type_code");
-        read_token(req.change.write.parameter_name, parsed->positionals[next++], "parameter_name");
-        read_token(req.change.write.display_name, parsed->positionals[next++], "display_name");
-        read_token(req.change.write.symbol, parsed->positionals[next++], "symbol");
-        read_token(req.change.write.short_label, parsed->positionals[next++], "short_label");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.data_type, parsed->positionals[next++], "data_type");
-        read_token(req.change.write.default_value, parsed->positionals[next++], "default_value");
-        read_token(req.change.write.min_value, parsed->positionals[next++], "min_value");
-        read_token(req.change.write.max_value, parsed->positionals[next++], "max_value");
-        read_token(req.change.write.display_order, parsed->positionals[next++], "display_order");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.parameter_name, parsed->positionals[next++], "parameter_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.display_name, parsed->positionals[next++], "display_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.symbol, parsed->positionals[next++], "symbol");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.short_label, parsed->positionals[next++], "short_label");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.data_type, parsed->positionals[next++], "data_type");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.default_value, parsed->positionals[next++], "default_value");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.min_value, parsed->positionals[next++], "min_value");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.max_value, parsed->positionals[next++], "max_value");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.display_order, parsed->positionals[next++], "display_order");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -419,19 +433,30 @@ void yield_curve_process_parameter_definition_commands::process_set(
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.id, parsed->positionals[next++], "id");
+        yield_curve_process_parameter_definition_read_token(
             req.change.write.process_type_code, parsed->positionals[next++], "process_type_code");
-        read_token(req.change.write.parameter_name, parsed->positionals[next++], "parameter_name");
-        read_token(req.change.write.display_name, parsed->positionals[next++], "display_name");
-        read_token(req.change.write.symbol, parsed->positionals[next++], "symbol");
-        read_token(req.change.write.short_label, parsed->positionals[next++], "short_label");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.data_type, parsed->positionals[next++], "data_type");
-        read_token(req.change.write.default_value, parsed->positionals[next++], "default_value");
-        read_token(req.change.write.min_value, parsed->positionals[next++], "min_value");
-        read_token(req.change.write.max_value, parsed->positionals[next++], "max_value");
-        read_token(req.change.write.display_order, parsed->positionals[next++], "display_order");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.parameter_name, parsed->positionals[next++], "parameter_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.display_name, parsed->positionals[next++], "display_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.symbol, parsed->positionals[next++], "symbol");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.short_label, parsed->positionals[next++], "short_label");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.data_type, parsed->positionals[next++], "data_type");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.default_value, parsed->positionals[next++], "default_value");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.min_value, parsed->positionals[next++], "min_value");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.max_value, parsed->positionals[next++], "max_value");
+        yield_curve_process_parameter_definition_read_token(
+            req.change.write.display_order, parsed->positionals[next++], "display_order");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -492,19 +517,30 @@ void yield_curve_process_parameter_definition_commands::process_put_many(
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::yield_curve_process_parameter_definition_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(
+            yield_curve_process_parameter_definition_read_token(
+                change.write.id, parsed->positionals[next++], "id");
+            yield_curve_process_parameter_definition_read_token(
                 change.write.process_type_code, parsed->positionals[next++], "process_type_code");
-            read_token(change.write.parameter_name, parsed->positionals[next++], "parameter_name");
-            read_token(change.write.display_name, parsed->positionals[next++], "display_name");
-            read_token(change.write.symbol, parsed->positionals[next++], "symbol");
-            read_token(change.write.short_label, parsed->positionals[next++], "short_label");
-            read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.data_type, parsed->positionals[next++], "data_type");
-            read_token(change.write.default_value, parsed->positionals[next++], "default_value");
-            read_token(change.write.min_value, parsed->positionals[next++], "min_value");
-            read_token(change.write.max_value, parsed->positionals[next++], "max_value");
-            read_token(change.write.display_order, parsed->positionals[next++], "display_order");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.parameter_name, parsed->positionals[next++], "parameter_name");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.display_name, parsed->positionals[next++], "display_name");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.symbol, parsed->positionals[next++], "symbol");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.short_label, parsed->positionals[next++], "short_label");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.description, parsed->positionals[next++], "description");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.data_type, parsed->positionals[next++], "data_type");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.default_value, parsed->positionals[next++], "default_value");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.min_value, parsed->positionals[next++], "min_value");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.max_value, parsed->positionals[next++], "max_value");
+            yield_curve_process_parameter_definition_read_token(
+                change.write.display_order, parsed->positionals[next++], "display_order");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -554,7 +590,8 @@ void yield_curve_process_parameter_definition_commands::process_delete(
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.parameter_name, parsed->positionals[next++], "parameter_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.removal.key.parameter_name, parsed->positionals[next++], "parameter_name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -608,7 +645,8 @@ void yield_curve_process_parameter_definition_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::yield_curve_process_parameter_definition_key key;
-            read_token(key.parameter_name, parsed->positionals[i * 1 + 0], "parameter_name");
+            yield_curve_process_parameter_definition_read_token(
+                key.parameter_name, parsed->positionals[i * 1 + 0], "parameter_name");
             req.removals.push_back(
                 messaging::yield_curve_process_parameter_definition_removal{.key = std::move(key)});
         }
@@ -661,8 +699,9 @@ void yield_curve_process_parameter_definition_commands::process_versions(
                       << std::endl;
             return;
         }
-        read_token(req.key.parameter_name, parsed->positionals[next++], "parameter_name");
-        apply_page(req, *parsed);
+        yield_curve_process_parameter_definition_read_token(
+            req.key.parameter_name, parsed->positionals[next++], "parameter_name");
+        yield_curve_process_parameter_definition_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -707,9 +746,10 @@ void yield_curve_process_parameter_definition_commands::process_version(
                       << std::endl;
             return;
         }
-        read_token(req.key.yield_curve_process_parameter_definition.parameter_name,
-                   parsed->positionals[next++],
-                   "parameter_name");
+        yield_curve_process_parameter_definition_read_token(
+            req.key.yield_curve_process_parameter_definition.parameter_name,
+            parsed->positionals[next++],
+            "parameter_name");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

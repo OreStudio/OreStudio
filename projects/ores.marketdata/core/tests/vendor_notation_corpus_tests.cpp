@@ -47,8 +47,6 @@ namespace {
 namespace vendor = ores::marketdata::vendor;
 namespace messaging = ores::marketdata::messaging;
 
-const std::string tags("[vendor_notation][corpus]");
-
 const std::vector<std::string> providers{"bloomberg", "lseg", "demo"};
 
 std::vector<std::string> split(const std::string& line, char separator) {
@@ -119,7 +117,7 @@ vendor::quote_description pillar(std::string currency,
 
 } // namespace
 
-TEST_CASE("the_registry_lists_the_providers_that_have_a_notation", tags) {
+TEST_CASE("the_registry_lists_the_providers_that_have_a_notation", "[vendor_notation][corpus]") {
     for (const auto& provider : providers) {
         const auto* found = vendor::notation_of(provider);
         REQUIRE(found != nullptr);
@@ -130,7 +128,8 @@ TEST_CASE("the_registry_lists_the_providers_that_have_a_notation", tags) {
     CHECK(vendor::notation_of("") == nullptr);
 }
 
-TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips", tags) {
+TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips",
+          "[vendor_notation][corpus]") {
     for (const auto& provider : providers) {
         const auto& sut = notation(provider);
         std::size_t valid = 0;
@@ -174,7 +173,8 @@ TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips", tags
     }
 }
 
-TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips", tags) {
+TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
+          "[vendor_notation][corpus]") {
     std::size_t written_ids = 0;
     std::size_t refusals = 0;
     for (const auto& row : rows_of("ir_curve_pillar_descriptions.csv")) {
@@ -210,7 +210,8 @@ TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
     CHECK(refusals >= 33);
 }
 
-TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair", tags) {
+TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair",
+          "[vendor_notation][corpus]") {
     const std::vector<messaging::vendor_id> pairs{{"bbg_ticker", "EURUSD Curncy", "PX_LAST"},
                                                   {"ric", "EUR=", "BID"},
                                                   {"demo_key", "EUR/USD", "value"}};
@@ -238,7 +239,8 @@ TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair", t
     }
 }
 
-TEST_CASE("every_description_in_the_corpus_writes_as_the_corpus_says_and_roundtrips", tags) {
+TEST_CASE("every_description_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
+          "[vendor_notation][corpus]") {
     std::size_t written_ids = 0;
     std::size_t refusals = 0;
     for (const auto& row : rows_of("fx_spot_descriptions.csv")) {
@@ -274,7 +276,8 @@ TEST_CASE("every_description_in_the_corpus_writes_as_the_corpus_says_and_roundtr
     CHECK(refusals > 50);
 }
 
-TEST_CASE("no_notation_writes_an_id_that_reads_as_another_description", tags) {
+TEST_CASE("no_notation_writes_an_id_that_reads_as_another_description",
+          "[vendor_notation][corpus]") {
     // The property over a grid the corpus does not list: every ordered pair of a set of
     // currencies, with every side, through every notation.
     const std::vector<std::string> currencies{
@@ -302,7 +305,7 @@ TEST_CASE("no_notation_writes_an_id_that_reads_as_another_description", tags) {
     CHECK(checked > 500);
 }
 
-TEST_CASE("a_damaged_id_is_refused_or_read_as_exactly_that_id", tags) {
+TEST_CASE("a_damaged_id_is_refused_or_read_as_exactly_that_id", "[vendor_notation][corpus]") {
     // Take each valid id of the corpus and damage it one character at a time. A notation that
     // reads the damaged id must write the damaged id back, so it never repairs an id quietly or
     // reads a different one.
@@ -352,7 +355,7 @@ TEST_CASE("a_damaged_id_is_refused_or_read_as_exactly_that_id", tags) {
     CHECK(still_read < damaged);
 }
 
-TEST_CASE("the_primary_side_of_each_notation_is_a_field_it_writes", tags) {
+TEST_CASE("the_primary_side_of_each_notation_is_a_field_it_writes", "[vendor_notation][corpus]") {
     for (const auto& provider : providers) {
         const auto& sut = notation(provider);
         const auto written = sut.write(fx("EUR", "GBP", sut.primary_side()));
@@ -362,7 +365,7 @@ TEST_CASE("the_primary_side_of_each_notation_is_a_field_it_writes", tags) {
     }
 }
 
-TEST_CASE("a_notation_names_the_scheme_it_refuses_a_foreign_id_with", tags) {
+TEST_CASE("a_notation_names_the_scheme_it_refuses_a_foreign_id_with", "[vendor_notation][corpus]") {
     const messaging::vendor_id bloomberg{"bbg_ticker", "EURUSD Curncy", "PX_LAST"};
     const messaging::vendor_id lseg{"ric", "EUR=", "BID"};
     const messaging::vendor_id demo{"demo_key", "EUR/USD", "value"};

@@ -62,8 +62,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::app_version_platform>
-read_one(repository::app_version_platform_repository& repo,
-         const messaging::app_version_platform_key& key) {
+app_version_platform_read_one(repository::app_version_platform_repository& repo,
+                              const messaging::app_version_platform_key& key) {
     return repo.read_latest(key.app_version_id, key.platform_id);
 }
 
@@ -73,7 +73,8 @@ read_one(repository::app_version_platform_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::app_version_platform_key key_from(const domain::app_version_platform& v) {
+messaging::app_version_platform_key
+app_version_platform_key_from(const domain::app_version_platform& v) {
     messaging::app_version_platform_key key;
     key.app_version_id = v.app_version_id;
     key.platform_id = v.platform_id;
@@ -88,7 +89,8 @@ messaging::app_version_platform_key key_from(const domain::app_version_platform&
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::app_version_platform to_domain(const messaging::app_version_platform_write& write) {
+domain::app_version_platform
+app_version_platform_to_domain(const messaging::app_version_platform_write& write) {
     domain::app_version_platform v;
     v.app_version_id = write.app_version_id;
     v.platform_id = write.platform_id;
@@ -147,7 +149,7 @@ app_version_platform_service::list_by_app_version_id_app_version_platforms(
 messaging::get_app_version_platform_response app_version_platform_service::get_app_version_platform(
     const messaging::get_app_version_platform_request& request) {
     messaging::get_app_version_platform_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = app_version_platform_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "app_version_platform"});
         return response;
@@ -167,7 +169,7 @@ app_version_platform_service::get_many_app_version_platforms(
     for (const auto& k : request.keys) {
         messaging::app_version_platform_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = app_version_platform_read_one(repo_, k);
         if (!found.empty())
             entry.app_version_platform = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +185,7 @@ messaging::put_app_version_platform_response app_version_platform_service::put_a
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = app_version_platform_read_one(repo_, app_version_platform_key_from(value));
     if (!written.empty())
         response.app_version_platform = std::move(written.front());
     return response;
@@ -216,7 +218,7 @@ app_version_platform_service::put_many_app_version_platforms(
     repo_.write(batch, claims);
     response.app_version_platforms.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = app_version_platform_read_one(repo_, app_version_platform_key_from(value));
         response.app_version_platforms.push_back(written.empty() ? value :
                                                                    std::move(written.front()));
     }
@@ -252,7 +254,7 @@ app_version_platform_service::delete_app_version_platform(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = app_version_platform_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "app_version_platform",
@@ -305,8 +307,8 @@ app_version_platform_service::prepare_change(const messaging::app_version_platfo
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = app_version_platform_to_domain(change.write);
+    const auto current = app_version_platform_read_one(repo_, app_version_platform_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

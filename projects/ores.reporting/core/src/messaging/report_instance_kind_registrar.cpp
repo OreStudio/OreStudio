@@ -39,7 +39,7 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view report_instance_kind_queue_group = "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_report_instance_kind_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_report_instance_kind_han
         std::make_shared<report_instance_kind_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_report_instance_kinds_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->list_report_instance_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_report_instance_kind_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_report_instance_kind(std::move(msg));
-        }));
+        get_report_instance_kind_request::nats_subject,
+        report_instance_kind_queue_group,
+        [h](ores::nats::message msg) { h->get_report_instance_kind(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_report_instance_kinds_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->get_many_report_instance_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_report_instance_kind_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_report_instance_kind(std::move(msg));
-        }));
+        put_report_instance_kind_request::nats_subject,
+        report_instance_kind_queue_group,
+        [h](ores::nats::message msg) { h->put_report_instance_kind(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_report_instance_kinds_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->put_many_report_instance_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_report_instance_kind_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->delete_report_instance_kind(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_report_instance_kinds_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->delete_many_report_instance_kinds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_report_instance_kind_versions_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->list_report_instance_kind_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_report_instance_kind_version_request::nats_subject,
-        queue_group,
+        report_instance_kind_queue_group,
         [h](ores::nats::message msg) { h->get_report_instance_kind_version(std::move(msg)); }));
     return subs;
 }

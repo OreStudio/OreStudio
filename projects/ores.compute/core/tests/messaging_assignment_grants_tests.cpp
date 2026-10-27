@@ -23,8 +23,6 @@
 
 namespace {
 
-const std::string tags("[messaging]");
-
 using ores::compute::messaging::grant_for_path;
 using ores::compute::messaging::storage_grants_for;
 
@@ -34,7 +32,7 @@ const std::string output = "/api/v1/storage/ores/compute/output/result.tar.gz";
 
 }
 
-TEST_CASE("grant_for_path_names_the_bucket_the_key_and_the_operation", tags) {
+TEST_CASE("grant_for_path_names_the_bucket_the_key_and_the_operation", "[messaging]") {
     const auto grant = grant_for_path(package, "get");
 
     REQUIRE(grant.has_value());
@@ -43,14 +41,15 @@ TEST_CASE("grant_for_path_names_the_bucket_the_key_and_the_operation", tags) {
     CHECK(grant->op == "get");
 }
 
-TEST_CASE("grant_for_path_refuses_a_path_that_names_no_object", tags) {
+TEST_CASE("grant_for_path_refuses_a_path_that_names_no_object", "[messaging]") {
     CHECK(!grant_for_path("", "get").has_value());
     CHECK(!grant_for_path("/somewhere/else", "get").has_value());
     CHECK(!grant_for_path("/api/v1/storage/ores", "get").has_value());
     CHECK(!grant_for_path("/api/v1/storage/ores/", "get").has_value());
 }
 
-TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_the_output", tags) {
+TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_the_output",
+          "[messaging]") {
     const auto grants = storage_grants_for(package, input, output);
 
     REQUIRE(grants.has_value());
@@ -63,7 +62,7 @@ TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_the_out
     CHECK((*grants)[2].key_prefix == "compute/output/result.tar.gz");
 }
 
-TEST_CASE("storage_grants_for_is_refused_when_any_path_names_no_object", tags) {
+TEST_CASE("storage_grants_for_is_refused_when_any_path_names_no_object", "[messaging]") {
     // A job with a missing grant cannot run, so the whole set is refused.
     CHECK(!storage_grants_for("", input, output).has_value());
     CHECK(!storage_grants_for(package, "nope", output).has_value());

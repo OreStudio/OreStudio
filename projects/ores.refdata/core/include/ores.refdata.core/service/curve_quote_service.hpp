@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_curve_quotes_response
-    list_curve_quotes(const messaging::list_curve_quotes_request& request);
-    messaging::get_curve_quote_response
-    get_curve_quote(const messaging::get_curve_quote_request& request);
-    messaging::get_many_curve_quotes_response
-    get_many_curve_quotes(const messaging::get_many_curve_quotes_request& request);
-    messaging::put_curve_quote_response
-    put_curve_quote(const messaging::put_curve_quote_request& request);
-    messaging::put_many_curve_quotes_response
-    put_many_curve_quotes(const messaging::put_many_curve_quotes_request& request);
-    messaging::delete_curve_quote_response
-    delete_curve_quote(const messaging::delete_curve_quote_request& request);
-    messaging::delete_many_curve_quotes_response
-    delete_many_curve_quotes(const messaging::delete_many_curve_quotes_request& request);
-    messaging::list_curve_quote_versions_response
-    list_curve_quote_versions(const messaging::list_curve_quote_versions_request& request);
-    messaging::get_curve_quote_version_response
-    get_curve_quote_version(const messaging::get_curve_quote_version_request& request);
+    ::ores::refdata::messaging::list_curve_quotes_response
+    list_curve_quotes(const ::ores::refdata::messaging::list_curve_quotes_request& request);
+    ::ores::refdata::messaging::get_curve_quote_response
+    get_curve_quote(const ::ores::refdata::messaging::get_curve_quote_request& request);
+    ::ores::refdata::messaging::get_many_curve_quotes_response
+    get_many_curve_quotes(const ::ores::refdata::messaging::get_many_curve_quotes_request& request);
+    ::ores::refdata::messaging::put_curve_quote_response
+    put_curve_quote(const ::ores::refdata::messaging::put_curve_quote_request& request);
+    ::ores::refdata::messaging::put_many_curve_quotes_response
+    put_many_curve_quotes(const ::ores::refdata::messaging::put_many_curve_quotes_request& request);
+    ::ores::refdata::messaging::delete_curve_quote_response
+    delete_curve_quote(const ::ores::refdata::messaging::delete_curve_quote_request& request);
+    ::ores::refdata::messaging::delete_many_curve_quotes_response delete_many_curve_quotes(
+        const ::ores::refdata::messaging::delete_many_curve_quotes_request& request);
+    ::ores::refdata::messaging::list_curve_quote_versions_response list_curve_quote_versions(
+        const ::ores::refdata::messaging::list_curve_quote_versions_request& request);
+    ::ores::refdata::messaging::get_curve_quote_version_response get_curve_quote_version(
+        const ::ores::refdata::messaging::get_curve_quote_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +189,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::curve_quote_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::curve_quote& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::curve_quote_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::curve_quote& out);
 };
 
 }

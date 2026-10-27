@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/dq/report_definition_template_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.dq.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("report_definition_template_operations_registers_every_declared_command", tags) {
+TEST_CASE("report_definition_template_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -70,7 +68,7 @@ TEST_CASE("report_definition_template_operations_registers_every_declared_comman
 
 TEST_CASE("report_definition_template_operations_process_list_dq_report_definition_templates_"
           "requires_a_session",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -87,7 +85,7 @@ TEST_CASE("report_definition_template_operations_process_list_dq_report_definiti
 
 TEST_CASE("report_definition_template_operations_process_list_dq_report_definition_templates_"
           "reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

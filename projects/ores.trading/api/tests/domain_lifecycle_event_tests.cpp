@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/lifecycle_event_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/lifecycle_event_table.hpp"
 #include "ores.trading.api/domain/lifecycle_event_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
@@ -29,9 +30,6 @@
 namespace {
 
 using ores::trading::domain::lifecycle_event;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 lifecycle_event make_lifecycle_event(const std::string& code, const std::string& description = "") {
     lifecycle_event le;
@@ -51,7 +49,7 @@ lifecycle_event make_lifecycle_event(const std::string& code, const std::string&
 using ores::trading::domain::lifecycle_event;
 using namespace ores::logging;
 
-TEST_CASE("create_lifecycle_event_with_valid_fields", tags) {
+TEST_CASE("create_lifecycle_event_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_lifecycle_event("New", "New trade lifecycle event");
@@ -66,7 +64,7 @@ TEST_CASE("create_lifecycle_event_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("lifecycle_event_insertion_operator", tags) {
+TEST_CASE("lifecycle_event_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_lifecycle_event("Amendment");
@@ -80,7 +78,7 @@ TEST_CASE("lifecycle_event_insertion_operator", tags) {
     CHECK(json_output.find("Amendment") != std::string::npos);
 }
 
-TEST_CASE("create_lifecycle_event_with_faker", tags) {
+TEST_CASE("create_lifecycle_event_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     lifecycle_event sut;
@@ -99,7 +97,7 @@ TEST_CASE("create_lifecycle_event_with_faker", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("create_multiple_random_lifecycle_events", tags) {
+TEST_CASE("create_multiple_random_lifecycle_events", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> codes = {
@@ -111,7 +109,7 @@ TEST_CASE("create_multiple_random_lifecycle_events", tags) {
     }
 }
 
-TEST_CASE("lifecycle_event_convert_single_to_table", tags) {
+TEST_CASE("lifecycle_event_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<lifecycle_event> items = {
@@ -124,7 +122,7 @@ TEST_CASE("lifecycle_event_convert_single_to_table", tags) {
     CHECK(table.find("FullTermination") != std::string::npos);
 }
 
-TEST_CASE("lifecycle_event_convert_multiple_to_table", tags) {
+TEST_CASE("lifecycle_event_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<lifecycle_event> items;
@@ -141,7 +139,7 @@ TEST_CASE("lifecycle_event_convert_multiple_to_table", tags) {
     CHECK(table.find("Event2") != std::string::npos);
 }
 
-TEST_CASE("lifecycle_event_convert_empty_vector_to_table", tags) {
+TEST_CASE("lifecycle_event_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<lifecycle_event> items;
@@ -152,7 +150,7 @@ TEST_CASE("lifecycle_event_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Version") != std::string::npos);
 }
 
-TEST_CASE("lifecycle_event_table_with_faker_data", tags) {
+TEST_CASE("lifecycle_event_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<lifecycle_event> items;

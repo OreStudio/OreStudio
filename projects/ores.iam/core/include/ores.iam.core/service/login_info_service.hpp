@@ -75,12 +75,12 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_login_info_response
-    list_login_info(const messaging::list_login_info_request& request);
-    messaging::get_login_info_response
-    get_login_info(const messaging::get_login_info_request& request);
-    messaging::get_many_login_info_response
-    get_many_login_info(const messaging::get_many_login_info_request& request);
+    ::ores::iam::messaging::list_login_info_response
+    list_login_info(const ::ores::iam::messaging::list_login_info_request& request);
+    ::ores::iam::messaging::get_login_info_response
+    get_login_info(const ::ores::iam::messaging::get_login_info_request& request);
+    ::ores::iam::messaging::get_many_login_info_response
+    get_many_login_info(const ::ores::iam::messaging::get_many_login_info_request& request);
     /**@}*/
 
     /**

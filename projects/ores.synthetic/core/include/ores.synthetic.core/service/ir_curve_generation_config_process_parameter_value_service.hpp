@@ -77,39 +77,47 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ir_curve_generation_config_process_parameter_values_response
+    ::ores::synthetic::messaging::list_ir_curve_generation_config_process_parameter_values_response
     list_ir_curve_generation_config_process_parameter_values(
-        const messaging::list_ir_curve_generation_config_process_parameter_values_request& request);
-    messaging::get_ir_curve_generation_config_process_parameter_value_response
+        const ::ores::synthetic::messaging::
+            list_ir_curve_generation_config_process_parameter_values_request& request);
+    ::ores::synthetic::messaging::get_ir_curve_generation_config_process_parameter_value_response
     get_ir_curve_generation_config_process_parameter_value(
-        const messaging::get_ir_curve_generation_config_process_parameter_value_request& request);
-    messaging::get_many_ir_curve_generation_config_process_parameter_values_response
-    get_many_ir_curve_generation_config_process_parameter_values(
-        const messaging::get_many_ir_curve_generation_config_process_parameter_values_request&
-            request);
-    messaging::put_ir_curve_generation_config_process_parameter_value_response
+        const ::ores::synthetic::messaging::
+            get_ir_curve_generation_config_process_parameter_value_request& request);
+    ::ores::synthetic::messaging::
+        get_many_ir_curve_generation_config_process_parameter_values_response
+        get_many_ir_curve_generation_config_process_parameter_values(
+            const ::ores::synthetic::messaging::
+                get_many_ir_curve_generation_config_process_parameter_values_request& request);
+    ::ores::synthetic::messaging::put_ir_curve_generation_config_process_parameter_value_response
     put_ir_curve_generation_config_process_parameter_value(
-        const messaging::put_ir_curve_generation_config_process_parameter_value_request& request);
-    messaging::put_many_ir_curve_generation_config_process_parameter_values_response
-    put_many_ir_curve_generation_config_process_parameter_values(
-        const messaging::put_many_ir_curve_generation_config_process_parameter_values_request&
-            request);
-    messaging::delete_ir_curve_generation_config_process_parameter_value_response
+        const ::ores::synthetic::messaging::
+            put_ir_curve_generation_config_process_parameter_value_request& request);
+    ::ores::synthetic::messaging::
+        put_many_ir_curve_generation_config_process_parameter_values_response
+        put_many_ir_curve_generation_config_process_parameter_values(
+            const ::ores::synthetic::messaging::
+                put_many_ir_curve_generation_config_process_parameter_values_request& request);
+    ::ores::synthetic::messaging::delete_ir_curve_generation_config_process_parameter_value_response
     delete_ir_curve_generation_config_process_parameter_value(
-        const messaging::delete_ir_curve_generation_config_process_parameter_value_request&
-            request);
-    messaging::delete_many_ir_curve_generation_config_process_parameter_values_response
-    delete_many_ir_curve_generation_config_process_parameter_values(
-        const messaging::delete_many_ir_curve_generation_config_process_parameter_values_request&
-            request);
-    messaging::list_ir_curve_generation_config_process_parameter_value_versions_response
-    list_ir_curve_generation_config_process_parameter_value_versions(
-        const messaging::list_ir_curve_generation_config_process_parameter_value_versions_request&
-            request);
-    messaging::get_ir_curve_generation_config_process_parameter_value_version_response
-    get_ir_curve_generation_config_process_parameter_value_version(
-        const messaging::get_ir_curve_generation_config_process_parameter_value_version_request&
-            request);
+        const ::ores::synthetic::messaging::
+            delete_ir_curve_generation_config_process_parameter_value_request& request);
+    ::ores::synthetic::messaging::
+        delete_many_ir_curve_generation_config_process_parameter_values_response
+        delete_many_ir_curve_generation_config_process_parameter_values(
+            const ::ores::synthetic::messaging::
+                delete_many_ir_curve_generation_config_process_parameter_values_request& request);
+    ::ores::synthetic::messaging::
+        list_ir_curve_generation_config_process_parameter_value_versions_response
+        list_ir_curve_generation_config_process_parameter_value_versions(
+            const ::ores::synthetic::messaging::
+                list_ir_curve_generation_config_process_parameter_value_versions_request& request);
+    ::ores::synthetic::messaging::
+        get_ir_curve_generation_config_process_parameter_value_version_response
+        get_ir_curve_generation_config_process_parameter_value_version(
+            const ::ores::synthetic::messaging::
+                get_ir_curve_generation_config_process_parameter_value_version_request& request);
     /**@}*/
 
     /**
@@ -220,10 +228,11 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(
-        const messaging::ir_curve_generation_config_process_parameter_value_change& change,
-        const ores::utility::domain::change_intent& intent,
-        domain::ir_curve_generation_config_process_parameter_value& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::synthetic::messaging::
+                       ir_curve_generation_config_process_parameter_value_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::ir_curve_generation_config_process_parameter_value& out);
 };
 
 }

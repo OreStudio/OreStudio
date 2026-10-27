@@ -53,7 +53,7 @@ namespace {
  * it does not know is the caller's to see as unauthorised, which is what the
  * service means by any code it does not spell out here.
  */
-http_response error_response(const std::string& error) {
+http_response account_operations_error_response(const std::string& error) {
     if (error == "forbidden") {
         return http_response::forbidden(error);
     }
@@ -73,7 +73,7 @@ http_response error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+account_operations_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -82,7 +82,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
                                             ores::nats::service::default_request_timeout);
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
-            co_return error_response(it->second);
+            co_return account_operations_error_response(it->second);
         }
         const auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
@@ -108,7 +108,7 @@ account_operations_routes::handle_save_account(const http_request& req, nats_cli
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -122,7 +122,7 @@ account_operations_routes::handle_update_account(const http_request& req, nats_c
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -136,7 +136,7 @@ account_operations_routes::handle_delete_account(const http_request& req, nats_c
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -150,7 +150,7 @@ account_operations_routes::handle_lock_account(const http_request& req, nats_cli
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -164,7 +164,7 @@ account_operations_routes::handle_unlock_account(const http_request& req, nats_c
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -178,7 +178,7 @@ account_operations_routes::handle_reset_password(const http_request& req, nats_c
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -192,7 +192,7 @@ account_operations_routes::handle_update_my_email(const http_request& req, nats_
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -206,7 +206,7 @@ account_operations_routes::handle_change_password(const http_request& req, nats_
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

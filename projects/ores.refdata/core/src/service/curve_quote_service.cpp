@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::curve_quote> read_one(repository::curve_quote_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::curve_quote_key& key) {
+std::vector<domain::curve_quote> curve_quote_read_one(repository::curve_quote_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::curve_quote_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::curve_quote> read_one(repository::curve_quote_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::curve_quote_key key_from(const domain::curve_quote& v) {
+messaging::curve_quote_key curve_quote_key_from(const domain::curve_quote& v) {
     messaging::curve_quote_key key;
     key.id = v.id;
     return key;
@@ -98,7 +98,7 @@ messaging::curve_quote_key key_from(const domain::curve_quote& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::curve_quote to_domain(const messaging::curve_quote_write& write) {
+domain::curve_quote curve_quote_to_domain(const messaging::curve_quote_write& write) {
     domain::curve_quote v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -151,7 +151,7 @@ curve_quote_service::list_curve_quotes(const messaging::list_curve_quotes_reques
 messaging::get_curve_quote_response
 curve_quote_service::get_curve_quote(const messaging::get_curve_quote_request& request) {
     messaging::get_curve_quote_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = curve_quote_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_quote"});
         return response;
@@ -170,7 +170,7 @@ messaging::get_many_curve_quotes_response curve_quote_service::get_many_curve_qu
     for (const auto& k : request.keys) {
         messaging::curve_quote_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = curve_quote_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.curve_quote = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -186,7 +186,7 @@ curve_quote_service::put_curve_quote(const messaging::put_curve_quote_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = curve_quote_read_one(repo_, ctx_, curve_quote_key_from(value));
     if (!written.empty())
         response.curve_quote = std::move(written.front());
     return response;
@@ -218,7 +218,7 @@ messaging::put_many_curve_quotes_response curve_quote_service::put_many_curve_qu
     repo_.write(ctx_, batch, claims);
     response.quotes.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = curve_quote_read_one(repo_, ctx_, curve_quote_key_from(value));
         response.quotes.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -251,7 +251,7 @@ curve_quote_service::delete_curve_quote(const messaging::delete_curve_quote_requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = curve_quote_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "curve_quote",
@@ -336,8 +336,8 @@ curve_quote_service::prepare_change(const messaging::curve_quote_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = curve_quote_to_domain(change.write);
+    const auto current = curve_quote_read_one(repo_, ctx_, curve_quote_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view future_convention_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_future_convention_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_future_convention_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<future_convention_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_future_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_future_conventions(std::move(msg));
-        }));
+        list_future_conventions_request::nats_subject,
+        future_convention_queue_group,
+        [h](ores::nats::message msg) { h->list_future_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_future_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_future_convention(std::move(msg));
-        }));
+        get_future_convention_request::nats_subject,
+        future_convention_queue_group,
+        [h](ores::nats::message msg) { h->get_future_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_future_conventions_request::nats_subject,
-        queue_group,
+        future_convention_queue_group,
         [h](ores::nats::message msg) { h->get_many_future_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_future_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_future_convention(std::move(msg));
-        }));
+        put_future_convention_request::nats_subject,
+        future_convention_queue_group,
+        [h](ores::nats::message msg) { h->put_future_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_future_conventions_request::nats_subject,
-        queue_group,
+        future_convention_queue_group,
         [h](ores::nats::message msg) { h->put_many_future_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_future_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_future_convention(std::move(msg));
-        }));
+        delete_future_convention_request::nats_subject,
+        future_convention_queue_group,
+        [h](ores::nats::message msg) { h->delete_future_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_future_conventions_request::nats_subject,
-        queue_group,
+        future_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_many_future_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_future_convention_versions_request::nats_subject,
-        queue_group,
+        future_convention_queue_group,
         [h](ores::nats::message msg) { h->list_future_convention_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_future_convention_version_request::nats_subject,
-        queue_group,
+        future_convention_queue_group,
         [h](ores::nats::message msg) { h->get_future_convention_version(std::move(msg)); }));
     return subs;
 }

@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -30,9 +31,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.shell.tests");
-const std::string tags("[shell_root_menu]");
 
 std::unique_ptr<cli::Menu> menu_named(const std::string& name, const std::string& verb) {
     auto menu = std::make_unique<cli::Menu>(name);
@@ -48,7 +46,7 @@ using ores::shell::app::extend_menu;
 using ores::shell::app::insert_menu;
 using ores::shell::app::shell_root_menu;
 
-TEST_CASE("insert_menu_refuses_a_second_owner_of_one_name", tags) {
+TEST_CASE("insert_menu_refuses_a_second_owner_of_one_name", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     shell_root_menu root;
@@ -65,7 +63,7 @@ TEST_CASE("insert_menu_refuses_a_second_owner_of_one_name", tags) {
     BOOST_LOG_SEV(lg, debug) << "A duplicate menu name is refused.";
 }
 
-TEST_CASE("insert_menu_accepts_two_different_names", tags) {
+TEST_CASE("insert_menu_accepts_two_different_names", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     shell_root_menu root;
@@ -79,7 +77,7 @@ TEST_CASE("insert_menu_accepts_two_different_names", tags) {
           completions.end());
 }
 
-TEST_CASE("extend_menu_adds_verbs_to_the_menu_another_unit_owns", tags) {
+TEST_CASE("extend_menu_adds_verbs_to_the_menu_another_unit_owns", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     shell_root_menu root;
@@ -103,7 +101,7 @@ TEST_CASE("extend_menu_adds_verbs_to_the_menu_another_unit_owns", tags) {
     BOOST_LOG_SEV(lg, debug) << "One menu answers both units' verbs.";
 }
 
-TEST_CASE("apply_extensions_refuses_an_extension_for_an_unowned_name", tags) {
+TEST_CASE("apply_extensions_refuses_an_extension_for_an_unowned_name", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     shell_root_menu root;
@@ -112,7 +110,7 @@ TEST_CASE("apply_extensions_refuses_an_extension_for_an_unowned_name", tags) {
     REQUIRE_THROWS_AS(root.apply_extensions(), std::runtime_error);
 }
 
-TEST_CASE("claim_name_refuses_a_root_command_that_takes_an_owned_name", tags) {
+TEST_CASE("claim_name_refuses_a_root_command_that_takes_an_owned_name", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     shell_root_menu root;
@@ -127,7 +125,7 @@ TEST_CASE("claim_name_refuses_a_root_command_that_takes_an_owned_name", tags) {
     REQUIRE_THROWS_AS(claim_name(root, "login"), std::runtime_error);
 }
 
-TEST_CASE("a_root_that_is_not_the_shells_claims_nothing", tags) {
+TEST_CASE("a_root_that_is_not_the_shells_claims_nothing", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     // A unit test builds its own root, and it has no other unit to collide
@@ -142,7 +140,7 @@ TEST_CASE("a_root_that_is_not_the_shells_claims_nothing", tags) {
     CHECK(std::count(completions.begin(), completions.end(), std::string{"accounts"}) == 2);
 }
 
-TEST_CASE("extend_menu_on_a_plain_root_gives_the_verbs_their_own_menu", tags) {
+TEST_CASE("extend_menu_on_a_plain_root_gives_the_verbs_their_own_menu", "[shell_root_menu]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root("root");

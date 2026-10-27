@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -34,9 +35,6 @@
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][manual_point_service]");
 
 using ores::marketdata::messaging::clear_manual_point_request;
 using ores::marketdata::messaging::get_curve_snapshot_request;
@@ -112,7 +110,8 @@ snapshot(database_helper& h, const resolve_series_identity_request& identity) {
 
 }
 
-TEST_CASE("a_keyed_point_owns_its_node_and_a_clear_gives_the_feed_value_back", tags) {
+TEST_CASE("a_keyed_point_owns_its_node_and_a_clear_gives_the_feed_value_back",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -145,7 +144,8 @@ TEST_CASE("a_keyed_point_owns_its_node_and_a_clear_gives_the_feed_value_back", t
     CHECK(after_clear.provenance[1].source_kind == "quoted");
 }
 
-TEST_CASE("a_clear_releases_a_node_that_was_keyed_more_than_once", tags) {
+TEST_CASE("a_clear_releases_a_node_that_was_keyed_more_than_once",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -165,7 +165,8 @@ TEST_CASE("a_clear_releases_a_node_that_was_keyed_more_than_once", tags) {
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"0.080"});
 }
 
-TEST_CASE("a_node_the_shape_does_not_hold_is_refused_and_nothing_is_written", tags) {
+TEST_CASE("a_node_the_shape_does_not_hold_is_refused_and_nothing_is_written",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -186,7 +187,8 @@ TEST_CASE("a_node_the_shape_does_not_hold_is_refused_and_nothing_is_written", ta
     CHECK(after.provenance[0].source_kind == "quoted");
 }
 
-TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", tags) {
+TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -217,7 +219,8 @@ TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", tags) {
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"0.080"});
 }
 
-TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling", tags) {
+TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -242,7 +245,7 @@ TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling", tags
     REQUIRE(cleared.success);
 }
 
-TEST_CASE("clearing_a_node_with_no_manual_point_says_so", tags) {
+TEST_CASE("clearing_a_node_with_no_manual_point_says_so", "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -255,7 +258,8 @@ TEST_CASE("clearing_a_node_with_no_manual_point_says_so", tags) {
     CHECK_FALSE(cleared.message.empty());
 }
 
-TEST_CASE("a_context_for_another_party_cannot_key_on_the_series", tags) {
+TEST_CASE("a_context_for_another_party_cannot_key_on_the_series",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

@@ -24,19 +24,13 @@
 #include <stdexcept>
 #include <string>
 
-namespace {
-
-const std::string tags("[fx_mixture_conversion]");
-
-}
-
 using Catch::Approx;
 using ores::synthetic::feed::convert_fx_mixture;
 using ores::synthetic::feed::fx_mixture;
 using ores::synthetic::feed::kappa_for_half_life;
 
 TEST_CASE("fx_mixture_conversion scales μ and σ by the price between log-returns and price units",
-          tags) {
+          "[fx_mixture_conversion]") {
     const fx_mixture geometric{{0.0001, 0.0}, {0.0005, 0.002}, {0.95, 0.05}};
 
     const auto arithmetic = convert_fx_mixture(geometric, "geometric", "arithmetic", 150.0, 3600);
@@ -53,7 +47,7 @@ TEST_CASE("fx_mixture_conversion scales μ and σ by the price between log-retur
 
 TEST_CASE("fx_mixture_conversion keeps the first component for Ornstein-Uhlenbeck, κ from a 15 "
           "minute half-life",
-          tags) {
+          "[fx_mixture_conversion]") {
     const fx_mixture geometric{{0.0001, 0.0}, {0.0005, 0.002}, {0.95, 0.05}};
 
     const auto ou = convert_fx_mixture(geometric, "geometric", "ornstein_uhlenbeck", 2.0, 60);
@@ -66,7 +60,7 @@ TEST_CASE("fx_mixture_conversion keeps the first component for Ornstein-Uhlenbec
 
 TEST_CASE("fx_mixture_conversion gives the one component the whole weight leaving "
           "Ornstein-Uhlenbeck",
-          tags) {
+          "[fx_mixture_conversion]") {
     const fx_mixture ou{{0.0}, {0.001}, {0.046}};
 
     const auto geometric = convert_fx_mixture(ou, "ornstein_uhlenbeck", "geometric", 2.0, 60);
@@ -75,7 +69,8 @@ TEST_CASE("fx_mixture_conversion gives the one component the whole weight leavin
     CHECK(geometric.weights[0] == 1.0);
 }
 
-TEST_CASE("fx_mixture_conversion returns a mixture whose engine does not change as it is", tags) {
+TEST_CASE("fx_mixture_conversion returns a mixture whose engine does not change as it is",
+          "[fx_mixture_conversion]") {
     const fx_mixture mixture{{0.1}, {0.2}, {0.3}};
     const auto same = convert_fx_mixture(mixture, "arithmetic", "arithmetic", 2.0, 60);
     CHECK(same.means == mixture.means);
@@ -83,7 +78,7 @@ TEST_CASE("fx_mixture_conversion returns a mixture whose engine does not change 
     CHECK(same.weights == mixture.weights);
 }
 
-TEST_CASE("fx_mixture_conversion refuses what it cannot convert", tags) {
+TEST_CASE("fx_mixture_conversion refuses what it cannot convert", "[fx_mixture_conversion]") {
     const fx_mixture mixture{{0.1}, {0.2}, {0.3}};
     CHECK_THROWS_AS(convert_fx_mixture(mixture, "geometric", "jump", 2.0, 60),
                     std::invalid_argument);

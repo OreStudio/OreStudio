@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+credit_simulation_entity_config_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!credit_simulation_entity_config_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> credit_simulation_entity_config_filter_condition(
+    const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -358,8 +359,8 @@ credit_simulation_entity_config_repository::read_latest_by_credit_simulation_con
                                       domain::credit_simulation_entity_config>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        credit_simulation_entity_config_list_order(order, {"id"}, false),
+        credit_simulation_entity_config_filter_condition(filter),
         [](const auto& entities) { return credit_simulation_entity_config_mapper::map(entities); },
         lg(),
         "Reading latest credit simulation entities by credit_simulation_config_id.");
@@ -384,7 +385,7 @@ credit_simulation_entity_config_repository::get_total_entity_count_by_credit_sim
     return execute_count_query<credit_simulation_entity_config_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        credit_simulation_entity_config_filter_condition(filter),
         lg(),
         "Counting credit simulation entities by credit_simulation_config_id");
 }
@@ -413,8 +414,8 @@ credit_simulation_entity_config_repository::read_latest_by_transition_matrix_id(
                                       domain::credit_simulation_entity_config>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        credit_simulation_entity_config_list_order(order, {"id"}, false),
+        credit_simulation_entity_config_filter_condition(filter),
         [](const auto& entities) { return credit_simulation_entity_config_mapper::map(entities); },
         lg(),
         "Reading latest credit simulation entities by transition_matrix_id.");
@@ -439,7 +440,7 @@ credit_simulation_entity_config_repository::get_total_entity_count_by_transition
     return execute_count_query<credit_simulation_entity_config_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        credit_simulation_entity_config_filter_condition(filter),
         lg(),
         "Counting credit simulation entities by transition_matrix_id");
 }
@@ -498,8 +499,8 @@ credit_simulation_entity_config_repository::read_latest(
                                       domain::credit_simulation_entity_config>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        credit_simulation_entity_config_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), credit_simulation_entity_config_filter_condition(filter)),
         [](const auto& entities) { return credit_simulation_entity_config_mapper::map(entities); },
         lg(),
         "Reading latest credit simulation entities with pagination.");
@@ -518,7 +519,7 @@ std::uint32_t credit_simulation_entity_config_repository::get_total_entity_count
     return execute_count_query<credit_simulation_entity_config_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), credit_simulation_entity_config_filter_condition(filter)),
         lg(),
         "Counting credit simulation entities");
 }

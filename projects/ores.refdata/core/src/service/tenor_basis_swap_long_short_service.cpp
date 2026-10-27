@@ -75,9 +75,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::tenor_basis_swap_long_short>
-read_one(repository::tenor_basis_swap_long_short_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::tenor_basis_swap_long_short_key& key) {
+tenor_basis_swap_long_short_read_one(repository::tenor_basis_swap_long_short_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::tenor_basis_swap_long_short_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -87,7 +87,8 @@ read_one(repository::tenor_basis_swap_long_short_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::tenor_basis_swap_long_short_key key_from(const domain::tenor_basis_swap_long_short& v) {
+messaging::tenor_basis_swap_long_short_key
+tenor_basis_swap_long_short_key_from(const domain::tenor_basis_swap_long_short& v) {
     messaging::tenor_basis_swap_long_short_key key;
     key.id = v.id;
     return key;
@@ -101,7 +102,7 @@ messaging::tenor_basis_swap_long_short_key key_from(const domain::tenor_basis_sw
  * database's to state, and are set after this conversion.
  */
 domain::tenor_basis_swap_long_short
-to_domain(const messaging::tenor_basis_swap_long_short_write& write) {
+tenor_basis_swap_long_short_to_domain(const messaging::tenor_basis_swap_long_short_write& write) {
     domain::tenor_basis_swap_long_short v;
     v.id = write.id;
     v.convention_id = write.convention_id;
@@ -196,7 +197,7 @@ messaging::get_tenor_basis_swap_long_short_response
 tenor_basis_swap_long_short_service::get_tenor_basis_swap_long_short(
     const messaging::get_tenor_basis_swap_long_short_request& request) {
     messaging::get_tenor_basis_swap_long_short_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = tenor_basis_swap_long_short_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_long_short"});
@@ -217,7 +218,7 @@ tenor_basis_swap_long_short_service::get_many_tenor_basis_swap_long_shorts(
     for (const auto& k : request.keys) {
         messaging::tenor_basis_swap_long_short_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = tenor_basis_swap_long_short_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.tenor_basis_swap_long_short = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -234,7 +235,8 @@ tenor_basis_swap_long_short_service::put_tenor_basis_swap_long_short(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = tenor_basis_swap_long_short_read_one(
+        repo_, ctx_, tenor_basis_swap_long_short_key_from(value));
     if (!written.empty())
         response.tenor_basis_swap_long_short = std::move(written.front());
     return response;
@@ -267,7 +269,8 @@ tenor_basis_swap_long_short_service::put_many_tenor_basis_swap_long_shorts(
     repo_.write(ctx_, batch, claims);
     response.tenor_basis_swap_long_shorts.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = tenor_basis_swap_long_short_read_one(
+            repo_, ctx_, tenor_basis_swap_long_short_key_from(value));
         response.tenor_basis_swap_long_shorts.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -303,7 +306,8 @@ tenor_basis_swap_long_short_service::delete_tenor_basis_swap_long_short(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                tenor_basis_swap_long_short_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "tenor_basis_swap_long_short",
@@ -396,8 +400,9 @@ ores::utility::domain::result tenor_basis_swap_long_short_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = tenor_basis_swap_long_short_to_domain(change.write);
+    const auto current = tenor_basis_swap_long_short_read_one(
+        repo_, ctx_, tenor_basis_swap_long_short_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

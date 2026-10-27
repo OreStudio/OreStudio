@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view catalog_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_catalog_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<catalog_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_catalogs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_catalogs_request::nats_subject, catalog_queue_group, [h](ores::nats::message msg) {
             h->list_catalogs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_catalog_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_catalog_request::nats_subject, catalog_queue_group, [h](ores::nats::message msg) {
             h->get_catalog(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_catalogs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_catalogs_request::nats_subject, catalog_queue_group, [h](ores::nats::message msg) {
             h->get_many_catalogs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_catalog_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_catalog_request::nats_subject, catalog_queue_group, [h](ores::nats::message msg) {
             h->put_catalog(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_catalogs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_catalogs_request::nats_subject, catalog_queue_group, [h](ores::nats::message msg) {
             h->put_many_catalogs(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_catalog_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_catalog_request::nats_subject, catalog_queue_group, [h](ores::nats::message msg) {
             h->delete_catalog(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_catalogs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_catalogs(std::move(msg));
-        }));
+        delete_many_catalogs_request::nats_subject,
+        catalog_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_catalogs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_catalog_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_catalog_versions(std::move(msg));
-        }));
+        list_catalog_versions_request::nats_subject,
+        catalog_queue_group,
+        [h](ores::nats::message msg) { h->list_catalog_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_catalog_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_catalog_version(std::move(msg));
-        }));
+        get_catalog_version_request::nats_subject,
+        catalog_queue_group,
+        [h](ores::nats::message msg) { h->get_catalog_version(std::move(msg)); }));
     return subs;
 }
 

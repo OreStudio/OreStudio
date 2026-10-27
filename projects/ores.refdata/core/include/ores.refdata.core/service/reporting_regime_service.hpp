@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_reporting_regimes_response
-    list_reporting_regimes(const messaging::list_reporting_regimes_request& request);
-    messaging::get_reporting_regime_response
-    get_reporting_regime(const messaging::get_reporting_regime_request& request);
-    messaging::get_many_reporting_regimes_response
-    get_many_reporting_regimes(const messaging::get_many_reporting_regimes_request& request);
-    messaging::put_reporting_regime_response
-    put_reporting_regime(const messaging::put_reporting_regime_request& request);
-    messaging::put_many_reporting_regimes_response
-    put_many_reporting_regimes(const messaging::put_many_reporting_regimes_request& request);
-    messaging::delete_reporting_regime_response
-    delete_reporting_regime(const messaging::delete_reporting_regime_request& request);
-    messaging::delete_many_reporting_regimes_response
-    delete_many_reporting_regimes(const messaging::delete_many_reporting_regimes_request& request);
-    messaging::list_reporting_regime_versions_response list_reporting_regime_versions(
-        const messaging::list_reporting_regime_versions_request& request);
-    messaging::get_reporting_regime_version_response
-    get_reporting_regime_version(const messaging::get_reporting_regime_version_request& request);
+    ::ores::refdata::messaging::list_reporting_regimes_response list_reporting_regimes(
+        const ::ores::refdata::messaging::list_reporting_regimes_request& request);
+    ::ores::refdata::messaging::get_reporting_regime_response
+    get_reporting_regime(const ::ores::refdata::messaging::get_reporting_regime_request& request);
+    ::ores::refdata::messaging::get_many_reporting_regimes_response get_many_reporting_regimes(
+        const ::ores::refdata::messaging::get_many_reporting_regimes_request& request);
+    ::ores::refdata::messaging::put_reporting_regime_response
+    put_reporting_regime(const ::ores::refdata::messaging::put_reporting_regime_request& request);
+    ::ores::refdata::messaging::put_many_reporting_regimes_response put_many_reporting_regimes(
+        const ::ores::refdata::messaging::put_many_reporting_regimes_request& request);
+    ::ores::refdata::messaging::delete_reporting_regime_response delete_reporting_regime(
+        const ::ores::refdata::messaging::delete_reporting_regime_request& request);
+    ::ores::refdata::messaging::delete_many_reporting_regimes_response
+    delete_many_reporting_regimes(
+        const ::ores::refdata::messaging::delete_many_reporting_regimes_request& request);
+    ::ores::refdata::messaging::list_reporting_regime_versions_response
+    list_reporting_regime_versions(
+        const ::ores::refdata::messaging::list_reporting_regime_versions_request& request);
+    ::ores::refdata::messaging::get_reporting_regime_version_response get_reporting_regime_version(
+        const ::ores::refdata::messaging::get_reporting_regime_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +193,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::reporting_regime_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::reporting_regime& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::reporting_regime_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::reporting_regime& out);
 };
 
 }

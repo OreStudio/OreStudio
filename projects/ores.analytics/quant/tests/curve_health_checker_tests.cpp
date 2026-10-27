@@ -28,8 +28,6 @@ using namespace std::chrono;
 
 namespace {
 
-const std::string tags("[curve_health_checker]");
-
 forward_rate_point make_forward(const std::string& id, double rate) {
     forward_rate_point f;
     f.point_id = id;
@@ -39,7 +37,8 @@ forward_rate_point make_forward(const std::string& id, double rate) {
 
 }
 
-TEST_CASE("check_discount_factors finds nothing for an all-positive curve", tags) {
+TEST_CASE("check_discount_factors finds nothing for an all-positive curve",
+          "[curve_health_checker]") {
     std::vector<bootstrapped_point> points{
         {"3M", 2026y / April / 1d, 0.99},
         {"1Y", 2027y / January / 1d, 0.95},
@@ -50,7 +49,8 @@ TEST_CASE("check_discount_factors finds nothing for an all-positive curve", tags
     CHECK(curve_health_checker::check_discount_factors(points).empty());
 }
 
-TEST_CASE("check_discount_factors flags a zero or negative discount factor", tags) {
+TEST_CASE("check_discount_factors flags a zero or negative discount factor",
+          "[curve_health_checker]") {
     std::vector<bootstrapped_point> points{
         {"3M", 2026y / April / 1d, 0.99},
         {"1Y", 2027y / January / 1d, 0.0},
@@ -65,14 +65,16 @@ TEST_CASE("check_discount_factors flags a zero or negative discount factor", tag
     CHECK(findings[1].point_id == "2Y");
 }
 
-TEST_CASE("check_forward_rates finds nothing for a flat, all-positive series", tags) {
+TEST_CASE("check_forward_rates finds nothing for a flat, all-positive series",
+          "[curve_health_checker]") {
     std::vector<forward_rate_point> forwards{
         make_forward("3M", 0.03), make_forward("6M", 0.03), make_forward("1Y", 0.03)};
 
     CHECK(curve_health_checker::check_forward_rates(forwards).empty());
 }
 
-TEST_CASE("check_forward_rates flags a negative forward rate as INFO, not WARNING", tags) {
+TEST_CASE("check_forward_rates flags a negative forward rate as INFO, not WARNING",
+          "[curve_health_checker]") {
     std::vector<forward_rate_point> forwards{
         make_forward("3M", 0.03), make_forward("6M", -0.01), make_forward("1Y", 0.03)};
 
@@ -83,7 +85,7 @@ TEST_CASE("check_forward_rates flags a negative forward rate as INFO, not WARNIN
     CHECK(findings[0].severity == curve_health_severity::INFO);
 }
 
-TEST_CASE("check_forward_rates flags a statistical outlier as WARNING", tags) {
+TEST_CASE("check_forward_rates flags a statistical outlier as WARNING", "[curve_health_checker]") {
     std::vector<forward_rate_point> forwards{make_forward("3M", 0.030),
                                              make_forward("6M", 0.031),
                                              make_forward("1Y", 0.029),
@@ -98,7 +100,8 @@ TEST_CASE("check_forward_rates flags a statistical outlier as WARNING", tags) {
     CHECK(findings[0].severity == curve_health_severity::WARNING);
 }
 
-TEST_CASE("check_forward_rates skips outlier detection for fewer than three points", tags) {
+TEST_CASE("check_forward_rates skips outlier detection for fewer than three points",
+          "[curve_health_checker]") {
     std::vector<forward_rate_point> forwards{make_forward("3M", 0.03), make_forward("6M", 5.0)};
 
     // No outlier findings with only two points -- too small a sample to have a meaningful
@@ -106,7 +109,8 @@ TEST_CASE("check_forward_rates skips outlier detection for fewer than three poin
     CHECK(curve_health_checker::check_forward_rates(forwards).empty());
 }
 
-TEST_CASE("check_forward_rates does not divide by zero when every rate is identical", tags) {
+TEST_CASE("check_forward_rates does not divide by zero when every rate is identical",
+          "[curve_health_checker]") {
     std::vector<forward_rate_point> forwards{
         make_forward("3M", 0.03), make_forward("6M", 0.03), make_forward("1Y", 0.03)};
 
@@ -114,7 +118,7 @@ TEST_CASE("check_forward_rates does not divide by zero when every rate is identi
     CHECK(curve_health_checker::check_forward_rates(forwards).empty());
 }
 
-TEST_CASE("check_forward_rates respects a custom outlier_z_threshold", tags) {
+TEST_CASE("check_forward_rates respects a custom outlier_z_threshold", "[curve_health_checker]") {
     std::vector<forward_rate_point> forwards{make_forward("3M", 0.030),
                                              make_forward("6M", 0.031),
                                              make_forward("1Y", 0.029),

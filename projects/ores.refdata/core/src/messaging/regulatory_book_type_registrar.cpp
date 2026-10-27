@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view regulatory_book_type_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_regulatory_book_type_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_regulatory_book_type_han
         std::make_shared<regulatory_book_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_regulatory_book_types_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->list_regulatory_book_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_regulatory_book_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_regulatory_book_type(std::move(msg));
-        }));
+        get_regulatory_book_type_request::nats_subject,
+        regulatory_book_type_queue_group,
+        [h](ores::nats::message msg) { h->get_regulatory_book_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_regulatory_book_types_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->get_many_regulatory_book_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_regulatory_book_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_regulatory_book_type(std::move(msg));
-        }));
+        put_regulatory_book_type_request::nats_subject,
+        regulatory_book_type_queue_group,
+        [h](ores::nats::message msg) { h->put_regulatory_book_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_regulatory_book_types_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->put_many_regulatory_book_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_regulatory_book_type_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->delete_regulatory_book_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_regulatory_book_types_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->delete_many_regulatory_book_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_regulatory_book_type_versions_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->list_regulatory_book_type_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_regulatory_book_type_version_request::nats_subject,
-        queue_group,
+        regulatory_book_type_queue_group,
         [h](ores::nats::message msg) { h->get_regulatory_book_type_version(std::move(msg)); }));
     return subs;
 }

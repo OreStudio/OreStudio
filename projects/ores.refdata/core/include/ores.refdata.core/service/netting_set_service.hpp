@@ -76,29 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_netting_sets_response
-    list_netting_sets(const messaging::list_netting_sets_request& request);
-    messaging::get_netting_set_response
-    get_netting_set(const messaging::get_netting_set_request& request);
-    messaging::get_many_netting_sets_response
-    get_many_netting_sets(const messaging::get_many_netting_sets_request& request);
-    messaging::put_netting_set_response
-    put_netting_set(const messaging::put_netting_set_request& request);
-    messaging::put_many_netting_sets_response
-    put_many_netting_sets(const messaging::put_many_netting_sets_request& request);
-    messaging::delete_netting_set_response
-    delete_netting_set(const messaging::delete_netting_set_request& request);
-    messaging::delete_many_netting_sets_response
-    delete_many_netting_sets(const messaging::delete_many_netting_sets_request& request);
-    messaging::list_by_netting_agreement_id_netting_sets_response
+    ::ores::refdata::messaging::list_netting_sets_response
+    list_netting_sets(const ::ores::refdata::messaging::list_netting_sets_request& request);
+    ::ores::refdata::messaging::get_netting_set_response
+    get_netting_set(const ::ores::refdata::messaging::get_netting_set_request& request);
+    ::ores::refdata::messaging::get_many_netting_sets_response
+    get_many_netting_sets(const ::ores::refdata::messaging::get_many_netting_sets_request& request);
+    ::ores::refdata::messaging::put_netting_set_response
+    put_netting_set(const ::ores::refdata::messaging::put_netting_set_request& request);
+    ::ores::refdata::messaging::put_many_netting_sets_response
+    put_many_netting_sets(const ::ores::refdata::messaging::put_many_netting_sets_request& request);
+    ::ores::refdata::messaging::delete_netting_set_response
+    delete_netting_set(const ::ores::refdata::messaging::delete_netting_set_request& request);
+    ::ores::refdata::messaging::delete_many_netting_sets_response delete_many_netting_sets(
+        const ::ores::refdata::messaging::delete_many_netting_sets_request& request);
+    ::ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_response
     list_by_netting_agreement_id_netting_sets(
-        const messaging::list_by_netting_agreement_id_netting_sets_request& request);
-    messaging::list_by_credit_limit_id_netting_sets_response list_by_credit_limit_id_netting_sets(
-        const messaging::list_by_credit_limit_id_netting_sets_request& request);
-    messaging::list_netting_set_versions_response
-    list_netting_set_versions(const messaging::list_netting_set_versions_request& request);
-    messaging::get_netting_set_version_response
-    get_netting_set_version(const messaging::get_netting_set_version_request& request);
+        const ::ores::refdata::messaging::list_by_netting_agreement_id_netting_sets_request&
+            request);
+    ::ores::refdata::messaging::list_by_credit_limit_id_netting_sets_response
+    list_by_credit_limit_id_netting_sets(
+        const ::ores::refdata::messaging::list_by_credit_limit_id_netting_sets_request& request);
+    ::ores::refdata::messaging::list_netting_set_versions_response list_netting_set_versions(
+        const ::ores::refdata::messaging::list_netting_set_versions_request& request);
+    ::ores::refdata::messaging::get_netting_set_version_response get_netting_set_version(
+        const ::ores::refdata::messaging::get_netting_set_version_request& request);
     /**@}*/
 
     /**
@@ -309,9 +311,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::netting_set_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::netting_set& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::netting_set_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::netting_set& out);
 };
 
 }

@@ -88,8 +88,9 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::party_currency> read_one(repository::party_currency_repository& repo,
-                                             const messaging::party_currency_key& key) {
+std::vector<domain::party_currency>
+party_currency_read_one(repository::party_currency_repository& repo,
+                        const messaging::party_currency_key& key) {
     return repo.read_latest(key.party_id, key.currency_iso_code);
 }
 
@@ -99,7 +100,7 @@ std::vector<domain::party_currency> read_one(repository::party_currency_reposito
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::party_currency_key key_from(const domain::party_currency& v) {
+messaging::party_currency_key party_currency_key_from(const domain::party_currency& v) {
     messaging::party_currency_key key;
     key.party_id = v.party_id;
     key.currency_iso_code = v.currency_iso_code;
@@ -114,7 +115,7 @@ messaging::party_currency_key key_from(const domain::party_currency& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::party_currency to_domain(const messaging::party_currency_write& write) {
+domain::party_currency party_currency_to_domain(const messaging::party_currency_write& write) {
     domain::party_currency v;
     v.party_id = write.party_id;
     v.currency_iso_code = write.currency_iso_code;
@@ -168,7 +169,7 @@ party_currency_service::list_by_party_id_party_currencies(
 messaging::get_party_currency_response
 party_currency_service::get_party_currency(const messaging::get_party_currency_request& request) {
     messaging::get_party_currency_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = party_currency_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_currency"});
         return response;
@@ -187,7 +188,7 @@ messaging::get_many_party_currencies_response party_currency_service::get_many_p
     for (const auto& k : request.keys) {
         messaging::party_currency_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = party_currency_read_one(repo_, k);
         if (!found.empty())
             entry.party_currency = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -203,7 +204,7 @@ party_currency_service::put_party_currency(const messaging::put_party_currency_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = party_currency_read_one(repo_, party_currency_key_from(value));
     if (!written.empty())
         response.party_currency = std::move(written.front());
     return response;
@@ -235,7 +236,7 @@ messaging::put_many_party_currencies_response party_currency_service::put_many_p
     repo_.write(batch, claims);
     response.party_currencies.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = party_currency_read_one(repo_, party_currency_key_from(value));
         response.party_currencies.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -269,7 +270,7 @@ messaging::delete_party_currency_response party_currency_service::delete_party_c
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = party_currency_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "party_currency",
@@ -322,8 +323,8 @@ party_currency_service::prepare_change(const messaging::party_currency_change& c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = party_currency_to_domain(change.write);
+    const auto current = party_currency_read_one(repo_, party_currency_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

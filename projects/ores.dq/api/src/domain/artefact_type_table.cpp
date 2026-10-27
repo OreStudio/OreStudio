@@ -31,7 +31,7 @@ namespace ores::dq::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string artefact_type_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,10 @@ std::string convert_to_table(const std::vector<artefact_type>& v) {
           << "Target Subject" << "Order" << "Modified By" << fort::endr;
 
     for ([[maybe_unused]] const auto& at : v) {
-        table << at.code << at.name << opt_str(at.description) << opt_str(at.artefact_table)
-              << opt_str(at.target_table) << opt_str(at.target_subject) << at.display_order
-              << at.modified_by << fort::endr;
+        table << at.code << at.name << artefact_type_opt_str(at.description)
+              << artefact_type_opt_str(at.artefact_table) << artefact_type_opt_str(at.target_table)
+              << artefact_type_opt_str(at.target_subject) << at.display_order << at.modified_by
+              << fort::endr;
     }
     return table.to_string();
 }

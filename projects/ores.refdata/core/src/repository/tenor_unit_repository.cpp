@@ -80,9 +80,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy tenor_unit_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!tenor_unit_repository::is_sortable(order.field))
@@ -96,7 +96,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::tenor_units_filter>& filter) {
+tenor_unit_filter_condition(const std::optional<messaging::tenor_units_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -298,8 +298,8 @@ tenor_unit_repository::read_latest(context ctx,
     return execute_ordered_read_query<tenor_unit_entity, domain::tenor_unit>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        tenor_unit_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), tenor_unit_filter_condition(filter)),
         [](const auto& entities) { return tenor_unit_mapper::map(entities); },
         lg(),
         "Reading latest tenor units with pagination.");
@@ -317,7 +317,7 @@ std::uint32_t tenor_unit_repository::get_total_unit_count(
     return execute_count_query<tenor_unit_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), tenor_unit_filter_condition(filter)),
         lg(),
         "Counting tenor units");
 }

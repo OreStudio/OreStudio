@@ -1,6 +1,6 @@
-# =list-role-permissions=
+# =list-role-permissions-page=
 #
 # GENERATED from doc/recipes/shell/authorization/authorization.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-authorization list-role-permissions __none__ __none__ __none__
+authorization list-role-permissions-page __none__ __none__ __none__

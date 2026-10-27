@@ -29,8 +29,6 @@
 
 namespace {
 
-const std::string tags("[repository][work_tenant]");
-
 using ores::compute::repository::work_tenant_repository;
 using ores::testing::database_helper;
 using ores::utility::uuid::tenant_id;
@@ -61,7 +59,7 @@ struct noted_tenant {
 
 }
 
-TEST_CASE("note_lists_a_tenant_once_however_often_it_is_noted", tags) {
+TEST_CASE("note_lists_a_tenant_once_however_often_it_is_noted", "[repository][work_tenant]") {
     database_helper h;
     noted_tenant noted{h};
     work_tenant_repository repo;
@@ -73,7 +71,7 @@ TEST_CASE("note_lists_a_tenant_once_however_often_it_is_noted", tags) {
     CHECK(std::ranges::count(tenants, noted.id) == 1);
 }
 
-TEST_CASE("list_is_empty_of_a_tenant_that_was_not_noted", tags) {
+TEST_CASE("list_is_empty_of_a_tenant_that_was_not_noted", "[repository][work_tenant]") {
     database_helper h;
     noted_tenant noted{h};
 
@@ -82,7 +80,7 @@ TEST_CASE("list_is_empty_of_a_tenant_that_was_not_noted", tags) {
     CHECK(std::ranges::count(tenants, noted.id) == 0);
 }
 
-TEST_CASE("a_tenants_session_reads_none_of_the_list", tags) {
+TEST_CASE("a_tenants_session_reads_none_of_the_list", "[repository][work_tenant]") {
     database_helper h;
     noted_tenant noted{h};
     work_tenant_repository repo;

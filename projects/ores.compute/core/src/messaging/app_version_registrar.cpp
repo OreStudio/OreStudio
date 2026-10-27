@@ -39,7 +39,7 @@
 namespace ores::compute::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.compute.service";
+static constexpr std::string_view app_version_queue_group = "ores.compute.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,45 +49,45 @@ register_app_version_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<app_version_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_app_versions(std::move(msg));
-        }));
+        list_app_versions_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->list_app_versions(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_app_version_request::nats_subject,
+                             app_version_queue_group,
+                             [h](ores::nats::message msg) { h->get_app_version(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_app_version(std::move(msg));
-        }));
+        get_many_app_versions_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->get_many_app_versions(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_app_version_request::nats_subject,
+                             app_version_queue_group,
+                             [h](ores::nats::message msg) { h->put_app_version(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_app_versions(std::move(msg));
-        }));
+        put_many_app_versions_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->put_many_app_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_app_version(std::move(msg));
-        }));
+        delete_app_version_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->delete_app_version(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_app_versions(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_app_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_app_version(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_app_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_app_versions(std::move(msg));
-        }));
+        delete_many_app_versions_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_app_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_app_id_app_versions_request::nats_subject,
-        queue_group,
+        app_version_queue_group,
         [h](ores::nats::message msg) { h->list_by_app_id_app_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_app_version_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_app_version_versions(std::move(msg));
-        }));
+        list_app_version_versions_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->list_app_version_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_app_version_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_app_version_version(std::move(msg));
-        }));
+        get_app_version_version_request::nats_subject,
+        app_version_queue_group,
+        [h](ores::nats::message msg) { h->get_app_version_version(std::move(msg)); }));
     return subs;
 }
 

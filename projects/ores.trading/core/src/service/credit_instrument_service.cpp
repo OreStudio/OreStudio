@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::credit_instrument> read_one(repository::credit_instrument_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::credit_instrument_key& key) {
+std::vector<domain::credit_instrument>
+credit_instrument_read_one(repository::credit_instrument_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::credit_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::credit_instrument> read_one(repository::credit_instrument_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::credit_instrument_key key_from(const domain::credit_instrument& v) {
+messaging::credit_instrument_key credit_instrument_key_from(const domain::credit_instrument& v) {
     messaging::credit_instrument_key key;
     key.trade_id = v.identity.trade_id;
     return key;
@@ -98,7 +99,8 @@ messaging::credit_instrument_key key_from(const domain::credit_instrument& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::credit_instrument to_domain(const messaging::credit_instrument_write& write) {
+domain::credit_instrument
+credit_instrument_to_domain(const messaging::credit_instrument_write& write) {
     domain::credit_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
@@ -148,7 +150,7 @@ messaging::list_credit_instruments_response credit_instrument_service::list_cred
 messaging::get_credit_instrument_response credit_instrument_service::get_credit_instrument(
     const messaging::get_credit_instrument_request& request) {
     messaging::get_credit_instrument_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = credit_instrument_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "credit_instrument"});
         return response;
@@ -168,7 +170,7 @@ credit_instrument_service::get_many_credit_instruments(
     for (const auto& k : request.keys) {
         messaging::credit_instrument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = credit_instrument_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.credit_instrument = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -184,7 +186,7 @@ messaging::put_credit_instrument_response credit_instrument_service::put_credit_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = credit_instrument_read_one(repo_, ctx_, credit_instrument_key_from(value));
     if (!written.empty())
         response.credit_instrument = std::move(written.front());
     return response;
@@ -217,7 +219,7 @@ credit_instrument_service::put_many_credit_instruments(
     repo_.write(ctx_, batch, claims);
     response.credit_instruments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = credit_instrument_read_one(repo_, ctx_, credit_instrument_key_from(value));
         response.credit_instruments.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -250,7 +252,7 @@ messaging::delete_credit_instrument_response credit_instrument_service::delete_c
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = credit_instrument_read_one(repo_, ctx_, request.removal.key);
             response.result =
                 refuse(outcome_code::version_conflict,
                        {.entity = "credit_instrument",
@@ -340,8 +342,8 @@ credit_instrument_service::prepare_change(const messaging::credit_instrument_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = credit_instrument_to_domain(change.write);
+    const auto current = credit_instrument_read_one(repo_, ctx_, credit_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

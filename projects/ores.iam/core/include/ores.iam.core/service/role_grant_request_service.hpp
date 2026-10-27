@@ -75,27 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_role_grant_requests_response
-    list_role_grant_requests(const messaging::list_role_grant_requests_request& request);
-    messaging::get_role_grant_request_response
-    get_role_grant_request(const messaging::get_role_grant_request_request& request);
-    messaging::get_many_role_grant_requests_response
-    get_many_role_grant_requests(const messaging::get_many_role_grant_requests_request& request);
-    messaging::put_role_grant_request_response
-    put_role_grant_request(const messaging::put_role_grant_request_request& request);
-    messaging::put_many_role_grant_requests_response
-    put_many_role_grant_requests(const messaging::put_many_role_grant_requests_request& request);
-    messaging::delete_role_grant_request_response
-    delete_role_grant_request(const messaging::delete_role_grant_request_request& request);
-    messaging::delete_many_role_grant_requests_response delete_many_role_grant_requests(
-        const messaging::delete_many_role_grant_requests_request& request);
-    messaging::list_by_account_id_role_grant_requests_response
+    ::ores::iam::messaging::list_role_grant_requests_response list_role_grant_requests(
+        const ::ores::iam::messaging::list_role_grant_requests_request& request);
+    ::ores::iam::messaging::get_role_grant_request_response
+    get_role_grant_request(const ::ores::iam::messaging::get_role_grant_request_request& request);
+    ::ores::iam::messaging::get_many_role_grant_requests_response get_many_role_grant_requests(
+        const ::ores::iam::messaging::get_many_role_grant_requests_request& request);
+    ::ores::iam::messaging::put_role_grant_request_response
+    put_role_grant_request(const ::ores::iam::messaging::put_role_grant_request_request& request);
+    ::ores::iam::messaging::put_many_role_grant_requests_response put_many_role_grant_requests(
+        const ::ores::iam::messaging::put_many_role_grant_requests_request& request);
+    ::ores::iam::messaging::delete_role_grant_request_response delete_role_grant_request(
+        const ::ores::iam::messaging::delete_role_grant_request_request& request);
+    ::ores::iam::messaging::delete_many_role_grant_requests_response
+    delete_many_role_grant_requests(
+        const ::ores::iam::messaging::delete_many_role_grant_requests_request& request);
+    ::ores::iam::messaging::list_by_account_id_role_grant_requests_response
     list_by_account_id_role_grant_requests(
-        const messaging::list_by_account_id_role_grant_requests_request& request);
-    messaging::list_role_grant_request_versions_response list_role_grant_request_versions(
-        const messaging::list_role_grant_request_versions_request& request);
-    messaging::get_role_grant_request_version_response get_role_grant_request_version(
-        const messaging::get_role_grant_request_version_request& request);
+        const ::ores::iam::messaging::list_by_account_id_role_grant_requests_request& request);
+    ::ores::iam::messaging::list_role_grant_request_versions_response
+    list_role_grant_request_versions(
+        const ::ores::iam::messaging::list_role_grant_request_versions_request& request);
+    ::ores::iam::messaging::get_role_grant_request_version_response get_role_grant_request_version(
+        const ::ores::iam::messaging::get_role_grant_request_version_request& request);
     /**@}*/
 
     /**
@@ -217,9 +219,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::role_grant_request_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::role_grant_request& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::iam::messaging::role_grant_request_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::role_grant_request& out);
 };
 
 }

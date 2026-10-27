@@ -39,6 +39,7 @@
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.workflow.core/service/workflow_engine.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -72,9 +73,6 @@
 namespace {
 
 using namespace ores::logging;
-
-const std::string_view test_suite("ores.workflow.tests");
-const std::string tags("[engine][integration]");
 
 // Both subjects are test-local: nothing in the product subscribes to them, so
 // a command the engine publishes here cannot reach a service.
@@ -402,7 +400,6 @@ std::optional<Response> await_reply(ores::nats::service::buffered_subscription& 
     return std::nullopt;
 }
 
-
 /**
  * @brief A request a caller in @p tenant signs, with @p roles as its grants.
  *
@@ -433,7 +430,7 @@ const std::string handler_secret = "workflow-handler-test-secret";
 
 } // namespace
 
-TEST_CASE("workflow_engine starts nothing for a type it does not know", tags) {
+TEST_CASE("workflow_engine starts nothing for a type it does not know", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -461,7 +458,8 @@ TEST_CASE("workflow_engine starts nothing for a type it does not know", tags) {
     BOOST_LOG_SEV(lg, debug) << "Unregistered type created nothing.";
 }
 
-TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain", tags) {
+TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -501,7 +499,8 @@ TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain
     BOOST_LOG_SEV(lg, debug) << "A chain that cannot deliver its inputs created nothing.";
 }
 
-TEST_CASE("workflow_engine starts nothing for a definition with no steps", tags) {
+TEST_CASE("workflow_engine starts nothing for a definition with no steps",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -528,7 +527,7 @@ TEST_CASE("workflow_engine starts nothing for a definition with no steps", tags)
     BOOST_LOG_SEV(lg, debug) << "Empty definition created nothing.";
 }
 
-TEST_CASE("workflow_engine stores the target a start names", tags) {
+TEST_CASE("workflow_engine stores the target a start names", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -560,7 +559,7 @@ TEST_CASE("workflow_engine stores the target a start names", tags) {
     BOOST_LOG_SEV(lg, debug) << "Target stored as named.";
 }
 
-TEST_CASE("workflow_engine refuses a start that names half a target", tags) {
+TEST_CASE("workflow_engine refuses a start that names half a target", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -603,7 +602,7 @@ TEST_CASE("workflow_engine refuses a start that names half a target", tags) {
     BOOST_LOG_SEV(lg, debug) << "Half targets refused.";
 }
 
-TEST_CASE("workflow_engine advances once when a step completes twice", tags) {
+TEST_CASE("workflow_engine advances once when a step completes twice", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -643,7 +642,8 @@ TEST_CASE("workflow_engine advances once when a step completes twice", tags) {
     BOOST_LOG_SEV(lg, debug) << "Duplicate completion advanced nothing.";
 }
 
-TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress", tags) {
+TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -678,7 +678,8 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
     BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched step " << step_id;
 }
 
-TEST_CASE("a definition that declares stop keeps its completed steps on a failure", tags) {
+TEST_CASE("a definition that declares stop keeps its completed steps on a failure",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -729,7 +730,7 @@ TEST_CASE("a definition that declares stop keeps its completed steps on a failur
     BOOST_LOG_SEV(lg, debug) << "Stop policy left the run on its failed step.";
 }
 
-TEST_CASE("a retry re-dispatches the failed step under its own identity", tags) {
+TEST_CASE("a retry re-dispatches the failed step under its own identity", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -795,7 +796,7 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", tags) 
     BOOST_LOG_SEV(lg, debug) << "Retry re-dispatched step " << failed_step_id;
 }
 
-TEST_CASE("a retry refuses a run that has not stopped", tags) {
+TEST_CASE("a retry refuses a run that has not stopped", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -821,7 +822,7 @@ TEST_CASE("a retry refuses a run that has not stopped", tags) {
     BOOST_LOG_SEV(lg, debug) << "Retry refused runs that had not stopped.";
 }
 
-TEST_CASE("a retry refuses a step the run does not hold", tags) {
+TEST_CASE("a retry refuses a step the run does not hold", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -847,7 +848,7 @@ TEST_CASE("a retry refuses a step the run does not hold", tags) {
     BOOST_LOG_SEV(lg, debug) << "Retry refused a step the run does not hold.";
 }
 
-TEST_CASE("a retry refuses a stopped run that has no failed step", tags) {
+TEST_CASE("a retry refuses a stopped run that has no failed step", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -886,7 +887,7 @@ TEST_CASE("a retry refuses a stopped run that has no failed step", tags) {
     BOOST_LOG_SEV(lg, debug) << "Retry refused a stopped run with no failed step.";
 }
 
-TEST_CASE("a retry is confined to the caller's own tenant", tags) {
+TEST_CASE("a retry is confined to the caller's own tenant", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     // The engine holds the system tenant, as the deployed service does, while
@@ -928,7 +929,8 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
     BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";
 }
 
-TEST_CASE("the workflow service user starts and advances a three step apply run", tags) {
+TEST_CASE("the workflow service user starts and advances a three step apply run",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     // The book apply workflow's shape: recheck, apply, tell, one after another,
@@ -968,7 +970,8 @@ TEST_CASE("the workflow service user starts and advances a three step apply run"
     BOOST_LOG_SEV(lg, debug) << "The workflow service user ran a run to the end.";
 }
 
-TEST_CASE("the workflow service user stops a run on a failure and resumes it", tags) {
+TEST_CASE("the workflow service user stops a run on a failure and resumes it",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f(engine_tenant::workflow_service);
@@ -1001,7 +1004,7 @@ TEST_CASE("the workflow service user stops a run on a failure and resumes it", t
     BOOST_LOG_SEV(lg, debug) << "The workflow service user stopped and resumed a run.";
 }
 
-TEST_CASE("a start that names a run the engine holds changes nothing", tags) {
+TEST_CASE("a start that names a run the engine holds changes nothing", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1023,7 +1026,7 @@ TEST_CASE("a start that names a run the engine holds changes nothing", tags) {
     BOOST_LOG_SEV(lg, debug) << "A repeated start dispatched nothing and stored nothing.";
 }
 
-TEST_CASE("a retry from the system tenant reaches a run of any tenant", tags) {
+TEST_CASE("a retry from the system tenant reaches a run of any tenant", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f(engine_tenant::service);
@@ -1052,7 +1055,8 @@ TEST_CASE("a retry from the system tenant reaches a run of any tenant", tags) {
     BOOST_LOG_SEV(lg, debug) << "A system tenant caller resumed another tenant's run.";
 }
 
-TEST_CASE("a definition that declares compensate still rolls its work back", tags) {
+TEST_CASE("a definition that declares compensate still rolls its work back",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1096,7 +1100,7 @@ TEST_CASE("a definition that declares compensate still rolls its work back", tag
     BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 
-TEST_CASE("a rollback settles the forward steps it abandoned", tags) {
+TEST_CASE("a rollback settles the forward steps it abandoned", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1161,7 +1165,7 @@ TEST_CASE("a rollback settles the forward steps it abandoned", tags) {
     BOOST_LOG_SEV(lg, debug) << "A compensated run has no step left running.";
 }
 
-TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {
+TEST_CASE("workflow_engine drives a run that belongs to another tenant", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f(engine_tenant::service);
@@ -1224,7 +1228,7 @@ TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {
     BOOST_LOG_SEV(lg, debug) << "Cross-tenant run completed.";
 }
 
-TEST_CASE("workflow_engine recovery finds a run in another tenant", tags) {
+TEST_CASE("workflow_engine recovery finds a run in another tenant", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f(engine_tenant::service);
@@ -1266,7 +1270,8 @@ TEST_CASE("workflow_engine recovery finds a run in another tenant", tags) {
     BOOST_LOG_SEV(lg, debug) << "Recovery re-dispatched " << step_id << " in another tenant.";
 }
 
-TEST_CASE("workflow_query_handler answers for the tenant a request names", tags) {
+TEST_CASE("workflow_query_handler answers for the tenant a request names",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     using ores::workflow::messaging::get_step_result_request;
@@ -1335,7 +1340,7 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names", tags)
 }
 
 TEST_CASE("workflow_query_handler lists a definition that builds its steps from its request",
-          tags) {
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     using ores::workflow::messaging::list_workflow_definitions_request;
@@ -1406,7 +1411,7 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     BOOST_LOG_SEV(lg, debug) << "Definitions listed: " << answer->definitions.size();
 }
 
-TEST_CASE("workflow_query_handler filters runs by type and by target", tags) {
+TEST_CASE("workflow_query_handler filters runs by type and by target", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     using ores::workflow::messaging::list_workflow_instance_summaries_request;
@@ -1492,7 +1497,7 @@ TEST_CASE("workflow_query_handler filters runs by type and by target", tags) {
     BOOST_LOG_SEV(lg, debug) << "Filters checked over " << type_runs.size() << " run(s).";
 }
 
-TEST_CASE("a listed run says when it last did anything", tags) {
+TEST_CASE("a listed run says when it last did anything", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     using ores::workflow::messaging::list_workflow_instance_summaries_request;
@@ -1563,7 +1568,8 @@ TEST_CASE("a listed run says when it last did anything", tags) {
     BOOST_LOG_SEV(lg, debug) << "A listed run carries its activity and its completion.";
 }
 
-TEST_CASE("workflow_handler retries a run only for a permitted caller in its tenant", tags) {
+TEST_CASE("workflow_handler retries a run only for a permitted caller in its tenant",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     using ores::workflow::messaging::retry_workflow_instance_request;
@@ -1637,7 +1643,7 @@ TEST_CASE("workflow_handler retries a run only for a permitted caller in its ten
 }
 
 TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for the service",
-          tags) {
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f(engine_tenant::service);
@@ -1709,7 +1715,7 @@ void backdate_dispatch(ores::database::context ctx,
     steps.write(ctx, step);
 }
 
-TEST_CASE("workflow_engine stops a run whose step outlives its deadline", tags) {
+TEST_CASE("workflow_engine stops a run whose step outlives its deadline", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1749,7 +1755,7 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", tags) 
     BOOST_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
 }
 
-TEST_CASE("workflow_engine keeps a failure when the step answers later", tags) {
+TEST_CASE("workflow_engine keeps a failure when the step answers later", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1806,7 +1812,8 @@ TEST_CASE("workflow_engine keeps a failure when the step answers later", tags) {
     BOOST_LOG_SEV(lg, debug) << "A late answer left the failure standing, and a retry resumed it.";
 }
 
-TEST_CASE("workflow_engine starts nothing for a definition whose step states no deadline", tags) {
+TEST_CASE("workflow_engine starts nothing for a definition whose step states no deadline",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1836,7 +1843,8 @@ TEST_CASE("workflow_engine starts nothing for a definition whose step states no 
     BOOST_LOG_SEV(lg, debug) << "A definition with no deadline started nothing.";
 }
 
-TEST_CASE("a consumer of two producers waits for both while the producers run together", tags) {
+TEST_CASE("a consumer of two producers waits for both while the producers run together",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -1900,7 +1908,7 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
     BOOST_LOG_SEV(lg, debug) << "A consumer of two producers waited for both.";
 }
 
-TEST_CASE("a finished run carries the times it ran and was last touched", tags) {
+TEST_CASE("a finished run carries the times it ran and was last touched", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -2004,7 +2012,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", tags) 
     BOOST_LOG_SEV(lg, debug) << "A finished run carried " << rows.size() << " stamped steps.";
 }
 
-TEST_CASE("a live run's activity time moves on while it runs", tags) {
+TEST_CASE("a live run's activity time moves on while it runs", "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;
@@ -2047,7 +2055,8 @@ TEST_CASE("a live run's activity time moves on while it runs", tags) {
     BOOST_LOG_SEV(lg, debug) << "Activity moved from the start to the second dispatch.";
 }
 
-TEST_CASE("a retry takes the failure's completion time off the step it resumes", tags) {
+TEST_CASE("a retry takes the failure's completion time off the step it resumes",
+          "[engine][integration]") {
     auto lg(make_logger(test_suite));
 
     fixture f;

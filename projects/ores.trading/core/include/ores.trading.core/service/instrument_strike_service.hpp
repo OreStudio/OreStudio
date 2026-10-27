@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_instrument_strikes_response
-    list_instrument_strikes(const messaging::list_instrument_strikes_request& request);
-    messaging::get_instrument_strike_response
-    get_instrument_strike(const messaging::get_instrument_strike_request& request);
-    messaging::get_many_instrument_strikes_response
-    get_many_instrument_strikes(const messaging::get_many_instrument_strikes_request& request);
-    messaging::put_instrument_strike_response
-    put_instrument_strike(const messaging::put_instrument_strike_request& request);
-    messaging::put_many_instrument_strikes_response
-    put_many_instrument_strikes(const messaging::put_many_instrument_strikes_request& request);
-    messaging::delete_instrument_strike_response
-    delete_instrument_strike(const messaging::delete_instrument_strike_request& request);
-    messaging::delete_many_instrument_strikes_response delete_many_instrument_strikes(
-        const messaging::delete_many_instrument_strikes_request& request);
-    messaging::list_instrument_strike_versions_response list_instrument_strike_versions(
-        const messaging::list_instrument_strike_versions_request& request);
-    messaging::get_instrument_strike_version_response
-    get_instrument_strike_version(const messaging::get_instrument_strike_version_request& request);
+    ::ores::trading::messaging::list_instrument_strikes_response list_instrument_strikes(
+        const ::ores::trading::messaging::list_instrument_strikes_request& request);
+    ::ores::trading::messaging::get_instrument_strike_response
+    get_instrument_strike(const ::ores::trading::messaging::get_instrument_strike_request& request);
+    ::ores::trading::messaging::get_many_instrument_strikes_response get_many_instrument_strikes(
+        const ::ores::trading::messaging::get_many_instrument_strikes_request& request);
+    ::ores::trading::messaging::put_instrument_strike_response
+    put_instrument_strike(const ::ores::trading::messaging::put_instrument_strike_request& request);
+    ::ores::trading::messaging::put_many_instrument_strikes_response put_many_instrument_strikes(
+        const ::ores::trading::messaging::put_many_instrument_strikes_request& request);
+    ::ores::trading::messaging::delete_instrument_strike_response delete_instrument_strike(
+        const ::ores::trading::messaging::delete_instrument_strike_request& request);
+    ::ores::trading::messaging::delete_many_instrument_strikes_response
+    delete_many_instrument_strikes(
+        const ::ores::trading::messaging::delete_many_instrument_strikes_request& request);
+    ::ores::trading::messaging::list_instrument_strike_versions_response
+    list_instrument_strike_versions(
+        const ::ores::trading::messaging::list_instrument_strike_versions_request& request);
+    ::ores::trading::messaging::get_instrument_strike_version_response
+    get_instrument_strike_version(
+        const ::ores::trading::messaging::get_instrument_strike_version_request& request);
     /**@}*/
 
     /**
@@ -203,9 +206,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::instrument_strike_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::instrument_strike& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::instrument_strike_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::instrument_strike& out);
 };
 
 }

@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void trade_party_role_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void trade_party_role_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -224,7 +224,7 @@ void trade_party_role_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        trade_party_role_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -272,8 +272,8 @@ void trade_party_role_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.role, parsed->positionals[next++], "role");
+        trade_party_role_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        trade_party_role_read_token(req.key.role, parsed->positionals[next++], "role");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -318,8 +318,8 @@ void trade_party_role_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::trade_party_role_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
-            read_token(key.role, parsed->positionals[i + 1], "role");
+            trade_party_role_read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            trade_party_role_read_token(key.role, parsed->positionals[i + 1], "role");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -365,8 +365,8 @@ void trade_party_role_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.trade_id = boost::uuids::random_generator()();
-        read_token(req.change.write.role, parsed->positionals[next++], "role");
-        read_token(
+        trade_party_role_read_token(req.change.write.role, parsed->positionals[next++], "role");
+        trade_party_role_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -415,9 +415,10 @@ void trade_party_role_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.change.write.role, parsed->positionals[next++], "role");
-        read_token(
+        trade_party_role_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        trade_party_role_read_token(req.change.write.role, parsed->positionals[next++], "role");
+        trade_party_role_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -480,9 +481,10 @@ void trade_party_role_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::trade_party_role_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(change.write.role, parsed->positionals[next++], "role");
-            read_token(
+            trade_party_role_read_token(
+                change.write.trade_id, parsed->positionals[next++], "trade_id");
+            trade_party_role_read_token(change.write.role, parsed->positionals[next++], "role");
+            trade_party_role_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -533,8 +535,9 @@ void trade_party_role_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.removal.key.role, parsed->positionals[next++], "role");
+        trade_party_role_read_token(
+            req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        trade_party_role_read_token(req.removal.key.role, parsed->positionals[next++], "role");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -588,8 +591,8 @@ void trade_party_role_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::trade_party_role_key key;
-            read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
-            read_token(key.role, parsed->positionals[i * 2 + 1], "role");
+            trade_party_role_read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
+            trade_party_role_read_token(key.role, parsed->positionals[i * 2 + 1], "role");
             req.removals.push_back(messaging::trade_party_role_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -648,7 +651,7 @@ void trade_party_role_commands::process_by_trade_id(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        trade_party_role_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -696,9 +699,9 @@ void trade_party_role_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.role, parsed->positionals[next++], "role");
-        apply_page(req, *parsed);
+        trade_party_role_read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        trade_party_role_read_token(req.key.role, parsed->positionals[next++], "role");
+        trade_party_role_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -743,8 +746,10 @@ void trade_party_role_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_party_role.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.trade_party_role.role, parsed->positionals[next++], "role");
+        trade_party_role_read_token(
+            req.key.trade_party_role.trade_id, parsed->positionals[next++], "trade_id");
+        trade_party_role_read_token(
+            req.key.trade_party_role.role, parsed->positionals[next++], "role");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

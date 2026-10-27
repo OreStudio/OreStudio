@@ -24,22 +24,16 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
+#include "test_suite.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::iam::domain::session;
 using namespace ores::logging;
 
-TEST_CASE("create_session_with_valid_fields", tags) {
+TEST_CASE("create_session_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -64,7 +58,7 @@ TEST_CASE("create_session_with_valid_fields", tags) {
     CHECK(sut.country_code == "US");
 }
 
-TEST_CASE("session_is_open_when_end_time_is_absent", tags) {
+TEST_CASE("session_is_open_when_end_time_is_absent", "[domain]") {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -80,7 +74,7 @@ TEST_CASE("session_is_open_when_end_time_is_absent", tags) {
     CHECK(sut.protocol == "binary");
 }
 
-TEST_CASE("session_is_closed_when_end_time_is_set", tags) {
+TEST_CASE("session_is_closed_when_end_time_is_set", "[domain]") {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -96,7 +90,7 @@ TEST_CASE("session_is_closed_when_end_time_is_set", tags) {
     CHECK(sut.end_time.has_value());
 }
 
-TEST_CASE("session_with_ipv6_address", tags) {
+TEST_CASE("session_with_ipv6_address", "[domain]") {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -112,7 +106,7 @@ TEST_CASE("session_with_ipv6_address", tags) {
     CHECK(sut.client_identifier == "IPv6 Client");
 }
 
-TEST_CASE("session_serialization_to_json", tags) {
+TEST_CASE("session_serialization_to_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -152,7 +146,7 @@ TEST_CASE("session_serialization_to_json", tags) {
     CHECK(json_output.find("GB") != std::string::npos);
 }
 
-TEST_CASE("session_without_geolocation", tags) {
+TEST_CASE("session_without_geolocation", "[domain]") {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -168,7 +162,7 @@ TEST_CASE("session_without_geolocation", tags) {
     CHECK(sut.country_code.empty());
 }
 
-TEST_CASE("create_session_with_faker", tags) {
+TEST_CASE("create_session_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -190,7 +184,7 @@ TEST_CASE("create_session_with_faker", tags) {
     CHECK(!sut.country_code.empty());
 }
 
-TEST_CASE("create_multiple_random_sessions", tags) {
+TEST_CASE("create_multiple_random_sessions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {

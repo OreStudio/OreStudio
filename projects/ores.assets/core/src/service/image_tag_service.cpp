@@ -61,8 +61,8 @@ namespace {
  * repository takes each in its own column's type, so the pair passes
  * straight through.
  */
-std::vector<domain::image_tag> read_one(repository::image_tag_repository& repo,
-                                        const messaging::image_tag_key& key) {
+std::vector<domain::image_tag> image_tag_read_one(repository::image_tag_repository& repo,
+                                                  const messaging::image_tag_key& key) {
     return repo.read_latest(key.image_id, key.tag_id);
 }
 
@@ -72,7 +72,7 @@ std::vector<domain::image_tag> read_one(repository::image_tag_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::image_tag_key key_from(const domain::image_tag& v) {
+messaging::image_tag_key image_tag_key_from(const domain::image_tag& v) {
     messaging::image_tag_key key;
     key.image_id = v.image_id;
     key.tag_id = v.tag_id;
@@ -87,7 +87,7 @@ messaging::image_tag_key key_from(const domain::image_tag& v) {
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::image_tag to_domain(const messaging::image_tag_write& write) {
+domain::image_tag image_tag_to_domain(const messaging::image_tag_write& write) {
     domain::image_tag v;
     v.image_id = write.image_id;
     v.tag_id = write.tag_id;
@@ -140,7 +140,7 @@ messaging::list_by_image_id_image_tags_response image_tag_service::list_by_image
 messaging::get_image_tag_response
 image_tag_service::get_image_tag(const messaging::get_image_tag_request& request) {
     messaging::get_image_tag_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = image_tag_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "image_tag"});
         return response;
@@ -159,7 +159,7 @@ image_tag_service::get_many_image_tags(const messaging::get_many_image_tags_requ
     for (const auto& k : request.keys) {
         messaging::image_tag_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = image_tag_read_one(repo_, k);
         if (!found.empty())
             entry.image_tag = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -175,7 +175,7 @@ image_tag_service::put_image_tag(const messaging::put_image_tag_request& request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = image_tag_read_one(repo_, image_tag_key_from(value));
     if (!written.empty())
         response.image_tag = std::move(written.front());
     return response;
@@ -207,7 +207,7 @@ image_tag_service::put_many_image_tags(const messaging::put_many_image_tags_requ
     repo_.write(batch, claims);
     response.image_tags.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = image_tag_read_one(repo_, image_tag_key_from(value));
         response.image_tags.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -240,7 +240,7 @@ image_tag_service::delete_image_tag(const messaging::delete_image_tag_request& r
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = image_tag_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "image_tag",
@@ -292,8 +292,8 @@ image_tag_service::prepare_change(const messaging::image_tag_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = image_tag_to_domain(change.write);
+    const auto current = image_tag_read_one(repo_, image_tag_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

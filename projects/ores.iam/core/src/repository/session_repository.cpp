@@ -96,9 +96,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy session_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"id", "start_time"});
@@ -112,7 +112,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::sessions_filter>& filter) {
+session_filter_condition(const std::optional<messaging::sessions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -301,8 +301,8 @@ session_repository::read_latest(context ctx,
     return execute_ordered_read_query<session_entity, domain::session>(
         ctx,
         query,
-        list_order(order, {"id", "start_time"}, false),
-        filter_condition(filter),
+        session_list_order(order, {"id", "start_time"}, false),
+        session_filter_condition(filter),
         [](const auto& entities) { return session_mapper::map(entities); },
         lg(),
         "Reading latest sessions with pagination.");
@@ -316,7 +316,7 @@ std::uint32_t session_repository::get_total_session_count(
     const auto query = sqlgen::read<std::vector<session_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<session_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting sessions");
+        ctx, query, session_filter_condition(filter), lg(), "Counting sessions");
 }
 
 std::vector<domain::session> session_repository::read_latest(

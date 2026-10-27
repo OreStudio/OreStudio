@@ -39,7 +39,7 @@
 namespace ores::assets::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.assets.service";
+static constexpr std::string_view tag_queue_group = "ores.assets.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,39 +49,39 @@ register_tag_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<tag_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_tags_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->list_tags(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_tag_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_tag_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->get_tag(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_tags_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->get_many_tags(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_tag_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_tag_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->put_tag(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_tags_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->put_many_tags(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_tag_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_tag_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->delete_tag(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_tags_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_many_tags_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->delete_many_tags(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_tag_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_tag_versions_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->list_tag_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_tag_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_tag_version_request::nats_subject, tag_queue_group, [h](ores::nats::message msg) {
             h->get_tag_version(std::move(msg));
         }));
     return subs;

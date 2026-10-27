@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view sub_periods_coupon_type_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_sub_periods_coupon_type_handlers(
@@ -51,41 +51,41 @@ std::vector<ores::nats::service::subscription> register_sub_periods_coupon_type_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_sub_periods_coupon_types_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->list_sub_periods_coupon_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_sub_periods_coupon_type_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->get_sub_periods_coupon_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_sub_periods_coupon_types_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->get_many_sub_periods_coupon_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_sub_periods_coupon_type_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->put_sub_periods_coupon_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_sub_periods_coupon_types_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->put_many_sub_periods_coupon_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_sub_periods_coupon_type_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->delete_sub_periods_coupon_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_sub_periods_coupon_types_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->delete_many_sub_periods_coupon_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_sub_periods_coupon_type_versions_request::nats_subject,
-                                        queue_group,
+                                        sub_periods_coupon_type_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_sub_periods_coupon_type_versions(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         get_sub_periods_coupon_type_version_request::nats_subject,
-        queue_group,
+        sub_periods_coupon_type_queue_group,
         [h](ores::nats::message msg) { h->get_sub_periods_coupon_type_version(std::move(msg)); }));
     return subs;
 }

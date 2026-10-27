@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view party_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,47 +49,47 @@ register_party_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<party_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_parties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_parties_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->list_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_party_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_party_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->get_party(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_parties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_parties_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->get_many_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_party_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_party_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->put_party(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_parties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_parties_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->put_many_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_party_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_party_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->delete_party(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_parties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_many_parties_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->delete_many_parties(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_party_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_party_versions_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->list_party_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_party_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_party_version_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->get_party_version(std::move(msg));
         }));
+    subs.push_back(
+        nats.queue_subscribe(get_party_composite_as_of_request::nats_subject,
+                             party_queue_group,
+                             [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_party_composite_as_of_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->composite_as_of(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_party_composite_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_party_composite_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->put_composite(std::move(msg));
         }));
     return subs;

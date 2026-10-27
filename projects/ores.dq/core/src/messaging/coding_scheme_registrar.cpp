@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view coding_scheme_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_coding_scheme_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<coding_scheme_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_coding_schemes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_coding_schemes(std::move(msg));
-        }));
+        list_coding_schemes_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->list_coding_schemes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_coding_scheme(std::move(msg));
-        }));
+        get_coding_scheme_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->get_coding_scheme(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_coding_schemes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_coding_schemes(std::move(msg));
-        }));
+        get_many_coding_schemes_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->get_many_coding_schemes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_coding_scheme_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_coding_scheme(std::move(msg));
-        }));
+        put_coding_scheme_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->put_coding_scheme(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_coding_schemes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_coding_schemes(std::move(msg));
-        }));
+        put_many_coding_schemes_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->put_many_coding_schemes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_coding_scheme(std::move(msg));
-        }));
+        delete_coding_scheme_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->delete_coding_scheme(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_coding_schemes_request::nats_subject,
-        queue_group,
+        coding_scheme_queue_group,
         [h](ores::nats::message msg) { h->delete_many_coding_schemes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_coding_scheme_versions_request::nats_subject,
-        queue_group,
+        coding_scheme_queue_group,
         [h](ores::nats::message msg) { h->list_coding_scheme_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_coding_scheme_version(std::move(msg));
-        }));
+        get_coding_scheme_version_request::nats_subject,
+        coding_scheme_queue_group,
+        [h](ores::nats::message msg) { h->get_coding_scheme_version(std::move(msg)); }));
     return subs;
 }
 

@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_convention_kind_terms_response
-    list_convention_kind_terms(const messaging::list_convention_kind_terms_request& request);
-    messaging::get_convention_kind_term_response
-    get_convention_kind_term(const messaging::get_convention_kind_term_request& request);
-    messaging::get_many_convention_kind_terms_response get_many_convention_kind_terms(
-        const messaging::get_many_convention_kind_terms_request& request);
-    messaging::put_convention_kind_term_response
-    put_convention_kind_term(const messaging::put_convention_kind_term_request& request);
-    messaging::put_many_convention_kind_terms_response put_many_convention_kind_terms(
-        const messaging::put_many_convention_kind_terms_request& request);
-    messaging::delete_convention_kind_term_response
-    delete_convention_kind_term(const messaging::delete_convention_kind_term_request& request);
-    messaging::delete_many_convention_kind_terms_response delete_many_convention_kind_terms(
-        const messaging::delete_many_convention_kind_terms_request& request);
-    messaging::list_convention_kind_term_versions_response list_convention_kind_term_versions(
-        const messaging::list_convention_kind_term_versions_request& request);
-    messaging::get_convention_kind_term_version_response get_convention_kind_term_version(
-        const messaging::get_convention_kind_term_version_request& request);
+    ::ores::refdata::messaging::list_convention_kind_terms_response list_convention_kind_terms(
+        const ::ores::refdata::messaging::list_convention_kind_terms_request& request);
+    ::ores::refdata::messaging::get_convention_kind_term_response get_convention_kind_term(
+        const ::ores::refdata::messaging::get_convention_kind_term_request& request);
+    ::ores::refdata::messaging::get_many_convention_kind_terms_response
+    get_many_convention_kind_terms(
+        const ::ores::refdata::messaging::get_many_convention_kind_terms_request& request);
+    ::ores::refdata::messaging::put_convention_kind_term_response put_convention_kind_term(
+        const ::ores::refdata::messaging::put_convention_kind_term_request& request);
+    ::ores::refdata::messaging::put_many_convention_kind_terms_response
+    put_many_convention_kind_terms(
+        const ::ores::refdata::messaging::put_many_convention_kind_terms_request& request);
+    ::ores::refdata::messaging::delete_convention_kind_term_response delete_convention_kind_term(
+        const ::ores::refdata::messaging::delete_convention_kind_term_request& request);
+    ::ores::refdata::messaging::delete_many_convention_kind_terms_response
+    delete_many_convention_kind_terms(
+        const ::ores::refdata::messaging::delete_many_convention_kind_terms_request& request);
+    ::ores::refdata::messaging::list_convention_kind_term_versions_response
+    list_convention_kind_term_versions(
+        const ::ores::refdata::messaging::list_convention_kind_term_versions_request& request);
+    ::ores::refdata::messaging::get_convention_kind_term_version_response
+    get_convention_kind_term_version(
+        const ::ores::refdata::messaging::get_convention_kind_term_version_request& request);
     /**@}*/
 
     /**
@@ -188,7 +193,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::convention_kind_term_change& change,
+    prepare_change(const ::ores::refdata::messaging::convention_kind_term_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::convention_kind_term& out);
 };

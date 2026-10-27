@@ -74,23 +74,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_currency_calendars_response
-    list_currency_calendars(const messaging::list_currency_calendars_request& request);
-    messaging::get_currency_calendar_response
-    get_currency_calendar(const messaging::get_currency_calendar_request& request);
-    messaging::get_many_currency_calendars_response
-    get_many_currency_calendars(const messaging::get_many_currency_calendars_request& request);
-    messaging::put_currency_calendar_response
-    put_currency_calendar(const messaging::put_currency_calendar_request& request);
-    messaging::put_many_currency_calendars_response
-    put_many_currency_calendars(const messaging::put_many_currency_calendars_request& request);
-    messaging::delete_currency_calendar_response
-    delete_currency_calendar(const messaging::delete_currency_calendar_request& request);
-    messaging::delete_many_currency_calendars_response delete_many_currency_calendars(
-        const messaging::delete_many_currency_calendars_request& request);
-    messaging::list_by_currency_iso_code_currency_calendars_response
+    ::ores::refdata::messaging::list_currency_calendars_response list_currency_calendars(
+        const ::ores::refdata::messaging::list_currency_calendars_request& request);
+    ::ores::refdata::messaging::get_currency_calendar_response
+    get_currency_calendar(const ::ores::refdata::messaging::get_currency_calendar_request& request);
+    ::ores::refdata::messaging::get_many_currency_calendars_response get_many_currency_calendars(
+        const ::ores::refdata::messaging::get_many_currency_calendars_request& request);
+    ::ores::refdata::messaging::put_currency_calendar_response
+    put_currency_calendar(const ::ores::refdata::messaging::put_currency_calendar_request& request);
+    ::ores::refdata::messaging::put_many_currency_calendars_response put_many_currency_calendars(
+        const ::ores::refdata::messaging::put_many_currency_calendars_request& request);
+    ::ores::refdata::messaging::delete_currency_calendar_response delete_currency_calendar(
+        const ::ores::refdata::messaging::delete_currency_calendar_request& request);
+    ::ores::refdata::messaging::delete_many_currency_calendars_response
+    delete_many_currency_calendars(
+        const ::ores::refdata::messaging::delete_many_currency_calendars_request& request);
+    ::ores::refdata::messaging::list_by_currency_iso_code_currency_calendars_response
     list_by_currency_iso_code_currency_calendars(
-        const messaging::list_by_currency_iso_code_currency_calendars_request& request);
+        const ::ores::refdata::messaging::list_by_currency_iso_code_currency_calendars_request&
+            request);
     /**@}*/
 
 private:
@@ -110,9 +112,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::currency_calendar_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::currency_calendar& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::currency_calendar_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::currency_calendar& out);
 };
 
 }

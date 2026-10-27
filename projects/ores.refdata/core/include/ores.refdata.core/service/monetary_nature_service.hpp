@@ -75,24 +75,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_monetary_natures_response
-    list_monetary_natures(const messaging::list_monetary_natures_request& request);
-    messaging::get_monetary_nature_response
-    get_monetary_nature(const messaging::get_monetary_nature_request& request);
-    messaging::get_many_monetary_natures_response
-    get_many_monetary_natures(const messaging::get_many_monetary_natures_request& request);
-    messaging::put_monetary_nature_response
-    put_monetary_nature(const messaging::put_monetary_nature_request& request);
-    messaging::put_many_monetary_natures_response
-    put_many_monetary_natures(const messaging::put_many_monetary_natures_request& request);
-    messaging::delete_monetary_nature_response
-    delete_monetary_nature(const messaging::delete_monetary_nature_request& request);
-    messaging::delete_many_monetary_natures_response
-    delete_many_monetary_natures(const messaging::delete_many_monetary_natures_request& request);
-    messaging::list_monetary_nature_versions_response
-    list_monetary_nature_versions(const messaging::list_monetary_nature_versions_request& request);
-    messaging::get_monetary_nature_version_response
-    get_monetary_nature_version(const messaging::get_monetary_nature_version_request& request);
+    ::ores::refdata::messaging::list_monetary_natures_response
+    list_monetary_natures(const ::ores::refdata::messaging::list_monetary_natures_request& request);
+    ::ores::refdata::messaging::get_monetary_nature_response
+    get_monetary_nature(const ::ores::refdata::messaging::get_monetary_nature_request& request);
+    ::ores::refdata::messaging::get_many_monetary_natures_response get_many_monetary_natures(
+        const ::ores::refdata::messaging::get_many_monetary_natures_request& request);
+    ::ores::refdata::messaging::put_monetary_nature_response
+    put_monetary_nature(const ::ores::refdata::messaging::put_monetary_nature_request& request);
+    ::ores::refdata::messaging::put_many_monetary_natures_response put_many_monetary_natures(
+        const ::ores::refdata::messaging::put_many_monetary_natures_request& request);
+    ::ores::refdata::messaging::delete_monetary_nature_response delete_monetary_nature(
+        const ::ores::refdata::messaging::delete_monetary_nature_request& request);
+    ::ores::refdata::messaging::delete_many_monetary_natures_response delete_many_monetary_natures(
+        const ::ores::refdata::messaging::delete_many_monetary_natures_request& request);
+    ::ores::refdata::messaging::list_monetary_nature_versions_response
+    list_monetary_nature_versions(
+        const ::ores::refdata::messaging::list_monetary_nature_versions_request& request);
+    ::ores::refdata::messaging::get_monetary_nature_version_response get_monetary_nature_version(
+        const ::ores::refdata::messaging::get_monetary_nature_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::monetary_nature_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::monetary_nature& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::monetary_nature_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::monetary_nature& out);
 };
 
 }

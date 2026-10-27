@@ -19,20 +19,14 @@
  */
 #include "ores.database/service/context_factory.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
-
-namespace {
-
-const std::string test_suite("ores.database.tests");
-const std::string tags("[context_factory]");
-
-}
 
 using namespace ores::database;
 using namespace ores::logging;
 
-TEST_CASE("context_factory_configuration_construction", tags) {
+TEST_CASE("context_factory_configuration_construction", "[context_factory]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing context_factory::configuration construction";
 
@@ -54,7 +48,7 @@ TEST_CASE("context_factory_configuration_construction", tags) {
     CHECK(sut.wait_time_in_seconds == 5);
 }
 
-TEST_CASE("context_factory_configuration_streaming", tags) {
+TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing context_factory::configuration streaming";
 
@@ -84,7 +78,7 @@ TEST_CASE("context_factory_configuration_streaming", tags) {
     CHECK(json_output.find("secret") == std::string::npos);
 }
 
-TEST_CASE("context_factory_configuration_default_values", tags) {
+TEST_CASE("context_factory_configuration_default_values", "[context_factory]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing context_factory::configuration default values";
 

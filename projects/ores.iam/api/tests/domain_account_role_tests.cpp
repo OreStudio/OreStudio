@@ -20,6 +20,7 @@
 #include "ores.iam.api/domain/account_role.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -28,9 +29,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
 using ores::utility::faker::datetime;
 
 }
@@ -38,7 +36,7 @@ using ores::utility::faker::datetime;
 using ores::iam::domain::account_role;
 using namespace ores::logging;
 
-TEST_CASE("create_account_role_with_valid_fields", tags) {
+TEST_CASE("create_account_role_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto expected_time = datetime::make_timepoint(2025, 1, 15, 10);
@@ -56,7 +54,7 @@ TEST_CASE("create_account_role_with_valid_fields", tags) {
     CHECK(sut.recorded_at == expected_time);
 }
 
-TEST_CASE("create_account_role_with_specific_uuids", tags) {
+TEST_CASE("create_account_role_with_specific_uuids", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -76,7 +74,7 @@ TEST_CASE("create_account_role_with_specific_uuids", tags) {
     CHECK(sut.modified_by == "system");
 }
 
-TEST_CASE("account_role_same_account_multiple_roles", tags) {
+TEST_CASE("account_role_same_account_multiple_roles", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto account_id = boost::uuids::random_generator()();
@@ -99,7 +97,7 @@ TEST_CASE("account_role_same_account_multiple_roles", tags) {
     }
 }
 
-TEST_CASE("account_role_same_role_multiple_accounts", tags) {
+TEST_CASE("account_role_same_role_multiple_accounts", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto role_id = boost::uuids::random_generator()();
@@ -122,7 +120,7 @@ TEST_CASE("account_role_same_role_multiple_accounts", tags) {
     }
 }
 
-TEST_CASE("create_account_role_with_faker", tags) {
+TEST_CASE("create_account_role_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account_role sut;
@@ -142,7 +140,7 @@ TEST_CASE("create_account_role_with_faker", tags) {
     CHECK(sut.recorded_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("create_multiple_random_account_roles", tags) {
+TEST_CASE("create_multiple_random_account_roles", "[domain]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 5; ++i) {
@@ -163,7 +161,7 @@ TEST_CASE("create_multiple_random_account_roles", tags) {
     }
 }
 
-TEST_CASE("account_role_default_values", tags) {
+TEST_CASE("account_role_default_values", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account_role sut;
@@ -177,7 +175,7 @@ TEST_CASE("account_role_default_values", tags) {
     CHECK(sut.recorded_at == std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("account_role_assignment_with_different_assigners", tags) {
+TEST_CASE("account_role_assignment_with_different_assigners", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> assigners = {"admin", "system", "operator", "superuser"};

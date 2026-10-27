@@ -19,17 +19,11 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <limits>
 #include <sstream>
-
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[decimal]");
-
-}
 
 using ores::utility::decimal::decimal;
 using namespace ores::logging;
@@ -42,7 +36,7 @@ decimal parsed(const std::string& text) {
 
 }
 
-TEST_CASE("decimal_round_trips_exact_decimal_text", tags) {
+TEST_CASE("decimal_round_trips_exact_decimal_text", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parsed("0.1").to_string() == "0.1");
@@ -53,7 +47,7 @@ TEST_CASE("decimal_round_trips_exact_decimal_text", tags) {
     CHECK(parsed("0").to_string() == "0");
 }
 
-TEST_CASE("decimal_renders_a_small_magnitude_without_an_exponent", tags) {
+TEST_CASE("decimal_renders_a_small_magnitude_without_an_exponent", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parsed("1e-10").to_string() == "0.0000000001");
@@ -62,7 +56,7 @@ TEST_CASE("decimal_renders_a_small_magnitude_without_an_exponent", tags) {
     CHECK(parsed("1e3").to_string() == "1000");
 }
 
-TEST_CASE("decimal_holds_the_value_a_double_cannot", tags) {
+TEST_CASE("decimal_holds_the_value_a_double_cannot", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     const auto wide = parsed("12345678901234567890.1234567890");
@@ -76,7 +70,7 @@ TEST_CASE("decimal_holds_the_value_a_double_cannot", tags) {
     CHECK(*from_binary != wide);
 }
 
-TEST_CASE("decimal_default_constructs_to_zero", tags) {
+TEST_CASE("decimal_default_constructs_to_zero", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     const decimal sut;
@@ -86,7 +80,7 @@ TEST_CASE("decimal_default_constructs_to_zero", tags) {
     CHECK(sut == parsed("0.000"));
 }
 
-TEST_CASE("decimal_orders_by_its_value", tags) {
+TEST_CASE("decimal_orders_by_its_value", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parsed("0.1") < parsed("0.2"));
@@ -96,7 +90,7 @@ TEST_CASE("decimal_orders_by_its_value", tags) {
     CHECK(parsed("0.1") <=> parsed("0.10") == std::strong_ordering::equal);
 }
 
-TEST_CASE("decimal_scale_follows_the_value", tags) {
+TEST_CASE("decimal_scale_follows_the_value", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parsed("1000").scale() == 0);
@@ -105,7 +99,7 @@ TEST_CASE("decimal_scale_follows_the_value", tags) {
     CHECK(parsed("0.1000").scale() == 1);
 }
 
-TEST_CASE("decimal_refuses_text_that_is_not_a_decimal", tags) {
+TEST_CASE("decimal_refuses_text_that_is_not_a_decimal", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     for (const auto* text :
@@ -116,7 +110,7 @@ TEST_CASE("decimal_refuses_text_that_is_not_a_decimal", tags) {
     }
 }
 
-TEST_CASE("decimal_refuses_a_text_wider_than_it_holds", tags) {
+TEST_CASE("decimal_refuses_a_text_wider_than_it_holds", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     constexpr auto held = std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::digits10;
@@ -132,7 +126,7 @@ TEST_CASE("decimal_refuses_a_text_wider_than_it_holds", tags) {
     CHECK(result.error().find("significant digits") != std::string::npos);
 }
 
-TEST_CASE("decimal_from_double_refuses_a_non_finite_value", tags) {
+TEST_CASE("decimal_from_double_refuses_a_non_finite_value", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(decimal::from_double(std::numeric_limits<double>::infinity()).has_value());
@@ -140,7 +134,7 @@ TEST_CASE("decimal_from_double_refuses_a_non_finite_value", tags) {
     CHECK_FALSE(decimal::from_double(std::numeric_limits<double>::quiet_NaN()).has_value());
 }
 
-TEST_CASE("decimal_reaches_a_double_only_through_the_named_boundary", tags) {
+TEST_CASE("decimal_reaches_a_double_only_through_the_named_boundary", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     CHECK(parsed("775").to_double() == 775.0);
@@ -153,7 +147,7 @@ TEST_CASE("decimal_reaches_a_double_only_through_the_named_boundary", tags) {
     CHECK(decimal::from_double(wide.to_double()).value() != wide);
 }
 
-TEST_CASE("decimal_streams_its_text", tags) {
+TEST_CASE("decimal_streams_its_text", "[decimal]") {
     auto lg(make_logger(test_suite));
 
     std::ostringstream ss;

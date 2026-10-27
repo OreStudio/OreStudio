@@ -33,8 +33,6 @@
 
 namespace {
 
-const std::string tags("[ore][run_document][database][roundtrip]");
-
 std::filesystem::path corpus_file(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/examples/" + relative);
 }
@@ -47,7 +45,7 @@ using ores::reporting::repository::configuration_repository;
 using ores::reporting::repository::risk_report_config_repository;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a party sees only its own run settings", tags) {
+TEST_CASE("a party sees only its own run settings", "[ore][run_document][database][roundtrip]") {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
 

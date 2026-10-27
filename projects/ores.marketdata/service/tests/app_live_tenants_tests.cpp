@@ -27,8 +27,6 @@
 
 namespace {
 
-const std::string tags("[app][live_tenants]");
-
 using ores::marketdata::domain::route;
 using ores::utility::uuid::tenant_id;
 
@@ -41,7 +39,7 @@ route route_of(const tenant_id& tenant) {
 
 }
 
-TEST_CASE("only the rows of live tenants are kept", tags) {
+TEST_CASE("only the rows of live tenants are kept", "[app][live_tenants]") {
     boost::uuids::random_generator gen;
     const auto live = tenant_id::from_uuid(gen()).value();
     const auto terminated = tenant_id::from_uuid(gen()).value();
@@ -55,7 +53,7 @@ TEST_CASE("only the rows of live tenants are kept", tags) {
     CHECK(rows[1].tenant_id == system);
 }
 
-TEST_CASE("no live tenant keeps no row", tags) {
+TEST_CASE("no live tenant keeps no row", "[app][live_tenants]") {
     boost::uuids::random_generator gen;
     std::vector<route> rows{route_of(tenant_id::from_uuid(gen()).value())};
 

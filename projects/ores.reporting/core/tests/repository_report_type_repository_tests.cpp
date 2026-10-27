@@ -25,14 +25,8 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::reporting::generators;
@@ -40,7 +34,7 @@ using namespace ores::reporting::generators;
 using ores::testing::database_helper;
 using ores::reporting::repository::report_type_repository;
 
-TEST_CASE("write_single_report_type", tags) {
+TEST_CASE("write_single_report_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -53,7 +47,7 @@ TEST_CASE("write_single_report_type", tags) {
     CHECK_NOTHROW(repo.write(h.context(), rt));
 }
 
-TEST_CASE("write_multiple_report_types", tags) {
+TEST_CASE("write_multiple_report_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_multiple_report_types", tags) {
     CHECK_NOTHROW(repo.write(h.context(), report_types));
 }
 
-TEST_CASE("read_latest_report_types", tags) {
+TEST_CASE("read_latest_report_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -84,7 +78,7 @@ TEST_CASE("read_latest_report_types", tags) {
     CHECK(read.size() >= written.size());
 }
 
-TEST_CASE("read_latest_report_type_by_code", tags) {
+TEST_CASE("read_latest_report_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -104,7 +98,7 @@ TEST_CASE("read_latest_report_type_by_code", tags) {
     CHECK(read[0].name == target.name);
 }
 
-TEST_CASE("read_all_versions_of_report_type", tags) {
+TEST_CASE("read_all_versions_of_report_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -124,7 +118,7 @@ TEST_CASE("read_all_versions_of_report_type", tags) {
     CHECK(all.size() >= 2);
 }
 
-TEST_CASE("remove_report_type", tags) {
+TEST_CASE("remove_report_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -144,7 +138,7 @@ TEST_CASE("remove_report_type", tags) {
     CHECK(after.empty());
 }
 
-TEST_CASE("read_nonexistent_report_type", tags) {
+TEST_CASE("read_nonexistent_report_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

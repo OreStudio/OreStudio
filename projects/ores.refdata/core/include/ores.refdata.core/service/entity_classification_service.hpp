@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_entity_classifications_response
-    list_entity_classifications(const messaging::list_entity_classifications_request& request);
-    messaging::get_entity_classification_response
-    get_entity_classification(const messaging::get_entity_classification_request& request);
-    messaging::get_many_entity_classifications_response get_many_entity_classifications(
-        const messaging::get_many_entity_classifications_request& request);
-    messaging::put_entity_classification_response
-    put_entity_classification(const messaging::put_entity_classification_request& request);
-    messaging::put_many_entity_classifications_response put_many_entity_classifications(
-        const messaging::put_many_entity_classifications_request& request);
-    messaging::delete_entity_classification_response
-    delete_entity_classification(const messaging::delete_entity_classification_request& request);
-    messaging::delete_many_entity_classifications_response delete_many_entity_classifications(
-        const messaging::delete_many_entity_classifications_request& request);
-    messaging::list_entity_classification_versions_response list_entity_classification_versions(
-        const messaging::list_entity_classification_versions_request& request);
-    messaging::get_entity_classification_version_response get_entity_classification_version(
-        const messaging::get_entity_classification_version_request& request);
+    ::ores::refdata::messaging::list_entity_classifications_response list_entity_classifications(
+        const ::ores::refdata::messaging::list_entity_classifications_request& request);
+    ::ores::refdata::messaging::get_entity_classification_response get_entity_classification(
+        const ::ores::refdata::messaging::get_entity_classification_request& request);
+    ::ores::refdata::messaging::get_many_entity_classifications_response
+    get_many_entity_classifications(
+        const ::ores::refdata::messaging::get_many_entity_classifications_request& request);
+    ::ores::refdata::messaging::put_entity_classification_response put_entity_classification(
+        const ::ores::refdata::messaging::put_entity_classification_request& request);
+    ::ores::refdata::messaging::put_many_entity_classifications_response
+    put_many_entity_classifications(
+        const ::ores::refdata::messaging::put_many_entity_classifications_request& request);
+    ::ores::refdata::messaging::delete_entity_classification_response delete_entity_classification(
+        const ::ores::refdata::messaging::delete_entity_classification_request& request);
+    ::ores::refdata::messaging::delete_many_entity_classifications_response
+    delete_many_entity_classifications(
+        const ::ores::refdata::messaging::delete_many_entity_classifications_request& request);
+    ::ores::refdata::messaging::list_entity_classification_versions_response
+    list_entity_classification_versions(
+        const ::ores::refdata::messaging::list_entity_classification_versions_request& request);
+    ::ores::refdata::messaging::get_entity_classification_version_response
+    get_entity_classification_version(
+        const ::ores::refdata::messaging::get_entity_classification_version_request& request);
     /**@}*/
 
     /**
@@ -194,7 +199,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::entity_classification_change& change,
+    prepare_change(const ::ores::refdata::messaging::entity_classification_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::entity_classification& out);
 };

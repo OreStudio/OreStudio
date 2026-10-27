@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view portfolio_right_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,50 +49,50 @@ register_portfolio_right_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<portfolio_right_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_portfolio_rights_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_portfolio_rights(std::move(msg));
-        }));
+        list_portfolio_rights_request::nats_subject,
+        portfolio_right_queue_group,
+        [h](ores::nats::message msg) { h->list_portfolio_rights(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_portfolio_right_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_portfolio_right(std::move(msg));
-        }));
+        get_portfolio_right_request::nats_subject,
+        portfolio_right_queue_group,
+        [h](ores::nats::message msg) { h->get_portfolio_right(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_portfolio_rights_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_portfolio_rights(std::move(msg));
-        }));
+        get_many_portfolio_rights_request::nats_subject,
+        portfolio_right_queue_group,
+        [h](ores::nats::message msg) { h->get_many_portfolio_rights(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_portfolio_right_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_portfolio_right(std::move(msg));
-        }));
+        put_portfolio_right_request::nats_subject,
+        portfolio_right_queue_group,
+        [h](ores::nats::message msg) { h->put_portfolio_right(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_portfolio_rights_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_portfolio_rights(std::move(msg));
-        }));
+        put_many_portfolio_rights_request::nats_subject,
+        portfolio_right_queue_group,
+        [h](ores::nats::message msg) { h->put_many_portfolio_rights(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_portfolio_right_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_portfolio_right(std::move(msg));
-        }));
+        delete_portfolio_right_request::nats_subject,
+        portfolio_right_queue_group,
+        [h](ores::nats::message msg) { h->delete_portfolio_right(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_portfolio_rights_request::nats_subject,
-        queue_group,
+        portfolio_right_queue_group,
         [h](ores::nats::message msg) { h->delete_many_portfolio_rights(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_account_id_portfolio_rights_request::nats_subject,
-        queue_group,
+        portfolio_right_queue_group,
         [h](ores::nats::message msg) { h->list_by_account_id_portfolio_rights(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(list_by_portfolio_id_portfolio_rights_request::nats_subject,
-                                        queue_group,
+                                        portfolio_right_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_by_portfolio_id_portfolio_rights(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         list_portfolio_right_versions_request::nats_subject,
-        queue_group,
+        portfolio_right_queue_group,
         [h](ores::nats::message msg) { h->list_portfolio_right_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_portfolio_right_version_request::nats_subject,
-        queue_group,
+        portfolio_right_queue_group,
         [h](ores::nats::message msg) { h->get_portfolio_right_version(std::move(msg)); }));
     return subs;
 }

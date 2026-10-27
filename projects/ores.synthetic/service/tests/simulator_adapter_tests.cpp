@@ -49,8 +49,6 @@
 
 namespace {
 
-const std::string tags("[simulator_adapter]");
-
 namespace messaging = ores::marketdata::messaging;
 namespace domain = ores::marketdata::domain;
 using ores::synthetic::service::generator_offer;
@@ -268,7 +266,8 @@ private:
 
 }
 
-TEST_CASE("the runner starts one generator for each id in the demand", tags + "[runner]") {
+TEST_CASE("the runner starts one generator for each id in the demand",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{idle_offer("EUR/USD", counters), idle_offer("GBP/USD", counters)};
@@ -284,7 +283,7 @@ TEST_CASE("the runner starts one generator for each id in the demand", tags + "[
 }
 
 TEST_CASE("the runner keeps a running generator when the next demand names it again",
-          tags + "[runner]") {
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
@@ -297,7 +296,8 @@ TEST_CASE("the runner keeps a running generator when the next demand names it ag
     CHECK(runner.running_count() == 1);
 }
 
-TEST_CASE("the runner stops a generator that the next demand drops", tags + "[runner]") {
+TEST_CASE("the runner stops a generator that the next demand drops",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{idle_offer("EUR/USD", counters), idle_offer("GBP/USD", counters)};
@@ -317,7 +317,7 @@ TEST_CASE("the runner stops a generator that the next demand drops", tags + "[ru
 }
 
 TEST_CASE("one generator serves every id of a curve, whichever of them is demanded",
-          tags + "[runner][curve]") {
+          "[simulator_adapter][runner][curve]") {
     auto counters = std::make_shared<generator_counters>();
     const auto short_end = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
     const auto long_end = demo_pillar_id("USD", "sofr", "IRS", "SPOT", "2Y");
@@ -368,7 +368,7 @@ TEST_CASE("one generator serves every id of a curve, whichever of them is demand
 }
 
 TEST_CASE("a curve and a one-id feed of the same demand run one generator each",
-          tags + "[runner][curve]") {
+          "[simulator_adapter][runner][curve]") {
     auto curve_counters = std::make_shared<generator_counters>();
     auto fx_counters = std::make_shared<generator_counters>();
     const auto short_end = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
@@ -398,7 +398,7 @@ TEST_CASE("a curve and a one-id feed of the same demand run one generator each",
 }
 
 TEST_CASE("a curve whose generator cannot be built rejects every id of the curve",
-          tags + "[runner][curve]") {
+          "[simulator_adapter][runner][curve]") {
     const auto short_end = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
     const auto long_end = demo_pillar_id("USD", "sofr", "IRS", "SPOT", "2Y");
     std::atomic<int> built{0};
@@ -422,7 +422,7 @@ TEST_CASE("a curve whose generator cannot be built rejects every id of the curve
 }
 
 TEST_CASE("the runner rejects an id with no generator and still serves the others",
-          tags + "[runner]") {
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
@@ -435,7 +435,8 @@ TEST_CASE("the runner rejects an id with no generator and still serves the other
     CHECK(out.rejected.front().reason == "unknown_id");
 }
 
-TEST_CASE("the runner refuses a second generator for one vendor instrument", tags + "[runner]") {
+TEST_CASE("the runner refuses a second generator for one vendor instrument",
+          "[simulator_adapter][runner]") {
     auto first = std::make_shared<generator_counters>();
     auto second = std::make_shared<generator_counters>();
     generator_runner runner(
@@ -450,7 +451,8 @@ TEST_CASE("the runner refuses a second generator for one vendor instrument", tag
     CHECK(runner.running_count() == 1);
 }
 
-TEST_CASE("the runner counts an id once when the demand repeats it", tags + "[runner]") {
+TEST_CASE("the runner counts an id once when the demand repeats it",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
@@ -460,7 +462,8 @@ TEST_CASE("the runner counts an id once when the demand repeats it", tags + "[ru
     CHECK(counters->built == 1);
 }
 
-TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[runner]") {
+TEST_CASE("the runner rejects an id whose generator cannot be built",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{generator_offer{.id = bbg_id("EUR/USD"),
@@ -478,11 +481,10 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[r
     CHECK(runner.running_count() == 1);
 }
 
-TEST_CASE("the runner survives a generator whose start throws", tags + "[runner]") {
+TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -494,7 +496,7 @@ TEST_CASE("the runner survives a generator whose start throws", tags + "[runner]
 }
 
 TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbeats",
-          tags + "[adapter]") {
+          "[simulator_adapter][adapter]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
 
@@ -599,7 +601,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
     adapter.stop();
 }
 
-TEST_CASE("the adapter announces again until the service answers", tags + "[adapter]") {
+TEST_CASE("the adapter announces again until the service answers", "[simulator_adapter][adapter]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     const auto adapter_id =
@@ -669,7 +671,7 @@ svc::feed_kind_candidate fx_candidate(const std::string& id,
 }
 
 TEST_CASE("the offers are the startable system configs of the provider that have a vendor id",
-          tags + "[offers]") {
+          "[simulator_adapter][offers]") {
     std::vector<ores::synthetic::feed::adapter_target> built;
     ores::synthetic::feed::feed_factory factory;
     factory.register_kind(
@@ -710,10 +712,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -823,7 +822,7 @@ curve_candidate(const std::string& id,
 }
 
 TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's own id",
-          tags + "[adapter][curve]") {
+          "[simulator_adapter][adapter][curve]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     const auto adapter_id =
@@ -880,7 +879,7 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
 }
 
 TEST_CASE("a curve whose process takes no variable step advances one tick however long it waited",
-          tags + "[adapter][curve]") {
+          "[simulator_adapter][adapter][curve]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     const auto adapter_id =
@@ -915,7 +914,7 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
 }
 
 TEST_CASE("a curve is offered once for each of its pillars, all under the curve's own group",
-          tags + "[offers][curve]") {
+          "[simulator_adapter][offers][curve]") {
     using ores::synthetic::feed::ir_curve_feed_build_input;
     namespace vendor = ores::marketdata::vendor;
 
@@ -990,7 +989,7 @@ TEST_CASE("a curve is offered once for each of its pillars, all under the curve'
     CHECK(targets[2].target.id.external_id == "USD/sofr/IRS/SPOT/2Y");
 }
 
-TEST_CASE("a curve that is not enabled is offered nothing", tags + "[offers][curve]") {
+TEST_CASE("a curve that is not enabled is offered nothing", "[simulator_adapter][offers][curve]") {
     using ores::synthetic::feed::ir_curve_feed_build_input;
     namespace vendor = ores::marketdata::vendor;
 

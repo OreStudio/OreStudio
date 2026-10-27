@@ -45,8 +45,6 @@
 
 namespace {
 
-const std::string tags("[ore][conventions][package]");
-
 using namespace ores::ore::domain;
 
 std::filesystem::path corpus_root() {
@@ -75,7 +73,7 @@ std::size_t count(const conventions& document, std::string_view element) {
 
 }
 
-TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {
+TEST_CASE("the_package_carries_one_row_for_every_document_element", "[ore][conventions][package]") {
     int checked = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -124,7 +122,7 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {
     CHECK(checked == 72);
 }
 
-TEST_CASE("the_package_keeps_the_fx_convention_out_of_the_bundle", tags) {
+TEST_CASE("the_package_keeps_the_fx_convention_out_of_the_bundle", "[ore][conventions][package]") {
     int files_with_fx = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -155,14 +153,14 @@ TEST_CASE("the_package_keeps_the_fx_convention_out_of_the_bundle", tags) {
     CHECK(files_with_fx > 0);
 }
 
-TEST_CASE("a_payload_no_family_can_decode_is_refused", tags) {
+TEST_CASE("a_payload_no_family_can_decode_is_refused", "[ore][conventions][package]") {
     conventions_package package;
     package.bundle.rows.push_back({"zero", 0, "not a payload"});
 
     CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
 }
 
-TEST_CASE("a_payload_from_a_family_no_element_carries_is_refused", tags) {
+TEST_CASE("a_payload_from_a_family_no_element_carries_is_refused", "[ore][conventions][package]") {
     conventions_package package;
     package.bundle.rows.push_back({"no_such_family", 0, "{}"});
 
@@ -172,7 +170,8 @@ TEST_CASE("a_payload_from_a_family_no_element_carries_is_refused", tags) {
 // The one table a bundle reads for the shared family holds every kind, so a
 // read hands the join rows that have no document element. Writing one as a
 // tenor basis swap would put a leg-less element in the export.
-TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap", tags) {
+TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap",
+          "[ore][conventions][package]") {
     ores::refdata::domain::convention c;
     c.kind_code = "SWAP";
     c.name = "not a tenor basis swap";
@@ -183,7 +182,8 @@ TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap", 
     CHECK(count(join_conventions(package), "TenorBasisSwap") == 0);
 }
 
-TEST_CASE("every_family_the_package_names_is_one_the_registry_names", tags) {
+TEST_CASE("every_family_the_package_names_is_one_the_registry_names",
+          "[ore][conventions][package]") {
     std::set<std::string> seen;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -209,7 +209,7 @@ TEST_CASE("every_family_the_package_names_is_one_the_registry_names", tags) {
 // The central convention family holds only the tenor basis swap rows, because
 // every other kind packs into a family of its own. The difference therefore
 // still sees a changed deposit, which is what these two cases pin.
-TEST_CASE("the_difference_of_a_document_with_itself_is_empty", tags) {
+TEST_CASE("the_difference_of_a_document_with_itself_is_empty", "[ore][conventions][package]") {
     int walked = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -225,7 +225,7 @@ TEST_CASE("the_difference_of_a_document_with_itself_is_empty", tags) {
     CHECK(walked > 0);
 }
 
-TEST_CASE("the_difference_reports_a_changed_non_tenor_convention", tags) {
+TEST_CASE("the_difference_reports_a_changed_non_tenor_convention", "[ore][conventions][package]") {
     int changed = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {

@@ -69,7 +69,7 @@ public:
      */
     /**@{*/
 {{#operations}}
-    messaging::{{response}} {{method}}(const messaging::{{request}}& request);
+    ::ores::{{component}}::messaging::{{response}} {{method}}(const ::ores::{{component}}::messaging::{{request}}& request);
 {{/operations}}
     /**@}*/
 {{#gated}}
@@ -100,7 +100,7 @@ public:
      * is the one the gate gives. A write that creates a row changes every
      * column.
      */
-    std::vector<std::string> changed_columns(const messaging::{{entity_singular}}_write& proposed);
+    std::vector<std::string> changed_columns(const ::ores::{{component}}::messaging::{{entity_singular}}_write& proposed);
 {{/gated}}
 {{/protocol_derived}}
 
@@ -393,7 +393,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result prepare_change(
-        const messaging::{{entity_singular}}_change& change,
+        const ::ores::{{component}}::messaging::{{entity_singular}}_change& change,
         const ores::utility::domain::change_intent& intent,
         domain::{{entity_singular}}& out);
 {{/put_operations}}
@@ -500,7 +500,7 @@ public:
      */
     /**@{*/
 {{#operations}}
-    messaging::{{response}} {{method}}(const messaging::{{request}}& request);
+    ::ores::{{component}}::messaging::{{response}} {{method}}(const ::ores::{{component}}::messaging::{{request}}& request);
 {{/operations}}
     /**@}*/
 {{#gated}}
@@ -545,7 +545,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result prepare_change(
-        const messaging::{{name_singular}}_change& change,
+        const ::ores::{{component}}::messaging::{{name_singular}}_change& change,
         const ores::utility::domain::change_intent& intent,
         domain::{{name_singular}}& out);
 {{/put_operations}}
@@ -653,7 +653,7 @@ public:
      */
     /**@{*/
 {{#operations}}
-    messaging::{{response}} {{method}}(const messaging::{{request}}& request);
+    ::ores::{{component}}::messaging::{{response}} {{method}}(const ::ores::{{component}}::messaging::{{request}}& request);
 {{/operations}}
     /**@}*/
 
@@ -668,9 +668,9 @@ private:
      * @brief Assembles the family item: the central row and every part live
      * at the same instant.
      */
-    messaging::{{entity_singular}}_item assemble(
+    ::ores::{{component}}::messaging::{{entity_singular}}_item assemble(
         const context& ctx,
-        const messaging::{{entity_singular}}_key& key,
+        const ::ores::{{component}}::messaging::{{entity_singular}}_key& key,
         const std::optional<domain::{{central.entity}}>& central);
 
     /**
@@ -680,7 +680,7 @@ private:
      * stamp are one decision made in one place.
      */
     ores::utility::domain::result prepare_{{central.entity}}(
-        const messaging::{{central.entity}}_change& change,
+        const ::ores::{{component}}::messaging::{{central.entity}}_change& change,
         const ores::utility::domain::change_intent& intent,
         const context& ctx,
         domain::{{central.entity}}& out);
@@ -690,7 +690,7 @@ private:
      * @brief Checks one part change against the row it names, and stamps it.
      */
     ores::utility::domain::result prepare_{{part}}(
-        const messaging::{{entity}}_change& change,
+        const ::ores::{{component}}::messaging::{{entity}}_change& change,
         const ores::utility::domain::change_intent& intent,
         const context& ctx,
         domain::{{entity}}& out);
@@ -706,7 +706,7 @@ private:
     ores::utility::domain::result reconcile_{{part}}(
         const context& ctx,
         const domain::{{central.entity}}& central,
-        const std::vector<messaging::{{entity}}_change>& requested,
+        const std::vector<::ores::{{component}}::messaging::{{entity}}_change>& requested,
         const ores::utility::domain::change_intent& intent);
 {{/parts}}
 };

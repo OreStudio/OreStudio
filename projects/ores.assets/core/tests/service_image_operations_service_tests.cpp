@@ -33,8 +33,6 @@
 
 namespace {
 
-const std::string tags("[service]");
-
 using ores::assets::messaging::upload_image_request;
 
 upload_image_request make_upload(std::string mime_type, std::vector<std::uint8_t> bytes) {
@@ -52,7 +50,7 @@ using ores::assets::tests::png_bytes;
 using ores::testing::scoped_database_helper;
 using ores::utility::domain::outcome;
 
-TEST_CASE("upload_image_stores_the_bytes_and_answers_the_id", tags) {
+TEST_CASE("upload_image_stores_the_bytes_and_answers_the_id", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
     const auto bytes = png_bytes(128, 128);
@@ -70,7 +68,7 @@ TEST_CASE("upload_image_stores_the_bytes_and_answers_the_id", tags) {
     CHECK(stored[0].data == bytes);
 }
 
-TEST_CASE("upload_image_refuses_bytes_that_are_not_the_stated_type", tags) {
+TEST_CASE("upload_image_refuses_bytes_that_are_not_the_stated_type", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
     const auto bytes = png_bytes(128, 128);
@@ -84,7 +82,7 @@ TEST_CASE("upload_image_refuses_bytes_that_are_not_the_stated_type", tags) {
     CHECK(response.result.fields[0].field == "data");
 }
 
-TEST_CASE("upload_image_refuses_an_image_below_the_minimum_size", tags) {
+TEST_CASE("upload_image_refuses_an_image_below_the_minimum_size", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
 
@@ -95,7 +93,7 @@ TEST_CASE("upload_image_refuses_an_image_below_the_minimum_size", tags) {
     CHECK(response.image_id.empty());
 }
 
-TEST_CASE("upload_image_refuses_an_unstated_media_type", tags) {
+TEST_CASE("upload_image_refuses_an_unstated_media_type", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
 
@@ -107,7 +105,7 @@ TEST_CASE("upload_image_refuses_an_unstated_media_type", tags) {
     CHECK(response.result.fields[0].field == "mime_type");
 }
 
-TEST_CASE("upload_image_refuses_an_empty_body", tags) {
+TEST_CASE("upload_image_refuses_an_empty_body", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
     upload_image_request request;
@@ -120,7 +118,7 @@ TEST_CASE("upload_image_refuses_an_empty_body", tags) {
     CHECK(response.image_id.empty());
 }
 
-TEST_CASE("get_image_upload_policy_answers_the_validator_policy", tags) {
+TEST_CASE("get_image_upload_policy_answers_the_validator_policy", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
 
@@ -135,7 +133,7 @@ TEST_CASE("get_image_upload_policy_answers_the_validator_policy", tags) {
     CHECK(response.min_height == static_cast<int>(rules.min_height));
 }
 
-TEST_CASE("ensure_image_answers_the_image_and_leaves_a_repeat_unchanged", tags) {
+TEST_CASE("ensure_image_answers_the_image_and_leaves_a_repeat_unchanged", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
 
@@ -153,7 +151,7 @@ TEST_CASE("ensure_image_answers_the_image_and_leaves_a_repeat_unchanged", tags) 
     CHECK(second.image_id == first.image_id);
 }
 
-TEST_CASE("ensure_image_refuses_a_code_with_no_template", tags) {
+TEST_CASE("ensure_image_refuses_a_code_with_no_template", "[service]") {
     scoped_database_helper h;
     image_operations_service svc(h.context());
 

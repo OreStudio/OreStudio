@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[repository][as_of]");
-
 using ores::marketdata::repository::as_of_bucket_ordinal;
 using ores::marketdata::repository::as_of_observation;
 using ores::marketdata::repository::as_of_row;
@@ -55,7 +53,7 @@ as_of_row bucket_row(std::optional<std::string> ordinal) {
 
 }
 
-TEST_CASE("an_as_of_row_maps_every_observation_column", tags) {
+TEST_CASE("an_as_of_row_maps_every_observation_column", "[repository][as_of]") {
     const auto e = as_of_observation(bucket_row("0"), 1, "read_as_of_buckets");
 
     CHECK(e.id.value() == "id");
@@ -69,7 +67,7 @@ TEST_CASE("an_as_of_row_maps_every_observation_column", tags) {
     CHECK(e.observation_datetime == "2026-10-05 09:00:00+00");
 }
 
-TEST_CASE("a_short_as_of_row_is_refused", tags) {
+TEST_CASE("a_short_as_of_row_is_refused", "[repository][as_of]") {
     auto row = observation_columns();
     row.pop_back();
 
@@ -77,12 +75,12 @@ TEST_CASE("a_short_as_of_row_is_refused", tags) {
                       ContainsSubstring("read_as_of: a row has 10 columns, expected 11"));
 }
 
-TEST_CASE("a_bucket_row_with_no_ordinal_is_refused", tags) {
+TEST_CASE("a_bucket_row_with_no_ordinal_is_refused", "[repository][as_of]") {
     CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row(std::nullopt), 4),
                       ContainsSubstring("has no bucket ordinal"));
 }
 
-TEST_CASE("a_bucket_ordinal_that_is_not_a_number_is_refused", tags) {
+TEST_CASE("a_bucket_ordinal_that_is_not_a_number_is_refused", "[repository][as_of]") {
     CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row("two"), 4),
                       ContainsSubstring("'two' is not a number"));
     CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row("2x"), 4),
@@ -93,7 +91,7 @@ TEST_CASE("a_bucket_ordinal_that_is_not_a_number_is_refused", tags) {
                       ContainsSubstring("' 1' is not a number"));
 }
 
-TEST_CASE("a_bucket_ordinal_outside_the_buckets_is_refused", tags) {
+TEST_CASE("a_bucket_ordinal_outside_the_buckets_is_refused", "[repository][as_of]") {
     CHECK(as_of_bucket_ordinal(bucket_row("3"), 4) == 3);
     CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row("4"), 4),
                       ContainsSubstring("ordinal 4 is outside the 4 buckets requested"));

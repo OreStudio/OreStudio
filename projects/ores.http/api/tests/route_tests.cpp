@@ -19,13 +19,11 @@
  */
 #include "ores.http.api/domain/route.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <regex>
 
 namespace {
-
-const std::string test_suite("ores.http.tests");
-const std::string tags("[route]");
 
 ores::http::domain::route make_route(const std::string& pattern,
                                      const std::regex& regex,
@@ -43,7 +41,7 @@ ores::http::domain::route make_route(const std::string& pattern,
 using namespace ores::http::domain;
 using namespace ores::logging;
 
-TEST_CASE("route_match_simple_path", tags) {
+TEST_CASE("route_match_simple_path", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route matching for simple path";
 
@@ -56,7 +54,7 @@ TEST_CASE("route_match_simple_path", tags) {
     CHECK(params.empty());
 }
 
-TEST_CASE("route_match_simple_path_no_match", tags) {
+TEST_CASE("route_match_simple_path_no_match", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route non-matching for different path";
 
@@ -69,7 +67,7 @@ TEST_CASE("route_match_simple_path_no_match", tags) {
     CHECK(params.empty());
 }
 
-TEST_CASE("route_match_with_single_parameter", tags) {
+TEST_CASE("route_match_with_single_parameter", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route matching with single path parameter";
 
@@ -83,7 +81,7 @@ TEST_CASE("route_match_with_single_parameter", tags) {
     CHECK(params["id"] == "123");
 }
 
-TEST_CASE("route_match_with_multiple_parameters", tags) {
+TEST_CASE("route_match_with_multiple_parameters", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route matching with multiple path parameters";
 
@@ -100,7 +98,7 @@ TEST_CASE("route_match_with_multiple_parameters", tags) {
     CHECK(params["postId"] == "100");
 }
 
-TEST_CASE("route_match_with_uuid_parameter", tags) {
+TEST_CASE("route_match_with_uuid_parameter", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route matching with UUID path parameter";
 
@@ -114,7 +112,7 @@ TEST_CASE("route_match_with_uuid_parameter", tags) {
     CHECK(params["id"] == "550e8400-e29b-41d4-a716-446655440000");
 }
 
-TEST_CASE("route_match_partial_path_no_match", tags) {
+TEST_CASE("route_match_partial_path_no_match", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route non-matching for partial path";
 
@@ -127,7 +125,7 @@ TEST_CASE("route_match_partial_path_no_match", tags) {
     CHECK(params.empty());
 }
 
-TEST_CASE("route_match_extra_segments_no_match", tags) {
+TEST_CASE("route_match_extra_segments_no_match", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route non-matching for extra path segments";
 
@@ -140,7 +138,7 @@ TEST_CASE("route_match_extra_segments_no_match", tags) {
     CHECK(params.empty());
 }
 
-TEST_CASE("route_default_construction", tags) {
+TEST_CASE("route_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route default construction";
 
@@ -157,7 +155,7 @@ TEST_CASE("route_default_construction", tags) {
     CHECK_FALSE(sut.success_response_schema.has_value());
 }
 
-TEST_CASE("query_param_default_construction", tags) {
+TEST_CASE("query_param_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing query_param default construction";
 
@@ -170,7 +168,7 @@ TEST_CASE("query_param_default_construction", tags) {
     CHECK_FALSE(sut.default_value.has_value());
 }
 
-TEST_CASE("request_body_schema_default_construction", tags) {
+TEST_CASE("request_body_schema_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing request_body_schema default construction";
 
@@ -182,7 +180,7 @@ TEST_CASE("request_body_schema_default_construction", tags) {
     CHECK(sut.example_json.empty());
 }
 
-TEST_CASE("response_schema_default_construction", tags) {
+TEST_CASE("response_schema_default_construction", "[route]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing response_schema default construction";
 

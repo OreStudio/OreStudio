@@ -126,6 +126,18 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 #
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(ORES_UNITY_BUILD "Build each target as unity translation units of 16 sources." ON)
+
+#
+# A unity build is the largest lever on total build time. Generated code is
+# unity-safe; the hand-written sources that are not are kept out of it by
+# cmake/unity_exclusions.cmake, which build/scripts/check_unity_collisions.py
+# keeps honest.
+#
+if(ORES_UNITY_BUILD)
+    set(CMAKE_UNITY_BUILD ON)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 16)
+endif()
 
 #
 # Test environment variables: applied to all test targets.
@@ -567,6 +579,9 @@ add_dependencies(rat run_all_tests)
 add_subdirectory(${CMAKE_SOURCE_DIR}/build)
 add_subdirectory(${CMAKE_SOURCE_DIR}/assets)
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)
+if(ORES_UNITY_BUILD)
+    include(${CMAKE_SOURCE_DIR}/cmake/unity_exclusions.cmake)
+endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/doc/llm/skills/modeling)
 
 # Development tools: programs a person runs, that no service and no test needs.

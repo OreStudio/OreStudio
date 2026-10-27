@@ -21,15 +21,13 @@
 #include "ores.compute.api/domain/result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/result_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
 namespace {
-
-const std::string_view test_suite("ores.compute.tests");
-const std::string tags("[domain]");
 
 // Server state codes: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done
 // Outcome codes: 1=Success, 3=ClientError, 4=NoReply
@@ -40,7 +38,7 @@ using ores::compute::domain::result;
 using namespace ores::compute::domain;
 using namespace ores::logging;
 
-TEST_CASE("create_result_with_valid_fields", tags) {
+TEST_CASE("create_result_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     result sut;
@@ -65,7 +63,7 @@ TEST_CASE("create_result_with_valid_fields", tags) {
     CHECK(sut.output_uri == "s3://bucket/outputs/result-001.zip");
 }
 
-TEST_CASE("create_inactive_result", tags) {
+TEST_CASE("create_inactive_result", "[domain]") {
     auto lg(make_logger(test_suite));
 
     result sut;
@@ -86,7 +84,7 @@ TEST_CASE("create_inactive_result", tags) {
     CHECK(sut.output_uri.empty());
 }
 
-TEST_CASE("create_in_progress_result", tags) {
+TEST_CASE("create_in_progress_result", "[domain]") {
     auto lg(make_logger(test_suite));
 
     result sut;
@@ -106,7 +104,7 @@ TEST_CASE("create_in_progress_result", tags) {
     CHECK(sut.server_state == 4);
 }
 
-TEST_CASE("create_result_with_specific_uuid", tags) {
+TEST_CASE("create_result_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -129,7 +127,7 @@ TEST_CASE("create_result_with_specific_uuid", tags) {
     CHECK(sut.outcome == 1);
 }
 
-TEST_CASE("result_insertion_operator", tags) {
+TEST_CASE("result_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     result sut;
@@ -153,7 +151,7 @@ TEST_CASE("result_insertion_operator", tags) {
     CHECK(json_output.find("serialization-test") != std::string::npos);
 }
 
-TEST_CASE("result_convert_single_to_table", tags) {
+TEST_CASE("result_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     result r;
@@ -175,7 +173,7 @@ TEST_CASE("result_convert_single_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("result_convert_multiple_to_table", tags) {
+TEST_CASE("result_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<result> results;
@@ -200,7 +198,7 @@ TEST_CASE("result_convert_multiple_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("result_convert_empty_vector_to_table", tags) {
+TEST_CASE("result_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<result> results;
@@ -212,7 +210,7 @@ TEST_CASE("result_convert_empty_vector_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("create_result_with_faker", tags) {
+TEST_CASE("create_result_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<int> states = {1, 2, 4, 5};

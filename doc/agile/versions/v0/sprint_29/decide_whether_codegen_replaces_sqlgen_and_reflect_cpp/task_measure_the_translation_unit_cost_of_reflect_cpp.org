@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: C8F67EE9-885C-4EBE-9F63-0E89A1D71B70
+:END:
+#+title: Task: Measure the translation-unit cost of reflect-cpp against a generated codec
+#+description: Measure compile time and peak memory of the worst translation units, then of the same units with one type's codec generated into its own .cpp, and with reflect-cpp confined by extern template.
+#+type: task
+#+level: s1
+#+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
+#+owner: marco
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Numbers for the translation-unit cost of reflect-cpp and sqlgen, and how much of it a generated codec, or a reflect-cpp instantiation confined to one .cpp, removes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+The measure of success is the total build time of the whole system.
+
+- Baseline: total compile CPU and wall time of a full build without ccache, at the
+  build slot's job count, and the peak memory of each file.
+- reflect-cpp's share of the total, extrapolated from the time traces of a random
+  sample of files, with the sampling error stated.
+- The total build time and peak memory after each option: one-time codecs for the
+  common types (=decimal=, =tenant_id=, UUID, =audit_record=, time points),
+  generated codecs in the per-concern layout, and reflect-cpp confined by =extern
+  template=.
+- For each option, the job count its peak memory allows within the build slot, and
+  the wall time at that job count.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.trading/service/tests/messaging_trade_origin_handler_tests.cpp= | 133.9 s, 3.72 GiB peak; reflect-cpp 47.4 s instantiation + 25.4 s backend (54%); sqlgen 0.1 s | =measure.py= (compile command from =compile_commands.json=, =-ftime-trace=, peak memory from =wait4=), =exclusive.py= on the trace | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.ore/service/src/messaging/report_package_handler.cpp= | 84.4 s, 2.50 GiB; reflect-cpp 31.1 + 13.9 s (53%); sqlgen 0.2 s | same | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.shell/application/src/app/commands/synthetic_commands.cpp= | 54.5 s, 1.44 GiB; reflect-cpp 14.5 + 8.6 s (42%) | same | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.iam/core/src/messaging/registrar.cpp= | 96.0 s, 2.31 GiB; reflect-cpp 23.0 + 14.2 s (39%); sqlgen 0.2 s | same | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.refdata/core/src/repository/currency_repository.cpp=, a typical generated repository | 14.4 s, 0.58 GiB; reflect-cpp 2.0 + 1.0 s (21%); sqlgen 0.5 + 0.3 s | same | =ced6c2fc70=, release preset, clang, no ccache |
+| Objects in the build | 8,144, mean 0.3 s from the ninja log (mostly ccache hits) | =.ninja_log= | =ced6c2fc70=, release preset, clang, no ccache |
+| Random sample of 100 files, 3 at a time | 780 s CPU, mean 7.8 s; reflect-cpp 165 s = 21.2% pooled, 11.0% +/- 2.1% per file (95%); 2 files above 1.5 GiB, peak 3.16 GiB | =sample.py= (seed 20261026), exclusive reflect-cpp time from each trace | =ced6c2fc70=, release preset, clang, no ccache |
+| Full build without ccache, extrapolated | about 17.2 CPU hours, about 5.7 wall hours at 3 jobs | the sample's mean times the 7,948 files in =compile_commands.json= | =ced6c2fc70=, release preset, clang, no ccache |
+| Phases of =currency_repository.cpp= | 14.4 s: header parsing 4.3 s, instantiation about 6 s (reflect-cpp 2.0 s), backend 6.6 s (optimiser 4.5 s, code generation 2.1 s) | the =Total= events of its time trace | =ced6c2fc70=, release preset, clang, no ccache |
+
+* Notes
+
+- Entities already have one =_json_io.cpp= each (466), so their generated codecs
+  add no translation units. Messages have 516 protocol headers and no =.cpp=;
+  their encoding is instantiated in each of the 424 files that call the wire
+  codec. Generated message codecs add files (about 516 for one each, about 40 for
+  one for each component) but remove the repeated instantiation, so the total
+  compile CPU of a full build is the number that decides, not the file count.
+- In =report_package_handler.cpp= reflect-cpp's time is spread across small types
+  used everywhere: =decimal= 6.0 s, =audit_record= 3.3 s, =tenant_id= 3.2 s, and
+  7.7 s in reflect-cpp's own templates, against 2.6 s for the largest instrument.
+  Those types are instantiated again in almost every file, so a one-time codec for
+  them is the cheapest lever on total build time.
+- Peak memory per file (up to 3.72 GiB) is what holds the build slot to three
+  jobs on eight cores, so lower peak memory shortens wall time beyond the CPU it
+  saves.
+- reflect-cpp is about a fifth of the total build CPU. Repeated header parsing is
+  about a third of a typical file and the backend nearly half, so precompiled
+  headers or unity builds, and the optimisation level of tests and generated
+  code, are levers on total build time at least as large as the codecs, and they
+  stack with them.
+- Layout to prototype and measure: one file pair for each concern of each type.
+  The type's header holds the plain struct. =_json_io.hpp=, =_msgpack.hpp= and the
+  repository's header only declare; their =.cpp= files define the codec or the
+  statements and include only their own library (yyjson, msgpack-c, libpq or
+  libpqxx). A caller compiles a function call, never a template, and no codec is
+  defined in a header. If the file count costs too much, CMake's unity build
+  batches the small generated files at build time without merging the sources.
+- reflect-cpp's cost sits inside our own wrappers, such as the wire codec's
+  =encode<T>=, so attribution by outermost instantiation hides it. The figures
+  above are exclusive times: each instantiation less its nested children, and
+  the backend's per-function events by the function they name. Module-wide
+  optimisation is not attributed, so the shares are lower bounds.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

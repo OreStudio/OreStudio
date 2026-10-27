@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view instrument_code_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_instrument_code_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<instrument_code_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_instrument_codes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_instrument_codes(std::move(msg));
-        }));
+        list_instrument_codes_request::nats_subject,
+        instrument_code_queue_group,
+        [h](ores::nats::message msg) { h->list_instrument_codes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_instrument_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_instrument_code(std::move(msg));
-        }));
+        get_instrument_code_request::nats_subject,
+        instrument_code_queue_group,
+        [h](ores::nats::message msg) { h->get_instrument_code(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_instrument_codes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_instrument_codes(std::move(msg));
-        }));
+        get_many_instrument_codes_request::nats_subject,
+        instrument_code_queue_group,
+        [h](ores::nats::message msg) { h->get_many_instrument_codes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_instrument_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_instrument_code(std::move(msg));
-        }));
+        put_instrument_code_request::nats_subject,
+        instrument_code_queue_group,
+        [h](ores::nats::message msg) { h->put_instrument_code(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_instrument_codes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_instrument_codes(std::move(msg));
-        }));
+        put_many_instrument_codes_request::nats_subject,
+        instrument_code_queue_group,
+        [h](ores::nats::message msg) { h->put_many_instrument_codes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_instrument_code_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_instrument_code(std::move(msg));
-        }));
+        delete_instrument_code_request::nats_subject,
+        instrument_code_queue_group,
+        [h](ores::nats::message msg) { h->delete_instrument_code(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_instrument_codes_request::nats_subject,
-        queue_group,
+        instrument_code_queue_group,
         [h](ores::nats::message msg) { h->delete_many_instrument_codes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_instrument_code_versions_request::nats_subject,
-        queue_group,
+        instrument_code_queue_group,
         [h](ores::nats::message msg) { h->list_instrument_code_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_instrument_code_version_request::nats_subject,
-        queue_group,
+        instrument_code_queue_group,
         [h](ores::nats::message msg) { h->get_instrument_code_version(std::move(msg)); }));
     return subs;
 }

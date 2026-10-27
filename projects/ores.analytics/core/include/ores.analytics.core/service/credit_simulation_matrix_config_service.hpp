@@ -76,30 +76,39 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_credit_simulation_matrix_configs_response list_credit_simulation_matrix_configs(
-        const messaging::list_credit_simulation_matrix_configs_request& request);
-    messaging::get_credit_simulation_matrix_config_response get_credit_simulation_matrix_config(
-        const messaging::get_credit_simulation_matrix_config_request& request);
-    messaging::get_many_credit_simulation_matrix_configs_response
+    ::ores::analytics::messaging::list_credit_simulation_matrix_configs_response
+    list_credit_simulation_matrix_configs(
+        const ::ores::analytics::messaging::list_credit_simulation_matrix_configs_request& request);
+    ::ores::analytics::messaging::get_credit_simulation_matrix_config_response
+    get_credit_simulation_matrix_config(
+        const ::ores::analytics::messaging::get_credit_simulation_matrix_config_request& request);
+    ::ores::analytics::messaging::get_many_credit_simulation_matrix_configs_response
     get_many_credit_simulation_matrix_configs(
-        const messaging::get_many_credit_simulation_matrix_configs_request& request);
-    messaging::put_credit_simulation_matrix_config_response put_credit_simulation_matrix_config(
-        const messaging::put_credit_simulation_matrix_config_request& request);
-    messaging::put_many_credit_simulation_matrix_configs_response
+        const ::ores::analytics::messaging::get_many_credit_simulation_matrix_configs_request&
+            request);
+    ::ores::analytics::messaging::put_credit_simulation_matrix_config_response
+    put_credit_simulation_matrix_config(
+        const ::ores::analytics::messaging::put_credit_simulation_matrix_config_request& request);
+    ::ores::analytics::messaging::put_many_credit_simulation_matrix_configs_response
     put_many_credit_simulation_matrix_configs(
-        const messaging::put_many_credit_simulation_matrix_configs_request& request);
-    messaging::delete_credit_simulation_matrix_config_response
+        const ::ores::analytics::messaging::put_many_credit_simulation_matrix_configs_request&
+            request);
+    ::ores::analytics::messaging::delete_credit_simulation_matrix_config_response
     delete_credit_simulation_matrix_config(
-        const messaging::delete_credit_simulation_matrix_config_request& request);
-    messaging::delete_many_credit_simulation_matrix_configs_response
+        const ::ores::analytics::messaging::delete_credit_simulation_matrix_config_request&
+            request);
+    ::ores::analytics::messaging::delete_many_credit_simulation_matrix_configs_response
     delete_many_credit_simulation_matrix_configs(
-        const messaging::delete_many_credit_simulation_matrix_configs_request& request);
-    messaging::list_credit_simulation_matrix_config_versions_response
+        const ::ores::analytics::messaging::delete_many_credit_simulation_matrix_configs_request&
+            request);
+    ::ores::analytics::messaging::list_credit_simulation_matrix_config_versions_response
     list_credit_simulation_matrix_config_versions(
-        const messaging::list_credit_simulation_matrix_config_versions_request& request);
-    messaging::get_credit_simulation_matrix_config_version_response
+        const ::ores::analytics::messaging::list_credit_simulation_matrix_config_versions_request&
+            request);
+    ::ores::analytics::messaging::get_credit_simulation_matrix_config_version_response
     get_credit_simulation_matrix_config_version(
-        const messaging::get_credit_simulation_matrix_config_version_request& request);
+        const ::ores::analytics::messaging::get_credit_simulation_matrix_config_version_request&
+            request);
     /**@}*/
 
     /**
@@ -213,10 +222,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::credit_simulation_matrix_config_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::credit_simulation_matrix_config& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::analytics::messaging::credit_simulation_matrix_config_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::credit_simulation_matrix_config& out);
 };
 
 }

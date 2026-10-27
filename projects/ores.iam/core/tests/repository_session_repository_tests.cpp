@@ -28,17 +28,11 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -46,7 +40,7 @@ using namespace ores::iam::generators;
 using ores::testing::database_helper;
 using ores::iam::repository::session_repository;
 
-TEST_CASE("create_single_session", tags) {
+TEST_CASE("create_single_session", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -59,7 +53,7 @@ TEST_CASE("create_single_session", tags) {
     CHECK_NOTHROW(repo.write(h.context(), s));
 }
 
-TEST_CASE("read_session_by_id", tags) {
+TEST_CASE("read_session_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -82,7 +76,7 @@ TEST_CASE("read_session_by_id", tags) {
     CHECK(read_session->account_id == s.account_id);
 }
 
-TEST_CASE("read_nonexistent_session", tags) {
+TEST_CASE("read_nonexistent_session", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -102,7 +96,7 @@ TEST_CASE("read_nonexistent_session", tags) {
  * An account's page reads that account's sessions and no other, newest first:
  * the list filters on the account and is ordered by the start time.
  */
-TEST_CASE("list_sessions_reads_one_accounts_sessions_newest_first", tags) {
+TEST_CASE("list_sessions_reads_one_accounts_sessions_newest_first", "[repository]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     session_repository repo;
@@ -135,7 +129,7 @@ TEST_CASE("list_sessions_reads_one_accounts_sessions_newest_first", tags) {
     CHECK(answer.sessions[1].id == older.id);
 }
 
-TEST_CASE("list_sessions_reads_the_sessions_of_any_account_named", tags) {
+TEST_CASE("list_sessions_reads_the_sessions_of_any_account_named", "[repository]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     session_repository repo;
@@ -162,7 +156,7 @@ TEST_CASE("list_sessions_reads_the_sessions_of_any_account_named", tags) {
         CHECK(row.account_id != unnamed.account_id);
 }
 
-TEST_CASE("list_sessions_refuses_a_filter_naming_more_than_1000_accounts", tags) {
+TEST_CASE("list_sessions_refuses_a_filter_naming_more_than_1000_accounts", "[repository]") {
     database_helper h;
 
     ores::iam::messaging::list_sessions_request request;

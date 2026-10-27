@@ -75,15 +75,16 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_accounts_response
-    list_accounts(const messaging::list_accounts_request& request);
-    messaging::get_account_response get_account(const messaging::get_account_request& request);
-    messaging::get_many_accounts_response
-    get_many_accounts(const messaging::get_many_accounts_request& request);
-    messaging::list_account_versions_response
-    list_account_versions(const messaging::list_account_versions_request& request);
-    messaging::get_account_version_response
-    get_account_version(const messaging::get_account_version_request& request);
+    ::ores::iam::messaging::list_accounts_response
+    list_accounts(const ::ores::iam::messaging::list_accounts_request& request);
+    ::ores::iam::messaging::get_account_response
+    get_account(const ::ores::iam::messaging::get_account_request& request);
+    ::ores::iam::messaging::get_many_accounts_response
+    get_many_accounts(const ::ores::iam::messaging::get_many_accounts_request& request);
+    ::ores::iam::messaging::list_account_versions_response
+    list_account_versions(const ::ores::iam::messaging::list_account_versions_request& request);
+    ::ores::iam::messaging::get_account_version_response
+    get_account_version(const ::ores::iam::messaging::get_account_version_request& request);
     /**@}*/
 
     /**

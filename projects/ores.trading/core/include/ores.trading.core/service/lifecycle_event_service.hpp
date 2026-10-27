@@ -75,24 +75,25 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_lifecycle_events_response
-    list_lifecycle_events(const messaging::list_lifecycle_events_request& request);
-    messaging::get_lifecycle_event_response
-    get_lifecycle_event(const messaging::get_lifecycle_event_request& request);
-    messaging::get_many_lifecycle_events_response
-    get_many_lifecycle_events(const messaging::get_many_lifecycle_events_request& request);
-    messaging::put_lifecycle_event_response
-    put_lifecycle_event(const messaging::put_lifecycle_event_request& request);
-    messaging::put_many_lifecycle_events_response
-    put_many_lifecycle_events(const messaging::put_many_lifecycle_events_request& request);
-    messaging::delete_lifecycle_event_response
-    delete_lifecycle_event(const messaging::delete_lifecycle_event_request& request);
-    messaging::delete_many_lifecycle_events_response
-    delete_many_lifecycle_events(const messaging::delete_many_lifecycle_events_request& request);
-    messaging::list_lifecycle_event_versions_response
-    list_lifecycle_event_versions(const messaging::list_lifecycle_event_versions_request& request);
-    messaging::get_lifecycle_event_version_response
-    get_lifecycle_event_version(const messaging::get_lifecycle_event_version_request& request);
+    ::ores::trading::messaging::list_lifecycle_events_response
+    list_lifecycle_events(const ::ores::trading::messaging::list_lifecycle_events_request& request);
+    ::ores::trading::messaging::get_lifecycle_event_response
+    get_lifecycle_event(const ::ores::trading::messaging::get_lifecycle_event_request& request);
+    ::ores::trading::messaging::get_many_lifecycle_events_response get_many_lifecycle_events(
+        const ::ores::trading::messaging::get_many_lifecycle_events_request& request);
+    ::ores::trading::messaging::put_lifecycle_event_response
+    put_lifecycle_event(const ::ores::trading::messaging::put_lifecycle_event_request& request);
+    ::ores::trading::messaging::put_many_lifecycle_events_response put_many_lifecycle_events(
+        const ::ores::trading::messaging::put_many_lifecycle_events_request& request);
+    ::ores::trading::messaging::delete_lifecycle_event_response delete_lifecycle_event(
+        const ::ores::trading::messaging::delete_lifecycle_event_request& request);
+    ::ores::trading::messaging::delete_many_lifecycle_events_response delete_many_lifecycle_events(
+        const ::ores::trading::messaging::delete_many_lifecycle_events_request& request);
+    ::ores::trading::messaging::list_lifecycle_event_versions_response
+    list_lifecycle_event_versions(
+        const ::ores::trading::messaging::list_lifecycle_event_versions_request& request);
+    ::ores::trading::messaging::get_lifecycle_event_version_response get_lifecycle_event_version(
+        const ::ores::trading::messaging::get_lifecycle_event_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +187,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::lifecycle_event_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::lifecycle_event& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::lifecycle_event_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::lifecycle_event& out);
 };
 
 }

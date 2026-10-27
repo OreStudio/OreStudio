@@ -45,8 +45,6 @@
 
 namespace {
 
-const std::string tags("[repository][catalogue]");
-
 constexpr auto unique_violation = "duplicate key value violates unique constraint";
 constexpr auto check_violation = "violates check constraint";
 
@@ -62,7 +60,7 @@ using ores::marketdata::repository::market_data_vendor_instrument_repository;
 
 using ores::database::service::tenant_context;
 
-TEST_CASE("write_and_read_a_provider", tags) {
+TEST_CASE("write_and_read_a_provider", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -76,7 +74,7 @@ TEST_CASE("write_and_read_a_provider", tags) {
     CHECK(read.front().kind == p.kind);
 }
 
-TEST_CASE("a_provider_has_at_most_one_default_source", tags) {
+TEST_CASE("a_provider_has_at_most_one_default_source", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -101,7 +99,7 @@ TEST_CASE("a_provider_has_at_most_one_default_source", tags) {
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_source_kind_must_be_in_the_vocabulary", tags) {
+TEST_CASE("a_source_kind_must_be_in_the_vocabulary", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -112,7 +110,7 @@ TEST_CASE("a_source_kind_must_be_in_the_vocabulary", tags) {
                       Catch::Matchers::ContainsSubstring("Invalid source_kind"));
 }
 
-TEST_CASE("a_vendor_instrument_identity_is_unique", tags) {
+TEST_CASE("a_vendor_instrument_identity_is_unique", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -136,7 +134,7 @@ TEST_CASE("a_vendor_instrument_identity_is_unique", tags) {
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_minted_vendor_instrument_needs_a_deviation_note", tags) {
+TEST_CASE("a_minted_vendor_instrument_needs_a_deviation_note", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -151,7 +149,7 @@ TEST_CASE("a_minted_vendor_instrument_needs_a_deviation_note", tags) {
     CHECK_NOTHROW(repo.write(h.context(), v));
 }
 
-TEST_CASE("a_mapping_is_unique_for_an_instrument_and_a_start", tags) {
+TEST_CASE("a_mapping_is_unique_for_an_instrument_and_a_start", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -170,7 +168,7 @@ TEST_CASE("a_mapping_is_unique_for_an_instrument_and_a_start", tags) {
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_mapping_cannot_end_before_it_starts", tags) {
+TEST_CASE("a_mapping_cannot_end_before_it_starts", "[repository][catalogue]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -181,7 +179,7 @@ TEST_CASE("a_mapping_cannot_end_before_it_starts", tags) {
                       Catch::Matchers::ContainsSubstring(check_violation));
 }
 
-TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
+TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", "[repository][catalogue]") {
     ores::testing::scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto& tenant_ctx = h.context();
@@ -206,7 +204,8 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", tags) {
 
 // The system tenant id on a write means "the session's tenant", so a tenant that writes a provider
 // for the system tenant writes one of its own. It cannot reach a system row.
-TEST_CASE("a_tenant_write_for_the_system_tenant_lands_in_its_own_tenant", tags) {
+TEST_CASE("a_tenant_write_for_the_system_tenant_lands_in_its_own_tenant",
+          "[repository][catalogue]") {
     ores::testing::scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto& tenant_ctx = h.context();

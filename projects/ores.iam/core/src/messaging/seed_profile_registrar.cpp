@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view seed_profile_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_seed_profile_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<seed_profile_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_seed_profiles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_seed_profiles(std::move(msg));
-        }));
+        list_seed_profiles_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->list_seed_profiles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_seed_profile_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_seed_profile(std::move(msg));
-        }));
+        get_seed_profile_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->get_seed_profile(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_seed_profiles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_seed_profiles(std::move(msg));
-        }));
+        get_many_seed_profiles_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->get_many_seed_profiles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_seed_profile_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_seed_profile(std::move(msg));
-        }));
+        put_seed_profile_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->put_seed_profile(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_seed_profiles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_seed_profiles(std::move(msg));
-        }));
+        put_many_seed_profiles_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->put_many_seed_profiles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_seed_profile_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_seed_profile(std::move(msg));
-        }));
+        delete_seed_profile_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->delete_seed_profile(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_seed_profiles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_seed_profiles(std::move(msg));
-        }));
+        delete_many_seed_profiles_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_seed_profiles(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_seed_profile_versions_request::nats_subject,
-        queue_group,
+        seed_profile_queue_group,
         [h](ores::nats::message msg) { h->list_seed_profile_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_seed_profile_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_seed_profile_version(std::move(msg));
-        }));
+        get_seed_profile_version_request::nats_subject,
+        seed_profile_queue_group,
+        [h](ores::nats::message msg) { h->get_seed_profile_version(std::move(msg)); }));
     return subs;
 }
 

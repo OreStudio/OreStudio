@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+configuration_analytic_parameter_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!configuration_analytic_parameter_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::configuration_analytic_parameters_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> configuration_analytic_parameter_filter_condition(
+    const std::optional<messaging::configuration_analytic_parameters_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -306,8 +307,8 @@ configuration_analytic_parameter_repository::read_latest_by_configuration_analyt
                                       domain::configuration_analytic_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        configuration_analytic_parameter_list_order(order, {"id"}, false),
+        configuration_analytic_parameter_filter_condition(filter),
         [](const auto& entities) { return configuration_analytic_parameter_mapper::map(entities); },
         lg(),
         "Reading latest analytic parameters by configuration_analytic_id.");
@@ -332,7 +333,7 @@ std::uint32_t configuration_analytic_parameter_repository::
     return execute_count_query<configuration_analytic_parameter_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        configuration_analytic_parameter_filter_condition(filter),
         lg(),
         "Counting analytic parameters by configuration_analytic_id");
 }
@@ -359,8 +360,8 @@ configuration_analytic_parameter_repository::read_latest_by_ore_parameter_id(
                                       domain::configuration_analytic_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        configuration_analytic_parameter_list_order(order, {"id"}, false),
+        configuration_analytic_parameter_filter_condition(filter),
         [](const auto& entities) { return configuration_analytic_parameter_mapper::map(entities); },
         lg(),
         "Reading latest analytic parameters by ore_parameter_id.");
@@ -384,7 +385,7 @@ configuration_analytic_parameter_repository::get_total_parameter_value_count_by_
     return execute_count_query<configuration_analytic_parameter_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        configuration_analytic_parameter_filter_condition(filter),
         lg(),
         "Counting analytic parameters by ore_parameter_id");
 }
@@ -443,8 +444,8 @@ configuration_analytic_parameter_repository::read_latest(
                                       domain::configuration_analytic_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        configuration_analytic_parameter_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), configuration_analytic_parameter_filter_condition(filter)),
         [](const auto& entities) { return configuration_analytic_parameter_mapper::map(entities); },
         lg(),
         "Reading latest analytic parameters with pagination.");
@@ -463,7 +464,7 @@ std::uint32_t configuration_analytic_parameter_repository::get_total_parameter_v
     return execute_count_query<configuration_analytic_parameter_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), configuration_analytic_parameter_filter_condition(filter)),
         lg(),
         "Counting analytic parameters");
 }

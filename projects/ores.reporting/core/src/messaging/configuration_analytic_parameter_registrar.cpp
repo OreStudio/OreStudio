@@ -39,7 +39,8 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view configuration_analytic_parameter_queue_group =
+    "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_configuration_analytic_parameter_handlers(
@@ -51,63 +52,63 @@ std::vector<ores::nats::service::subscription> register_configuration_analytic_p
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_configuration_analytic_parameters_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_configuration_analytic_parameters(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         get_configuration_analytic_parameter_request::nats_subject,
-        queue_group,
+        configuration_analytic_parameter_queue_group,
         [h](ores::nats::message msg) { h->get_configuration_analytic_parameter(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_configuration_analytic_parameters_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_configuration_analytic_parameters(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_configuration_analytic_parameter_request::nats_subject,
-        queue_group,
+        configuration_analytic_parameter_queue_group,
         [h](ores::nats::message msg) { h->put_configuration_analytic_parameter(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_configuration_analytic_parameters_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_configuration_analytic_parameters(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_configuration_analytic_parameter_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_configuration_analytic_parameter(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(delete_many_configuration_analytic_parameters_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_configuration_analytic_parameters(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_configuration_analytic_id_configuration_analytic_parameters_request::nats_subject,
-        queue_group,
+        configuration_analytic_parameter_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_configuration_analytic_id_configuration_analytic_parameters(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_by_ore_parameter_id_configuration_analytic_parameters_request::nats_subject,
-        queue_group,
+        configuration_analytic_parameter_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_ore_parameter_id_configuration_analytic_parameters(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(list_configuration_analytic_parameter_versions_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_configuration_analytic_parameter_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_configuration_analytic_parameter_version_request::nats_subject,
-                             queue_group,
+                             configuration_analytic_parameter_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_configuration_analytic_parameter_version(std::move(msg));
                              }));

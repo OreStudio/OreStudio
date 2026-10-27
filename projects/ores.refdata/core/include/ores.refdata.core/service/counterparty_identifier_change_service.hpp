@@ -76,22 +76,28 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_counterparty_identifier_changes_response list_counterparty_identifier_changes(
-        const messaging::list_counterparty_identifier_changes_request& request);
-    messaging::get_counterparty_identifier_change_response get_counterparty_identifier_change(
-        const messaging::get_counterparty_identifier_change_request& request);
-    messaging::get_many_counterparty_identifier_changes_response
+    ::ores::refdata::messaging::list_counterparty_identifier_changes_response
+    list_counterparty_identifier_changes(
+        const ::ores::refdata::messaging::list_counterparty_identifier_changes_request& request);
+    ::ores::refdata::messaging::get_counterparty_identifier_change_response
+    get_counterparty_identifier_change(
+        const ::ores::refdata::messaging::get_counterparty_identifier_change_request& request);
+    ::ores::refdata::messaging::get_many_counterparty_identifier_changes_response
     get_many_counterparty_identifier_changes(
-        const messaging::get_many_counterparty_identifier_changes_request& request);
-    messaging::list_by_request_id_counterparty_identifier_changes_response
+        const ::ores::refdata::messaging::get_many_counterparty_identifier_changes_request&
+            request);
+    ::ores::refdata::messaging::list_by_request_id_counterparty_identifier_changes_response
     list_by_request_id_counterparty_identifier_changes(
-        const messaging::list_by_request_id_counterparty_identifier_changes_request& request);
-    messaging::list_counterparty_identifier_change_versions_response
+        const ::ores::refdata::messaging::
+            list_by_request_id_counterparty_identifier_changes_request& request);
+    ::ores::refdata::messaging::list_counterparty_identifier_change_versions_response
     list_counterparty_identifier_change_versions(
-        const messaging::list_counterparty_identifier_change_versions_request& request);
-    messaging::get_counterparty_identifier_change_version_response
+        const ::ores::refdata::messaging::list_counterparty_identifier_change_versions_request&
+            request);
+    ::ores::refdata::messaging::get_counterparty_identifier_change_version_response
     get_counterparty_identifier_change_version(
-        const messaging::get_counterparty_identifier_change_version_request& request);
+        const ::ores::refdata::messaging::get_counterparty_identifier_change_version_request&
+            request);
     /**@}*/
 
     /**

@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "report_instance_test_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -44,9 +45,6 @@
 // no word rather than by borrowing a nearby one.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][database]");
 
 std::string word_of(const ores::reporting::messaging::get_report_instance_health_response& response,
                     const boost::uuids::uuid& instance_id) {
@@ -71,7 +69,7 @@ state_of(const ores::reporting::messaging::get_report_instance_health_response& 
 
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("each lifecycle state reads as the health word the screen draws", tags) {
+TEST_CASE("each lifecycle state reads as the health word the screen draws", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

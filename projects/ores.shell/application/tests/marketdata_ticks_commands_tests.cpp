@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -37,9 +38,6 @@ using namespace std::chrono_literals;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][marketdata][ticks]");
-
 const std::string spot_uri("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 const std::string other_uri("oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
@@ -56,7 +54,7 @@ ores::marketdata::messaging::get_series_ticks_response a_reply() {
 
 }
 
-TEST_CASE("marketdata_commands registers the ticks verb", tags) {
+TEST_CASE("marketdata_commands registers the ticks verb", "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -69,7 +67,8 @@ TEST_CASE("marketdata_commands registers the ticks verb", tags) {
           completions.end());
 }
 
-TEST_CASE("the_times_of_a_history_reply_are_the_first_instant_plus_the_gaps", tags) {
+TEST_CASE("the_times_of_a_history_reply_are_the_first_instant_plus_the_gaps",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     const auto reply = a_reply();
@@ -86,7 +85,7 @@ TEST_CASE("the_times_of_a_history_reply_are_the_first_instant_plus_the_gaps", ta
     CHECK((*ticks)[1].value == 1.3);
 }
 
-TEST_CASE("a_history_reply_with_no_tick_gives_no_tick", tags) {
+TEST_CASE("a_history_reply_with_no_tick_gives_no_tick", "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     const ores::marketdata::messaging::get_series_ticks_response reply;
@@ -96,7 +95,8 @@ TEST_CASE("a_history_reply_with_no_tick_gives_no_tick", tags) {
     CHECK(ticks->empty());
 }
 
-TEST_CASE("a_history_reply_whose_arrays_differ_in_length_is_malformed", tags) {
+TEST_CASE("a_history_reply_whose_arrays_differ_in_length_is_malformed",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     auto reply = a_reply();
@@ -108,7 +108,8 @@ TEST_CASE("a_history_reply_whose_arrays_differ_in_length_is_malformed", tags) {
     CHECK(ticks.error().find("differ in length") != std::string::npos);
 }
 
-TEST_CASE("a_history_reply_that_names_a_missing_coordinate_is_malformed", tags) {
+TEST_CASE("a_history_reply_that_names_a_missing_coordinate_is_malformed",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     auto reply = a_reply();
@@ -120,7 +121,8 @@ TEST_CASE("a_history_reply_that_names_a_missing_coordinate_is_malformed", tags) 
     CHECK(ticks.error().find("names coordinate 2") != std::string::npos);
 }
 
-TEST_CASE("a_history_reply_with_ticks_and_no_first_instant_is_malformed", tags) {
+TEST_CASE("a_history_reply_with_ticks_and_no_first_instant_is_malformed",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     auto reply = a_reply();
@@ -132,7 +134,8 @@ TEST_CASE("a_history_reply_with_ticks_and_no_first_instant_is_malformed", tags) 
     CHECK(ticks.error().find("no first instant") != std::string::npos);
 }
 
-TEST_CASE("a_date_is_midnight_utc_and_an_instant_keeps_its_microseconds", tags) {
+TEST_CASE("a_date_is_midnight_utc_and_an_instant_keeps_its_microseconds",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     const auto midnight = std::chrono::sys_days{std::chrono::year{2026} / 10 / 23};
@@ -145,7 +148,8 @@ TEST_CASE("a_date_is_midnight_utc_and_an_instant_keeps_its_microseconds", tags) 
     CHECK(*instant == midnight + 14h + 30min + 250ms);
 }
 
-TEST_CASE("a_bound_that_is_neither_a_date_nor_an_instant_is_refused_with_its_text", tags) {
+TEST_CASE("a_bound_that_is_neither_a_date_nor_an_instant_is_refused_with_its_text",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     const auto bound = marketdata_commands::parse_span_bound("yesterday");
@@ -154,7 +158,7 @@ TEST_CASE("a_bound_that_is_neither_a_date_nor_an_instant_is_refused_with_its_tex
     CHECK(bound.error().find("'yesterday'") != std::string::npos);
 }
 
-TEST_CASE("a_history_tick_renders_its_time_coordinate_and_value", tags) {
+TEST_CASE("a_history_tick_renders_its_time_coordinate_and_value", "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     const auto ticks = marketdata_commands::history_ticks(a_reply());
@@ -164,7 +168,7 @@ TEST_CASE("a_history_tick_renders_its_time_coordinate_and_value", tags) {
           "2026-10-23 14:30:00.000000Z  " + spot_uri + "  1.0845");
 }
 
-TEST_CASE("a_history_tick_row_escapes_a_coordinate_with_a_comma", tags) {
+TEST_CASE("a_history_tick_row_escapes_a_coordinate_with_a_comma", "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     const history_tick tick{
@@ -174,7 +178,8 @@ TEST_CASE("a_history_tick_row_escapes_a_coordinate_with_a_comma", tags) {
           "2026-10-23 00:00:00.000000Z,\"oresmd://x/a,b\",2.5");
 }
 
-TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_identity", tags) {
+TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_identity",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -186,7 +191,8 @@ TEST_CASE("the_ticks_command_states_its_usage_when_it_has_no_identity", tags) {
     CHECK(out.str().find("--provider <code>") != std::string::npos);
 }
 
-TEST_CASE("the_ticks_command_refuses_a_session_that_is_not_logged_in", tags) {
+TEST_CASE("the_ticks_command_refuses_a_session_that_is_not_logged_in",
+          "[commands][marketdata][ticks]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -208,7 +214,8 @@ TEST_CASE("the_ticks_command_refuses_a_session_that_is_not_logged_in", tags) {
     CHECK(out.str().find("Not logged in.") != std::string::npos);
 }
 
-TEST_CASE("identity_fields_are_read_as_name_value_pairs_in_the_order_given", tags) {
+TEST_CASE("identity_fields_are_read_as_name_value_pairs_in_the_order_given",
+          "[commands][marketdata][ticks]") {
     const auto fields =
         marketdata_commands::parse_identity_fields("curve_id=EUR-6M,day_counter=A365");
 
@@ -220,14 +227,15 @@ TEST_CASE("identity_fields_are_read_as_name_value_pairs_in_the_order_given", tag
     CHECK(fields->back().text == "A365");
 }
 
-TEST_CASE("no_identity_fields_is_an_empty_list_and_not_an_error", tags) {
+TEST_CASE("no_identity_fields_is_an_empty_list_and_not_an_error", "[commands][marketdata][ticks]") {
     const auto fields = marketdata_commands::parse_identity_fields("");
 
     REQUIRE(fields);
     CHECK(fields->empty());
 }
 
-TEST_CASE("an_identity_field_with_no_name_or_no_value_is_refused_with_its_text", tags) {
+TEST_CASE("an_identity_field_with_no_name_or_no_value_is_refused_with_its_text",
+          "[commands][marketdata][ticks]") {
     for (const auto* text : {"ccy", "=USD", "ccy="}) {
         const auto fields = marketdata_commands::parse_identity_fields(text);
         REQUIRE_FALSE(fields);

@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void curve_global_report_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void curve_global_report_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -228,7 +228,7 @@ void curve_global_report_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        curve_global_report_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -276,7 +276,7 @@ void curve_global_report_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
+        curve_global_report_read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -321,7 +321,7 @@ void curve_global_report_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::curve_global_report_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            curve_global_report_read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -367,35 +367,44 @@ void curve_global_report_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.curve_configuration_id,
-                   parsed->positionals[next++],
-                   "curve_configuration_id");
-        read_token(req.change.write.family, parsed->positionals[next++], "family");
-        read_token(req.change.write.has_report, parsed->positionals[next++], "has_report");
-        read_token(req.change.write.report_on_delta_grid,
-                   parsed->positionals[next++],
-                   "report_on_delta_grid");
-        read_token(req.change.write.report_on_moneyness_grid,
-                   parsed->positionals[next++],
-                   "report_on_moneyness_grid");
-        read_token(req.change.write.report_on_strike_grid,
-                   parsed->positionals[next++],
-                   "report_on_strike_grid");
-        read_token(req.change.write.report_on_strike_spread_grid,
-                   parsed->positionals[next++],
-                   "report_on_strike_spread_grid");
-        read_token(req.change.write.deltas, parsed->positionals[next++], "deltas");
-        read_token(req.change.write.moneyness, parsed->positionals[next++], "moneyness");
-        read_token(req.change.write.strikes, parsed->positionals[next++], "strikes");
-        read_token(req.change.write.strike_spreads, parsed->positionals[next++], "strike_spreads");
-        read_token(req.change.write.expiries, parsed->positionals[next++], "expiries");
-        read_token(req.change.write.pillar_dates, parsed->positionals[next++], "pillar_dates");
-        read_token(
+        curve_global_report_read_token(req.change.write.curve_configuration_id,
+                                       parsed->positionals[next++],
+                                       "curve_configuration_id");
+        curve_global_report_read_token(
+            req.change.write.family, parsed->positionals[next++], "family");
+        curve_global_report_read_token(
+            req.change.write.has_report, parsed->positionals[next++], "has_report");
+        curve_global_report_read_token(req.change.write.report_on_delta_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_delta_grid");
+        curve_global_report_read_token(req.change.write.report_on_moneyness_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_moneyness_grid");
+        curve_global_report_read_token(req.change.write.report_on_strike_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_strike_grid");
+        curve_global_report_read_token(req.change.write.report_on_strike_spread_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_strike_spread_grid");
+        curve_global_report_read_token(
+            req.change.write.deltas, parsed->positionals[next++], "deltas");
+        curve_global_report_read_token(
+            req.change.write.moneyness, parsed->positionals[next++], "moneyness");
+        curve_global_report_read_token(
+            req.change.write.strikes, parsed->positionals[next++], "strikes");
+        curve_global_report_read_token(
+            req.change.write.strike_spreads, parsed->positionals[next++], "strike_spreads");
+        curve_global_report_read_token(
+            req.change.write.expiries, parsed->positionals[next++], "expiries");
+        curve_global_report_read_token(
+            req.change.write.pillar_dates, parsed->positionals[next++], "pillar_dates");
+        curve_global_report_read_token(
             req.change.write.underlying_tenors, parsed->positionals[next++], "underlying_tenors");
-        read_token(req.change.write.continuation_expiry,
-                   parsed->positionals[next++],
-                   "continuation_expiry");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        curve_global_report_read_token(req.change.write.continuation_expiry,
+                                       parsed->positionals[next++],
+                                       "continuation_expiry");
+        curve_global_report_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -443,36 +452,45 @@ void curve_global_report_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.curve_configuration_id,
-                   parsed->positionals[next++],
-                   "curve_configuration_id");
-        read_token(req.change.write.family, parsed->positionals[next++], "family");
-        read_token(req.change.write.has_report, parsed->positionals[next++], "has_report");
-        read_token(req.change.write.report_on_delta_grid,
-                   parsed->positionals[next++],
-                   "report_on_delta_grid");
-        read_token(req.change.write.report_on_moneyness_grid,
-                   parsed->positionals[next++],
-                   "report_on_moneyness_grid");
-        read_token(req.change.write.report_on_strike_grid,
-                   parsed->positionals[next++],
-                   "report_on_strike_grid");
-        read_token(req.change.write.report_on_strike_spread_grid,
-                   parsed->positionals[next++],
-                   "report_on_strike_spread_grid");
-        read_token(req.change.write.deltas, parsed->positionals[next++], "deltas");
-        read_token(req.change.write.moneyness, parsed->positionals[next++], "moneyness");
-        read_token(req.change.write.strikes, parsed->positionals[next++], "strikes");
-        read_token(req.change.write.strike_spreads, parsed->positionals[next++], "strike_spreads");
-        read_token(req.change.write.expiries, parsed->positionals[next++], "expiries");
-        read_token(req.change.write.pillar_dates, parsed->positionals[next++], "pillar_dates");
-        read_token(
+        curve_global_report_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        curve_global_report_read_token(req.change.write.curve_configuration_id,
+                                       parsed->positionals[next++],
+                                       "curve_configuration_id");
+        curve_global_report_read_token(
+            req.change.write.family, parsed->positionals[next++], "family");
+        curve_global_report_read_token(
+            req.change.write.has_report, parsed->positionals[next++], "has_report");
+        curve_global_report_read_token(req.change.write.report_on_delta_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_delta_grid");
+        curve_global_report_read_token(req.change.write.report_on_moneyness_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_moneyness_grid");
+        curve_global_report_read_token(req.change.write.report_on_strike_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_strike_grid");
+        curve_global_report_read_token(req.change.write.report_on_strike_spread_grid,
+                                       parsed->positionals[next++],
+                                       "report_on_strike_spread_grid");
+        curve_global_report_read_token(
+            req.change.write.deltas, parsed->positionals[next++], "deltas");
+        curve_global_report_read_token(
+            req.change.write.moneyness, parsed->positionals[next++], "moneyness");
+        curve_global_report_read_token(
+            req.change.write.strikes, parsed->positionals[next++], "strikes");
+        curve_global_report_read_token(
+            req.change.write.strike_spreads, parsed->positionals[next++], "strike_spreads");
+        curve_global_report_read_token(
+            req.change.write.expiries, parsed->positionals[next++], "expiries");
+        curve_global_report_read_token(
+            req.change.write.pillar_dates, parsed->positionals[next++], "pillar_dates");
+        curve_global_report_read_token(
             req.change.write.underlying_tenors, parsed->positionals[next++], "underlying_tenors");
-        read_token(req.change.write.continuation_expiry,
-                   parsed->positionals[next++],
-                   "continuation_expiry");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
+        curve_global_report_read_token(req.change.write.continuation_expiry,
+                                       parsed->positionals[next++],
+                                       "continuation_expiry");
+        curve_global_report_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -534,36 +552,45 @@ void curve_global_report_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::curve_global_report_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.curve_configuration_id,
-                       parsed->positionals[next++],
-                       "curve_configuration_id");
-            read_token(change.write.family, parsed->positionals[next++], "family");
-            read_token(change.write.has_report, parsed->positionals[next++], "has_report");
-            read_token(change.write.report_on_delta_grid,
-                       parsed->positionals[next++],
-                       "report_on_delta_grid");
-            read_token(change.write.report_on_moneyness_grid,
-                       parsed->positionals[next++],
-                       "report_on_moneyness_grid");
-            read_token(change.write.report_on_strike_grid,
-                       parsed->positionals[next++],
-                       "report_on_strike_grid");
-            read_token(change.write.report_on_strike_spread_grid,
-                       parsed->positionals[next++],
-                       "report_on_strike_spread_grid");
-            read_token(change.write.deltas, parsed->positionals[next++], "deltas");
-            read_token(change.write.moneyness, parsed->positionals[next++], "moneyness");
-            read_token(change.write.strikes, parsed->positionals[next++], "strikes");
-            read_token(change.write.strike_spreads, parsed->positionals[next++], "strike_spreads");
-            read_token(change.write.expiries, parsed->positionals[next++], "expiries");
-            read_token(change.write.pillar_dates, parsed->positionals[next++], "pillar_dates");
-            read_token(
+            curve_global_report_read_token(change.write.id, parsed->positionals[next++], "id");
+            curve_global_report_read_token(change.write.curve_configuration_id,
+                                           parsed->positionals[next++],
+                                           "curve_configuration_id");
+            curve_global_report_read_token(
+                change.write.family, parsed->positionals[next++], "family");
+            curve_global_report_read_token(
+                change.write.has_report, parsed->positionals[next++], "has_report");
+            curve_global_report_read_token(change.write.report_on_delta_grid,
+                                           parsed->positionals[next++],
+                                           "report_on_delta_grid");
+            curve_global_report_read_token(change.write.report_on_moneyness_grid,
+                                           parsed->positionals[next++],
+                                           "report_on_moneyness_grid");
+            curve_global_report_read_token(change.write.report_on_strike_grid,
+                                           parsed->positionals[next++],
+                                           "report_on_strike_grid");
+            curve_global_report_read_token(change.write.report_on_strike_spread_grid,
+                                           parsed->positionals[next++],
+                                           "report_on_strike_spread_grid");
+            curve_global_report_read_token(
+                change.write.deltas, parsed->positionals[next++], "deltas");
+            curve_global_report_read_token(
+                change.write.moneyness, parsed->positionals[next++], "moneyness");
+            curve_global_report_read_token(
+                change.write.strikes, parsed->positionals[next++], "strikes");
+            curve_global_report_read_token(
+                change.write.strike_spreads, parsed->positionals[next++], "strike_spreads");
+            curve_global_report_read_token(
+                change.write.expiries, parsed->positionals[next++], "expiries");
+            curve_global_report_read_token(
+                change.write.pillar_dates, parsed->positionals[next++], "pillar_dates");
+            curve_global_report_read_token(
                 change.write.underlying_tenors, parsed->positionals[next++], "underlying_tenors");
-            read_token(change.write.continuation_expiry,
-                       parsed->positionals[next++],
-                       "continuation_expiry");
-            read_token(change.write.position, parsed->positionals[next++], "position");
+            curve_global_report_read_token(change.write.continuation_expiry,
+                                           parsed->positionals[next++],
+                                           "continuation_expiry");
+            curve_global_report_read_token(
+                change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -613,7 +640,7 @@ void curve_global_report_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.id, parsed->positionals[next++], "id");
+        curve_global_report_read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -667,7 +694,7 @@ void curve_global_report_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::curve_global_report_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            curve_global_report_read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::curve_global_report_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -719,8 +746,8 @@ void curve_global_report_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
-        apply_page(req, *parsed);
+        curve_global_report_read_token(req.key.id, parsed->positionals[next++], "id");
+        curve_global_report_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -765,7 +792,8 @@ void curve_global_report_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.curve_global_report.id, parsed->positionals[next++], "id");
+        curve_global_report_read_token(
+            req.key.curve_global_report.id, parsed->positionals[next++], "id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

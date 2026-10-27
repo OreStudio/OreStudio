@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/logging_listener.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -26,14 +27,11 @@
 
 namespace {
 
-const std::string test_suite("ores.testing.tests");
-const std::string tags("[testing]");
-
 using ores::testing::logging_listener;
 
 }
 
-TEST_CASE("reports_the_module_name_it_was_given", tags) {
+TEST_CASE("reports_the_module_name_it_was_given", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     logging_listener::set_test_module_name("ores.other.tests");
@@ -45,7 +43,7 @@ TEST_CASE("reports_the_module_name_it_was_given", tags) {
     CHECK(logging_listener::extract_module_name() == "ores.testing.tests");
 }
 
-TEST_CASE("takes_the_suite_name_from_the_first_tag", tags) {
+TEST_CASE("takes_the_suite_name_from_the_first_tag", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const Catch::TestCaseInfo info(
@@ -58,7 +56,7 @@ TEST_CASE("takes_the_suite_name_from_the_first_tag", tags) {
     CHECK(suite == "my_suite");
 }
 
-TEST_CASE("names_the_default_suite_when_a_case_has_no_tags", tags) {
+TEST_CASE("names_the_default_suite_when_a_case_has_no_tags", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const Catch::TestCaseInfo info(

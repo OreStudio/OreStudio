@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string credit_basket_constituent_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<credit_basket_constituent>& v) {
 
     for ([[maybe_unused]] const auto& constituent : v) {
         table << constituent.sequence_number << constituent.issuer_id
-              << opt_str(constituent.notional) << opt_str(constituent.weight)
-              << constituent.modified_by << constituent.version << fort::endr;
+              << credit_basket_constituent_opt_str(constituent.notional)
+              << credit_basket_constituent_opt_str(constituent.weight) << constituent.modified_by
+              << constituent.version << fort::endr;
     }
     return table.to_string();
 }

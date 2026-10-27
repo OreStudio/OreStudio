@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view coding_scheme_authority_type_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription> register_coding_scheme_authority_type_handlers(
@@ -51,47 +51,47 @@ std::vector<ores::nats::service::subscription> register_coding_scheme_authority_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_coding_scheme_authority_types_request::nats_subject,
-        queue_group,
+        coding_scheme_authority_type_queue_group,
         [h](ores::nats::message msg) { h->list_coding_scheme_authority_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
+        coding_scheme_authority_type_queue_group,
         [h](ores::nats::message msg) { h->get_coding_scheme_authority_type(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_coding_scheme_authority_types_request::nats_subject,
-                             queue_group,
+                             coding_scheme_authority_type_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_coding_scheme_authority_types(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
+        coding_scheme_authority_type_queue_group,
         [h](ores::nats::message msg) { h->put_coding_scheme_authority_type(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_coding_scheme_authority_types_request::nats_subject,
-                             queue_group,
+                             coding_scheme_authority_type_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_coding_scheme_authority_types(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_coding_scheme_authority_type_request::nats_subject,
-        queue_group,
+        coding_scheme_authority_type_queue_group,
         [h](ores::nats::message msg) { h->delete_coding_scheme_authority_type(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_coding_scheme_authority_types_request::nats_subject,
-                             queue_group,
+                             coding_scheme_authority_type_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_coding_scheme_authority_types(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_coding_scheme_authority_type_versions_request::nats_subject,
-                             queue_group,
+                             coding_scheme_authority_type_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_coding_scheme_authority_type_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_coding_scheme_authority_type_version_request::nats_subject,
-                             queue_group,
+                             coding_scheme_authority_type_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_coding_scheme_authority_type_version(std::move(msg));
                              }));

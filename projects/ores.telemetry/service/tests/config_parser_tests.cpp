@@ -21,28 +21,21 @@
 #include "ores.telemetry.service/config/parser.hpp"
 #include "ores.telemetry.service/config/parser_exception.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
 #include <vector>
 
-namespace {
-
-const std::string_view test_suite("ores.telemetry.service.tests");
-const std::string tags("[config]");
-
-}
-
 using namespace ores::telemetry::service::config;
 
-TEST_CASE("parse_defaults_returns_expected_values", tags) {
+TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
     // Local (non-CI) ctest loads the whole .env into the test process,
     // including shared ORES_NATS_* vars the parser now genuinely reads --
     // clear them so this test asserts real compiled-in defaults.
     const ores::testing::scoped_environment_override env_guard(
         {}, {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
-
 
     const std::vector<std::string> args;
     std::ostringstream info, err;
@@ -56,7 +49,7 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     CHECK_FALSE(result->logging.has_value());
 }
 
-TEST_CASE("parse_custom_nats_url", tags) {
+TEST_CASE("parse_custom_nats_url", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--nats-url", "nats://myserver:5555"};
@@ -67,7 +60,7 @@ TEST_CASE("parse_custom_nats_url", tags) {
     CHECK(result->nats.url == "nats://myserver:5555");
 }
 
-TEST_CASE("parse_nats_subject_prefix", tags) {
+TEST_CASE("parse_nats_subject_prefix", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--nats-subject-prefix", "ores.prod.main1"};
@@ -78,7 +71,7 @@ TEST_CASE("parse_nats_subject_prefix", tags) {
     CHECK(result->nats.subject_prefix == "ores.prod.main1");
 }
 
-TEST_CASE("parse_custom_database_host_and_port", tags) {
+TEST_CASE("parse_custom_database_host_and_port", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--db-host", "dbserver.internal", "--db-port", "5433"};
@@ -90,7 +83,7 @@ TEST_CASE("parse_custom_database_host_and_port", tags) {
     CHECK(result->database.port == 5433);
 }
 
-TEST_CASE("parse_custom_database_name", tags) {
+TEST_CASE("parse_custom_database_name", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--db-database", "ores_prod"};
@@ -101,7 +94,7 @@ TEST_CASE("parse_custom_database_name", tags) {
     CHECK(result->database.database == "ores_prod");
 }
 
-TEST_CASE("parse_custom_log_level", tags) {
+TEST_CASE("parse_custom_log_level", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--log-enabled", "--log-level", "debug"};
@@ -113,7 +106,7 @@ TEST_CASE("parse_custom_log_level", tags) {
     CHECK(result->logging->severity == "debug");
 }
 
-TEST_CASE("parse_custom_log_filename", tags) {
+TEST_CASE("parse_custom_log_filename", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--log-enabled", "--log-filename", "custom.log"};
@@ -125,7 +118,7 @@ TEST_CASE("parse_custom_log_filename", tags) {
     CHECK(result->logging->filename == "custom.log");
 }
 
-TEST_CASE("parse_help_returns_empty", tags) {
+TEST_CASE("parse_help_returns_empty", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--help"};
@@ -143,7 +136,7 @@ TEST_CASE("parse_help_returns_empty", tags) {
     CHECK(err.str().empty());
 }
 
-TEST_CASE("parse_version_returns_empty", tags) {
+TEST_CASE("parse_version_returns_empty", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--version"};
@@ -160,7 +153,7 @@ TEST_CASE("parse_version_returns_empty", tags) {
     CHECK(err.str().empty());
 }
 
-TEST_CASE("parse_unknown_option_throws", tags) {
+TEST_CASE("parse_unknown_option_throws", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--unknown-option", "value"};

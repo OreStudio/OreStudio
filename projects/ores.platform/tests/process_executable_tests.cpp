@@ -30,8 +30,6 @@
 
 namespace {
 
-const std::string tags("[process][executable]");
-
 using ores::platform::process::executable_build_time;
 using ores::platform::process::executable_path;
 using ores::platform::time::datetime;
@@ -60,14 +58,14 @@ std::string expected_build_time(const std::filesystem::path& path) {
 
 }
 
-TEST_CASE("executable_path_returns_the_running_binary", tags) {
+TEST_CASE("executable_path_returns_the_running_binary", "[process][executable]") {
     const auto path = executable_path();
 
     REQUIRE_FALSE(path.empty());
     CHECK(path.filename() == "ores.platform.tests");
 }
 
-TEST_CASE("executable_path_points_at_an_existing_regular_file", tags) {
+TEST_CASE("executable_path_points_at_an_existing_regular_file", "[process][executable]") {
     const auto path = executable_path();
 
     REQUIRE_FALSE(path.empty());
@@ -75,14 +73,14 @@ TEST_CASE("executable_path_points_at_an_existing_regular_file", tags) {
     CHECK(std::filesystem::is_regular_file(path));
 }
 
-TEST_CASE("executable_build_time_matches_the_binary_modification_time", tags) {
+TEST_CASE("executable_build_time_matches_the_binary_modification_time", "[process][executable]") {
     const auto path = executable_path();
     REQUIRE_FALSE(path.empty());
 
     CHECK(executable_build_time() == expected_build_time(path));
 }
 
-TEST_CASE("executable_build_time_uses_the_documented_format", tags) {
+TEST_CASE("executable_build_time_uses_the_documented_format", "[process][executable]") {
     const auto value = executable_build_time();
 
     REQUIRE(value != "unknown");
@@ -94,7 +92,7 @@ TEST_CASE("executable_build_time_uses_the_documented_format", tags) {
     CHECK(value[16] == ':');
 }
 
-TEST_CASE("executable_build_time_parses_as_a_calendar_timestamp", tags) {
+TEST_CASE("executable_build_time_parses_as_a_calendar_timestamp", "[process][executable]") {
     const auto value = executable_build_time();
     REQUIRE(value != "unknown");
 
@@ -119,7 +117,7 @@ TEST_CASE("executable_build_time_parses_as_a_calendar_timestamp", tags) {
     CHECK(tod.seconds().count() <= 60);
 }
 
-TEST_CASE("executable_build_time_does_not_postdate_the_test_run", tags) {
+TEST_CASE("executable_build_time_does_not_postdate_the_test_run", "[process][executable]") {
     const auto value = executable_build_time();
     REQUIRE(value != "unknown");
 

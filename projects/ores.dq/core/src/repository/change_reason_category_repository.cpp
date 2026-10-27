@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+change_reason_category_list_order(const ores::utility::domain::order& order,
+                                  std::initializer_list<std::string> default_columns,
+                                  bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!change_reason_category_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::change_reason_categories_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> change_reason_category_filter_condition(
+    const std::optional<messaging::change_reason_categories_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -304,8 +305,8 @@ std::vector<domain::change_reason_category> change_reason_category_repository::r
                                       domain::change_reason_category>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        change_reason_category_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), change_reason_category_filter_condition(filter)),
         [](const auto& entities) { return change_reason_category_mapper::map(entities); },
         lg(),
         "Reading latest change reason categories with pagination.");
@@ -322,7 +323,7 @@ std::uint32_t change_reason_category_repository::get_total_category_count(
     return execute_count_query<change_reason_category_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), change_reason_category_filter_condition(filter)),
         lg(),
         "Counting change reason categories");
 }

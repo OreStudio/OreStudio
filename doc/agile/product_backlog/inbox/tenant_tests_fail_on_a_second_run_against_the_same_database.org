@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: B132367E-6752-4C22-B9C4-0E0345BBF03F
+:END:
+#+title: Tenant tests fail on a second run against the same database
+#+description: Tests that write generated tenants collide on tenants_code_uniq_idx when the suite runs again against the same database, because the generated codes repeat between runs.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the tests that write generated tenants independent of earlier runs:
+=write_multiple_tenants=, =write_tenant_publishes_an_event= and
+=login_refused_when_the_accounts_tenant_is_suspended= in =ores.iam.core.tests=.
+Either give each run's tenant codes a part no earlier run can have, or remove
+the tenants a test writes.
+
+* Why
+
+On 2026-10-27 the three tests passed in a full =rat= run and then failed every
+time when run again against the same database, with =duplicate key value
+violates unique constraint "tenants_code_uniq_idx"=. A tenant code is a faker
+noun with =_tenant_<index>= appended, and the rows outlive the run, so a second
+run that draws the same nouns collides. The unity-build work on the
+=Replace sqlgen and reflect-cpp with generated code= story found it; the
+change there does not touch tenant generation.
+
+* References
+
+-
+
+* See also
+
+-

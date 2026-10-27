@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_fsm_transitions_response
-    list_fsm_transitions(const messaging::list_fsm_transitions_request& request);
-    messaging::get_fsm_transition_response
-    get_fsm_transition(const messaging::get_fsm_transition_request& request);
-    messaging::get_many_fsm_transitions_response
-    get_many_fsm_transitions(const messaging::get_many_fsm_transitions_request& request);
-    messaging::put_fsm_transition_response
-    put_fsm_transition(const messaging::put_fsm_transition_request& request);
-    messaging::put_many_fsm_transitions_response
-    put_many_fsm_transitions(const messaging::put_many_fsm_transitions_request& request);
-    messaging::delete_fsm_transition_response
-    delete_fsm_transition(const messaging::delete_fsm_transition_request& request);
-    messaging::delete_many_fsm_transitions_response
-    delete_many_fsm_transitions(const messaging::delete_many_fsm_transitions_request& request);
-    messaging::list_fsm_transition_versions_response
-    list_fsm_transition_versions(const messaging::list_fsm_transition_versions_request& request);
-    messaging::get_fsm_transition_version_response
-    get_fsm_transition_version(const messaging::get_fsm_transition_version_request& request);
+    ::ores::dq::messaging::list_fsm_transitions_response
+    list_fsm_transitions(const ::ores::dq::messaging::list_fsm_transitions_request& request);
+    ::ores::dq::messaging::get_fsm_transition_response
+    get_fsm_transition(const ::ores::dq::messaging::get_fsm_transition_request& request);
+    ::ores::dq::messaging::get_many_fsm_transitions_response get_many_fsm_transitions(
+        const ::ores::dq::messaging::get_many_fsm_transitions_request& request);
+    ::ores::dq::messaging::put_fsm_transition_response
+    put_fsm_transition(const ::ores::dq::messaging::put_fsm_transition_request& request);
+    ::ores::dq::messaging::put_many_fsm_transitions_response put_many_fsm_transitions(
+        const ::ores::dq::messaging::put_many_fsm_transitions_request& request);
+    ::ores::dq::messaging::delete_fsm_transition_response
+    delete_fsm_transition(const ::ores::dq::messaging::delete_fsm_transition_request& request);
+    ::ores::dq::messaging::delete_many_fsm_transitions_response delete_many_fsm_transitions(
+        const ::ores::dq::messaging::delete_many_fsm_transitions_request& request);
+    ::ores::dq::messaging::list_fsm_transition_versions_response list_fsm_transition_versions(
+        const ::ores::dq::messaging::list_fsm_transition_versions_request& request);
+    ::ores::dq::messaging::get_fsm_transition_version_response get_fsm_transition_version(
+        const ::ores::dq::messaging::get_fsm_transition_version_request& request);
     /**@}*/
 
     /**
@@ -203,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::fsm_transition_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::fsm_transition& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::fsm_transition_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::fsm_transition& out);
 };
 
 }

@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void ore_parameter_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void ore_parameter_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -233,7 +233,7 @@ void ore_parameter_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        ore_parameter_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -281,7 +281,7 @@ void ore_parameter_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
+        ore_parameter_read_token(req.key.name, parsed->positionals[next++], "name");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -326,7 +326,7 @@ void ore_parameter_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::ore_parameter_key key;
-            read_token(key.name, parsed->positionals[i + 0], "name");
+            ore_parameter_read_token(key.name, parsed->positionals[i + 0], "name");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -372,23 +372,30 @@ void ore_parameter_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.scope, parsed->positionals[next++], "scope");
-        read_token(req.change.write.subtype, parsed->positionals[next++], "subtype");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.schema_name, parsed->positionals[next++], "schema_name");
-        read_token(req.change.write.xpath, parsed->positionals[next++], "xpath");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
-        read_token(req.change.write.ore_parameter_value_domain_code,
-                   parsed->positionals[next++],
-                   "ore_parameter_value_domain_code");
-        read_token(req.change.write.is_required, parsed->positionals[next++], "is_required");
-        read_token(req.change.write.label, parsed->positionals[next++], "label");
-        read_token(req.change.write.help, parsed->positionals[next++], "help");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.default_text, parsed->positionals[next++], "default_text");
-        read_token(req.change.write.format, parsed->positionals[next++], "format");
-        read_token(req.change.write.introduced_in, parsed->positionals[next++], "introduced_in");
-        read_token(req.change.write.removed_in, parsed->positionals[next++], "removed_in");
+        ore_parameter_read_token(req.change.write.scope, parsed->positionals[next++], "scope");
+        ore_parameter_read_token(req.change.write.subtype, parsed->positionals[next++], "subtype");
+        ore_parameter_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        ore_parameter_read_token(
+            req.change.write.schema_name, parsed->positionals[next++], "schema_name");
+        ore_parameter_read_token(req.change.write.xpath, parsed->positionals[next++], "xpath");
+        ore_parameter_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
+        ore_parameter_read_token(req.change.write.ore_parameter_value_domain_code,
+                                 parsed->positionals[next++],
+                                 "ore_parameter_value_domain_code");
+        ore_parameter_read_token(
+            req.change.write.is_required, parsed->positionals[next++], "is_required");
+        ore_parameter_read_token(req.change.write.label, parsed->positionals[next++], "label");
+        ore_parameter_read_token(req.change.write.help, parsed->positionals[next++], "help");
+        ore_parameter_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        ore_parameter_read_token(
+            req.change.write.default_text, parsed->positionals[next++], "default_text");
+        ore_parameter_read_token(req.change.write.format, parsed->positionals[next++], "format");
+        ore_parameter_read_token(
+            req.change.write.introduced_in, parsed->positionals[next++], "introduced_in");
+        ore_parameter_read_token(
+            req.change.write.removed_in, parsed->positionals[next++], "removed_in");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -436,24 +443,31 @@ void ore_parameter_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.scope, parsed->positionals[next++], "scope");
-        read_token(req.change.write.subtype, parsed->positionals[next++], "subtype");
-        read_token(req.change.write.name, parsed->positionals[next++], "name");
-        read_token(req.change.write.schema_name, parsed->positionals[next++], "schema_name");
-        read_token(req.change.write.xpath, parsed->positionals[next++], "xpath");
-        read_token(req.change.write.position, parsed->positionals[next++], "position");
-        read_token(req.change.write.ore_parameter_value_domain_code,
-                   parsed->positionals[next++],
-                   "ore_parameter_value_domain_code");
-        read_token(req.change.write.is_required, parsed->positionals[next++], "is_required");
-        read_token(req.change.write.label, parsed->positionals[next++], "label");
-        read_token(req.change.write.help, parsed->positionals[next++], "help");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.default_text, parsed->positionals[next++], "default_text");
-        read_token(req.change.write.format, parsed->positionals[next++], "format");
-        read_token(req.change.write.introduced_in, parsed->positionals[next++], "introduced_in");
-        read_token(req.change.write.removed_in, parsed->positionals[next++], "removed_in");
+        ore_parameter_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        ore_parameter_read_token(req.change.write.scope, parsed->positionals[next++], "scope");
+        ore_parameter_read_token(req.change.write.subtype, parsed->positionals[next++], "subtype");
+        ore_parameter_read_token(req.change.write.name, parsed->positionals[next++], "name");
+        ore_parameter_read_token(
+            req.change.write.schema_name, parsed->positionals[next++], "schema_name");
+        ore_parameter_read_token(req.change.write.xpath, parsed->positionals[next++], "xpath");
+        ore_parameter_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
+        ore_parameter_read_token(req.change.write.ore_parameter_value_domain_code,
+                                 parsed->positionals[next++],
+                                 "ore_parameter_value_domain_code");
+        ore_parameter_read_token(
+            req.change.write.is_required, parsed->positionals[next++], "is_required");
+        ore_parameter_read_token(req.change.write.label, parsed->positionals[next++], "label");
+        ore_parameter_read_token(req.change.write.help, parsed->positionals[next++], "help");
+        ore_parameter_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
+        ore_parameter_read_token(
+            req.change.write.default_text, parsed->positionals[next++], "default_text");
+        ore_parameter_read_token(req.change.write.format, parsed->positionals[next++], "format");
+        ore_parameter_read_token(
+            req.change.write.introduced_in, parsed->positionals[next++], "introduced_in");
+        ore_parameter_read_token(
+            req.change.write.removed_in, parsed->positionals[next++], "removed_in");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -515,24 +529,31 @@ void ore_parameter_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::ore_parameter_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.scope, parsed->positionals[next++], "scope");
-            read_token(change.write.subtype, parsed->positionals[next++], "subtype");
-            read_token(change.write.name, parsed->positionals[next++], "name");
-            read_token(change.write.schema_name, parsed->positionals[next++], "schema_name");
-            read_token(change.write.xpath, parsed->positionals[next++], "xpath");
-            read_token(change.write.position, parsed->positionals[next++], "position");
-            read_token(change.write.ore_parameter_value_domain_code,
-                       parsed->positionals[next++],
-                       "ore_parameter_value_domain_code");
-            read_token(change.write.is_required, parsed->positionals[next++], "is_required");
-            read_token(change.write.label, parsed->positionals[next++], "label");
-            read_token(change.write.help, parsed->positionals[next++], "help");
-            read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.default_text, parsed->positionals[next++], "default_text");
-            read_token(change.write.format, parsed->positionals[next++], "format");
-            read_token(change.write.introduced_in, parsed->positionals[next++], "introduced_in");
-            read_token(change.write.removed_in, parsed->positionals[next++], "removed_in");
+            ore_parameter_read_token(change.write.id, parsed->positionals[next++], "id");
+            ore_parameter_read_token(change.write.scope, parsed->positionals[next++], "scope");
+            ore_parameter_read_token(change.write.subtype, parsed->positionals[next++], "subtype");
+            ore_parameter_read_token(change.write.name, parsed->positionals[next++], "name");
+            ore_parameter_read_token(
+                change.write.schema_name, parsed->positionals[next++], "schema_name");
+            ore_parameter_read_token(change.write.xpath, parsed->positionals[next++], "xpath");
+            ore_parameter_read_token(
+                change.write.position, parsed->positionals[next++], "position");
+            ore_parameter_read_token(change.write.ore_parameter_value_domain_code,
+                                     parsed->positionals[next++],
+                                     "ore_parameter_value_domain_code");
+            ore_parameter_read_token(
+                change.write.is_required, parsed->positionals[next++], "is_required");
+            ore_parameter_read_token(change.write.label, parsed->positionals[next++], "label");
+            ore_parameter_read_token(change.write.help, parsed->positionals[next++], "help");
+            ore_parameter_read_token(
+                change.write.description, parsed->positionals[next++], "description");
+            ore_parameter_read_token(
+                change.write.default_text, parsed->positionals[next++], "default_text");
+            ore_parameter_read_token(change.write.format, parsed->positionals[next++], "format");
+            ore_parameter_read_token(
+                change.write.introduced_in, parsed->positionals[next++], "introduced_in");
+            ore_parameter_read_token(
+                change.write.removed_in, parsed->positionals[next++], "removed_in");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -582,7 +603,7 @@ void ore_parameter_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.name, parsed->positionals[next++], "name");
+        ore_parameter_read_token(req.removal.key.name, parsed->positionals[next++], "name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -636,7 +657,7 @@ void ore_parameter_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::ore_parameter_key key;
-            read_token(key.name, parsed->positionals[i * 1 + 0], "name");
+            ore_parameter_read_token(key.name, parsed->positionals[i * 1 + 0], "name");
             req.removals.push_back(messaging::ore_parameter_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -695,7 +716,7 @@ void ore_parameter_commands::process_by_ore_parameter_value_domain_code(
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        ore_parameter_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -744,8 +765,8 @@ void ore_parameter_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.name, parsed->positionals[next++], "name");
-        apply_page(req, *parsed);
+        ore_parameter_read_token(req.key.name, parsed->positionals[next++], "name");
+        ore_parameter_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -790,7 +811,7 @@ void ore_parameter_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.ore_parameter.name, parsed->positionals[next++], "name");
+        ore_parameter_read_token(req.key.ore_parameter.name, parsed->positionals[next++], "name");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

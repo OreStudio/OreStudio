@@ -77,9 +77,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::counterparty> read_one(repository::counterparty_repository& repo,
-                                           const ores::database::context& ctx,
-                                           const messaging::counterparty_key& key) {
+std::vector<domain::counterparty> counterparty_read_one(repository::counterparty_repository& repo,
+                                                        const ores::database::context& ctx,
+                                                        const messaging::counterparty_key& key) {
     return repo.read_latest_by_short_code(ctx, key.short_code);
 }
 
@@ -89,7 +89,7 @@ std::vector<domain::counterparty> read_one(repository::counterparty_repository& 
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::counterparty_key key_from(const domain::counterparty& v) {
+messaging::counterparty_key counterparty_key_from(const domain::counterparty& v) {
     messaging::counterparty_key key;
     key.short_code = v.short_code;
     return key;
@@ -102,7 +102,7 @@ messaging::counterparty_key key_from(const domain::counterparty& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::counterparty to_domain(const messaging::counterparty_write& write) {
+domain::counterparty counterparty_to_domain(const messaging::counterparty_write& write) {
     domain::counterparty v;
     v.id = write.id;
     v.short_code = write.short_code;
@@ -121,8 +121,8 @@ domain::counterparty to_domain(const messaging::counterparty_write& write) {
  *
  * A write that creates a row changes every column.
  */
-std::vector<std::string> columns_changed(const std::vector<domain::counterparty>& live,
-                                         const domain::counterparty& next) {
+std::vector<std::string> counterparty_columns_changed(const std::vector<domain::counterparty>& live,
+                                                      const domain::counterparty& next) {
     const bool created = live.empty();
     std::vector<std::string> names;
     // The key names the row and is not a column a policy decides.
@@ -191,7 +191,7 @@ counterparty_service::list_counterparties(const messaging::list_counterparties_r
 messaging::get_counterparty_response
 counterparty_service::get_counterparty(const messaging::get_counterparty_request& request) {
     messaging::get_counterparty_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = counterparty_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "counterparty"});
         return response;
@@ -210,7 +210,7 @@ messaging::get_many_counterparties_response counterparty_service::get_many_count
     for (const auto& k : request.keys) {
         messaging::counterparty_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = counterparty_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.counterparty = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -226,7 +226,7 @@ counterparty_service::put_counterparty(const messaging::put_counterparty_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = counterparty_read_one(repo_, ctx_, counterparty_key_from(value));
     if (!written.empty())
         response.counterparty = std::move(written.front());
     return response;
@@ -258,7 +258,7 @@ messaging::put_many_counterparties_response counterparty_service::put_many_count
     repo_.write(ctx_, batch, claims);
     response.counterparties.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = counterparty_read_one(repo_, ctx_, counterparty_key_from(value));
         response.counterparties.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -281,11 +281,12 @@ counterparty_service::delete_counterparty(const messaging::delete_counterparty_r
         }
         expected = request.removal.precondition.version;
     }
-    if (const auto refused = gate_delete(read_one(repo_, ctx_, request.removal.key), expected)) {
+    if (const auto refused =
+            gate_delete(counterparty_read_one(repo_, ctx_, request.removal.key), expected)) {
         response.result = *refused;
         return response;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = counterparty_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "counterparty"});
         return response;
@@ -301,7 +302,7 @@ counterparty_service::delete_counterparty(const messaging::delete_counterparty_r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = counterparty_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "counterparty",
@@ -337,7 +338,8 @@ messaging::delete_many_counterparties_response counterparty_service::delete_many
     // A batch carries no versions, so an approved line that claims one never
     // matches here. The applier removes one row at a time, with its version.
     for (const auto& removal : request.removals) {
-        if (const auto refused = gate_delete(read_one(repo_, ctx_, removal.key), std::nullopt)) {
+        if (const auto refused =
+                gate_delete(counterparty_read_one(repo_, ctx_, removal.key), std::nullopt)) {
             response.result = *refused;
             return response;
         }
@@ -350,7 +352,7 @@ messaging::delete_many_counterparties_response counterparty_service::delete_many
     std::vector<domain::counterparty> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = counterparty_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -376,7 +378,7 @@ messaging::list_counterparty_versions_response counterparty_service::list_counte
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = counterparty_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "counterparty"});
         return response;
@@ -399,7 +401,7 @@ messaging::get_counterparty_version_response counterparty_service::get_counterpa
     messaging::get_counterparty_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.counterparty);
+    const auto named = counterparty_read_one(repo_, ctx_, request.key.counterparty);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "counterparty"});
         return response;
@@ -421,8 +423,8 @@ counterparty_service::prepare_change(const messaging::counterparty_change& chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = counterparty_to_domain(change.write);
+    const auto current = counterparty_read_one(repo_, ctx_, counterparty_key_from(out));
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
     if (const auto refused = gate_put(current, out, change.precondition))
@@ -475,8 +477,9 @@ void counterparty_service::rehearse() {
 
 std::vector<std::string>
 counterparty_service::changed_columns(const messaging::counterparty_write& proposed) {
-    const auto next = to_domain(proposed);
-    return columns_changed(read_one(repo_, ctx_, key_from(next)), next);
+    const auto next = counterparty_to_domain(proposed);
+    return counterparty_columns_changed(
+        counterparty_read_one(repo_, ctx_, counterparty_key_from(next)), next);
 }
 
 bool counterparty_service::holds_line(const std::string& operation,
@@ -503,8 +506,11 @@ counterparty_service::gate_put(const std::vector<domain::counterparty>& current,
     using ores::utility::domain::precondition_kind;
     if (pass_.rehearsal)
         return std::nullopt;
-    switch (ores::service::messaging::gate_verdict_of(
-        ctx_, "counterparty", "put", columns_changed(current, next), pass_.request_id)) {
+    switch (ores::service::messaging::gate_verdict_of(ctx_,
+                                                      "counterparty",
+                                                      "put",
+                                                      counterparty_columns_changed(current, next),
+                                                      pass_.request_id)) {
         case gate_verdict::free:
             return std::nullopt;
         case gate_verdict::approved: {
@@ -581,7 +587,7 @@ counterparty_service::get_counterparty_by_short_code(const std::string& short_co
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty by short_code: " << short_code;
     messaging::counterparty_key k;
     k.short_code = short_code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = counterparty_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

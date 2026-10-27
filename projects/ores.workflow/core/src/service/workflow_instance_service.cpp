@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::workflow_instance> read_one(repository::workflow_instance_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::workflow_instance_key& key) {
+std::vector<domain::workflow_instance>
+workflow_instance_read_one(repository::workflow_instance_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::workflow_instance_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::workflow_instance> read_one(repository::workflow_instance_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::workflow_instance_key key_from(const domain::workflow_instance& v) {
+messaging::workflow_instance_key workflow_instance_key_from(const domain::workflow_instance& v) {
     messaging::workflow_instance_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,8 @@ messaging::workflow_instance_key key_from(const domain::workflow_instance& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::workflow_instance to_domain(const messaging::workflow_instance_write& write) {
+domain::workflow_instance
+workflow_instance_to_domain(const messaging::workflow_instance_write& write) {
     domain::workflow_instance v;
     v.id = write.id;
     v.type = write.type;
@@ -151,7 +153,7 @@ messaging::list_workflow_instances_response workflow_instance_service::list_work
 messaging::get_workflow_instance_response workflow_instance_service::get_workflow_instance(
     const messaging::get_workflow_instance_request& request) {
     messaging::get_workflow_instance_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = workflow_instance_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "workflow_instance"});
         return response;
@@ -171,7 +173,7 @@ workflow_instance_service::get_many_workflow_instances(
     for (const auto& k : request.keys) {
         messaging::workflow_instance_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = workflow_instance_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.workflow_instance = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -187,7 +189,7 @@ messaging::put_workflow_instance_response workflow_instance_service::put_workflo
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = workflow_instance_read_one(repo_, ctx_, workflow_instance_key_from(value));
     if (!written.empty())
         response.workflow_instance = std::move(written.front());
     return response;
@@ -220,7 +222,7 @@ workflow_instance_service::put_many_workflow_instances(
     repo_.write(ctx_, batch, claims);
     response.instances.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = workflow_instance_read_one(repo_, ctx_, workflow_instance_key_from(value));
         response.instances.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -253,7 +255,7 @@ messaging::delete_workflow_instance_response workflow_instance_service::delete_w
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = workflow_instance_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "workflow_instance",
@@ -342,8 +344,8 @@ workflow_instance_service::prepare_change(const messaging::workflow_instance_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = workflow_instance_to_domain(change.write);
+    const auto current = workflow_instance_read_one(repo_, ctx_, workflow_instance_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

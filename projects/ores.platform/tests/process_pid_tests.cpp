@@ -19,19 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/process/pid.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.platform.tests");
-const std::string tags("[process]");
-
-}
 
 using namespace ores::platform::process;
 using namespace ores::logging;
 
-TEST_CASE("current_pid_returns_non_zero", tags) {
+TEST_CASE("current_pid_returns_non_zero", "[process]") {
     auto lg(make_logger(test_suite));
 
     const auto pid = current_pid();
@@ -41,7 +35,7 @@ TEST_CASE("current_pid_returns_non_zero", tags) {
     REQUIRE(pid > 0);
 }
 
-TEST_CASE("current_pid_is_stable", tags) {
+TEST_CASE("current_pid_is_stable", "[process]") {
     const auto pid1 = current_pid();
     const auto pid2 = current_pid();
 

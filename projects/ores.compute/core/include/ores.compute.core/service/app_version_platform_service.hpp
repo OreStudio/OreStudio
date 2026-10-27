@@ -76,23 +76,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_app_version_platforms_response
-    list_app_version_platforms(const messaging::list_app_version_platforms_request& request);
-    messaging::get_app_version_platform_response
-    get_app_version_platform(const messaging::get_app_version_platform_request& request);
-    messaging::get_many_app_version_platforms_response get_many_app_version_platforms(
-        const messaging::get_many_app_version_platforms_request& request);
-    messaging::put_app_version_platform_response
-    put_app_version_platform(const messaging::put_app_version_platform_request& request);
-    messaging::put_many_app_version_platforms_response put_many_app_version_platforms(
-        const messaging::put_many_app_version_platforms_request& request);
-    messaging::delete_app_version_platform_response
-    delete_app_version_platform(const messaging::delete_app_version_platform_request& request);
-    messaging::delete_many_app_version_platforms_response delete_many_app_version_platforms(
-        const messaging::delete_many_app_version_platforms_request& request);
-    messaging::list_by_app_version_id_app_version_platforms_response
+    ::ores::compute::messaging::list_app_version_platforms_response list_app_version_platforms(
+        const ::ores::compute::messaging::list_app_version_platforms_request& request);
+    ::ores::compute::messaging::get_app_version_platform_response get_app_version_platform(
+        const ::ores::compute::messaging::get_app_version_platform_request& request);
+    ::ores::compute::messaging::get_many_app_version_platforms_response
+    get_many_app_version_platforms(
+        const ::ores::compute::messaging::get_many_app_version_platforms_request& request);
+    ::ores::compute::messaging::put_app_version_platform_response put_app_version_platform(
+        const ::ores::compute::messaging::put_app_version_platform_request& request);
+    ::ores::compute::messaging::put_many_app_version_platforms_response
+    put_many_app_version_platforms(
+        const ::ores::compute::messaging::put_many_app_version_platforms_request& request);
+    ::ores::compute::messaging::delete_app_version_platform_response delete_app_version_platform(
+        const ::ores::compute::messaging::delete_app_version_platform_request& request);
+    ::ores::compute::messaging::delete_many_app_version_platforms_response
+    delete_many_app_version_platforms(
+        const ::ores::compute::messaging::delete_many_app_version_platforms_request& request);
+    ::ores::compute::messaging::list_by_app_version_id_app_version_platforms_response
     list_by_app_version_id_app_version_platforms(
-        const messaging::list_by_app_version_id_app_version_platforms_request& request);
+        const ::ores::compute::messaging::list_by_app_version_id_app_version_platforms_request&
+            request);
     /**@}*/
 
 private:
@@ -113,7 +117,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::app_version_platform_change& change,
+    prepare_change(const ::ores::compute::messaging::app_version_platform_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::app_version_platform& out);
 };

@@ -32,8 +32,6 @@
 
 namespace {
 
-const std::string tags("[reporting][run_document][database]");
-
 // A document belongs to a party, so each case writes one and acts for it.
 ores::database::context party_context(ores::testing::scoped_database_helper& h) {
     auto gen = ores::testing::make_generation_context(h);
@@ -87,7 +85,7 @@ ores::reporting::messaging::run_document npv_run() {
 
 using ores::reporting::service::run_document_service;
 
-TEST_CASE("a run document reads back as it was saved", tags) {
+TEST_CASE("a run document reads back as it was saved", "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);
@@ -120,7 +118,8 @@ TEST_CASE("a run document reads back as it was saved", tags) {
     CHECK(back->market_bindings[0].market_configuration_name == "default");
 }
 
-TEST_CASE("a definition binds one risk report configuration", tags) {
+TEST_CASE("a definition binds one risk report configuration",
+          "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);
@@ -129,7 +128,8 @@ TEST_CASE("a definition binds one risk report configuration", tags) {
     CHECK_THROWS_AS(runs.save(definition, npv_run()), std::invalid_argument);
 }
 
-TEST_CASE("a parameter no definition describes is refused before anything is written", tags) {
+TEST_CASE("a parameter no definition describes is refused before anything is written",
+          "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);
@@ -140,7 +140,8 @@ TEST_CASE("a parameter no definition describes is refused before anything is wri
     CHECK_FALSE(runs.get(definition).has_value());
 }
 
-TEST_CASE("a binding takes its owning component from the configuration type", tags) {
+TEST_CASE("a binding takes its owning component from the configuration type",
+          "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);

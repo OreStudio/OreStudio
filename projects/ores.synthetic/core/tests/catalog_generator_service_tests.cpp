@@ -23,14 +23,12 @@
 
 namespace {
 
-const std::string tags("[catalog_generator_service]");
-
 using namespace ores::synthetic::service;
 using namespace ores::synthetic::domain;
 
 }
 
-TEST_CASE("generate_with_defaults_produces_nonempty_catalog", tags) {
+TEST_CASE("generate_with_defaults_produces_nonempty_catalog", "[catalog_generator_service]") {
     catalog_generator_service svc;
     auto result = svc.generate();
 
@@ -44,7 +42,7 @@ TEST_CASE("generate_with_defaults_produces_nonempty_catalog", tags) {
     REQUIRE(!result.datasets.empty());
 }
 
-TEST_CASE("generate_respects_account_count", tags) {
+TEST_CASE("generate_respects_account_count", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -54,7 +52,7 @@ TEST_CASE("generate_respects_account_count", tags) {
     REQUIRE(result.accounts.size() == 3);
 }
 
-TEST_CASE("generate_respects_catalog_count", tags) {
+TEST_CASE("generate_respects_catalog_count", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -64,7 +62,7 @@ TEST_CASE("generate_respects_catalog_count", tags) {
     REQUIRE(result.catalogs.size() == 2);
 }
 
-TEST_CASE("generate_respects_dataset_count", tags) {
+TEST_CASE("generate_respects_dataset_count", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -74,7 +72,7 @@ TEST_CASE("generate_respects_dataset_count", tags) {
     REQUIRE(result.datasets.size() == 10);
 }
 
-TEST_CASE("generate_with_seed_is_reproducible", tags) {
+TEST_CASE("generate_with_seed_is_reproducible", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -96,7 +94,7 @@ TEST_CASE("generate_with_seed_is_reproducible", tags) {
     }
 }
 
-TEST_CASE("generate_stores_seed_in_result", tags) {
+TEST_CASE("generate_stores_seed_in_result", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 777;
@@ -105,7 +103,7 @@ TEST_CASE("generate_stores_seed_in_result", tags) {
     REQUIRE(result.seed == 777);
 }
 
-TEST_CASE("generate_accounts_have_valid_fields", tags) {
+TEST_CASE("generate_accounts_have_valid_fields", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -119,7 +117,7 @@ TEST_CASE("generate_accounts_have_valid_fields", tags) {
     }
 }
 
-TEST_CASE("generate_datasets_reference_existing_entities", tags) {
+TEST_CASE("generate_datasets_reference_existing_entities", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -161,7 +159,7 @@ TEST_CASE("generate_datasets_reference_existing_entities", tags) {
     }
 }
 
-TEST_CASE("generate_subject_areas_linked_to_domains", tags) {
+TEST_CASE("generate_subject_areas_linked_to_domains", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -179,7 +177,7 @@ TEST_CASE("generate_subject_areas_linked_to_domains", tags) {
     }
 }
 
-TEST_CASE("generate_stamps_dependencies", tags) {
+TEST_CASE("generate_stamps_dependencies", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -191,7 +189,7 @@ TEST_CASE("generate_stamps_dependencies", tags) {
     CHECK(result.dependencies[1] == "Core DQ Dimensions");
 }
 
-TEST_CASE("generate_stamps_methodology_id_on_datasets", tags) {
+TEST_CASE("generate_stamps_methodology_id_on_datasets", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;
@@ -218,7 +216,7 @@ TEST_CASE("generate_stamps_methodology_id_on_datasets", tags) {
     }
 }
 
-TEST_CASE("generate_clamps_counts_to_predefined_data_size", tags) {
+TEST_CASE("generate_clamps_counts_to_predefined_data_size", "[catalog_generator_service]") {
     catalog_generator_service svc;
     generation_options opts;
     opts.seed = 42;

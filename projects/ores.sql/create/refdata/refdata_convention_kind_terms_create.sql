@@ -155,3 +155,23 @@ on delete to "ores_refdata_convention_kind_terms_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Convention Kind Term
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
+-- =============================================================================
+alter table ores_refdata_convention_kind_terms_tbl enable row level security;
+
+drop policy if exists convention_kind_terms_tbl_tenant_isolation_policy
+    on ores_refdata_convention_kind_terms_tbl;
+
+create policy convention_kind_terms_tbl_tenant_isolation_policy
+on ores_refdata_convention_kind_terms_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

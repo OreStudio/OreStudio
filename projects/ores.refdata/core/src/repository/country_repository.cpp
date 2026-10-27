@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy country_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"alpha2_code"});
     if (!country_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::countries_filter>& filter) {
+country_filter_condition(const std::optional<messaging::countries_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -302,8 +302,8 @@ country_repository::read_latest(context ctx,
     return execute_ordered_read_query<country_entity, domain::country>(
         ctx,
         query,
-        list_order(order, {"alpha2_code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        country_list_order(order, {"alpha2_code"}, false),
+        narrowed(valid_at(as_of), country_filter_condition(filter)),
         [](const auto& entities) { return country_mapper::map(entities); },
         lg(),
         "Reading latest countries with pagination.");
@@ -318,11 +318,12 @@ std::uint32_t country_repository::get_total_country_count(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<country_entity>(ctx,
-                                               query,
-                                               narrowed(valid_at(as_of), filter_condition(filter)),
-                                               lg(),
-                                               "Counting countries");
+    return execute_count_query<country_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), country_filter_condition(filter)),
+        lg(),
+        "Counting countries");
 }
 
 std::vector<domain::country>

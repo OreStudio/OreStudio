@@ -20,20 +20,14 @@
 #include "ores.iam.api/generators/account_party_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::iam::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("account_party_generator_produces_valid_instance", tags) {
+TEST_CASE("account_party_generator_produces_valid_instance", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     auto sut = generate_synthetic_account_party(ctx);
@@ -50,7 +44,7 @@ TEST_CASE("account_party_generator_produces_valid_instance", tags) {
     CHECK(sut.change_commentary == "Synthetic test data");
 }
 
-TEST_CASE("account_party_generator_produces_multiple_instances", tags) {
+TEST_CASE("account_party_generator_produces_multiple_instances", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

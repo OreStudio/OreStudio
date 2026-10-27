@@ -76,29 +76,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_generation_counterparties_response list_trade_generation_counterparties(
-        const messaging::list_trade_generation_counterparties_request& request);
-    messaging::get_trade_generation_counterparty_response get_trade_generation_counterparty(
-        const messaging::get_trade_generation_counterparty_request& request);
-    messaging::get_many_trade_generation_counterparties_response
+    ::ores::synthetic::messaging::list_trade_generation_counterparties_response
+    list_trade_generation_counterparties(
+        const ::ores::synthetic::messaging::list_trade_generation_counterparties_request& request);
+    ::ores::synthetic::messaging::get_trade_generation_counterparty_response
+    get_trade_generation_counterparty(
+        const ::ores::synthetic::messaging::get_trade_generation_counterparty_request& request);
+    ::ores::synthetic::messaging::get_many_trade_generation_counterparties_response
     get_many_trade_generation_counterparties(
-        const messaging::get_many_trade_generation_counterparties_request& request);
-    messaging::put_trade_generation_counterparty_response put_trade_generation_counterparty(
-        const messaging::put_trade_generation_counterparty_request& request);
-    messaging::put_many_trade_generation_counterparties_response
+        const ::ores::synthetic::messaging::get_many_trade_generation_counterparties_request&
+            request);
+    ::ores::synthetic::messaging::put_trade_generation_counterparty_response
+    put_trade_generation_counterparty(
+        const ::ores::synthetic::messaging::put_trade_generation_counterparty_request& request);
+    ::ores::synthetic::messaging::put_many_trade_generation_counterparties_response
     put_many_trade_generation_counterparties(
-        const messaging::put_many_trade_generation_counterparties_request& request);
-    messaging::delete_trade_generation_counterparty_response delete_trade_generation_counterparty(
-        const messaging::delete_trade_generation_counterparty_request& request);
-    messaging::delete_many_trade_generation_counterparties_response
+        const ::ores::synthetic::messaging::put_many_trade_generation_counterparties_request&
+            request);
+    ::ores::synthetic::messaging::delete_trade_generation_counterparty_response
+    delete_trade_generation_counterparty(
+        const ::ores::synthetic::messaging::delete_trade_generation_counterparty_request& request);
+    ::ores::synthetic::messaging::delete_many_trade_generation_counterparties_response
     delete_many_trade_generation_counterparties(
-        const messaging::delete_many_trade_generation_counterparties_request& request);
-    messaging::list_trade_generation_counterparty_versions_response
+        const ::ores::synthetic::messaging::delete_many_trade_generation_counterparties_request&
+            request);
+    ::ores::synthetic::messaging::list_trade_generation_counterparty_versions_response
     list_trade_generation_counterparty_versions(
-        const messaging::list_trade_generation_counterparty_versions_request& request);
-    messaging::get_trade_generation_counterparty_version_response
+        const ::ores::synthetic::messaging::list_trade_generation_counterparty_versions_request&
+            request);
+    ::ores::synthetic::messaging::get_trade_generation_counterparty_version_response
     get_trade_generation_counterparty_version(
-        const messaging::get_trade_generation_counterparty_version_request& request);
+        const ::ores::synthetic::messaging::get_trade_generation_counterparty_version_request&
+            request);
     /**@}*/
 
     /**
@@ -203,7 +212,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::trade_generation_counterparty_change& change,
+    prepare_change(const ::ores::synthetic::messaging::trade_generation_counterparty_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::trade_generation_counterparty& out);
 };

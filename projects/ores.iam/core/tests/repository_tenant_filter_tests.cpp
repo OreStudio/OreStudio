@@ -41,8 +41,6 @@
 
 namespace {
 
-const std::string tags("[repository][list_filter]");
-
 using ores::database::context;
 using ores::iam::messaging::tenants_filter;
 using ores::iam::repository::tenant_repository;
@@ -85,7 +83,8 @@ std::vector<ores::iam::domain::tenant> read(ores::testing::database_helper& h,
 
 using ores::testing::database_helper;
 
-TEST_CASE("a search matches the code, the name and the hostname, ignoring case", tags) {
+TEST_CASE("a search matches the code, the name and the hostname, ignoring case",
+          "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Filter Fixture " + m);
@@ -98,7 +97,8 @@ TEST_CASE("a search matches the code, the name and the hostname, ignoring case",
     CHECK(codes(read(h, {.search = m + "_a.EXAMPLE"})) == std::vector<std::string>{m + "_a"});
 }
 
-TEST_CASE("a search folds letters outside ASCII as the database does", tags) {
+TEST_CASE("a search folds letters outside ASCII as the database does",
+          "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Société " + m);
@@ -106,7 +106,7 @@ TEST_CASE("a search folds letters outside ASCII as the database does", tags) {
     CHECK(codes(read(h, {.search = "SOCIÉTÉ " + m})) == std::vector<std::string>{m + "_a"});
 }
 
-TEST_CASE("a search matches its text literally", tags) {
+TEST_CASE("a search matches its text literally", "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Fifty% " + m);
@@ -118,14 +118,14 @@ TEST_CASE("a search matches its text literally", tags) {
     CHECK(codes(read(h, {.search = "o'brien " + m})) == std::vector<std::string>{m + "_c"});
 }
 
-TEST_CASE("an empty search sets no condition", tags) {
+TEST_CASE("an empty search sets no condition", "[repository][list_filter]") {
     database_helper h;
     const auto ctx = system_context(h);
     CHECK(tenant_repository{}.get_total_tenant_count(ctx, tenants_filter{.search = ""}) ==
           tenant_repository{}.get_total_tenant_count(ctx));
 }
 
-TEST_CASE("a one-of member reads the rows for the keys it lists", tags) {
+TEST_CASE("a one-of member reads the rows for the keys it lists", "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     const auto a = write_tenant(h, m + "_a", "One Of " + m);
@@ -137,7 +137,7 @@ TEST_CASE("a one-of member reads the rows for the keys it lists", tags) {
     CHECK(read(h, {.id_one_of = std::vector<boost::uuids::uuid>{}}).empty());
 }
 
-TEST_CASE("the members a filter sets must all hold", tags) {
+TEST_CASE("the members a filter sets must all hold", "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     const auto a = write_tenant(h, m + "_a", "Both " + m);
@@ -147,7 +147,7 @@ TEST_CASE("the members a filter sets must all hold", tags) {
           std::vector<std::string>{m + "_a"});
 }
 
-TEST_CASE("the total counts the rows the filter matches", tags) {
+TEST_CASE("the total counts the rows the filter matches", "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Counted " + m);
@@ -159,7 +159,7 @@ TEST_CASE("the total counts the rows the filter matches", tags) {
     CHECK(tenant_repository{}.read_latest(system_context(h), 0, 2, {}, f).size() == 2);
 }
 
-TEST_CASE("the service answers a filtered page and its total", tags) {
+TEST_CASE("the service answers a filtered page and its total", "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Served " + m);
@@ -175,7 +175,8 @@ TEST_CASE("the service answers a filtered page and its total", tags) {
     CHECK(r.total == 2);
 }
 
-TEST_CASE("the service refuses a one-of list longer than 1000 values", tags) {
+TEST_CASE("the service refuses a one-of list longer than 1000 values",
+          "[repository][list_filter]") {
     database_helper h;
     ores::iam::service::tenant_service service(system_context(h));
 
@@ -188,7 +189,7 @@ TEST_CASE("the service refuses a one-of list longer than 1000 values", tags) {
     CHECK(r.tenants.empty());
 }
 
-TEST_CASE("the service refuses a search longer than 256 characters", tags) {
+TEST_CASE("the service refuses a search longer than 256 characters", "[repository][list_filter]") {
     database_helper h;
     ores::iam::service::tenant_service service(system_context(h));
 

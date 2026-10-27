@@ -38,8 +38,6 @@
 
 namespace {
 
-const std::string tags("[ore][market][roundtrip]");
-
 std::filesystem::path examples_path(const std::string& rel) {
     return ores::testing::project_root::resolve("external/ore/examples/" + rel);
 }
@@ -111,55 +109,56 @@ void check_fixings_roundtrip(const std::string& rel_path) {
 // Market data files — YYYYMMDD date format (17 files)
 // =============================================================================
 
-TEST_CASE("roundtrip_market_Input_market_20160205", tags) {
+TEST_CASE("roundtrip_market_Input_market_20160205", "[ore][market][roundtrip]") {
     check_market_roundtrip("Input/market_20160205.txt");
 }
-TEST_CASE("roundtrip_market_Input_market_20160205_flat", tags) {
+TEST_CASE("roundtrip_market_Input_market_20160205_flat", "[ore][market][roundtrip]") {
     check_market_roundtrip("Input/market_20160205_flat.txt");
 }
-TEST_CASE("roundtrip_market_CurveBuilding_Input_market_20160205", tags) {
+TEST_CASE("roundtrip_market_CurveBuilding_Input_market_20160205", "[ore][market][roundtrip]") {
     check_market_roundtrip("CurveBuilding/Input/market_20160205.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_19_market_20160205_smile", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_19_market_20160205_smile", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_19/Input/market_20160205_smile.txt");
 }
-TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market_flat_fixed_fxfwd", tags) {
+TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market_flat_fixed_fxfwd",
+          "[ore][market][roundtrip]") {
     check_market_roundtrip("AmericanMonteCarlo/Input/market_20160205_flat_fixed_fxfwd.txt");
 }
-TEST_CASE("roundtrip_market_Exposure_Input_market_flipview", tags) {
+TEST_CASE("roundtrip_market_Exposure_Input_market_flipview", "[ore][market][roundtrip]") {
     check_market_roundtrip("Exposure/Input/market_flipview.txt");
 }
-TEST_CASE("roundtrip_market_InitialMargin_Input_Simm_simm_market", tags) {
+TEST_CASE("roundtrip_market_InitialMargin_Input_Simm_simm_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("InitialMargin/Input/Simm/simm_market.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_56_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_56_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_56/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Academy_TA002_IR_Swap_market", tags) {
+TEST_CASE("roundtrip_market_Academy_TA002_IR_Swap_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Academy/TA002_IR_Swap/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_2_market", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_2_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_2/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_3_market", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_3_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_3/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_6_market", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_6_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_6/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_7_market", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_7_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_7/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_9_market_20160205", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_9_market_20160205", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_9/Input/market_20160205.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_9_market_20160205_flat", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_9_market_20160205_flat", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_9/Input/market_20160205_flat.txt");
 }
-TEST_CASE("roundtrip_market_XvaRisk_market_20160205_eonia_200bp_up", tags) {
+TEST_CASE("roundtrip_market_XvaRisk_market_20160205_eonia_200bp_up", "[ore][market][roundtrip]") {
     check_market_roundtrip("XvaRisk/Input/market_20160205_eonia_200bp_up.txt");
 }
-TEST_CASE("roundtrip_market_XvaRisk_market_20160205_eur6m_200bp_up", tags) {
+TEST_CASE("roundtrip_market_XvaRisk_market_20160205_eur6m_200bp_up", "[ore][market][roundtrip]") {
     check_market_roundtrip("XvaRisk/Input/market_20160205_eur6m_200bp_up.txt");
 }
 
@@ -167,53 +166,54 @@ TEST_CASE("roundtrip_market_XvaRisk_market_20160205_eur6m_200bp_up", tags) {
 // Market data files — YYYY-MM-DD date format (15 files)
 // =============================================================================
 
-TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market", tags) {
+TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("AmericanMonteCarlo/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Academy_FC003_Reporting_Currency_marketdata", tags) {
+TEST_CASE("roundtrip_market_Academy_FC003_Reporting_Currency_marketdata",
+          "[ore][market][roundtrip]") {
     check_market_roundtrip("Academy/FC003_Reporting_Currency/Input/marketdata.txt");
 }
-TEST_CASE("roundtrip_market_Academy_TA001_Equity_Option_marketdata", tags) {
+TEST_CASE("roundtrip_market_Academy_TA001_Equity_Option_marketdata", "[ore][market][roundtrip]") {
     check_market_roundtrip("Academy/TA001_Equity_Option/Input/marketdata.txt");
 }
-TEST_CASE("roundtrip_market_Exposure_Input_market_inflation", tags) {
+TEST_CASE("roundtrip_market_Exposure_Input_market_inflation", "[ore][market][roundtrip]") {
     check_market_roundtrip("Exposure/Input/market_inflation.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_45_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_45_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_45/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_46_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_46_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_46/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_47_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_47_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_47/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_48_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_48_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_48/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_55_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_55_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_55/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Legacy_Example_73_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_73_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_73/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_MarketRisk_Input_Curvealgebra_market", tags) {
+TEST_CASE("roundtrip_market_MarketRisk_Input_Curvealgebra_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("MarketRisk/Input/Curvealgebra/market.txt");
 }
-TEST_CASE("roundtrip_market_MarketRisk_Input_HistSimVar_market", tags) {
+TEST_CASE("roundtrip_market_MarketRisk_Input_HistSimVar_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("MarketRisk/Input/HistSimVar/market.txt");
 }
-TEST_CASE("roundtrip_market_MarketRisk_Input_Pnl_market", tags) {
+TEST_CASE("roundtrip_market_MarketRisk_Input_Pnl_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("MarketRisk/Input/Pnl/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_5_market", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_5_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_5/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_OREPython_Example_8_Example_62_market", tags) {
+TEST_CASE("roundtrip_market_OREPython_Example_8_Example_62_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("ORE-Python/Notebooks/Example_8/Input/Example_62/market.txt");
 }
 
-TEST_CASE("roundtrip_market_Legacy_Example_61_market", tags) {
+TEST_CASE("roundtrip_market_Legacy_Example_61_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_61/Input/market.txt");
 }
 
@@ -221,10 +221,10 @@ TEST_CASE("roundtrip_market_Legacy_Example_61_market", tags) {
 // Fixings files — YYYYMMDD date format (2 files)
 // =============================================================================
 
-TEST_CASE("roundtrip_fixings_Legacy_Example_54_fixings_20160205", tags) {
+TEST_CASE("roundtrip_fixings_Legacy_Example_54_fixings_20160205", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Legacy/Example_54/Input/fixings_20160205.txt");
 }
-TEST_CASE("roundtrip_fixings_OREPython_Example_9_fixings_20160205", tags) {
+TEST_CASE("roundtrip_fixings_OREPython_Example_9_fixings_20160205", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("ORE-Python/Notebooks/Example_9/Input/fixings_20160205.txt");
 }
 
@@ -232,42 +232,42 @@ TEST_CASE("roundtrip_fixings_OREPython_Example_9_fixings_20160205", tags) {
 // Fixings files — YYYY-MM-DD date format (12 files)
 // =============================================================================
 
-TEST_CASE("roundtrip_fixings_Input_fixings_20160205", tags) {
+TEST_CASE("roundtrip_fixings_Input_fixings_20160205", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Input/fixings_20160205.txt");
 }
-TEST_CASE("roundtrip_fixings_AmericanMonteCarlo_Input_fixings", tags) {
+TEST_CASE("roundtrip_fixings_AmericanMonteCarlo_Input_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("AmericanMonteCarlo/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_Exposure_Input_fixings_inflation", tags) {
+TEST_CASE("roundtrip_fixings_Exposure_Input_fixings_inflation", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Exposure/Input/fixings_inflation.txt");
 }
-TEST_CASE("roundtrip_fixings_Legacy_Example_45_fixings", tags) {
+TEST_CASE("roundtrip_fixings_Legacy_Example_45_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Legacy/Example_45/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_Legacy_Example_46_fixings", tags) {
+TEST_CASE("roundtrip_fixings_Legacy_Example_46_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Legacy/Example_46/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_Legacy_Example_47_fixings", tags) {
+TEST_CASE("roundtrip_fixings_Legacy_Example_47_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Legacy/Example_47/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_Legacy_Example_48_fixings", tags) {
+TEST_CASE("roundtrip_fixings_Legacy_Example_48_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Legacy/Example_48/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_MarketRisk_Input_HistSimVar_fixings", tags) {
+TEST_CASE("roundtrip_fixings_MarketRisk_Input_HistSimVar_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("MarketRisk/Input/HistSimVar/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_MarketRisk_Input_Pnl_fixings", tags) {
+TEST_CASE("roundtrip_fixings_MarketRisk_Input_Pnl_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("MarketRisk/Input/Pnl/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_OREAPI_Input_fixings_20160205", tags) {
+TEST_CASE("roundtrip_fixings_OREAPI_Input_fixings_20160205", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("ORE-API/Input/fixings_20160205.txt");
 }
-TEST_CASE("roundtrip_fixings_OREPython_Example_3_fixings", tags) {
+TEST_CASE("roundtrip_fixings_OREPython_Example_3_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("ORE-Python/Notebooks/Example_3/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_OREPython_Example_5_fixings", tags) {
+TEST_CASE("roundtrip_fixings_OREPython_Example_5_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("ORE-Python/Notebooks/Example_5/Input/fixings.txt");
 }
-TEST_CASE("roundtrip_fixings_Legacy_Example_61_fixings", tags) {
+TEST_CASE("roundtrip_fixings_Legacy_Example_61_fixings", "[ore][market][roundtrip]") {
     check_fixings_roundtrip("Legacy/Example_61/Input/fixings.txt");
 }

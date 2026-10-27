@@ -27,8 +27,6 @@
 
 namespace {
 
-const std::string tags("[approval][apply_start]");
-
 using ores::inbox::service::apply_start_of;
 
 ores::inbox::domain::approval_kind kind_applied_by(const std::string& workflow) {
@@ -49,7 +47,7 @@ ores::inbox::domain::approval_request a_request() {
 
 }
 
-TEST_CASE("a_kind_that_names_no_workflow_starts_nothing", tags) {
+TEST_CASE("a_kind_that_names_no_workflow_starts_nothing", "[approval][apply_start]") {
     ores::inbox::domain::approval_kind none = kind_applied_by("");
     CHECK_FALSE(apply_start_of(none, a_request(), "corr").has_value());
 
@@ -58,7 +56,7 @@ TEST_CASE("a_kind_that_names_no_workflow_starts_nothing", tags) {
     CHECK_FALSE(apply_start_of(empty, a_request(), "corr").has_value());
 }
 
-TEST_CASE("the_start_names_the_workflow_the_request_and_its_tenant", tags) {
+TEST_CASE("the_start_names_the_workflow_the_request_and_its_tenant", "[approval][apply_start]") {
     const auto request = a_request();
 
     const auto start = apply_start_of(kind_applied_by("book_apply_workflow"), request, "corr-1");
@@ -73,7 +71,8 @@ TEST_CASE("the_start_names_the_workflow_the_request_and_its_tenant", tags) {
     CHECK(start->request_json == "{\"request_id\":\"" + id + "\"}");
 }
 
-TEST_CASE("a_request_always_names_the_same_run_and_two_requests_name_two", tags) {
+TEST_CASE("a_request_always_names_the_same_run_and_two_requests_name_two",
+          "[approval][apply_start]") {
     const auto first = a_request();
     const auto second = a_request();
     const auto kind = kind_applied_by("book_apply_workflow");
@@ -90,7 +89,7 @@ TEST_CASE("a_request_always_names_the_same_run_and_two_requests_name_two", tags)
     CHECK(once->instance_id != other->instance_id);
 }
 
-TEST_CASE("the_seeded_kinds_name_their_apply_workflow", tags) {
+TEST_CASE("the_seeded_kinds_name_their_apply_workflow", "[approval][apply_start]") {
     ores::testing::scoped_database_helper h;
     ores::inbox::service::approval_lifecycle lifecycle(
         h.context().with_tenant(h.tenant_id(), h.db_user()));

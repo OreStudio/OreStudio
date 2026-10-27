@@ -21,6 +21,7 @@
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -29,9 +30,6 @@
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][portfolio][projection]");
 
 using namespace ores::logging;
 using namespace ores::ore::domain;
@@ -849,7 +847,8 @@ auto rebuild(const ores::ore::xml::trade_import_item& item) -> ores::ore::xml::t
 
 }
 
-TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap", tags) {
+TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(swap_document_text);
@@ -911,7 +910,8 @@ TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap", tags) {
     CHECK(round->leg_rates[1].value.to_string() == "0.001");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_cap_floor_and_its_strike", tags) {
+TEST_CASE("a_portfolio_document_projects_a_cap_floor_and_its_strike",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(cap_floor_document_text);
@@ -974,7 +974,8 @@ TEST_CASE("a_portfolio_document_projects_a_cap_floor_and_its_strike", tags) {
     CHECK(round->strikes[0].bare_value->to_string() == "0.04");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_swaption_and_its_option", tags) {
+TEST_CASE("a_portfolio_document_projects_a_swaption_and_its_option",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(swaption_document_text);
@@ -1040,7 +1041,8 @@ TEST_CASE("a_portfolio_document_projects_a_swaption_and_its_option", tags) {
     CHECK(round->schedule_dates[0].schedule_date == date_of(2024, 6, 15));
 }
 
-TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products", tags) {
+TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(remaining_products_document_text);
@@ -1202,7 +1204,8 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products", tags) {
     CHECK(callable_again->call_dates[1].call_date == date_of(2026, 1, 15));
 }
 
-TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes", tags) {
+TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(document_text);
@@ -1236,7 +1239,8 @@ TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes", tags) 
     CHECK(instrument->underlyings_json == "[\"SPX\"]");
 }
 
-TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments", tags) {
+TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(document_text);
@@ -1277,7 +1281,8 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     CHECK(round->underlyings_json == "[\"SPX\"]");
 }
 
-TEST_CASE("a_portfolio_document_projects_an_fx_forward_and_an_fx_swap", tags) {
+TEST_CASE("a_portfolio_document_projects_an_fx_forward_and_an_fx_swap",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(fx_plain_document_text);
@@ -1335,7 +1340,8 @@ TEST_CASE("a_portfolio_document_projects_an_fx_forward_and_an_fx_swap", tags) {
     CHECK(swap_round->forwards[0].sold_amount.to_string() == "75000000");
 }
 
-TEST_CASE("a_portfolio_document_projects_an_fx_barrier_option_and_an_fx_touch_option", tags) {
+TEST_CASE("a_portfolio_document_projects_an_fx_barrier_option_and_an_fx_touch_option",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(fx_product_document_text);
@@ -1413,7 +1419,8 @@ TEST_CASE("a_portfolio_document_projects_an_fx_barrier_option_and_an_fx_touch_op
     CHECK(touch_round->digital_options[0].lower_barrier->to_string() == "0.85");
 }
 
-TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products", tags) {
+TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -1608,7 +1615,8 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products", tags) {
     CHECK(variance_round->variance_swaps[0].end_date == date_of(2025, 1, 15));
 }
 
-TEST_CASE("a_portfolio_document_projects_a_bond_and_its_fixed_leg", tags) {
+TEST_CASE("a_portfolio_document_projects_a_bond_and_its_fixed_leg",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -1720,7 +1728,8 @@ TEST_CASE("a_portfolio_document_projects_a_bond_and_its_fixed_leg", tags) {
     CHECK(round->bond_legs[0].schedule.rules[0].tenor == "1Y");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates", tags) {
+TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -1795,7 +1804,8 @@ TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates", ta
     CHECK(again_instrument->call_dates[1].call_date == date_of(2027, 4, 1));
 }
 
-TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption", tags) {
+TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -1876,7 +1886,8 @@ TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption", tags
     CHECK(round->option_exercise_dates[0] == "2028-02-02");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_credit_default_swap_and_its_premium_leg", tags) {
+TEST_CASE("a_portfolio_document_projects_a_credit_default_swap_and_its_premium_leg",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -2002,7 +2013,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_default_swap_and_its_premium_l
     CHECK(round->leg_rates[0].value.to_string() == "0.01");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_groups", tags) {
+TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_groups",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -2123,7 +2135,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
     CHECK(round->leg_rates[1].value.to_string() == "0.0015");
 }
 
-TEST_CASE("a_portfolio_document_projects_an_index_swap_and_a_synthetic_cdo", tags) {
+TEST_CASE("a_portfolio_document_projects_an_index_swap_and_a_synthetic_cdo",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -2305,7 +2318,8 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_and_a_synthetic_cdo", tag
     CHECK(cdo_round->constituents[0].issuer_id == "ACME");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_risk_participation_agreement", tags) {
+TEST_CASE("a_portfolio_document_projects_a_risk_participation_agreement",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -2454,7 +2468,8 @@ TEST_CASE("a_portfolio_document_projects_a_risk_participation_agreement", tags) 
     CHECK(round->schedule_dates[0].schedule_date == date_of(2029, 2, 1));
 }
 
-TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_swap", tags) {
+TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_swap",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const char* const text = R"(<Portfolio>
@@ -2577,7 +2592,8 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_sw
     CHECK(round->constituents[0].weight == std::optional<double>(1.0));
 }
 
-TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying", tags) {
+TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(equity_option_document_text);
@@ -2622,7 +2638,8 @@ TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying", t
     CHECK(round->strike.to_string() == "2800.5");
 }
 
-TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entries", tags) {
+TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entries",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(equity_position_document_text);
@@ -2703,7 +2720,8 @@ TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entri
     CHECK(round_data->underlyings[1].settlement_type == "Physical");
 }
 
-TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumulator", tags) {
+TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumulator",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(equity_barrier_and_accumulator_document_text);
@@ -2785,7 +2803,8 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
           R"([{"RangeTo":4000,"Leverage":1},{"RangeFrom":4000,"Leverage":2}])");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swap", tags) {
+TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swap",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(commodity_swap_and_forward_document_text);
@@ -2855,7 +2874,8 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swa
           std::optional<std::chrono::year_month_day>(date_of(2026, 1, 15)));
 }
 
-TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_basket", tags) {
+TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_basket",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document =
@@ -2953,7 +2973,8 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
     CHECK(basket_round_data->constituents[1].weight == std::optional<double>(0.4));
 }
 
-TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components", tags) {
+TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(composite_document_text);
@@ -2999,7 +3020,8 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components", 
     CHECK(reread->instrument.description == "ACME-BASKET");
 }
 
-TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_difference", tags) {
+TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_difference",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(composite_document_text);
@@ -3035,7 +3057,8 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
               .instrument.identity.trade_type_code == "ContractForDifference");
 }
 
-TEST_CASE("a_written_product_states_the_terms_the_schema_requires", tags) {
+TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const auto document = portfolio_projection::read(required_terms_document_text);
@@ -3157,7 +3180,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires", tags) {
     CHECK(worst_of_again->fixed_trigger_levels_json == worst_of->fixed_trigger_levels_json);
 }
 
-TEST_CASE("a_collar_keeps_both_arms_of_its_strike_lists", tags) {
+TEST_CASE("a_collar_keeps_both_arms_of_its_strike_lists", "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = R"(<Portfolio>
@@ -3227,8 +3250,8 @@ TEST_CASE("a_collar_keeps_both_arms_of_its_strike_lists", tags) {
     CHECK(round_role("floor", 1) == "0.0121");
 }
 
-
-TEST_CASE("a_trade_type_the_schema_does_not_name_is_not_written", tags) {
+TEST_CASE("a_trade_type_the_schema_does_not_name_is_not_written",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     ores::trading::messaging::trade_export_item item;
@@ -3238,7 +3261,8 @@ TEST_CASE("a_trade_type_the_schema_does_not_name_is_not_written", tags) {
     CHECK(document.trade.empty());
 }
 
-TEST_CASE("a_trade_whose_product_cannot_be_read_still_imports", tags) {
+TEST_CASE("a_trade_whose_product_cannot_be_read_still_imports",
+          "[ore][xml][portfolio][projection]") {
     auto lg(make_logger(test_suite));
 
     // The schedule states a date the trading domain cannot hold, so the rates
@@ -3275,7 +3299,8 @@ TEST_CASE("a_trade_whose_product_cannot_be_read_still_imports", tags) {
 // A trade holds one instrument kind, so it keeps that kind in a column its
 // holder owns instead of a member for every kind. A trade sized for all of them
 // costs more to create than to read.
-TEST_CASE("a_portfolio_trade_is_not_sized_for_every_instrument_kind", tags) {
+TEST_CASE("a_portfolio_trade_is_not_sized_for_every_instrument_kind",
+          "[ore][xml][portfolio][projection]") {
     CHECK(sizeof(pf::trade) < 1024);
     CHECK(sizeof(pf::component_trade) < 1024);
     CHECK(sizeof(pf::component_sub_trade) < 1024);

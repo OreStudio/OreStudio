@@ -76,22 +76,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_books_response list_books(const messaging::list_books_request& request);
-    messaging::get_book_response get_book(const messaging::get_book_request& request);
-    messaging::get_many_books_response
-    get_many_books(const messaging::get_many_books_request& request);
-    messaging::put_book_response put_book(const messaging::put_book_request& request);
-    messaging::put_many_books_response
-    put_many_books(const messaging::put_many_books_request& request);
-    messaging::delete_book_response delete_book(const messaging::delete_book_request& request);
-    messaging::delete_many_books_response
-    delete_many_books(const messaging::delete_many_books_request& request);
-    messaging::list_by_parent_portfolio_id_books_response list_by_parent_portfolio_id_books(
-        const messaging::list_by_parent_portfolio_id_books_request& request);
-    messaging::list_book_versions_response
-    list_book_versions(const messaging::list_book_versions_request& request);
-    messaging::get_book_version_response
-    get_book_version(const messaging::get_book_version_request& request);
+    ::ores::refdata::messaging::list_books_response
+    list_books(const ::ores::refdata::messaging::list_books_request& request);
+    ::ores::refdata::messaging::get_book_response
+    get_book(const ::ores::refdata::messaging::get_book_request& request);
+    ::ores::refdata::messaging::get_many_books_response
+    get_many_books(const ::ores::refdata::messaging::get_many_books_request& request);
+    ::ores::refdata::messaging::put_book_response
+    put_book(const ::ores::refdata::messaging::put_book_request& request);
+    ::ores::refdata::messaging::put_many_books_response
+    put_many_books(const ::ores::refdata::messaging::put_many_books_request& request);
+    ::ores::refdata::messaging::delete_book_response
+    delete_book(const ::ores::refdata::messaging::delete_book_request& request);
+    ::ores::refdata::messaging::delete_many_books_response
+    delete_many_books(const ::ores::refdata::messaging::delete_many_books_request& request);
+    ::ores::refdata::messaging::list_by_parent_portfolio_id_books_response
+    list_by_parent_portfolio_id_books(
+        const ::ores::refdata::messaging::list_by_parent_portfolio_id_books_request& request);
+    ::ores::refdata::messaging::list_book_versions_response
+    list_book_versions(const ::ores::refdata::messaging::list_book_versions_request& request);
+    ::ores::refdata::messaging::get_book_version_response
+    get_book_version(const ::ores::refdata::messaging::get_book_version_request& request);
     /**@}*/
 
     /**
@@ -120,7 +125,8 @@ public:
      * is the one the gate gives. A write that creates a row changes every
      * column.
      */
-    std::vector<std::string> changed_columns(const messaging::book_write& proposed);
+    std::vector<std::string>
+    changed_columns(const ::ores::refdata::messaging::book_write& proposed);
 
     /**
      * @brief Lists books with pagination support.
@@ -266,9 +272,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::book_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::book& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::book_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::book& out);
 
     ores::service::messaging::write_pass pass_;
 

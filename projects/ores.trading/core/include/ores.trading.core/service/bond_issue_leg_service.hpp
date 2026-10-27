@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_bond_issue_legs_response
-    list_bond_issue_legs(const messaging::list_bond_issue_legs_request& request);
-    messaging::get_bond_issue_leg_response
-    get_bond_issue_leg(const messaging::get_bond_issue_leg_request& request);
-    messaging::get_many_bond_issue_legs_response
-    get_many_bond_issue_legs(const messaging::get_many_bond_issue_legs_request& request);
-    messaging::put_bond_issue_leg_response
-    put_bond_issue_leg(const messaging::put_bond_issue_leg_request& request);
-    messaging::put_many_bond_issue_legs_response
-    put_many_bond_issue_legs(const messaging::put_many_bond_issue_legs_request& request);
-    messaging::delete_bond_issue_leg_response
-    delete_bond_issue_leg(const messaging::delete_bond_issue_leg_request& request);
-    messaging::delete_many_bond_issue_legs_response
-    delete_many_bond_issue_legs(const messaging::delete_many_bond_issue_legs_request& request);
-    messaging::list_bond_issue_leg_versions_response
-    list_bond_issue_leg_versions(const messaging::list_bond_issue_leg_versions_request& request);
-    messaging::get_bond_issue_leg_version_response
-    get_bond_issue_leg_version(const messaging::get_bond_issue_leg_version_request& request);
+    ::ores::trading::messaging::list_bond_issue_legs_response
+    list_bond_issue_legs(const ::ores::trading::messaging::list_bond_issue_legs_request& request);
+    ::ores::trading::messaging::get_bond_issue_leg_response
+    get_bond_issue_leg(const ::ores::trading::messaging::get_bond_issue_leg_request& request);
+    ::ores::trading::messaging::get_many_bond_issue_legs_response get_many_bond_issue_legs(
+        const ::ores::trading::messaging::get_many_bond_issue_legs_request& request);
+    ::ores::trading::messaging::put_bond_issue_leg_response
+    put_bond_issue_leg(const ::ores::trading::messaging::put_bond_issue_leg_request& request);
+    ::ores::trading::messaging::put_many_bond_issue_legs_response put_many_bond_issue_legs(
+        const ::ores::trading::messaging::put_many_bond_issue_legs_request& request);
+    ::ores::trading::messaging::delete_bond_issue_leg_response
+    delete_bond_issue_leg(const ::ores::trading::messaging::delete_bond_issue_leg_request& request);
+    ::ores::trading::messaging::delete_many_bond_issue_legs_response delete_many_bond_issue_legs(
+        const ::ores::trading::messaging::delete_many_bond_issue_legs_request& request);
+    ::ores::trading::messaging::list_bond_issue_leg_versions_response list_bond_issue_leg_versions(
+        const ::ores::trading::messaging::list_bond_issue_leg_versions_request& request);
+    ::ores::trading::messaging::get_bond_issue_leg_version_response get_bond_issue_leg_version(
+        const ::ores::trading::messaging::get_bond_issue_leg_version_request& request);
     /**@}*/
 
     /**
@@ -192,9 +192,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::bond_issue_leg_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::bond_issue_leg& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::bond_issue_leg_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::bond_issue_leg& out);
 };
 
 }

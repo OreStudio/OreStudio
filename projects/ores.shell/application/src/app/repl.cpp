@@ -36,6 +36,7 @@
 #include "ores.shell/app/commands/compute_commands.hpp"
 #include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/dq/dq_commands.hpp"
+#include "ores.shell/app/commands/event_channel_commands.hpp"
 #include "ores.shell/app/commands/history_commands.hpp"
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/iam/role_grant_request_commands.hpp"
@@ -99,7 +100,6 @@
 #include "ores.shell/app/commands/scheduler_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/storage/storage_commands.hpp"
-#include "ores.shell/app/commands/subscription_commands.hpp"
 #include "ores.shell/app/commands/synthetic/synthetic_entity_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
@@ -192,7 +192,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     configuration_market_binding_commands::register_commands(*root, session_);
     report_type_commands::register_commands(*root, session_);
     report_operations_operations_commands::register_commands(*root, session_);
-    subscription_commands::register_commands(*root, session_);
+    event_channel_commands::register_commands(*root, session_);
     rbac_commands::register_commands(*root, session_, pagination_);
     role_request_operations_operations_commands::register_commands(*root, session_);
     approval_operations_operations_commands::register_commands(*root, session_);

@@ -55,8 +55,6 @@
 
 namespace {
 
-const std::string tags("[repository]");
-
 using ores::testing::database_helper;
 
 ores::utility::decimal::decimal decimal_of(std::string_view text) {
@@ -440,7 +438,7 @@ bond_issue_leg_schedule_date make_issue_schedule_date(const stamps& s,
 
 }
 
-TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", tags) {
+TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -482,7 +480,7 @@ TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", tags) {
     CHECK(data.conversion_targets[1].underlying_id == "UND-2");
 }
 
-TEST_CASE("read_instruments_gives_two_instruments_the_one_issue", tags) {
+TEST_CASE("read_instruments_gives_two_instruments_the_one_issue", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -510,7 +508,7 @@ TEST_CASE("read_instruments_gives_two_instruments_the_one_issue", tags) {
     CHECK(instruments.at(second_id).call_dates.size() == 1);
 }
 
-TEST_CASE("read_instruments_omits_an_instrument_with_no_header_row", tags) {
+TEST_CASE("read_instruments_omits_an_instrument_with_no_header_row", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -531,7 +529,7 @@ TEST_CASE("read_instruments_omits_an_instrument_with_no_header_row", tags) {
     CHECK(!instruments.contains(unwritten_id));
 }
 
-TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
+TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -623,7 +621,7 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     CHECK(rebuilt.payment_dates[1] == "2025-01-15");
 }
 
-TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
+TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -713,7 +711,7 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     CHECK(floating.reset_schedule.rules[0].calendar == "TARGET");
 }
 
-TEST_CASE("read_instruments_keeps_two_trades_of_one_security_apart", tags) {
+TEST_CASE("read_instruments_keeps_two_trades_of_one_security_apart", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -769,7 +767,7 @@ TEST_CASE("read_instruments_keeps_two_trades_of_one_security_apart", tags) {
     CHECK(!second.ascot_swap_leg.leg_type.has_value());
 }
 
-TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
+TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -807,7 +805,7 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
     CHECK(with_option.option_knocks_out == "Up");
 }
 
-TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
+TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -918,7 +916,7 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     CHECK(rebuilt.option_exercise_schedule->rules[0].tenor == "6M");
 }
 
-TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
+TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -971,7 +969,7 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
     CHECK(rebuilt.forward_premium->date == "2024-03-15");
 }
 
-TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
+TEST_CASE("read_instruments_rebuilds_the_trs_return_side", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -1016,7 +1014,8 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     CHECK(rebuilt.trs_schedule.rules[0].tenor == "3M");
 }
 
-TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_row", tags) {
+TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_row",
+          "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -1076,7 +1075,7 @@ issue_legs_of(ores::database::context ctx, const boost::uuids::uuid& issue_id) {
 
 } // namespace
 
-TEST_CASE("the_delete_closes_the_family_and_the_issue_it_owns", tags) {
+TEST_CASE("the_delete_closes_the_family_and_the_issue_it_owns", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
@@ -1112,7 +1111,7 @@ TEST_CASE("the_delete_closes_the_family_and_the_issue_it_owns", tags) {
         bond_issue_repository().read_latest(ctx, boost::uuids::to_string(issue.issue_id)).empty());
 }
 
-TEST_CASE("the_issue_outlives_the_instrument_that_still_shares_it", tags) {
+TEST_CASE("the_issue_outlives_the_instrument_that_still_shares_it", "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);

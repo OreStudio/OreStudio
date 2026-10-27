@@ -79,9 +79,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::report_instance> read_one(repository::report_instance_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::report_instance_key& key) {
+std::vector<domain::report_instance>
+report_instance_read_one(repository::report_instance_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::report_instance_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -91,7 +92,7 @@ std::vector<domain::report_instance> read_one(repository::report_instance_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::report_instance_key key_from(const domain::report_instance& v) {
+messaging::report_instance_key report_instance_key_from(const domain::report_instance& v) {
     messaging::report_instance_key key;
     key.name = v.name;
     return key;
@@ -104,7 +105,7 @@ messaging::report_instance_key key_from(const domain::report_instance& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::report_instance to_domain(const messaging::report_instance_write& write) {
+domain::report_instance report_instance_to_domain(const messaging::report_instance_write& write) {
     domain::report_instance v;
     v.id = write.id;
     v.name = write.name;
@@ -177,7 +178,7 @@ messaging::list_report_instances_response report_instance_service::list_report_i
 messaging::get_report_instance_response report_instance_service::get_report_instance(
     const messaging::get_report_instance_request& request) {
     messaging::get_report_instance_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = report_instance_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "report_instance"});
         return response;
@@ -196,7 +197,7 @@ messaging::get_many_report_instances_response report_instance_service::get_many_
     for (const auto& k : request.keys) {
         messaging::report_instance_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = report_instance_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.report_instance = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -212,7 +213,7 @@ messaging::put_report_instance_response report_instance_service::put_report_inst
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = report_instance_read_one(repo_, ctx_, report_instance_key_from(value));
     if (!written.empty())
         response.report_instance = std::move(written.front());
     return response;
@@ -244,7 +245,7 @@ messaging::put_many_report_instances_response report_instance_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.instances.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = report_instance_read_one(repo_, ctx_, report_instance_key_from(value));
         response.instances.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -267,7 +268,7 @@ messaging::delete_report_instance_response report_instance_service::delete_repor
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = report_instance_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "report_instance"});
         return response;
@@ -283,7 +284,7 @@ messaging::delete_report_instance_response report_instance_service::delete_repor
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = report_instance_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "report_instance",
@@ -325,7 +326,7 @@ report_instance_service::delete_many_report_instances(
     std::vector<domain::report_instance> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = report_instance_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -353,7 +354,7 @@ report_instance_service::list_report_instance_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = report_instance_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "report_instance"});
         return response;
@@ -377,7 +378,7 @@ report_instance_service::get_report_instance_version(
     messaging::get_report_instance_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.report_instance);
+    const auto named = report_instance_read_one(repo_, ctx_, request.key.report_instance);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "report_instance"});
         return response;
@@ -399,8 +400,8 @@ report_instance_service::prepare_change(const messaging::report_instance_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = report_instance_to_domain(change.write);
+    const auto current = report_instance_read_one(repo_, ctx_, report_instance_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -481,7 +482,7 @@ report_instance_service::get_instance_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting report instance by name: " << name;
     messaging::report_instance_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = report_instance_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

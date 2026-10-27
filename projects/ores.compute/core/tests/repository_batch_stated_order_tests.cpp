@@ -44,8 +44,6 @@
 
 namespace {
 
-const std::string tags("[repository][stated_order]");
-
 using ores::compute::repository::batch_repository;
 using ores::testing::scoped_database_helper;
 using ores::utility::domain::order;
@@ -104,7 +102,7 @@ refs_in_order(const ores::database::context& ctx, const std::string& marker, con
 
 }
 
-TEST_CASE("batches read newest first when no order is stated", tags) {
+TEST_CASE("batches read newest first when no order is stated", "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -114,7 +112,8 @@ TEST_CASE("batches read newest first when no order is stated", tags) {
     CHECK(refs_in_order(ctx, m, {}) == written);
 }
 
-TEST_CASE("a descending order reverses the default and reads oldest first", tags) {
+TEST_CASE("a descending order reverses the default and reads oldest first",
+          "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -123,7 +122,8 @@ TEST_CASE("a descending order reverses the default and reads oldest first", tags
     CHECK(refs_in_order(ctx, m, {.descending = true}) == written);
 }
 
-TEST_CASE("the recording time is honoured in both directions when it is stated", tags) {
+TEST_CASE("the recording time is honoured in both directions when it is stated",
+          "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -135,7 +135,8 @@ TEST_CASE("the recording time is honoured in both directions when it is stated",
     CHECK(refs_in_order(ctx, m, {.field = "recorded_at", .descending = true}) == newest_first);
 }
 
-TEST_CASE("the store refuses an order by a field the model does not declare", tags) {
+TEST_CASE("the store refuses an order by a field the model does not declare",
+          "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
 

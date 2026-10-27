@@ -28,8 +28,6 @@
 
 namespace {
 
-const std::string tags("[member_role]");
-
 auto& lg() {
     static auto instance = ores::logging::make_logger("ores.iam.core.tests.member_role");
     return instance;
@@ -92,7 +90,7 @@ bool holds_member(ores::testing::scoped_database_helper& h,
 
 }
 
-TEST_CASE("a_person_account_holds_member_from_its_first_version", tags) {
+TEST_CASE("a_person_account_holds_member_from_its_first_version", "[member_role]") {
     ores::testing::scoped_database_helper h(true);
     ensure_member(h);
 
@@ -101,7 +99,7 @@ TEST_CASE("a_person_account_holds_member_from_its_first_version", tags) {
     CHECK(holds_member(h, person));
 }
 
-TEST_CASE("a_service_account_does_not_hold_member", tags) {
+TEST_CASE("a_service_account_does_not_hold_member", "[member_role]") {
     ores::testing::scoped_database_helper h(true);
     ensure_member(h);
 
@@ -110,7 +108,7 @@ TEST_CASE("a_service_account_does_not_hold_member", tags) {
     CHECK_FALSE(holds_member(h, service));
 }
 
-TEST_CASE("member_taken_away_is_not_given_back_by_the_next_version", tags) {
+TEST_CASE("member_taken_away_is_not_given_back_by_the_next_version", "[member_role]") {
     ores::testing::scoped_database_helper h(true);
     ensure_member(h);
     auto person = write_account(h, "user");

@@ -20,6 +20,7 @@
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -33,9 +34,6 @@
 // not touch.
 
 namespace {
-
-const std::string_view test_suite("scheduler.tests");
-const std::string tags("[repository][job_instance]");
 
 ores::scheduler::domain::job_instance make_instance(const boost::uuids::uuid& job_definition_id,
                                                     std::chrono::system_clock::time_point at) {
@@ -60,7 +58,8 @@ using ores::scheduler::domain::job_status;
 using ores::scheduler::repository::job_instance_repository;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("job_instance_repository records a run from start to finish", tags) {
+TEST_CASE("job_instance_repository records a run from start to finish",
+          "[repository][job_instance]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -98,7 +97,8 @@ TEST_CASE("job_instance_repository records a run from start to finish", tags) {
     REQUIRE(finished.front().duration_ms.has_value());
 }
 
-TEST_CASE("job_instance_repository reports the newest run of one definition", tags) {
+TEST_CASE("job_instance_repository reports the newest run of one definition",
+          "[repository][job_instance]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -129,7 +129,8 @@ TEST_CASE("job_instance_repository reports the newest run of one definition", ta
     CHECK(*last_run >= second - std::chrono::seconds(1));
 }
 
-TEST_CASE("job_instance_repository lists the newest runs across definitions", tags) {
+TEST_CASE("job_instance_repository lists the newest runs across definitions",
+          "[repository][job_instance]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

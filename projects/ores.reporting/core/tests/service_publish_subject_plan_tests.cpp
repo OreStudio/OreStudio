@@ -27,30 +27,27 @@
 
 using ores::reporting::service::publish_from_dq_function;
 
-namespace {
-const std::string tags("[service][publish]");
-}
-
-TEST_CASE("a report definitions subject names its expansion function", tags) {
+TEST_CASE("a report definitions subject names its expansion function", "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.v1.ops.publish_report_definitions_from_dq") ==
           "ores_reporting_publish_report_definitions_from_dq_fn");
 }
 
-TEST_CASE("the operation name is the function name", tags) {
+TEST_CASE("the operation name is the function name", "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.v1.ops.publish_report_operations_from_dq") ==
           "ores_reporting_publish_report_operations_from_dq_fn");
     CHECK(publish_from_dq_function("reporting.v1.ops.publish_a_b_c_from_dq") ==
           "ores_reporting_publish_a_b_c_from_dq_fn");
 }
 
-TEST_CASE("a subject without a version has no function", tags) {
+TEST_CASE("a subject without a version has no function", "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.report-definitions.publish-from-dq").empty());
 }
 
-TEST_CASE("a subject outside the publish pattern has no function", tags) {
+TEST_CASE("a subject outside the publish pattern has no function", "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.v1.report-definitions.list").empty());
 }
 
-TEST_CASE("a subject with nothing between the version and the suffix has no function", tags) {
+TEST_CASE("a subject with nothing between the version and the suffix has no function",
+          "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.v1..publish-from-dq").empty());
 }

@@ -76,29 +76,37 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_instrument_option_premiums_response list_instrument_option_premiums(
-        const messaging::list_instrument_option_premiums_request& request);
-    messaging::get_instrument_option_premium_response
-    get_instrument_option_premium(const messaging::get_instrument_option_premium_request& request);
-    messaging::get_many_instrument_option_premiums_response get_many_instrument_option_premiums(
-        const messaging::get_many_instrument_option_premiums_request& request);
-    messaging::put_instrument_option_premium_response
-    put_instrument_option_premium(const messaging::put_instrument_option_premium_request& request);
-    messaging::put_many_instrument_option_premiums_response put_many_instrument_option_premiums(
-        const messaging::put_many_instrument_option_premiums_request& request);
-    messaging::delete_instrument_option_premium_response delete_instrument_option_premium(
-        const messaging::delete_instrument_option_premium_request& request);
-    messaging::delete_many_instrument_option_premiums_response
+    ::ores::trading::messaging::list_instrument_option_premiums_response
+    list_instrument_option_premiums(
+        const ::ores::trading::messaging::list_instrument_option_premiums_request& request);
+    ::ores::trading::messaging::get_instrument_option_premium_response
+    get_instrument_option_premium(
+        const ::ores::trading::messaging::get_instrument_option_premium_request& request);
+    ::ores::trading::messaging::get_many_instrument_option_premiums_response
+    get_many_instrument_option_premiums(
+        const ::ores::trading::messaging::get_many_instrument_option_premiums_request& request);
+    ::ores::trading::messaging::put_instrument_option_premium_response
+    put_instrument_option_premium(
+        const ::ores::trading::messaging::put_instrument_option_premium_request& request);
+    ::ores::trading::messaging::put_many_instrument_option_premiums_response
+    put_many_instrument_option_premiums(
+        const ::ores::trading::messaging::put_many_instrument_option_premiums_request& request);
+    ::ores::trading::messaging::delete_instrument_option_premium_response
+    delete_instrument_option_premium(
+        const ::ores::trading::messaging::delete_instrument_option_premium_request& request);
+    ::ores::trading::messaging::delete_many_instrument_option_premiums_response
     delete_many_instrument_option_premiums(
-        const messaging::delete_many_instrument_option_premiums_request& request);
-    messaging::list_by_trade_id_instrument_option_premiums_response
+        const ::ores::trading::messaging::delete_many_instrument_option_premiums_request& request);
+    ::ores::trading::messaging::list_by_trade_id_instrument_option_premiums_response
     list_by_trade_id_instrument_option_premiums(
-        const messaging::list_by_trade_id_instrument_option_premiums_request& request);
-    messaging::list_instrument_option_premium_versions_response
+        const ::ores::trading::messaging::list_by_trade_id_instrument_option_premiums_request&
+            request);
+    ::ores::trading::messaging::list_instrument_option_premium_versions_response
     list_instrument_option_premium_versions(
-        const messaging::list_instrument_option_premium_versions_request& request);
-    messaging::get_instrument_option_premium_version_response get_instrument_option_premium_version(
-        const messaging::get_instrument_option_premium_version_request& request);
+        const ::ores::trading::messaging::list_instrument_option_premium_versions_request& request);
+    ::ores::trading::messaging::get_instrument_option_premium_version_response
+    get_instrument_option_premium_version(
+        const ::ores::trading::messaging::get_instrument_option_premium_version_request& request);
     /**@}*/
 
     /**
@@ -220,7 +228,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::instrument_option_premium_change& change,
+    prepare_change(const ::ores::trading::messaging::instrument_option_premium_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::instrument_option_premium& out);
 };

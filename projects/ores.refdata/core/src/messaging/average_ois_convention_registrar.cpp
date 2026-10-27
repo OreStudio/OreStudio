@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view average_ois_convention_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_average_ois_convention_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_average_ois_convention_h
         std::make_shared<average_ois_convention_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_average_ois_conventions_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->list_average_ois_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_average_ois_convention_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->get_average_ois_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_average_ois_conventions_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->get_many_average_ois_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_average_ois_convention_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->put_average_ois_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_average_ois_conventions_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->put_many_average_ois_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_average_ois_convention_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_average_ois_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_average_ois_conventions_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_many_average_ois_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_average_ois_convention_versions_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->list_average_ois_convention_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_average_ois_convention_version_request::nats_subject,
-        queue_group,
+        average_ois_convention_queue_group,
         [h](ores::nats::message msg) { h->get_average_ois_convention_version(std::move(msg)); }));
     return subs;
 }

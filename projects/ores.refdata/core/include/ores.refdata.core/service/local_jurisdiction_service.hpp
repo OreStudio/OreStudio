@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_local_jurisdictions_response
-    list_local_jurisdictions(const messaging::list_local_jurisdictions_request& request);
-    messaging::get_local_jurisdiction_response
-    get_local_jurisdiction(const messaging::get_local_jurisdiction_request& request);
-    messaging::get_many_local_jurisdictions_response
-    get_many_local_jurisdictions(const messaging::get_many_local_jurisdictions_request& request);
-    messaging::put_local_jurisdiction_response
-    put_local_jurisdiction(const messaging::put_local_jurisdiction_request& request);
-    messaging::put_many_local_jurisdictions_response
-    put_many_local_jurisdictions(const messaging::put_many_local_jurisdictions_request& request);
-    messaging::delete_local_jurisdiction_response
-    delete_local_jurisdiction(const messaging::delete_local_jurisdiction_request& request);
-    messaging::delete_many_local_jurisdictions_response delete_many_local_jurisdictions(
-        const messaging::delete_many_local_jurisdictions_request& request);
-    messaging::list_local_jurisdiction_versions_response list_local_jurisdiction_versions(
-        const messaging::list_local_jurisdiction_versions_request& request);
-    messaging::get_local_jurisdiction_version_response get_local_jurisdiction_version(
-        const messaging::get_local_jurisdiction_version_request& request);
+    ::ores::refdata::messaging::list_local_jurisdictions_response list_local_jurisdictions(
+        const ::ores::refdata::messaging::list_local_jurisdictions_request& request);
+    ::ores::refdata::messaging::get_local_jurisdiction_response get_local_jurisdiction(
+        const ::ores::refdata::messaging::get_local_jurisdiction_request& request);
+    ::ores::refdata::messaging::get_many_local_jurisdictions_response get_many_local_jurisdictions(
+        const ::ores::refdata::messaging::get_many_local_jurisdictions_request& request);
+    ::ores::refdata::messaging::put_local_jurisdiction_response put_local_jurisdiction(
+        const ::ores::refdata::messaging::put_local_jurisdiction_request& request);
+    ::ores::refdata::messaging::put_many_local_jurisdictions_response put_many_local_jurisdictions(
+        const ::ores::refdata::messaging::put_many_local_jurisdictions_request& request);
+    ::ores::refdata::messaging::delete_local_jurisdiction_response delete_local_jurisdiction(
+        const ::ores::refdata::messaging::delete_local_jurisdiction_request& request);
+    ::ores::refdata::messaging::delete_many_local_jurisdictions_response
+    delete_many_local_jurisdictions(
+        const ::ores::refdata::messaging::delete_many_local_jurisdictions_request& request);
+    ::ores::refdata::messaging::list_local_jurisdiction_versions_response
+    list_local_jurisdiction_versions(
+        const ::ores::refdata::messaging::list_local_jurisdiction_versions_request& request);
+    ::ores::refdata::messaging::get_local_jurisdiction_version_response
+    get_local_jurisdiction_version(
+        const ::ores::refdata::messaging::get_local_jurisdiction_version_request& request);
     /**@}*/
 
     /**
@@ -192,9 +195,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::local_jurisdiction_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::local_jurisdiction& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::local_jurisdiction_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::local_jurisdiction& out);
 };
 
 }

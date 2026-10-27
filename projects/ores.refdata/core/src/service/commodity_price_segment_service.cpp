@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::commodity_price_segment>
-read_one(repository::commodity_price_segment_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::commodity_price_segment_key& key) {
+commodity_price_segment_read_one(repository::commodity_price_segment_repository& repo,
+                                 const ores::database::context& ctx,
+                                 const messaging::commodity_price_segment_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::commodity_price_segment_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::commodity_price_segment_key key_from(const domain::commodity_price_segment& v) {
+messaging::commodity_price_segment_key
+commodity_price_segment_key_from(const domain::commodity_price_segment& v) {
     messaging::commodity_price_segment_key key;
     key.id = v.id;
     return key;
@@ -99,7 +100,8 @@ messaging::commodity_price_segment_key key_from(const domain::commodity_price_se
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::commodity_price_segment to_domain(const messaging::commodity_price_segment_write& write) {
+domain::commodity_price_segment
+commodity_price_segment_to_domain(const messaging::commodity_price_segment_write& write) {
     domain::commodity_price_segment v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -154,7 +156,7 @@ messaging::get_commodity_price_segment_response
 commodity_price_segment_service::get_commodity_price_segment(
     const messaging::get_commodity_price_segment_request& request) {
     messaging::get_commodity_price_segment_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = commodity_price_segment_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "commodity_price_segment"});
         return response;
@@ -174,7 +176,7 @@ commodity_price_segment_service::get_many_commodity_price_segments(
     for (const auto& k : request.keys) {
         messaging::commodity_price_segment_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = commodity_price_segment_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.commodity_price_segment = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -191,7 +193,8 @@ commodity_price_segment_service::put_commodity_price_segment(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        commodity_price_segment_read_one(repo_, ctx_, commodity_price_segment_key_from(value));
     if (!written.empty())
         response.commodity_price_segment = std::move(written.front());
     return response;
@@ -224,7 +227,8 @@ commodity_price_segment_service::put_many_commodity_price_segments(
     repo_.write(ctx_, batch, claims);
     response.price_segments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            commodity_price_segment_read_one(repo_, ctx_, commodity_price_segment_key_from(value));
         response.price_segments.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -259,7 +263,7 @@ commodity_price_segment_service::delete_commodity_price_segment(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = commodity_price_segment_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "commodity_price_segment",
@@ -349,8 +353,9 @@ ores::utility::domain::result commodity_price_segment_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = commodity_price_segment_to_domain(change.write);
+    const auto current =
+        commodity_price_segment_read_one(repo_, ctx_, commodity_price_segment_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

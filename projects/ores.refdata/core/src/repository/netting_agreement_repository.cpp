@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+netting_agreement_list_order(const ores::utility::domain::order& order,
+                             std::initializer_list<std::string> default_columns,
+                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!netting_agreement_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::netting_agreements_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> netting_agreement_filter_condition(
+    const std::optional<messaging::netting_agreements_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -334,8 +335,8 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
     return execute_ordered_read_query<netting_agreement_entity, domain::netting_agreement>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        netting_agreement_list_order(order, {"id"}, false),
+        netting_agreement_filter_condition(filter),
         [](const auto& entities) { return netting_agreement_mapper::map(entities); },
         lg(),
         "Reading latest netting agreements by counterparty_id.");
@@ -357,7 +358,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count_by
     return execute_count_query<netting_agreement_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        netting_agreement_filter_condition(filter),
         lg(),
         "Counting netting agreements by counterparty_id");
 }
@@ -412,8 +413,8 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
     return execute_ordered_read_query<netting_agreement_entity, domain::netting_agreement>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        netting_agreement_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), netting_agreement_filter_condition(filter)),
         [](const auto& entities) { return netting_agreement_mapper::map(entities); },
         lg(),
         "Reading latest netting agreements with pagination.");
@@ -432,7 +433,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count(
     return execute_count_query<netting_agreement_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), netting_agreement_filter_condition(filter)),
         lg(),
         "Counting netting agreements");
 }

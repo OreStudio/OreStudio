@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void calendar_date_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void calendar_date_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -175,7 +175,7 @@ void calendar_date_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        calendar_date_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -223,8 +223,9 @@ void calendar_date_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.calendar_code, parsed->positionals[next++], "calendar_code");
-        read_token(req.key.date, parsed->positionals[next++], "date");
+        calendar_date_read_token(
+            req.key.calendar_code, parsed->positionals[next++], "calendar_code");
+        calendar_date_read_token(req.key.date, parsed->positionals[next++], "date");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -269,8 +270,9 @@ void calendar_date_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::calendar_date_key key;
-            read_token(key.calendar_code, parsed->positionals[i + 0], "calendar_code");
-            read_token(key.date, parsed->positionals[i + 1], "date");
+            calendar_date_read_token(
+                key.calendar_code, parsed->positionals[i + 0], "calendar_code");
+            calendar_date_read_token(key.date, parsed->positionals[i + 1], "date");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -327,7 +329,7 @@ void calendar_date_commands::process_by_calendar_code(std::ostream& out,
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        calendar_date_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view crm_enabled_derived_pair_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_crm_enabled_derived_pair_handlers(
@@ -51,43 +51,43 @@ std::vector<ores::nats::service::subscription> register_crm_enabled_derived_pair
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_crm_enabled_derived_pairs_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->list_crm_enabled_derived_pairs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_crm_enabled_derived_pair_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->get_crm_enabled_derived_pair(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_crm_enabled_derived_pairs_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->get_many_crm_enabled_derived_pairs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_crm_enabled_derived_pair_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->put_crm_enabled_derived_pair(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_crm_enabled_derived_pairs_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->put_many_crm_enabled_derived_pairs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_crm_enabled_derived_pair_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->delete_crm_enabled_derived_pair(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(delete_many_crm_enabled_derived_pairs_request::nats_subject,
-                                        queue_group,
+                                        crm_enabled_derived_pair_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->delete_many_crm_enabled_derived_pairs(
                                                 std::move(msg));
                                         }));
     subs.push_back(
         nats.queue_subscribe(list_crm_enabled_derived_pair_versions_request::nats_subject,
-                             queue_group,
+                             crm_enabled_derived_pair_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_crm_enabled_derived_pair_versions(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         get_crm_enabled_derived_pair_version_request::nats_subject,
-        queue_group,
+        crm_enabled_derived_pair_queue_group,
         [h](ores::nats::message msg) { h->get_crm_enabled_derived_pair_version(std::move(msg)); }));
     return subs;
 }

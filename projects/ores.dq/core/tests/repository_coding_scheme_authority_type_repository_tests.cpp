@@ -25,17 +25,11 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::dq::generators;
@@ -44,7 +38,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::coding_scheme_authority_type_repository;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("write_single_coding_scheme_authority_type", tags) {
+TEST_CASE("write_single_coding_scheme_authority_type", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_single_coding_scheme_authority_type", tags) {
     CHECK(read_authority_types[0].name == authority_type.name);
 }
 
-TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
+TEST_CASE("write_multiple_coding_scheme_authority_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -96,7 +90,7 @@ TEST_CASE("write_multiple_coding_scheme_authority_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
+TEST_CASE("read_latest_coding_scheme_authority_types", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -127,7 +121,7 @@ TEST_CASE("read_latest_coding_scheme_authority_types", tags) {
     }
 }
 
-TEST_CASE("read_latest_coding_scheme_authority_type_by_code", tags) {
+TEST_CASE("read_latest_coding_scheme_authority_type_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

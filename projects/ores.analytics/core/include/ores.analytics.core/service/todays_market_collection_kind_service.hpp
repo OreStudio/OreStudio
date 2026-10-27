@@ -76,29 +76,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_todays_market_collection_kinds_response list_todays_market_collection_kinds(
-        const messaging::list_todays_market_collection_kinds_request& request);
-    messaging::get_todays_market_collection_kind_response get_todays_market_collection_kind(
-        const messaging::get_todays_market_collection_kind_request& request);
-    messaging::get_many_todays_market_collection_kinds_response
+    ::ores::analytics::messaging::list_todays_market_collection_kinds_response
+    list_todays_market_collection_kinds(
+        const ::ores::analytics::messaging::list_todays_market_collection_kinds_request& request);
+    ::ores::analytics::messaging::get_todays_market_collection_kind_response
+    get_todays_market_collection_kind(
+        const ::ores::analytics::messaging::get_todays_market_collection_kind_request& request);
+    ::ores::analytics::messaging::get_many_todays_market_collection_kinds_response
     get_many_todays_market_collection_kinds(
-        const messaging::get_many_todays_market_collection_kinds_request& request);
-    messaging::put_todays_market_collection_kind_response put_todays_market_collection_kind(
-        const messaging::put_todays_market_collection_kind_request& request);
-    messaging::put_many_todays_market_collection_kinds_response
+        const ::ores::analytics::messaging::get_many_todays_market_collection_kinds_request&
+            request);
+    ::ores::analytics::messaging::put_todays_market_collection_kind_response
+    put_todays_market_collection_kind(
+        const ::ores::analytics::messaging::put_todays_market_collection_kind_request& request);
+    ::ores::analytics::messaging::put_many_todays_market_collection_kinds_response
     put_many_todays_market_collection_kinds(
-        const messaging::put_many_todays_market_collection_kinds_request& request);
-    messaging::delete_todays_market_collection_kind_response delete_todays_market_collection_kind(
-        const messaging::delete_todays_market_collection_kind_request& request);
-    messaging::delete_many_todays_market_collection_kinds_response
+        const ::ores::analytics::messaging::put_many_todays_market_collection_kinds_request&
+            request);
+    ::ores::analytics::messaging::delete_todays_market_collection_kind_response
+    delete_todays_market_collection_kind(
+        const ::ores::analytics::messaging::delete_todays_market_collection_kind_request& request);
+    ::ores::analytics::messaging::delete_many_todays_market_collection_kinds_response
     delete_many_todays_market_collection_kinds(
-        const messaging::delete_many_todays_market_collection_kinds_request& request);
-    messaging::list_todays_market_collection_kind_versions_response
+        const ::ores::analytics::messaging::delete_many_todays_market_collection_kinds_request&
+            request);
+    ::ores::analytics::messaging::list_todays_market_collection_kind_versions_response
     list_todays_market_collection_kind_versions(
-        const messaging::list_todays_market_collection_kind_versions_request& request);
-    messaging::get_todays_market_collection_kind_version_response
+        const ::ores::analytics::messaging::list_todays_market_collection_kind_versions_request&
+            request);
+    ::ores::analytics::messaging::get_todays_market_collection_kind_version_response
     get_todays_market_collection_kind_version(
-        const messaging::get_todays_market_collection_kind_version_request& request);
+        const ::ores::analytics::messaging::get_todays_market_collection_kind_version_request&
+            request);
     /**@}*/
 
     /**
@@ -195,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::todays_market_collection_kind_change& change,
+    prepare_change(const ::ores::analytics::messaging::todays_market_collection_kind_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::todays_market_collection_kind& out);
 };

@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
@@ -35,14 +36,11 @@ using ores::trading::domain::index_credit_default_swap_option_instrument;
 using ores::trading::domain::risk_participation_agreement_instrument;
 using ores::trading::domain::visit_credit_facts;
 
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
-
 }
 
 using namespace ores::logging;
 
-TEST_CASE("a_carrier_that_states_no_fact_row_reports_no_answer", tags) {
+TEST_CASE("a_carrier_that_states_no_fact_row_reports_no_answer", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const credit_instrument_data sut;
@@ -52,7 +50,7 @@ TEST_CASE("a_carrier_that_states_no_fact_row_reports_no_answer", tags) {
     CHECK(!answered.has_value());
 }
 
-TEST_CASE("a_visitor_that_answers_false_is_not_reported_as_silence", tags) {
+TEST_CASE("a_visitor_that_answers_false_is_not_reported_as_silence", "[domain]") {
     auto lg(make_logger(test_suite));
 
     credit_instrument_data sut;
@@ -64,7 +62,7 @@ TEST_CASE("a_visitor_that_answers_false_is_not_reported_as_silence", tags) {
     CHECK(!*answered);
 }
 
-TEST_CASE("the_visitor_sees_the_one_fact_row_the_carrier_states", tags) {
+TEST_CASE("the_visitor_sees_the_one_fact_row_the_carrier_states", "[domain]") {
     auto lg(make_logger(test_suite));
 
     credit_instrument_data sut;
@@ -77,7 +75,7 @@ TEST_CASE("the_visitor_sees_the_one_fact_row_the_carrier_states", tags) {
     CHECK(*answered);
 }
 
-TEST_CASE("fact_rows_reaches_the_array_the_fact_type_lives_in", tags) {
+TEST_CASE("fact_rows_reaches_the_array_the_fact_type_lives_in", "[domain]") {
     auto lg(make_logger(test_suite));
 
     credit_instrument_data sut;

@@ -23,21 +23,15 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <set>
-
-namespace {
-
-const std::string_view test_suite("ores.assets.tests");
-const std::string tags("[generators]");
-
-}
 
 using namespace ores::assets::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("generate_single_image", tags) {
+TEST_CASE("generate_single_image", "[generators]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;
@@ -53,7 +47,7 @@ TEST_CASE("generate_single_image", tags) {
     CHECK(image.recorded_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("generate_multiple_images", tags) {
+TEST_CASE("generate_multiple_images", "[generators]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;
@@ -63,7 +57,7 @@ TEST_CASE("generate_multiple_images", tags) {
     CHECK(images.size() == 3);
 }
 
-TEST_CASE("generate_images_with_distinct_codes", tags) {
+TEST_CASE("generate_images_with_distinct_codes", "[generators]") {
     auto lg(make_logger(test_suite));
 
     generation_context ctx;

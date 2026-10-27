@@ -75,9 +75,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::account_contact_information>
-read_one(repository::account_contact_information_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::account_contact_information_key& key) {
+account_contact_information_read_one(repository::account_contact_information_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::account_contact_information_key& key) {
     return repo.read_latest_by_email(ctx, key.email);
 }
 
@@ -87,7 +87,8 @@ read_one(repository::account_contact_information_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::account_contact_information_key key_from(const domain::account_contact_information& v) {
+messaging::account_contact_information_key
+account_contact_information_key_from(const domain::account_contact_information& v) {
     messaging::account_contact_information_key key;
     key.email = v.email;
     return key;
@@ -101,7 +102,7 @@ messaging::account_contact_information_key key_from(const domain::account_contac
  * database's to state, and are set after this conversion.
  */
 domain::account_contact_information
-to_domain(const messaging::account_contact_information_write& write) {
+account_contact_information_to_domain(const messaging::account_contact_information_write& write) {
     domain::account_contact_information v;
     v.id = write.id;
     v.account_id = write.account_id;
@@ -198,7 +199,7 @@ messaging::get_account_contact_information_response
 account_contact_information_service::get_account_contact_information(
     const messaging::get_account_contact_information_request& request) {
     messaging::get_account_contact_information_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = account_contact_information_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "account_contact_information"});
@@ -219,7 +220,7 @@ account_contact_information_service::get_many_account_contact_informations(
     for (const auto& k : request.keys) {
         messaging::account_contact_information_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = account_contact_information_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.account_contact_information = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -236,7 +237,8 @@ account_contact_information_service::put_account_contact_information(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = account_contact_information_read_one(
+        repo_, ctx_, account_contact_information_key_from(value));
     if (!written.empty())
         response.account_contact_information = std::move(written.front());
     return response;
@@ -269,7 +271,8 @@ account_contact_information_service::put_many_account_contact_informations(
     repo_.write(ctx_, batch, claims);
     response.account_contact_informations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = account_contact_information_read_one(
+            repo_, ctx_, account_contact_information_key_from(value));
         response.account_contact_informations.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -294,7 +297,7 @@ account_contact_information_service::delete_account_contact_information(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = account_contact_information_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "account_contact_information"});
@@ -312,7 +315,8 @@ account_contact_information_service::delete_account_contact_information(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                account_contact_information_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "account_contact_information",
@@ -354,7 +358,7 @@ account_contact_information_service::delete_many_account_contact_informations(
     std::vector<domain::account_contact_information> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = account_contact_information_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -383,7 +387,7 @@ account_contact_information_service::list_account_contact_information_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = account_contact_information_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "account_contact_information"});
@@ -408,7 +412,8 @@ account_contact_information_service::get_account_contact_information_version(
     messaging::get_account_contact_information_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.account_contact_information);
+    const auto named =
+        account_contact_information_read_one(repo_, ctx_, request.key.account_contact_information);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "account_contact_information"});
@@ -432,8 +437,9 @@ ores::utility::domain::result account_contact_information_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = account_contact_information_to_domain(change.write);
+    const auto current = account_contact_information_read_one(
+        repo_, ctx_, account_contact_information_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -535,7 +541,7 @@ account_contact_information_service::get_account_contact_information_by_email(
     BOOST_LOG_SEV(lg(), debug) << "Getting account contact information by email: " << email;
     messaging::account_contact_information_key k;
     k.email = email;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = account_contact_information_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

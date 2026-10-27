@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::curve_correlation_config>
-read_one(repository::curve_correlation_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::curve_correlation_config_key& key) {
+curve_correlation_config_read_one(repository::curve_correlation_config_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const messaging::curve_correlation_config_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::curve_correlation_config_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::curve_correlation_config_key key_from(const domain::curve_correlation_config& v) {
+messaging::curve_correlation_config_key
+curve_correlation_config_key_from(const domain::curve_correlation_config& v) {
     messaging::curve_correlation_config_key key;
     key.id = v.id;
     return key;
@@ -99,7 +100,8 @@ messaging::curve_correlation_config_key key_from(const domain::curve_correlation
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::curve_correlation_config to_domain(const messaging::curve_correlation_config_write& write) {
+domain::curve_correlation_config
+curve_correlation_config_to_domain(const messaging::curve_correlation_config_write& write) {
     domain::curve_correlation_config v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -160,7 +162,7 @@ messaging::get_curve_correlation_config_response
 curve_correlation_config_service::get_curve_correlation_config(
     const messaging::get_curve_correlation_config_request& request) {
     messaging::get_curve_correlation_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = curve_correlation_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_correlation_config"});
         return response;
@@ -180,7 +182,7 @@ curve_correlation_config_service::get_many_curve_correlation_configs(
     for (const auto& k : request.keys) {
         messaging::curve_correlation_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = curve_correlation_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.curve_correlation_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -197,7 +199,8 @@ curve_correlation_config_service::put_curve_correlation_config(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        curve_correlation_config_read_one(repo_, ctx_, curve_correlation_config_key_from(value));
     if (!written.empty())
         response.curve_correlation_config = std::move(written.front());
     return response;
@@ -230,7 +233,8 @@ curve_correlation_config_service::put_many_curve_correlation_configs(
     repo_.write(ctx_, batch, claims);
     response.correlation_configs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = curve_correlation_config_read_one(
+            repo_, ctx_, curve_correlation_config_key_from(value));
         response.correlation_configs.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -266,7 +270,7 @@ curve_correlation_config_service::delete_curve_correlation_config(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = curve_correlation_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "curve_correlation_config",
@@ -358,8 +362,9 @@ ores::utility::domain::result curve_correlation_config_service::prepare_change(
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = curve_correlation_config_to_domain(change.write);
+    const auto current =
+        curve_correlation_config_read_one(repo_, ctx_, curve_correlation_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

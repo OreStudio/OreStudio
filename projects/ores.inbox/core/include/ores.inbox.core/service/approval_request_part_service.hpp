@@ -75,23 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_approval_request_parts_response
-    list_approval_request_parts(const messaging::list_approval_request_parts_request& request);
-    messaging::get_approval_request_part_response
-    get_approval_request_part(const messaging::get_approval_request_part_request& request);
-    messaging::get_many_approval_request_parts_response get_many_approval_request_parts(
-        const messaging::get_many_approval_request_parts_request& request);
-    messaging::put_approval_request_part_response
-    put_approval_request_part(const messaging::put_approval_request_part_request& request);
-    messaging::put_many_approval_request_parts_response put_many_approval_request_parts(
-        const messaging::put_many_approval_request_parts_request& request);
-    messaging::delete_approval_request_part_response
-    delete_approval_request_part(const messaging::delete_approval_request_part_request& request);
-    messaging::delete_many_approval_request_parts_response delete_many_approval_request_parts(
-        const messaging::delete_many_approval_request_parts_request& request);
-    messaging::list_by_request_id_approval_request_parts_response
+    ::ores::inbox::messaging::list_approval_request_parts_response list_approval_request_parts(
+        const ::ores::inbox::messaging::list_approval_request_parts_request& request);
+    ::ores::inbox::messaging::get_approval_request_part_response get_approval_request_part(
+        const ::ores::inbox::messaging::get_approval_request_part_request& request);
+    ::ores::inbox::messaging::get_many_approval_request_parts_response
+    get_many_approval_request_parts(
+        const ::ores::inbox::messaging::get_many_approval_request_parts_request& request);
+    ::ores::inbox::messaging::put_approval_request_part_response put_approval_request_part(
+        const ::ores::inbox::messaging::put_approval_request_part_request& request);
+    ::ores::inbox::messaging::put_many_approval_request_parts_response
+    put_many_approval_request_parts(
+        const ::ores::inbox::messaging::put_many_approval_request_parts_request& request);
+    ::ores::inbox::messaging::delete_approval_request_part_response delete_approval_request_part(
+        const ::ores::inbox::messaging::delete_approval_request_part_request& request);
+    ::ores::inbox::messaging::delete_many_approval_request_parts_response
+    delete_many_approval_request_parts(
+        const ::ores::inbox::messaging::delete_many_approval_request_parts_request& request);
+    ::ores::inbox::messaging::list_by_request_id_approval_request_parts_response
     list_by_request_id_approval_request_parts(
-        const messaging::list_by_request_id_approval_request_parts_request& request);
+        const ::ores::inbox::messaging::list_by_request_id_approval_request_parts_request& request);
     /**@}*/
 
 private:
@@ -112,7 +115,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::approval_request_part_change& change,
+    prepare_change(const ::ores::inbox::messaging::approval_request_part_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::approval_request_part& out);
 };

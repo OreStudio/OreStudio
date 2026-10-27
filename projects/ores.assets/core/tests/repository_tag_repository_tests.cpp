@@ -26,17 +26,11 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.assets.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::assets::generators;
 using ores::assets::domain::tag;
@@ -44,7 +38,7 @@ using ores::assets::repository::tag_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_tag", tags) {
+TEST_CASE("write_single_tag", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -56,7 +50,7 @@ TEST_CASE("write_single_tag", tags) {
     CHECK_NOTHROW(repo.write(h.context(), t));
 }
 
-TEST_CASE("write_multiple_tags", tags) {
+TEST_CASE("write_multiple_tags", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -68,7 +62,7 @@ TEST_CASE("write_multiple_tags", tags) {
     CHECK_NOTHROW(repo.write(h.context(), tag_list));
 }
 
-TEST_CASE("read_latest_tags", tags) {
+TEST_CASE("read_latest_tags", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -91,7 +85,7 @@ TEST_CASE("read_latest_tags", tags) {
     }
 }
 
-TEST_CASE("read_latest_tag_by_id", tags) {
+TEST_CASE("read_latest_tag_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -114,7 +108,7 @@ TEST_CASE("read_latest_tag_by_id", tags) {
     CHECK(read_tags[0].description == original_description + " v2");
 }
 
-TEST_CASE("read_latest_tag_by_name", tags) {
+TEST_CASE("read_latest_tag_by_name", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -133,7 +127,7 @@ TEST_CASE("read_latest_tag_by_name", tags) {
     CHECK(read_tags[0].id == t.id);
 }
 
-TEST_CASE("read_all_tag_versions", tags) {
+TEST_CASE("read_all_tag_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -160,7 +154,7 @@ TEST_CASE("read_all_tag_versions", tags) {
     CHECK(read_tags[1].description == original_description);
 }
 
-TEST_CASE("read_nonexistent_tag_id", tags) {
+TEST_CASE("read_nonexistent_tag_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

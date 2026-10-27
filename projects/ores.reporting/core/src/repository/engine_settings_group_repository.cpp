@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+engine_settings_group_list_order(const ores::utility::domain::order& order,
+                                 std::initializer_list<std::string> default_columns,
+                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!engine_settings_group_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::engine_settings_groups_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> engine_settings_group_filter_condition(
+    const std::optional<messaging::engine_settings_groups_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -310,8 +311,8 @@ std::vector<domain::engine_settings_group> engine_settings_group_repository::rea
     return execute_ordered_read_query<engine_settings_group_entity, domain::engine_settings_group>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        engine_settings_group_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), engine_settings_group_filter_condition(filter)),
         [](const auto& entities) { return engine_settings_group_mapper::map(entities); },
         lg(),
         "Reading latest engine settings groups with pagination.");
@@ -330,7 +331,7 @@ std::uint32_t engine_settings_group_repository::get_total_group_count(
     return execute_count_query<engine_settings_group_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), engine_settings_group_filter_condition(filter)),
         lg(),
         "Counting engine settings groups");
 }

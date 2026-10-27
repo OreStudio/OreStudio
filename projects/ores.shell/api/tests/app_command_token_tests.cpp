@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_token.hpp"
+#include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -29,17 +30,10 @@
 #include <optional>
 #include <string>
 
-namespace {
-
-const std::string_view test_suite("ores.shell.tests");
-const std::string tags("[app]");
-
-}
-
 using ores::shell::app::from_token;
 using namespace ores::logging;
 
-TEST_CASE("from_token_takes_a_string_token_verbatim", tags) {
+TEST_CASE("from_token_takes_a_string_token_verbatim", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK(from_token<std::string>("42") == "42");
@@ -47,7 +41,7 @@ TEST_CASE("from_token_takes_a_string_token_verbatim", tags) {
     CHECK(from_token<std::string>("") == "");
 }
 
-TEST_CASE("from_token_converts_a_typed_token", tags) {
+TEST_CASE("from_token_converts_a_typed_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK(from_token<int>("7") == 7);
@@ -55,14 +49,14 @@ TEST_CASE("from_token_converts_a_typed_token", tags) {
     CHECK(from_token<double>("1100000.5") == 1100000.5);
 }
 
-TEST_CASE("from_token_parses_a_uuid_token", tags) {
+TEST_CASE("from_token_parses_a_uuid_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     const auto text = "01234567-89ab-cdef-0123-456789abcdef";
     CHECK(boost::lexical_cast<std::string>(from_token<boost::uuids::uuid>(text)) == text);
 }
 
-TEST_CASE("from_token_reads_a_bool_token", tags) {
+TEST_CASE("from_token_reads_a_bool_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK(from_token<bool>("true"));
@@ -70,7 +64,7 @@ TEST_CASE("from_token_reads_a_bool_token", tags) {
     CHECK_FALSE(from_token<bool>("false"));
 }
 
-TEST_CASE("from_token_leaves_an_optional_unset_on_the_absent_token", tags) {
+TEST_CASE("from_token_leaves_an_optional_unset_on_the_absent_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(from_token<std::optional<int>>("-").has_value());
@@ -78,7 +72,7 @@ TEST_CASE("from_token_leaves_an_optional_unset_on_the_absent_token", tags) {
     CHECK_FALSE(from_token<std::optional<boost::uuids::uuid>>("-").has_value());
 }
 
-TEST_CASE("from_token_fills_an_optional_from_a_present_token", tags) {
+TEST_CASE("from_token_fills_an_optional_from_a_present_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     REQUIRE(from_token<std::optional<int>>("7").has_value());
@@ -87,14 +81,14 @@ TEST_CASE("from_token_fills_an_optional_from_a_present_token", tags) {
     CHECK(*from_token<std::optional<std::string>>("Cash") == "Cash");
 }
 
-TEST_CASE("from_token_rejects_a_malformed_typed_token", tags) {
+TEST_CASE("from_token_rejects_a_malformed_typed_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     CHECK_THROWS_AS(from_token<int>("not-a-number"), boost::bad_lexical_cast);
     CHECK_THROWS_AS(from_token<boost::uuids::uuid>("not-a-uuid"), boost::bad_lexical_cast);
 }
 
-TEST_CASE("from_token_converts_an_instant_token", tags) {
+TEST_CASE("from_token_converts_an_instant_token", "[app]") {
     auto lg(make_logger(test_suite));
 
     // The storage form is the token a caller types, so a token parses back to

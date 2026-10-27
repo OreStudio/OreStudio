@@ -76,24 +76,30 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_curve_parametric_smiles_response
-    list_curve_parametric_smiles(const messaging::list_curve_parametric_smiles_request& request);
-    messaging::get_curve_parametric_smile_response
-    get_curve_parametric_smile(const messaging::get_curve_parametric_smile_request& request);
-    messaging::get_many_curve_parametric_smiles_response get_many_curve_parametric_smiles(
-        const messaging::get_many_curve_parametric_smiles_request& request);
-    messaging::put_curve_parametric_smile_response
-    put_curve_parametric_smile(const messaging::put_curve_parametric_smile_request& request);
-    messaging::put_many_curve_parametric_smiles_response put_many_curve_parametric_smiles(
-        const messaging::put_many_curve_parametric_smiles_request& request);
-    messaging::delete_curve_parametric_smile_response
-    delete_curve_parametric_smile(const messaging::delete_curve_parametric_smile_request& request);
-    messaging::delete_many_curve_parametric_smiles_response delete_many_curve_parametric_smiles(
-        const messaging::delete_many_curve_parametric_smiles_request& request);
-    messaging::list_curve_parametric_smile_versions_response list_curve_parametric_smile_versions(
-        const messaging::list_curve_parametric_smile_versions_request& request);
-    messaging::get_curve_parametric_smile_version_response get_curve_parametric_smile_version(
-        const messaging::get_curve_parametric_smile_version_request& request);
+    ::ores::refdata::messaging::list_curve_parametric_smiles_response list_curve_parametric_smiles(
+        const ::ores::refdata::messaging::list_curve_parametric_smiles_request& request);
+    ::ores::refdata::messaging::get_curve_parametric_smile_response get_curve_parametric_smile(
+        const ::ores::refdata::messaging::get_curve_parametric_smile_request& request);
+    ::ores::refdata::messaging::get_many_curve_parametric_smiles_response
+    get_many_curve_parametric_smiles(
+        const ::ores::refdata::messaging::get_many_curve_parametric_smiles_request& request);
+    ::ores::refdata::messaging::put_curve_parametric_smile_response put_curve_parametric_smile(
+        const ::ores::refdata::messaging::put_curve_parametric_smile_request& request);
+    ::ores::refdata::messaging::put_many_curve_parametric_smiles_response
+    put_many_curve_parametric_smiles(
+        const ::ores::refdata::messaging::put_many_curve_parametric_smiles_request& request);
+    ::ores::refdata::messaging::delete_curve_parametric_smile_response
+    delete_curve_parametric_smile(
+        const ::ores::refdata::messaging::delete_curve_parametric_smile_request& request);
+    ::ores::refdata::messaging::delete_many_curve_parametric_smiles_response
+    delete_many_curve_parametric_smiles(
+        const ::ores::refdata::messaging::delete_many_curve_parametric_smiles_request& request);
+    ::ores::refdata::messaging::list_curve_parametric_smile_versions_response
+    list_curve_parametric_smile_versions(
+        const ::ores::refdata::messaging::list_curve_parametric_smile_versions_request& request);
+    ::ores::refdata::messaging::get_curve_parametric_smile_version_response
+    get_curve_parametric_smile_version(
+        const ::ores::refdata::messaging::get_curve_parametric_smile_version_request& request);
     /**@}*/
 
     /**
@@ -195,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::curve_parametric_smile_change& change,
+    prepare_change(const ::ores::refdata::messaging::curve_parametric_smile_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::curve_parametric_smile& out);
 };

@@ -73,9 +73,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::commodity_basket_constituent>
-read_one(repository::commodity_basket_constituent_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::commodity_basket_constituent_key& key) {
+commodity_basket_constituent_read_one(repository::commodity_basket_constituent_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const messaging::commodity_basket_constituent_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
 }
@@ -87,7 +87,7 @@ read_one(repository::commodity_basket_constituent_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::commodity_basket_constituent_key
-key_from(const domain::commodity_basket_constituent& v) {
+commodity_basket_constituent_key_from(const domain::commodity_basket_constituent& v) {
     messaging::commodity_basket_constituent_key key;
     key.trade_id = v.trade_id;
     key.sequence_number = v.sequence_number;
@@ -102,7 +102,7 @@ key_from(const domain::commodity_basket_constituent& v) {
  * database's to state, and are set after this conversion.
  */
 domain::commodity_basket_constituent
-to_domain(const messaging::commodity_basket_constituent_write& write) {
+commodity_basket_constituent_to_domain(const messaging::commodity_basket_constituent_write& write) {
     domain::commodity_basket_constituent v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
@@ -184,7 +184,7 @@ messaging::get_commodity_basket_constituent_response
 commodity_basket_constituent_service::get_commodity_basket_constituent(
     const messaging::get_commodity_basket_constituent_request& request) {
     messaging::get_commodity_basket_constituent_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = commodity_basket_constituent_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "commodity_basket_constituent"});
@@ -205,7 +205,7 @@ commodity_basket_constituent_service::get_many_commodity_basket_constituents(
     for (const auto& k : request.keys) {
         messaging::commodity_basket_constituent_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = commodity_basket_constituent_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.commodity_basket_constituent = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -222,7 +222,8 @@ commodity_basket_constituent_service::put_commodity_basket_constituent(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = commodity_basket_constituent_read_one(
+        repo_, ctx_, commodity_basket_constituent_key_from(value));
     if (!written.empty())
         response.commodity_basket_constituent = std::move(written.front());
     return response;
@@ -255,7 +256,8 @@ commodity_basket_constituent_service::put_many_commodity_basket_constituents(
     repo_.write(ctx_, batch, claims);
     response.commodity_basket_constituents.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = commodity_basket_constituent_read_one(
+            repo_, ctx_, commodity_basket_constituent_key_from(value));
         response.commodity_basket_constituents.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -294,7 +296,8 @@ commodity_basket_constituent_service::delete_commodity_basket_constituent(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                commodity_basket_constituent_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "commodity_basket_constituent",
@@ -394,8 +397,9 @@ ores::utility::domain::result commodity_basket_constituent_service::prepare_chan
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = commodity_basket_constituent_to_domain(change.write);
+    const auto current = commodity_basket_constituent_read_one(
+        repo_, ctx_, commodity_basket_constituent_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

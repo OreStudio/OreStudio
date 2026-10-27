@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::cds_convention> read_one(repository::cds_convention_repository& repo,
-                                             const ores::database::context& ctx,
-                                             const messaging::cds_convention_key& key) {
+std::vector<domain::cds_convention>
+cds_convention_read_one(repository::cds_convention_repository& repo,
+                        const ores::database::context& ctx,
+                        const messaging::cds_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::cds_convention> read_one(repository::cds_convention_reposito
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::cds_convention_key key_from(const domain::cds_convention& v) {
+messaging::cds_convention_key cds_convention_key_from(const domain::cds_convention& v) {
     messaging::cds_convention_key key;
     key.id = v.id;
     return key;
@@ -94,7 +95,7 @@ messaging::cds_convention_key key_from(const domain::cds_convention& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::cds_convention to_domain(const messaging::cds_convention_write& write) {
+domain::cds_convention cds_convention_to_domain(const messaging::cds_convention_write& write) {
     domain::cds_convention v;
     v.id = write.id;
     v.settlement_days = write.settlement_days;
@@ -148,7 +149,7 @@ messaging::list_cds_conventions_response cds_convention_service::list_cds_conven
 messaging::get_cds_convention_response
 cds_convention_service::get_cds_convention(const messaging::get_cds_convention_request& request) {
     messaging::get_cds_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = cds_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "cds_convention"});
         return response;
@@ -167,7 +168,7 @@ messaging::get_many_cds_conventions_response cds_convention_service::get_many_cd
     for (const auto& k : request.keys) {
         messaging::cds_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = cds_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.cds_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +184,7 @@ cds_convention_service::put_cds_convention(const messaging::put_cds_convention_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = cds_convention_read_one(repo_, ctx_, cds_convention_key_from(value));
     if (!written.empty())
         response.cds_convention = std::move(written.front());
     return response;
@@ -215,7 +216,7 @@ messaging::put_many_cds_conventions_response cds_convention_service::put_many_cd
     repo_.write(ctx_, batch, claims);
     response.cds_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = cds_convention_read_one(repo_, ctx_, cds_convention_key_from(value));
         response.cds_conventions.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -248,7 +249,7 @@ messaging::delete_cds_convention_response cds_convention_service::delete_cds_con
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = cds_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "cds_convention",
@@ -333,8 +334,8 @@ cds_convention_service::prepare_change(const messaging::cds_convention_change& c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = cds_convention_to_domain(change.write);
+    const auto current = cds_convention_read_one(repo_, ctx_, cds_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

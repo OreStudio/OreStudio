@@ -69,10 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::ore_parameter_value_set_catalogue>
-read_one(repository::ore_parameter_value_set_catalogue_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::ore_parameter_value_set_catalogue_key& key) {
+std::vector<domain::ore_parameter_value_set_catalogue> ore_parameter_value_set_catalogue_read_one(
+    repository::ore_parameter_value_set_catalogue_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::ore_parameter_value_set_catalogue_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -83,7 +83,7 @@ read_one(repository::ore_parameter_value_set_catalogue_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::ore_parameter_value_set_catalogue_key
-key_from(const domain::ore_parameter_value_set_catalogue& v) {
+ore_parameter_value_set_catalogue_key_from(const domain::ore_parameter_value_set_catalogue& v) {
     messaging::ore_parameter_value_set_catalogue_key key;
     key.code = v.code;
     return key;
@@ -96,8 +96,8 @@ key_from(const domain::ore_parameter_value_set_catalogue& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::ore_parameter_value_set_catalogue
-to_domain(const messaging::ore_parameter_value_set_catalogue_write& write) {
+domain::ore_parameter_value_set_catalogue ore_parameter_value_set_catalogue_to_domain(
+    const messaging::ore_parameter_value_set_catalogue_write& write) {
     domain::ore_parameter_value_set_catalogue v;
     v.code = write.code;
     v.name = write.name;
@@ -149,7 +149,7 @@ messaging::get_ore_parameter_value_set_catalogue_response
 ore_parameter_value_set_catalogue_service::get_ore_parameter_value_set_catalogue(
     const messaging::get_ore_parameter_value_set_catalogue_request& request) {
     messaging::get_ore_parameter_value_set_catalogue_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = ore_parameter_value_set_catalogue_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "ore_parameter_value_set_catalogue"});
@@ -170,7 +170,7 @@ ore_parameter_value_set_catalogue_service::get_many_ore_parameter_value_set_cata
     for (const auto& k : request.keys) {
         messaging::ore_parameter_value_set_catalogue_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = ore_parameter_value_set_catalogue_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.ore_parameter_value_set_catalogue = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -187,7 +187,8 @@ ore_parameter_value_set_catalogue_service::put_ore_parameter_value_set_catalogue
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = ore_parameter_value_set_catalogue_read_one(
+        repo_, ctx_, ore_parameter_value_set_catalogue_key_from(value));
     if (!written.empty())
         response.ore_parameter_value_set_catalogue = std::move(written.front());
     return response;
@@ -220,7 +221,8 @@ ore_parameter_value_set_catalogue_service::put_many_ore_parameter_value_set_cata
     repo_.write(ctx_, batch, claims);
     response.catalogues.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = ore_parameter_value_set_catalogue_read_one(
+            repo_, ctx_, ore_parameter_value_set_catalogue_key_from(value));
         response.catalogues.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -255,7 +257,8 @@ ore_parameter_value_set_catalogue_service::delete_ore_parameter_value_set_catalo
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                ore_parameter_value_set_catalogue_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "ore_parameter_value_set_catalogue",
@@ -346,8 +349,9 @@ ores::utility::domain::result ore_parameter_value_set_catalogue_service::prepare
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = ore_parameter_value_set_catalogue_to_domain(change.write);
+    const auto current = ore_parameter_value_set_catalogue_read_one(
+        repo_, ctx_, ore_parameter_value_set_catalogue_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

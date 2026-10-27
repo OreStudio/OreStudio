@@ -28,8 +28,6 @@
 
 namespace {
 
-const std::string tags("[datum][market_datum]");
-
 using namespace ores::marketdata::datum;
 
 term t(const char* s) {
@@ -64,7 +62,7 @@ std::vector<field_value> without(std::vector<field_value> fields, field f) {
 
 }
 
-TEST_CASE("a_datum_holds_its_fields_in_the_order_its_key_writes_them", tags) {
+TEST_CASE("a_datum_holds_its_fields_in_the_order_its_key_writes_them", "[datum][market_datum]") {
     const auto datum = cds();
     std::vector<field> order;
     for (const auto& fv : datum.fields())
@@ -80,7 +78,7 @@ TEST_CASE("a_datum_holds_its_fields_in_the_order_its_key_writes_them", tags) {
     CHECK_FALSE(datum.is_series());
 }
 
-TEST_CASE("a_datum_reads_its_fields_with_their_types", tags) {
+TEST_CASE("a_datum_reads_its_fields_with_their_types", "[datum][market_datum]") {
     const auto datum = cds();
     const auto* name = datum.get<field::underlying_name>();
     REQUIRE(name);
@@ -93,7 +91,7 @@ TEST_CASE("a_datum_reads_its_fields_with_their_types", tags) {
     CHECK_THROWS_AS(datum.at(field::strike), std::out_of_range);
 }
 
-TEST_CASE("a_datum_refuses_fields_that_do_not_match_its_row", tags) {
+TEST_CASE("a_datum_refuses_fields_that_do_not_match_its_row", "[datum][market_datum]") {
     using q = quote_type;
     const auto type = instrument_type::cds;
 
@@ -127,7 +125,7 @@ TEST_CASE("a_datum_refuses_fields_that_do_not_match_its_row", tags) {
     }
 }
 
-TEST_CASE("a_code_must_be_one_its_field_takes", tags) {
+TEST_CASE("a_code_must_be_one_its_field_takes", "[datum][market_datum]") {
     const auto make = [](code cap_floor) {
         return market_datum::make(instrument_type::zc_inflation_capfloor,
                                   quote_type::price,
@@ -155,7 +153,7 @@ TEST_CASE("a_code_must_be_one_its_field_takes", tags) {
     CHECK_FALSE(shape(c("UNIT")));
 }
 
-TEST_CASE("free_text_keeps_its_case", tags) {
+TEST_CASE("free_text_keeps_its_case", "[datum][market_datum]") {
     const auto datum = market_datum::make(instrument_type::equity_spot,
                                           quote_type::price,
                                           {{field::eq_name, std::string("Lufthansa")},
@@ -164,7 +162,7 @@ TEST_CASE("free_text_keeps_its_case", tags) {
     CHECK(*datum.get<field::eq_name>() == "Lufthansa");
 }
 
-TEST_CASE("free_text_cannot_be_empty", tags) {
+TEST_CASE("free_text_cannot_be_empty", "[datum][market_datum]") {
     const auto datum =
         market_datum::make(instrument_type::equity_spot,
                            quote_type::price,
@@ -179,7 +177,7 @@ TEST_CASE("free_text_cannot_be_empty", tags) {
     CHECK_FALSE(series);
 }
 
-TEST_CASE("two_datums_are_equal_when_every_part_is", tags) {
+TEST_CASE("two_datums_are_equal_when_every_part_is", "[datum][market_datum]") {
     CHECK(cds() == cds());
     auto fields = without(cds_fields(), field::term);
     fields.push_back({field::term, t("10Y")});
@@ -191,7 +189,7 @@ TEST_CASE("two_datums_are_equal_when_every_part_is", tags) {
     CHECK(cds() != priced);
 }
 
-TEST_CASE("series_of_drops_exactly_the_coordinate_fields", tags) {
+TEST_CASE("series_of_drops_exactly_the_coordinate_fields", "[datum][market_datum]") {
     const auto datum = cds();
     const auto series = series_of(datum);
     CHECK(series.is_series());
@@ -212,7 +210,7 @@ TEST_CASE("series_of_drops_exactly_the_coordinate_fields", tags) {
     CHECK(series_of(series) == series);
 }
 
-TEST_CASE("a_series_refuses_a_coordinate", tags) {
+TEST_CASE("a_series_refuses_a_coordinate", "[datum][market_datum]") {
     CHECK_FALSE(market_datum::make_series(instrument_type::fx_fwd,
                                           quote_type::rate,
                                           {{field::unit_ccy, std::string("EUR")},
@@ -224,7 +222,7 @@ TEST_CASE("a_series_refuses_a_coordinate", tags) {
         {{field::unit_ccy, std::string("EUR")}, {field::ccy, std::string("USD")}}));
 }
 
-TEST_CASE("every_name_reads_back_to_what_it_names", tags) {
+TEST_CASE("every_name_reads_back_to_what_it_names", "[datum][market_datum]") {
     for (std::size_t i = 0; i < instrument_type_count; ++i) {
         const auto type = static_cast<instrument_type>(i);
         CHECK(instrument_type_named(ore_name(type)) == type);
@@ -241,7 +239,8 @@ TEST_CASE("every_name_reads_back_to_what_it_names", tags) {
     CHECK_FALSE(field_named("settle"));
 }
 
-TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary", tags) {
+TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary",
+          "[datum][market_datum]") {
     std::set<field> used;
     for (const auto& row : schema) {
         for (const auto& spec : row.fields)
@@ -255,7 +254,7 @@ TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary
     }
 }
 
-TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", tags) {
+TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", "[datum][market_datum]") {
     std::set<asset_class> used;
     for (const auto& row : schema)
         used.insert(row.asset);
@@ -270,7 +269,8 @@ TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", tags) {
     CHECK_FALSE(asset_class_named("interest_rates"));
 }
 
-TEST_CASE("every_asset_class_but_correlation_and_generic_is_a_refdata_asset_class", tags) {
+TEST_CASE("every_asset_class_but_correlation_and_generic_is_a_refdata_asset_class",
+          "[datum][market_datum]") {
     using ores::marketdata::domain::asset_class_for_authority;
     for (std::size_t i = 0; i < asset_class_count; ++i) {
         const auto a = static_cast<asset_class>(i);

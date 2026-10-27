@@ -988,11 +988,11 @@ Hand-crafted subjects wired into the generated =party_registrar.cpp= via the
 
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
     subs.push_back(nats.queue_subscribe(
-        get_party_composite_as_of_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_party_composite_as_of_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->composite_as_of(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_party_composite_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_party_composite_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->put_composite(std::move(msg));
         }));
 #+end_src

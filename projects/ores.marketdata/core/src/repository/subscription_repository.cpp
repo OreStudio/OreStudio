@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy subscription_list_order(const ores::utility::domain::order& order,
+                                                 std::initializer_list<std::string> default_columns,
+                                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!subscription_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::subscriptions_filter>& filter) {
+subscription_filter_condition(const std::optional<messaging::subscriptions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -365,8 +365,8 @@ subscription_repository::read_latest(context ctx,
     return execute_ordered_read_query<subscription_entity, domain::subscription>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        subscription_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), subscription_filter_condition(filter)),
         [](const auto& entities) { return subscription_mapper::map(entities); },
         lg(),
         "Reading latest subscriptions with pagination.");
@@ -384,7 +384,7 @@ std::uint32_t subscription_repository::get_total_subscription_count(
     return execute_count_query<subscription_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), subscription_filter_condition(filter)),
         lg(),
         "Counting subscriptions");
 }

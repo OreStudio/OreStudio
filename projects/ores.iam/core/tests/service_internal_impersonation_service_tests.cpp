@@ -20,14 +20,12 @@
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[service][internal_impersonation_service]");
 
 const std::string test_secret("super-secret-key-for-testing-purposes-only-32bytes!");
 
@@ -37,7 +35,8 @@ using namespace ores::logging;
 using ores::testing::scoped_database_helper;
 using ores::iam::service::internal_impersonation_service;
 
-TEST_CASE("mint_token_produces_a_token_validating_to_the_impersonated_identity", tags) {
+TEST_CASE("mint_token_produces_a_token_validating_to_the_impersonated_identity",
+          "[service][internal_impersonation_service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -63,7 +62,7 @@ TEST_CASE("mint_token_produces_a_token_validating_to_the_impersonated_identity",
     CHECK(claims->visible_party_ids.size() == 2);
 }
 
-TEST_CASE("mint_token_respects_the_requested_ttl", tags) {
+TEST_CASE("mint_token_respects_the_requested_ttl", "[service][internal_impersonation_service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

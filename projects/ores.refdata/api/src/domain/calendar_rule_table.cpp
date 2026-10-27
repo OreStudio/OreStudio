@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string calendar_rule_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,11 @@ std::string convert_to_table(const std::vector<calendar_rule>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rule : v) {
-        table << rule.calendar_code << rule.kind << opt_str(rule.month) << opt_str(rule.day)
-              << rule.shift << opt_str(rule.effective_from) << opt_str(rule.effective_to)
-              << rule.modified_by << rule.version << fort::endr;
+        table << rule.calendar_code << rule.kind << calendar_rule_opt_str(rule.month)
+              << calendar_rule_opt_str(rule.day) << rule.shift
+              << calendar_rule_opt_str(rule.effective_from)
+              << calendar_rule_opt_str(rule.effective_to) << rule.modified_by << rule.version
+              << fort::endr;
     }
     return table.to_string();
 }

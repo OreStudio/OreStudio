@@ -55,7 +55,7 @@ namespace {
  * carry an empty argument: the tokenizer drops one, and a command whose list
  * field should be empty has no other way to say so.
  */
-std::vector<std::string> split_list_token(const std::string& value) {
+std::vector<std::string> approval_operations_split_list_token(const std::string& value) {
     if (value == "__none__")
         return {};
     std::vector<std::string> parts;
@@ -192,7 +192,7 @@ void approval_operations_operations_commands::process_raise_approval(
     try {
         req.kind_code = parsed->positionals[next++];
         req.reason = parsed->positionals[next++];
-        req.part_codes = split_list_token(parsed->positionals[next++]);
+        req.part_codes = approval_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

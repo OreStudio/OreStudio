@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy run_grant_list_order(const ores::utility::domain::order& order,
+                                              std::initializer_list<std::string> default_columns,
+                                              bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!run_grant_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::run_grants_filter>& filter) {
+run_grant_filter_condition(const std::optional<messaging::run_grants_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -323,8 +323,8 @@ std::vector<domain::run_grant> run_grant_repository::read_latest_by_grantor_acco
     return execute_ordered_read_query<run_grant_entity, domain::run_grant>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        run_grant_list_order(order, {"id"}, false),
+        run_grant_filter_condition(filter),
         [](const auto& entities) { return run_grant_mapper::map(entities); },
         lg(),
         "Reading latest run grants by grantor_account_id.");
@@ -343,8 +343,11 @@ std::uint32_t run_grant_repository::get_total_grant_count_by_grantor_account_id(
                        where("tenant_id"_c == tid && "grantor_account_id"_c == grantor_account_id &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<run_grant_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting run grants by grantor_account_id");
+    return execute_count_query<run_grant_entity>(ctx,
+                                                 query,
+                                                 run_grant_filter_condition(filter),
+                                                 lg(),
+                                                 "Counting run grants by grantor_account_id");
 }
 
 
@@ -397,8 +400,8 @@ run_grant_repository::read_latest(context ctx,
     return execute_ordered_read_query<run_grant_entity, domain::run_grant>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        run_grant_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), run_grant_filter_condition(filter)),
         [](const auto& entities) { return run_grant_mapper::map(entities); },
         lg(),
         "Reading latest run grants with pagination.");
@@ -416,7 +419,7 @@ std::uint32_t run_grant_repository::get_total_grant_count(
     return execute_count_query<run_grant_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), run_grant_filter_condition(filter)),
         lg(),
         "Counting run grants");
 }

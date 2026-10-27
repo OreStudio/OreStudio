@@ -24,17 +24,11 @@
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[eventing]");
-
-}
 
 using ores::iam::eventing::role_assigned_event;
 using ores::iam::eventing::role_revoked_event;
@@ -44,7 +38,7 @@ using ores::eventing::domain::has_event_traits;
 using namespace ores::iam::domain::permissions;
 using namespace ores::logging;
 
-TEST_CASE("event_traits_role_assigned_event", tags) {
+TEST_CASE("event_traits_role_assigned_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Testing role_assigned_event traits";
@@ -53,7 +47,7 @@ TEST_CASE("event_traits_role_assigned_event", tags) {
     STATIC_REQUIRE(has_event_traits<role_assigned_event>);
 }
 
-TEST_CASE("event_traits_role_revoked_event", tags) {
+TEST_CASE("event_traits_role_revoked_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Testing role_revoked_event traits";
@@ -62,7 +56,7 @@ TEST_CASE("event_traits_role_revoked_event", tags) {
     STATIC_REQUIRE(has_event_traits<role_revoked_event>);
 }
 
-TEST_CASE("event_traits_account_permissions_changed_event", tags) {
+TEST_CASE("event_traits_account_permissions_changed_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Testing account_permissions_changed_event traits";
@@ -72,7 +66,7 @@ TEST_CASE("event_traits_account_permissions_changed_event", tags) {
     STATIC_REQUIRE(has_event_traits<account_permissions_changed_event>);
 }
 
-TEST_CASE("create_role_assigned_event", tags) {
+TEST_CASE("create_role_assigned_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     role_assigned_event sut;
@@ -87,7 +81,7 @@ TEST_CASE("create_role_assigned_event", tags) {
     CHECK(!sut.role_id.is_nil());
 }
 
-TEST_CASE("create_role_revoked_event", tags) {
+TEST_CASE("create_role_revoked_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     role_revoked_event sut;
@@ -102,7 +96,7 @@ TEST_CASE("create_role_revoked_event", tags) {
     CHECK(!sut.role_id.is_nil());
 }
 
-TEST_CASE("create_account_permissions_changed_event", tags) {
+TEST_CASE("create_account_permissions_changed_event", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     account_permissions_changed_event sut;
@@ -117,7 +111,7 @@ TEST_CASE("create_account_permissions_changed_event", tags) {
     CHECK(sut.permission_codes.size() == 3);
 }
 
-TEST_CASE("account_permissions_changed_event_with_wildcard", tags) {
+TEST_CASE("account_permissions_changed_event_with_wildcard", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     account_permissions_changed_event sut;
@@ -133,7 +127,7 @@ TEST_CASE("account_permissions_changed_event_with_wildcard", tags) {
     CHECK(sut.permission_codes[0] == "*");
 }
 
-TEST_CASE("account_permissions_changed_event_empty_permissions", tags) {
+TEST_CASE("account_permissions_changed_event_empty_permissions", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     account_permissions_changed_event sut;
@@ -147,7 +141,7 @@ TEST_CASE("account_permissions_changed_event_empty_permissions", tags) {
     CHECK(sut.permission_codes.empty());
 }
 
-TEST_CASE("event_bus_role_assigned_subscription", tags) {
+TEST_CASE("event_bus_role_assigned_subscription", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     ores::eventing::service::event_bus bus;
@@ -174,7 +168,7 @@ TEST_CASE("event_bus_role_assigned_subscription", tags) {
     CHECK(received_role_id == event.role_id);
 }
 
-TEST_CASE("event_bus_role_revoked_subscription", tags) {
+TEST_CASE("event_bus_role_revoked_subscription", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     ores::eventing::service::event_bus bus;
@@ -201,7 +195,7 @@ TEST_CASE("event_bus_role_revoked_subscription", tags) {
     CHECK(received_role_id == event.role_id);
 }
 
-TEST_CASE("event_bus_permissions_changed_subscription", tags) {
+TEST_CASE("event_bus_permissions_changed_subscription", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     ores::eventing::service::event_bus bus;
@@ -229,7 +223,7 @@ TEST_CASE("event_bus_permissions_changed_subscription", tags) {
     CHECK(received_permission_codes.size() == 2);
 }
 
-TEST_CASE("event_bus_role_events_isolation", tags) {
+TEST_CASE("event_bus_role_events_isolation", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     ores::eventing::service::event_bus bus;
@@ -259,7 +253,7 @@ TEST_CASE("event_bus_role_events_isolation", tags) {
     CHECK_FALSE(permissions_changed_received);
 }
 
-TEST_CASE("create_role_assigned_event_with_faker", tags) {
+TEST_CASE("create_role_assigned_event_with_faker", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
@@ -278,7 +272,7 @@ TEST_CASE("create_role_assigned_event_with_faker", tags) {
     }
 }
 
-TEST_CASE("create_account_permissions_changed_event_with_faker", tags) {
+TEST_CASE("create_account_permissions_changed_event_with_faker", "[eventing]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> available_permissions = {accounts_read,

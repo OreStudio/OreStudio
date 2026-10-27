@@ -74,23 +74,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_dataset_bundle_members_response
-    list_dataset_bundle_members(const messaging::list_dataset_bundle_members_request& request);
-    messaging::get_dataset_bundle_member_response
-    get_dataset_bundle_member(const messaging::get_dataset_bundle_member_request& request);
-    messaging::get_many_dataset_bundle_members_response get_many_dataset_bundle_members(
-        const messaging::get_many_dataset_bundle_members_request& request);
-    messaging::put_dataset_bundle_member_response
-    put_dataset_bundle_member(const messaging::put_dataset_bundle_member_request& request);
-    messaging::put_many_dataset_bundle_members_response put_many_dataset_bundle_members(
-        const messaging::put_many_dataset_bundle_members_request& request);
-    messaging::delete_dataset_bundle_member_response
-    delete_dataset_bundle_member(const messaging::delete_dataset_bundle_member_request& request);
-    messaging::delete_many_dataset_bundle_members_response delete_many_dataset_bundle_members(
-        const messaging::delete_many_dataset_bundle_members_request& request);
-    messaging::list_by_bundle_code_dataset_bundle_members_response
+    ::ores::dq::messaging::list_dataset_bundle_members_response list_dataset_bundle_members(
+        const ::ores::dq::messaging::list_dataset_bundle_members_request& request);
+    ::ores::dq::messaging::get_dataset_bundle_member_response get_dataset_bundle_member(
+        const ::ores::dq::messaging::get_dataset_bundle_member_request& request);
+    ::ores::dq::messaging::get_many_dataset_bundle_members_response get_many_dataset_bundle_members(
+        const ::ores::dq::messaging::get_many_dataset_bundle_members_request& request);
+    ::ores::dq::messaging::put_dataset_bundle_member_response put_dataset_bundle_member(
+        const ::ores::dq::messaging::put_dataset_bundle_member_request& request);
+    ::ores::dq::messaging::put_many_dataset_bundle_members_response put_many_dataset_bundle_members(
+        const ::ores::dq::messaging::put_many_dataset_bundle_members_request& request);
+    ::ores::dq::messaging::delete_dataset_bundle_member_response delete_dataset_bundle_member(
+        const ::ores::dq::messaging::delete_dataset_bundle_member_request& request);
+    ::ores::dq::messaging::delete_many_dataset_bundle_members_response
+    delete_many_dataset_bundle_members(
+        const ::ores::dq::messaging::delete_many_dataset_bundle_members_request& request);
+    ::ores::dq::messaging::list_by_bundle_code_dataset_bundle_members_response
     list_by_bundle_code_dataset_bundle_members(
-        const messaging::list_by_bundle_code_dataset_bundle_members_request& request);
+        const ::ores::dq::messaging::list_by_bundle_code_dataset_bundle_members_request& request);
     /**@}*/
 
 private:
@@ -111,7 +112,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::dataset_bundle_member_change& change,
+    prepare_change(const ::ores::dq::messaging::dataset_bundle_member_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::dataset_bundle_member& out);
 };

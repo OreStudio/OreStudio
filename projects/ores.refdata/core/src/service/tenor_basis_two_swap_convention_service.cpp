@@ -69,10 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::tenor_basis_two_swap_convention>
-read_one(repository::tenor_basis_two_swap_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::tenor_basis_two_swap_convention_key& key) {
+std::vector<domain::tenor_basis_two_swap_convention> tenor_basis_two_swap_convention_read_one(
+    repository::tenor_basis_two_swap_convention_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::tenor_basis_two_swap_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -83,7 +83,7 @@ read_one(repository::tenor_basis_two_swap_convention_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::tenor_basis_two_swap_convention_key
-key_from(const domain::tenor_basis_two_swap_convention& v) {
+tenor_basis_two_swap_convention_key_from(const domain::tenor_basis_two_swap_convention& v) {
     messaging::tenor_basis_two_swap_convention_key key;
     key.id = v.id;
     return key;
@@ -96,8 +96,8 @@ key_from(const domain::tenor_basis_two_swap_convention& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::tenor_basis_two_swap_convention
-to_domain(const messaging::tenor_basis_two_swap_convention_write& write) {
+domain::tenor_basis_two_swap_convention tenor_basis_two_swap_convention_to_domain(
+    const messaging::tenor_basis_two_swap_convention_write& write) {
     domain::tenor_basis_two_swap_convention v;
     v.id = write.id;
     v.calendar = write.calendar;
@@ -155,7 +155,7 @@ messaging::get_tenor_basis_two_swap_convention_response
 tenor_basis_two_swap_convention_service::get_tenor_basis_two_swap_convention(
     const messaging::get_tenor_basis_two_swap_convention_request& request) {
     messaging::get_tenor_basis_two_swap_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = tenor_basis_two_swap_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "tenor_basis_two_swap_convention"});
@@ -176,7 +176,7 @@ tenor_basis_two_swap_convention_service::get_many_tenor_basis_two_swap_conventio
     for (const auto& k : request.keys) {
         messaging::tenor_basis_two_swap_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = tenor_basis_two_swap_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.tenor_basis_two_swap_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -193,7 +193,8 @@ tenor_basis_two_swap_convention_service::put_tenor_basis_two_swap_convention(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = tenor_basis_two_swap_convention_read_one(
+        repo_, ctx_, tenor_basis_two_swap_convention_key_from(value));
     if (!written.empty())
         response.tenor_basis_two_swap_convention = std::move(written.front());
     return response;
@@ -226,7 +227,8 @@ tenor_basis_two_swap_convention_service::put_many_tenor_basis_two_swap_conventio
     repo_.write(ctx_, batch, claims);
     response.tenor_basis_two_swap_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = tenor_basis_two_swap_convention_read_one(
+            repo_, ctx_, tenor_basis_two_swap_convention_key_from(value));
         response.tenor_basis_two_swap_conventions.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -262,7 +264,8 @@ tenor_basis_two_swap_convention_service::delete_tenor_basis_two_swap_convention(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                tenor_basis_two_swap_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "tenor_basis_two_swap_convention",
@@ -353,8 +356,9 @@ ores::utility::domain::result tenor_basis_two_swap_convention_service::prepare_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = tenor_basis_two_swap_convention_to_domain(change.write);
+    const auto current = tenor_basis_two_swap_convention_read_one(
+        repo_, ctx_, tenor_basis_two_swap_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

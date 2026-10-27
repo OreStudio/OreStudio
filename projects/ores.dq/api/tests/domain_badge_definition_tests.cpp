@@ -21,21 +21,15 @@
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/badge_definition_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::dq::domain::badge_definition;
 using ores::dq::domain::convert_to_table;
 using namespace ores::logging;
 
-TEST_CASE("create_badge_definition_with_valid_fields", tags) {
+TEST_CASE("create_badge_definition_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     badge_definition sut;
@@ -61,7 +55,7 @@ TEST_CASE("create_badge_definition_with_valid_fields", tags) {
     CHECK(sut.modified_by == "system");
 }
 
-TEST_CASE("badge_definition_default_values", tags) {
+TEST_CASE("badge_definition_default_values", "[domain]") {
     auto lg(make_logger(test_suite));
 
     badge_definition sut;
@@ -75,7 +69,7 @@ TEST_CASE("badge_definition_default_values", tags) {
     CHECK(sut.display_order == 0);
 }
 
-TEST_CASE("badge_definition_convert_single_to_table", tags) {
+TEST_CASE("badge_definition_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     badge_definition bd;
@@ -100,7 +94,7 @@ TEST_CASE("badge_definition_convert_single_to_table", tags) {
     CHECK(table.contains("#ffffff"));
 }
 
-TEST_CASE("badge_definition_convert_multiple_to_table", tags) {
+TEST_CASE("badge_definition_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     badge_definition bd1;

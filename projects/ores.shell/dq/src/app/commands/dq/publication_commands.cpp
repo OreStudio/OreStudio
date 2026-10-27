@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void publication_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void publication_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -209,7 +209,7 @@ void publication_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        publication_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -257,7 +257,7 @@ void publication_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.id, parsed->positionals[next++], "id");
+        publication_read_token(req.key.id, parsed->positionals[next++], "id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -302,7 +302,7 @@ void publication_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::publication_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            publication_read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -348,20 +348,25 @@ void publication_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.dataset_id, parsed->positionals[next++], "dataset_id");
-        read_token(req.change.write.dataset_code, parsed->positionals[next++], "dataset_code");
-        read_token(req.change.write.mode, parsed->positionals[next++], "mode");
-        read_token(req.change.write.target_table, parsed->positionals[next++], "target_table");
-        read_token(
+        publication_read_token(
+            req.change.write.dataset_id, parsed->positionals[next++], "dataset_id");
+        publication_read_token(
+            req.change.write.dataset_code, parsed->positionals[next++], "dataset_code");
+        publication_read_token(req.change.write.mode, parsed->positionals[next++], "mode");
+        publication_read_token(
+            req.change.write.target_table, parsed->positionals[next++], "target_table");
+        publication_read_token(
             req.change.write.records_inserted, parsed->positionals[next++], "records_inserted");
-        read_token(
+        publication_read_token(
             req.change.write.records_updated, parsed->positionals[next++], "records_updated");
-        read_token(
+        publication_read_token(
             req.change.write.records_skipped, parsed->positionals[next++], "records_skipped");
-        read_token(
+        publication_read_token(
             req.change.write.records_deleted, parsed->positionals[next++], "records_deleted");
-        read_token(req.change.write.published_by, parsed->positionals[next++], "published_by");
-        read_token(req.change.write.published_at, parsed->positionals[next++], "published_at");
+        publication_read_token(
+            req.change.write.published_by, parsed->positionals[next++], "published_by");
+        publication_read_token(
+            req.change.write.published_at, parsed->positionals[next++], "published_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -409,21 +414,26 @@ void publication_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.dataset_id, parsed->positionals[next++], "dataset_id");
-        read_token(req.change.write.dataset_code, parsed->positionals[next++], "dataset_code");
-        read_token(req.change.write.mode, parsed->positionals[next++], "mode");
-        read_token(req.change.write.target_table, parsed->positionals[next++], "target_table");
-        read_token(
+        publication_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        publication_read_token(
+            req.change.write.dataset_id, parsed->positionals[next++], "dataset_id");
+        publication_read_token(
+            req.change.write.dataset_code, parsed->positionals[next++], "dataset_code");
+        publication_read_token(req.change.write.mode, parsed->positionals[next++], "mode");
+        publication_read_token(
+            req.change.write.target_table, parsed->positionals[next++], "target_table");
+        publication_read_token(
             req.change.write.records_inserted, parsed->positionals[next++], "records_inserted");
-        read_token(
+        publication_read_token(
             req.change.write.records_updated, parsed->positionals[next++], "records_updated");
-        read_token(
+        publication_read_token(
             req.change.write.records_skipped, parsed->positionals[next++], "records_skipped");
-        read_token(
+        publication_read_token(
             req.change.write.records_deleted, parsed->positionals[next++], "records_deleted");
-        read_token(req.change.write.published_by, parsed->positionals[next++], "published_by");
-        read_token(req.change.write.published_at, parsed->positionals[next++], "published_at");
+        publication_read_token(
+            req.change.write.published_by, parsed->positionals[next++], "published_by");
+        publication_read_token(
+            req.change.write.published_at, parsed->positionals[next++], "published_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -485,21 +495,26 @@ void publication_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::publication_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.dataset_id, parsed->positionals[next++], "dataset_id");
-            read_token(change.write.dataset_code, parsed->positionals[next++], "dataset_code");
-            read_token(change.write.mode, parsed->positionals[next++], "mode");
-            read_token(change.write.target_table, parsed->positionals[next++], "target_table");
-            read_token(
+            publication_read_token(change.write.id, parsed->positionals[next++], "id");
+            publication_read_token(
+                change.write.dataset_id, parsed->positionals[next++], "dataset_id");
+            publication_read_token(
+                change.write.dataset_code, parsed->positionals[next++], "dataset_code");
+            publication_read_token(change.write.mode, parsed->positionals[next++], "mode");
+            publication_read_token(
+                change.write.target_table, parsed->positionals[next++], "target_table");
+            publication_read_token(
                 change.write.records_inserted, parsed->positionals[next++], "records_inserted");
-            read_token(
+            publication_read_token(
                 change.write.records_updated, parsed->positionals[next++], "records_updated");
-            read_token(
+            publication_read_token(
                 change.write.records_skipped, parsed->positionals[next++], "records_skipped");
-            read_token(
+            publication_read_token(
                 change.write.records_deleted, parsed->positionals[next++], "records_deleted");
-            read_token(change.write.published_by, parsed->positionals[next++], "published_by");
-            read_token(change.write.published_at, parsed->positionals[next++], "published_at");
+            publication_read_token(
+                change.write.published_by, parsed->positionals[next++], "published_by");
+            publication_read_token(
+                change.write.published_at, parsed->positionals[next++], "published_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -549,7 +564,7 @@ void publication_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.id, parsed->positionals[next++], "id");
+        publication_read_token(req.removal.key.id, parsed->positionals[next++], "id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -603,7 +618,7 @@ void publication_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::publication_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            publication_read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::publication_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];

@@ -23,13 +23,11 @@
 
 namespace {
 
-const std::string tags("[datum][value]");
-
 using namespace ores::marketdata::datum;
 
 }
 
-TEST_CASE("a_term_reads_each_kind_and_keeps_its_text", tags) {
+TEST_CASE("a_term_reads_each_kind_and_keeps_its_text", "[datum][value]") {
     const struct {
         const char* text;
         term::kind kind;
@@ -53,7 +51,7 @@ TEST_CASE("a_term_reads_each_kind_and_keeps_its_text", tags) {
     }
 }
 
-TEST_CASE("a_term_refuses_what_is_not_one", tags) {
+TEST_CASE("a_term_refuses_what_is_not_one", "[datum][value]") {
     for (const auto* text :
          {"", "Y", "1", "1X", "2016-13-01", "2016-02-30", "c", "cX", "ATM", "1Y "}) {
         INFO("text: '" << text << "'");
@@ -61,7 +59,7 @@ TEST_CASE("a_term_refuses_what_is_not_one", tags) {
     }
 }
 
-TEST_CASE("a_decimal_keeps_the_spelling_it_arrived_in", tags) {
+TEST_CASE("a_decimal_keeps_the_spelling_it_arrived_in", "[datum][value]") {
     for (const auto* text : {"0.030", "-0.02", "100", "1e-06", "112.5"}) {
         INFO("decimal: " << text);
         const auto d = decimal::parse(text);
@@ -74,7 +72,7 @@ TEST_CASE("a_decimal_keeps_the_spelling_it_arrived_in", tags) {
     }
 }
 
-TEST_CASE("a_code_is_one_token", tags) {
+TEST_CASE("a_code_is_one_token", "[datum][value]") {
     const auto c = code::parse("Smile");
     REQUIRE(c);
     CHECK(c->text() == "Smile");
@@ -82,7 +80,7 @@ TEST_CASE("a_code_is_one_token", tags) {
     CHECK_FALSE(code::parse("A/B"));
 }
 
-TEST_CASE("a_strike_reads_every_form_of_ores_grammar_and_writes_it_back", tags) {
+TEST_CASE("a_strike_reads_every_form_of_ores_grammar_and_writes_it_back", "[datum][value]") {
     const char* forms[] = {"3000",
                            "-0.01",
                            "ATM",
@@ -101,7 +99,7 @@ TEST_CASE("a_strike_reads_every_form_of_ores_grammar_and_writes_it_back", tags) 
     }
 }
 
-TEST_CASE("a_strike_names_its_form", tags) {
+TEST_CASE("a_strike_names_its_form", "[datum][value]") {
     const auto atmf = strike::parse("ATMF");
     REQUIRE(atmf);
     const auto* atm = std::get_if<atm_strike>(&atmf->which());
@@ -123,7 +121,7 @@ TEST_CASE("a_strike_names_its_form", tags) {
     CHECK(*strike::parse("ATMF") != *strike::parse("ATM/AtmFwd"));
 }
 
-TEST_CASE("a_strike_refuses_what_ores_grammar_refuses", tags) {
+TEST_CASE("a_strike_refuses_what_ores_grammar_refuses", "[datum][value]") {
     for (const auto* text : {"",
                              "ATM/Forward",
                              "ATM/AtmFwd/DEL",
@@ -138,7 +136,7 @@ TEST_CASE("a_strike_refuses_what_ores_grammar_refuses", tags) {
     }
 }
 
-TEST_CASE("a_strike_label_reads_every_form_and_writes_it_canonically", tags) {
+TEST_CASE("a_strike_label_reads_every_form_and_writes_it_canonically", "[datum][value]") {
     const struct {
         const char* text;
         strike_label::form form;
@@ -162,7 +160,7 @@ TEST_CASE("a_strike_label_reads_every_form_and_writes_it_canonically", tags) {
     }
 }
 
-TEST_CASE("two_spellings_of_one_component_are_one_strike_label", tags) {
+TEST_CASE("two_spellings_of_one_component_are_one_strike_label", "[datum][value]") {
     const auto canonical = strike_label::parse("25RR");
     REQUIRE(canonical);
     for (const auto* text : {"25rr", "25Rr", "+25RR", "25.0RR", "25.00RR"}) {
@@ -178,7 +176,7 @@ TEST_CASE("two_spellings_of_one_component_are_one_strike_label", tags) {
     CHECK(level->number() == "25");
 }
 
-TEST_CASE("a_strike_label_ore_refuses_is_refused", tags) {
+TEST_CASE("a_strike_label_ore_refuses_is_refused", "[datum][value]") {
     // ORE's strike grammar reads ATMF and 25D, and its FX option quote then
     // refuses them; BF and FLY are not in the grammar at all.
     for (const auto* text :
@@ -188,7 +186,7 @@ TEST_CASE("a_strike_label_ore_refuses_is_refused", tags) {
     }
 }
 
-TEST_CASE("text_of_writes_each_value_as_the_key_does", tags) {
+TEST_CASE("text_of_writes_each_value_as_the_key_does", "[datum][value]") {
     CHECK(text_of(value{none}).empty());
     CHECK(text_of(value{std::string("Lufthansa")}) == "Lufthansa");
     CHECK(text_of(value{*term::parse("6M")}) == "6M");

@@ -78,9 +78,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy subject_area_list_order(const ores::utility::domain::order& order,
+                                                 std::initializer_list<std::string> default_columns,
+                                                 bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"name", "domain_name"});
@@ -284,7 +284,7 @@ subject_area_repository::read_latest(context ctx,
     return execute_ordered_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
-        list_order(order, {"name", "domain_name"}, false),
+        subject_area_list_order(order, {"name", "domain_name"}, false),
         narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),

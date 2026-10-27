@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.iam.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("account_operations_operations_registers_every_declared_command", tags) {
+TEST_CASE("account_operations_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -88,7 +86,7 @@ TEST_CASE("account_operations_operations_registers_every_declared_command", tags
     BOOST_LOG_SEV(lg, debug) << "Registered 21 command(s).";
 }
 
-TEST_CASE("account_operations_operations_process_save_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_save_account_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -109,7 +107,8 @@ TEST_CASE("account_operations_operations_process_save_account_requires_a_session
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_save_account_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_save_account_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -127,7 +126,8 @@ TEST_CASE("account_operations_operations_process_save_account_reports_the_expect
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_save_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_save_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -154,7 +154,7 @@ TEST_CASE("account_operations_operations_process_save_account_reaches_the_transp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_update_account_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -180,7 +180,8 @@ TEST_CASE("account_operations_operations_process_update_account_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_account_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_update_account_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -198,7 +199,8 @@ TEST_CASE("account_operations_operations_process_update_account_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_update_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -230,7 +232,7 @@ TEST_CASE("account_operations_operations_process_update_account_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_delete_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_delete_account_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -248,7 +250,8 @@ TEST_CASE("account_operations_operations_process_delete_account_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_delete_account_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_delete_account_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -266,7 +269,8 @@ TEST_CASE("account_operations_operations_process_delete_account_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_delete_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_delete_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -290,7 +294,7 @@ TEST_CASE("account_operations_operations_process_delete_account_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_lock_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_lock_account_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -308,7 +312,8 @@ TEST_CASE("account_operations_operations_process_lock_account_requires_a_session
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_lock_account_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_lock_account_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -326,7 +331,8 @@ TEST_CASE("account_operations_operations_process_lock_account_reports_the_expect
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_lock_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_lock_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -350,7 +356,7 @@ TEST_CASE("account_operations_operations_process_lock_account_reaches_the_transp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_unlock_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_unlock_account_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -368,7 +374,8 @@ TEST_CASE("account_operations_operations_process_unlock_account_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_unlock_account_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_unlock_account_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -386,7 +393,8 @@ TEST_CASE("account_operations_operations_process_unlock_account_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_unlock_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_unlock_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -410,7 +418,7 @@ TEST_CASE("account_operations_operations_process_unlock_account_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_reset_password_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_reset_password_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -429,7 +437,8 @@ TEST_CASE("account_operations_operations_process_reset_password_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_reset_password_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_reset_password_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -447,7 +456,8 @@ TEST_CASE("account_operations_operations_process_reset_password_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_reset_password_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_reset_password_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -472,7 +482,8 @@ TEST_CASE("account_operations_operations_process_reset_password_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_my_email_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_update_my_email_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -491,7 +502,7 @@ TEST_CASE("account_operations_operations_process_update_my_email_requires_a_sess
 }
 
 TEST_CASE("account_operations_operations_process_update_my_email_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -509,7 +520,8 @@ TEST_CASE("account_operations_operations_process_update_my_email_reports_the_exp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_my_email_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_update_my_email_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -533,7 +545,8 @@ TEST_CASE("account_operations_operations_process_update_my_email_reaches_the_tra
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_set_my_default_party_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_set_my_default_party_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -552,7 +565,7 @@ TEST_CASE("account_operations_operations_process_set_my_default_party_requires_a
 }
 
 TEST_CASE("account_operations_operations_process_set_my_default_party_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -571,7 +584,7 @@ TEST_CASE("account_operations_operations_process_set_my_default_party_reports_th
 }
 
 TEST_CASE("account_operations_operations_process_set_my_default_party_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -595,7 +608,7 @@ TEST_CASE("account_operations_operations_process_set_my_default_party_reaches_th
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_select_party_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_select_party_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -613,7 +626,8 @@ TEST_CASE("account_operations_operations_process_select_party_requires_a_session
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_select_party_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_select_party_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -631,7 +645,8 @@ TEST_CASE("account_operations_operations_process_select_party_reports_the_expect
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_select_party_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_select_party_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -655,7 +670,7 @@ TEST_CASE("account_operations_operations_process_select_party_reaches_the_transp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_switch_party_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_switch_party_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -673,7 +688,8 @@ TEST_CASE("account_operations_operations_process_switch_party_requires_a_session
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_switch_party_reports_the_expected_count", tags) {
+TEST_CASE("account_operations_operations_process_switch_party_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -691,7 +707,8 @@ TEST_CASE("account_operations_operations_process_switch_party_reports_the_expect
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_switch_party_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_switch_party_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -715,7 +732,8 @@ TEST_CASE("account_operations_operations_process_switch_party_reaches_the_transp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_change_password_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_change_password_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -735,7 +753,7 @@ TEST_CASE("account_operations_operations_process_change_password_requires_a_sess
 }
 
 TEST_CASE("account_operations_operations_process_change_password_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -753,7 +771,8 @@ TEST_CASE("account_operations_operations_process_change_password_reports_the_exp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_change_password_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_change_password_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -778,7 +797,8 @@ TEST_CASE("account_operations_operations_process_change_password_reaches_the_tra
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_self_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_update_self_account_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -804,7 +824,7 @@ TEST_CASE("account_operations_operations_process_update_self_account_requires_a_
 }
 
 TEST_CASE("account_operations_operations_process_update_self_account_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -822,7 +842,8 @@ TEST_CASE("account_operations_operations_process_update_self_account_reports_the
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_update_self_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_update_self_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -855,7 +876,7 @@ TEST_CASE("account_operations_operations_process_update_self_account_reaches_the
 
 TEST_CASE("account_operations_operations_process_update_self_account_contact_information_requires_"
           "a_session",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -886,7 +907,7 @@ TEST_CASE("account_operations_operations_process_update_self_account_contact_inf
 
 TEST_CASE("account_operations_operations_process_update_self_account_contact_information_reports_"
           "the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -907,7 +928,7 @@ TEST_CASE("account_operations_operations_process_update_self_account_contact_inf
 
 TEST_CASE("account_operations_operations_process_update_self_account_contact_information_reaches_"
           "the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -944,7 +965,7 @@ TEST_CASE("account_operations_operations_process_update_self_account_contact_inf
 
 TEST_CASE(
     "account_operations_operations_process_get_my_account_contact_information_requires_a_session",
-    tags) {
+    "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -961,7 +982,7 @@ TEST_CASE(
 
 TEST_CASE("account_operations_operations_process_get_my_account_contact_information_reaches_the_"
           "transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -982,7 +1003,7 @@ TEST_CASE("account_operations_operations_process_get_my_account_contact_informat
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_account_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_get_my_account_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -997,7 +1018,8 @@ TEST_CASE("account_operations_operations_process_get_my_account_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_account_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_get_my_account_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1018,7 +1040,8 @@ TEST_CASE("account_operations_operations_process_get_my_account_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_login_info_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_get_my_login_info_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1033,7 +1056,8 @@ TEST_CASE("account_operations_operations_process_get_my_login_info_requires_a_se
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_login_info_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_get_my_login_info_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1054,7 +1078,8 @@ TEST_CASE("account_operations_operations_process_get_my_login_info_reaches_the_t
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_sessions_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_get_my_sessions_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1069,7 +1094,8 @@ TEST_CASE("account_operations_operations_process_get_my_sessions_requires_a_sess
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_sessions_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_get_my_sessions_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1090,7 +1116,7 @@ TEST_CASE("account_operations_operations_process_get_my_sessions_reaches_the_tra
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_parties_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_get_my_parties_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1105,7 +1131,8 @@ TEST_CASE("account_operations_operations_process_get_my_parties_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_my_parties_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_get_my_parties_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1126,7 +1153,8 @@ TEST_CASE("account_operations_operations_process_get_my_parties_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_set_reporting_line_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_set_reporting_line_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1149,7 +1177,7 @@ TEST_CASE("account_operations_operations_process_set_reporting_line_requires_a_s
 }
 
 TEST_CASE("account_operations_operations_process_set_reporting_line_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1167,7 +1195,8 @@ TEST_CASE("account_operations_operations_process_set_reporting_line_reports_the_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_set_reporting_line_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_set_reporting_line_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1195,7 +1224,8 @@ TEST_CASE("account_operations_operations_process_set_reporting_line_reaches_the_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_reporting_tree_requires_a_session", tags) {
+TEST_CASE("account_operations_operations_process_get_reporting_tree_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1214,7 +1244,7 @@ TEST_CASE("account_operations_operations_process_get_reporting_tree_requires_a_s
 }
 
 TEST_CASE("account_operations_operations_process_get_reporting_tree_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1232,7 +1262,8 @@ TEST_CASE("account_operations_operations_process_get_reporting_tree_reports_the_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("account_operations_operations_process_get_reporting_tree_reaches_the_transport", tags) {
+TEST_CASE("account_operations_operations_process_get_reporting_tree_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1257,7 +1288,7 @@ TEST_CASE("account_operations_operations_process_get_reporting_tree_reaches_the_
 }
 
 TEST_CASE("account_operations_operations_process_attach_account_pictures_requires_a_session",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -1273,7 +1304,7 @@ TEST_CASE("account_operations_operations_process_attach_account_pictures_require
 }
 
 TEST_CASE("account_operations_operations_process_attach_account_pictures_reaches_the_transport",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

@@ -20,6 +20,7 @@
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
@@ -29,9 +30,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][record]");
 
 using namespace ores::logging;
 using namespace ores::ore::xml;
@@ -251,7 +249,7 @@ auto emitted(const root& record) -> std::string {
 
 }
 
-TEST_CASE("a_reader_states_what_the_document_states", tags) {
+TEST_CASE("a_reader_states_what_the_document_states", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<Root><Entry><Name>a</Name><Count>-3</Count>"
@@ -286,7 +284,7 @@ TEST_CASE("a_reader_states_what_the_document_states", tags) {
     CHECK(items[1].own_text() == std::optional<std::string>("second"));
 }
 
-TEST_CASE("a_reader_tells_an_absent_element_from_an_empty_one", tags) {
+TEST_CASE("a_reader_tells_an_absent_element_from_an_empty_one", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<Root><Entry><Name></Name></Entry></Root>";
@@ -305,7 +303,7 @@ TEST_CASE("a_reader_tells_an_absent_element_from_an_empty_one", tags) {
     CHECK(e.integer("Count") == std::nullopt);
 }
 
-TEST_CASE("a_writer_marks_every_row_it_fills", tags) {
+TEST_CASE("a_writer_marks_every_row_it_fills", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     root written{};
@@ -335,7 +333,7 @@ TEST_CASE("a_writer_marks_every_row_it_fills", tags) {
     CHECK(written.entry.front().item.size() == 2);
 }
 
-TEST_CASE("a_writer_writes_only_the_rows_it_was_given", tags) {
+TEST_CASE("a_writer_writes_only_the_rows_it_was_given", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     root written{};
@@ -352,7 +350,7 @@ TEST_CASE("a_writer_writes_only_the_rows_it_was_given", tags) {
     CHECK(text.find("<Name>only the name</Name>") != std::string::npos);
 }
 
-TEST_CASE("a_flag_reads_every_spelling_and_writes_two", tags) {
+TEST_CASE("a_flag_reads_every_spelling_and_writes_two", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     // ORE writes a boolean as any spelling the schema allows, so the reading
@@ -380,7 +378,7 @@ TEST_CASE("a_flag_reads_every_spelling_and_writes_two", tags) {
     CHECK(emitted(written).find("<Active>Y</Active>") != std::string::npos);
 }
 
-TEST_CASE("a_reader_and_a_writer_refuse_a_name_the_table_lacks", tags) {
+TEST_CASE("a_reader_and_a_writer_refuse_a_name_the_table_lacks", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     root record{};
@@ -395,7 +393,7 @@ TEST_CASE("a_reader_and_a_writer_refuse_a_name_the_table_lacks", tags) {
     CHECK_THROWS_WITH(write_entry.set_spelling("Kind", "C", "kind"), "'C' is not a valid kind");
 }
 
-TEST_CASE("a_reader_and_a_writer_refuse_a_member_of_another_kind", tags) {
+TEST_CASE("a_reader_and_a_writer_refuse_a_member_of_another_kind", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     root record{};
@@ -408,7 +406,7 @@ TEST_CASE("a_reader_and_a_writer_refuse_a_member_of_another_kind", tags) {
                       "'Entry' of the root table holds a repeated child element, not text");
 }
 
-TEST_CASE("a_reader_states_which_members_the_table_declares", tags) {
+TEST_CASE("a_reader_states_which_members_the_table_declares", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     root record{};
@@ -424,7 +422,7 @@ TEST_CASE("a_reader_states_which_members_the_table_declares", tags) {
     CHECK_FALSE(entries.declares("active"));
 }
 
-TEST_CASE("a_repeated_leaf_reads_and_writes_its_values", tags) {
+TEST_CASE("a_repeated_leaf_reads_and_writes_its_values", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<Root><Entry><Name>leaves</Name>"
@@ -548,7 +546,7 @@ auto emitted_node(const node& record) -> std::string {
 
 }
 
-TEST_CASE("a_type_that_holds_itself_indexes_its_rows", tags) {
+TEST_CASE("a_type_that_holds_itself_indexes_its_rows", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<Node><Value>a</Value>"
@@ -592,7 +590,7 @@ TEST_CASE("a_type_that_holds_itself_indexes_its_rows", tags) {
     CHECK_THROWS_AS(emitted_node(orphan), std::runtime_error);
 }
 
-TEST_CASE("a_member_the_schema_allows_once_refuses_a_second_row", tags) {
+TEST_CASE("a_member_the_schema_allows_once_refuses_a_second_row", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     node twice{};
@@ -606,7 +604,7 @@ TEST_CASE("a_member_the_schema_allows_once_refuses_a_second_row", tags) {
     CHECK_THROWS_AS(w.append_indexed("Child"), std::runtime_error);
 }
 
-TEST_CASE("a_writer_appends_indexed_rows", tags) {
+TEST_CASE("a_writer_appends_indexed_rows", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     node written{};
@@ -654,7 +652,7 @@ const document_type measure_document{"Measure", &measure_type};
 
 }
 
-TEST_CASE("an_element_with_no_text_of_its_own_has_no_own_decimal", tags) {
+TEST_CASE("an_element_with_no_text_of_its_own_has_no_own_decimal", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<Root><Entry><Name>a</Name></Entry></Root>";
@@ -665,7 +663,7 @@ TEST_CASE("an_element_with_no_text_of_its_own_has_no_own_decimal", tags) {
     CHECK_FALSE(entries.front().own_decimal().has_value());
 }
 
-TEST_CASE("a_type_whose_own_text_is_a_number_keeps_its_digits", tags) {
+TEST_CASE("a_type_whose_own_text_is_a_number_keeps_its_digits", "[ore][xml][record]") {
     auto lg(make_logger(test_suite));
 
     measure parsed{};

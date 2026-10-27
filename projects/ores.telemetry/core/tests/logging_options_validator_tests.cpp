@@ -23,8 +23,6 @@
 
 namespace {
 
-const std::string tags("[logging_options_validator]");
-
 using namespace ores::logging;
 
 }
@@ -39,7 +37,7 @@ using namespace ores::logging;
  * field change that the contract refuses, so it has no rejection case.
  */
 
-TEST_CASE("validate_throws_when_no_logging_destination", tags) {
+TEST_CASE("validate_throws_when_no_logging_destination", "[logging_options_validator]") {
     // Console-only logging at severity "debug" is accepted; disabling the
     // console leaves no destination at all.
     logging_options opts;
@@ -49,7 +47,7 @@ TEST_CASE("validate_throws_when_no_logging_destination", tags) {
     REQUIRE_THROWS_AS(logging_options_validator::validate(opts), logging_exception);
 }
 
-TEST_CASE("validate_throws_when_directory_without_filename", tags) {
+TEST_CASE("validate_throws_when_directory_without_filename", "[logging_options_validator]") {
     // Console-and-file logging ("warn", "app.log" under "/tmp") is accepted;
     // removing the file name leaves a directory with no file.
     logging_options opts;
@@ -60,7 +58,7 @@ TEST_CASE("validate_throws_when_directory_without_filename", tags) {
     REQUIRE_THROWS_AS(logging_options_validator::validate(opts), logging_exception);
 }
 
-TEST_CASE("validate_throws_on_invalid_severity", tags) {
+TEST_CASE("validate_throws_on_invalid_severity", "[logging_options_validator]") {
     // Console-only logging accepts trace, debug, info, warn and error; any
     // other severity string is refused.
     logging_options opts;

@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/portfolio_right_protocol.hpp"
 #include "ores.refdata.core/repository/portfolio_right_repository.hpp"
 #include "ores.refdata.core/service/portfolio_right_service.hpp"
+#include "test_suite.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
 // regardless of the child's generator facet, hence the fully-qualified
@@ -84,13 +85,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::portfolio_right;
@@ -99,7 +93,7 @@ using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_portfolio_right_publishes_an_event", tags) {
+TEST_CASE("write_portfolio_right_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

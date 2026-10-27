@@ -76,29 +76,36 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_commodity_forward_conventions_response list_commodity_forward_conventions(
-        const messaging::list_commodity_forward_conventions_request& request);
-    messaging::get_commodity_forward_convention_response get_commodity_forward_convention(
-        const messaging::get_commodity_forward_convention_request& request);
-    messaging::get_many_commodity_forward_conventions_response
+    ::ores::refdata::messaging::list_commodity_forward_conventions_response
+    list_commodity_forward_conventions(
+        const ::ores::refdata::messaging::list_commodity_forward_conventions_request& request);
+    ::ores::refdata::messaging::get_commodity_forward_convention_response
+    get_commodity_forward_convention(
+        const ::ores::refdata::messaging::get_commodity_forward_convention_request& request);
+    ::ores::refdata::messaging::get_many_commodity_forward_conventions_response
     get_many_commodity_forward_conventions(
-        const messaging::get_many_commodity_forward_conventions_request& request);
-    messaging::put_commodity_forward_convention_response put_commodity_forward_convention(
-        const messaging::put_commodity_forward_convention_request& request);
-    messaging::put_many_commodity_forward_conventions_response
+        const ::ores::refdata::messaging::get_many_commodity_forward_conventions_request& request);
+    ::ores::refdata::messaging::put_commodity_forward_convention_response
+    put_commodity_forward_convention(
+        const ::ores::refdata::messaging::put_commodity_forward_convention_request& request);
+    ::ores::refdata::messaging::put_many_commodity_forward_conventions_response
     put_many_commodity_forward_conventions(
-        const messaging::put_many_commodity_forward_conventions_request& request);
-    messaging::delete_commodity_forward_convention_response delete_commodity_forward_convention(
-        const messaging::delete_commodity_forward_convention_request& request);
-    messaging::delete_many_commodity_forward_conventions_response
+        const ::ores::refdata::messaging::put_many_commodity_forward_conventions_request& request);
+    ::ores::refdata::messaging::delete_commodity_forward_convention_response
+    delete_commodity_forward_convention(
+        const ::ores::refdata::messaging::delete_commodity_forward_convention_request& request);
+    ::ores::refdata::messaging::delete_many_commodity_forward_conventions_response
     delete_many_commodity_forward_conventions(
-        const messaging::delete_many_commodity_forward_conventions_request& request);
-    messaging::list_commodity_forward_convention_versions_response
+        const ::ores::refdata::messaging::delete_many_commodity_forward_conventions_request&
+            request);
+    ::ores::refdata::messaging::list_commodity_forward_convention_versions_response
     list_commodity_forward_convention_versions(
-        const messaging::list_commodity_forward_convention_versions_request& request);
-    messaging::get_commodity_forward_convention_version_response
+        const ::ores::refdata::messaging::list_commodity_forward_convention_versions_request&
+            request);
+    ::ores::refdata::messaging::get_commodity_forward_convention_version_response
     get_commodity_forward_convention_version(
-        const messaging::get_commodity_forward_convention_version_request& request);
+        const ::ores::refdata::messaging::get_commodity_forward_convention_version_request&
+            request);
     /**@}*/
 
     /**
@@ -199,7 +206,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::commodity_forward_convention_change& change,
+    prepare_change(const ::ores::refdata::messaging::commodity_forward_convention_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::commodity_forward_convention& out);
 };

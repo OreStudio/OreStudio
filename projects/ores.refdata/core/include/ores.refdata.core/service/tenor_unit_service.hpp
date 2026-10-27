@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_tenor_units_response
-    list_tenor_units(const messaging::list_tenor_units_request& request);
-    messaging::get_tenor_unit_response
-    get_tenor_unit(const messaging::get_tenor_unit_request& request);
-    messaging::get_many_tenor_units_response
-    get_many_tenor_units(const messaging::get_many_tenor_units_request& request);
-    messaging::put_tenor_unit_response
-    put_tenor_unit(const messaging::put_tenor_unit_request& request);
-    messaging::put_many_tenor_units_response
-    put_many_tenor_units(const messaging::put_many_tenor_units_request& request);
-    messaging::delete_tenor_unit_response
-    delete_tenor_unit(const messaging::delete_tenor_unit_request& request);
-    messaging::delete_many_tenor_units_response
-    delete_many_tenor_units(const messaging::delete_many_tenor_units_request& request);
-    messaging::list_tenor_unit_versions_response
-    list_tenor_unit_versions(const messaging::list_tenor_unit_versions_request& request);
-    messaging::get_tenor_unit_version_response
-    get_tenor_unit_version(const messaging::get_tenor_unit_version_request& request);
+    ::ores::refdata::messaging::list_tenor_units_response
+    list_tenor_units(const ::ores::refdata::messaging::list_tenor_units_request& request);
+    ::ores::refdata::messaging::get_tenor_unit_response
+    get_tenor_unit(const ::ores::refdata::messaging::get_tenor_unit_request& request);
+    ::ores::refdata::messaging::get_many_tenor_units_response
+    get_many_tenor_units(const ::ores::refdata::messaging::get_many_tenor_units_request& request);
+    ::ores::refdata::messaging::put_tenor_unit_response
+    put_tenor_unit(const ::ores::refdata::messaging::put_tenor_unit_request& request);
+    ::ores::refdata::messaging::put_many_tenor_units_response
+    put_many_tenor_units(const ::ores::refdata::messaging::put_many_tenor_units_request& request);
+    ::ores::refdata::messaging::delete_tenor_unit_response
+    delete_tenor_unit(const ::ores::refdata::messaging::delete_tenor_unit_request& request);
+    ::ores::refdata::messaging::delete_many_tenor_units_response delete_many_tenor_units(
+        const ::ores::refdata::messaging::delete_many_tenor_units_request& request);
+    ::ores::refdata::messaging::list_tenor_unit_versions_response list_tenor_unit_versions(
+        const ::ores::refdata::messaging::list_tenor_unit_versions_request& request);
+    ::ores::refdata::messaging::get_tenor_unit_version_response get_tenor_unit_version(
+        const ::ores::refdata::messaging::get_tenor_unit_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::tenor_unit_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::tenor_unit& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::tenor_unit_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::tenor_unit& out);
 };
 
 }

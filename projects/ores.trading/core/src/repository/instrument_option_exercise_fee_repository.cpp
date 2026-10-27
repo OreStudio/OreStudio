@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+instrument_option_exercise_fee_list_order(const ores::utility::domain::order& order,
+                                          std::initializer_list<std::string> default_columns,
+                                          bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::instrument_option_exercise_fees_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> instrument_option_exercise_fee_filter_condition(
+    const std::optional<messaging::instrument_option_exercise_fees_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -311,8 +312,8 @@ instrument_option_exercise_fee_repository::read_latest_by_trade_id(
                                       domain::instrument_option_exercise_fee>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        instrument_option_exercise_fee_list_order(order, {"trade_id", "sequence_number"}, false),
+        instrument_option_exercise_fee_filter_condition(filter),
         [](const auto& entities) { return instrument_option_exercise_fee_mapper::map(entities); },
         lg(),
         "Reading latest instrument option exercise fees by trade_id.");
@@ -334,7 +335,7 @@ std::uint32_t instrument_option_exercise_fee_repository::get_total_exercise_fee_
     return execute_count_query<instrument_option_exercise_fee_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        instrument_option_exercise_fee_filter_condition(filter),
         lg(),
         "Counting instrument option exercise fees by trade_id");
 }
@@ -400,8 +401,8 @@ instrument_option_exercise_fee_repository::read_latest(
                                       domain::instrument_option_exercise_fee>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        instrument_option_exercise_fee_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), instrument_option_exercise_fee_filter_condition(filter)),
         [](const auto& entities) { return instrument_option_exercise_fee_mapper::map(entities); },
         lg(),
         "Reading latest instrument option exercise fees with pagination.");
@@ -420,7 +421,7 @@ std::uint32_t instrument_option_exercise_fee_repository::get_total_exercise_fee_
     return execute_count_query<instrument_option_exercise_fee_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), instrument_option_exercise_fee_filter_condition(filter)),
         lg(),
         "Counting instrument option exercise fees");
 }

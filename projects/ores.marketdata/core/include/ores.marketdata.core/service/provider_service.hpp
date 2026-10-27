@@ -75,22 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_providers_response
-    list_providers(const messaging::list_providers_request& request);
-    messaging::get_provider_response get_provider(const messaging::get_provider_request& request);
-    messaging::get_many_providers_response
-    get_many_providers(const messaging::get_many_providers_request& request);
-    messaging::put_provider_response put_provider(const messaging::put_provider_request& request);
-    messaging::put_many_providers_response
-    put_many_providers(const messaging::put_many_providers_request& request);
-    messaging::delete_provider_response
-    delete_provider(const messaging::delete_provider_request& request);
-    messaging::delete_many_providers_response
-    delete_many_providers(const messaging::delete_many_providers_request& request);
-    messaging::list_provider_versions_response
-    list_provider_versions(const messaging::list_provider_versions_request& request);
-    messaging::get_provider_version_response
-    get_provider_version(const messaging::get_provider_version_request& request);
+    ::ores::marketdata::messaging::list_providers_response
+    list_providers(const ::ores::marketdata::messaging::list_providers_request& request);
+    ::ores::marketdata::messaging::get_provider_response
+    get_provider(const ::ores::marketdata::messaging::get_provider_request& request);
+    ::ores::marketdata::messaging::get_many_providers_response
+    get_many_providers(const ::ores::marketdata::messaging::get_many_providers_request& request);
+    ::ores::marketdata::messaging::put_provider_response
+    put_provider(const ::ores::marketdata::messaging::put_provider_request& request);
+    ::ores::marketdata::messaging::put_many_providers_response
+    put_many_providers(const ::ores::marketdata::messaging::put_many_providers_request& request);
+    ::ores::marketdata::messaging::delete_provider_response
+    delete_provider(const ::ores::marketdata::messaging::delete_provider_request& request);
+    ::ores::marketdata::messaging::delete_many_providers_response delete_many_providers(
+        const ::ores::marketdata::messaging::delete_many_providers_request& request);
+    ::ores::marketdata::messaging::list_provider_versions_response list_provider_versions(
+        const ::ores::marketdata::messaging::list_provider_versions_request& request);
+    ::ores::marketdata::messaging::get_provider_version_response get_provider_version(
+        const ::ores::marketdata::messaging::get_provider_version_request& request);
     /**@}*/
 
     /**
@@ -184,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::provider_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::provider& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::provider_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::provider& out);
 };
 
 }

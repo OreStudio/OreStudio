@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_sensitivity_templates_response
-    list_sensitivity_templates(const messaging::list_sensitivity_templates_request& request);
-    messaging::get_sensitivity_template_response
-    get_sensitivity_template(const messaging::get_sensitivity_template_request& request);
-    messaging::get_many_sensitivity_templates_response get_many_sensitivity_templates(
-        const messaging::get_many_sensitivity_templates_request& request);
-    messaging::put_sensitivity_template_response
-    put_sensitivity_template(const messaging::put_sensitivity_template_request& request);
-    messaging::put_many_sensitivity_templates_response put_many_sensitivity_templates(
-        const messaging::put_many_sensitivity_templates_request& request);
-    messaging::delete_sensitivity_template_response
-    delete_sensitivity_template(const messaging::delete_sensitivity_template_request& request);
-    messaging::delete_many_sensitivity_templates_response delete_many_sensitivity_templates(
-        const messaging::delete_many_sensitivity_templates_request& request);
-    messaging::list_sensitivity_template_versions_response list_sensitivity_template_versions(
-        const messaging::list_sensitivity_template_versions_request& request);
-    messaging::get_sensitivity_template_version_response get_sensitivity_template_version(
-        const messaging::get_sensitivity_template_version_request& request);
+    ::ores::analytics::messaging::list_sensitivity_templates_response list_sensitivity_templates(
+        const ::ores::analytics::messaging::list_sensitivity_templates_request& request);
+    ::ores::analytics::messaging::get_sensitivity_template_response get_sensitivity_template(
+        const ::ores::analytics::messaging::get_sensitivity_template_request& request);
+    ::ores::analytics::messaging::get_many_sensitivity_templates_response
+    get_many_sensitivity_templates(
+        const ::ores::analytics::messaging::get_many_sensitivity_templates_request& request);
+    ::ores::analytics::messaging::put_sensitivity_template_response put_sensitivity_template(
+        const ::ores::analytics::messaging::put_sensitivity_template_request& request);
+    ::ores::analytics::messaging::put_many_sensitivity_templates_response
+    put_many_sensitivity_templates(
+        const ::ores::analytics::messaging::put_many_sensitivity_templates_request& request);
+    ::ores::analytics::messaging::delete_sensitivity_template_response delete_sensitivity_template(
+        const ::ores::analytics::messaging::delete_sensitivity_template_request& request);
+    ::ores::analytics::messaging::delete_many_sensitivity_templates_response
+    delete_many_sensitivity_templates(
+        const ::ores::analytics::messaging::delete_many_sensitivity_templates_request& request);
+    ::ores::analytics::messaging::list_sensitivity_template_versions_response
+    list_sensitivity_template_versions(
+        const ::ores::analytics::messaging::list_sensitivity_template_versions_request& request);
+    ::ores::analytics::messaging::get_sensitivity_template_version_response
+    get_sensitivity_template_version(
+        const ::ores::analytics::messaging::get_sensitivity_template_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +194,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::sensitivity_template_change& change,
+    prepare_change(const ::ores::analytics::messaging::sensitivity_template_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::sensitivity_template& out);
 };

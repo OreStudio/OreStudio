@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+calendar_rule_list_order(const ores::utility::domain::order& order,
+                         std::initializer_list<std::string> default_columns,
+                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!calendar_rule_repository::is_sortable(order.field))
@@ -99,7 +100,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::calendar_rules_filter>& filter) {
+calendar_rule_filter_condition(const std::optional<messaging::calendar_rules_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -279,8 +280,8 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_latest_by_cale
     return execute_ordered_read_query<calendar_rule_entity, domain::calendar_rule>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        calendar_rule_list_order(order, {"id"}, false),
+        calendar_rule_filter_condition(filter),
         [](const auto& entities) { return calendar_rule_mapper::map(entities); },
         lg(),
         "Reading latest calendar rules by calendar_code.");
@@ -299,8 +300,11 @@ std::uint32_t calendar_rule_repository::get_total_calendar_rule_count_by_calenda
                        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<calendar_rule_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting calendar rules by calendar_code");
+    return execute_count_query<calendar_rule_entity>(ctx,
+                                                     query,
+                                                     calendar_rule_filter_condition(filter),
+                                                     lg(),
+                                                     "Counting calendar rules by calendar_code");
 }
 
 
@@ -379,8 +383,8 @@ calendar_rule_repository::read_latest(context ctx,
     return execute_ordered_read_query<calendar_rule_entity, domain::calendar_rule>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        calendar_rule_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), calendar_rule_filter_condition(filter)),
         [](const auto& entities) { return calendar_rule_mapper::map(entities); },
         lg(),
         "Reading latest calendar rules with pagination.");
@@ -399,7 +403,7 @@ std::uint32_t calendar_rule_repository::get_total_calendar_rule_count(
     return execute_count_query<calendar_rule_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), calendar_rule_filter_condition(filter)),
         lg(),
         "Counting calendar rules");
 }

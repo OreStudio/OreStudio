@@ -26,13 +26,7 @@ using ores::service::service::rate_limiter;
 using std::chrono::seconds;
 using time_point = std::chrono::system_clock::time_point;
 
-namespace {
-
-const std::string tags("[rate_limiter]");
-
-}
-
-TEST_CASE("a key may burst up to its bucket", tags) {
+TEST_CASE("a key may burst up to its bucket", "[rate_limiter]") {
     time_point now{};
     rate_limiter limiter(60, seconds(60), 3, [&] { return now; });
 
@@ -45,7 +39,7 @@ TEST_CASE("a key may burst up to its bucket", tags) {
     CHECK(refused.retry_after > std::chrono::milliseconds::zero());
 }
 
-TEST_CASE("a refusal says when the next token comes", tags) {
+TEST_CASE("a refusal says when the next token comes", "[rate_limiter]") {
     time_point now{};
     // One token a second, a bucket of one.
     rate_limiter limiter(1, seconds(1), 1, [&] { return now; });
@@ -60,7 +54,7 @@ TEST_CASE("a refusal says when the next token comes", tags) {
     CHECK(limiter.allow("svc").allowed);
 }
 
-TEST_CASE("keys have their own buckets", tags) {
+TEST_CASE("keys have their own buckets", "[rate_limiter]") {
     time_point now{};
     rate_limiter limiter(1, seconds(1), 1, [&] { return now; });
 
@@ -69,7 +63,7 @@ TEST_CASE("keys have their own buckets", tags) {
     CHECK_FALSE(limiter.allow("a").allowed);
 }
 
-TEST_CASE("a quiet key refills to its burst and no further", tags) {
+TEST_CASE("a quiet key refills to its burst and no further", "[rate_limiter]") {
     time_point now{};
     rate_limiter limiter(1, seconds(1), 2, [&] { return now; });
 
@@ -85,7 +79,7 @@ TEST_CASE("a quiet key refills to its burst and no further", tags) {
     CHECK_FALSE(limiter.allow("svc").allowed);
 }
 
-TEST_CASE("forget drops a key's bucket", tags) {
+TEST_CASE("forget drops a key's bucket", "[rate_limiter]") {
     time_point now{};
     rate_limiter limiter(1, seconds(1), 1, [&] { return now; });
 
@@ -98,7 +92,7 @@ TEST_CASE("forget drops a key's bucket", tags) {
     CHECK(limiter.allow("svc").allowed);
 }
 
-TEST_CASE("a limit of nothing admits every request", tags) {
+TEST_CASE("a limit of nothing admits every request", "[rate_limiter]") {
     time_point now{};
     rate_limiter limiter(0, seconds(1), 0, [&] { return now; });
 

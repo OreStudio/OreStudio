@@ -21,6 +21,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/history_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -36,9 +37,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][history]");
-
 const std::string workflow_instance("ores.workflow.workflow_instance");
 const std::string instance_id("1a529bd2-3345-41f8-b8ff-ab9334509c1e");
 
@@ -52,7 +50,7 @@ const std::string instance_id("1a529bd2-3345-41f8-b8ff-ab9334509c1e");
  */
 } // anonymous namespace
 
-TEST_CASE("history_commands registers the get verb", tags) {
+TEST_CASE("history_commands registers the get verb", "[commands][history]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -67,7 +65,7 @@ TEST_CASE("history_commands registers the get verb", tags) {
           completions.end());
 }
 
-TEST_CASE("history_commands_get_names_the_arguments_it_needs", tags) {
+TEST_CASE("history_commands_get_names_the_arguments_it_needs", "[commands][history]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -81,7 +79,7 @@ TEST_CASE("history_commands_get_names_the_arguments_it_needs", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("history_commands_get_refuses_a_version_it_cannot_read", tags) {
+TEST_CASE("history_commands_get_refuses_a_version_it_cannot_read", "[commands][history]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -96,7 +94,7 @@ TEST_CASE("history_commands_get_refuses_a_version_it_cannot_read", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("history_commands_get_refuses_a_version_without_a_diff", tags) {
+TEST_CASE("history_commands_get_refuses_a_version_without_a_diff", "[commands][history]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -112,7 +110,7 @@ TEST_CASE("history_commands_get_refuses_a_version_without_a_diff", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("history_commands_get_requires_a_session", tags) {
+TEST_CASE("history_commands_get_requires_a_session", "[commands][history]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

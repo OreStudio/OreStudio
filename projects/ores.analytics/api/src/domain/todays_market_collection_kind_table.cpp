@@ -31,7 +31,7 @@ namespace ores::analytics::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string todays_market_collection_kind_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<todays_market_collection_kind>& v
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& tck : v) {
-        table << tck.code << tck.entry_element << tck.key_attribute << opt_str(tck.key_attribute_2)
-              << tck.modified_by << tck.version << fort::endr;
+        table << tck.code << tck.entry_element << tck.key_attribute
+              << todays_market_collection_kind_opt_str(tck.key_attribute_2) << tck.modified_by
+              << tck.version << fort::endr;
     }
     return table.to_string();
 }

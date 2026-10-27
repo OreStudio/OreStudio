@@ -83,9 +83,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy lei_bic_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"lei"});
     if (!lei_bic_repository::is_sortable(order.field))
@@ -98,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::lei_bic_filter>& filter) {
+lei_bic_filter_condition(const std::optional<messaging::lei_bic_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -250,8 +250,8 @@ lei_bic_repository::read_latest(context ctx,
     return execute_ordered_read_query<lei_bic_entity, domain::lei_bic>(
         ctx,
         query,
-        list_order(order, {"lei"}, false),
-        filter_condition(filter),
+        lei_bic_list_order(order, {"lei"}, false),
+        lei_bic_filter_condition(filter),
         [](const auto& entities) { return lei_bic_mapper::map(entities); },
         lg(),
         "Reading latest LEI BIC with pagination.");
@@ -264,7 +264,7 @@ std::uint32_t lei_bic_repository::get_total_lei_bic_count(
     const auto query = sqlgen::read<std::vector<lei_bic_entity>>;
 
     return execute_count_query<lei_bic_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting LEI BIC");
+        ctx, query, lei_bic_filter_condition(filter), lg(), "Counting LEI BIC");
 }
 
 std::vector<domain::lei_bic> lei_bic_repository::read_latest(context ctx,

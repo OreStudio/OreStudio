@@ -77,22 +77,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_countries_response
-    list_countries(const messaging::list_countries_request& request);
-    messaging::get_country_response get_country(const messaging::get_country_request& request);
-    messaging::get_many_countries_response
-    get_many_countries(const messaging::get_many_countries_request& request);
-    messaging::put_country_response put_country(const messaging::put_country_request& request);
-    messaging::put_many_countries_response
-    put_many_countries(const messaging::put_many_countries_request& request);
-    messaging::delete_country_response
-    delete_country(const messaging::delete_country_request& request);
-    messaging::delete_many_countries_response
-    delete_many_countries(const messaging::delete_many_countries_request& request);
-    messaging::list_country_versions_response
-    list_country_versions(const messaging::list_country_versions_request& request);
-    messaging::get_country_version_response
-    get_country_version(const messaging::get_country_version_request& request);
+    ::ores::refdata::messaging::list_countries_response
+    list_countries(const ::ores::refdata::messaging::list_countries_request& request);
+    ::ores::refdata::messaging::get_country_response
+    get_country(const ::ores::refdata::messaging::get_country_request& request);
+    ::ores::refdata::messaging::get_many_countries_response
+    get_many_countries(const ::ores::refdata::messaging::get_many_countries_request& request);
+    ::ores::refdata::messaging::put_country_response
+    put_country(const ::ores::refdata::messaging::put_country_request& request);
+    ::ores::refdata::messaging::put_many_countries_response
+    put_many_countries(const ::ores::refdata::messaging::put_many_countries_request& request);
+    ::ores::refdata::messaging::delete_country_response
+    delete_country(const ::ores::refdata::messaging::delete_country_request& request);
+    ::ores::refdata::messaging::delete_many_countries_response
+    delete_many_countries(const ::ores::refdata::messaging::delete_many_countries_request& request);
+    ::ores::refdata::messaging::list_country_versions_response
+    list_country_versions(const ::ores::refdata::messaging::list_country_versions_request& request);
+    ::ores::refdata::messaging::get_country_version_response
+    get_country_version(const ::ores::refdata::messaging::get_country_version_request& request);
     /**@}*/
 
     /**
@@ -206,9 +208,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::country_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::country& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::country_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::country& out);
     repository::party_country_repository junction_repo_;
 };
 

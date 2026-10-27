@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::report_error_event> read_one(repository::report_error_event_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::report_error_event_key& key) {
+std::vector<domain::report_error_event>
+report_error_event_read_one(repository::report_error_event_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::report_error_event_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -152,7 +153,7 @@ report_error_event_service::list_by_report_instance_id_report_error_events(
 messaging::get_report_error_event_response report_error_event_service::get_report_error_event(
     const messaging::get_report_error_event_request& request) {
     messaging::get_report_error_event_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = report_error_event_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "report_error_event"});
         return response;
@@ -172,7 +173,7 @@ report_error_event_service::get_many_report_error_events(
     for (const auto& k : request.keys) {
         messaging::report_error_event_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = report_error_event_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.report_error_event = std::move(found.front());
         response.entries.push_back(std::move(entry));

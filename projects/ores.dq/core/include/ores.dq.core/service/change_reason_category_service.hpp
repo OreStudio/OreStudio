@@ -75,24 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_change_reason_categories_response
-    list_change_reason_categories(const messaging::list_change_reason_categories_request& request);
-    messaging::get_change_reason_category_response
-    get_change_reason_category(const messaging::get_change_reason_category_request& request);
-    messaging::get_many_change_reason_categories_response get_many_change_reason_categories(
-        const messaging::get_many_change_reason_categories_request& request);
-    messaging::put_change_reason_category_response
-    put_change_reason_category(const messaging::put_change_reason_category_request& request);
-    messaging::put_many_change_reason_categories_response put_many_change_reason_categories(
-        const messaging::put_many_change_reason_categories_request& request);
-    messaging::delete_change_reason_category_response
-    delete_change_reason_category(const messaging::delete_change_reason_category_request& request);
-    messaging::delete_many_change_reason_categories_response delete_many_change_reason_categories(
-        const messaging::delete_many_change_reason_categories_request& request);
-    messaging::list_change_reason_category_versions_response list_change_reason_category_versions(
-        const messaging::list_change_reason_category_versions_request& request);
-    messaging::get_change_reason_category_version_response get_change_reason_category_version(
-        const messaging::get_change_reason_category_version_request& request);
+    ::ores::dq::messaging::list_change_reason_categories_response list_change_reason_categories(
+        const ::ores::dq::messaging::list_change_reason_categories_request& request);
+    ::ores::dq::messaging::get_change_reason_category_response get_change_reason_category(
+        const ::ores::dq::messaging::get_change_reason_category_request& request);
+    ::ores::dq::messaging::get_many_change_reason_categories_response
+    get_many_change_reason_categories(
+        const ::ores::dq::messaging::get_many_change_reason_categories_request& request);
+    ::ores::dq::messaging::put_change_reason_category_response put_change_reason_category(
+        const ::ores::dq::messaging::put_change_reason_category_request& request);
+    ::ores::dq::messaging::put_many_change_reason_categories_response
+    put_many_change_reason_categories(
+        const ::ores::dq::messaging::put_many_change_reason_categories_request& request);
+    ::ores::dq::messaging::delete_change_reason_category_response delete_change_reason_category(
+        const ::ores::dq::messaging::delete_change_reason_category_request& request);
+    ::ores::dq::messaging::delete_many_change_reason_categories_response
+    delete_many_change_reason_categories(
+        const ::ores::dq::messaging::delete_many_change_reason_categories_request& request);
+    ::ores::dq::messaging::list_change_reason_category_versions_response
+    list_change_reason_category_versions(
+        const ::ores::dq::messaging::list_change_reason_category_versions_request& request);
+    ::ores::dq::messaging::get_change_reason_category_version_response
+    get_change_reason_category_version(
+        const ::ores::dq::messaging::get_change_reason_category_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +194,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::change_reason_category_change& change,
+    prepare_change(const ::ores::dq::messaging::change_reason_category_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::change_reason_category& out);
 };

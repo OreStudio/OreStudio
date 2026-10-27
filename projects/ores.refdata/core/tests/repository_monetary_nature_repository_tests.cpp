@@ -27,6 +27,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -36,19 +37,12 @@
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::repository::monetary_nature_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_monetary_nature", tags) {
+TEST_CASE("write_single_monetary_nature", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -66,7 +60,7 @@ TEST_CASE("write_single_monetary_nature", tags) {
     CHECK(read_monetary_natures[0].name == mn.name);
 }
 
-TEST_CASE("read_latest_monetary_natures_no_duplicate_codes", tags) {
+TEST_CASE("read_latest_monetary_natures_no_duplicate_codes", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -96,7 +90,7 @@ TEST_CASE("read_latest_monetary_natures_no_duplicate_codes", tags) {
     CHECK(codes.size() == read_monetary_natures.size());
 }
 
-TEST_CASE("read_latest_monetary_nature_by_code", tags) {
+TEST_CASE("read_latest_monetary_nature_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -121,7 +115,7 @@ TEST_CASE("read_latest_monetary_nature_by_code", tags) {
     CHECK(read_monetary_natures[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_nonexistent_monetary_nature_code", tags) {
+TEST_CASE("read_nonexistent_monetary_nature_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

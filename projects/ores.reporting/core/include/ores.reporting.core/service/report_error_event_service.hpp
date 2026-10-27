@@ -76,15 +76,17 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_report_error_events_response
-    list_report_error_events(const messaging::list_report_error_events_request& request);
-    messaging::get_report_error_event_response
-    get_report_error_event(const messaging::get_report_error_event_request& request);
-    messaging::get_many_report_error_events_response
-    get_many_report_error_events(const messaging::get_many_report_error_events_request& request);
-    messaging::list_by_report_instance_id_report_error_events_response
+    ::ores::reporting::messaging::list_report_error_events_response list_report_error_events(
+        const ::ores::reporting::messaging::list_report_error_events_request& request);
+    ::ores::reporting::messaging::get_report_error_event_response get_report_error_event(
+        const ::ores::reporting::messaging::get_report_error_event_request& request);
+    ::ores::reporting::messaging::get_many_report_error_events_response
+    get_many_report_error_events(
+        const ::ores::reporting::messaging::get_many_report_error_events_request& request);
+    ::ores::reporting::messaging::list_by_report_instance_id_report_error_events_response
     list_by_report_instance_id_report_error_events(
-        const messaging::list_by_report_instance_id_report_error_events_request& request);
+        const ::ores::reporting::messaging::list_by_report_instance_id_report_error_events_request&
+            request);
     /**@}*/
 
     /**

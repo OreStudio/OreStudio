@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+csa_eligible_currency_list_order(const ores::utility::domain::order& order,
+                                 std::initializer_list<std::string> default_columns,
+                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!csa_eligible_currency_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::csa_eligible_currencies_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> csa_eligible_currency_filter_condition(
+    const std::optional<messaging::csa_eligible_currencies_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -324,8 +325,8 @@ std::vector<domain::csa_eligible_currency> csa_eligible_currency_repository::rea
     return execute_ordered_read_query<csa_eligible_currency_entity, domain::csa_eligible_currency>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        csa_eligible_currency_list_order(order, {"id"}, false),
+        csa_eligible_currency_filter_condition(filter),
         [](const auto& entities) { return csa_eligible_currency_mapper::map(entities); },
         lg(),
         "Reading latest CSA eligible currencies by csa_id.");
@@ -345,7 +346,11 @@ std::uint32_t csa_eligible_currency_repository::get_total_csa_eligible_currency_
         where("tenant_id"_c == tid && "csa_id"_c == csa_id && "valid_to"_c == max.value());
 
     return execute_count_query<csa_eligible_currency_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting CSA eligible currencies by csa_id");
+        ctx,
+        query,
+        csa_eligible_currency_filter_condition(filter),
+        lg(),
+        "Counting CSA eligible currencies by csa_id");
 }
 
 
@@ -398,8 +403,8 @@ std::vector<domain::csa_eligible_currency> csa_eligible_currency_repository::rea
     return execute_ordered_read_query<csa_eligible_currency_entity, domain::csa_eligible_currency>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        csa_eligible_currency_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), csa_eligible_currency_filter_condition(filter)),
         [](const auto& entities) { return csa_eligible_currency_mapper::map(entities); },
         lg(),
         "Reading latest CSA eligible currencies with pagination.");
@@ -418,7 +423,7 @@ std::uint32_t csa_eligible_currency_repository::get_total_csa_eligible_currency_
     return execute_count_query<csa_eligible_currency_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), csa_eligible_currency_filter_condition(filter)),
         lg(),
         "Counting CSA eligible currencies");
 }

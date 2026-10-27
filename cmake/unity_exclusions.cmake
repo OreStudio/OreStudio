@@ -190,6 +190,7 @@ set_source_files_properties(
     PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 set_source_files_properties(
     "${CMAKE_SOURCE_DIR}/projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp"
+    "${CMAKE_SOURCE_DIR}/projects/ores.ore/service/src/messaging/pricing_engines_handler.cpp"
     "${CMAKE_SOURCE_DIR}/projects/ores.ore/service/src/messaging/run_configuration_operations.cpp"
     DIRECTORY "${CMAKE_SOURCE_DIR}/projects/ores.ore/service/src"
     PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)

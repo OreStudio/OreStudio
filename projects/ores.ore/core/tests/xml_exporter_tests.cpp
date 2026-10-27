@@ -993,7 +993,7 @@ ores::analytics::messaging::pricing_engines_document swap_configuration() {
 
 }
 
-TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", tags) {
+TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_pricing_engines(swap_configuration());
@@ -1016,7 +1016,7 @@ TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", tags) {
 )");
 }
 
-TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", tags) {
+TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;
@@ -1031,7 +1031,8 @@ TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", tags) 
     CHECK(xml.find("BondTRS") < xml.find("ForwardBond"));
 }
 
-TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_scope", tags) {
+TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_scope",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;
@@ -1058,7 +1059,7 @@ TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_
     CHECK(engine_at < timestep_at);
 }
 
-TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", tags) {
+TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;
@@ -1083,7 +1084,8 @@ TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", tags) {
     CHECK(parameters.front().value == R"(x < 1 && y > 2 && s == "z")");
 }
 
-TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_sections", tags) {
+TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_sections",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml =
@@ -1097,7 +1099,8 @@ TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_section
 )");
 }
 
-TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states", tags) {
+TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto configuration = swap_configuration();
@@ -1115,7 +1118,8 @@ TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states", ta
     CHECK(from_round_trip == from_rows);
 }
 
-TEST_CASE("export_pricing_engines_refuses_a_row_the_document_has_no_place_for", tags) {
+TEST_CASE("export_pricing_engines_refuses_a_row_the_document_has_no_place_for",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     ores::analytics::messaging::pricing_engines_document document;

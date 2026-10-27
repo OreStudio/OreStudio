@@ -66,10 +66,10 @@ TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_no
         ++checked[row.provider_code];
     }
 
-    // The catalogue holds the 26 FX pairs and the 60 interest rate pillars of the uniform demo
-    // curves for each of the three providers. Other suites share the database and may add rows of
-    // their own, so the count is a floor.
-    CHECK(checked["bloomberg"] >= 86);
-    CHECK(checked["lseg"] >= 86);
-    CHECK(checked["demo"] >= 86);
+    // Each provider's catalogue is the set of ids its own feeds serve, so the providers differ:
+    // the seed installs 362 Bloomberg ids, 71 Demo ids and 14 LSEG crosses. Other suites share
+    // the database and may add rows of their own, so the count is a floor.
+    CHECK(checked["bloomberg"] >= 362);
+    CHECK(checked["demo"] >= 71);
+    CHECK(checked["lseg"] >= 14);
 }

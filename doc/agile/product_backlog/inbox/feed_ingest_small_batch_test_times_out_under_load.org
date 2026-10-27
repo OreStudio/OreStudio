@@ -26,6 +26,12 @@ tap counted every tick. Run alone it passed five times out of five, in about
 than a slow machine, such as another suite running at the same time against
 the same services. That is not yet shown.
 
+On the same day a full =ctest= run after a rebase failed it again, at line
+1249, and with it a second test of the same file:
+=a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits=,
+whose =wait_until= at line 1089 gave up before every tick was republished.
+The load average was about 30. The suite run again alone passed both.
+
 * References
 
 -

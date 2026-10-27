@@ -358,6 +358,15 @@ function HistoryTab({ record }: { readonly record: PublishedCurveSet }): ReactNo
         ...recordEvents(PUBLISH_ENTITY, record.publish_id, versions.data ?? []),
     ];
     const decided = request.data?.decision ?? null;
+    // The stream states its gaps: a request that nobody answers can have no
+    // decision, and an answered one whose decision this reader may not read is a
+    // gap and not a silence.
+    const decisionHidden =
+        request.data !== null &&
+        request.data !== undefined &&
+        decided === null &&
+        request.data.stateCode !== 'waiting' &&
+        request.data.stateCode !== 'held';
     if (decided !== null && decided.decidedAt !== '') {
         events.push({
             entityType: 'ores.inbox.approval_request',
@@ -379,15 +388,24 @@ function HistoryTab({ record }: { readonly record: PublishedCurveSet }): ReactNo
                     subject: 'record',
                     id: record.publish_id,
                     events: orderTimeline(events),
-                    gaps:
-                        request.isError && record.request_id !== ''
+                    gaps: [
+                        ...(request.isError && record.request_id !== ''
                             ? [
                                   {
                                       entity: 'ores.inbox.approval_request',
                                       reason: request.error.message,
                                   },
                               ]
-                            : [],
+                            : []),
+                        ...(decisionHidden
+                            ? [
+                                  {
+                                      entity: t('marketdata.published.history.decision'),
+                                      reason: t('marketdata.published.history.decisionHidden'),
+                                  },
+                              ]
+                            : []),
+                    ],
                 }}
                 recordName={(event) =>
                     event.entityType === 'ores.inbox.approval_request'

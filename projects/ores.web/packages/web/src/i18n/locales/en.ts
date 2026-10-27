@@ -4576,6 +4576,8 @@ export const en: SourceCatalogue = {
                 decision: 'Approval decision',
                 noRevert:
                     'There is no Revert. Nobody may write a publish record, so a correction is a new publish or a withdrawal, and each is an act of its own with a request behind it.',
+                decisionHidden:
+                    'The decision on this request is not readable here: it belongs to the request, and reading it needs the inbox’s decisions read.',
             },
             chart: {
                 noPublished:

@@ -4608,6 +4608,8 @@ const pt: SourceCatalogue = {
                 decision: 'Decisão de aprovação',
                 noRevert:
                     'Não há reversão. Ninguém pode escrever um registo de publicação, por isso uma correção é uma nova publicação ou uma retirada, e cada uma é um ato próprio com um pedido por trás.',
+                decisionHidden:
+                    'A decisão sobre este pedido não é legível aqui: pertence ao pedido, e lê-la exige o direito de ler as decisões da caixa.',
             },
             chart: {
                 noPublished:

@@ -52,9 +52,11 @@ using namespace ores::logging;
  * @brief The published curve screens' reads, and the act that ends a set.
  *
  * The two reads answer the caller's tenant, which is what the list screen is:
- * every set the tenant holds, with the state each is in. A reader who may see a
- * curve may read the sets it is published in, so the reads ask for the
- * permission the snapshot read asks for and no other.
+ * every set the tenant holds, with the state each is in. They read publish
+ * records, so they ask for the permission the publish records name:
+ * `marketdata::curve_publishes:read`. That is also the permission the decider of
+ * a publish holds, which is what lets a queue row and a request page name the
+ * subject the decision is about.
  *
  * The withdrawal is the maker's act and not the decider's: the account that may
  * publish a curve may take one out of use, as the journey states, so it asks for
@@ -74,7 +76,7 @@ public:
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(published_curves_handler_lg(), msg);
-        const auto req_ctx = context_of(msg, "marketdata::curve_snapshots:read");
+        const auto req_ctx = context_of(msg, "marketdata::curve_publishes:read");
         if (!req_ctx)
             return;
         auto req = decode<list_published_curves_request>(msg);
@@ -98,7 +100,7 @@ public:
     void sets(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(published_curves_handler_lg(), msg);
-        const auto req_ctx = context_of(msg, "marketdata::curve_snapshots:read");
+        const auto req_ctx = context_of(msg, "marketdata::curve_publishes:read");
         if (!req_ctx)
             return;
         auto req = decode<get_published_curve_sets_request>(msg);

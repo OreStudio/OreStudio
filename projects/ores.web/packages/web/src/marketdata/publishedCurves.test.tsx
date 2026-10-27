@@ -480,6 +480,37 @@ describe('the published curve record', () => {
         expect(html).not.toContain('>Revert<');
     });
 
+    it('states the decision it cannot read as a gap, and not as a silence', () => {
+        const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}&tab=history`, (client) => {
+            seedRecord(client, [set()]);
+            client.setQueryData(['history', 'ores.marketdata.curve_publish', set().publish_id], [
+                {
+                    version: 1,
+                    modifiedBy: 'henry.jones',
+                    recordedAt: '2026-10-27 16:00:00Z',
+                    fields: [{ name: 'Change Reason Code', value: 'system.new_record' }],
+                    changes: [],
+                },
+            ]);
+            client.setQueryData(['request', REQUEST], {
+                id: REQUEST,
+                version: 2,
+                kindCode: 'marketdata.curve_publish',
+                stateCode: 'approved',
+                requestedBy: 'henry.jones',
+                requestedAt: '2026-10-27 16:00:00Z',
+                reason: 'The desk prices off this curve',
+                expiresAt: null,
+                roles: [],
+                decision: null,
+                parts: [],
+                subjects: [],
+            });
+        });
+
+        expect(html).toContain('The decision on this request is not readable here');
+    });
+
     it('says a curve with no published set has none, and draws no tabs', () => {
         const html = render(<PublishedCurvePage />, `/market-data/published-curves/${CURVE}?party=${PARTY}`, (client) =>
             seedRecord(client, [candidate()], 0),

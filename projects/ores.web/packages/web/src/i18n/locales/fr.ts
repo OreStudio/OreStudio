@@ -4639,6 +4639,8 @@ const fr: SourceCatalogue = {
                 decision: 'Décision d’approbation',
                 noRevert:
                     'Il n’y a pas de retour en arrière. Personne ne peut écrire un enregistrement de publication : une correction est une nouvelle publication ou un retrait, et chacun est un acte propre avec une demande derrière lui.',
+                decisionHidden:
+                    'La décision sur cette demande n’est pas lisible ici : elle appartient à la demande, et la lire demande le droit de lire les décisions de la boîte.',
             },
             chart: {
                 noPublished:

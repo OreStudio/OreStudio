@@ -33,11 +33,11 @@ a person would look for them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Built, and driven on the running environment. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The review.                            |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance

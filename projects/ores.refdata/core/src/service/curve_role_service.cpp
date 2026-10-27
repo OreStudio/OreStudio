@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -177,8 +176,7 @@ curve_role_service::put_curve_role(const messaging::put_curve_role_request& requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(curve_role_read_one(repo_, ctx_, curve_role_key_from(value)), ctx_);
+    auto written = curve_role_read_one(repo_, ctx_, curve_role_key_from(value));
     if (!written.empty())
         response.curve_role = std::move(written.front());
     return response;
@@ -210,8 +208,7 @@ curve_role_service::put_many_curve_roles(const messaging::put_many_curve_roles_r
     repo_.write(ctx_, batch, claims);
     response.roles.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            of_acting_party(curve_role_read_one(repo_, ctx_, curve_role_key_from(value)), ctx_);
+        auto written = curve_role_read_one(repo_, ctx_, curve_role_key_from(value));
         response.roles.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -329,10 +326,7 @@ curve_role_service::prepare_change(const messaging::curve_role_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = curve_role_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(curve_role_read_one(repo_, ctx_, curve_role_key_from(out)), ctx_);
+    const auto current = curve_role_read_one(repo_, ctx_, curve_role_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

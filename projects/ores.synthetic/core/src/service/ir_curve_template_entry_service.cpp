@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -196,9 +195,8 @@ ir_curve_template_entry_service::put_ir_curve_template_entry(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        ir_curve_template_entry_read_one(repo_, ctx_, ir_curve_template_entry_key_from(value)),
-        ctx_);
+    auto written =
+        ir_curve_template_entry_read_one(repo_, ctx_, ir_curve_template_entry_key_from(value));
     if (!written.empty())
         response.ir_curve_template_entry = std::move(written.front());
     return response;
@@ -231,9 +229,8 @@ ir_curve_template_entry_service::put_many_ir_curve_template_entries(
     repo_.write(ctx_, batch, claims);
     response.ir_curve_template_entries.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            ir_curve_template_entry_read_one(repo_, ctx_, ir_curve_template_entry_key_from(value)),
-            ctx_);
+        auto written =
+            ir_curve_template_entry_read_one(repo_, ctx_, ir_curve_template_entry_key_from(value));
         response.ir_curve_template_entries.push_back(written.empty() ? value :
                                                                        std::move(written.front()));
     }
@@ -360,10 +357,8 @@ ores::utility::domain::result ir_curve_template_entry_service::prepare_change(
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = ir_curve_template_entry_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        ir_curve_template_entry_read_one(repo_, ctx_, ir_curve_template_entry_key_from(out)), ctx_);
+    const auto current =
+        ir_curve_template_entry_read_one(repo_, ctx_, ir_curve_template_entry_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

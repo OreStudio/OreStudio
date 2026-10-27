@@ -43,7 +43,6 @@
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -175,8 +174,7 @@ price_type_service::put_price_type(const messaging::put_price_type_request& requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written =
-        of_acting_party(price_type_read_one(repo_, ctx_, price_type_key_from(value)), ctx_);
+    auto written = price_type_read_one(repo_, ctx_, price_type_key_from(value));
     if (!written.empty())
         response.price_type = std::move(written.front());
     return response;
@@ -208,8 +206,7 @@ price_type_service::put_many_price_types(const messaging::put_many_price_types_r
     repo_.write(ctx_, batch, claims);
     response.price_types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written =
-            of_acting_party(price_type_read_one(repo_, ctx_, price_type_key_from(value)), ctx_);
+        auto written = price_type_read_one(repo_, ctx_, price_type_key_from(value));
         response.price_types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -327,10 +324,7 @@ price_type_service::prepare_change(const messaging::price_type_change& change,
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = price_type_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current =
-        of_acting_party(price_type_read_one(repo_, ctx_, price_type_key_from(out)), ctx_);
+    const auto current = price_type_read_one(repo_, ctx_, price_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

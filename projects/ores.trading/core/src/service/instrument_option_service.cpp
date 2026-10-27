@@ -47,7 +47,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
-using ores::service::messaging::of_acting_party;
 using ores::service::messaging::stamp;
 // Every refusal names its outcome; the catalogue supplies the code and the
 // sentence, so a service states what happened and nothing about how to say it.
@@ -213,8 +212,7 @@ messaging::put_instrument_option_response instrument_option_service::put_instrum
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = of_acting_party(
-        instrument_option_read_one(repo_, ctx_, instrument_option_key_from(value)), ctx_);
+    auto written = instrument_option_read_one(repo_, ctx_, instrument_option_key_from(value));
     if (!written.empty())
         response.instrument_option = std::move(written.front());
     return response;
@@ -247,8 +245,7 @@ instrument_option_service::put_many_instrument_options(
     repo_.write(ctx_, batch, claims);
     response.instrument_options.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = of_acting_party(
-            instrument_option_read_one(repo_, ctx_, instrument_option_key_from(value)), ctx_);
+        auto written = instrument_option_read_one(repo_, ctx_, instrument_option_key_from(value));
         response.instrument_options.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -371,10 +368,7 @@ instrument_option_service::prepare_change(const messaging::instrument_option_cha
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = instrument_option_to_domain(change.write);
-    // The write lands under the acting party, so its claim is checked against
-    // that party's row, not another visible party's row of the same key.
-    const auto current = of_acting_party(
-        instrument_option_read_one(repo_, ctx_, instrument_option_key_from(out)), ctx_);
+    const auto current = instrument_option_read_one(repo_, ctx_, instrument_option_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -7,13 +7,13 @@
 #+level: cross
 #+filetags: :prototype:index:ui:market_data:
 #+created: 2026-10-08
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 
 * Summary
 
 Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time.
 
-22 prototypes answer to this group. Each one is a static page under
+23 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -39,6 +39,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:decide-a-publish.org][Decide a publish]] | The checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes. | [[file:decide-a-publish/][prototype]] | none |
 | [[file:publish-the-approved-set.org][Publish the approved set]] | Publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it. | [[file:publish-the-approved-set/][prototype]] | none |
 | [[file:withdraw-or-replace-a-published-curve.org][Withdraw or replace a published curve]] | A wrong publish is undone as an act with a reason, and the withdrawal can need its own approval. | [[file:withdraw-or-replace-a-published-curve/][prototype]] | none |
+| [[file:published-curves.org][Published curves]] | The tenant's published sets as a list and a record page of four tabs: details, published points with the last sets overlaid as the IR ticks panel draws them, compare as of with its chart and its changed, added, dropped and unchanged points, and the standard history with the record's versions; and the approvals queue row that carries a publish's subject beside the other kinds. | [[file:published-curves/][prototype]] | none |
 | [[file:watch-a-curve-or-surface-evolve.org][Watch a curve or surface evolve]] | One instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument. | [[file:watch-a-curve-or-surface-evolve/][prototype]] | none |
 | [[file:see-who-changed-a-curve.org][See who changed a curve, and when]] | The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor. | [[file:see-who-changed-a-curve/][prototype]] | none |
 | [[file:oresmd-url-editor.org][oresmd URL editor]] | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, curve ids, index names, security ids) plus ORE's own vocabularies as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][prototype]] | none |

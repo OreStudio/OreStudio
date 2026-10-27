@@ -207,6 +207,85 @@ decider reads is the kind's own read, in the component that owns the kind.
    list of the reasons the operational authorisation queue names, and a code it
    does not hold is refused with the codes it does.
 
+* The decision
+
+** The maker and checker pair on the kind
+
+*** The rule
+
+The kind names two permissions, and each one governs one half of the act:
+
+| Field                   | What it permits                                    | Seed in Acme                                              |
+|-------------------------+----------------------------------------------------+-----------------------------------------------------------|
+| =raise_permission_code= | Raise a request of this kind: the maker's right    | =marketdata::curves:publish=, held by the market data maker roles |
+| =decide_permission_code= | Decide a request of this kind: the checker's right | =inbox::approvals:decide_market_risk=, held by the heads of market risk |
+
+=decide_permission_code= exists today. =raise_permission_code= does not, and the
+decision is that the kind gains it.
+
+The four-eyes rule is a rule of the record, not of the pair. The decision insert
+trigger refuses a decision whose decider is the request's raiser, and the service
+answers =four_eyes= with the words "You asked for this request, so someone else
+decides it." The pair makes the rule reachable in the ordinary case: the maker
+holds the raise and not the decide, and the checker holds the decide. A tenant
+that grants one account both permissions has a weaker control, and the record
+still refuses the self-decision.
+
+The queue is filtered by =decide_permission_code=, and the raise is refused to an
+account without =raise_permission_code=. Neither permission appears on a screen:
+a screen draws the action or leaves it out, and the access mark says Editable or
+Read only.
+
+*** Per kind, and not per request
+
+The pair belongs to the kind. A request cannot name a permission of its own, and
+must not: a maker who could name a weaker checker would choose their own control.
+A kind may name parts, and each part names a permission and an answer order; the
+parts are per request, because a request names which functions answer it. The
+pair is not a part, and one request never widens it.
+
+The permissions are held by an account in the tenant, never by a party. A curve
+publish for one party is therefore raised by a maker who holds the raise and
+decided by the tenant's Market Risk, and the subject names the party so the
+checker knows whose curve it is.
+
+*** Why this answer
+
+The record already enforces the separation that matters: the decider is not the
+asker. What the pair adds is the ordinary case, where the desk cannot answer its
+own request and the approver cannot raise one in the desk's name. One column on
+the kind and one check on the raise give that, and no screen changes.
+
+*** The alternative
+
+A request names the permission its decider must hold, and the kind names only a
+default. A maker then chooses the checker from a list the kind allows. This is
+the answer if a tenant needs a request to route to the functions of the party
+whose curve it is. It is rejected for now, because the queue would become a join
+over the requests and their named permissions, and the four-eyes rule would be
+the only fixed part of the control.
+
+*** Open questions
+
+1. What is the raise permission called? The recommendation is
+   =marketdata::curves:publish=, in the market data component's namespace,
+   because the act is the component's; the decide stays in the inbox's namespace
+   because the inbox owns the queue. The alternative is
+   =inbox::approvals:raise_marketdata=, which groups both halves under the queue.
+2. Is the raise permission per curve family or per curve kind? The recommendation
+   is per curve kind first: one code for an IR curve and one for an FX curve,
+   granted to the maker roles that own each. The alternative is one code for
+   every curve, which a desk that owns one family does not need.
+3. Is the pair declared on the kind or in a policy? The recommendation is on the
+   kind, beside =approvals_required=, because the kind is already the one place
+   the count, the hold and the expiry are read. The alternative is the policy
+   model the book changes use, and it would split one control over two
+   mechanisms.
+4. What happens when an account holds both? The recommendation is that the seed
+   never grants both to one role, and that the request page says plainly that
+   the person may decide, so a tenant that grants both can see what it has done.
+   The alternative is to refuse the grant, which the IAM model has no rule for.
+
 * Related journeys
 
 - [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the request this screen decides.

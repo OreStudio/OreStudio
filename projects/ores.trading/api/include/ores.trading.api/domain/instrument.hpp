@@ -306,6 +306,13 @@ struct equity_instrument_data {
      * levels and its ordinal pairs them with the schedule.
      */
     std::vector<equity_swap_period> periods;
+    /**
+     * @brief The range bounds an equity accumulator pays on.
+     *
+     * A bound is a row of the shared table rather than a column, so the
+     * accumulator states them beside its facts as the FX accumulator does.
+     */
+    std::vector<range_bound> range_bounds;
 };
 
 /**
@@ -617,6 +624,8 @@ inline void stamp_ids(equity_instrument_data& data,
         stamp_ids(constituent, trade_id, activity_id);
     for (auto& period : data.periods)
         stamp_ids(period, trade_id, activity_id);
+    for (auto& bound : data.range_bounds)
+        stamp_ids(bound, trade_id, activity_id);
     for (auto& underlying : data.underlyings) {
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;

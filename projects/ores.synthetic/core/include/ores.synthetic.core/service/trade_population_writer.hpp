@@ -118,8 +118,7 @@ public:
      * A grouped structure's id is derived from its first leg, so a repeated run
      * finds the structure it made the first time and groups nothing twice.
      */
-    [[nodiscard]] virtual bool
-    structure_exists(const boost::uuids::uuid& structure_id) = 0;
+    [[nodiscard]] virtual bool structure_exists(const boost::uuids::uuid& structure_id) = 0;
 
     /**
      * @brief Creates the structure the population grouped.

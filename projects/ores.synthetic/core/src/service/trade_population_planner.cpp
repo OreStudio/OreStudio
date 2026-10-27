@@ -913,8 +913,7 @@ boost::uuids::uuid structure_id_for(const boost::uuids::uuid& first_leg) {
 
 }
 
-void group_into_structures(domain::trade_population_plan& plan,
-                           std::uint32_t structures_per_book) {
+void group_into_structures(domain::trade_population_plan& plan, std::uint32_t structures_per_book) {
     if (structures_per_book == 0 || plan.slots.empty())
         return;
 

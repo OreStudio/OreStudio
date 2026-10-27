@@ -922,10 +922,9 @@ bool trading_trade_population_writer::structure_exists(const boost::uuids::uuid&
         ores::trading::messaging::get_structure_request::nats_subject, codec.encode(req));
     const auto error = reply.headers.find("X-Error");
     if (error != reply.headers.end())
-        throw trade_population_write_error(
-            std::format("Reading structure {} was refused: {}",
-                        boost::uuids::to_string(structure_id),
-                        error->second));
+        throw trade_population_write_error(std::format("Reading structure {} was refused: {}",
+                                                       boost::uuids::to_string(structure_id),
+                                                       error->second));
     auto decoded = codec.decode<ores::trading::messaging::get_structure_response>(reply.data);
     if (!decoded)
         throw trade_population_write_error(
@@ -969,8 +968,7 @@ void trading_trade_population_writer::write_structure(
 }
 
 void trading_trade_population_writer::write_structure_member(
-    const boost::uuids::uuid& structure_id,
-    const domain::trade_population_slot& slot) {
+    const boost::uuids::uuid& structure_id, const domain::trade_population_slot& slot) {
     const auto& codec = ores::nats::default_wire_codec();
     ores::trading::messaging::put_structure_member_request req;
     req.change.write.trade_id = slot.trade_id;
@@ -997,11 +995,10 @@ void trading_trade_population_writer::write_structure_member(
                         boost::uuids::to_string(slot.trade_id),
                         boost::uuids::to_string(structure_id)));
     if (decoded->result.outcome != outcome::ok)
-        throw trade_population_write_error(
-            std::format("Adding trade {} to structure {} failed: {}",
-                        boost::uuids::to_string(slot.trade_id),
-                        boost::uuids::to_string(structure_id),
-                        decoded->result.message));
+        throw trade_population_write_error(std::format("Adding trade {} to structure {} failed: {}",
+                                                       boost::uuids::to_string(slot.trade_id),
+                                                       boost::uuids::to_string(structure_id),
+                                                       decoded->result.message));
 }
 
 

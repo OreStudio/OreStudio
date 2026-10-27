@@ -199,11 +199,11 @@ cross join (values
     -- tradeable links, which is why the step resolves them rather than the
     -- row naming them. No anchor is stated: the population is meant to sit
     -- relative to the present, so it is anchored on the day the run makes it.
-    -- Twelve populations: every legal entity books bonds, interest rate trades
-    -- and foreign exchange, each into the book that entity keeps for that
-    -- business. The set is chosen so no class dominates: a class books six or
-    -- eight trades into its own book, and every class the planner knows appears
-    -- in every entity. The book count and the population size are the config's,
+    -- Eleven populations. The three operating entities book bonds, interest rate
+    -- trades and foreign exchange, each into the book that entity keeps for that
+    -- business; the group holds only an intercompany book and a hedge book, so it
+    -- books bonds and foreign exchange and no rates. The set is chosen so no
+    -- class dominates: a class books six or eight trades into its own book. The book count and the population size are the config's,
     -- so a tenant that wants a thinner book changes a row and not the generator.
     -- The counterparties are the entity's own tradeable links, which is why the
     -- step resolves them rather than the row naming them. No anchor is stated:
@@ -211,18 +211,13 @@ cross join (values
     -- on the day the run makes it.
     ('acme_demo', 'generate_trades', 70, '{"configs": [
         {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bonds",
-         "description": "The bonds the group books, in its own bonds book.",
-         "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
+         "description": "The bonds the group books, in its intercompany book.",
+         "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
          "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 6, "structures_per_book": 2},
-        {"party": "Acme Corporation Plc", "name": "ACME ACMCOR rates",
-         "description": "The interest rate trades the group books, in its euro rates book.",
-         "asset_class_code": "interest_rates", "book": "EUR Vanilla Swaps",
-         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 43, "trades_per_book": 8, "structures_per_book": 2},
-        {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
-         "description": "The foreign exchange trades the group books, in its majors forward book.",
-         "asset_class_code": "fx", "book": "G10 Majors Spot Forward",
+                {"party": "Acme Corporation Plc", "name": "ACME ACMCOR FX",
+         "description": "The foreign exchange trades the group books, in its hedge book.",
+         "asset_class_code": "fx", "book": "Group FX Hedges",
          "min_tenor_code": "1M", "max_tenor_code": "2Y",
          "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 8, "structures_per_book": 2},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK bonds",

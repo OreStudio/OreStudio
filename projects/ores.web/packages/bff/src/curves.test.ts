@@ -544,3 +544,145 @@ describe('the curve read routes', () => {
         expect(calls).toHaveLength(0);
     });
 });
+
+/**
+ * The published curve reads and the withdrawal.
+ *
+ * The routes add no rule of their own: the server decides who may read a set and
+ * who may end one, so what is checked here is that the shape is forwarded as the
+ * protocol names it and that a refusal from the server travels as its words.
+ */
+const PUBLISHED_SET = {
+    publish_id: '3f1e2d4c-0000-4000-8000-000000000001',
+    request_id: '5b42775e-3da7-4c61-a732-6b62cb9f948f',
+    curve: 'USD-SOFR-ACME',
+    series_id: '0a42775e-3da7-4c61-a732-6b62cb9f948f',
+    series_uri: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
+    bootstrap_config_id: 'd0e1f2a3-b4c5-4d6e-7f80-91a2b3c4d5e6',
+    party: 'ACCOUS',
+    party_id: '44444444-4444-4444-8444-444444444444',
+    as_of: '2026-10-27 12:00:00Z',
+    published_by: 'henry.jones',
+    published_at: '2026-10-27 16:07:08Z',
+    state_code: 'published',
+    point_count: 2,
+    withdrawn_by: '',
+    withdrawn_at: null,
+    withdrawn_reason_code: '',
+    withdrawal_request_id: '',
+    superseded_at: null,
+    superseded_by_request_id: '',
+    superseded_as_of: null,
+    points: [],
+};
+
+describe('the published curve routes', () => {
+    it('reads the tenant’s published sets with the filters the screen names', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.list_published_curves': {
+                success: true,
+                message: '',
+                sets: [PUBLISHED_SET],
+                total: 1,
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/published', {
+            party_id: '',
+            search: 'USD-SOFR',
+            include_candidates: true,
+            include_ended: false,
+            limit: 25,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ sets: [PUBLISHED_SET], total: 1 });
+        expect(calls[0]?.body).toEqual({
+            party_id: '',
+            search: 'USD-SOFR',
+            include_candidates: true,
+            include_ended: false,
+            request_id_one_of: [],
+            offset: 0,
+            limit: 25,
+        });
+    });
+
+    it('reads one curve’s last sets with the points each holds', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.get_published_curve_sets': {
+                success: true,
+                message: '',
+                sets: [PUBLISHED_SET],
+                published_count: 3,
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/published-sets', {
+            series_id: PUBLISHED_SET.series_id,
+            limit: 5,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ sets: [PUBLISHED_SET], published_count: 3 });
+        expect(calls[0]?.body).toEqual({
+            series_id: PUBLISHED_SET.series_id,
+            limit: 5,
+            include_candidates: true,
+        });
+    });
+
+    it('ends a set with the reason the person chose', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.withdraw_curve': {
+                success: true,
+                message: '',
+                withdrawn_at: '2026-10-27 17:05:00Z',
+                withdrawn_by: 'm.oduya',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/published/withdraw', {
+            publish_id: PUBLISHED_SET.publish_id,
+            reason_code: 'common.stale_data',
+            comment: 'The 2Y pillar was stale.',
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            withdrawn_at: '2026-10-27 17:05:00Z',
+            withdrawn_by: 'm.oduya',
+        });
+        expect(calls[0]?.body).toEqual({
+            publish_id: PUBLISHED_SET.publish_id,
+            reason_code: 'common.stale_data',
+            comment: 'The 2Y pillar was stale.',
+            approval_request_id: '',
+        });
+    });
+
+    it('travels the server’s refusal of a withdrawal as its words', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.withdraw_curve': {
+                success: false,
+                message: 'That set was withdrawn at 2026-10-27T17:05:00Z by m.oduya.',
+                withdrawn_at: '2026-10-27 17:05:00Z',
+                withdrawn_by: 'm.oduya',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/published/withdraw', {
+            publish_id: PUBLISHED_SET.publish_id,
+            reason_code: 'common.stale_data',
+        });
+        expect(response.statusCode).toBe(422);
+        expect(response.json()).toMatchObject({
+            message: 'That set was withdrawn at 2026-10-27T17:05:00Z by m.oduya.',
+        });
+    });
+
+    it('needs a reason to end a set', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/curves/published/withdraw', {
+            publish_id: PUBLISHED_SET.publish_id,
+            reason_code: '',
+        });
+        // The body the route will not accept is a bad request; the server's own
+        // refusal of a withdrawal that no reason supports comes back as its words.
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+});

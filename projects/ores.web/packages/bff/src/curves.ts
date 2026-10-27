@@ -23,6 +23,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { isWireTimestamp } from '@ores/wire-protocol';
 import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
+import { subjects as publishedCurves } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
 import { HttpFailure } from './errors.js';
 import { input } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -135,6 +136,49 @@ const replySchema = z.looseObject({
 });
 
 /**
+ * What one published set's read states about the curve the screen is on.
+ *
+ * The filters are the list's own: a party, the text a curve's name must hold,
+ * whether the candidates and the ended sets are drawn, and a page. The request
+ * ids let a screen that holds a page of approval requests read their subjects in
+ * one call, which is what the queue does.
+ */
+const publishedListBody = z.strictObject({
+    party_id: z.union([z.uuid(), z.literal('')]).default(''),
+    search: z.string().trim().max(200).default(''),
+    include_candidates: z.boolean().default(false),
+    include_ended: z.boolean().default(false),
+    request_id_one_of: z.array(z.uuid()).max(100).default([]),
+    offset: z.int().min(0).default(0),
+    limit: z.int().min(1).max(200).default(50),
+});
+
+/**
+ * The last sets of one curve, with the points each holds.
+ *
+ * The sets are read beside their points because the snapshot read serves the
+ * market at the caller's clock and a set built at an earlier as-of is not that.
+ */
+const publishedSetsBody = z.strictObject({
+    series_id: z.uuid(),
+    limit: z.int().min(1).max(20).default(5),
+    include_candidates: z.boolean().default(true),
+});
+
+/**
+ * The act that takes a published set out of use.
+ *
+ * The reason is a change reason code the server validates, and the request is
+ * the one that authorised the act when a decision stands behind it.
+ */
+const withdrawBody = z.strictObject({
+    publish_id: z.uuid(),
+    reason_code: z.string().trim().min(1).max(100),
+    comment: z.string().trim().max(500).default(''),
+    approval_request_id: z.union([z.uuid(), z.literal('')]).default(''),
+});
+
+/**
  * A refused read is a request the server will not answer, such as an object
  * with no axis or a range that ends before it starts. The server's words are
  * the reason, so they travel as they are.
@@ -212,5 +256,30 @@ export function registerCurveRoutes(
             to_instant: stated ? NO_INSTANT : (body.to_instant ?? NO_INSTANT),
             instants: body.instants,
         });
+    });
+
+    // The tenant's published sets, with the state each is in. The read is the
+    // list screen's whole page: the filters and the pager are the server's, so a
+    // screen never filters a page it was given.
+    server.post('/api/curves/published', async (request) => {
+        const session = requireSession(request);
+        const body = input(publishedListBody, request.body ?? {});
+        return call(session, publishedCurves.list_published_curves_request, body);
+    });
+
+    // One curve's last published sets, with the pillars each holds. The overlay
+    // and the comparison read this once.
+    server.post('/api/curves/published-sets', async (request) => {
+        const session = requireSession(request);
+        const body = input(publishedSetsBody, request.body);
+        return call(session, publishedCurves.get_published_curve_sets_request, body);
+    });
+
+    // Takes a published set out of use. The server decides who may, so the route
+    // adds no rule of its own.
+    server.post('/api/curves/published/withdraw', async (request) => {
+        const session = requireSession(request);
+        const body = input(withdrawBody, request.body);
+        return call(session, publishedCurves.withdraw_curve_request, body);
     });
 }

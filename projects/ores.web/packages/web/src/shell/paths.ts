@@ -52,6 +52,7 @@ export const PATHS = {
     signIns: '/operations/sign-ins',
     marketDataSources: '/operations/market-data-sources',
     synthetic: '/market-data/synthetic',
+    publishedCurves: '/market-data/published-curves',
     subscriptions: '/market-data/subscriptions',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
@@ -74,6 +75,33 @@ export function conventionPath(family: string): string {
 export function conventionDocumentPath(family: string, id: string, party?: string): string {
     const query = party === undefined || party === '' ? '' : `?party=${encodeURIComponent(party)}`;
     return `${conventionPath(family)}/${encodeURIComponent(id)}${query}`;
+}
+
+/**
+ * The address of one published curve's record: the curve it names and the party
+ * the set belongs to.
+ *
+ * The curve is the curve id its output series carries, and the party is the
+ * short code a person reads, because the same curve id in two parties is two
+ * curves. The tab and the as-of are the page's own parameters, so leaving them
+ * out opens the record on its details.
+ */
+export function publishedCurvePath(curve: string, party?: string): string {
+    const query = party === undefined || party === '' ? '' : `?party=${encodeURIComponent(party)}`;
+    return `${PATHS.publishedCurves}/${encodeURIComponent(curve)}${query}`;
+}
+
+/**
+ * The address of one published curve's comparison, at the as-of a request names.
+ *
+ * This is the door a decider takes from the queue: the record opens on the tab
+ * that shows what the candidate changes, and no second screen holds the same
+ * comparison.
+ */
+export function publishedCurveComparisonPath(curve: string, party: string, asOf: string): string {
+    const query = new URLSearchParams({ party, tab: 'compare' });
+    if (asOf !== '') query.set('asof', asOf);
+    return `${PATHS.publishedCurves}/${encodeURIComponent(curve)}?${query.toString()}`;
 }
 
 /** The address of one person's page. */

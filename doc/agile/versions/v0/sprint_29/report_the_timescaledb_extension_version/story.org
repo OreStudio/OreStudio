@@ -21,11 +21,11 @@ compass db status names the timescaledb version a database records, the versions
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | db status reports the recorded and installed timescaledb versions; the gate and the PR remain. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge, then close the task. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-27                               |
 
 * Acceptance
@@ -38,8 +38,8 @@ compass db status names the timescaledb version a database records, the versions
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9BAA6DF8-5FBD-460F-828E-4250CFECC1C3][Scaffold story: Report when a database's timescaledb version is not on disk]] | STARTED | 2026-10-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:81E4BE20-2012-4F9E-AB31-A64C23AC5AA1][Report the recorded and installed timescaledb versions]] | BACKLOG | | | Initial task for: Report when a database's timescaledb version is not on disk |
+| [[id:9BAA6DF8-5FBD-460F-828E-4250CFECC1C3][Scaffold story: Report when a database's timescaledb version is not on disk]] | DONE | 2026-10-27 | 2026-10-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:81E4BE20-2012-4F9E-AB31-A64C23AC5AA1][Report the recorded and installed timescaledb versions]] | DONE | 2026-10-27 | 2026-10-27 | Initial task for: Report when a database's timescaledb version is not on disk |
 
 * Decisions
 

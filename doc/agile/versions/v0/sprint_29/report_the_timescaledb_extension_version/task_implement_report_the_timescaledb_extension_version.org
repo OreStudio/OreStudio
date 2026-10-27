@@ -26,11 +26,11 @@ compass db status names the timescaledb version a database records, the versions
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:651922B3-E3D0-413B-AC0E-ED713324AC71][Report when a database's timescaledb version is not on disk]] |
-| Now          | db status reports the recorded and installed timescaledb versions, with the fix named. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Pass the compass gate and raise the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -85,3 +85,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+`compass db status` prints the timescaledb version a database records and
+whether a library for it is on disk, under the schema block:
+
+#+begin_example
+    timescaledb: 2.30.2, and its library is on disk
+#+end_example
+
+A mismatch names both versions and the statement that fixes it:
+
+#+begin_example
+    timescaledb: recorded 2.30.1, but only 2.30.2 is on disk
+    compass sql -- -c "alter extension timescaledb update;"
+#+end_example
+
+A database without the extension reads as "not installed in this database",
+not as a fault. The compass suite passes: 453 passed, 1 skipped, with six
+new cases.

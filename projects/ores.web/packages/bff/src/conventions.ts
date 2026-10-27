@@ -159,6 +159,33 @@ const PART_LINK_FIELDS = new Set([
 const centralRow = z.looseObject({ id: z.string(), version: z.int() });
 const compositeItem = z.looseObject({ key: z.looseObject({ id: z.string() }) });
 
+/**
+ * A part's terms under their own names, whatever member carries them.
+ *
+ * A part whose entity is grouped onto field groups reaches its columns through
+ * a member — =identity=, =long_leg=, =coupon= — so the wire nests them one
+ * level. A term is still named by its column, which is the leaf name, so the
+ * groups are flattened and the link fields are dropped wherever they sit.
+ */
+function flattenPart(part: Readonly<Record<string, unknown>>): Record<string, unknown> {
+    const flat: Record<string, unknown> = {};
+    for (const [field, value] of Object.entries(part)) {
+        if (PART_LINK_FIELDS.has(field)) {
+            continue;
+        }
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+            for (const [member, memberValue] of Object.entries(value as Record<string, unknown>)) {
+                if (!PART_LINK_FIELDS.has(member)) {
+                    flat[member] = memberValue;
+                }
+            }
+            continue;
+        }
+        flat[field] = value;
+    }
+    return flat;
+}
+
 /** One central row with whichever part is populated laid over its terms. */
 function zipParts(
     central: Readonly<Record<string, unknown>>,
@@ -174,10 +201,7 @@ function zipParts(
         if (part === undefined) {
             continue;
         }
-        const terms = Object.fromEntries(
-            Object.entries(part).filter(([field]) => !PART_LINK_FIELDS.has(field)),
-        );
-        merged = { ...merged, ...terms };
+        merged = { ...merged, ...flattenPart(part) };
     }
     return merged;
 }

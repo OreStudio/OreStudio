@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:volatility:design:factor:
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 
 * Summary
 
@@ -33,9 +33,9 @@ One state machine and one shared heat, read once per tick:
 where =S= is the calm/active multiplier (calm derived so its long-run mean is
 one), =C= is the heat any event adds to and decay fades, and =R= is the summed
 mean rate of the series enrolled with the heat, so a series takes the share of
-=C= its own rate is of the total. A feed reads it through
-=market_link::rate_multiplier()=, which returns =sensitivity * A(t)=, and its
-arrival process is re-rated by that number. The rates move; the prices do not.
+=C= its own rate is of the total. The scheduler integrates =A= into the market's
+operational time, tau, and runs each feed's arrival law in =sensitivity * tau=.
+The rates move; the prices do not.
 
 The heat's long-run mean is not zero — it settles at the event rate times
 jump/decay — so with the heat on, the average rate is above the configured one.
@@ -69,7 +69,7 @@ Every feed carries three numbers, tied together:
 |--------|---------|
 | =r= | ticks per wall second: how often the feed *publishes* |
 | =Delta= | simulated time per tick: how far the *law* steps |
-| =v= | simulated seconds per wall second: how fast the *simulated world* runs |
+| =v= | simulated seconds per unit of market time: how fast the *simulated world* runs |
 
 They satisfy =v = r * Delta=, so two of them are the design and the third follows.
 Which two are chosen is the whole question.
@@ -87,9 +87,23 @@ So the market lives in two times at once, and nobody chose either. A rate change
 on a curve moves time; on a spot feed it does not. That is not a defect in either
 path but a missing decision.
 
-*The decision:* =v= belongs to the **market factor**, one number for the run,
-beside the state and the heat, and a feed's rate is pure sampling. A feed derives
-=Delta = v / r= and hands it to its process.
+*The decision:* =v= belongs to the **market**, one number for the run, and a
+feed's rate is pure sampling. Simulated time runs on the market's operational
+time, tau, which every feed already shares: the simulated world advances by =v=
+for each unit of tau. A tick therefore steps its price by the simulated time
+since the feed last ticked, =v * (tau now - tau at the last tick)=, and a
+periodic feed at rate =r= steps by =Delta = v / r=.
+
+- One clock for every feed: spot and curve feeds live in one simulated world,
+  because they share tau.
+- A rate change changes sampling only, and so does a feed's sensitivity: more
+  ticks in a unit of tau, each covering less of it.
+- A busy market runs tau, and so the simulated world, faster in wall time.
+  Volatility per unit of market time stays fixed; volatility per wall second
+  rises with the pace. A busy market is busier in time, not rougher per tick.
+- =v= is fixed for a run, set by the service's =--market-speed=, and logged at
+  start. A curve's step is fixed when its feed is built. Setting =v= while a run
+  goes on is left to the task that sets the market's chain and heat.
 
 - A higher rate therefore gives a *smaller* step, which is the safe direction for
   every numerical scheme.
@@ -129,11 +143,11 @@ visibly unchanged.
 
 Three seams, each mirroring something the arrival work already has:
 
-1. =i_stochastic_process= gains =set_volatility_multiplier(double)=, the sibling
-   of =i_arrival_process::set_baseline_multiplier=. The default refuses; the
+1. =i_stochastic_process= gains =set_volatility_multiplier(double)=, the price
+   side of what the operational clock does for arrivals. The default refuses; the
    processes that can honour it scale their own sigma — a Gaussian mixture scales
    its stdevs, a short-rate model its sigma — and keep their means.
-2. =market_link= gains =volatility_sensitivity= beside =sensitivity=. A feed that
+2. A feed's =series_spec= gains =volatility_sensitivity= beside =sensitivity=. A feed that
    follows the market in rate and not in volatility sets it to zero; the default
    follows the rate loading, because a market that only ticks faster is the
    artefact this note exists to remove. Both generation-config kinds gain the

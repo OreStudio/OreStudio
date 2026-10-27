@@ -33,12 +33,12 @@ std::string convert_to_table(const std::vector<sensitivity_template>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Asset class" << "Method" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Code" << "Asset class" << "Method" << "Method code" << "Modified By"
+          << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& st : v) {
-        table << st.code << st.asset_class << st.method << st.modified_by << st.version
-              << fort::endr;
+        table << st.code << st.asset_class << st.method << st.method_code << st.modified_by
+              << st.version << fort::endr;
     }
     return table.to_string();
 }

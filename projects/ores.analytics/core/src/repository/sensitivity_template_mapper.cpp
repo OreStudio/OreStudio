@@ -46,6 +46,7 @@ sensitivity_template_mapper::map(const sensitivity_template_entity& v) {
     r.code = v.code.value();
     r.asset_class = v.asset_class;
     r.method = v.method;
+    r.method_code = v.method_code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -67,6 +68,7 @@ sensitivity_template_mapper::map(const domain::sensitivity_template& v) {
     r.version = v.version;
     r.asset_class = v.asset_class;
     r.method = v.method;
+    r.method_code = v.method_code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

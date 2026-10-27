@@ -37,7 +37,14 @@ namespace ores::analytics::domain {
  *
  * A sensitivity template is a key. The pricing engine configuration puts it on a product with the
  * setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to
- * the products that carry the key. The key names an asset class and a method, for example IR_FD.
+ * the products that carry the key. The key names an asset class and a method, for example IR_FD,
+ * and the row states both of them in the two forms ORE uses: the token a key carries, and the words
+ * a person reads.
+ *
+ * The key's spelling is the tenant's. ORE resolves a template key by looking up the key the
+ * sensitivity configuration states, and a configuration may state a key that ORE's own list does
+ * not hold, so a tenant can add a key of its own. The table therefore holds every row to the
+ * metadata it states and does not hold the key to a shape built out of it.
  */
 struct sensitivity_template final {
     /**
@@ -64,9 +71,18 @@ struct sensitivity_template final {
 
     /**
      * @brief How the products with this template are priced: Analytical, Semianalytical, Finite
-     * difference, Monte Carlo or Trade level.
+     * difference, Monte Carlo or Trade level. It is the words a person reads; method_code is the
+     * token ORE puts in the key.
      */
     std::string method;
+
+    /**
+     * @brief The method as ORE spells it in a template key: Analytical, Semianalytical, FD, MC or
+     * Trade. The generated key encodes it, as in IR_FD, and so does the key a tenant writes. It
+     * says which shift scheme ORE applies, so a screen can read it without reading the English of
+     * method.
+     */
+    std::string method_code;
 
     /**
      * @brief What the template stands for.

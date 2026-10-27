@@ -102,6 +102,7 @@ sensitivity_template_to_domain(const messaging::sensitivity_template_write& writ
     v.code = write.code;
     v.asset_class = write.asset_class;
     v.method = write.method;
+    v.method_code = write.method_code;
     v.description = write.description;
     return v;
 }

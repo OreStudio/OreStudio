@@ -18,6 +18,7 @@ checkout.
 
 Usage:
     python3 generate_vocabulary_sql.py <ore-checkout>
+    python3 generate_vocabulary_sql.py --templates
 """
 import json
 import os
@@ -56,6 +57,18 @@ LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -
 TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_analytics_service', 'system.initial_load'"
 SEED = "Seed pricing engine vocabulary"
+
+# The token ORE puts in a template key for each method, as the model
+# projects/ores.analytics/modeling/ores.analytics.sensitivity_template.org states it. The
+# method is the words a person reads; the key carries the token. A method the table
+# does not name is a fail, not a guess: the table checks the pair.
+METHOD_CODES = {
+    "Analytical": "Analytical",
+    "Semianalytical": "Semianalytical",
+    "Finite difference": "FD",
+    "Monte Carlo": "MC",
+    "Trade level": "Trade",
+}
 
 
 def q(value):
@@ -110,6 +123,26 @@ def described_rows(table, codes):
              q(table[c]["source"]), ACTOR, q(SEED)] for c in sorted(codes)]
 
 
+def write_templates():
+    """The sensitivity templates, whose rows the curation states in full.
+
+    This file needs no ORE checkout: it reads curation alone, so a change to a
+    template's words or its method is regenerated without one.
+    """
+    rows = []
+    for code, entry in CURATED.templates.items():
+        method_code = METHOD_CODES.get(entry["method"])
+        if method_code is None:
+            sys.exit(f"curation/templates.json: {code} states the method "
+                     f"{entry['method']!r}, which has no key token")
+        rows.append([q(code), TENANT, "0", q(entry["asset_class"]), q(entry["method"]),
+                     q(method_code), q(entry["description"]), ACTOR, q(SEED)])
+    write("analytics_sensitivity_templates_populate.sql",
+          "Sensitivity Templates Population Script\n *\n * The sensitivity template keys that ORE examples put on products.",
+          "ores_analytics_sensitivity_templates_tbl",
+          "asset_class, method, method_code, description", rows, "Sensitivity Templates")
+
+
 def main(ore):
     vocabulary = extract.main_result(ore)
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
@@ -160,13 +193,11 @@ def main(ore):
           "Pricing Methods Population Script\n *\n * The description of each engine that a pair names. ORE calls a pricing method an\n * engine.",
           "ores_analytics_pricing_methods_tbl", "description, detail, source",
           described_rows(CURATED.engines, engines), "Pricing Methods")
-    write("analytics_sensitivity_templates_populate.sql",
-          "Sensitivity Templates Population Script\n *\n * The sensitivity template keys that ORE examples put on products.",
-          "ores_analytics_sensitivity_templates_tbl", "asset_class, method, description",
-          [[q(c), TENANT, "0", q(e["asset_class"]), q(e["method"]), q(e["description"]),
-            ACTOR, q(SEED)] for c, e in CURATED.templates.items()],
-          "Sensitivity Templates")
+    write_templates()
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1:] == ["--templates"]:
+        write_templates()
+    else:
+        main(sys.argv[1])

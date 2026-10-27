@@ -24,7 +24,9 @@
  *
  * Sensitivity Template Table
  *
- * A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD.
+ * A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
+ *
+ * The key's spelling is the tenant's. ORE resolves a template key by looking up the key the sensitivity configuration states, and a configuration may state a key that ORE's own list does not hold, so a tenant can add a key of its own. The table therefore holds every row to the metadata it states and does not hold the key to a shape built out of it.
  */
 
 create table if not exists "ores_analytics_sensitivity_templates_tbl" (
@@ -33,6 +35,7 @@ create table if not exists "ores_analytics_sensitivity_templates_tbl" (
     "version" integer not null,
     "asset_class" text not null,
     "method" text not null,
+    "method_code" text not null,
     "description" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -47,7 +50,10 @@ create table if not exists "ores_analytics_sensitivity_templates_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> '')
+    check ("code" <> ''),
+    check ("asset_class" in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL')),
+    check ("method_code" in ('Analytical', 'Semianalytical', 'FD', 'MC', 'Trade')),
+    check ((method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('FD', 'Finite difference'), ('MC', 'Monte Carlo'), ('Trade', 'Trade level')))
 );
 
 -- Version uniqueness for optimistic concurrency

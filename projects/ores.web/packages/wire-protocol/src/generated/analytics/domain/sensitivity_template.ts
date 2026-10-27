@@ -36,6 +36,7 @@ export interface SensitivityTemplate {
     code: string;
     asset_class: string;
     method: string;
+    method_code: string;
     description: string;
     modified_by: string;
     performed_by: string;

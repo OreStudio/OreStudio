@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-sensitivity_templates add <code> <asset_class> <method> <description> <reason> <commentary>
+sensitivity_templates add <code> <asset_class> <method> <method_code> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.sensitivity_templates.put=.
 
 #+name: sensitivity_templates-add
 #+begin_src ores-shell :tangle sensitivity_templates-add.ores :exports none
-sensitivity_templates add __none__ __none__ __none__ __none__ system.new_record generated_script
+sensitivity_templates add __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-sensitivity_templates set <code> <asset_class> <method> <description> <reason> <commentary> [--version <n>]
+sensitivity_templates set <code> <asset_class> <method> <method_code> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =analytics.v1.sensitivity_templates.put=.
 
 #+name: sensitivity_templates-set
 #+begin_src ores-shell :tangle sensitivity_templates-set.ores :exports none
-sensitivity_templates set __none__ __none__ __none__ __none__ system.new_record generated_script
+sensitivity_templates set __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-sensitivity_templates put-many --count <n> <code> <asset_class> <method> <description> <reason> <commentary>
+sensitivity_templates put-many --count <n> <code> <asset_class> <method> <method_code> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.sensitivity_templates.put_many=.
 
 #+name: sensitivity_templates-put-many
 #+begin_src ores-shell :tangle sensitivity_templates-put-many.ores :exports none
-sensitivity_templates put-many --count 1 __none__ __none__ __none__ __none__ system.new_record generated_script
+sensitivity_templates put-many --count 1 __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

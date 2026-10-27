@@ -13,7 +13,9 @@
 #+created: 2026-10-21
 #+updated: 2026-10-21
 
-A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD.
+A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
+
+The key's spelling is the tenant's. ORE resolves a template key by looking up the key the sensitivity configuration states, and a configuration may state a key that ORE's own list does not hold, so a tenant can add a key of its own. The table therefore holds every row to the metadata it states and does not hold the key to a shape built out of it.
 
 * Flags
 :PROPERTIES:
@@ -57,10 +59,39 @@ std::string("IR")
 :nullable:     false
 :END:
 
-How the products with this template are priced: Analytical, Semianalytical, Finite difference, Monte Carlo or Trade level.
+How the products with this template are priced: Analytical, Semianalytical, Finite difference, Monte Carlo or Trade level. It is the words a person reads; =method_code= is the token ORE puts in the key.
 
 #+begin_src cpp :name generator
-std::string("Analytical")
+[idx]{
+    static constexpr std::string_view methods[] = {
+        "Analytical", "Semianalytical", "Finite difference", "Monte Carlo",
+        "Trade level"};
+    return std::string(methods[static_cast<std::size_t>(idx) % std::size(methods)]);
+}()
+#+end_src
+
+** method_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The method as ORE spells it in a template key: Analytical, Semianalytical,
+FD, MC or Trade. The generated key encodes it, as in =IR_FD=, and so does the
+key a tenant writes. It says which shift scheme ORE applies, so a screen can
+read it without reading the English of =method=.
+
+#+begin_src cpp :name generator
+[&r]{
+    if (r.method == "Finite difference")
+        return std::string("FD");
+    if (r.method == "Monte Carlo")
+        return std::string("MC");
+    if (r.method == "Trade level")
+        return std::string("Trade");
+    return r.method;
+}()
 #+end_src
 
 ** description
@@ -82,6 +113,25 @@ std::string("Interest rate products priced by a closed formula.")
 :PROPERTIES:
 :tablename: ores_analytics_sensitivity_templates_tbl
 :END:
+
+** Checks
+
+Domain constraints beyond the standard temporal, natural-key and nil-uuid
+checks the template emits on its own. A text key column already rejects the
+empty string, so the template emits the code's own check and no row here
+repeats it.
+
+The pair of =method= and =method_code= is checked, and nothing else is: the
+key is not held to =asset_class || '_' || method_code=. ORE resolves a
+template key by looking up the key the sensitivity configuration states, so a
+tenant may register a key ORE's own examples do not hold. What must be valid
+is the metadata each row states, not the spelling of a key a tenant chose.
+
+| expression |
+|------------|
+| "asset_class" in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL') |
+| "method_code" in ('Analytical', 'Semianalytical', 'FD', 'MC', 'Trade') |
+| (method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('FD', 'Finite difference'), ('MC', 'Monte Carlo'), ('Trade', 'Trade level')) |
 
 * Insert trigger
 ** Validations
@@ -124,6 +174,7 @@ std::string("Interest rate products priced by a closed formula.")
 | code | Code |
 | asset_class | Asset class |
 | method | Method |
+| method_code | Method code |
 | modified_by | Modified By |
 | version     | Version     |
 
@@ -140,6 +191,7 @@ std::string("Interest rate products priced by a closed formula.")
 | code        | Code        | codeEdit       | line_edit | true   | true        | Enter the template key |
 | asset_class | Asset class | assetClassEdit | line_edit |        | true        | IR, FX, EQ, COMM, CR or ALL |
 | method      | Method      | methodEdit     | line_edit |        | true        | Enter the method |
+| method_code | Method code | methodCodeEdit | line_edit |        | true        | Analytical, Semianalytical, FD, MC or Trade |
 | description | Description | descriptionEdit | text_edit |        | true        | Enter a description |
 
 *** Columns
@@ -149,6 +201,7 @@ std::string("Interest rate products priced by a closed formula.")
 | Code       | code        | Code        | string    | 180   |
 | AssetClass | asset_class | Asset class | string    | 90    |
 | Method     | method      | Method      | string    | 140   |
+| MethodCode | method_code | Method code | string    | 110   |
 | Description | description | Description | string   | 380   |
 | Version    | version     | Version     | int       | 70    |
 | ModifiedBy | modified_by | Modified By | string    | 120   |

@@ -48,7 +48,20 @@ generate_synthetic_sensitivity_template(utility::generation::generation_context&
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.asset_class = std::string("IR");
-    r.method = std::string("Analytical");
+    r.method = [idx] {
+        static constexpr std::string_view methods[] = {
+            "Analytical", "Semianalytical", "Finite difference", "Monte Carlo", "Trade level"};
+        return std::string(methods[static_cast<std::size_t>(idx) % std::size(methods)]);
+    }();
+    r.method_code = [&r] {
+        if (r.method == "Finite difference")
+            return std::string("FD");
+        if (r.method == "Monte Carlo")
+            return std::string("MC");
+        if (r.method == "Trade level")
+            return std::string("Trade");
+        return r.method;
+    }();
     r.description = std::string("Interest rate products priced by a closed formula.");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

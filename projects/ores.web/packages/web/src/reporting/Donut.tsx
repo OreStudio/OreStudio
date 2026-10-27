@@ -21,6 +21,9 @@
 
 import type { ReactNode } from 'react';
 
+/** The colours a whole's parts are drawn in, in turn. */
+const COLOURS = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e', '#bb9af7', '#7dcfff'];
+
 /** One part of a whole, as a name and a size. */
 export interface Share {
     readonly name: string;
@@ -63,6 +66,8 @@ function pointAt(cx: number, cy: number, radius: number, angle: number): [number
 /** One arc as a filled path, or a full circle when it is the whole. */
 function pathOf(arc: Arc, cx: number, cy: number, radius: number, hole: number): string {
     if (arc.to - arc.from >= 359.999) {
+        // A whole circle is drawn as an outer ring and a reversed inner ring, so
+        // the hole is a hole rather than filled by the default fill rule.
         return [
             `M ${cx} ${cy - radius}`,
             `A ${radius} ${radius} 0 1 1 ${cx - 0.01} ${cy - radius}`,
@@ -85,6 +90,56 @@ function pathOf(arc: Arc, cx: number, cy: number, radius: number, hole: number):
     ].join(' ');
 }
 
+/** A book's row, as far as its share is concerned. */
+export interface BookRow {
+    readonly key: string;
+    readonly name: string;
+    readonly is_group: boolean;
+    readonly is_removed: boolean;
+    readonly totals: readonly { readonly currency: string; readonly total: string }[];
+}
+
+/**
+ * The books' shares of a run, or nothing when a donut would say something false.
+ *
+ * A share needs one currency and no sign: a total in two currencies cannot be
+ * added, and a negative book would be dropped from a ring that reads as parts of
+ * a whole. Either case withholds the plot rather than drawing a shape the reader
+ * would have to distrust.
+ */
+export function bookSharesOf(rows: readonly BookRow[]): readonly Share[] | null {
+    const books = rows.filter((row) => !row.is_group && !row.is_removed);
+    if (books.length < 2) {
+        return null;
+    }
+    const currencies = new Set(books.flatMap((row) => row.totals.map((money) => money.currency)));
+    if (currencies.size !== 1) {
+        return null;
+    }
+    if (
+        books.some((row) => row.totals.some((money) => (Number.parseFloat(money.total) || 0) < 0))
+    ) {
+        return null;
+    }
+    return books.map((row) => ({
+        name: row.name === '' ? row.key : row.name,
+        value: row.totals.reduce((sum, money) => sum + (Number.parseFloat(money.total) || 0), 0),
+    }));
+}
+
+/** How many problems the run recorded in each scope, the unscoped ones included. */
+export function problemsOf(
+    errors: readonly { readonly scope: string }[],
+    unscoped: string,
+): readonly Share[] {
+    const counts = new Map<string, number>();
+    for (const error of errors) {
+        const scope = error.scope === '' ? unscoped : error.scope;
+        counts.set(scope, (counts.get(scope) ?? 0) + 1);
+    }
+    return [...counts.entries()].map(([name, value]) => ({ name, value }));
+}
+
 /**
  * A whole in a few parts.
  *
@@ -105,7 +160,6 @@ export function Donut({
 }): ReactNode {
     const arcs = arcsOf(parts);
     const whole = parts.reduce((sum, part) => sum + Math.max(0, part.value), 0);
-    const colours = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e', '#bb9af7', '#7dcfff'];
     return (
         <figure className="space-y-2">
             <figcaption className="text-sm">
@@ -124,9 +178,9 @@ export function Donut({
                 >
                     {arcs.map((arc, index) => (
                         <path
-                            key={arc.name}
+                            key={`${index}-${arc.name}`}
                             d={pathOf(arc, 60, 60, 56, 34)}
-                            fill={colours[index % colours.length]}
+                            fill={COLOURS[index % COLOURS.length]}
                             opacity={0.9}
                         />
                     ))}
@@ -134,7 +188,7 @@ export function Donut({
                         x={60}
                         y={62}
                         textAnchor="middle"
-                        className="fill-ink text-[10px]"
+                        className="fill-ink"
                         style={{ fontSize: 10 }}
                     >
                         {format(whole)}
@@ -142,11 +196,11 @@ export function Donut({
                 </svg>
                 <ul className="space-y-1 text-sm">
                     {parts.map((part, index) => (
-                        <li key={part.name} className="flex items-center gap-2">
+                        <li key={`${index}-${part.name}`} className="flex items-center gap-2">
                             <span
                                 aria-hidden
                                 className="inline-block h-2 w-2 rounded-full"
-                                style={{ background: colours[index % colours.length] }}
+                                style={{ background: COLOURS[index % COLOURS.length] }}
                             />
                             <span>{part.name}</span>
                             <span className="font-mono text-xs text-ink-muted">

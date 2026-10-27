@@ -31,7 +31,7 @@ import {
     type RunResultRow,
 } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Donut, type Share } from './Donut.js';
+import { Donut, bookSharesOf, problemsOf, type Share } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
 
 /**
@@ -234,22 +234,19 @@ export function RunResultsPanel({
     const reason = results.data?.reason ?? '';
     const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
     const tradeCount = results.data?.tradeCount ?? 0;
-    const bookShares: readonly Share[] = aggregates
-        .filter((row) => !row.is_group && !row.is_removed)
-        .map((row) => ({
-            name: row.name === '' ? row.key : row.name,
-            value: row.totals.reduce((sum, money) => {
-                const figure = Number.parseFloat(money.total);
-                return sum + (Number.isFinite(figure) ? Math.max(0, figure) : 0);
-            }, 0),
-        }))
-        .filter((share) => share.value > 0);
-    const problems: readonly Share[] = Object.entries(
-        (errors.data ?? []).map(toError).reduce<Record<string, number>>((counts, error) => {
-            const scope = error.scope === '' ? t(`${field}.unscoped`) : error.scope;
-            return { ...counts, [scope]: (counts[scope] ?? 0) + 1 };
-        }, {}),
-    ).map(([name, value]) => ({ name, value }));
+    const bookShares = bookSharesOf(
+        aggregates.map((row) => ({
+            key: row.key,
+            name: row.name,
+            is_group: row.is_group,
+            is_removed: row.is_removed,
+            totals: row.totals,
+        })),
+    );
+    const problems: readonly Share[] = problemsOf(
+        (errors.data ?? []).map(toError),
+        t(`${field}.unscoped`),
+    );
     const filterName = noBook
         ? t(`${field}.unbooked`)
         : bookFilter !== ''
@@ -406,7 +403,7 @@ export function RunResultsPanel({
                                     </button>
                                 </p>
                             )}
-                            {level === 'book' && bookShares.length > 1 && (
+                            {level === 'book' && bookShares !== null && (
                                 <Donut
                                     title={t(`${field}.shareTitle`)}
                                     caption={t(`${field}.shareCaption`)}

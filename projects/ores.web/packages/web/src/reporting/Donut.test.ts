@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { arcsOf } from './Donut.js';
+import { arcsOf, bookSharesOf, problemsOf, type BookRow } from './Donut.js';
 
 describe('arcsOf', () => {
     it('sweeps the whole circle across the parts', () => {
@@ -43,5 +43,43 @@ describe('arcsOf', () => {
         const arcs = arcsOf([{ name: 'Part', value: 5 }], 10);
 
         expect(arcs[0]?.to).toBe(180);
+    });
+});
+
+describe('bookSharesOf', () => {
+    const book = (key: string, name: string, total: string, currency = 'GBP'): BookRow => ({
+        key,
+        name,
+        is_group: false,
+        is_removed: false,
+        totals: [{ currency, total }],
+    });
+
+    it('states each book by its name', () => {
+        expect(bookSharesOf([book('b1', 'One', '100'), book('b2', '', '50')])).toEqual([
+            { name: 'One', value: 100 },
+            { name: 'b2', value: 50 },
+        ]);
+    });
+
+    it('draws nothing for one book, two currencies or a loss', () => {
+        expect(bookSharesOf([book('b1', 'One', '100')])).toBeNull();
+        expect(bookSharesOf([book('b1', 'One', '100'), book('b2', 'Two', '50', 'USD')])).toBeNull();
+        expect(bookSharesOf([book('b1', 'One', '100'), book('b2', 'Two', '-50')])).toBeNull();
+    });
+});
+
+describe('problemsOf', () => {
+    it('counts each scope, and the unscoped ones apart', () => {
+        expect(
+            problemsOf(
+                [{ scope: 'Curve' }, { scope: 'Curve' }, { scope: 'Trade' }, { scope: '' }],
+                'None',
+            ),
+        ).toEqual([
+            { name: 'Curve', value: 2 },
+            { name: 'Trade', value: 1 },
+            { name: 'None', value: 1 },
+        ]);
     });
 });

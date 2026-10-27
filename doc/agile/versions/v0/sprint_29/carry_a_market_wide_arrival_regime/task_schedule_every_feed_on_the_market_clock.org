@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/schedule-every-feed-on-the-market-clock-v2
-#+pr:
+#+pr: 3926
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -26,11 +26,11 @@ One loop schedules every feed. Feed i fires when tau reaches its next mark over 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Built; live check next.                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -84,7 +84,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scheduler tests | 13 cases; 10 of 10 runs clean, and the self-removal case 30 of 30 | =ores.analytics.quant.tests [tick_scheduler]= | c0d27c3988 |
+| Step cost | 3.1e-7 s at 1,000 series, 1.7e-6 s at 100,000; O(n) would be a hundred times | =ores.analytics.quant.tests "a tick costs O(log n)..."= | c0d27c3988 |
+| Synthetic suites | ores.synthetic.api.tests and ores.synthetic.service.tests passed | =compass test run -- -R ...= on a recreated database | 34de2401dc |
+| Live ticks | 56,308 ticks in three minutes; every adapter accepted every row | =compass smoke ticks --skip-provision --leave-running= | c0d27c3988 |
+| Pace against the model | calm 0.50 to 0.54, active 2.04 to 2.10; tau moved 62.6 in 30.5 s at pace 2.06 | shell =synthetic regime get= every 30 s, with the debug log of the snapshot | c0d27c3988 |
 
 * Notes
 
@@ -103,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3926][#3926]] | [analytics] Schedule every feed on the market clock, and let one loop own it |
 
 * Review
 
@@ -118,3 +122,15 @@ via its "Verifies task" field.
 | 7 | Bot: test stop while a remove waits, and a body that removes itself. | tick_scheduler_tests.cpp | Accept | Both tested. |
 
 * Result
+
+Every feed now ticks from one scheduler that owns the market's operational
+clock. A feed's mark in tau is fixed when its gap is drawn, so a tick costs
+O(log n): a step at 100,000 series costs about five times one at 1,000, where
+O(n) would cost a hundred times. A test on the manual clock asserts the exact
+series and time of thirty ticks across a pin from calm to active, and each
+series' gaps in its own operational time are its law's gaps, with compensated
+Hawkes gaps passing a KS test. tick_clock, the old arrival processes and the
+per-series refresh are gone, and a feed cannot be built without a scheduler.
+Live on Acme, 56,308 ticks reached the store in three minutes. The rates
+follow the market: a one-a-second feed ran at 0.5 a second while calm and at
+2.04 while active, which is the pace the scheduler reports.

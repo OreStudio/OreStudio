@@ -26,11 +26,11 @@ The synthetic service runs one loop that owns the market and the feeds. The mark
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Built; live check next.                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -69,7 +69,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pin to calm while active | pace 2.06 to 0.56 between two reads 9 ms apart; tau moved 0.036 | shell =synthetic regime pin calm= between two =get=, with the debug log of the snapshot | c0d27c3988 |
+| Enrolled rate over five minutes | 31.8 a second, 99 series, at every sample | shell =synthetic regime get= every 30 s | c0d27c3988 |
 
 * Notes
 
@@ -97,3 +98,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The service runs one loop and no market_owner thread, and only that loop
+writes the regime, the heat and tau. A pin from the shell is in force when the
+command returns: pinning calm while the market was active took the pace from
+2.06 to 0.56 between two reads nine milliseconds apart. The run seed is the
+=--run-seed= option and is logged at start. market_regime and shared_intensity
+are deleted. The shell's =synthetic regime get= now prints the heat, the jump
+and the decay beside the state.

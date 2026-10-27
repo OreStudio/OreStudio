@@ -218,7 +218,22 @@ configuration, and its history.
   [[id:CA40C9B0-01FB-4B3E-B0CE-348313A6BB04][a task of its own]] and the nested
   collections are [[id:894F3A64-F564-44B2-A6F1-AB00FF30A6B9][another]].
 
-The BFF suite passes with five new cases, and the browser suite with nine. The
-=curve-sections-wiring= check passes. The =web= check fails on three files this
-branch does not change -- =wire-protocol/src/inbox.ts=, =pnpm-lock.yaml= and
-=pnpm-workspace.yaml= -- and they fail on =origin/main= too, at =e05ed3b24d=.
+The BFF suite passes (1,051 cases, five of them new) and the browser suite
+passes (2,155 cases, ten of them new). The local gate runs 26 checks: 18 pass,
+including the build, the database, the ticks smoke test, =curve-sections-wiring=,
+=lint=, =org-links=, =sql-hygiene=, =populate-refs=, =entity-writes= and the
+two tool suites. The eight that fail do not come from this change:
+
+- =web=, on three files this branch does not change -- =wire-protocol/src/inbox.ts=,
+  =pnpm-lock.yaml= and =pnpm-workspace.yaml= -- which fail on =origin/main= too at
+  =e05ed3b24d=, and the branch's own files typecheck, format and pass.
+- =bff-list-requests= failed inside the gate on the generated table and passes
+  when the check is run again on the settled tree: the build regenerates the
+  protocols the table is derived from while the check reads them.
+- =er-diagram=, =sql-reachability= and four =codegen-tests= fail on
+  =report_result_rows= SQL that no aggregator includes and on
+  =structure_identifiers= permission codes that no seed writes, both merged on
+  =main= before this branch.
+- =handler-permissions= fails on the same unseeded trading codes, =ctest= on a
+  =post_process_results= step another branch added and on market data ingest
+  timing, and =pgtap= on the trading origin rule.

@@ -26,11 +26,11 @@ A write or a delete from a session that sees several parties acts on the acting 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1FF8F326-2F05-4CD1-9FA9-D94F6C5968A5][Scope a delete and an unclaimed write to the acting party]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -43,9 +43,12 @@ A write or a delete from a session that sees several parties acts on the acting 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The 27 entities whose =party_id= is a =:sql_key:= column hold one row per id and party, but the repository takes the id alone. Codegen justified that with "row level security already confines a session to its own rows", which is false: a parent party sees its subsidiaries' rows.
+
+1. Codegen derives =primary_key.party_sql_key= and =primary_key.party_member= (the party's path, =identity.party_id= on a grouped row).
+2. The repository's =read_latest(ctx, key)= keeps the acting party's rows when one exists, and otherwise the rows as read, so another party's row can still be found by its key. =replace_claim= and the unclaimed write read through it.
+3. =remove= deletes by the party of the row it checked, and its read-back looks for that party's row only. The table's delete rule closes =OLD.party_id='s row, so the party filter is enough.
+4. The service template drops =of_acting_party()=; the helper and its tests go. The services are again byte-identical to main before the hotfix.
 
 * Measurements
 
@@ -84,6 +87,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A get by key now returns the acting party's row, not the first visible row | repository template | Accept | Intended: the key names the acting party's row. The batch =read_latest(keys)= behind =get_many= is unchanged and can still return several rows of a key; out of scope. |
+| 2 | With no acting row and two subsidiaries holding the id, the read and removal act on =current.front()= | repository template | Accept as a limit | The choice among subsidiaries is the order the store returns. Before, a removal closed every row of that version. |
+| 3 | =*party= is read inside a lambda | repository template | No change | The lambda runs only after =party.has_value()=; =&&= short-circuits. |
+| 4 | Spelling check | — | Clean | misspell-fixer over the hand-written files. |
 
 * Result
+
+A parent party's session reads, writes and removes its own row of a convention key. The repository template, through =primary_key.party_sql_key=, prefers the acting party's row in the key read and closes only the checked party's row in a removal. That covers the 24 refdata conventions and the 3 engine settings tables. The service template and services are back to their form before the hotfix, and =of_acting_party()= is gone.
+
+Proof: =ores.refdata.core.tests "[acting_party]"= passes 5 of 5. Against main's repository, 4 of them fail: a false version conflict on an unclaimed write, two removals that report conflicting, and a key read that returns 2 rows. =test_sql_key_column.py= passes 5 of 5.

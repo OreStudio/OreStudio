@@ -8,7 +8,7 @@
 #+filetags: :a-write-checks-the-version-of-another-partys-row:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/a-write-checks-the-version-of-another-partys-row
-#+pr:
+#+pr: 3901
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3901][#3901]] | [service] Check a write's claim against the acting party's row |
 
 * Review
 

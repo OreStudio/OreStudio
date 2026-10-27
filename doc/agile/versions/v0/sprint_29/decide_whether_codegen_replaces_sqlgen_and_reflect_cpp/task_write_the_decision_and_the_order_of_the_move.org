@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,27 @@ A decision, argued from the measurements of the other tasks, and the order in wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- The decision is keep, replace, or replace in part, for sqlgen and for
+  reflect-cpp separately.
+- Each reason points to a measurement in another task of this story.
+- The order of the move is a list of steps. Each step leaves the system
+  working, and each step says what proves it.
+- The decision names what it does not settle.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the result of every other task in the story and argue the decision
+from it. The tasks are the [[id:5A8896F6-E9AF-4047-A038-3771ED77C1BC][inventory]], the [[id:C8F67EE9-885C-4EBE-9F63-0E89A1D71B70][translation-unit cost]], the [[id:B8842E1C-01C5-493A-9A83-F48F39A20BDF][libpqxx check]], the [[id:974EC72D-5B19-4979-A9B4-3E96E732981A][repository comparison]], the
+[[id:830DD368-8670-4803-A8AA-CCEEF7820014][codec comparison]], the [[id:B8AF1758-A400-44AA-8552-29D64A80E2E6][unity build]], the [[id:86F3D15C-D648-4C2D-B21F-4C5B6B19811C][precompiled header]] and the [[id:3017065B-2EA8-494C-823C-30387A61AA28][optimisation level]].
 
 * Measurements
 
@@ -53,11 +58,105 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
+Code size of the release objects of the two benchmarks. These are object
+files, so they include the template code each one instantiates. The linker
+merges shared template code across files, so the effect on a whole binary is
+smaller than these ratios.
+
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =reflected_codec.o= / =generated_codec.o= | 139,186 / 53,037 bytes of text (2.6× smaller) | =size= on the objects of =evidence/codec_bench/build.py= | 976de33923 |
+| =sqlgen_client.o= / =pqxx_client.o= / =libpq_client.o= | 139,990 / 112,001 / 15,577 bytes of text | =size= on the objects of =evidence/repository_bench/build.py= | 976de33923 |
 
 * Notes
+
+** The decision
+
+*Replace sqlgen with generated statements on a thin layer of our own over
+libpq. Replace reflect-cpp with generated JSON and MessagePack codecs over
+yyjson and msgpack-c. Do not adopt libpqxx. Build every component as a unity
+build first, because it is the largest lever on build time and does not wait
+for the rest.*
+
+** The reasons
+
+1. *Build time is the measure, and the unity build is its largest lever.* On
+   =ores.dq.core=, a unity build of 16 cut compile CPU by 75%, against 45% for a
+   precompiled header and about 1.4% of the total for =-O0= tests. reflect-cpp
+   is about 21% of the total by the sample. The unity build does not depend on
+   the replacement, and the generator is now unity-safe, so it comes first.
+2. *Generated code compiles three to five times faster.* A generated codec
+   unit takes 4.3 s and 195 MiB, against 13.1 s and 437 MiB for reflect-cpp. A
+   libpq repository unit takes 2.0 s and 175 MiB, against 10.0 s and 410 MiB
+   for sqlgen. The objects are 2.6 and 9 times smaller.
+3. *sqlgen's reads cost six round trips.* Every sqlgen read goes through a
+   cursor: =BEGIN=, =DECLARE=, two =FETCH=, =CLOSE= and the end of the
+   transaction. A point read is 5–7 times slower than one prepared statement.
+   Every repository read in the services pays this today.
+4. *Batches need pipeline mode, and libpqxx does not have it.* Pipeline mode
+   wrote 1,000 rows 3–5 times faster than one prepared insert per row. libpqxx
+   gives the same run-time speed as libpq on the paths it has, but it lacks
+   pipeline mode, it needs a clang triplet because of an ABI mismatch, and it
+   compiles twice as slowly as libpq. When the generator writes the calls,
+   libpqxx's nicer API gives little.
+5. *Generated codecs keep the wire format.* The generated codec reproduces
+   reflect-cpp's JSON and MessagePack byte for byte, in both directions. The
+   move needs no protocol change. The codec work is 2–3.5 times faster, but a
+   message with timestamps gains only 1.1–1.9 times, because ISO 8601
+   conversion is 80–90% of its cost. That is a separate capture, [[id:EDDA9476-7971-470C-A1A0-66208C25251E][Make ISO 8601 timestamp conversion fast]].
+6. *The surface is almost all generated.* Of the SQL use, 3,647 of 3,692 reads
+   and 862 of 864 deletes are generated. Of the JSON use, 5,577 of 5,857 calls
+   are. A template change moves most of it, and the hand-written remainder is
+   small.
+
+** The order of the move
+
+Each step leaves the system working. Each one ends in a check that proves it.
+
+1. *Unity build everywhere.* Rename the hand-written file-local collisions,
+   turn on =UNITY_BUILD= with a batch of 16 in the component CMake template,
+   and keep generated code unity-safe. Proof: the whole tree builds and the
+   suites pass as a unity build, and a full build without ccache on a quiet
+   machine measures the gain against the baseline of about 17.2 CPU hours.
+2. *The libpq layer in =ores.database=.* RAII handles for the connection and
+   the result, one =ensure= for result checks, SQLSTATE mapped to our own
+   exception types, a prepared-statement registry for each connection, a
+   pipeline batch, COPY, and the tenant and party settings the pool sets
+   today. It is the layer the data path's typed statements run on. Proof: its
+   own tests against the database, and the repository benchmark on it.
+3. *Generated repositories on the layer, one component at a time.* The
+   repository template emits statements, typed parameters and row decoders in
+   place of sqlgen calls, behind the same repository interface. Start with
+   =ores.dq=, the component measured here. Proof: each component's suites
+   pass, and its reads take one round trip.
+4. *Delete sqlgen.* Move the 45 hand-written reads, 7 inserts and 2 deletes,
+   and drop the sqlgen entity facet and the dependency. Proof: nothing includes
+   sqlgen, and the build passes.
+5. *One-time codecs for the twelve types with a custom encoding.* =uuid=,
+   =tenant_id=, =decimal=, =time_point=, =year_month_day= and the rest, written
+   by hand once, with tests that compare their bytes to reflect-cpp's.
+6. *Generated codecs, one component at a time.* Each type's JSON and
+   MessagePack functions go into its own translation unit, as decided earlier
+   in this story, and =ores::nats::wire_codec= calls them in place of
+   reflect-cpp. Proof: for each type, a test compares the generated bytes with
+   reflect-cpp's in both formats, while both exist.
+7. *Delete reflect-cpp.* Move the 106 dynamic JSON uses to yyjson, the enum
+   tables and schemas to the generator, and drop the dependency. Proof:
+   nothing includes reflect-cpp, and the build passes.
+
+Steps 2 to 4 and steps 5 to 7 are independent of each other, and each can
+follow step 1 alone.
+
+** What the decision does not settle
+
+- The absolute times. The repository and codec benchmarks ran on a machine
+  under heavy load, so the decision rests on ratios. They will be measured
+  again on a quiet machine.
+- The full-build gain of each option. The [[id:C8F67EE9-885C-4EBE-9F63-0E89A1D71B70][translation-unit cost]] task still needs the full-build
+  totals after each option, on a quiet machine.
+- Binary results and binary COPY. A read of 1,000 text rows takes about 4 ms on
+  every client, so text is enough for the control plane. The data path may
+  need binary formats for ticks; that is its own decision.
 
 * Test Scenarios
 
@@ -83,3 +182,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Replace both libraries with generated code: statements on a thin libpq layer
+in place of sqlgen, and JSON and MessagePack codecs over yyjson and msgpack-c
+in place of reflect-cpp. libpqxx is not adopted. A unity build of every
+component comes first, because it is the largest lever on build time and
+waits on nothing. The notes give the reasons, each from a measurement in this
+story, and the order of the move in seven steps.

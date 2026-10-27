@@ -73,9 +73,12 @@ operational_clock::operational_clock(const market_config& config, math::rng_stre
     upcoming_dwells_.pop_front();
 }
 
+double operational_clock::share_of(double heat) const {
+    return population_rate_ > 0.0 ? heat / population_rate_ : 0.0;
+}
+
 double operational_clock::pace() const {
-    const double share = population_rate_ > 0.0 ? heat_ / population_rate_ : 0.0;
-    return multiplier(state()) + share;
+    return multiplier(state()) + share_of(heat_);
 }
 
 std::optional<double> operational_clock::next_transition_in() const {
@@ -85,12 +88,12 @@ std::optional<double> operational_clock::next_transition_in() const {
 }
 
 double operational_clock::tau_over(double seconds, double m, double heat) const {
-    const double share = population_rate_ > 0.0 ? heat / population_rate_ : 0.0;
+    const double share = share_of(heat);
     return m * seconds - share * std::expm1(-config_.decay * seconds) / config_.decay;
 }
 
 double operational_clock::seconds_for(double distance, double m, double heat) const {
-    const double share = population_rate_ > 0.0 ? heat / population_rate_ : 0.0;
+    const double share = share_of(heat);
     if (share == 0.0)
         return distance / m;
 
@@ -139,6 +142,8 @@ void operational_clock::advance(double seconds) {
 }
 
 double operational_clock::time_to_reach(double target) {
+    if (!std::isfinite(target))
+        throw std::invalid_argument("operational_clock: target must be finite");
     double distance = target - tau_;
     if (distance <= 0.0)
         return 0.0;
@@ -184,6 +189,9 @@ void operational_clock::enrol(double mean_rate) {
 void operational_clock::withdraw(double mean_rate) {
     if (enrolled_ == 0)
         throw std::logic_error("operational_clock: withdraw with no series enrolled");
+    if (!positive(mean_rate) || mean_rate > population_rate_ * (1.0 + 1e-9))
+        throw std::invalid_argument(
+            "operational_clock: mean_rate must be positive and no more than the enrolled total");
     // A sum of doubles added and taken away drifts, so the last series to leave
     // sets it back to exactly zero.
     --enrolled_;

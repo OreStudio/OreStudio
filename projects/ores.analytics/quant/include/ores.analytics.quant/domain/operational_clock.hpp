@@ -21,6 +21,7 @@
 
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <optional>
@@ -126,9 +127,9 @@ public:
      * @brief The seconds from now at which tau reaches @p target, if nothing
      * else happens first.
      *
-     * Exact up to the solver's tolerance, across any number of transitions. Not
-     * const: looking past a transition may draw that transition's dwell, which
-     * advance then uses.
+     * Exact up to the solver's tolerance, across any number of transitions. A
+     * target already passed gives zero. Not const: looking past a transition may draw that
+     * transition's dwell, which advance then uses.
      */
     [[nodiscard]] double time_to_reach(double target);
 
@@ -145,6 +146,9 @@ public:
     void withdraw(double mean_rate);
 
 private:
+    /// What heat @p heat adds to the pace, shared over the enrolled rate.
+    [[nodiscard]] double share_of(double heat) const;
+
     /// How much tau moves over @p seconds at multiplier @p m from heat @p heat.
     [[nodiscard]] double tau_over(double seconds, double m, double heat) const;
 

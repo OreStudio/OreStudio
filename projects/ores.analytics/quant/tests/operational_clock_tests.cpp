@@ -22,6 +22,7 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <stdexcept>
 
 using ores::analytics::quant::domain::market_config;
@@ -178,4 +179,28 @@ TEST_CASE("the chain spends its share of time active and keeps the mean pace at 
     }
     CHECK(active / clock.now() == Catch::Approx(0.4).epsilon(0.02));
     CHECK(clock.tau() / clock.now() == Catch::Approx(1.0).epsilon(0.02));
+}
+
+TEST_CASE("time_to_reach answers a pinned clock and a passed target", "[operational_clock]") {
+    operational_clock clock(busy, market_stream(17));
+    clock.pin(market_state::calm);
+    clock.advance(1.0);
+
+    CHECK(clock.time_to_reach(clock.tau()) == 0.0);
+    CHECK(clock.time_to_reach(clock.tau() - 1.0) == 0.0);
+
+    // Calm with no heat moves tau at a third, so a third more takes a second.
+    CHECK(clock.time_to_reach(clock.tau() + 1.0 / 3.0) == Catch::Approx(1.0));
+    CHECK_THROWS_AS(clock.time_to_reach(std::numeric_limits<double>::quiet_NaN()),
+                    std::invalid_argument);
+}
+
+TEST_CASE("withdraw refuses a rate that was never enrolled", "[operational_clock]") {
+    operational_clock clock(busy, market_stream(19));
+    CHECK_THROWS_AS(clock.withdraw(1.0), std::logic_error);
+    clock.enrol(2.0);
+    CHECK_THROWS_AS(clock.withdraw(3.0), std::invalid_argument);
+    CHECK_THROWS_AS(clock.withdraw(-1.0), std::invalid_argument);
+    clock.withdraw(2.0);
+    CHECK(clock.population_rate() == 0.0);
 }

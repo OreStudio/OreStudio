@@ -220,8 +220,14 @@ void stamp_document(T& v,
         if (v)
             stamp_document(*v, ctx, change_reason);
     } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T>) {
-        rfl::to_view(v).apply(
-            [&](const auto& field) { stamp_document(*field.value(), ctx, change_reason); });
+        // A grouped row keeps the security fields in a member rather than on
+        // the struct, so each member is stamped as well as walked into.
+        // stamp() is guarded field by field and does nothing for a member that
+        // carries none of them.
+        rfl::to_view(v).apply([&](const auto& field) {
+            stamp(*field.value(), ctx, change_reason);
+            stamp_document(*field.value(), ctx, change_reason);
+        });
     }
 }
 

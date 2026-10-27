@@ -43,7 +43,9 @@ void apply_tenor_basis_two_swap(const ores::database::context& ctx,
                                  "\"tenor_basis_two_swap\" does not decode.");
     auto rows =
         std::vector<ores::refdata::domain::tenor_basis_two_swap_convention>{std::move(*decoded)};
-    ores::service::messaging::stamp(rows.front(), ctx);
+    // A grouped row keeps its security fields in a member, so the stamp has
+    // to walk into it; stamp_document does, and leaves a flat row alone.
+    ores::service::messaging::stamp_document(rows.front(), ctx);
     replace_party_rows(ctx,
                        ores::refdata::repository::tenor_basis_two_swap_convention_repository(),
                        std::move(rows));

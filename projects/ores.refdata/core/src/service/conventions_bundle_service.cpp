@@ -94,7 +94,10 @@ std::vector<Row> decode_family(const conventions_bundle& bundle,
             throw std::runtime_error("Bundle payload for family \"" + std::string(family) +
                                      "\" does not decode.");
         auto value = std::move(*decoded);
-        ores::service::messaging::stamp(value, ctx);
+        // A grouped row keeps its security fields in a member, so the stamp
+        // has to walk into it; stamp_document does, and does nothing extra
+        // to a flat row.
+        ores::service::messaging::stamp_document(value, ctx);
         rows.push_back(std::move(value));
     }
     return rows;

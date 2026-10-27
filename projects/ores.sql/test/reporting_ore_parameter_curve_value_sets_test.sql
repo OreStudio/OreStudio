@@ -56,12 +56,16 @@ join t_documented d on l.code = d.scope || ':' || d.name
 where l.valid_to = ores_utility_infinity_timestamp_fn()
   and l.tenant_id = ores_utility_system_tenant_id_fn();
 
+-- The curve sets, whether or not a leaf uses them, plus any set a curve leaf
+-- wrongly uses. Reading only the referenced sets would make the orphan test
+-- vacuous, and reading only the prefix would hide a shared set.
 create temporary table t_sets on commit drop as
 select s.code, s.source_kind, s.catalogue_code
 from ores_reporting_ore_parameter_value_sets_tbl s
 where s.valid_to = ores_utility_infinity_timestamp_fn()
   and s.tenant_id = ores_utility_system_tenant_id_fn()
-  and exists (select 1 from t_links l where l.value_set_code = s.code);
+  and (starts_with(s.code, 'curve.')
+       or exists (select 1 from t_links l where l.value_set_code = s.code));
 
 select cmp_ok(
     (select count(*)::int from t_links), '>', 0,

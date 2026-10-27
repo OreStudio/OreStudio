@@ -131,5 +131,6 @@ via its "Verifies task" field.
 | 7 | The two red checks will stay red for anyone rebasing onto this. | er-diagram, cmake-sources | Accept | The trading table's missing row level security is captured in the inbox. cmake-sources is main's own drift and its fix sweeps every component list. |
 | 8 | The trading diagram churn is unrelated. | the diagrams | Decline | It is in its own commit, and the description names it. The generator draws every package at once, so the alternative is a stale diagram and a red check. |
 | 9 | Filtering the links by the =curve.= set prefix narrows three tests: a curve leaf linked to a shared set would fail the coverage test as a false positive, and a leaf linked to the wrong set would go unseen. | the new test | Accept | The links are read by the documented leaf, not by the set prefix, so a leaf linked to any set is seen. A sixth assertion states the rule the prefix was assuming: every set a curve leaf uses must be a curve set. |
+| 10 | Reading =t_sets= only from the referenced sets made the orphan assertion vacuous: a curve set no leaf uses was never in the table. | the new test | Accept | =t_sets= is now the curve sets by prefix, plus any set a curve leaf wrongly uses, so an orphan is seen and a shared set is still caught. Proven by inserting an orphan set: the test failed on it, and the probe was removed. |
 
 * Result

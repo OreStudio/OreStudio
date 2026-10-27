@@ -50,6 +50,9 @@ struct tick_context final {
     double elapsed_seconds;
     /// When the tick happened, from the run clock.
     std::chrono::system_clock::time_point observed_at;
+    /// The simulated seconds since this series last ticked: the market's speed times
+    /// the market time that passed. What a price step covers.
+    double simulated_seconds = 0.0;
 };
 
 /// What a scheduler needs to know about a series to schedule it.
@@ -84,6 +87,8 @@ struct market_snapshot final {
     double decay;
     double loop_gain;
     double population_rate;
+    /// The simulated seconds one unit of market time spans.
+    double speed;
 };
 
 /**
@@ -226,6 +231,11 @@ public:
         return run_seed_;
     }
 
+    /// The simulated seconds one unit of market time spans; fixed for the run.
+    [[nodiscard]] double market_speed() const {
+        return speed_;
+    }
+
     /**
      * @brief Take the next tick now, without waiting for its time.
      *
@@ -295,6 +305,7 @@ private:
     i_run_clock& clock_;
     i_run_clock::time_point origin_;
     std::uint64_t run_seed_;
+    double speed_;
 
     mutable std::mutex mutex_;
     domain::operational_clock market_;

@@ -46,6 +46,10 @@ struct market_config final {
     double jump = 0.0;
     /// How fast the heat fades, per second.
     double decay = 1.0;
+    /// The market's speed: the simulated seconds one unit of market time spans. One
+    /// number for the run, so every feed's prices live in one simulated world. The
+    /// default keeps a curve at one tick a minute stepping a calendar day a tick.
+    double speed = 1440.0;
 };
 
 /**
@@ -106,6 +110,10 @@ public:
 
     /// The bracket B: how fast tau moves now, per second.
     [[nodiscard]] double pace() const;
+
+    [[nodiscard]] double speed() const {
+        return config_.speed;
+    }
 
     [[nodiscard]] double jump() const {
         return config_.jump;

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_SERVICE_MESSAGING_CURVE_PUBLISH_HANDLER_HPP
-#define ORES_MARKETDATA_SERVICE_MESSAGING_CURVE_PUBLISH_HANDLER_HPP
+#ifndef ORES_MARKETDATA_SERVICE_MESSAGING_APPROVAL_GATED_CURVE_PUBLISH_HANDLER_HPP
+#define ORES_MARKETDATA_SERVICE_MESSAGING_APPROVAL_GATED_CURVE_PUBLISH_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -41,8 +41,8 @@ namespace ores::marketdata::messaging {
 
 namespace {
 inline auto& curve_publish_handler_lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.marketdata.messaging.curve_publish_handler");
+    static auto instance = ores::logging::make_logger(
+        "ores.marketdata.messaging.approval_gated_curve_publish_handler");
     return instance;
 }
 }
@@ -68,17 +68,19 @@ using namespace ores::logging;
  * The permission is the maker's. The decision is the decider's, and it is taken
  * on the inbox's own operation, so the two halves ask for two different codes.
  */
-class curve_publish_handler {
+class approval_gated_curve_publish_handler {
 public:
-    curve_publish_handler(ores::nats::service::client& nats,
-                          ores::database::context ctx,
-                          std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    approval_gated_curve_publish_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
     void publish(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(curve_publish_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(curve_publish_handler_lg(), msg);
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -137,10 +139,8 @@ private:
             return;
         }
 
-        const auto attempted =
-            resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
-        const auto verdict =
-            verdict_on_publish(req_ctx, req.approval_request_id, attempted);
+        const auto attempted = resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
+        const auto verdict = verdict_on_publish(req_ctx, req.approval_request_id, attempted);
         resp.approval_request_id = req.approval_request_id;
         resp.state_code = verdict.state_code;
         if (!verdict.approved) {
@@ -148,15 +148,13 @@ private:
             return;
         }
 
-        curve_republish_service::republish(
-            req_ctx, attempted.bootstrap_config_id, attempted.as_of);
+        curve_republish_service::republish(req_ctx, attempted.bootstrap_config_id, attempted.as_of);
         // The record is stamped after the set moved, so a failure to write the
         // observations leaves the request unused rather than spent.
-        const auto published =
-            record_publication(req_ctx,
-                               *verdict.record,
-                               req_ctx.actor().empty() ? req_ctx.service_account()
-                                                       : req_ctx.actor());
+        const auto published = record_publication(
+            req_ctx,
+            *verdict.record,
+            req_ctx.actor().empty() ? req_ctx.service_account() : req_ctx.actor());
         resp.success = true;
         resp.published_at = published.published_at;
         resp.published_by = published.published_by;

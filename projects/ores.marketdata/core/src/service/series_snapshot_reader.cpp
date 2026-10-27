@@ -20,9 +20,9 @@
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
-#include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
@@ -41,7 +41,8 @@ using namespace ores::logging;
 
 namespace {
 
-inline std::string_view series_snapshot_reader_logger_name = "ores.marketdata.core.series_snapshot_reader";
+inline std::string_view series_snapshot_reader_logger_name =
+    "ores.marketdata.core.series_snapshot_reader";
 
 [[nodiscard]] auto& series_snapshot_reader_lg() {
     static auto instance = make_logger(series_snapshot_reader_logger_name);
@@ -123,13 +124,15 @@ series_snapshot_reader::read(ores::database::context ctx,
         return response;
     }
     if (series.size() > 1)
-        return series_snapshot_reader_refuse("the identity names " + std::to_string(series.size()) +
-                      " series; state the party or the provider so that it names one");
+        return series_snapshot_reader_refuse(
+            "the identity names " + std::to_string(series.size()) +
+            " series; state the party or the provider so that it names one");
 
     const auto series_id = boost::uuids::to_string(series.front().id);
     const auto declared = read_series_shape(ctx, series_id);
     if (declared.axes.empty())
-        return series_snapshot_reader_refuse("the object declares no axis, so it is not a composite object");
+        return series_snapshot_reader_refuse(
+            "the object declares no axis, so it is not a composite object");
 
     const series_grid grid(declared);
     response.coordinate_fields.reserve(declared.axes.size());
@@ -178,7 +181,8 @@ series_snapshot_reader::read(ores::database::context ctx,
     // nobody has approved yet. The read serves the observations either way, and
     // states which of the two it served rather than leaving the caller to guess.
     repository::curve_publish_repository publish_repo;
-    if (const auto published = publish_repo.read_latest_published_for_series(ctx, series.front().id);
+    if (const auto published =
+            publish_repo.read_latest_published_for_series(ctx, series.front().id);
         published && published->published_at) {
         response.published_at = published->published_at;
         response.published_by = published->published_by;
@@ -186,8 +190,9 @@ series_snapshot_reader::read(ores::database::context ctx,
         response.approval_request_id = boost::uuids::to_string(published->request_id);
     }
 
-    BOOST_LOG_SEV(series_snapshot_reader_lg(), debug) << "Read the snapshot of series " << series_id << ": "
-                               << placed.size() << " points over " << grid.size() << " nodes";
+    BOOST_LOG_SEV(series_snapshot_reader_lg(), debug)
+        << "Read the snapshot of series " << series_id << ": " << placed.size() << " points over "
+        << grid.size() << " nodes";
     response.success = true;
     return response;
 }

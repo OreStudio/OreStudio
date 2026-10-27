@@ -165,3 +165,13 @@ int position) { return kind + id; }
 }
 """
     assert collisions.internal_names(text) == {("", "entry")}
+
+
+def test_an_unbalanced_parenthesis_on_a_directive_does_not_hide_later_names():
+    text = """
+#define OPEN_CALL(x) f((x)
+namespace {
+int helper() { return 1; }
+}
+"""
+    assert collisions.internal_names(text) == {("", "helper")}

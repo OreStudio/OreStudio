@@ -36,12 +36,12 @@
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/usage_recorder.hpp"
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
+#include "ores.marketdata.service/messaging/approval_gated_curve_publish_handler.hpp"
 #include "ores.marketdata.service/messaging/bill_handler.hpp"
 #include "ores.marketdata.service/messaging/composite_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
-#include "ores.marketdata.service/messaging/curve_publish_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
-#include "ores.marketdata.service/messaging/curve_publish_handler.hpp"
+#include "ores.marketdata.service/messaging/curve_publish_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
@@ -309,13 +309,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                  mm::curve_republish_handler h(n, c, v);
                                                  h.compute(std::move(msg));
                                              }));
-            subs.push_back(
-                n.queue_subscribe(std::string(mm::publish_curve_request::nats_subject),
-                                  queue,
-                                  [&n, c, v](ores::nats::message msg) mutable {
-                                      mm::curve_publish_handler h(n, c, v);
-                                      h.publish(std::move(msg));
-                                  }));
+            subs.push_back(n.queue_subscribe(std::string(mm::publish_curve_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::approval_gated_curve_publish_handler h(
+                                                     n, c, v);
+                                                 h.publish(std::move(msg));
+                                             }));
             return subs;
         },
         [&nats, ingest, supervisor, usage](boost::asio::io_context& ioc) {

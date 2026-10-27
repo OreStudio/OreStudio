@@ -64,10 +64,11 @@ function pointAt(cx: number, cy: number, radius: number, angle: number): [number
 }
 
 /** One arc as a filled path, or a full circle when it is the whole. */
-function pathOf(arc: Arc, cx: number, cy: number, radius: number, hole: number): string {
+export function pathOf(arc: Arc, cx: number, cy: number, radius: number, hole: number): string {
     if (arc.to - arc.from >= 359.999) {
         // A whole circle is drawn as an outer ring and a reversed inner ring, so
-        // the hole is a hole rather than filled by the default fill rule.
+        // that the nonzero winding rule cancels the inner one and the hole is a
+        // hole rather than filled.
         return [
             `M ${cx} ${cy - radius}`,
             `A ${radius} ${radius} 0 1 1 ${cx - 0.01} ${cy - radius}`,
@@ -129,17 +130,32 @@ export function bookSharesOf(rows: readonly BookRow[]): readonly Share[] | null 
     }));
 }
 
-/** How many problems the run recorded in each scope, the unscoped ones included. */
+/**
+ * How many problems the run recorded in each scope, the unscoped ones included.
+ *
+ * A ring stops telling parts apart once the colours repeat, so the scopes past
+ * the colours are added into one part named for the caller, and the exact counts
+ * stay in the legend beside it.
+ */
 export function problemsOf(
     errors: readonly { readonly scope: string }[],
     unscoped: string,
+    other = 'Other',
 ): readonly Share[] {
     const counts = new Map<string, number>();
     for (const error of errors) {
         const scope = error.scope === '' ? unscoped : error.scope;
         counts.set(scope, (counts.get(scope) ?? 0) + 1);
     }
-    return [...counts.entries()].map(([name, value]) => ({ name, value }));
+    const parts = [...counts.entries()]
+        .map(([name, value]) => ({ name, value }))
+        .sort((left, right) => right.value - left.value);
+    if (parts.length <= COLOURS.length) {
+        return parts;
+    }
+    const kept = parts.slice(0, COLOURS.length - 1);
+    const rest = parts.slice(COLOURS.length - 1).reduce((sum, part) => sum + part.value, 0);
+    return [...kept, { name: other, value: rest }];
 }
 
 /**

@@ -246,6 +246,7 @@ export function RunResultsPanel({
     const problems: readonly Share[] = problemsOf(
         (errors.data ?? []).map(toError),
         t(`${field}.unscoped`),
+        t(`${field}.otherScopes`),
     );
     const filterName = noBook
         ? t(`${field}.unbooked`)

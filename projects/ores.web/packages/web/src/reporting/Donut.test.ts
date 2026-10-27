@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { arcsOf, bookSharesOf, problemsOf, type BookRow } from './Donut.js';
+import { arcsOf, bookSharesOf, pathOf, problemsOf, type BookRow } from './Donut.js';
 
 describe('arcsOf', () => {
     it('sweeps the whole circle across the parts', () => {
@@ -81,5 +81,60 @@ describe('problemsOf', () => {
             { name: 'Trade', value: 1 },
             { name: 'None', value: 1 },
         ]);
+    });
+});
+
+describe('problemsOf, the crowded ring', () => {
+    it('adds the scopes past the colours into one part', () => {
+        const scopes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((scope) => ({ scope }));
+        const parts = problemsOf(scopes, 'None', 'Other');
+
+        expect(parts).toHaveLength(6);
+        expect(parts[5]?.name).toBe('Other');
+        expect(parts[5]?.value).toBe(3);
+        expect(parts.reduce((sum, part) => sum + part.value, 0)).toBe(8);
+    });
+
+    it('states nothing for no problems', () => {
+        expect(problemsOf([], 'None')).toEqual([]);
+    });
+});
+
+describe('pathOf, a whole in one part', () => {
+    it('draws a ring with a hole rather than a filled disc', () => {
+        const path = pathOf({ name: 'All', value: 1, from: 0, to: 360 }, 60, 60, 56, 34);
+
+        expect(path.match(/M /g)).toHaveLength(2);
+    });
+});
+
+describe('bookSharesOf, the rows it must not count', () => {
+    const book = (over: Partial<BookRow>): BookRow => ({
+        key: 'b1',
+        name: 'One',
+        is_group: false,
+        is_removed: false,
+        totals: [{ currency: 'GBP', total: '100' }],
+        ...over,
+    });
+
+    it('leaves out a group row, a removed row and a book with no figure', () => {
+        const shares = bookSharesOf([
+            book({ key: 'b1', name: 'One' }),
+            book({ key: 'b2', name: 'Two' }),
+            book({ key: 'p1', name: 'Portfolio', is_group: true }),
+            book({ key: 'b3', name: 'Gone', is_removed: true }),
+            book({ key: 'b4', name: 'Empty', totals: [] }),
+        ]);
+
+        expect(shares?.map((share) => share.name)).toEqual(['One', 'Two', 'Empty']);
+    });
+
+    it('draws nothing for more books than a ring has colours', () => {
+        const many = Array.from({ length: 7 }, (_, index) =>
+            book({ key: `b${index}`, name: `Book ${index}` }),
+        );
+
+        expect(bookSharesOf(many)).toBeNull();
     });
 });

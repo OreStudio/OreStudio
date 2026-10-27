@@ -5573,6 +5573,7 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            otherScopes: 'Autres portées',
             shareTitle: "Part de chaque livre dans l'exécution",
             shareCaption:
                 'Un tout en quelques parts se lit en anneau. Les chiffres sont à côté, car un anneau dit la forme et non la valeur.',

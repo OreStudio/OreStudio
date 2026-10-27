@@ -5488,6 +5488,7 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            otherScopes: 'Other scopes',
             shareTitle: "Each book's share of the run",
             shareCaption:
                 'One whole in a few parts is a donut. The figures are stated beside it, because a ring says the shape and not the value.',

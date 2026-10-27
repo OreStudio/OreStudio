@@ -5531,6 +5531,7 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            otherScopes: 'Outros âmbitos',
             shareTitle: 'Peso de cada livro na execução',
             shareCaption:
                 'Um todo em poucas partes lê-se em anel. Os números ficam ao lado, porque um anel diz a forma e não o valor.',

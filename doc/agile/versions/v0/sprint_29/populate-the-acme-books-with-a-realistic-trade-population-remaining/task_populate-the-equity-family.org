@@ -26,7 +26,7 @@ ACME's books hold equity trades: total return swaps, vanilla, barrier, digital, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Paused after the catalogue. The payload and the planner wait on the basket modelling. |
 | Waiting on   | Nothing.                               |

@@ -81,9 +81,20 @@ function TemplateBody({ template }: { readonly template: SensitivityTemplate }):
         label: template.code,
         tabs: ['details', 'history'],
     });
+    /** Re-reads the key and its history after a correction. */
     const reload = async (): Promise<void> => {
         await queries.invalidateQueries({ queryKey: ['sensitivity-templates'] });
         await queries.invalidateQueries({ queryKey: ['history', ENTITY_TYPE, template.code] });
+    };
+
+    /**
+     * Forgets the key that was just removed. A read of it now answers 404, so
+     * the page would report a missing record for a key it removed on purpose;
+     * the list stays to be re-read, and the page leaves before that matters.
+     */
+    const forget = async (): Promise<void> => {
+        queries.removeQueries({ queryKey: ['sensitivity-templates', 'key', template.code] });
+        await queries.invalidateQueries({ queryKey: ['sensitivity-templates'] });
     };
 
     return (
@@ -136,7 +147,7 @@ function TemplateBody({ template }: { readonly template: SensitivityTemplate }):
                             version: template.version,
                             ...intent,
                         });
-                        await reload();
+                        await forget();
                     }}
                 />
             )}

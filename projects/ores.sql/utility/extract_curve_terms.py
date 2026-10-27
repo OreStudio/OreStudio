@@ -591,6 +591,52 @@ def guide_terms(ore, sections):
     return found
 
 
+def parser_values(text, relative):
+    """The strings each parser accepts, in its own order, with its line.
+
+    A parser states them in a static map at its head or in a chain of
+    comparisons, so the whole body is read. Each string is recorded with the
+    value it means, the last part of the enumerator, so a person reads the word
+    and not the code. A parser that states neither, such as one that reads a
+    number, has no entry.
+    """
+    out = {}
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        match = PARSER_DEF.match(line)
+        if not match or line.rstrip().endswith("}"):
+            continue
+        end = index + 1
+        while end < len(lines) and not lines[end].startswith("}"):
+            end += 1
+        chunk = "\n".join(lines[index + 1:end])
+        found = [{"value": value, "means": target.rsplit("::", 1)[-1]}
+                 for value, target in MAP_KEY.findall(chunk) + COMPARED.findall(chunk)]
+        if found:
+            out[match.group(1)] = {"values": found,
+                                   "source_ref": f"{relative}:{index + 1}"}
+    return out
+
+
+def all_parsers(ore):
+    """Every parser map the ORE source states, whichever file defines it.
+
+    A curve field's parser is often not in the configuration parser at all, so
+    the whole data layer is read rather than the one directory.
+    """
+    root = os.path.join(ore, "OREData")
+    out = {}
+    for directory, _, names in os.walk(root):
+        for name in sorted(names):
+            if not name.endswith((".cpp", ".hpp")):
+                continue
+            path = os.path.join(directory, name)
+            for parser, entry in parser_values(read(path),
+                                               os.path.relpath(path, ore)).items():
+                out.setdefault(parser, entry)
+    return out
+
+
 def commit(ore):
     try:
         return subprocess.run(["git", "-C", ore, "rev-parse", "--short", "HEAD"],
@@ -628,7 +674,8 @@ def main():
     covered = 0
 
     out = {"schema": SCHEMA_NAME, "guide": GUIDE,
-           "ore": {"path": ARGS.ore, "commit": commit(ARGS.ore)}, "sections": {}}
+           "ore": {"path": ARGS.ore, "commit": commit(ARGS.ore)},
+           "parsers": all_parsers(ARGS.ore), "sections": {}}
     total, unresolved = 0, 0
     for section in sections:
         entry = section["entry_element"]

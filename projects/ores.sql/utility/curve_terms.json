@@ -4,6 +4,2607 @@
   "commit": "3d75a6908",
   "path": "/home/marco/Vault/Development/ORE/Engine"
  },
+ "parsers": {
+  "parseAmortizationType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:713",
+   "values": [
+    {
+     "means": "None",
+     "value": "None"
+    },
+    {
+     "means": "FixedAmount",
+     "value": "FixedAmount"
+    },
+    {
+     "means": "RelativeToInitialNotional",
+     "value": "RelativeToInitialNotional"
+    },
+    {
+     "means": "RelativeToPreviousNotional",
+     "value": "RelativeToPreviousNotional"
+    },
+    {
+     "means": "Annuity",
+     "value": "Annuity"
+    },
+    {
+     "means": "LinearToMaturity",
+     "value": "LinearToMaturity"
+    }
+   ]
+  },
+  "parseAssetClass": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:772",
+   "values": [
+    {
+     "means": "EQ",
+     "value": "EQ"
+    },
+    {
+     "means": "FX",
+     "value": "FX"
+    },
+    {
+     "means": "COM",
+     "value": "COM"
+    },
+    {
+     "means": "IR",
+     "value": "IR"
+    },
+    {
+     "means": "INF",
+     "value": "INF"
+    },
+    {
+     "means": "CR",
+     "value": "CR"
+    },
+    {
+     "means": "BOND",
+     "value": "BOND"
+    },
+    {
+     "means": "BOND_INDEX",
+     "value": "BOND_INDEX"
+    },
+    {
+     "means": "PORTFOLIO_DETAILS",
+     "value": "PORTFOLIO_DETAILS"
+    }
+   ]
+  },
+  "parseAtmType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:810",
+   "values": [
+    {
+     "means": "AtmNull",
+     "value": "AtmNull"
+    },
+    {
+     "means": "AtmSpot",
+     "value": "AtmSpot"
+    },
+    {
+     "means": "AtmFwd",
+     "value": "AtmFwd"
+    },
+    {
+     "means": "AtmDeltaNeutral",
+     "value": "AtmDeltaNeutral"
+    },
+    {
+     "means": "AtmVegaMax",
+     "value": "AtmVegaMax"
+    },
+    {
+     "means": "AtmGammaMax",
+     "value": "AtmGammaMax"
+    },
+    {
+     "means": "AtmPutCall50",
+     "value": "AtmPutCall50"
+    }
+   ]
+  },
+  "parseAverageType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1327",
+   "values": [
+    {
+     "means": "Arithmetic",
+     "value": "Arithmetic"
+    },
+    {
+     "means": "Geometric",
+     "value": "Geometric"
+    }
+   ]
+  },
+  "parseAveragingDataPeriod": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1212",
+   "values": [
+    {
+     "means": "PreviousMonth",
+     "value": "PreviousMonth"
+    },
+    {
+     "means": "ExpiryToExpiry",
+     "value": "ExpiryToExpiry"
+    }
+   ]
+  },
+  "parseBarrierType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1129",
+   "values": [
+    {
+     "means": "DownIn",
+     "value": "DownAndIn"
+    },
+    {
+     "means": "UpIn",
+     "value": "UpAndIn"
+    },
+    {
+     "means": "DownOut",
+     "value": "DownAndOut"
+    },
+    {
+     "means": "UpOut",
+     "value": "UpAndOut"
+    },
+    {
+     "means": "DownIn",
+     "value": "Down&In"
+    },
+    {
+     "means": "UpIn",
+     "value": "Up&In"
+    },
+    {
+     "means": "DownOut",
+     "value": "Down&Out"
+    },
+    {
+     "means": "UpOut",
+     "value": "Up&Out"
+    }
+   ]
+  },
+  "parseBondPriceType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:405",
+   "values": [
+    {
+     "means": "Clean",
+     "value": "Clean"
+    },
+    {
+     "means": "Dirty",
+     "value": "Dirty"
+    }
+   ]
+  },
+  "parseBool": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:153",
+   "values": [
+    {
+     "means": "true",
+     "value": "Y"
+    },
+    {
+     "means": "true",
+     "value": "YES"
+    },
+    {
+     "means": "true",
+     "value": "TRUE"
+    },
+    {
+     "means": "true",
+     "value": "True"
+    },
+    {
+     "means": "true",
+     "value": "true"
+    },
+    {
+     "means": "true",
+     "value": "1"
+    },
+    {
+     "means": "false",
+     "value": "N"
+    },
+    {
+     "means": "false",
+     "value": "NO"
+    },
+    {
+     "means": "false",
+     "value": "FALSE"
+    },
+    {
+     "means": "false",
+     "value": "False"
+    },
+    {
+     "means": "false",
+     "value": "false"
+    },
+    {
+     "means": "false",
+     "value": "0"
+    }
+   ]
+  },
+  "parseBusinessDayConvention": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:182",
+   "values": [
+    {
+     "means": "Following",
+     "value": "F"
+    },
+    {
+     "means": "Following",
+     "value": "Following"
+    },
+    {
+     "means": "Following",
+     "value": "FOLLOWING"
+    },
+    {
+     "means": "ModifiedFollowing",
+     "value": "MF"
+    },
+    {
+     "means": "ModifiedFollowing",
+     "value": "ModifiedFollowing"
+    },
+    {
+     "means": "ModifiedFollowing",
+     "value": "Modified Following"
+    },
+    {
+     "means": "ModifiedFollowing",
+     "value": "MODIFIEDF"
+    },
+    {
+     "means": "ModifiedFollowing",
+     "value": "MODFOLLOWING"
+    },
+    {
+     "means": "Preceding",
+     "value": "P"
+    },
+    {
+     "means": "Preceding",
+     "value": "Preceding"
+    },
+    {
+     "means": "Preceding",
+     "value": "PRECEDING"
+    },
+    {
+     "means": "ModifiedPreceding",
+     "value": "MP"
+    },
+    {
+     "means": "ModifiedPreceding",
+     "value": "ModifiedPreceding"
+    },
+    {
+     "means": "ModifiedPreceding",
+     "value": "Modified Preceding"
+    },
+    {
+     "means": "ModifiedPreceding",
+     "value": "MODIFIEDP"
+    },
+    {
+     "means": "Unadjusted",
+     "value": "U"
+    },
+    {
+     "means": "Unadjusted",
+     "value": "Unadjusted"
+    },
+    {
+     "means": "Unadjusted",
+     "value": "INDIFF"
+    },
+    {
+     "means": "HalfMonthModifiedFollowing",
+     "value": "HalfMonthModifiedFollowing"
+    },
+    {
+     "means": "HalfMonthModifiedFollowing",
+     "value": "HMMF"
+    },
+    {
+     "means": "HalfMonthModifiedFollowing",
+     "value": "Half Month Modified Following"
+    },
+    {
+     "means": "HalfMonthModifiedFollowing",
+     "value": "HALFMONTHMF"
+    },
+    {
+     "means": "HalfMonthModifiedFollowing",
+     "value": "HalfMonthMF"
+    },
+    {
+     "means": "Nearest",
+     "value": "NEAREST"
+    },
+    {
+     "means": "Unadjusted",
+     "value": "NONE"
+    },
+    {
+     "means": "Unadjusted",
+     "value": "NotApplicable"
+    }
+   ]
+  },
+  "parseCamAssetType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:903",
+   "values": [
+    {
+     "means": "IR",
+     "value": "IR"
+    },
+    {
+     "means": "FX",
+     "value": "FX"
+    },
+    {
+     "means": "INF",
+     "value": "INF"
+    },
+    {
+     "means": "CR",
+     "value": "CR"
+    },
+    {
+     "means": "EQ",
+     "value": "EQ"
+    },
+    {
+     "means": "COM",
+     "value": "COM"
+    },
+    {
+     "means": "CrState",
+     "value": "CrState"
+    }
+   ]
+  },
+  "parseCapFloorType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:879",
+   "values": [
+    {
+     "means": "Cap",
+     "value": "Cap"
+    },
+    {
+     "means": "Floor",
+     "value": "Floor"
+    },
+    {
+     "means": "Collar",
+     "value": "Collar"
+    }
+   ]
+  },
+  "parseCdsDocClause": {
+   "source_ref": "OREData/ored/portfolio/creditdefaultswapdata.cpp:81",
+   "values": [
+    {
+     "means": "CR",
+     "value": "CR"
+    },
+    {
+     "means": "MM",
+     "value": "MM"
+    },
+    {
+     "means": "MR",
+     "value": "MR"
+    },
+    {
+     "means": "XR",
+     "value": "XR"
+    },
+    {
+     "means": "CR14",
+     "value": "CR14"
+    },
+    {
+     "means": "MM14",
+     "value": "MM14"
+    },
+    {
+     "means": "MR14",
+     "value": "MR14"
+    },
+    {
+     "means": "XR14",
+     "value": "XR14"
+    }
+   ]
+  },
+  "parseCdsOptionStrikeType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1316",
+   "values": [
+    {
+     "means": "Spread",
+     "value": "Spread"
+    },
+    {
+     "means": "Price",
+     "value": "Price"
+    }
+   ]
+  },
+  "parseCdsTier": {
+   "source_ref": "OREData/ored/portfolio/creditdefaultswapdata.cpp:33",
+   "values": [
+    {
+     "means": "SNRFOR",
+     "value": "SNRFOR"
+    },
+    {
+     "means": "SUBLT2",
+     "value": "SUBLT2"
+    },
+    {
+     "means": "SNRLAC",
+     "value": "SNRLAC"
+    },
+    {
+     "means": "SECDOM",
+     "value": "SECDOM"
+    },
+    {
+     "means": "JRSUBUT2",
+     "value": "JRSUBUT2"
+    },
+    {
+     "means": "PREFT1",
+     "value": "PREFT1"
+    },
+    {
+     "means": "LIEN1",
+     "value": "LIEN1"
+    },
+    {
+     "means": "LIEN2",
+     "value": "LIEN2"
+    },
+    {
+     "means": "LIEN3",
+     "value": "LIEN3"
+    }
+   ]
+  },
+  "parseCirCalibrationStrategy": {
+   "source_ref": "OREData/ored/model/crcirdata.cpp:42",
+   "values": [
+    {
+     "means": "None",
+     "value": "None"
+    },
+    {
+     "means": "CurveAndFlatVol",
+     "value": "CurveAndFlatVol"
+    }
+   ]
+  },
+  "parseCompounding": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:389",
+   "values": [
+    {
+     "means": "Simple",
+     "value": "Simple"
+    },
+    {
+     "means": "Compounded",
+     "value": "Compounded"
+    },
+    {
+     "means": "Continuous",
+     "value": "Continuous"
+    },
+    {
+     "means": "SimpleThenCompounded",
+     "value": "SimpleThenCompounded"
+    }
+   ]
+  },
+  "parseCreditEventTiers": {
+   "source_ref": "OREData/ored/portfolio/creditdefaultswapdata.cpp:257",
+   "values": [
+    {
+     "means": "SNR",
+     "value": "SNR"
+    },
+    {
+     "means": "SUB",
+     "value": "SUB"
+    },
+    {
+     "means": "SNRLAC",
+     "value": "SNRLAC"
+    },
+    {
+     "means": "SNR_SUB",
+     "value": "SNR/SUB"
+    },
+    {
+     "means": "SNR_SNRLAC",
+     "value": "SNR/SNRLAC"
+    },
+    {
+     "means": "SUB_SNRLAC",
+     "value": "SUB/SNRLAC"
+    },
+    {
+     "means": "SNR_SUB_SNRLAC",
+     "value": "SNR/SUB/SNRLAC"
+    }
+   ]
+  },
+  "parseCreditEventType": {
+   "source_ref": "OREData/ored/portfolio/creditdefaultswapdata.cpp:164",
+   "values": [
+    {
+     "means": "BANKRUPTCY",
+     "value": "BANKRUPTCY"
+    },
+    {
+     "means": "FAILURE_TO_PAY",
+     "value": "FAILURE TO PAY"
+    },
+    {
+     "means": "RESTRUCTURING",
+     "value": "RESTRUCTURING"
+    },
+    {
+     "means": "OBLIGATION_ACCELERATION",
+     "value": "OBLIGATION ACCELERATION"
+    },
+    {
+     "means": "OBLIGATION_DEFAULT",
+     "value": "OBLIGATION DEFAULT"
+    },
+    {
+     "means": "REPUDIATION_MORATORIUM",
+     "value": "REPUDIATION/MORATORIUM"
+    },
+    {
+     "means": "GOVERNMENTAL_INTERVENTION",
+     "value": "GOVERNMENTAL INTERVENTION"
+    }
+   ]
+  },
+  "parseCreditPortfolioSensitivityDecomposition": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1450",
+   "values": [
+    {
+     "means": "Underlying",
+     "value": "Underlying"
+    },
+    {
+     "means": "NotionalWeighted",
+     "value": "NotionalWeighted"
+    },
+    {
+     "means": "LossWeighted",
+     "value": "LossWeighted"
+    },
+    {
+     "means": "DeltaWeighted",
+     "value": "DeltaWeighted"
+    }
+   ]
+  },
+  "parseCsaType": {
+   "source_ref": "OREData/ored/portfolio/nettingsetdefinition.cpp:44",
+   "values": [
+    {
+     "means": "Bilateral",
+     "value": "Bilateral"
+    },
+    {
+     "means": "CallOnly",
+     "value": "CallOnly"
+    },
+    {
+     "means": "PostOnly",
+     "value": "PostOnly"
+    }
+   ]
+  },
+  "parseCurrencyType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:303",
+   "values": [
+    {
+     "means": "Major",
+     "value": "Major"
+    },
+    {
+     "means": "Major",
+     "value": "Fiat Currency"
+    },
+    {
+     "means": "Major",
+     "value": "Fiat"
+    },
+    {
+     "means": "Metal",
+     "value": "Metal"
+    },
+    {
+     "means": "Metal",
+     "value": "Precious Metal"
+    },
+    {
+     "means": "Crypto",
+     "value": "Crypto"
+    },
+    {
+     "means": "Crypto",
+     "value": "Cryptocurrency"
+    }
+   ]
+  },
+  "parseCurveConfigurationType": {
+   "source_ref": "OREData/ored/marketdata/curvespecparser.cpp:266",
+   "values": [
+    {
+     "means": "Yield",
+     "value": "YieldCurves"
+    },
+    {
+     "means": "CapFloorVolatility",
+     "value": "CapFloorVolatilities"
+    },
+    {
+     "means": "SwaptionVolatility",
+     "value": "SwaptionVolatilities"
+    },
+    {
+     "means": "YieldVolatility",
+     "value": "YieldVolatilities"
+    },
+    {
+     "means": "FX",
+     "value": "FXSpots"
+    },
+    {
+     "means": "FXVolatility",
+     "value": "FXVolatilities"
+    },
+    {
+     "means": "Default",
+     "value": "DefaultCurves"
+    },
+    {
+     "means": "CDSVolatility",
+     "value": "CDSVolatilities"
+    },
+    {
+     "means": "BaseCorrelation",
+     "value": "BaseCorrelations"
+    },
+    {
+     "means": "Inflation",
+     "value": "InflationCurves"
+    },
+    {
+     "means": "InflationCapFloorVolatility",
+     "value": "InflationCapFloorVolatilities"
+    },
+    {
+     "means": "Equity",
+     "value": "EquityCurves"
+    },
+    {
+     "means": "EquityVolatility",
+     "value": "EquityVolatilities"
+    },
+    {
+     "means": "Security",
+     "value": "Securities"
+    },
+    {
+     "means": "Commodity",
+     "value": "CommodityCurves"
+    },
+    {
+     "means": "Correlation",
+     "value": "Correlations"
+    },
+    {
+     "means": "CommodityVolatility",
+     "value": "CommodityVolatilities"
+    },
+    {
+     "means": "BondFutureVolatility",
+     "value": "BondFutureVolatilities"
+    },
+    {
+     "means": "IntradayPowerCurve",
+     "value": "IntradayPowerCurves"
+    }
+   ]
+  },
+  "parseDateDeltaAnchor": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1965",
+   "values": [
+    {
+     "means": "Adjusted",
+     "value": "Adjusted"
+    },
+    {
+     "means": "Unadjusted",
+     "value": "Unadjusted"
+    }
+   ]
+  },
+  "parseDateDeltaUnit": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1955",
+   "values": [
+    {
+     "means": "BusinessDays",
+     "value": "BusinessDays"
+    },
+    {
+     "means": "CalendarDays",
+     "value": "CalendarDays"
+    }
+   ]
+  },
+  "parseDateGenerationRule": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:339",
+   "values": [
+    {
+     "means": "Backward",
+     "value": "Backward"
+    },
+    {
+     "means": "Forward",
+     "value": "Forward"
+    },
+    {
+     "means": "Zero",
+     "value": "Zero"
+    },
+    {
+     "means": "ThirdWednesday",
+     "value": "ThirdWednesday"
+    },
+    {
+     "means": "Twentieth",
+     "value": "Twentieth"
+    },
+    {
+     "means": "TwentiethIMM",
+     "value": "TwentiethIMM"
+    },
+    {
+     "means": "OldCDS",
+     "value": "OldCDS"
+    },
+    {
+     "means": "CDS2015",
+     "value": "CDS2015"
+    },
+    {
+     "means": "CDS",
+     "value": "CDS"
+    },
+    {
+     "means": "LastWednesday",
+     "value": "LastWednesday"
+    },
+    {
+     "means": "NthBusinessDay",
+     "value": "NthBusinessDay"
+    },
+    {
+     "means": "EighthBusinessDay",
+     "value": "EighthBusinessDay"
+    }
+   ]
+  },
+  "parseDayCounter": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:218",
+   "values": [
+    {
+     "means": "Actual360",
+     "value": "A360"
+    },
+    {
+     "means": "Actual360",
+     "value": "Actual/360"
+    },
+    {
+     "means": "Actual360",
+     "value": "ACT/360"
+    },
+    {
+     "means": "Actual360",
+     "value": "Act/360"
+    },
+    {
+     "means": "Actual360",
+     "value": "A360 (Incl Last)"
+    },
+    {
+     "means": "Actual360",
+     "value": "Actual/360 (Incl Last)"
+    },
+    {
+     "means": "Actual360",
+     "value": "ACT/360 (Incl Last)"
+    },
+    {
+     "means": "Actual360",
+     "value": "Act/360 (Incl Last)"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "A365"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "A365F"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Actual/365 (Fixed)"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Actual/365 (fixed)"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "ACT/365.FIXED"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "ACT/365"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "ACT/365L"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Act/365"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Act/365L"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Act/365 (Canadian Bond)"
+    },
+    {
+     "means": "Thirty360",
+     "value": "T360"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 US"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 (US)"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 NASD"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30U/360"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30US/360"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 (Bond Basis)"
+    },
+    {
+     "means": "Thirty360",
+     "value": "ACT/nACT"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360 (Eurobond Basis)"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 AIBD (Euro)"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360.ICMA"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360 ICMA"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360E"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360.ISDA"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30E/360 ISDA"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 German"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 (German)"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 Italian"
+    },
+    {
+     "means": "Thirty360",
+     "value": "30/360 (Italian)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActActISDA"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT/ACT.ISDA"
+    },
+    {
+     "means": "ActualActual",
+     "value": "Actual/Actual (ISDA)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActualActual (ISDA)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT/ACT"
+    },
+    {
+     "means": "ActualActual",
+     "value": "Act/Act"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT29"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActActISMA"
+    },
+    {
+     "means": "ActualActual",
+     "value": "Actual/Actual (ISMA)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActualActual (ISMA)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT/ACT.ISMA"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActActICMA"
+    },
+    {
+     "means": "ActualActual",
+     "value": "Actual/Actual (ICMA)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActualActual (ICMA)"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT/ACT.ICMA"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ActActAFB"
+    },
+    {
+     "means": "ActualActual",
+     "value": "ACT/ACT.AFB"
+    },
+    {
+     "means": "ActualActual",
+     "value": "Actual/Actual (AFB)"
+    },
+    {
+     "means": "OneDayCounter",
+     "value": "1/1"
+    },
+    {
+     "means": "Business252",
+     "value": "BUS/252"
+    },
+    {
+     "means": "Business252",
+     "value": "Business/252"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Actual/365 (No Leap)"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Act/365 (NL)"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "NL/365"
+    },
+    {
+     "means": "Actual365Fixed",
+     "value": "Actual/365 (JGB)"
+    },
+    {
+     "means": "SimpleDayCounter",
+     "value": "Simple"
+    },
+    {
+     "means": "YearCounter",
+     "value": "Year"
+    },
+    {
+     "means": "Actual364",
+     "value": "A364"
+    },
+    {
+     "means": "Actual364",
+     "value": "Actual/364"
+    },
+    {
+     "means": "Actual364",
+     "value": "Act/364"
+    },
+    {
+     "means": "Actual364",
+     "value": "ACT/364"
+    },
+    {
+     "means": "MonthCounter",
+     "value": "Month"
+    }
+   ]
+  },
+  "parseDeltaType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:827",
+   "values": [
+    {
+     "means": "Spot",
+     "value": "Spot"
+    },
+    {
+     "means": "Fwd",
+     "value": "Fwd"
+    },
+    {
+     "means": "PaSpot",
+     "value": "PaSpot"
+    },
+    {
+     "means": "PaFwd",
+     "value": "PaFwd"
+    }
+   ]
+  },
+  "parseDiscretization": {
+   "source_ref": "OREData/ored/model/crossassetmodeldata.cpp:862",
+   "values": [
+    {
+     "means": "Exact",
+     "value": "Exact"
+    },
+    {
+     "means": "Euler",
+     "value": "Euler"
+    },
+    {
+     "means": "BestMarginalDiscretization",
+     "value": "BestMarginalDiscretization"
+    }
+   ]
+  },
+  "parseDoubleBarrierType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1148",
+   "values": [
+    {
+     "means": "KnockIn",
+     "value": "KnockIn"
+    },
+    {
+     "means": "KnockOut",
+     "value": "KnockOut"
+    },
+    {
+     "means": "KIKO",
+     "value": "KIKO"
+    },
+    {
+     "means": "KOKI",
+     "value": "KOKI"
+    }
+   ]
+  },
+  "parseDuplicatePillarPolicy": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1612",
+   "values": [
+    {
+     "means": "KeepLast",
+     "value": "KeepLast"
+    },
+    {
+     "means": "KeepFirst",
+     "value": "KeepFirst"
+    },
+    {
+     "means": "KeepAll",
+     "value": "KeepAll"
+    },
+    {
+     "means": "ThrowError",
+     "value": "ThrowError"
+    }
+   ]
+  },
+  "parseEquityCurveConfigType": {
+   "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:131",
+   "values": [
+    {
+     "means": "DividendYield",
+     "value": "DividendYield"
+    },
+    {
+     "means": "ForwardPrice",
+     "value": "ForwardPrice"
+    },
+    {
+     "means": "ForwardDividendPrice",
+     "value": "ForwardDividendPrice"
+    },
+    {
+     "means": "OptionPremium",
+     "value": "OptionPremium"
+    },
+    {
+     "means": "NoDividends",
+     "value": "NoDividends"
+    }
+   ]
+  },
+  "parseExerciseType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:511",
+   "values": [
+    {
+     "means": "European",
+     "value": "European"
+    },
+    {
+     "means": "Bermudan",
+     "value": "Bermudan"
+    },
+    {
+     "means": "American",
+     "value": "American"
+    }
+   ]
+  },
+  "parseExtrapolation": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:842",
+   "values": [
+    {
+     "means": "None",
+     "value": "None"
+    },
+    {
+     "means": "Flat",
+     "value": "Flat"
+    }
+   ]
+  },
+  "parseFdmSchemeDesc": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:754",
+   "values": [
+    {
+     "means": "CrankNicolson",
+     "value": "CrankNicolson"
+    },
+    {
+     "means": "Hundsdorfer",
+     "value": "Hundsdorfer"
+    },
+    {
+     "means": "Douglas",
+     "value": "Douglas"
+    },
+    {
+     "means": "CraigSneyd",
+     "value": "CraigSneyd"
+    },
+    {
+     "means": "ModifiedCraigSneyd",
+     "value": "ModifiedCraigSneyd"
+    },
+    {
+     "means": "ImplicitEuler",
+     "value": "ImplicitEuler"
+    },
+    {
+     "means": "ExplicitEuler",
+     "value": "ExplicitEuler"
+    },
+    {
+     "means": "MethodOfLines",
+     "value": "MethodOfLines"
+    },
+    {
+     "means": "TrBDF2",
+     "value": "TrBDF2"
+    }
+   ]
+  },
+  "parseFrequency": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:361",
+   "values": [
+    {
+     "means": "Once",
+     "value": "Z"
+    },
+    {
+     "means": "Once",
+     "value": "Once"
+    },
+    {
+     "means": "Annual",
+     "value": "A"
+    },
+    {
+     "means": "Annual",
+     "value": "Annual"
+    },
+    {
+     "means": "Semiannual",
+     "value": "S"
+    },
+    {
+     "means": "Semiannual",
+     "value": "Semiannual"
+    },
+    {
+     "means": "Quarterly",
+     "value": "Q"
+    },
+    {
+     "means": "Quarterly",
+     "value": "Quarterly"
+    },
+    {
+     "means": "Bimonthly",
+     "value": "B"
+    },
+    {
+     "means": "Bimonthly",
+     "value": "Bimonthly"
+    },
+    {
+     "means": "Monthly",
+     "value": "M"
+    },
+    {
+     "means": "Monthly",
+     "value": "Monthly"
+    },
+    {
+     "means": "EveryFourthWeek",
+     "value": "L"
+    },
+    {
+     "means": "EveryFourthWeek",
+     "value": "Lunarmonth"
+    },
+    {
+     "means": "Weekly",
+     "value": "W"
+    },
+    {
+     "means": "Weekly",
+     "value": "Weekly"
+    },
+    {
+     "means": "Daily",
+     "value": "D"
+    },
+    {
+     "means": "Daily",
+     "value": "Daily"
+    }
+   ]
+  },
+  "parseFutureDateGenerationRule": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1061",
+   "values": [
+    {
+     "means": "IMM",
+     "value": "IMM"
+    },
+    {
+     "means": "FirstDayOfMonth",
+     "value": "FirstDayOfMonth"
+    },
+    {
+     "means": "IMMNZD",
+     "value": "IMMNZD"
+    },
+    {
+     "means": "IMMCAD",
+     "value": "IMMCAD"
+    },
+    {
+     "means": "IMMEUR",
+     "value": "IMMEUR"
+    }
+   ]
+  },
+  "parseFxVolatilityTimeInterpolation": {
+   "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:367",
+   "values": [
+    {
+     "means": "V",
+     "value": "V"
+    },
+    {
+     "means": "V2T",
+     "value": "V2T"
+    }
+   ]
+  },
+  "parseHestonProcessDiscretization": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1911",
+   "values": [
+    {
+     "means": "PartialTruncation",
+     "value": "PartialTruncation"
+    },
+    {
+     "means": "FullTruncation",
+     "value": "FullTruncation"
+    },
+    {
+     "means": "Reflection",
+     "value": "Reflection"
+    },
+    {
+     "means": "NonCentralChiSquareVariance",
+     "value": "NonCentralChiSquareVariance"
+    },
+    {
+     "means": "QuadraticExponential",
+     "value": "QuadraticExponential"
+    },
+    {
+     "means": "QuadraticExponentialMartingale",
+     "value": "QuadraticExponentialMartingale"
+    },
+    {
+     "means": "BroadieKayaExactSchemeLobatto",
+     "value": "BroadieKayaExactSchemeLobatto"
+    },
+    {
+     "means": "BroadieKayaExactSchemeLaguerre",
+     "value": "BroadieKayaExactSchemeLaguerre"
+    },
+    {
+     "means": "BroadieKayaExactSchemeTrapezoidal",
+     "value": "BroadieKayaExactSchemeTrapezoidal"
+    }
+   ]
+  },
+  "parseInflationSwapPublicationRoll": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1099",
+   "values": [
+    {
+     "means": "None",
+     "value": "None"
+    },
+    {
+     "means": "OnPublicationDate",
+     "value": "OnPublicationDate"
+    },
+    {
+     "means": "AfterPublicationDate",
+     "value": "AfterPublicationDate"
+    }
+   ]
+  },
+  "parseInstrumentType": {
+   "source_ref": "OREData/ored/marketdata/marketdatumparser.cpp:39",
+   "values": [
+    {
+     "means": "ZERO",
+     "value": "ZERO"
+    },
+    {
+     "means": "DISCOUNT",
+     "value": "DISCOUNT"
+    },
+    {
+     "means": "MM",
+     "value": "MM"
+    },
+    {
+     "means": "MM_FUTURE",
+     "value": "MM_FUTURE"
+    },
+    {
+     "means": "OI_FUTURE",
+     "value": "OI_FUTURE"
+    },
+    {
+     "means": "FRA",
+     "value": "FRA"
+    },
+    {
+     "means": "IMM_FRA",
+     "value": "IMM_FRA"
+    },
+    {
+     "means": "IR_SWAP",
+     "value": "IR_SWAP"
+    },
+    {
+     "means": "IR_DATED_SWAP",
+     "value": "IR_DATED_SWAP"
+    },
+    {
+     "means": "BASIS_SWAP",
+     "value": "BASIS_SWAP"
+    },
+    {
+     "means": "CC_BASIS_SWAP",
+     "value": "CC_BASIS_SWAP"
+    },
+    {
+     "means": "CC_FIX_FLOAT_SWAP",
+     "value": "CC_FIX_FLOAT_SWAP"
+    },
+    {
+     "means": "BMA_SWAP",
+     "value": "BMA_SWAP"
+    },
+    {
+     "means": "CDS",
+     "value": "CDS"
+    },
+    {
+     "means": "CDS_INDEX",
+     "value": "CDS_INDEX"
+    },
+    {
+     "means": "FX_SPOT",
+     "value": "FX"
+    },
+    {
+     "means": "FX_SPOT",
+     "value": "FX_SPOT"
+    },
+    {
+     "means": "FX_FWD",
+     "value": "FXFWD"
+    },
+    {
+     "means": "FX_FWD",
+     "value": "FX_FWD"
+    },
+    {
+     "means": "HAZARD_RATE",
+     "value": "HAZARD_RATE"
+    },
+    {
+     "means": "RECOVERY_RATE",
+     "value": "RECOVERY_RATE"
+    },
+    {
+     "means": "ASSUMED_RECOVERY_RATE",
+     "value": "ASSUMED_RECOVERY_RATE"
+    },
+    {
+     "means": "SWAPTION",
+     "value": "SWAPTION"
+    },
+    {
+     "means": "CAPFLOOR",
+     "value": "CAPFLOOR"
+    },
+    {
+     "means": "FX_OPTION",
+     "value": "FX_OPTION"
+    },
+    {
+     "means": "EQUITY_SPOT",
+     "value": "EQUITY"
+    },
+    {
+     "means": "EQUITY_FWD",
+     "value": "EQUITY_FWD"
+    },
+    {
+     "means": "EQUITY_DIVIDEND",
+     "value": "EQUITY_DIVIDEND"
+    },
+    {
+     "means": "EQUITY_OPTION",
+     "value": "EQUITY_OPTION"
+    },
+    {
+     "means": "BOND",
+     "value": "BOND"
+    },
+    {
+     "means": "BOND_FUTURE",
+     "value": "BOND_FUTURE"
+    },
+    {
+     "means": "BOND_OPTION",
+     "value": "BOND_OPTION"
+    },
+    {
+     "means": "ZC_INFLATIONSWAP",
+     "value": "ZC_INFLATIONSWAP"
+    },
+    {
+     "means": "ZC_INFLATIONCAPFLOOR",
+     "value": "ZC_INFLATIONCAPFLOOR"
+    },
+    {
+     "means": "YY_INFLATIONSWAP",
+     "value": "YY_INFLATIONSWAP"
+    },
+    {
+     "means": "YY_INFLATIONCAPFLOOR",
+     "value": "YY_INFLATIONCAPFLOOR"
+    },
+    {
+     "means": "SEASONALITY",
+     "value": "SEASONALITY"
+    },
+    {
+     "means": "INDEX_CDS_OPTION",
+     "value": "INDEX_CDS_OPTION"
+    },
+    {
+     "means": "INDEX_CDS_TRANCHE",
+     "value": "INDEX_CDS_TRANCHE"
+    },
+    {
+     "means": "COMMODITY_SPOT",
+     "value": "COMMODITY"
+    },
+    {
+     "means": "COMMODITY_FWD",
+     "value": "COMMODITY_FWD"
+    },
+    {
+     "means": "CORRELATION",
+     "value": "CORRELATION"
+    },
+    {
+     "means": "COMMODITY_OPTION",
+     "value": "COMMODITY_OPTION"
+    },
+    {
+     "means": "COMMODITY_CALENDAR_SPREAD_OPTION",
+     "value": "COMMODITY_CALENDAR_SPREAD_OPTION"
+    },
+    {
+     "means": "SHAPE_PROFILE",
+     "value": "SHAPE_PROFILE"
+    },
+    {
+     "means": "CPR",
+     "value": "CPR"
+    },
+    {
+     "means": "RATING",
+     "value": "RATING"
+    },
+    {
+     "means": "BOND_FUTURE_OPTION",
+     "value": "BOND_FUTURE_OPTION"
+    }
+   ]
+  },
+  "parseIsdaRulesDefinitions": {
+   "source_ref": "OREData/ored/portfolio/creditdefaultswapdata.cpp:127",
+   "values": [
+    {
+     "means": "y2003",
+     "value": "2003"
+    },
+    {
+     "means": "y2014",
+     "value": "2014"
+    }
+   ]
+  },
+  "parseLocalVolType": {
+   "source_ref": "OREData/ored/model/localvolmodelbuilder.cpp:183",
+   "values": [
+    {
+     "means": "Dupire",
+     "value": "Dupire"
+    },
+    {
+     "means": "DupireFloored",
+     "value": "DupireFloored"
+    },
+    {
+     "means": "AndreasenHuge",
+     "value": "AndreasenHuge"
+    }
+   ]
+  },
+  "parseMomentType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1437",
+   "values": [
+    {
+     "means": "Variance",
+     "value": "Variance"
+    },
+    {
+     "means": "Volatility",
+     "value": "Volatility"
+    }
+   ]
+  },
+  "parseMoneynessType": {
+   "source_ref": "OREData/ored/marketdata/strike.cpp:258",
+   "values": [
+    {
+     "means": "Spot",
+     "value": "Spot"
+    },
+    {
+     "means": "Forward",
+     "value": "Fwd"
+    }
+   ]
+  },
+  "parseMonth": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:658",
+   "values": [
+    {
+     "means": "January",
+     "value": "Jan"
+    },
+    {
+     "means": "February",
+     "value": "Feb"
+    },
+    {
+     "means": "March",
+     "value": "Mar"
+    },
+    {
+     "means": "April",
+     "value": "Apr"
+    },
+    {
+     "means": "May",
+     "value": "May"
+    },
+    {
+     "means": "June",
+     "value": "Jun"
+    },
+    {
+     "means": "July",
+     "value": "Jul"
+    },
+    {
+     "means": "August",
+     "value": "Aug"
+    },
+    {
+     "means": "September",
+     "value": "Sep"
+    },
+    {
+     "means": "October",
+     "value": "Oct"
+    },
+    {
+     "means": "November",
+     "value": "Nov"
+    },
+    {
+     "means": "December",
+     "value": "Dec"
+    },
+    {
+     "means": "January",
+     "value": "January"
+    },
+    {
+     "means": "February",
+     "value": "February"
+    },
+    {
+     "means": "March",
+     "value": "March"
+    },
+    {
+     "means": "April",
+     "value": "April"
+    },
+    {
+     "means": "May",
+     "value": "May"
+    },
+    {
+     "means": "June",
+     "value": "June"
+    },
+    {
+     "means": "July",
+     "value": "July"
+    },
+    {
+     "means": "August",
+     "value": "August"
+    },
+    {
+     "means": "September",
+     "value": "September"
+    },
+    {
+     "means": "October",
+     "value": "October"
+    },
+    {
+     "means": "November",
+     "value": "November"
+    },
+    {
+     "means": "December",
+     "value": "December"
+    }
+   ]
+  },
+  "parseMporCashFlowMode": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1667",
+   "values": [
+    {
+     "means": "Unspecified",
+     "value": "Unspecified"
+    },
+    {
+     "means": "NonePay",
+     "value": "NonePay"
+    },
+    {
+     "means": "BothPay",
+     "value": "BothPay"
+    },
+    {
+     "means": "WePay",
+     "value": "WePay"
+    },
+    {
+     "means": "TheyPay",
+     "value": "TheyPay"
+    }
+   ]
+  },
+  "parseObservationInterpolation": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:744",
+   "values": [
+    {
+     "means": "Flat",
+     "value": "Flat"
+    },
+    {
+     "means": "Linear",
+     "value": "Linear"
+    },
+    {
+     "means": "AsIndex",
+     "value": "AsIndex"
+    }
+   ]
+  },
+  "parseOptionType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:526",
+   "values": [
+    {
+     "means": "Put",
+     "value": "Put"
+    },
+    {
+     "means": "Call",
+     "value": "Call"
+    }
+   ]
+  },
+  "parseOvernightIndexFutureNettingType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1040",
+   "values": [
+    {
+     "means": "Simple",
+     "value": "Averaging"
+    },
+    {
+     "means": "Compound",
+     "value": "Compounding"
+    }
+   ]
+  },
+  "parseParConversionMatrixRegularisation": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1886",
+   "values": [
+    {
+     "means": "Silent",
+     "value": "Silent"
+    },
+    {
+     "means": "Warning",
+     "value": "Warning"
+    },
+    {
+     "means": "Disable",
+     "value": "Disable"
+    }
+   ]
+  },
+  "parsePillarChoice": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1573",
+   "values": [
+    {
+     "means": "NoPillar",
+     "value": "NoPillar"
+    },
+    {
+     "means": "StartDate",
+     "value": "StartDate"
+    },
+    {
+     "means": "StartDateAndMaturityDate",
+     "value": "StartDateAndMaturityDate"
+    },
+    {
+     "means": "StartDateAndLastRelevantDate",
+     "value": "StartDateAndLastRelevantDate"
+    }
+   ]
+  },
+  "parsePolynomType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:572",
+   "values": [
+    {
+     "means": "Monomial",
+     "value": "Monomial"
+    },
+    {
+     "means": "Laguerre",
+     "value": "Laguerre"
+    },
+    {
+     "means": "Hermite",
+     "value": "Hermite"
+    },
+    {
+     "means": "Hyperbolic",
+     "value": "Hyperbolic"
+    },
+    {
+     "means": "Legendre",
+     "value": "Legendre"
+    },
+    {
+     "means": "Chebyshev",
+     "value": "Chebyshev"
+    },
+    {
+     "means": "Chebyshev2nd",
+     "value": "Chebyshev2nd"
+    }
+   ]
+  },
+  "parsePositionType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:417",
+   "values": [
+    {
+     "means": "Long",
+     "value": "Long"
+    },
+    {
+     "means": "Short",
+     "value": "Short"
+    },
+    {
+     "means": "Long",
+     "value": "L"
+    },
+    {
+     "means": "Short",
+     "value": "S"
+    }
+   ]
+  },
+  "parsePriceQuoteMethod": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1337",
+   "values": [
+    {
+     "means": "CurrencyPerUnit",
+     "value": "CurrencyPerUnit"
+    },
+    {
+     "means": "PercentageOfPar",
+     "value": "PercentageOfPar"
+    }
+   ]
+  },
+  "parsePriceSegmentType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1234",
+   "values": [
+    {
+     "means": "Future",
+     "value": "Future"
+    },
+    {
+     "means": "AveragingFuture",
+     "value": "AveragingFuture"
+    },
+    {
+     "means": "AveragingSpot",
+     "value": "AveragingSpot"
+    },
+    {
+     "means": "AveragingOffPeakPower",
+     "value": "AveragingOffPeakPower"
+    },
+    {
+     "means": "OffPeakPowerDaily",
+     "value": "OffPeakPowerDaily"
+    }
+   ]
+  },
+  "parseProtectionSide": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:433",
+   "values": [
+    {
+     "means": "Buyer",
+     "value": "Buyer"
+    },
+    {
+     "means": "Seller",
+     "value": "Seller"
+    },
+    {
+     "means": "Buyer",
+     "value": "B"
+    },
+    {
+     "means": "Seller",
+     "value": "S"
+    },
+    {
+     "means": "Buyer",
+     "value": "Payer"
+    },
+    {
+     "means": "Seller",
+     "value": "Receiver"
+    },
+    {
+     "means": "Buyer",
+     "value": "P"
+    },
+    {
+     "means": "Seller",
+     "value": "R"
+    }
+   ]
+  },
+  "parseQuoteType": {
+   "source_ref": "OREData/ored/marketdata/marketdatumparser.cpp:99",
+   "values": [
+    {
+     "means": "BASIS_SPREAD",
+     "value": "BASIS_SPREAD"
+    },
+    {
+     "means": "CREDIT_SPREAD",
+     "value": "CREDIT_SPREAD"
+    },
+    {
+     "means": "CONV_CREDIT_SPREAD",
+     "value": "CONV_CREDIT_SPREAD"
+    },
+    {
+     "means": "YIELD_SPREAD",
+     "value": "YIELD_SPREAD"
+    },
+    {
+     "means": "RATE",
+     "value": "RATE"
+    },
+    {
+     "means": "RATIO",
+     "value": "RATIO"
+    },
+    {
+     "means": "PRICE",
+     "value": "PRICE"
+    },
+    {
+     "means": "RATE_LNVOL",
+     "value": "RATE_LNVOL"
+    },
+    {
+     "means": "RATE_LNVOL",
+     "value": "RATE_GVOL"
+    },
+    {
+     "means": "RATE_NVOL",
+     "value": "RATE_NVOL"
+    },
+    {
+     "means": "RATE_SLNVOL",
+     "value": "RATE_SLNVOL"
+    },
+    {
+     "means": "BASE_CORRELATION",
+     "value": "BASE_CORRELATION"
+    },
+    {
+     "means": "SHIFT",
+     "value": "SHIFT"
+    },
+    {
+     "means": "TRANSITION_PROBABILITY",
+     "value": "TRANSITION_PROBABILITY"
+    },
+    {
+     "means": "CONVERSION_FACTOR",
+     "value": "CONVERSION_FACTOR"
+    },
+    {
+     "means": "SHAPE_FACTOR",
+     "value": "SHAPE_FACTOR"
+    },
+    {
+     "means": "NONE",
+     "value": "NULL"
+    }
+   ]
+  },
+  "parseRegressorModel": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1641",
+   "values": [
+    {
+     "means": "Simple",
+     "value": "Simple"
+    },
+    {
+     "means": "Lagged",
+     "value": "Lagged"
+    },
+    {
+     "means": "LaggedIR",
+     "value": "LaggedIR"
+    },
+    {
+     "means": "LaggedFX",
+     "value": "LaggedFX"
+    },
+    {
+     "means": "LaggedEQ",
+     "value": "LaggedEQ"
+    }
+   ]
+  },
+  "parseRoundingType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1114",
+   "values": [
+    {
+     "means": "Up",
+     "value": "Up"
+    },
+    {
+     "means": "Down",
+     "value": "Down"
+    },
+    {
+     "means": "Closest",
+     "value": "Closest"
+    },
+    {
+     "means": "Floor",
+     "value": "Floor"
+    },
+    {
+     "means": "Ceiling",
+     "value": "Ceiling"
+    }
+   ]
+  },
+  "parseRpaOptionExpiryPosition": {
+   "source_ref": "OREData/ored/scripting/engines/riskparticipationagreementbaseengine.cpp:306",
+   "values": [
+    {
+     "means": "Mid",
+     "value": "Mid"
+    },
+    {
+     "means": "Left",
+     "value": "Left"
+    }
+   ]
+  },
+  "parseSabrParametricVolatilityModelVariant": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1697",
+   "values": [
+    {
+     "means": "Hagan2002Lognormal",
+     "value": "Hagan2002Lognormal"
+    },
+    {
+     "means": "Hagan2002Normal",
+     "value": "Hagan2002Normal"
+    },
+    {
+     "means": "Hagan2002NormalZeroBeta",
+     "value": "Hagan2002NormalZeroBeta"
+    },
+    {
+     "means": "Antonov2015FreeBoundaryNormal",
+     "value": "Antonov2015FreeBoundaryNormal"
+    },
+    {
+     "means": "KienitzLawsonSwaynePde",
+     "value": "KienitzLawsonSwaynePde"
+    },
+    {
+     "means": "FlochKennedy",
+     "value": "FlochKennedy"
+    }
+   ]
+  },
+  "parseSalvagingAlgorithmType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1805",
+   "values": [
+    {
+     "means": "None",
+     "value": "None"
+    },
+    {
+     "means": "Spectral",
+     "value": "Spectral"
+    },
+    {
+     "means": "Hypersphere",
+     "value": "Hypersphere"
+    },
+    {
+     "means": "LowerDiagonal",
+     "value": "LowerDiagonal"
+    },
+    {
+     "means": "Higham",
+     "value": "Higham"
+    },
+    {
+     "means": "Principal",
+     "value": "Principal"
+    }
+   ]
+  },
+  "parseSequenceType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:730",
+   "values": [
+    {
+     "means": "MersenneTwister",
+     "value": "MersenneTwister"
+    },
+    {
+     "means": "MersenneTwisterAntithetic",
+     "value": "MersenneTwisterAntithetic"
+    },
+    {
+     "means": "Sobol",
+     "value": "Sobol"
+    },
+    {
+     "means": "SobolBrownianBridge",
+     "value": "SobolBrownianBridge"
+    },
+    {
+     "means": "Burley2020SobolBrownianBridge",
+     "value": "Burley2020SobolBrownianBridge"
+    }
+   ]
+  },
+  "parseSettlementMethod": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:481",
+   "values": [
+    {
+     "means": "PhysicalOTC",
+     "value": "PhysicalOTC"
+    },
+    {
+     "means": "PhysicalCleared",
+     "value": "PhysicalCleared"
+    },
+    {
+     "means": "CollateralizedCashPrice",
+     "value": "CollateralizedCashPrice"
+    },
+    {
+     "means": "ParYieldCurve",
+     "value": "ParYieldCurve"
+    }
+   ]
+  },
+  "parseSettlementType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:465",
+   "values": [
+    {
+     "means": "Cash",
+     "value": "Cash"
+    },
+    {
+     "means": "Physical",
+     "value": "Physical"
+    },
+    {
+     "means": "Cash",
+     "value": "C"
+    },
+    {
+     "means": "Physical",
+     "value": "P"
+    }
+   ]
+  },
+  "parseSobolBrownianGeneratorOrdering": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:612",
+   "values": [
+    {
+     "means": "Factors",
+     "value": "Factors"
+    },
+    {
+     "means": "Steps",
+     "value": "Steps"
+    },
+    {
+     "means": "Diagonal",
+     "value": "Diagonal"
+    }
+   ]
+  },
+  "parseSobolRsgDirectionIntegers": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:624",
+   "values": [
+    {
+     "means": "Unit",
+     "value": "Unit"
+    },
+    {
+     "means": "Jaeckel",
+     "value": "Jaeckel"
+    },
+    {
+     "means": "SobolLevitan",
+     "value": "SobolLevitan"
+    },
+    {
+     "means": "SobolLevitanLemieux",
+     "value": "SobolLevitanLemieux"
+    },
+    {
+     "means": "JoeKuoD5",
+     "value": "JoeKuoD5"
+    },
+    {
+     "means": "JoeKuoD6",
+     "value": "JoeKuoD6"
+    },
+    {
+     "means": "JoeKuoD7",
+     "value": "JoeKuoD7"
+    },
+    {
+     "means": "Kuo",
+     "value": "Kuo"
+    },
+    {
+     "means": "Kuo2",
+     "value": "Kuo2"
+    },
+    {
+     "means": "Kuo3",
+     "value": "Kuo3"
+    }
+   ]
+  },
+  "parseSubPeriodsCouponType": {
+   "source_ref": "OREData/ored/configuration/conventions.cpp:46",
+   "values": [
+    {
+     "means": "Compounding",
+     "value": "Compounding"
+    },
+    {
+     "means": "Averaging",
+     "value": "Averaging"
+    }
+   ]
+  },
+  "parseSviParametricVolatilityModelVariant": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1737",
+   "values": [
+    {
+     "means": "Gatheral2004SviRaw",
+     "value": "Gatheral2004SviRaw"
+    },
+    {
+     "means": "Gatheral2004SviNatural",
+     "value": "Gatheral2004SviNatural"
+    },
+    {
+     "means": "Gatheral2004SviJw",
+     "value": "Gatheral2004SviJw"
+    },
+    {
+     "means": "Gatheral2012SsviHeston",
+     "value": "Gatheral2012SsviHeston"
+    },
+    {
+     "means": "Gatheral2012SsviPowerLaw",
+     "value": "Gatheral2012SsviPowerLaw"
+    },
+    {
+     "means": "HendriksMartini2017EssviFirstPowerLaw",
+     "value": "HendriksMartini2017EssviFirstPowerLaw"
+    },
+    {
+     "means": "HendriksMartini2017EssviSecondPowerLaw",
+     "value": "HendriksMartini2017EssviSecondPowerLaw"
+    },
+    {
+     "means": "CorbettaEtAl2019Essvi",
+     "value": "CorbettaEtAl2019Essvi"
+    },
+    {
+     "means": "Mingone2022EssviGJ",
+     "value": "Mingone2022EssviGJ"
+    },
+    {
+     "means": "Mingone2022EssviMM",
+     "value": "Mingone2022EssviMM"
+    }
+   ]
+  },
+  "parseVarGroupMode": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:1657",
+   "values": [
+    {
+     "means": "Global",
+     "value": "Global"
+    },
+    {
+     "means": "Trivial",
+     "value": "Trivial"
+    }
+   ]
+  },
+  "parseVolatilityQuoteType": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:868",
+   "values": [
+    {
+     "means": "Normal",
+     "value": "Normal"
+    },
+    {
+     "means": "ShiftedLognormal",
+     "value": "ShiftedLognormal"
+    }
+   ]
+  },
+  "parseWeekday": {
+   "source_ref": "OREData/ored/utilities/parsers.cpp:644",
+   "values": [
+    {
+     "means": "Sunday",
+     "value": "Sun"
+    },
+    {
+     "means": "Monday",
+     "value": "Mon"
+    },
+    {
+     "means": "Tuesday",
+     "value": "Tue"
+    },
+    {
+     "means": "Wednesday",
+     "value": "Wed"
+    },
+    {
+     "means": "Thursday",
+     "value": "Thu"
+    },
+    {
+     "means": "Friday",
+     "value": "Fri"
+    },
+    {
+     "means": "Saturday",
+     "value": "Sat"
+    }
+   ]
+  },
+  "parseYieldCurveExtrapolationMethod": {
+   "source_ref": "OREData/ored/marketdata/yieldcurve.cpp:3836",
+   "values": [
+    {
+     "means": "ContinuousForward",
+     "value": "ContinuousForward"
+    },
+    {
+     "means": "DiscreteForward",
+     "value": "DiscreteForward"
+    }
+   ]
+  },
+  "parseYieldCurveInterpolationMethod": {
+   "source_ref": "OREData/ored/marketdata/yieldcurve.cpp:311",
+   "values": [
+    {
+     "means": "Linear",
+     "value": "Linear"
+    },
+    {
+     "means": "LogLinear",
+     "value": "LogLinear"
+    },
+    {
+     "means": "NaturalCubic",
+     "value": "NaturalCubic"
+    },
+    {
+     "means": "FinancialCubic",
+     "value": "FinancialCubic"
+    },
+    {
+     "means": "ConvexMonotone",
+     "value": "ConvexMonotone"
+    },
+    {
+     "means": "Quadratic",
+     "value": "Quadratic"
+    },
+    {
+     "means": "LogQuadratic",
+     "value": "LogQuadratic"
+    },
+    {
+     "means": "LogNaturalCubic",
+     "value": "LogNaturalCubic"
+    },
+    {
+     "means": "LogFinancialCubic",
+     "value": "LogFinancialCubic"
+    },
+    {
+     "means": "LogCubicSpline",
+     "value": "LogCubicSpline"
+    },
+    {
+     "means": "MonotonicLogCubicSpline",
+     "value": "MonotonicLogCubicSpline"
+    },
+    {
+     "means": "Hermite",
+     "value": "Hermite"
+    },
+    {
+     "means": "CubicSpline",
+     "value": "CubicSpline"
+    },
+    {
+     "means": "MonotonicLogMixedLinearCubic",
+     "value": "MonotonicLogMixedLinearCubic"
+    },
+    {
+     "means": "KrugerLogMixedLinearCubic",
+     "value": "KrugerLogMixedLinearCubic"
+    },
+    {
+     "means": "LogMixedLinearCubicNaturalSpline",
+     "value": "LogMixedLinearCubicNaturalSpline"
+    },
+    {
+     "means": "BackwardFlat",
+     "value": "BackwardFlat"
+    },
+    {
+     "means": "NelsonSiegel",
+     "value": "NelsonSiegel"
+    },
+    {
+     "means": "Svensson",
+     "value": "Svensson"
+    },
+    {
+     "means": "ExponentialSplines",
+     "value": "ExponentialSplines"
+    }
+   ]
+  },
+  "parseYieldCurveInterpolationVariable": {
+   "source_ref": "OREData/ored/marketdata/yieldcurve.cpp:358",
+   "values": [
+    {
+     "means": "Zero",
+     "value": "Zero"
+    },
+    {
+     "means": "Discount",
+     "value": "Discount"
+    },
+    {
+     "means": "Forward",
+     "value": "Forward"
+    }
+   ]
+  }
+ },
  "schema": "curveconfig.xsd",
  "sections": {
   "BaseCorrelations": {

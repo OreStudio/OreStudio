@@ -1,0 +1,50 @@
+{
+ "InterpolationMethod": {
+  "link": "parseYieldCurveInterpolationMethod",
+  "reason": "The yield curve config stores the method as text and ORE applies this parser to the accessor in OREData/ored/marketdata/yieldcurve.cpp, so the parser is the one ORE reads this leaf with, though it is not applied in the config parser.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:258",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "InterpolationVariable": {
+  "link": "parseYieldCurveInterpolationVariable",
+  "reason": "Stored as text by the yield curve config and parsed by this function beside the interpolation method, in the same header.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:260",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "ExtrapolationMethod": {
+  "link": "parseYieldCurveExtrapolationMethod",
+  "reason": "Stored as text by the yield curve config; ORE parses the accessor, so this is the parser for the leaf.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/marketdata/yieldcurve.hpp:259",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "TimeInterpolation": {
+  "link": "parseFxVolatilityTimeInterpolation",
+  "reason": "The FX volatility config reads TimeInterpolation as one of the time-interpolation codes, and this is the parser that accepts them.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/utilities/parsers.cpp",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "Compounding": {
+  "link": "parseCompounding",
+  "reason": "The convolution and default curve configs read a compounding rule, which this parser accepts.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/utilities/parsers.cpp",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "Frequency": {
+  "link": "parseFrequency",
+  "reason": "A frequency the ORE parsers accept, used by the default curve and security configs.",
+  "source": "ore_code",
+  "source_ref": "OREData/ored/utilities/parsers.cpp",
+  "curator": "marco",
+  "date": "2026-10-27"
+ }
+}

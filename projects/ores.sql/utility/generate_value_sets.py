@@ -32,6 +32,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import convention_value_sets  # noqa: E402
+import curve_value_sets  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 GUIDE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
@@ -270,6 +271,31 @@ def add_conventions(data):
     return problems
 
 
+def add_curves(data):
+    """Add the curve configuration leaves' sets after the convention ones.
+
+    A curve leaf's set comes from a catalogue, a curated parser link, or its
+    type, so a code or a link that already exists is a clash, not an override.
+    """
+    extra = curve_value_sets.data()
+    problems = [f"{code}: a curve set clashes with an existing set"
+                for code in extra["sets"] if code in data["sets"]]
+    problems += [f"{key}: names {code}, which no set holds"
+                 for key, code in extra["links"].items()
+                 if code not in extra["sets"] and code not in data["sets"]]
+    problems += [f"{key}: a curve link clashes with an existing link"
+                 for key in extra["links"] if key in data["links"]]
+    registry = data["catalogues"]
+    if isinstance(registry, list):
+        registry = {entry["code"]: entry for entry in registry}
+    registry.update(extra["catalogues"])
+    data["catalogues"] = registry
+    for code, entry in extra["sets"].items():
+        data["sets"].setdefault(code, entry)
+    data["links"].update(extra["links"])
+    return problems
+
+
 def render(data):
     catalogues, sets, values, links = rows_of(data)
     return (
@@ -308,6 +334,10 @@ def main():
     data = load()
     problems = resolve(data)
     problems = problems + add_conventions(data)
+    problems = problems + add_curves(data)
+    text = curve_value_sets.text_of()
+    print(f"{len(text)} curve configuration leaves take text, for example "
+          f"{', '.join(text[:3])}.", file=sys.stderr)
     problems = problems + validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)

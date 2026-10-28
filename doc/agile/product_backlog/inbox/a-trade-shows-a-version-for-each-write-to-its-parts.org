@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 3B00AE75-CAF6-46E5-BD05-0FAAD17C1FAF
+:END:
+#+title: A trade shows a version for every write to its parts
+#+description: The trade anchor is immutable but its versions carry the economic digest, so every write to a part adds an entry the timeline cannot hide.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A trade's timeline shows one entry for every write to one of its parts. The trade
+row is immutable and written once, so those entries are version bumps the store
+makes to partition the trade's windows: their comment says which child bumped
+them, and their only changed field is the economic digest, a hash folded from the
+parts.
+
+Draw the trade's story from what a person can act on: the booking, the
+identifiers, the party roles, the state, the membership, each named. Either leave
+the digest out of the fields a history compares, or leave the trade's own bumped
+versions out of the stream and state that the trade is built from its parts.
+
+* Why
+
+The History tab of a trade reads as a list of bumps, each saying *Economic
+Digest* changed, beside the part entry that says what actually happened. The
+digest is derived, so the bump is not a fact about the trade a reader needs. The
+standard's rule for a composite record, ES-HIST-24, leaves out versions that
+changed none of the fields the record carries; the digest makes those versions
+look like changes.
+
+* References
+
+- ~projects/ores.web/packages/web/src/trading/TradePage.tsx~ — the trade's History
+  tab, which reads the timeline over the trade and its parts.
+- ~doc/knowledge/ui/entity_screen_specification.org~ — ES-HIST-24.
+- ~projects/ores.trading/core/src/presentation/trade_history_field_mapper.cpp~ —
+  the fields the trade's history compares.
+
+* See also
+
+- [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]]

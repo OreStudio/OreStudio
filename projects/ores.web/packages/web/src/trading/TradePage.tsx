@@ -24,6 +24,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { trades, type TradeLink, type TradePageRecord } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
@@ -548,12 +549,10 @@ export function TradePage(): ReactNode {
                 )}
                 {tabs.tab === 'links' && <LinksTab record={record} />}
                 {tabs.tab === 'history' && (
-                    <PartTable
-                        caption={t('trading.page.history')}
-                        columns={[t('trading.fields.version')]}
-                        rows={record.history.map((entry) => [String(entry.version)])}
-                        empty={t('trading.page.noHistory')}
-                    />
+                    // The application's own panel: the timeline, the fields that
+                    // changed at each version, who changed them and why. A table
+                    // of version numbers says nothing a person can act on.
+                    <HistoryPanel entityType="ores.trading.trade" entityId={trade.id} />
                 )}
             </div>
         </ScreenFrame>

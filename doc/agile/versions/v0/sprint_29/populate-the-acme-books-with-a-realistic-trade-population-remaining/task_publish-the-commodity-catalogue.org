@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The commodity catalogue publishes during provisioning, so a population that name
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -84,3 +84,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The commodity catalogue publishes during provisioning, and a provisioning run
+over the ACME tenant now leaves six commodities in the catalogue it books in.
+The equity catalogue publishes beside it, eleven underlyings, which is the
+check that the mechanism is the same one.
+
+Two registrations were missing, and only two: the publish operation itself
+already existed, because the commodity catalogue was written when publish
+operations were hand written, and what it never had was the artefact type that
+names the function and the bundle membership that makes the profile reach it.
+
+| Registration | Before | After |
+|--------------+--------+-------|
+| publish operation | present | present |
+| artefact type | absent | =commodities= |
+| bundle membership | absent | =base= |
+
+The lesson from the equity family held: a seeded catalogue is not a published
+catalogue, and the three registrations are what publish it. It is worth saying
+that this gap existed while the commodity population task was recorded as done,
+because that task was proved in code and never through a provisioning run. The
+proof that matters is the run.

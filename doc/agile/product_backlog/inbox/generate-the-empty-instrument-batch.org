@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 96A10C0F-E3F8-48E9-9538-68606EE9F999
+:END:
+#+title: Generate the empty instrument batch from the protocol
+#+description: A booking failed for everyone on main because the BFF's empty instrument batch is hand-written and main added two families to the batch. The wire refuses a request that omits a declared member, so every family must be named twice: once where it is declared and once in a list nobody regenerates.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* What happened
+
+Booking a trade was refused by the trading service as a bad request:
+
+#+begin_example
+Failed to decode trading.v1.ops.book_trade: Failed to parse field 'instruments'
+#+end_example
+
+The request never reached the booking rule. Main had added two families to the
+instrument batch — =equity_basket_constituents= and =equity_swap_periods= — and
+the BFF's =emptyBatch()=, which states every array a bond booking does not fill,
+did not name them. The wire refuses a request that omits a declared member, so
+every booking, of every family, failed with a 502 the screen could only report as
+"the server refused the request".
+
+Nothing failed to compile. The C++ declared the arrays, the TypeScript had a list,
+and the two drifted silently.
+
+* Why it is a class and not an incident
+
+Three faults of one shape reached review today:
+
+| Where | The declaration | The hand-written mirror |
+|-------+-----------------+-------------------------|
+| Booking | =instrument_batch= in C++ | =emptyBatch()= in the BFF |
+| Handler permissions | a handler's permission check | the permission seed |
+| Code lists | a modelled entity | the tenant's copied lists |
+
+Each was found by running something and reading a refusal, never by a build. The
+instrument batch is the worst of the three, because it is not a seed that one
+environment misses: it is every booking, in every environment, at once.
+
+* What is asked for
+
+Generate the empty batch from the protocol, as =completeListRequest= is already
+generated from the list descriptors: one source of truth for the members a
+request must carry, and an empty value per member type. Then a family added to
+the batch is a build change and not a runtime refusal, and nobody has to remember
+a list that lives in another language.
+
+The same lever, if it works here, is the pattern for the other two rows: a
+generated seed for the permission codes a handler checks, and a generated
+comparison for the code lists a tenant copies.
+
+* What would settle it
+
+Whether the TypeScript can be generated from the C++ declarations at build time —
+the codegen already reads models for both languages, so the question is whether
+the wire's field list is exposed to it — or whether a check that compares the two
+lists is the affordable half-step, failing the build when they differ.

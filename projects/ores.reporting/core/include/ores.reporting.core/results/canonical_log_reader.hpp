@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_RESULTS_CANONICAL_LOG_READER_HPP
 
 #include "ores.reporting.core/export.hpp"
-#include "ores.reporting.core/service/engine_error_log.hpp"
+#include "ores.reporting.core/service/engine_log_error.hpp"
 #include <string>
 #include <string_view>
 #include <vector>

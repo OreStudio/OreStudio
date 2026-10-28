@@ -168,6 +168,11 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         std::vector<std::string> unknown_scopes;
         rows.reserve(errors.size() + unknown_scopes.capacity());
         for (const auto& error : errors) {
+            // The canonical rows hold every line the run's engine wrote. The run
+            // keeps the ones that say something went wrong, which is what the
+            // screen shows; a notice is not a reason.
+            if (error.severity != "error" && error.severity != "warning")
+                continue;
             if (!is_known_scope(error.scope)) {
                 // The scope vocabulary has to grow before these rows can be
                 // stored, but that is no reason to lose the ones it does name.
@@ -217,6 +222,11 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                                       scope,
                                       std::nullopt,
                                       {}));
+
+        // A run whose log says nothing went wrong records nothing, and returns
+        // before the write rather than asking the table to take no rows.
+        if (rows.empty())
+            return {};
 
         // The engine log can state the same reason more than once in one read,
         // and the unique indexes make those rows one row. Collapsing the

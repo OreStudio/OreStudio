@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.core/export.hpp"
-#include "ores.reporting.core/service/engine_error_log.hpp"
+#include "ores.reporting.core/service/engine_log_error.hpp"
 #include <string>
 #include <vector>
 

@@ -30,7 +30,6 @@
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <cstddef>
 #include <optional>
-#include <span>
 #include <string>
 
 namespace ores::reporting::messaging {
@@ -94,18 +93,6 @@ private:
     void mark_instance_failed(const std::string& tenant_id,
                               const std::string& instance_id,
                               const std::string& error_message);
-
-    /**
-     * @brief Records the errors the run's own output carries.
-     *
-     * The engine writes its errors into the output the run fetched, so the
-     * account of them arrives with the results and is stored against the run
-     * once they are. A read that finds nothing, or finds what it cannot read,
-     * is logged and not fatal: the run still has a report.
-     */
-    void record_engine_errors(const std::string& tenant_id,
-                              const std::string& instance_id,
-                              std::span<const std::byte> archive);
 
     /**
      * @brief Records the log rows the node wrote for one compute result.

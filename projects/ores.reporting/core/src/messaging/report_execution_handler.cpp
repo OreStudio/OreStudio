@@ -34,7 +34,7 @@
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/results/canonical_log_reader.hpp"
 #include "ores.reporting.core/results/canonical_reader.hpp"
-#include "ores.reporting.core/service/engine_error_log.hpp"
+#include "ores.reporting.core/service/engine_log_error.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
@@ -556,21 +556,22 @@ void report_execution_handler::record_run_log(const std::string& tenant_id,
         std::string err;
         const auto token = run_token(tenant_id, report_instance_id, err);
         if (token.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
-                                      << " were not read: " << err;
+            BOOST_LOG_SEV(lg(), warn)
+                << "The log rows of result " << result_id << " were not read: " << err;
             return;
         }
         const auto uri = ores::compute::net::compute_storage::logs_path(result_id);
         std::string bucket;
         std::string key;
         if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
-            BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
-                                      << " name no readable location: " << uri;
+            BOOST_LOG_SEV(lg(), warn)
+                << "The log rows of result " << result_id << " name no readable location: " << uri;
             return;
         }
         ores::storage::net::storage_transfer transfer(http_base_url_, token);
         const auto body = transfer.download_blob(bucket, key);
-        const auto read = results::read_canonical_log_csv(std::string_view(body.data(), body.size()));
+        const auto read =
+            results::read_canonical_log_csv(std::string_view(body.data(), body.size()));
         if (!read.refusals.empty()) {
             std::string reasons;
             for (const auto& refusal : read.refusals) {
@@ -578,8 +579,8 @@ void report_execution_handler::record_run_log(const std::string& tenant_id,
                     reasons += " ";
                 reasons += refusal;
             }
-            BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
-                                      << " were refused: " << reasons;
+            BOOST_LOG_SEV(lg(), warn)
+                << "The log rows of result " << result_id << " were refused: " << reasons;
             return;
         }
         if (read.rows.empty()) {
@@ -597,37 +598,6 @@ void report_execution_handler::record_run_log(const std::string& tenant_id,
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
                                   << " were not read: " << e.what();
-    }
-}
-
-void report_execution_handler::record_engine_errors(const std::string& tenant_id,
-                                                    const std::string& instance_id,
-                                                    std::span<const std::byte> archive) {
-    try {
-        const auto read = service::read_engine_errors_from_archive(archive);
-        if (!read.ok()) {
-            BOOST_LOG_SEV(lg(), warn) << "The errors of report instance " << instance_id
-                                      << " were not read: " << read.error;
-            return;
-        }
-        if (read.errors.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "The output of report instance " << instance_id
-                                      << " was read and stated no errors.";
-            return;
-        }
-
-        service::report_error_recorder recorder(
-            ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
-        const auto failure = recorder.record_engine_errors(instance_id, read.errors);
-        if (!failure.empty()) {
-            BOOST_LOG_SEV(lg(), error) << failure;
-            return;
-        }
-        BOOST_LOG_SEV(lg(), info) << "Recorded " << read.errors.size() << " engine error(s) for "
-                                  << "report instance " << instance_id;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Recording the errors of report instance " << instance_id << " failed: " << e.what();
     }
 }
 
@@ -709,45 +679,8 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                     // The node uploads the log it wrote even when the engine
                     // failed, so the run's account of the failure is its own rows
                     // rather than one sentence.
-                    record_run_log(req.tenant_id,
-                                   req.report_instance_id,
-                                   boost::uuids::to_string(one.id));
-                    // A failed job uploads what the engine wrote, so its own
-                    // log is readable here. Recording it per reason is what
-                    // makes the errors screen a list of causes rather than one
-                    // sentence about the run.
-                    std::string failed_bucket;
-                    std::string failed_key;
-                    if (one.output_uri.empty() ||
-                        !ores::storage::net::storage_paths::split_object_path(
-                            one.output_uri, failed_bucket, failed_key)) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "The failed result names no readable output, so its own errors were "
-                               "not recorded: "
-                            << one.output_uri;
-                    } else {
-                        try {
-                            const auto token =
-                                run_token(req.tenant_id, req.report_instance_id, err);
-                            if (token.empty()) {
-                                BOOST_LOG_SEV(lg(), warn)
-                                    << "The log of the failed result was not read, no run token: "
-                                    << err;
-                            } else {
-                                ores::storage::net::storage_transfer failed(http_base_url_, token);
-                                const auto body = failed.download_blob(failed_bucket, failed_key);
-                                record_engine_errors(
-                                    req.tenant_id,
-                                    req.report_instance_id,
-                                    std::as_bytes(std::span(body.data(), body.size())));
-                            }
-                        } catch (const std::exception& read) {
-                            // The engine's sentence is what the run must report.
-                            // Losing the log costs the reasons, not the failure.
-                            BOOST_LOG_SEV(lg(), warn)
-                                << "The log of the failed result was not read: " << read.what();
-                        }
-                    }
+                    record_run_log(
+                        req.tenant_id, req.report_instance_id, boost::uuids::to_string(one.id));
                     refuse(std::format("The run's compute job failed with outcome {}: {}",
                                        one.outcome,
                                        one.error_message.empty() ? "(no message)" :
@@ -797,14 +730,6 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
         }
         instance->output_storage_key = key;
         inst_svc.save_instance(*instance);
-
-        // The errors the run produced belong to the run, and the account of them
-        // is the archive that has just been fetched: the engine wrote its own
-        // log into that output. Reading it here is what makes a run that failed
-        // its analytics distinguishable from one that did not.
-        record_engine_errors(req.tenant_id,
-                             req.report_instance_id,
-                             std::as_bytes(std::span(body.data(), body.size())));
 
         collect_compute_results_result result;
         result.success = true;

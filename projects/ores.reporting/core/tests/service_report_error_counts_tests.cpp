@@ -149,3 +149,32 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
     CHECK(response.counts[0].errors == 3);
     CHECK(response.counts[0].warnings == 2);
 }
+
+TEST_CASE("a log line that is neither an error nor a warning is not a problem",
+          "[service][database]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = service_report_error_counts_write_test_party_and_scope_context(h, gen);
+    const auto instance = service_report_error_counts_write_instance(ctx, h.db_user(), gen);
+
+    // The canonical rows hold every line the engine wrote. Only the two that say
+    // something went wrong belong to the run's problems.
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    std::vector<ores::reporting::service::engine_log_error> lines{
+        {.severity = "notice", .scope = "Report", .message = "building the portfolio"},
+        {.severity = "info", .scope = "Report", .message = "done"},
+        {.severity = "error", .scope = "Trade", .message = "did not price"}};
+    REQUIRE(recorder.record_engine_errors(instance, lines).empty());
+
+    ores::reporting::service::report_error_event_service service(ctx);
+    ores::reporting::messaging::get_report_error_counts_request request;
+    request.report_instance_ids =
+        std::vector<boost::uuids::uuid>{boost::uuids::string_generator()(instance)};
+    const auto response = service.get_report_error_counts(request);
+
+    REQUIRE(response.counts.size() == 1);
+    CHECK(response.counts[0].errors == 1);
+    CHECK(response.counts[0].warnings == 0);
+}

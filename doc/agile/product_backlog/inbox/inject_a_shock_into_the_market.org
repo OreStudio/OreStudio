@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: B5A025B8-D67D-4394-A011-976455D35985
+:END:
+#+title: Inject a shock into the market
+#+description: A system verb that adds a burst of heat at once, as if a number of ticks had just arrived, recorded in the trace, so a tester can watch a panic spread and fade without waiting for the chain or pinning the state.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:regime:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A system verb that raises the shared heat at once by a stated amount, or by a
+stated number of jumps, applied at the loop's now and recorded in the trace as
+its own kind. Every feed's pace rises by the heat's share and decays at the
+heat's own rate, so the shock spreads and fades by the same law a real burst
+does. The Market screen offers it beside the force switch.
+
+* Why
+
+Gemini's review drew *+25 ticks* and *+100 ticks shock* buttons. Today a tester
+who wants to see a panic either pins the market active, which holds a level
+rather than a spike, or waits for a burst. A shock is the impulse response of
+the market: the one input that shows what jump and decay mean.
+
+It is cheap: the heat is one number the loop already owns, and a command that
+adds to it is the same shape as the pin and the settings. It must stay inside
+the stability rule, because a shock adds heat but does not change the loop
+gain.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:51E4851F-5F8C-4143-A034-E3E1A2F9C7CE][Run the market, prototype]]
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

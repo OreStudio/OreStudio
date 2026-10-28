@@ -25,4 +25,5 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * See also
 
--
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — built options 1 and 2.
+- Option 3 is now its own capture, =let_one_feeds_ticks_excite_anothers=.

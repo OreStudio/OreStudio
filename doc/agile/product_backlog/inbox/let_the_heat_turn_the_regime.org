@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: A86E0A3E-DC69-4406-B383-3B1146BD664B
+:END:
+#+title: Let the heat turn the regime
+#+description: Make the chain's transition rates depend on the heat, and consider a third, stressed state, so a market that runs hot is likelier to turn active and stay there. Today the chain is exogenous: it turns on its own, and the heat only adds to the pace.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:regime:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the chain's two transition rates depend on the heat, for example
+=wake = wake_0 * exp(k * C)=, so a market that runs hot is likelier to turn active
+and slower to calm. Consider a third, stressed state above active, entered only
+from active, with its own multiplier and spell. Keep the mean pace at one over
+the long run, which now depends on the heat's own mean.
+
+* Why
+
+Gemini's review drew heat thresholds that switch the state, and a third
+*volatile burst* state. A threshold is the wrong mechanism, because a state that
+flips at a number flaps around it. The need behind it is real: today the chain
+is exogenous, so a burst of activity can never cause a calm market to turn,
+and a panic cannot feed on itself through the regime.
+
+It changes the market's model, so it needs the same care as the tails: a
+stated rule, a test that the long-run pace still holds, and a note in the
+market volatility channel page.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]]
+- [[id:4A00CBE5-E42B-46A8-A09B-FD698A09E4BB][Make activity and volatility excite each other]]
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

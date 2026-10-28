@@ -8,7 +8,7 @@
 #+filetags: :analytics:ore:import:one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/import-a-pricing-engine-configuration-as-ore-xml
-#+pr:
+#+pr: 3999
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -283,7 +283,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3999][#3999]] | [ore] Import a pricing engine configuration as ORE XML |
 
 * Review
 

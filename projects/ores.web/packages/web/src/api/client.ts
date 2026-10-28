@@ -758,6 +758,7 @@ const officialSeriesSchema = z.object({
 
 const officialProviderSchema = z.object({
     code: z.string(),
+    version: z.number(),
     name: z.string(),
     description: z.string(),
     terms_url: z.string(),
@@ -2284,10 +2285,11 @@ export const api = {
         ).fixings;
     },
 
-    /** Accepts a provider's terms as they stand; the service records who and when. */
-    async acceptProviderTerms(code: string): Promise<void> {
+    /** Accepts a provider's terms at the version the person read; the service records who and when. */
+    async acceptProviderTerms(code: string, version: number): Promise<void> {
         await request(`/api/marketdata/official/${encodeURIComponent(code)}/accept-terms`, {
             method: 'POST',
+            body: JSON.stringify({ version }),
         });
     },
 

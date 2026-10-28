@@ -25,6 +25,7 @@ import { currenciesOf, pairValues, planPair, seriesOf } from './officialRates.js
 function provider(code: string, pivot: string, quotes: readonly string[]): OfficialProvider {
     return {
         code,
+        version: 3,
         name: code.toUpperCase(),
         description: '',
         terms_url: `https://${code}.example/terms`,

@@ -35,6 +35,7 @@ function provider(
 ): OfficialProvider {
     return {
         code,
+        version: 3,
         name,
         description: '',
         terms_url: `https://${code}.example/terms`,

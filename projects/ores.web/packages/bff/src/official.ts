@@ -35,6 +35,7 @@ import type { LiveSession } from './sessions.js';
  */
 
 const officialProviderSchema = z.looseObject({
+    version: z.number().int().default(0),
     code: z.string(),
     name: z.string(),
     kind: z.string().default(''),
@@ -139,6 +140,7 @@ export function registerOfficialRatesRoutes(
             providers: providers
                 .map((provider) => ({
                     code: provider.code,
+                    version: provider.version,
                     name: provider.name,
                     description: provider.description,
                     terms_url: provider.terms_url,
@@ -197,13 +199,17 @@ export function registerOfficialRatesRoutes(
         return { fixings: bySeries };
     });
 
-    /** Accepts a provider's terms as they stand; the service records who and when. */
+    /**
+     * Accepts a provider's terms at the version the person read; the service refuses when
+     * the provider changed since, and records who and when.
+     */
     server.post('/api/marketdata/official/:code/accept-terms', async (request) => {
         const session = requireSession(request);
         const { code } = input(z.object({ code: z.string().min(1) }), request.params);
+        const { version } = input(z.object({ version: z.number().int().min(1) }), request.body);
         const reply = await session.client.callAuthenticated(
             termsSubjects.accept_provider_terms_request,
-            { provider_code: code },
+            { provider_code: code, provider_version: version },
             z.looseObject({
                 success: z.boolean().default(false),
                 message: z.string().default(''),

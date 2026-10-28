@@ -228,4 +228,53 @@ describe('the official rates routes', () => {
         const body = calls[0]?.body as { filter: { series_id_one_of: string[] } };
         expect(body.filter.series_id_one_of).toEqual([ECB_USD, ECB_GBP]);
     });
+
+    it('accepts the terms at the version the person read', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.accept_provider_terms': {
+                success: true,
+                message: 'Accepted',
+                accepted_by: 'super_admin',
+                accepted_at: '2026-10-28 15:00:00Z',
+            },
+        });
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/official/ecb/accept-terms',
+            payload: { version: 3 },
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json().accepted_by).toBe('super_admin');
+        expect(calls[0]?.body).toEqual({ provider_code: 'ecb', provider_version: 3 });
+    });
+
+    it('refuses an acceptance that names no version before it asks the service', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/official/ecb/accept-terms',
+            payload: {},
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('reports terms that changed after they were read as a refusal', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.accept_provider_terms': {
+                success: false,
+                message: "The provider 'ecb' changed after its terms were read. Read them again.",
+            },
+        });
+        const response = await server.inject({
+            method: 'POST',
+            url: '/api/marketdata/official/ecb/accept-terms',
+            payload: { version: 2 },
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.json().message).toContain('Read them again');
+    });
 });

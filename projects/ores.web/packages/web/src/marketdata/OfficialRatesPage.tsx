@@ -367,8 +367,9 @@ export function OfficialRatesPage(): ReactNode {
     const providers = useQuery({ queryKey: ['official-rates'], queryFn: api.officialRates });
     const [chosen, setChosen] = useState<string | undefined>(undefined);
     const accept = useMutation({
-        mutationFn: (code: string) => api.acceptProviderTerms(code),
-        onSuccess: () => queries.invalidateQueries({ queryKey: ['official-rates'] }),
+        mutationFn: (provider: OfficialProvider) =>
+            api.acceptProviderTerms(provider.code, provider.version),
+        onSettled: () => queries.invalidateQueries({ queryKey: ['official-rates'] }),
     });
     const load = { dataUpdatedAt: providers.dataUpdatedAt, isFetching: providers.isFetching };
     const news = useEntityChanges([{ component: 'marketdata', entity: 'providers' }], load);
@@ -483,7 +484,7 @@ export function OfficialRatesPage(): ReactNode {
                                             provider={p}
                                             mayAccept={mayAccept}
                                             pending={accept.isPending}
-                                            onAccept={() => accept.mutate(p.code)}
+                                            onAccept={() => accept.mutate(p)}
                                         />
                                     </td>
                                     <td className="py-2 align-top font-mono text-xs">

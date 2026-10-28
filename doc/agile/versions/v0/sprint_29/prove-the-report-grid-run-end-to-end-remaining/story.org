@@ -63,6 +63,7 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:7D867B23-569E-47FC-A3E1-003F94B787F0][Post-process a run's results into rows]] | BACKLOG | | | A post-processing step after retrieval, one reader per analytic, rows written in one transaction per run, and the run stating what was written. |
 | [[id:E2B1C2B1-3E73-4B85-B42F-C4392750DDAE][Marshal the engine's output into result rows]] | BACKLOG | | | The compute wrapper writes one canonical result file from the engine's own files, a projection of their headings rather than a parse, before it uploads. |
 | [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] | DONE | 2026-10-27 | 2026-10-27 | A report definition runs on demand from its own page, the run is followed to the grid and its jobs, and the results the screen draws are the rows the post-processor loaded rather than the archive it used to parse. |
+| [[id:7904CF60-DE60-4E1B-8A29-7271D0F2DFD3][Complete the result row's generation]] | STARTED | 2026-10-28 | | The result row entity's generated layers were never committed, and its repository was hand-edited to add read_by_run. Regeneration now wins: the layers are committed, the run read goes through the generated filter, and the read is paged and permission-checked. |
 
 * Decisions
 

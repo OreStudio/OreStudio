@@ -197,15 +197,6 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
-    /**
-     * @brief Reads the rows one run produced, in the order the run wrote them.
-     *
-     * A run's rows are read together or not at all, so the filter is the run
-     * rather than a page of the table. The caller states no order: the screen
-     * sorts what it draws, and the store's own order is by the subject the row is
-     * about.
-     */
-    std::vector<domain::report_result_row> read_by_run(context ctx, const std::string& run_id);
 
 private:
     /**

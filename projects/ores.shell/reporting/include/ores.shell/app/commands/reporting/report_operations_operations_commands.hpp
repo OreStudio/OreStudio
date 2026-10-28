@@ -146,6 +146,13 @@ public:
                                                 const std::vector<std::string>& args);
 
     /**
+     * @brief post-process-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+     */
+    static void process_post_process_results(std::ostream& out,
+                                             ores::nats::service::nats_client& session,
+                                             const std::vector<std::string>& args);
+
+    /**
      * @brief finalise-report <report_instance_id> <tenant_id> <correlation_id>
      */
     static void process_finalise_report(std::ostream& out,

@@ -52,6 +52,7 @@ set(files
     "messaging/report_error_scope_event_registrar.cpp"
     "messaging/report_instance_event_registrar.cpp"
     "messaging/report_instance_kind_event_registrar.cpp"
+    "messaging/report_result_row_event_registrar.cpp"
     "messaging/report_trigger_type_event_registrar.cpp"
     "messaging/report_type_event_registrar.cpp"
 )
@@ -91,6 +92,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_error_scope_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_instance_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_instance_kind_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_result_row_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_trigger_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/ores.reporting.service.hpp"

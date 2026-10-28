@@ -243,6 +243,27 @@ It is addressed at =reporting.v1.ops.collect_compute_results=.
 report_operations collect-compute-results __none__ __none__ __none__ __none__
 #+end_src
 
+** =post-process-results=
+:PROPERTIES:
+:ID: 47F2531E-AE6C-5CFA-B451-0B9BE73757BC
+:END:
+
+Sends =post_process_results_request= and prints =post_process_results_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =batch_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations post-process-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
+#+end_example
+
+It is addressed at =reporting.v1.ops.post_process_results=.
+
+#+name: report_operations-post-process-results
+#+begin_src ores-shell :tangle report_operations-post-process-results.ores :exports none
+report_operations post-process-results __none__ __none__ __none__ __none__
+#+end_src
+
 ** =finalise-report=
 :PROPERTIES:
 :ID: A8B1B9DE-7361-55BC-B2C5-D1FC0462C75E

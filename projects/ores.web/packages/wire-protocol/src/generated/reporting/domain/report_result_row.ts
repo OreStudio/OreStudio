@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 /**
- * The row wire shape.
+ * The report result row wire shape.
  *
  * Field names are the C++ member names, because they are the keys rfl::json
  * writes. Renaming them breaks the wire silently, so they are not renamed.

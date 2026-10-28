@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: EFD4F97A-2CF0-498D-A1C5-8415B0F89CEE
+:END:
+#+title: Workflow recovery fails on test tenants left by ctest
+#+description: A fleet started on a database the full ctest run used logs a recovery error for every open workflow instance of an inactive test tenant, and a step-deadline error for every test workflow; a clean database logs none.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:testing:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Starting the fleet on a database that the full ctest run has used logs two
+kinds of error from =ores.workflow.service=. On startup the workflow engine
+recovers every open instance; for an instance of a test tenant that the tests
+deactivated, writing the step fails in the insert trigger with "Invalid or
+inactive tenant_id", and the engine logs "Recovery failed for instance".
+Two minutes later every test workflow whose step publishes on
+=test.workflow.engine.step= logs "Step outlived its deadline", because no
+service answers that subject. On 2026-10-28, on the branch of PR #3994, this
+was 104 ERROR lines within a minute; a fleet started on a freshly recreated
+database logged none.
+
+Decide which side owns it: the workflow tests leave instances open when they
+finish, or the engine should not recover, or should close, the instances of
+a tenant that is no longer active. Probably both.
+
+* Why
+
+Developers run ctest and then start the fleet on the same database, so these
+errors appear in normal work. A journal with a hundred expected errors hides
+a real one, and a check that counts ERROR lines after a start cannot tell
+them apart.
+
+* References
+
+- PR #3994 review: https://github.com/OreStudio/OreStudio/pull/3994
+
+* See also
+
+-

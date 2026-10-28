@@ -134,7 +134,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Valgrind libpq rule names sqlgen; check its frames still match | build/valgrind/custom.supp | Accept | Wording now names pq::pool. The rule pins PQconnectdb, which pq::connection still calls, so it still matches. |
+| 2 | Docstring lists sqlgen as a third-party example | build/scripts/check_boost_dependencies.py | Accept | Names libpq instead. |
+| 3 | Windows libpq fix-up assumes every user goes through ores.database | CMakeLists.txt | Decline | Only ores.database links PostgreSQL::PostgreSQL; the fix-up sits on the imported target, so any later direct user inherits it too. |
+| 4 | Unconditional find_package(PostgreSQL) needs libpq documented for non-vcpkg builds | CMakeLists.txt | Decline | vcpkg.json supplies libpq; with ORES_VCPKG_ENABLED=OFF the configure returns at line 329, before any find_package, so doc-only builds are unaffected. |
+| 5 | Track the workflow recovery errors | — | Accept | Capture: workflow_recovery_fails_on_test_tenants_left_by_ctest. |
+| 6 | Is the open-policy test bounded? | projects/ores.database/tests/pq_layer_tests.cpp | No change | Port 1 on localhost refuses at once; three attempts with waits of 1 s and 2 s, about 3 s; the one-attempt case fails at once. |
+| 7 | (found while syncing) main's new ores.http.client links sqlgen::sqlgen | projects/ores.http/client/src/CMakeLists.txt | Fix | Generated on main from the old template; link removed. |
 
 * Result
 

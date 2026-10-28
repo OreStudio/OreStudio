@@ -188,6 +188,14 @@ and a report would erase the reports before it.
 :entity_plural_words:   report result rows
 :END:
 
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
 ** Table display
 
 | column       | header       |

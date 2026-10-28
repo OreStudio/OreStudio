@@ -104,7 +104,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Recording the log per result keeps only the first result's errors, because the recorder writes a run's account once | report_execution_handler.cpp | Accepted | Every result's rows are gathered and written in one call; the failure path passes its single result the same way. |
+| 2 | The write sat at the end of post-processing, so a run whose rows were refused recorded nothing | report_execution_handler.cpp | Accepted | The write moved before the rows are loaded; the account no longer depends on the rows landing. |
+| 3 | The canonical rows carried no detail, so every stored row lost the exception the old reader kept | engine_log.cpp, canonical_log_reader.cpp | Accepted | `detail` is the tenth column, written from the event the node already holds; the reader's header and field count move to ten, with a case. |
+| 4 | A severity outside error/warning is dropped silently, and an unknown engine category reads as notice | engine_log.cpp | Accepted | An unknown category reads as an error, so a failure nobody has seen before cannot be dropped. |
+| 5 | The row type is named for errors but holds every line | engine_log_row.hpp | Accepted | Renamed to `engine_log_row`, with a doc that says which severities the service keeps. |
+| 6 | Stale prose: the recorder's class doc names the engine's structured log; the row header uses org-mode emphasis; the api model names a core type | several | Accepted | All corrected; the model no longer names another component's type. |
+| 7 | Unused `<span>` include left by the deletion, and an unused logger in the new test | several | Accepted | Both removed. |
+| 8 | The failure path in `collect_results` has no test | — | Not changed | The decision it makes is the recorder's, which is tested; the path itself needs a compute job. Recorded as a limitation. |
+| — | The review bot did not run: the same infrastructure error, at no cost, before reading anything. The round was run as two parallel reviews, standards and spec | — | — | Both reviews are in the Notes above as rows 1-8. |
 
 * Result
 
@@ -127,8 +135,16 @@ stored, so nothing is lost.
 The rows keep the table's meaning. The canonical file holds every line the
 engine wrote, so the recorder keeps the severities the screen shows -- =error=
 and =warning= -- and drops the rest, with a case that says a notice is not a
-problem. A run whose log says nothing went wrong returns before the write rather
+problem. A run's log says nothing went wrong returns before the write rather
 than asking the table to take no rows.
+
+The review of this task found that two of its claims did not hold, and both are
+fixed here. Recording per result kept only the first result's errors, because the
+recorder writes a run's account once; the rows of all results are now gathered
+into one write. And the write sat at the end of post-processing, so a run whose
+rows were refused recorded nothing; it now happens before the rows are loaded.
+The canonical rows also gained a =detail= column, without which every stored row
+lost the exception the old reader kept.
 
 The refusal paths the task asks about are the canonical reader's: a wrong
 header, a short row, a wrong field count, a quote that never closes and an empty

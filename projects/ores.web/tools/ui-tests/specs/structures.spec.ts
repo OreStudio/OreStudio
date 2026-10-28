@@ -27,7 +27,7 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     const reference = (await row.locator('td').first().innerText()).trim();
     expect(reference).toMatch(/^PKG-/);
 
-    await row.locator('td').first().click();
+    await row.locator('td').first().getByRole('link').first().click();
     // The kind titles the page and the reference sits under it, as the
     // prototype draws it: what the customer receives, then its name.
     await expect(page.getByRole('heading', { name: /^(Package|Strategy|Typed|Dynamic)$/ })).toBeVisible({
@@ -89,7 +89,7 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
     const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
     await row.waitFor({ state: 'visible', timeout: 20_000 });
     const reference = (await row.locator('td').first().innerText()).trim();
-    await row.locator('td').first().click();
+    await row.locator('td').first().getByRole('link').first().click();
 
     // The deal titles itself by kind, so the reference is the subtitle: the
     // breadcrumb is what says which deal is open.
@@ -121,7 +121,7 @@ test('two legs are taken out of a deal and grouped into another', async ({ page 
     const row = page.locator('tbody tr', { hasText: 'Package' }).first();
     await row.waitFor({ state: 'visible', timeout: 20_000 });
     const deal = (await row.locator('td').first().innerText()).trim().replace('└ ', '');
-    await row.locator('td').first().click();
+    await row.locator('td').first().getByRole('link').first().click();
     await page.getByRole('tab', { name: /^members$/i }).click();
 
     // Every tab stays mounted, so only the rows on screen are the ones counted.

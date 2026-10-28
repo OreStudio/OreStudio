@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/populate-the-equity-family
-#+pr: 3945
+#+pr: 4007
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -140,6 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4007][#4007]] | [synthetic] Book the equity family |
 | [[https://github.com/OreStudio/OreStudio/pull/3945][#3945]] | [refdata] Give the equity underlyings a catalogue |
 
 * Review

@@ -3761,6 +3761,7 @@ export const en: SourceCatalogue = {
             reason: 'Reason',
             tabsLabel: 'Structure sections',
             tab: {
+                details: 'Details',
                 members: 'Members',
                 price: 'Price',
                 history: 'History',

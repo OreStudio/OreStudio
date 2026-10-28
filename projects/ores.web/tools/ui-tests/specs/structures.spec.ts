@@ -63,7 +63,9 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     await page.getByRole('button', { name: /^add the leg$/i }).click();
 
     await expect(page.locator('tbody tr')).toHaveCount(before + 1, { timeout: 20_000 });
-    await expect(page.getByRole('link', { name: chosen })).toBeVisible({ timeout: 20_000 });
+    await expect(
+        page.locator('tbody tr').getByRole('link', { name: chosen }).first(),
+    ).toBeVisible({ timeout: 20_000 });
     await page.screenshot({ path: 'shots/structure-page.png', fullPage: true });
 
     // The record of the structure is its own tab, and adding a leg is a change
@@ -89,12 +91,13 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
     const reference = (await row.locator('td').first().innerText()).trim();
     await row.locator('td').first().click();
 
+    // The deal titles itself by kind, so the reference is the subtitle: the
+    // breadcrumb is what says which deal is open.
+    await page.getByRole('tab', { name: /^members$/i }).click();
+
     // The leg's own link leads to the trade, and the trade names the structure it
     // belongs to by the same reference the structure shows.
-    const legs = page.locator('section', {
-        has: page.getByRole('heading', { name: /legs of this structure/i }),
-    });
-    await legs.locator('tbody tr').first().getByRole('link').first().click();
+    await page.locator('tbody tr').first().getByRole('link').first().click();
     await expect(page.getByRole('heading', { name: reference })).toBeHidden({ timeout: 20_000 });
     await expect(page.getByRole('tab', { name: /details/i })).toHaveAttribute(
         'aria-selected',
@@ -104,63 +107,61 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
 });
 
 /**
- * Grouping trades into a structure, the way the prototype draws the workflow.
+ * Unlinking a leg, and grouping trades into a structure.
  *
- * The case picks two ungrouped trades, states the kind, groups them, and lands on
- * the structure the grouping made: its reference is the title and both trades are
- * legs of it, in the order they were picked.
+ * The two legs of one deal share its counterparty, so taking them out and
+ * grouping them again is a grouping with a pair that must be allowed: the case
+ * does not depend on which counterparties a population happened to draw.
  */
-test('two trades are grouped into a structure of a chosen kind', async ({ page }) => {
+test('two legs are taken out of a deal and grouped into another', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/structures/group');
+    await page.goto('/trading/structures');
 
-    // The label wraps the control and its hint, so the picker is found by the
-    // label's text rather than by a name that would carry the hint too. A
-    // hidden select elsewhere in the shell is why the first select is not it.
+    // A package of two legs: the population groups trades in pairs.
+    const row = page.locator('tbody tr', { hasText: 'Package' }).first();
+    await row.waitFor({ state: 'visible', timeout: 20_000 });
+    const deal = (await row.locator('td').first().innerText()).trim().replace('└ ', '');
+    await row.locator('td').first().click();
+    await page.getByRole('tab', { name: /^members$/i }).click();
+
+    // Every tab stays mounted, so only the rows on screen are the ones counted.
+    const rows = page.locator('tbody tr:visible');
+    await rows.first().waitFor({ state: 'visible', timeout: 20_000 });
+    const before = await rows.count();
+    const freed: string[] = [];
+    for (let index = 0; index < 2; index += 1) {
+        const link = rows.first().getByRole('link').first();
+        freed.push(((await link.innerText()) ?? '').trim());
+        await rows.first().getByRole('button', { name: /^unlink$/i }).click();
+        await expect(rows).toHaveCount(before - index - 1, { timeout: 20_000 });
+    }
+    expect(freed).toHaveLength(2);
+
+    await page.getByRole('button', { name: /^group trades$/i }).first().click();
+    await page.waitForURL(/\/trading\/structures\/group/, { timeout: 20_000 });
+
     const kind = page.getByLabel(/kind/i);
     await kind.waitFor({ state: 'visible' });
     await kind.selectOption({ index: 1 });
 
-    /*
-     * Two trades that share a counterparty, because every trade in a structure
-     * does: the page refuses a mixed pair before the server would, so picking
-     * the first two rows would prove nothing and hang.
-     */
-    const table = page.locator('section', {
-        has: page.getByRole('heading', { name: /trades no structure has grouped/i }),
-    });
-    const rows = table.locator('tbody tr');
-    await rows.first().waitFor({ state: 'visible', timeout: 20_000 });
-    const known = await rows.evaluateAll((elements) =>
-        elements.map((element) => ({
-            reference: element.querySelector('td:nth-child(2)')?.textContent?.trim() ?? '',
-            counterparty: element.querySelector('td:nth-child(4)')?.textContent?.trim() ?? '',
-        })),
-    );
-    const pair = known.find(
-        (entry, index) => known.findIndex((other) => other.counterparty === entry.counterparty) !== index,
-    );
-    expect(pair, 'the environment has two ungrouped trades for one counterparty').toBeTruthy();
-    const first = known.findIndex((entry) => entry.counterparty === pair?.counterparty);
-    const secondIndex = known.findIndex(
-        (entry, index) => index !== first && entry.counterparty === pair?.counterparty,
-    );
-    const chosen = known[first]?.reference ?? '';
-    const second = known[secondIndex]?.reference ?? '';
-    await rows.nth(first).locator('input[type="checkbox"]').check();
-    await rows.nth(secondIndex).locator('input[type="checkbox"]').check();
-
+    for (const reference of freed) {
+        const checkbox = page.getByRole('checkbox', { name: reference });
+        await checkbox.check({ timeout: 20_000 });
+    }
     await page.getByRole('button', { name: /^group the trades$/i }).click();
 
-    // The page lands on the new structure, addressed by the reference it was
-    // given when it was created.
+    // The page lands on the new deal, addressed by the reference it was given,
+    // and both freed trades are its legs.
     await expect(page).toHaveURL(/\/trading\/structures\/[A-Z]+-[0-9a-f]+$/, { timeout: 20_000 });
-    const legs = page.locator('section', {
-        has: page.getByRole('heading', { name: /legs of this structure/i }),
-    });
-    await expect(legs.getByRole('link', { name: chosen })).toBeVisible({ timeout: 20_000 });
-    await expect(legs.getByRole('link', { name: second })).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('tab', { name: /^details$/i }).click();
+    const trades = page.locator('section', { has: page.getByRole('heading', { name: /^trades$/i }) });
+    for (const reference of freed) {
+        await expect(trades.getByRole('link', { name: reference }).first()).toBeVisible({
+            timeout: 20_000,
+        });
+    }
     await page.screenshot({ path: 'shots/structure-grouped.png', fullPage: true });
+    expect(deal).not.toBe('');
 });
 
 /**
@@ -177,9 +178,19 @@ test('the structures list draws the trees with what each row holds', async ({ pa
         page.getByRole('heading', { name: /structures and packages/i, level: 1 }),
     ).toBeVisible({ timeout: 20_000 });
 
-    for (const column of ['Identifier', 'Kind', 'Template', 'Counterparty', 'Inside it', 'Confirms', 'Priced']) {
-        await expect(page.getByRole('columnheader', { name: new RegExp(`^${column}$`, 'i') })).toBeVisible();
-    }
+    // The header row is read as one line: the prototype's columns, in its order.
+    const headers = (await page.locator('thead th').allInnerTexts()).map((text) =>
+        text.trim().toUpperCase(),
+    );
+    expect(headers).toEqual([
+        'IDENTIFIER',
+        'KIND',
+        'TEMPLATE',
+        'COUNTERPARTY',
+        'INSIDE IT',
+        'CONFIRMS',
+        'PRICED',
+    ]);
 
     const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
     await row.waitFor({ state: 'visible', timeout: 20_000 });

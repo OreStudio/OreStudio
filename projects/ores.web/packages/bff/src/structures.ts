@@ -28,6 +28,8 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as bondSubject } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_kind_protocol';
+import { subjects as swapLegAmountSubjects } from '@ores/wire-protocol/generated/trading/protocol/swap_leg_amount_protocol';
+import { subjects as swapLegSubjects } from '@ores/wire-protocol/generated/trading/protocol/swap_leg_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
@@ -435,10 +437,11 @@ async function statesOf(
 /**
  * The notional each trade holds, keyed by the trade's id.
  *
- * Only the bond instrument is read: the other families are booked into their own
- * tables and no reader in this service names them yet, so a leg of another
- * family states no notional rather than a wrong one. Reading the rest is the
- * same shape repeated per family, and it belongs with the instrument screens.
+ * Two families are read, and they hold the number in different places: a bond
+ * states it on its instrument, and a rate trade states it as the amount of its
+ * first leg. The rest are not read, and a leg of one states nothing rather than a
+ * wrong number: an FX trade holds bought and sold amounts, not a notional, and
+ * the tables that would answer for the others have no reader here yet.
  */
 async function notionalsOf(
     session: LiveSession,
@@ -448,17 +451,40 @@ async function notionalsOf(
     if (tradeIds.length === 0) {
         return notionals;
     }
-    const bonds = await readAll(session, bondSubject.list_bond_instruments_request, 'bond_instruments', {
-        filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
-    });
+    const [bonds, amounts, legs] = await Promise.all([
+        readAll(session, bondSubject.list_bond_instruments_request, 'bond_instruments', {
+            filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+        }),
+        readAll(session, swapLegAmountSubjects.list_swap_leg_amounts_request, 'swap_leg_amounts', {
+            filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+        }),
+        readAll(session, swapLegSubjects.list_swap_legs_request, 'swap_legs', {
+            filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+        }),
+    ]);
     for (const entry of bonds) {
         const id = text(entry['trade_id']);
         if (id !== '') {
             notionals.set(id, {
                 notional: text(entry['notional']),
-                currency: text(entry['currency']),
+                currency: '',
             });
         }
+    }
+    // A rate trade's amount is stated per leg and per period; the first one is
+    // the trade's size, and the currency is the leg's.
+    const currencyOf = new Map(
+        legs.map((entry) => [text(entry['trade_id']), text(entry['currency'])] as const),
+    );
+    for (const entry of amounts) {
+        const id = text(entry['trade_id']);
+        if (id === '' || notionals.has(id)) {
+            continue;
+        }
+        notionals.set(id, {
+            notional: text(entry['amount']),
+            currency: currencyOf.get(id) ?? '',
+        });
     }
     return notionals;
 }

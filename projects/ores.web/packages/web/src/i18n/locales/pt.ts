@@ -672,6 +672,7 @@ const pt: SourceCatalogue = {
                 'As partes e as pessoas deste inquilino são alteradas pelos seus próprios administradores.',
             tab: {
                 details: 'Detalhes',
+                details: 'Detalhes',
                 parties: 'Partes',
                 people: 'Pessoas',
                 history: 'Histórico',

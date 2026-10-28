@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/remove-the-database-store-from-the-ore-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The ORE codec holds no database session and calls no other component's repositor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,16 @@ The ORE codec holds no database session and calls no other component's repositor
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The store held two things that do not belong together: the database import and
+export, and the layout of an ORE input directory. The layout stays and moves to
+=xml/run_package.hpp=, because an ORE package is an ORE artefact; the import and
+export go, because the live import is the service's, over NATS, and nothing but
+the store's own tests called them.
+
+=report_package_handler= is the one caller, and it used only the layout. Its
+three call sites move to the new namespace. The component's dependency block
+drops =ores.database=, =ores.analytics.core= and =ores.reporting.core=, and the
+drift check and the ore suites prove the result.
 
 * Measurements
 
@@ -62,6 +69,9 @@ task and name that file in the Command column.
 | Callers of =store::import_run= and =store::export_run= outside the codec's own database tests | 0 | =grep -rn 'store::import_run\|store::export_run' projects --include=*.cpp --include=*.hpp | grep -vc run_store_database_tests= | b8eac6b354 |
 | The compute wrapper links the codec | yes, =ores.ore.core.lib= at line 60 | =grep -n 'ores.ore.core.lib' projects/ores.compute/wrapper/src/CMakeLists.txt= | b8eac6b354 |
 | Core or service libraries =ores.reporting.api= links, which is what makes it a leaf | 0 | =grep -c 'ores\.[a-z]*\.core\.lib\|ores\.[a-z]*\.service\.lib' projects/ores.reporting/api/src/CMakeLists.txt= | b8eac6b354 |
+| ORES libraries the codec declares, after | 19 | the same command | HEAD |
+| Of those, what the removal took | =reporting.core=, =analytics.core= and =scheduler.api= | =diff= of the two lists | HEAD |
+| =ores.database= as a direct link | gone; it still arrives through =refdata.core= and the profile's =nats= and =service= | =grep -n 'ores.database' projects/ores.ore/core/src/CMakeLists.txt= | HEAD |
 
 * Notes
 

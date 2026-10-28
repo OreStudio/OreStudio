@@ -61,14 +61,11 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.analytics.api.lib
         ores.ore.api.lib
-        ores.database.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
         ores.reporting.api.lib
         ores.trading.api.lib
     PRIVATE
-        ores.analytics.core.lib
-        ores.reporting.core.lib
         ores.dq.api.lib
         ores.history.core.lib
         ores.logging.lib

@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/carry-the-curve-and-report-screens-through-the-ux-review
-#+pr:
+#+pr: 4003
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -128,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4003][#4003]] | [web] Carry the curve and report screens through the UX review |
 
 * Review
 

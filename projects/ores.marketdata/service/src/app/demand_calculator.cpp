@@ -88,6 +88,8 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
                 return s.tenant_id == route.tenant_id && s.party_id == route.party_id &&
                        s.provider_code == route.provider_code && has_a_right(s);
             });
+        // A provider the catalogue does not hold states no terms to meet; its routes still
+        // need a subscription.
         if (provider != catalogue.providers.end() && !terms::may_fetch(*provider))
             demand.refusal = "terms_not_accepted";
         else if (!subscribed)

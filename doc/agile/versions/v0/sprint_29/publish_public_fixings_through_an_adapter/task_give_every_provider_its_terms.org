@@ -86,7 +86,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Acceptance is writable by any caller of a provider write | provider_service | Defer | Settled with its only writer, the accept operation: an acceptance criterion of the first-run terms task. |
+| 2 | A route to an unknown provider skips the terms check | demand_calculator.cpp | Accept | Commented: such a provider states no terms; the subscription still applies. |
+| 3 | The digest joins its fields with a newline | provider_terms.cpp | Accept | Each field is now length-prefixed. |
+| 4 | Shell add, set and put-many take 12 positionals | provider_commands | Note | Generated; for the release notes. |
+| 5 | No demand-level test of accepted, then changed | app_demand_calculator_tests.cpp | Accept | Added. |
+| 6 | The gate cannot pass on main | local_checks | Accept | Filed as a capture. |
 
 * Result
 

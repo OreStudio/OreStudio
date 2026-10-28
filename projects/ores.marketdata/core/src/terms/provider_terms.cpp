@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/terms/provider_terms.hpp"
 #include "ores.utility/crypto/sha256.hpp"
+#include <string_view>
 #include <utility>
 
 namespace ores::marketdata::terms {
@@ -28,8 +29,18 @@ bool has_terms(const domain::provider& p) {
 }
 
 std::string terms_digest(const domain::provider& p) {
-    return utility::crypto::sha256::hex_digest(p.terms_url + '\n' + p.terms_credit + '\n' +
-                                               (p.allows_storage ? "store" : "no-store"));
+    // Each field is prefixed by its length, so no text in one field can pass for a split
+    // between two.
+    std::string input;
+    for (const std::string_view field :
+         {std::string_view(p.terms_url),
+          std::string_view(p.terms_credit),
+          std::string_view(p.allows_storage ? "store" : "no-store")}) {
+        input += std::to_string(field.size());
+        input += ':';
+        input += field;
+    }
+    return utility::crypto::sha256::hex_digest(input);
 }
 
 bool terms_accepted(const domain::provider& p) {

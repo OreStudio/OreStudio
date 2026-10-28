@@ -20,7 +20,7 @@
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
-#include "ores.ore.core/store/run_store.hpp"
+#include "ores.ore.core/xml/run_package.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
@@ -189,7 +189,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // from its owner through the owner's operation, carrying the run token.
         auto owners = service_nats_.with_delegation(run_token);
         auto run_input = ores::ore::service::messaging::export_run(owners, req.definition_id);
-        const auto places = ores::ore::store::declared_data_files(run_input);
+        const auto places = ores::ore::xml::declared_data_files(run_input);
 
         BOOST_LOG_SEV(lg(), debug) << "Downloading market data: " << req.market_data_storage_key;
         const auto market_data =
@@ -211,7 +211,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // the requested date, the run prices at the last date it does carry,
         // and says so, rather than letting the engine refuse every analytic.
         const auto document = std::ranges::find_if(run_input, [](const auto& entry) {
-            return entry.first.ends_with(std::string(ores::ore::store::run_document_file));
+            return entry.first.ends_with(std::string(ores::ore::xml::run_document_file));
         });
         const auto requested_date = document != run_input.end() ?
                                         asof_date_of(document->second).value_or("") :
@@ -320,7 +320,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // engine reads them. The documents come from their owners through the
         // owners' operations, carrying the run token, so ore never reads their
         // tables.
-        const auto input = ores::ore::store::archive_layout(run_input);
+        const auto input = ores::ore::xml::archive_layout(run_input);
         for (const auto& [path, content] : input) {
             const auto target = stage_dir / path;
             std::filesystem::create_directories(target.parent_path());

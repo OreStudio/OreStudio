@@ -37,6 +37,7 @@ Whether a provider's data may be fetched and stored is a fact on the provider, w
 
 - The provider has the terms URL, the credit text, whether storage is allowed, a credential reference, and the accepted terms version with who accepted it and when.
 - A change of terms makes a new version and clears the acceptance.
+- Values stored under earlier terms stay. When new terms withdraw permission to store, the system administrator can delete that provider's fixings, and the deletion records who did it.
 - The adapter contract refuses a demand for a provider whose terms are not accepted, and a test shows it.
 
 * Plan

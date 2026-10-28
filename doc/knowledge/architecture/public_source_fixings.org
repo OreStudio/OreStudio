@@ -57,7 +57,8 @@ needed for this: it is the pattern of every vendor.
 
 The design is generic. The catalogue is data, so a new publisher is a row and a
 set of vendor ids, not code. A fetcher is code, and one fetcher serves many
-publishers: Frankfurter alone reaches 106 providers.
+publishers: Frankfurter alone reaches about a hundred providers. The counts are
+in "Coverage at the start".
 
 ** The item is an FX fixing
 
@@ -93,6 +94,14 @@ answer, and the fixings are its first class:
 - A backfill arrives in order, oldest first, for each vendor id, so the order
   rule still holds.
 - Conflation is =none=: each daily value is kept.
+- A tick whose vendor id and vendor time are already stored is skipped, as the
+  point key already makes it, so a backfill that overlaps what is stored, after a
+  restart, adds nothing.
+- A fixing that has only a date gets the publisher's stated publication time on
+  that date, in UTC, such as 16:00 CET for the ECB. A publisher that states no
+  time gets the end of the day in UTC. The time is part of the provider's
+  catalogue entry, so every fixing of one provider is stamped the same way, and a
+  read "on or before a date" takes the fixing of that date.
 - The class has its own points table, of the same shape as the ticks, because
   "a class with a different retention needs its own table". It is kept for good.
   The volume is small: a publisher gives a few dozen rows a day.
@@ -112,7 +121,8 @@ answers its demand set, sends a heartbeat, and publishes ticks.
 - *Backfill, then daily.* On start the adapter fetches the window that the
   calibration needs for each demanded item, oldest first. After that it polls
   each publisher once a day, after its publication time, from the last day it
-  sent.
+  sent. It does not remember what it sent across a restart; the store does, and
+  skips what it already holds.
 - *HTTPS.* The only outbound HTTP client today, in =ores.storage=, takes
   =http://= alone. The adapter gets an HTTPS GET built on the Boost.Beast and
   OpenSSL that the build already links.
@@ -129,8 +139,15 @@ the first run, and again when its terms change. See the task
 [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]].
 
 The adapter never fetches for a provider whose terms are not accepted. A
-provider with no terms page of its own, 65 of the 106 that Frankfurter lists, is
-not offered until someone reads its own site and records what it says.
+provider with no terms page of its own is not offered until someone reads its own
+site and records what it says.
+
+When a provider's terms change after its values are stored, the acceptance
+clears and the adapter stops fetching it until the system administrator accepts
+again. The stored values stay, because they were taken under the terms in force
+when they were taken, and each value's provider and time say which version that
+was. If the new terms withdraw permission to store, the system administrator
+deletes that provider's fixings from the durable table, which records who did it.
 
 ** Demand
 

@@ -53,6 +53,7 @@ the provenance is what tells them apart.
 | [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Offer a synthetic collection]] | simulator author | The generators a collection owns, what it covers, and offering it by enabling it |
 | [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] | system administrator | The short-rate models and their parameters, kept as data rather than code |
 | [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] | party administrator | The providers a party takes, the source that serves each, the usage and the cost, as a record screen, the same for live and simulated sources |
+| [[id:3888BB1A-F216-46E0-92FA-6C0E6A0CD33C][Run the public sources]] | system administrator | Whether each public provider's fixings arrive, its terms, a pause, a backfill of a range, and where each feed started |
 
 * Related
 

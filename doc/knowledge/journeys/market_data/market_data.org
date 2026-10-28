@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-09
+#+updated: 2026-10-28
 
 A curve or a surface is a composite object the desk is responsible for: it is
 built from what the market sends, corrected by hand where the market is wrong
@@ -33,6 +33,8 @@ the provenance is what tells them apart.
 | Journey | Actor | Gist |
 |---------+-------+------|
 | [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] | trader, quant | The curve's identity, pillars, bootstrap and conventions |
+| [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]] | trader, quant | The recipes as one record each: list, open, add, change, copy, what each feeds, and its end |
+| [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]] | trader, quant | The recipe's own checks, the pillars the market cannot fill, and the curve they produce |
 | [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] | trader, quant | The surface's axes, quoting convention and model |
 | [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] | trader, operations | The raw quotes, and the fallbacks for the ones that fail |
 | [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] | trader | A candidate curve from the day's market |

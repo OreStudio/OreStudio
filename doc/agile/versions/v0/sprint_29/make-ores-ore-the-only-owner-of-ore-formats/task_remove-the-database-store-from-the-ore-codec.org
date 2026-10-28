@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/remove-the-database-store-from-the-ore-codec
-#+pr:
+#+pr: 3990
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3990][#3990]] | [ore] Hold the input layout without a database |
 
 * Review
 

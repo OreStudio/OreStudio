@@ -36,7 +36,7 @@ Eight columns in the trading models hold JSON blobs where the domain should hold
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] | STARTED | 2026-10-26 | | Four trading entities hold their baskets, prices, barriers and levels as JSON blobs. This replaces the basket blob with constituent rows that say what kind each constituent is and which vocabulary it belongs to, so a mixed basket is representable and a constituent can be checked against the catalogue it names. |
+| [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] | DONE | 2026-10-26 | 2026-10-27 | Four trading entities hold their baskets, prices, barriers and levels as JSON blobs. This replaces the basket blob with constituent rows that say what kind each constituent is and which vocabulary it belongs to, so a mixed basket is representable and a constituent can be checked against the catalogue it names. |
 | [[id:8A153B75-1431-40EC-BC35-FB360D5F394C][State the kind of a basket constituent]] | DONE | 2026-10-27 | 2026-10-27 | A constituent names a code but not the vocabulary that code belongs to, so a worst-of basket whose constituents are FX pairs cannot be told apart from one whose constituents are equities. This adds the kind and refuses a constituent whose code the kind's catalogue does not hold. |
 
 * Decisions

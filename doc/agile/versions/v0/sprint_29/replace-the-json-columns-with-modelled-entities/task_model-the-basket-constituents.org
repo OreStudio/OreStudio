@@ -26,11 +26,11 @@ A basket is a row per constituent, each stating its kind, its position and the c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance

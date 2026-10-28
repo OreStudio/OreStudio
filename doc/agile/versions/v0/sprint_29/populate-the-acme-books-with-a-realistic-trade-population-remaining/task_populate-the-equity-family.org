@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/populate-the-equity-family
-#+pr: 3945
+#+pr: 4007
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -26,11 +26,11 @@ ACME's books hold equity trades: total return swaps, vanilla, barrier, digital, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Paused after the catalogue. The payload and the planner wait on the basket modelling. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Resume at step 2 once a basket constituent is a row rather than a blob, because EquityWorstOfBasketSwap has no other representation. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -140,6 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4007][#4007]] | [synthetic] Book the equity family |
 | [[https://github.com/OreStudio/OreStudio/pull/3945][#3945]] | [refdata] Give the equity underlyings a catalogue |
 
 * Review
@@ -149,6 +150,65 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The family books. A provisioning run over the ACME tenant produces seventeen
+equity trades across the nine routed tables, and the worst-of basket states its
+constituents and its periods beside the swap:
+
+| Table | Trades |
+|-------+--------|
+| option | 2 |
+| asian option | 1 |
+| barrier option | 3 |
+| digital option | 2 |
+| forward | 1 |
+| swap | 2 |
+| variance swap | 1 |
+| accumulator | 3 |
+| position | 2 |
+| *total* | *17* |
+
+The basket states 2 constituents and 4 periods, which is the shape the corpus
+holds.
+
+Sixteen of the seventeen routed codes book. =EquityOutperformanceOption= does
+not, because it routes to the option table and that table's check admits
+=EquityOption= and =EquityCliquetOption= only, so no row of that type can
+satisfy it. That is a defect in the check.
+
+** What the run cost, in the order it was found
+
+Every one of these was a value the schema refuses, and every one was found by
+running rather than by reading:
+
+1. The catalogue was seeded and never published: it had no artefact type, no
+   publish operation and no bundle membership.
+2. The aggregate registrar never called the equity underlying registration, so
+   the service answered no request for the list.
+3. =underlying_kind= carried the catalogue's =index= or =share= where the
+   vocabulary is =equity=.
+4. The accumulator's =payoff_type= and =target_type= are a fixed set, and an
+   accumulator states no target where a TaRF must.
+5. A digital states an option type and a strike; a touch states a barrier and
+   neither.
+6. The forward's =quantity= is required above zero and was never set.
+7. The swap's =return_type= is =Total= or =Price=.
+8. The constituent's check read the catalogues as the writing session, and the
+   population writes as a service session that holds none, so every
+   constituent was refused. The vocabularies are market facts and are now read
+   past tenancy.
+
+** What this says about the design
+
+The catalogue was made tenant-scoped by copying the commodity precedent. The
+run shows the cost: a check that resolves a code against a catalogue only works
+when both share a tenant, and a service-origin writer has no catalogue at all.
+A vocabulary of market facts belongs to the installation, and the resolver now
+treats it that way even though the rows are published per tenant.
+
+The commodity catalogue is in the same position as the equity one was: seeded,
+never given an artefact type, never published. Any family that draws on a
+catalogue will meet this until it is fixed for all of them.
 
 * Notes
 
@@ -216,3 +276,115 @@ files, of which the hand-written ones are the shape to copy:
   source not yet identified. Inventing tickers is not an option, so a wider set
   needs a corpus or a published list to point at.
 
+** Progress after resuming, 2026-10-27
+
+Steps 2, 3 and 4 are done: the payload, the planner and the writer.
+
+- =equity_terms= states the union of the nine routed tables, with the basket
+  constituents and the periods as lists of their own row types.
+- =equity_underlying_reference= on the scope, loaded from the tenant's
+  catalogue in =trading_trade_population_writer=.
+- =equity_trade_planner= cycles the seventeen routed codes and refuses an empty
+  catalogue.
+- The writer fills one arm per table: the option table serves three codes, the
+  barrier table three, the digital table two, the accumulator two, the swap two
+  and the rest one each. The worst-of swap also states its constituents and its
+  periods.
+
+Four cases prove it: seventeen types appear in a population of seventeen, every
+slot names a catalogue underlying, a worst-of states two constituents and four
+periods, and an empty catalogue is refused. The synthetic suite passes 1,733
+assertions in 78 cases.
+
+**What step 5 needs and does not have**
+
+The profile config needs a book chartered to trade equities, and no ACME book
+is. The seeded books are intercompany loans, FX hedges, vanilla swaps, rates
+options, CDS and forwards; none is an equity book. Adding one means a new row in
+=acme_uk_books_artefact_populate.sql= with its catalogue and dataset, through
+the same pipeline the equity underlying catalogue took.
+
+Until then the family is proven in code and not in the books, and the export
+cases and the population run wait on it.
+
+** The population run, and the two things it found
+
+The run is the proof that matters, and it found two gaps in what came before.
+
+*1. The catalogue's handlers were never registered.* =equity_underlying_registrar=
+exists and =registrar.cpp= declares its function, and nothing called it, so the
+service answered no request for the list:
+
+  generate_trades: failed — no service is handling subject
+  'refdata.v1.equity_underlyings.list'
+
+=registrar.cpp= is hand maintained, which is why the aggregate drifted from the
+entity it was meant to serve. With the call in place the error moves on to the
+next gap, which is how a wiring fix should behave.
+
+*2. The catalogue is seeded but never published.* The run now fails on the
+planner's own refusal:
+
+  generate_trades: failed — The tenant holds no equity underlying, so no
+  equity trade can name one. Publish the equity underlying catalogue first.
+
+The seed fills the data quality artefact table and the publish function works
+when called by hand; the =publish_bundle= step of the =acme_demo= profile does
+not reach it. Adding the dataset to the =base= bundle made no difference, so the
+publish path is not bundle-driven for this dataset and the mechanism is still
+unknown. Commodities are in the same position in this database -- their
+catalogue is empty too -- so the commodity population likely never ran through
+this profile either.
+
+Until publishing is wired, a population cannot depend on a catalogue, and that
+is the next thing to understand rather than to guess at.
+
+** How a catalogue publishes, and where the run now stops
+
+The question was answered by following the path rather than the bundle table.
+A dataset publishes through three things that must all exist:
+
+1. An *artefact type* row naming the data quality artefact table, the live
+   table and the publish subject.
+2. A *publish operation*: the refdata service derives the SQL function from the
+   subject's last segment, so =refdata.v1.ops.publish_equity_underlyings_from_dq=
+   calls =ores_refdata_publish_equity_underlyings_from_dq_fn=.
+3. Membership of the bundle the profile publishes, which is =base= for the
+   reference data a tenant works from.
+
+The catalogue had the SQL function and none of the three. All three are in
+place and the catalogue publishes during provisioning; the population run now
+books equity trades.
+
+Booking then found five refusals, each a value the schema does not accept:
+
+- the accumulator's =payoff_type= and =target_type=, which are a fixed set, and
+  the split between an accumulator, which states no target, and a TaRF, which
+  must state one;
+- the digital and touch split, where a digital states an option type and a
+  strike and a touch states a barrier and neither;
+- the forward's =quantity=, which the schema requires above zero and the writer
+  never set;
+- the swap's =return_type=, which is =Total= or =Price= and not a phrase I
+  invented;
+- the constituent's kind, which is the *vocabulary* -- =equity= -- and not the
+  catalogue's =index= or =share= classification.
+
+=EquityOutperformanceOption= is excluded: it routes to the option table, and
+that table's check admits =EquityOption= and =EquityCliquetOption= only, so no
+row of that type can satisfy it. That is a defect in the check, not in the
+planner, and it is why the family books sixteen of the seventeen routed codes.
+
+** Where it stops, and why that is not another value to patch
+
+The run now fails inside the basket constituent's check:
+
+  ores_trading_basket_constituent_resolves_fn(text,text) line 7
+
+The resolver works when called by hand, and the catalogue's eleven rows belong
+to the ACME tenant. The write that triggers it runs in the trading service's
+session, whose tenant is not the catalogue's. So the refusal is correct and the
+question is who the population writes as: either the catalogue must be visible
+to that session, or the resolve must read the catalogue of the tenant the trade
+belongs to rather than of the session. That is a design question about service
+origin writes, and it is the next thing to settle.

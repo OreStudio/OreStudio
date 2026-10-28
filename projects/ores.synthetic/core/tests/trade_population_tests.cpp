@@ -225,6 +225,22 @@ domain::trade_generation_scope commodity_scope() {
     return scope;
 }
 
+/*
+ * The scene's equity catalogue. It holds four underlyings because a worst-of
+ * basket names two, and the kinds differ so a basket drawn across them states
+ * more than one vocabulary.
+ */
+domain::trade_generation_scope equity_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "equity";
+    scope.equity_underlyings = {
+        domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
+        domain::equity_underlying_reference{.code = "MSFT.O", .kind = "share", .currency = "USD"},
+        domain::equity_underlying_reference{.code = ".STOXX50E", .kind = "index", .currency = "EUR"},
+        domain::equity_underlying_reference{.code = "GB0005405286", .kind = "share", .currency = "GBP"}};
+    return scope;
+}
+
 TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_population]") {
     auto wide = commodity_scope();
     wide.trades_per_book = 25;
@@ -241,6 +257,79 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
      * twenty-five reaches every one.
      */
     REQUIRE(types.size() == 25u);
+}
+
+TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length",
+          "[trade_population]") {
+    auto wide = equity_scope();
+    wide.trades_per_book = 16;
+
+    const auto plan = plan_of(wide);
+
+    std::set<std::string> types;
+    for (const auto& slot : plan.slots)
+        types.insert(slot.trade_type_code);
+
+    /*
+     * Sixteen codes share nine tables -- the outperformance option is routed
+     * to a table whose check cannot admit it -- and the planner cycles through
+     * them, so one book of sixteen reaches every one.
+     */
+    REQUIRE(types.size() == 16u);
+}
+
+TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_population]") {
+    const auto plan = plan_of(equity_scope());
+
+    std::set<std::string> named;
+    for (const auto& slot : plan.slots) {
+        REQUIRE(std::holds_alternative<domain::equity_terms>(slot.terms));
+        const auto& terms = std::get<domain::equity_terms>(slot.terms);
+        REQUIRE_FALSE(terms.underlying_name.empty());
+        REQUIRE_FALSE(terms.underlying_kind.empty());
+        named.insert(terms.underlying_name);
+    }
+
+    // Every underlying the scope states is drawn, and no other is invented.
+    REQUIRE(named.size() == 4u);
+    REQUIRE((named.contains(".SPX") && named.contains("MSFT.O")));
+}
+
+TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods",
+          "[trade_population]") {
+    auto scope = equity_scope();
+    scope.trades_per_book = 16;
+
+    const auto plan = plan_of(scope);
+
+    bool found = false;
+    for (const auto& slot : plan.slots) {
+        if (slot.trade_type_code != "EquityWorstOfBasketSwap")
+            continue;
+        found = true;
+        const auto& terms = std::get<domain::equity_terms>(slot.terms);
+        // Two names over four dates, which is the shape the corpus states.
+        REQUIRE(terms.basket.size() == 2u);
+        REQUIRE(terms.periods.size() == 4u);
+        for (const auto& member : terms.basket) {
+            REQUIRE_FALSE(member.name.empty());
+            REQUIRE_FALSE(member.kind.empty());
+            REQUIRE(member.initial_price.has_value());
+        }
+        for (const auto& period : terms.periods) {
+            REQUIRE(period.period_date.has_value());
+            REQUIRE(period.knock_out_level.has_value());
+            REQUIRE(period.fixed_trigger_level.has_value());
+        }
+    }
+    REQUIRE(found);
+}
+
+TEST_CASE("an_equity_population_with_no_catalogue_is_refused", "[trade_population]") {
+    auto empty = equity_scope();
+    empty.equity_underlyings.clear();
+
+    REQUIRE_THROWS_AS(plan_of(empty), trade_population_error);
 }
 
 TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity",

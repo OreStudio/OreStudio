@@ -31,9 +31,13 @@
 -- row's two columns. It raises rather than returning false so the operator
 -- reads the kind and the code that disagree instead of a constraint name.
 --
--- The catalogues are tenant scoped and carry their own policies, so this runs
--- as the writing account and sees the catalogues that account may see: a
--- tenant cannot name an underlying another tenant published.
+-- The function is security definer, and deliberately so. A catalogue is a
+-- vocabulary of market facts: the equity underlyings, the currency pairs and
+-- the commodities exist whether or not a particular tenant has published its
+-- own copy, and a population writes as a service session that holds no
+-- catalogue of its own. Reading them as the caller would refuse every
+-- constituent the moment the writer's session tenant differed from the
+-- catalogue's, which is exactly what the first population run did.
 create or replace function ores_trading_basket_constituent_resolves_fn(
     p_kind text,
     p_code text
@@ -76,4 +80,4 @@ begin
 
     return true;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;

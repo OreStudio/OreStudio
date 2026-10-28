@@ -88,6 +88,10 @@ BEGIN
     -- ISO Standards
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.countries', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.currencies', 11);
+    -- The equity underlyings a population draws. A trade that named one no
+    -- catalogue holds is refused when it is written, so the catalogue has to
+    -- publish before the population runs.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.equity_underlyings', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pairs', 12);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pair_conventions', 13);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.calendar_types', 14);

@@ -14,7 +14,7 @@ import { signIn } from './support/sign-in';
  */
 test('a structure shows its reference and its legs, and takes another leg', async ({ page }) => {
     await signIn(page);
-    await page.goto('/trading/trades');
+    await page.goto('/trading/structures');
 
     const search = page.getByRole('searchbox').first();
     await search.fill('PKG-');
@@ -28,9 +28,12 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     expect(reference).toMatch(/^PKG-/);
 
     await row.locator('td').first().click();
-    await expect(page.getByRole('heading', { name: reference })).toBeVisible({
+    // The kind titles the page and the reference sits under it, as the
+    // prototype draws it: what the customer receives, then its name.
+    await expect(page.getByRole('heading', { name: /^(Package|Strategy|Typed|Dynamic)$/ })).toBeVisible({
         timeout: 20_000,
     });
+    await expect(page.getByText(reference, { exact: true }).first()).toBeVisible();
     // The address carries the reference, not the id: a person shares what they
     // read, and a uuid is not that.
     await expect(page).toHaveURL(new RegExp(`/trading/structures/${reference}$`));
@@ -38,20 +41,29 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     // rows.
     const tree = page.locator('aside', { has: page.getByRole('heading', { name: /the tree/i }) });
     await expect(tree.getByRole('link', { name: reference }).first()).toBeVisible();
+    await page.getByRole('tab', { name: /details/i }).click();
 
-    const legs = page.locator('section', {
-        has: page.getByRole('heading', { name: /legs of this structure/i }),
+    /*
+     * The legs are stated twice, as the prototype does: on Details inside the
+     * Trades card, and on Members where a trade is added. The add is made where
+     * the form is, and the count is read there.
+     */
+    const tradesCard = page.locator('section', {
+        has: page.getByRole('heading', { name: /^trades$/i }),
     });
-    const before = await legs.locator('tbody tr').count();
+    await expect(tradesCard.locator('tbody tr').first()).toBeVisible({ timeout: 20_000 });
 
-    const trade = page.getByRole('combobox', { name: /^trade$/i });
+    await page.getByRole('tab', { name: /^members$/i }).click();
+    const before = await page.locator('tbody tr').count();
+
+    const trade = page.getByLabel(/^trade/i);
     await trade.waitFor({ state: 'visible' });
     const chosen = (await trade.locator('option').nth(1).innerText()).trim();
     await trade.selectOption({ index: 1 });
     await page.getByRole('button', { name: /^add the leg$/i }).click();
 
-    await expect(legs.locator('tbody tr')).toHaveCount(before + 1, { timeout: 20_000 });
-    await expect(legs.getByRole('link', { name: chosen })).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('tbody tr')).toHaveCount(before + 1, { timeout: 20_000 });
+    await expect(page.getByRole('link', { name: chosen })).toBeVisible({ timeout: 20_000 });
     await page.screenshot({ path: 'shots/structure-page.png', fullPage: true });
 
     // The record of the structure is its own tab, and adding a leg is a change
@@ -149,4 +161,29 @@ test('two trades are grouped into a structure of a chosen kind', async ({ page }
     await expect(legs.getByRole('link', { name: chosen })).toBeVisible({ timeout: 20_000 });
     await expect(legs.getByRole('link', { name: second })).toBeVisible({ timeout: 20_000 });
     await page.screenshot({ path: 'shots/structure-grouped.png', fullPage: true });
+});
+
+/**
+ * The list the prototype opens on: the tenant's trees, and what each row holds.
+ *
+ * The columns are the prototype's, and a structure that sits inside another is
+ * indented under it, because the composition is what the screen is for.
+ */
+test('the structures list draws the trees with what each row holds', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/trading/structures');
+
+    await expect(
+        page.getByRole('heading', { name: /structures and packages/i, level: 1 }),
+    ).toBeVisible({ timeout: 20_000 });
+
+    for (const column of ['Identifier', 'Kind', 'Template', 'Counterparty', 'Inside it', 'Confirms', 'Priced']) {
+        await expect(page.getByRole('columnheader', { name: new RegExp(`^${column}$`, 'i') })).toBeVisible();
+    }
+
+    const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
+    await row.waitFor({ state: 'visible', timeout: 20_000 });
+    // A package's legs each confirm on their own, which the row states.
+    await expect(row).toContainText(/each leg confirms on its own/i);
+    await page.screenshot({ path: 'shots/structures-list.png', fullPage: true });
 });

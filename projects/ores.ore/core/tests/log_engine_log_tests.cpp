@@ -26,8 +26,10 @@ namespace {
 
 using ores::ore::log::field_of;
 using ores::ore::log::is_memory_report;
+using ores::ore::log::line_count;
 using ores::ore::log::parse_engine_log_json;
 using ores::ore::log::parse_engine_log_text;
+using ores::ore::log::store_level_of;
 
 const std::string curve_line =
     "ALERT    [2026-Oct-27 19:42:07.139446]          (OREData/ored/utilities/log.cpp:214) : "
@@ -249,8 +251,7 @@ TEST_CASE("a line the engine wrote states its level, its time and where it logge
         "log.txt");
 
     REQUIRE(events.size() == 1);
-    CHECK(events[0].engine_format);
-    CHECK(events[0].level_word == "WARNING");
+    CHECK(events[0].states_line_fields);
     CHECK(events[0].severity == "warning");
     CHECK(events[0].location == "risk/engine.cpp:99");
     CHECK(events[0].event_time == "2024-Dec-31 23:59:59.123456");
@@ -265,7 +266,7 @@ TEST_CASE("a line the engine did not write in its own shape says so", "[ore][log
     const auto events = parse_engine_log_text("WARNING something is off\n", "log.txt");
 
     REQUIRE(events.size() == 1);
-    CHECK_FALSE(events[0].engine_format);
+    CHECK_FALSE(events[0].states_line_fields);
     CHECK(events[0].message == "WARNING something is off");
 }
 
@@ -287,7 +288,7 @@ TEST_CASE("a time the engine did not write as one is not a value", "[ore][log]")
 
     REQUIRE(events.size() == 1);
     CHECK_FALSE(events[0].occurred_at.has_value());
-    CHECK_FALSE(events[0].engine_format);
+    CHECK_FALSE(events[0].states_line_fields);
 }
 
 TEST_CASE("the engine's memory report reads as a measurement, not a warning", "[ore][log]") {
@@ -338,4 +339,96 @@ TEST_CASE("a structured message takes the severity it states, and keeps its line
     REQUIRE(without_category.size() == 1);
     CHECK(with_category[0].severity == "warning");
     CHECK(without_category[0].severity == "error");
+}
+
+TEST_CASE("the spaces after the separator belong to the message", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "NOTICE    [2024-Feb-20 10:00:00.000000]    (a/b.cpp:1) :   spaced message\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].message == "  spaced message");
+}
+
+TEST_CASE("a parenthesis inside the message does not name a location", "[ore][log]") {
+    // The location comes before the separator, so a parenthesis after it is part
+    // of what the engine said and not where it logged the line.
+    const auto events =
+        parse_engine_log_text("ERROR    [2024-Jan-01 00:00:00.000000] : no curve (X)\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].location.empty());
+    CHECK_FALSE(events[0].states_line_fields);
+    CHECK(events[0].message.contains("(X)"));
+}
+
+TEST_CASE("only the words the engine writes as a level are its own", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "DEBUG    [2024-Jan-01 00:00:00.000000]    (x.cpp:1) : msg\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK_FALSE(events[0].states_line_fields);
+    CHECK(events[0].severity == "debug");
+    CHECK(events[0].message == "msg");
+}
+
+TEST_CASE("a structured record that names no category reads as notice", "[ore][log]") {
+    const auto events = parse_engine_log_json("{\"group\": \"Report\", \"message\": \"done\"}\n",
+                                              "log_structured.json");
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].severity == "notice");
+    CHECK_FALSE(events[0].states_line_fields);
+}
+
+TEST_CASE("a structured record that states no message keeps the line and says so", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "ERROR [2026-Oct-27 20:00:00.000000] (x.cpp:1) : StructuredMessage { \"group\": "
+        "\"Curve\" }\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK_FALSE(events[0].message_stated);
+    CHECK(events[0].message.contains("StructuredMessage"));
+}
+
+TEST_CASE("a log store keeps a level for each of the engine's lines", "[ore][log]") {
+    const auto events =
+        parse_engine_log_text("DATA    [2024-Jan-01 00:00:00.000000] (x.cpp:1) : loading\n"
+                              "NOTICE  [2024-Jan-01 00:00:00.000000] (x.cpp:2) : started\n"
+                              "WARNING [2024-Jan-01 00:00:00.000000] (x.cpp:3) : careful\n"
+                              "ERROR   [2024-Jan-01 00:00:00.000000] (x.cpp:4) : broke\n"
+                              "ALERT   [2024-Jan-01 00:00:00.000000] (x.cpp:5) : broke loudly\n",
+                              "log.txt");
+
+    REQUIRE(events.size() == 5);
+    CHECK(store_level_of(events[0]) == "debug");
+    CHECK(store_level_of(events[1]) == "info");
+    CHECK(store_level_of(events[2]) == "warn");
+    CHECK(store_level_of(events[3]) == "error");
+    CHECK(store_level_of(events[4]) == "error");
+}
+
+TEST_CASE("a log store keeps no level for a line the engine did not write", "[ore][log]") {
+    const auto events = parse_engine_log_text("WARNING something is off\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(store_level_of(events[0]).empty());
+}
+
+TEST_CASE("a memory report reaches a log store as a measurement", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "WARNING  [2026-Oct-11 09:54:13.735791] (oreapp.cpp:257) : 52359168|52514816 "
+        "(peakMemoryUsage (bytes) | memoryUsage (bytes))\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(store_level_of(events[0]) == "debug");
+}
+
+TEST_CASE("a log states how many lines it holds", "[ore][log]") {
+    CHECK(line_count("") == 0);
+    CHECK(line_count("one\n") == 1);
+    CHECK(line_count("one\ntwo") == 2);
+    CHECK(line_count("one\r\ntwo\r\n") == 2);
+    CHECK(line_count(std::string("\xEF\xBB\xBF") + "one\n") == 1);
 }

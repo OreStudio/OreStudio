@@ -40,28 +40,6 @@ inline auto& log_publisher_lg() {
 
 constexpr std::size_t batch_size = 200;
 
-/**
- * @brief The level this node forwards a line under, or nothing when it forwards none.
- *
- * The telemetry store names its levels after the ones a person reads, and the
- * engine names its own: the table is the one translation, and it is the
- * telemetry contract's vocabulary rather than the engine's.
- */
-std::string telemetry_level(const ores::ore::log::engine_log_event& event) {
-    if (ores::ore::log::is_memory_report(event))
-        return "debug";
-    const auto& word = event.level_word;
-    if (word == "DATA")
-        return "debug";
-    if (word == "NOTICE")
-        return "info";
-    if (word == "WARNING" || word == "WARN")
-        return "warn";
-    if (word == "ERROR" || word == "ALERT")
-        return "error";
-    return {};
-}
-
 void publish_batch(ores::nats::service::client& nats,
                    ores::telemetry::messaging::publish_log_entries_request& req) {
     if (req.entries.empty())
@@ -94,8 +72,8 @@ void publish_ore_logs(ores::nats::service::client& nats,
     std::size_t parsed = 0;
     std::size_t skipped = 0;
     for (const auto& event : ores::ore::log::parse_engine_log_text(text, "log.txt")) {
-        auto level = telemetry_level(event);
-        if (level.empty() || !event.engine_format || !event.occurred_at) {
+        auto level = ores::ore::log::store_level_of(event);
+        if (level.empty()) {
             ++skipped;
             continue;
         }

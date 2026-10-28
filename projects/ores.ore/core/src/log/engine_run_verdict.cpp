@@ -61,20 +61,9 @@ constexpr std::string_view fatal_marker = "Error in ORE analytics";
 std::vector<engine_log_event> engine_events(std::string_view engine_log) {
     std::vector<engine_log_event> events;
     for (const auto& event : parse_engine_log_text(engine_log, engine_log_name))
-        if (event.engine_format)
+        if (event.states_line_fields)
             events.push_back(event);
     return events;
-}
-
-/** How many lines the log held, which is what the engine was asked to write. */
-std::size_t line_count(std::string_view text) {
-    if (text.empty())
-        return 0;
-    std::size_t breaks = 0;
-    for (const auto c : text)
-        if (c == '\n')
-            ++breaks;
-    return text.back() == '\n' ? breaks : breaks + 1;
 }
 
 /** The messages of the engine's ERROR lines, in the order it wrote them. */
@@ -109,17 +98,20 @@ std::vector<std::string> explanations(std::string_view engine_log) {
         if (event.severity != "error")
             continue;
 
+        // A structured message that states no message of its own says nothing a
+        // person can act on, so it is not a reason.
+        if (!event.message_stated)
+            continue;
+
         auto text = event.message;
-        const auto trade = field_of(event, "tradeId");
-        const auto curve = field_of(event, "curveId");
-        if (!trade.empty()) {
-            text += " (trade " + trade;
+        if (event.subject == "trade") {
+            text += " (trade " + event.subject_id;
             const auto type = field_of(event, "tradeType");
             if (!type.empty())
                 text += ", " + type;
             text += ")";
-        } else if (!curve.empty()) {
-            text += " (curve " + curve + ")";
+        } else if (!event.cause.empty()) {
+            text += " (curve " + event.cause + ")";
         }
         if (!restates(reasons, text))
             reasons.push_back(std::move(text));
@@ -138,8 +130,7 @@ std::vector<std::string> explanations(std::string_view engine_log) {
 std::vector<std::string> fatal_messages(std::string_view engine_log) {
     std::vector<std::string> failures;
     for (const auto& event : engine_events(engine_log)) {
-        if (event.message.find(fatal_marker) != std::string::npos &&
-            !restates(failures, event.message))
+        if (event.message.contains(fatal_marker) && !restates(failures, event.message))
             failures.push_back(event.message);
     }
     return failures;

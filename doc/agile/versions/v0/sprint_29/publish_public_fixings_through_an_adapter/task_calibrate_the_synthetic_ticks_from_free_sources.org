@@ -149,9 +149,12 @@ as one over its value. A pair no source fixes keeps its configured level, and th
 feed records why.
 
 The feed page shows where the run started: the provider, the item as its oresmd
-URI, the publisher's date, the time the value arrived, and the spread the window
-measured; or that no fixing set the level and the run kept it. A curve reports no
-start, since it starts from no published value.
+URI, the value as the publisher wrote it, in decimal text, the publisher's date,
+the time the value arrived, and the spread the window measured; or that no fixing
+set the level and the run kept its configured one. A curve reports no start, since
+it starts from no published value. The start keeps no binary float: a rate is
+money, so the published text is what the record holds and the feed's process is
+the only boundary that reads it as a double.
 
 The vintage goes from FX and IR, and with it the columns, the lookup, the
 validity handler, the shell command, the web fields and the dataset dependency

@@ -84,14 +84,14 @@ export interface FeedStart {
     provider_code: string;
     /** @brief The provider's own id of the item, or empty when no mapping names it. */
     vendor_id: string;
+    /** @brief The fixing's value as the publisher wrote it, in decimal text. */
+    value: string;
     /** @brief True when the item quotes the feed's pair the other way round. */
     inverted: boolean;
     /** @brief The date of the fixing, which is the publisher's own time for a daily fixing. */
     fixing_date: string | null;
     /** @brief When the service stored the fixing. */
     received_at: string | null;
-    /** @brief The level the feed started from, read the way round the feed quotes its pair. */
-    level: number;
     /** @brief How many calendar days of fixings the window covered. */
     window_days: number;
     /** @brief How many fixings of the window measured the spread. */

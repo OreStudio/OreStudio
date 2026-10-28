@@ -173,6 +173,14 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The provider's own id of the item, or empty when no mapping names it. */
 #+end_src
 
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The fixing's value as the publisher wrote it, in decimal text. */
+#+end_src
+
 *** inverted
 :PROPERTIES:
 :cpp_type: bool
@@ -196,15 +204,6 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /** @brief When the service stored the fixing. */
-#+end_src
-
-*** level
-:PROPERTIES:
-:cpp_type: double
-:default: 0.0
-:END:
-#+begin_src cpp :name comment
-/** @brief The level the feed started from, read the way round the feed quotes its pair. */
 #+end_src
 
 *** window_days

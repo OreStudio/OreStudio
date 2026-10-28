@@ -31,6 +31,7 @@ const START: FeedStart = {
     item: 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
     provider_code: 'ecb',
     vendor_id: 'EUR',
+    value: '1.15',
     inverted: false,
     fixing_date: '2026-10-27',
     received_at: '2026-10-27 16:05:00.000000Z',
@@ -70,12 +71,11 @@ describe('where a feed run started', () => {
             provider_code: '',
             fixing_date: null,
             received_at: null,
-            level: 1.08,
             used: 0,
             window_days: 0,
             note: 'The config names no fixing item.',
         });
-        expect(html).toContain('kept its fixed level of 1.08');
+        expect(html).toContain('kept its configured level');
         expect(html).toContain('The config names no fixing item.');
         expect(html).not.toContain('fixing of');
     });

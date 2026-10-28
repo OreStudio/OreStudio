@@ -87,6 +87,9 @@ policy_date(const std::string& policy, const ores::marketdata::domain::market_cl
 /// scaled to it; or, when no item has a fixing, the record that the feed kept its fixed level.
 struct resolved_start final {
     ores::marketdata::domain::feed_start source;
+    /// The level the mixture starts from, as the process reads it. The start records the value
+    /// as published; the process is the one boundary that holds it as a binary float.
+    double level = 0.0;
     std::optional<std::vector<double>> stdevs;
 };
 
@@ -97,7 +100,7 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
                      std::vector<ores::synthetic::domain::fx_spot_fixing_item> items,
                      const ores::marketdata::domain::market_clock* clock) {
     resolved_start out;
-    out.source.level = cfg.gmm_initial_price;
+    out.level = cfg.gmm_initial_price;
     std::ranges::sort(items, {}, &ores::synthetic::domain::fx_spot_fixing_item::rank);
 
     auto delegated = auth_nats.with_delegation({});
@@ -139,16 +142,25 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
             skipped.push_back(item.item + ": the fixing '" + latest->value + "' is not a price");
             continue;
         }
+        // The record keeps the publisher's value exactly; a spelling the decimal type cannot
+        // hold is refused rather than rounded.
+        const auto published = ores::utility::decimal::decimal::from_string(latest->value);
+        if (!published) {
+            skipped.push_back(item.item + ": the fixing '" + latest->value +
+                              "' is not an exact decimal");
+            continue;
+        }
 
         auto& s = out.source;
         s.from_fixing = true;
         s.item = item.item;
         s.provider_code = latest->provider_code;
         s.vendor_id = latest->vendor_id;
+        s.value = *published;
         s.inverted = *orientation == item_orientation::inverted;
         s.fixing_date = latest->fixing_date;
         s.received_at = latest->received_at;
-        s.level = s.inverted ? 1.0 / *value : *value;
+        out.level = s.inverted ? 1.0 / *value : *value;
         s.window_days = item.window_days;
 
         const auto window = md.get_fixing_window({.item = item.item,
@@ -223,15 +235,14 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     }
 
     // "fixing" starts from the first ranked item with a fixing and sizes the mixture to its
-    // spread; "fixed" uses the stored value as-is. The start records the level either way, so a
-    // fixed feed reads as one that kept its level rather than as one that started nowhere.
+    // spread; "fixed" uses the stored value as-is. A fixed feed's start says it kept its level,
+    // so it reads as a run that took no published value rather than as one that started nowhere.
     ores::marketdata::domain::feed_start start;
-    start.level = cfg.gmm_initial_price;
     double initial_price = cfg.gmm_initial_price;
     if (cfg.price_source == "fixing") {
         auto resolved = resolve_fixing_start(auth_nats, cfg, components, fixing_items, clock);
         start = std::move(resolved.source);
-        initial_price = start.level;
+        initial_price = resolved.level;
         if (resolved.stdevs)
             stdevs = std::move(*resolved.stdevs);
         BOOST_LOG_SEV(lg(), info) << "Feed " << cfg.source_name << " starts at " << initial_price

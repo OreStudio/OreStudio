@@ -547,7 +547,8 @@ async function providerOfFeed(
 }
 
 /**
- * Where a feed's starting value came from: the fixing the run took, or the level it kept.
+ * Where a feed's starting value came from: the fixing the run took and the value
+ * as its publisher wrote it, or the level the run kept.
  *
  * The service reads it when it builds the generator, so it names the value this run
  * started from and not the one a later run would take.
@@ -557,10 +558,10 @@ export const feedStartSchema = z.object({
     item: z.string().default(''),
     provider_code: z.string().default(''),
     vendor_id: z.string().default(''),
+    value: z.string().default(''),
     inverted: z.boolean().default(false),
     fixing_date: z.string().nullish(),
     received_at: z.string().nullish(),
-    level: z.number().default(0),
     window_days: z.int().default(0),
     used: z.int().default(0),
     hourly_spread: z.number().nullish(),

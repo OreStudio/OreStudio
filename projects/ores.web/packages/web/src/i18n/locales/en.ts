@@ -5523,11 +5523,12 @@ export const en: SourceCatalogue = {
             },
             start: {
                 title: 'Where this run started',
-                fromFixing: 'Started from the {provider} fixing of {date}, received {received}.',
+                fromFixing:
+                    'Started from the {provider} fixing of {value} on {date}, received {received}.',
                 dateUnknown: 'an unknown date',
                 receivedUnknown: 'at an unknown time',
                 fixedLevel:
-                    'No published fixing set the level, so the run kept its fixed level of {level}.',
+                    'No published fixing set the level, so the run kept its configured level.',
                 inverted:
                     'The item quotes the pair the other way round, so its value was read as one over it.',
                 window: '{used} fixings over {days} days measured its spread.',

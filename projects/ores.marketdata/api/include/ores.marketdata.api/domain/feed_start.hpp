@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_FEED_START_HPP
 #define ORES_MARKETDATA_API_DOMAIN_FEED_START_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
@@ -30,10 +31,14 @@ namespace ores::marketdata::domain {
  * @brief Where a feed's starting value came from, or that it kept its fixed level.
  *
  * A feed that starts from a published value records the one it took: the item, the
- * provider, the provider's own id of the item, the date of the value and the time it was
- * received. A feed with no published value to take keeps its configured level, and says
- * why in @c note. The record belongs to the run, not to the config: a feed that stops and
- * starts again records where the new run started.
+ * provider, the provider's own id of the item, the value as published, the date of the
+ * value and the time it was received. A feed with no published value to take keeps its
+ * configured level, and says why in @c note. The record belongs to the run, not to the
+ * config: a feed that stops and starts again records where the new run started.
+ *
+ * The value is kept as the publisher wrote it, in decimal text, and not as a binary
+ * float: a rate is money, and the feed's process is the only thing that reads it as a
+ * double.
  */
 struct feed_start final {
     /// True when a fixing set the level; false when the feed kept its fixed level.
@@ -44,14 +49,14 @@ struct feed_start final {
     std::string provider_code;
     /// The provider's own id of the item, or empty when no mapping names it.
     std::string vendor_id;
+    /// The fixing's value as the publisher wrote it.
+    ores::utility::decimal::decimal value;
     /// True when the item quotes the feed's pair the other way round.
     bool inverted = false;
     /// The date of the fixing, which is the publisher's own time for a daily fixing.
     std::optional<std::chrono::year_month_day> fixing_date;
     /// When the service stored the fixing.
     std::optional<std::chrono::system_clock::time_point> received_at;
-    /// The level the feed started from, read the feed's pair the way round it quotes it.
-    double level = 0.0;
     /// How many calendar days of fixings the window covered.
     int window_days = 0;
     /// How many fixings of the window measured the spread.

@@ -27,10 +27,11 @@ import { Notice } from '../../ui/Primitives.js';
 import { formatDateTime } from '../../ui/Time.js';
 
 /**
- * Where a run's starting value came from, in one sentence: the fixing it took
- * with the publisher's date and the time it arrived, or that no fixing set the
- * level and the run kept its configured one. The item itself is drawn as the
- * oresmd URI it is, so a reader can open the series the value came from.
+ * Where a run's starting value came from, in one sentence: the fixing it took,
+ * with the value as the publisher wrote it, the publisher's date and the time it
+ * arrived; or that no fixing set the level and the run kept its configured one.
+ * The item itself is drawn as the oresmd URI it is, so a reader can open the
+ * series the value came from.
  */
 export function FeedStartNotice({ start }: { readonly start: FeedStart }): ReactNode {
     const { t, language } = useTranslation();
@@ -45,15 +46,14 @@ export function FeedStartNotice({ start }: { readonly start: FeedStart }): React
                 {start.from_fixing
                     ? t('marketdata.fxFeeds.start.fromFixing', {
                           provider: start.provider_code,
+                          value: start.value,
                           date:
                               start.fixing_date === null || start.fixing_date === undefined
                                   ? t('marketdata.fxFeeds.start.dateUnknown')
                                   : start.fixing_date,
                           received,
                       })
-                    : t('marketdata.fxFeeds.start.fixedLevel', {
-                          level: String(start.level),
-                      })}
+                    : t('marketdata.fxFeeds.start.fixedLevel')}
             </p>
             {start.from_fixing && start.item !== '' && <OresmdUrl uri={start.item} />}
             {start.from_fixing && start.inverted && <p>{t('marketdata.fxFeeds.start.inverted')}</p>}

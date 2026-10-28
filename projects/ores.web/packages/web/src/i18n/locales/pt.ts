@@ -5556,11 +5556,12 @@ const pt: SourceCatalogue = {
             },
             start: {
                 title: 'De onde arrancou esta execução',
-                fromFixing: 'Arrancou do fixing {provider} de {date}, recebido em {received}.',
+                fromFixing:
+                    'Arrancou do fixing {provider} de {value} de {date}, recebido em {received}.',
                 dateUnknown: 'uma data desconhecida',
                 receivedUnknown: 'uma hora desconhecida',
                 fixedLevel:
-                    'Nenhum fixing publicado fixou o nível, por isso a execução manteve o nível fixo de {level}.',
+                    'Nenhum fixing publicado fixou o nível, por isso a execução manteve o nível configurado.',
                 inverted:
                     'O item cita o par ao contrário, por isso o valor foi lido como o seu inverso.',
                 window: '{used} fixings em {days} dias mediram a sua dispersão.',

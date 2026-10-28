@@ -114,14 +114,14 @@ struct feed_start {
     std::string provider_code;
     /** @brief The provider's own id of the item, or empty when no mapping names it. */
     std::string vendor_id;
+    /** @brief The fixing's value as the publisher wrote it, in decimal text. */
+    std::string value;
     /** @brief True when the item quotes the feed's pair the other way round. */
     bool inverted = false;
     /** @brief The date of the fixing, which is the publisher's own time for a daily fixing. */
     std::optional<std::chrono::year_month_day> fixing_date;
     /** @brief When the service stored the fixing. */
     std::optional<std::chrono::system_clock::time_point> received_at;
-    /** @brief The level the feed started from, read the way round the feed quotes its pair. */
-    double level = 0.0;
     /** @brief How many calendar days of fixings the window covered. */
     int window_days = 0;
     /** @brief How many fixings of the window measured the spread. */

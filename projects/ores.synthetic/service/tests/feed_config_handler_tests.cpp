@@ -62,7 +62,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <map>
@@ -457,7 +456,7 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     REQUIRE(fx_run->start.has_value());
     CHECK_FALSE(fx_run->start->from_fixing);
     CHECK(fx_run->start->item.empty());
-    CHECK(fx_run->start->level == Catch::Approx(1.08));
+    CHECK(fx_run->start->value.empty());
     // A curve starts from no published value, so its run carries no start.
     const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
         return one.source_name == seeds.ir_enabled_source;

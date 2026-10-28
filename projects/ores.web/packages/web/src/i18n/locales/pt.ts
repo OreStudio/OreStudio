@@ -3789,9 +3789,7 @@ const pt: SourceCatalogue = {
             product: 'Produto',
             externalVersion: 'Versão externa',
             noCandidates: 'Cada transação já é uma perna de uma estrutura.',
-            historyRecord: 'Registo',
-            historyHint: 'O negócio e cada uma das suas pernas guardam as suas próprias versões: ligar ou desligar é uma versão da perna.',
-            historyDeal: 'o negócio',
+            membershipEntry: 'Perna {reference} · {role}',
             tabsLabel: 'Secções da estrutura',
             tab: {
                 details: 'Detalhes',

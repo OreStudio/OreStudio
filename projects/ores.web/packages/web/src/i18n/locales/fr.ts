@@ -3806,9 +3806,7 @@ const fr: SourceCatalogue = {
             product: 'Produit',
             externalVersion: 'Version externe',
             noCandidates: 'Chaque transaction est déjà une jambe d\'une structure.',
-            historyRecord: 'Enregistrement',
-            historyHint: 'L\'opération et chacune de ses jambes gardent leurs propres versions : un lien ou un déliement est une version de la jambe.',
-            historyDeal: 'l\'opération',
+            membershipEntry: 'Jambe {reference} · {role}',
             tabsLabel: 'Sections de la structure',
             tab: {
                 details: 'Détails',

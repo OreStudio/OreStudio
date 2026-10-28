@@ -61,6 +61,11 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
 
     await page.getByRole('tab', { name: /^members$/i }).click();
 
+    // A leg the deal already holds, whose membership the stream must name.
+    const existing = (
+        await page.locator('tbody tr').first().getByRole('link').first().innerText()
+    ).trim();
+
     const form = page.locator('section', {
         has: page.getByRole('heading', { name: /add a leg/i }),
     });
@@ -85,17 +90,23 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
         timeout: 20_000,
     });
 
-    // The record of the structure is its own tab, and adding a leg is a change
-    // the leg's membership history holds: the record picker chooses which of the
-    // two records is read, and the history panel is the page's own.
+    /*
+     * The History tab is the shared timeline, and the stream is the deal's
+     * story: its own versions and those of every leg it holds, merged. A leg's
+     * entry is named by its leg rather than by a uuid.
+     */
     await page.getByRole('tab', { name: /history/i }).click();
-    const timeline = page.getByRole('list', { name: /timeline/i });
-    await expect(timeline).toBeVisible({ timeout: 20_000 });
-    // The deal and each leg are separate records: choosing a leg reads the
-    // versions that hold its link, which the deal's own versions do not.
-    const records = page.getByLabel(/^record/i);
-    await records.selectOption({ index: 1 });
-    await expect(timeline).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('button', { name: /hide system activity/i })).toBeVisible({
+        timeout: 20_000,
+    });
+    await expect(page.getByText(new RegExp(`Leg ${existing} · leg`)).first()).toBeVisible({
+        timeout: 20_000,
+    });
+    // A leg taken out of the deal is no longer one of its parts, and the stream
+    // says so rather than pretending the story is whole.
+    await expect(
+        page.getByText(/a part deleted from the record is not in this stream/i),
+    ).toBeVisible();
 });
 
 /**
@@ -351,7 +362,11 @@ test('a trade booked from a deal becomes its leg', async ({ page }) => {
     // The trade was booked and joined the deal; the deal is left as it was
     // found, so a second run reads the same population. The trade itself stays
     // booked, which is what unlinking means.
-    await legs.locator('tbody tr').last().getByRole('button', { name: /^unlink$/i }).click();
+    await legs
+        .locator('tbody tr')
+        .last()
+        .getByRole('button', { name: /^unlink$/i })
+        .click();
     await expect
         .poll(async () => {
             const stated = (

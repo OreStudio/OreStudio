@@ -852,6 +852,7 @@ export function registerStructureRoutes(
                     reference: tradeReferences.get(tradeId) ?? '',
                     role: text(member['role']),
                     sequence_number: Number(member['sequence_number'] ?? 0),
+                    version: Number(member['version'] ?? 0),
                     kind: type,
                     product: nameOf(type),
                     asset_class: classOf(type),

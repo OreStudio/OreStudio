@@ -3762,9 +3762,7 @@ export const en: SourceCatalogue = {
             product: 'Product',
             externalVersion: 'External version',
             noCandidates: 'Every trade is already a leg of a structure.',
-            historyRecord: 'Record',
-            historyHint: 'The deal and each of its legs keep their own versions: a link or an unlink is a version of the leg.',
-            historyDeal: 'the deal',
+            membershipEntry: 'Leg {reference} · {role}',
             tabsLabel: 'Structure sections',
             tab: {
                 details: 'Details',

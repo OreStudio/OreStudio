@@ -29,8 +29,8 @@ import {
     type StructureTreeNode,
 } from '../api/structures.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { RecordTable, type ListSource } from '../refdata/RecordList.js';
+import { RecordTimeline } from '../refdata/RecordTimeline.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
@@ -649,43 +649,36 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
 /**
  * The record of what changed.
  *
- * Two records change when a deal does: the deal itself, when its kind or its
- * template is corrected, and the membership of each leg, when a trade is linked
- * or unlinked. Both are read with the application's history panel, the one every
- * record page shows, so a link reads as a version with a reason and a person on
- * it rather than as a row in a table built for this screen.
+ * The stream is the deal's story, as the record screen standard sets it: the
+ * deal's own versions and the versions of every leg it holds now, merged newest
+ * first and each entry named by its leg. So a trade joining the deal, or taking
+ * a different role on it, reads beside the deal's own corrections, and the
+ * reader opens the difference on the entry that carries it.
  */
 function HistoryTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
-    const [legId, setLegId] = useState('');
-    const leg = record.legs.find((row) => row.trade_id === legId);
+    const word = (value: unknown): string => (typeof value === 'string' ? value : '');
     return (
-        <div className="space-y-4">
-            <Field
-                label={t('trading.structure.historyRecord')}
-                hint={t('trading.structure.historyHint')}
-            >
-                <Select value={legId} onChange={(event) => setLegId(event.target.value)}>
-                    <option value="">
-                        {record.reference === '' ? record.id : record.reference} ·{' '}
-                        {t('trading.structure.historyDeal')}
-                    </option>
-                    {record.legs.map((row) => (
-                        <option key={row.trade_id} value={row.trade_id}>
-                            {(row.reference === '' ? row.trade_id : row.reference) +
-                                ' · ' +
-                                row.role}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
-            <HistoryPanel
-                entityType={
-                    leg === undefined ? 'ores.trading.structure' : 'ores.trading.structure_member'
-                }
-                entityId={leg === undefined ? record.id : leg.trade_id}
-            />
-        </div>
+        <RecordTimeline
+            entityType="ores.trading.structure"
+            entityId={record.id}
+            parts={[
+                {
+                    entityType: 'ores.trading.structure_member',
+                    rows: record.legs.map((leg) => ({
+                        id: leg.trade_id,
+                        version: leg.version,
+                        reference: leg.reference,
+                        role: leg.role,
+                    })),
+                    name: (row) =>
+                        t('trading.structure.membershipEntry', {
+                            reference: word(row['reference']) || word(row['id']),
+                            role: word(row['role']),
+                        }),
+                },
+            ]}
+        />
     );
 }
 

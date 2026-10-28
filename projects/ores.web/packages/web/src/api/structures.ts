@@ -29,6 +29,8 @@ export interface StructureLeg {
     readonly reference: string;
     readonly role: string;
     readonly sequence_number: number;
+    /** The version of the membership, which is the record a leg's history holds. */
+    readonly version: number;
     /** The trade's type code, and the name that type is known by. */
     readonly kind: string;
     readonly product: string;
@@ -156,6 +158,7 @@ const structurePageRecordSchema = z.object({
                 reference: z.string().default(''),
                 role: z.string().default(''),
                 sequence_number: z.coerce.number().int().default(0),
+                version: z.coerce.number().int().default(0),
                 kind: z.string().default(''),
                 product: z.string().default(''),
                 asset_class: z.string().default(''),

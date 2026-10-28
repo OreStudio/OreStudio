@@ -26,25 +26,28 @@ Whether a provider's data may be fetched and stored is a fact on the provider, w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
 
-- The provider has the terms URL, the credit text, whether storage is allowed, a credential reference, and the accepted terms version with who accepted it and when.
+- The provider has the terms URL, the credit text, whether storage is allowed, a credential reference, and the digest of the terms it accepted, with who accepted them and when. (Amended on 2026-10-28: a digest of the terms rather than a version number, so only a change of the terms themselves clears the acceptance.)
 - A change of terms makes a new version and clears the acceptance.
-- Values stored under earlier terms stay. When new terms withdraw permission to store, the system administrator can delete that provider's fixings, and the deletion records who did it.
+- Values stored under earlier terms stay. (Amended on 2026-10-28: deleting a provider's fixings when new terms withdraw storage is an operator action, moved to the control surface task.)
 - The adapter contract refuses a demand for a provider whose terms are not accepted, and a test shows it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add the terms columns to the provider model and regenerate the entity.
+2. Write the rules in one place, =ores.marketdata.core/terms/provider_terms=: whether
+   a provider has terms, their digest, whether they are accepted, whether its data may
+   be fetched, and accepting them.
+3. Give the demand catalogue the providers, and refuse a route to a provider whose
+   data may not be fetched, with the reason =terms_not_accepted=.
 
 * Measurements
 
@@ -86,3 +89,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A provider now carries its terms: the page, the credit, whether storage is
+allowed, a credential reference, and the digest of the terms it accepted, with who
+and when. The digest is the SHA-256 of the page, the credit and the storage
+permission, so a change of any of them clears the acceptance with no further
+write, and a change elsewhere, such as the description, does not. A route to a
+provider with terms demands nothing until they are accepted and allow storage,
+and is refused as =terms_not_accepted=. A provider with no terms page, as every
+vendor is today, is demanded as before.
+
+Evidence: =ores.marketdata.core.tests= =[provider_terms]= 4 of 4 and
+=ores.marketdata.service.tests= =[demand_calculator]= 13 of 13, including a
+subscribed route refused for unaccepted terms and a provider without terms
+demanded as before; the web app typechecks against the regenerated type. The
+database-backed suites run in the check gate, which recreates the schema.
+

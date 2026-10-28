@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/publish-the-commodity-catalogue
-#+pr:
+#+pr: 4008
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4008][#4008]] | [dq] Publish the commodity catalogue |
 
 * Review
 

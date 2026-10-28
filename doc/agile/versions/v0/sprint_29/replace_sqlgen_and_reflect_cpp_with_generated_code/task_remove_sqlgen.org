@@ -26,11 +26,11 @@ Step 4 of 7. sqlgen is gone from the build. Starts after every component has mov
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -137,3 +137,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+sqlgen is gone from the tree. The context, the unit of work and the listener
+run on the libpq layer; the pool retries opening under an open policy; the
+codegen has one repository archetype; vcpkg.json names libpq and the sqlgen
+overlay port is deleted.
+
+Every acceptance point is met:
+
+- No source, CMake file, template or vcpkg file names sqlgen
+  (=grep -rln sqlgen projects build/cmake CMakeLists.txt vcpkg.json= over
+  code, CMake, JSON and mustache files: no match).
+- The sqlgen repository facet and its backend switch are deleted.
+- Models, diagrams and docs describe the libpq layer and the target state of
+  the arc; only the agile history, the plans and one investigation record
+  name sqlgen.
+- Full build green at -j4; ctest 96/96; database recreated, 24/24 services
+  running, Acme provisioning complete, no ERROR or FATAL line in the journal.
+  Codegen tests: 1637 pass, and the 5 failures also fail on origin/main.
+
+Two semantics changed, signed off by the user: a call on a committed unit of
+work is refused, and a commit after a failed statement rolls back and throws.
+
+The raw-SQL helpers still open a connection per call; [[id:29333023-8206-4B41-9190-10D15ED3FA6A][Run every query on the pool behind pgbouncer]]
+moves them onto the pool.

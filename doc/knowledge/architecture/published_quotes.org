@@ -79,6 +79,63 @@ A generator config has =price_source= of =fixed= or =published=, and for =publis
 
 It would reuse readers and screens, but its rows belong to a series keyed by item, provider and party, they are bitemporal, their values are text, and its chunks are 30 days. It would put a shared cache of the world inside party series, and it has no place for the fetch and load provenance.
 
+** What the existing tables already carry
+
+The first version of this page asked only whether =market_observation= could hold
+the rows. It did not ask whether the catalogue, the mapping and the data quality
+pipeline already hold the rest. This section asks that, on 2026-10-28, before any
+table is built.
+
+The system already loads published quotes. The dataset =marketdata.fx_driver_rates_2026=
+(=projects/ores.sql/populate/marketdata/marketdata_fx_driver_rates_2026_populate.sql=)
+is a set of Federal Reserve H.10 rates, under the DQ methodology "Federal Reserve
+H.10 Historical Rates". Its rows go into =ores_dq_market_observations_artefact_tbl=
+with =source_url= and =retrieved_at=, a publication writes them into
+=market_observation=, and a feed reads one back through =vintage_source= and
+=vintage_date= (=find_vintage_observation= in
+=projects/ores.synthetic/api/include/ores.synthetic.api/feeds/vintage_lookup.hpp=).
+The loader of this page is a second producer for that path, not a new path.
+
+| Proposed | Existing | Fit |
+|----------+----------+-----|
+| =publisher= | =provider=, kind =reference= | The provider owns a namespace of ids, and its kinds include a reference set. The ECB is a provider. It lacks the terms: the terms page, when they were read and by whom, the credit, and whether storage is allowed. Every provider has terms, Bloomberg and LSEG included, so these are columns of the provider and not of a publisher. |
+| =publisher_series= | =market_data_vendor_instrument= and =market_data_mapping= | The same shape: an id in the provider's notation, mapped to an oresmd item for a period. The ECB's =USD= against the euro is a vendor instrument of the provider =ecb=. Nothing to add. |
+| =quote_load= | DQ =dataset= and =publication= | A dataset has the methodology, the as-of date, the ingestion time, the licence and its lineage. A publication records who wrote what, where and how many. Nothing to add. |
+| access route, such as Frankfurter | DQ =methodology= | The methodology says how the values were obtained, as the H.10 one does. A =market_data_source= is an adapter that publishes ticks, so it is not the place for a batch fetch. |
+| =published_quote= | =market_observation=, through its DQ artefact | The artefact already has the key, the date, a =numeric= value, the source, =source_url= and =retrieved_at=. See the objections below. |
+| =quote_fetch= and the raw body | nothing | No table keeps the bytes of a download or their hash. This is the one gap. |
+
+The objections of the section above, looked at again:
+
+- *A series belongs to a party.* Since 2026-10-25 a simulated or shared source is
+  held by the system tenant and the system party, and a read is entitled by the
+  subscription. The calibration runs in the system tenant, which owns the feeds.
+  It holds.
+- *Bitemporal.* A refresh that returns a corrected value becomes a new version,
+  which is what the page asked of a correction. It is a benefit.
+- *Values are text.* The text keeps the published digits exactly, and the
+  artefact is =numeric=. It holds.
+- *Chunks of 30 days.* Daily rows of a few hundred series fill a chunk thinly. It
+  costs space, not correctness.
+- *No place for the fetch and the load.* The load is the dataset and the
+  publication. Only the raw body is missing.
+
+What a clean reuse needs:
+
+1. The terms on =provider=, for every provider.
+2. A reader query on =market_observation=: the latest value on or before a date
+   for an item and a source, and a window. Today the vintage lookup pages
+   through every observation of a series, which does not scale to a daily
+   history.
+3. A decision on the raw body. Either a DQ dataset may name a stored file with
+   its hash, which serves any dataset made from a download and not only this
+   loader, or the slice keeps =source_url= and =retrieved_at= on each row, as the
+   H.10 dataset does, and stores no bytes.
+
+What it removes: the five new entities, their repositories, protocols, shell and
+TypeScript, and a second store of published values beside the one the feeds
+already read.
+
 ** Secrets
 
 A credential is never in a table, a log or a stored URL. A publisher row holds a =credential_ref=, such as =env:ORES_MARKETDATA_SERVICE_FRED_API_KEY=, and a =secret_source= interface resolves it. Hashing does not fit: a hash cannot be turned back into the key that a provider needs. The first implementation reads the service environment, as the database passwords are read. A second one, an encrypted table with AES-256-GCM through OpenSSL, can follow without a change to the publisher rows.

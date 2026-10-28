@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 5C1B7E42-9A3D-4F60-B1E8-2D7A4C6F0E93
+:END:
+#+title: Official rates, prototype
+#+description: The public sources as one screen a person runs: each provider's terms, freshness and adapter state on one row, the three failures told apart, and the paused and backfill variants drawn before either is built.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:official_rates:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+| Item          | Where                                              |
+|---------------+----------------------------------------------------|
+| Prototype     | [[file:official-rates/][the prototype page]]          |
+| Design note   | this page                                          |
+| Group         | [[file:index.org][Market data prototypes]]           |
+| Journey       | [[file:../../knowledge/journeys/market_data/journey_run-the-public-sources.org][Run the public sources]] |
+| Review        | none                                               |
+
+* Summary
+
+The Official rates screen does governance today: it lists the public providers,
+their terms and their stored fixings, and it lets a person accept the terms at
+the version shown. It does not answer the operational question a system
+administrator asks next: is the data actually arriving, and what do I do when
+it is not.
+
+This prototype argues the shape of that answer before any control is built. The
+provider is the object, over time: its terms, its freshness, the state of its
+adapter, and the acts that follow. Three of the facts it draws already exist as
+reads; two of the acts rest on decisions the architecture has not taken.
+
+* What it asks
+
+1. What does a paused provider look like, and what happens to its fixings, its
+   chart and its pair on the comparison while it is paused?
+2. While a backfill of a chosen range runs, what does the person see: a
+   progress, the table filling day by day, or nothing until it ends?
+3. How does a late fixing read differently from an adapter that is down, and
+   how does a provider that never had a fixing read, without three colours
+   meaning the same thing?
+4. Does accepting terms that withdraw permission to store show deleting the
+   provider's fixings as a consequence, or as a command the person must
+   remember?
+
+* Variants and states
+
+Every state has an address, so a reviewer opens it rather than clicking to it.
+
+| State | Address | What it shows |
+|-------+---------+---------------|
+| At rest | =index.html= | Five providers: serving, late, not accepted, adapter down, and one paused and dimmed |
+| Late | =?state=late= | The Bank of Canada alone, with the sentence that says to read the heartbeat and then ask for a backfill |
+| Down | =?state=down= | The Central Bank of Turkiye alone: no heartbeat, refused ids, and no fixing ever stored |
+| Never fixed | =?state=never= | The same row with the never-fixed badge, telling it apart from the adapter being down |
+| Paused, kept | =?paused=muted= (default) | The paused provider stays in the list, dimmed, with Resume; its fixings and the feed start it explains stay |
+| Paused, hidden | =?paused=hidden= | The paused provider leaves the list; a count and a link bring it back |
+| Competing answers | =?compare=1= | The paused row kept, the row hidden, and both freshness lines side by side above the list |
+| Paused provider's page | =?provider=boe= | A paused provider's fixings, chart and pair still drawn, and a notice that nothing new arrives |
+| Pause, in the address | =?pause=boe= and =?resume=boe= | A pause survives a reload because the address holds it |
+| Withdrawn terms | =?terms=withdraw= | The fund's v2 withdraws storage: the row says so, and the consequence offers deleting its fixings |
+| Terms and paused states | =?state=terms= and =?state=paused= | One state alone, as the three failures are shown |
+| Freshness, quiet | =?fresh=quiet= (default) | The date and the received line, small and grey |
+| Freshness, strong | =?fresh=strong= | The same facts in the body colour, for the comparison |
+| Backfill at rest | =?backfill=none= (default) | The range fields and the sentence that the contract cannot carry the request yet |
+| Backfill running | =?backfill=progress= | A progress bar, the days fetched oldest first, and Stop |
+| Backfill done | =?backfill=fill= | 300 days asked, 280 stored, 20 skipped because the store held them |
+
+* What it argues
+
+- *One row, four questions.* The row answers who the provider is, whether we may
+  fetch it, whether it is arriving, and what a person may do about it. The five
+  badges that follow from those questions are mutually exclusive: accepted terms
+  and no fixing yet is =never fixed=; accepted, serving and no value today is
+  =late=; a stopped heartbeat is =not serving=; a person's pause is =paused=.
+- *Freshness is not tick age.* The adapter read's last-tick age is useless for a
+  source that publishes once a day, so the row states the last fixing's date,
+  the time it was received, and whether the next publication is late. The
+  adapter's heartbeat stays in its own column, where a stopped source reads as
+  one.
+- *The paused row stays.* A paused provider keeps its fixings and the feed that
+  started from one, so hiding it from the list loses the reason a feed's start
+  names it. The prototype keeps it, dimmed, and draws the hidden variant beside
+  it for comparison: the hidden variant needs a count and a way back, and it
+  makes the pair comparison lose a column silently.
+- *A backfill is a request, and the screen says whose.* The dialog names the
+  adapter as the only party that can answer it, and says that until the contract
+  carries the request the screen offers only the window the service fetches
+  itself. The done state says what the store did: asked for 300 days, stored
+  280, skipped 20 it already held.
+- *Deleting fixings is a consequence, not a command.* The prototype does not
+  draw it as a row action. It is offered after a terms version withdraws
+  storage, in the same place the person accepts the new version, and it names
+  the feeds that started from a value that goes.
+
+* What is fake
+
+- Every provider, item, fixing, date and time is invented.
+- The chart is seven points drawn in the page, not a series.
+- The adapter's state and heartbeat are written into the mock data; the real
+  read answers them per adapter, with the ids it serves and refuses.
+- The backfill progress is a fixed number, and no request is made.
+- Refresh does nothing, and the history and feed links point nowhere.
+- Nothing is written. Accepting terms and deleting fixings are inert buttons.
+  Pause and resume move the query string, so the state survives a reload.
+  Fetch moves the address to the running state and no request leaves the page.
+
+* Where the code lives
+
+- =doc/prototypes/market_data/official-rates/index.html= — the shell: the bar
+  with the variant selectors, the provider table, the provider page, and the
+  backfill card.
+- =doc/prototypes/market_data/official-rates/prototype.css= — the product's
+  tokens copied from =projects/ores.web/packages/web/src/styles.css=, and the
+  handful of classes the page needs.
+- =doc/prototypes/market_data/official-rates/prototype.js= — the mock data, the
+  state derived from terms, adapter and fixings, and the query string as the
+  only state.
+
+The page adds nothing of its own beyond those three files, and the site adds
+nothing to it.
+
+* Verdict
+
+The shape is agreed for review: the row carries terms, freshness, next
+publication, the adapter and the acts; the three failures have three sentences;
+the paused row stays unless the hidden variant's count and the lost comparison
+column are wanted; the backfill is a dialog that says the adapter answers it.
+
+The comparison state is the one the prototype now recommends: the paused row
+stays, and the hidden variant's only gain is a shorter list whose pair
+comparison silently loses a column. The withdrawn-terms state draws the
+deletion where the person accepts the new version, never as a row command.
+
+What the prototype cannot settle is what this story's two decision tasks own:
+whether the pause is a demand fact or a provider state, and what form the
+backfill request takes on the adapter contract. The prototype's choices are the
+input to those decisions, not their substitute.

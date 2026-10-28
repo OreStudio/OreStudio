@@ -1,0 +1,212 @@
+:PROPERTIES:
+:ID: 3888BB1A-F216-46E0-92FA-6C0E6A0CD33C
+:END:
+#+title: User Journey: Run the public sources
+#+description: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each synthetic feed started.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:official_rates:operations:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator sees whether each public provider's fixings are arriving, accepts or declines its terms, pauses or resumes it, asks for a backfill, and reads where each synthetic feed started.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know whether the rates we use are actually arriving, and to do
+something about it when they are not — accept a publisher's terms, pause one
+that costs too much, fetch a range we missed — without asking someone to run a
+command." The journey is done when the person has read the state of every
+public provider, has acted on each one that needed it, and knows which feeds
+started from which published value.
+
+* Actor and trigger
+
+The actor is the system administrator, because every public provider is system
+data and a person accepts its terms on the system's behalf. Reading the
+providers and the fixings needs =marketdata::providers:read= and
+=marketdata::market_fixings:read=. Accepting or declining terms needs
+=marketdata::providers:accept_terms=. Pausing, resuming and starting a backfill
+need a permission the server does not define yet, and deleting a provider's
+fixings needs a delete permission the server does not define yet.
+
+The trigger is one of four events. A publisher's terms change, and the person
+must accept them again or stop using its data. A fixing a desk needs is late,
+and the person looks for the cause. A pair or a provider is new, and the person
+checks that its data arrives before anyone builds on it. A bill or a coverage
+review says a provider is not worth its cost, and the person pauses it.
+
+The journey starts at *Market data*, then *Official rates*, and ends when the
+person leaves the screen. A person who came from a synthetic feed's page
+returns there, because that page carries the value a run started from.
+
+* Steps
+
+The screen is the record screen shape of the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]: a list of
+providers, one provider's page with its fixings, and a pair comparison. This
+journey adds the operational facts the screen already has data for and the two
+acts the architecture can carry.
+
+1. *Read the providers.* The person opens *Market data* and then *Official
+   rates*. The system lists every public provider that has terms: its name, the
+   kind of source it is, whether its terms are accepted at the version shown,
+   the items it serves, and its freshness.
+2. *Read the freshness.* For each provider the row states the last fixing's
+   date, the time it was received, and whether the next expected publication is
+   late. A provider that has never had a fixing says so in words rather than
+   showing a blank cell.
+3. *Tell the three failures apart.* An adapter that is not serving, a provider
+   whose next publication is late, and a provider that has never had a fixing
+   read as three different states, each with the sentence that says what to do.
+   The adapter's state, heartbeat and the ids it refuses come from the adapter
+   status read the marketdata service already answers.
+4. *Accept or decline terms.* The person opens a provider whose terms are not
+   accepted, reads the terms page and the credit it asks for, and accepts them
+   at the version shown or declines. The service refuses an acceptance of a
+   version that changed since the person read it, and the screen reloads and
+   says so. The service fetches a provider only after someone accepts its terms.
+5. *Read a provider's fixings.* The person opens the provider and reads its
+   series as a table and a chart over a window, one item at a time. Each value
+   keeps the publisher's own id of the item and the time it was received.
+6. *Compare a pair.* The person compares one pair across every provider, as
+   published, inverted, or crossed through the provider's base, and the screen
+   names the route of each value.
+7. *Pause and resume.* The person pauses a provider that is not worth its cost,
+   and the system stops demanding its items. The fixings the provider already
+   published stay, and a feed that started from one keeps its start. Resume
+   restores the demand. Each act is audited with an actor and a reason.
+8. *Start a backfill of a range.* The person names a date range and asks for it.
+   The service asks the adapter for the range, and the screen says the backfill
+   is running and names the days it has fetched. A range that overlaps what the
+   store holds adds nothing, because the store skips a fixing it already has.
+9. *Delete the fixings of a provider whose terms withdrew storage.* When a new
+   terms version withdraws permission to store, the person deletes that
+   provider's fixings. The deletion records who did it and when, and the screen
+   says which feeds started from a value that is now gone.
+10. *See where a feed started.* From a synthetic feed's page the person reads
+    the provider, the item, the value as published and the time it was received
+    of the fixing the run started from. The screen links back to this one.
+11. *See who changed it.* The person opens the provider's history: terms
+    acceptances and declines, pauses and resumes, backfills and deletions, each
+    with its actor and its reason.
+12. *Leave.* The person returns to *Market data*.
+
+* Screens and wireframes
+
+The list and the provider page of the standard, with a freshness line and an
+adapter badge on each row, a backfill range dialog, and a pause dialog that
+names what stops and what stays.
+
+#+caption: The provider list with terms state, freshness and adapter state, and one provider's page with its fixings, pair comparison and the backfill range.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_run-the-public-sources.png]]
+
+Every step is judged against what the standard draws today, and what the server
+answers today.
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 | The provider list of the standard | The screen already draws it |
+| 2 | A freshness line on each row: last fixing, received, next expected | A view no rule draws yet; the data is joined from the fixings read and the adapter read |
+| 3 | A state badge on each row, with the sentence below the list | A kind's own state, by RS-PAGE-03; needs the three sentences fixed |
+| 4 | Accept terms from the row, at the version shown | The screen and the service already do it |
+| 5 | The provider page's fixings table and chart | The screen already draws it |
+| 6 | The pair comparison | The screen already draws it |
+| 7 | Pause and resume from the row, with a dialog | A missing server operation; see [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] |
+| 8 | A range dialog and a progress state | A missing server operation; see [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]] |
+| 9 | Delete fixings offered after a withdrawal | A missing server operation and a permission |
+| 10 | The feed page's start notice | Already built; the screen shows where a run started |
+| 11 | The shared timeline of the provider | The standard's history tab, once the acts exist |
+
+* Prototype
+
+- Directory :: [[file:../../../prototypes/market_data/official-rates/][doc/prototypes/market_data/official-rates/]]
+- Note :: [[file:../../../prototypes/market_data/official-rates.org][the design note]]
+- States :: =?state=live|late|down|never|paused|terms=, =?paused=muted|hidden=,
+  =?fresh=quiet|strong=, =?compare=1=, =?provider=<code>=,
+  =?pause=<code>= and =?resume=<code>=, =?terms=withdraw=,
+  =?backfill=none|progress|fill=
+
+The prototype draws the provider row and the provider page, the three failure
+states, the two paused variants, and the backfill range at rest and in
+progress. It is a static page: no build, no server, no session.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =provider= | The name, the kind and the terms state | =projects/ores.marketdata/modeling/ores.marketdata.provider.org= |
+| =provider terms= | The terms page, the credit, whether storage is allowed, and who accepted which version | the same model |
+| =market_fixing= | The values of a provider's item, with the publisher's time and the time received | =projects/ores.marketdata/modeling/ores.marketdata.market_fixing.org= |
+| =market_series= | The series an item is stored under, per party | =projects/ores.marketdata/modeling/ores.marketdata.market_series.org= |
+| =market_data_mapping=, =market_data_vendor_instrument= | The publisher's own id of an item | the marketdata vendor models |
+| adapter status | The state, the heartbeat and the ids an adapter serves or refuses; a read, not an entity | =marketdata.v1.ops.list_adapter_status= |
+| =fx_spot_fixing_item= | The ranked items a synthetic feed may start from | =projects/ores.synthetic/modeling/ores.synthetic.fx_spot_fixing_item.org= |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1, 4 | List the public providers with their terms and series | =marketdata.v1.providers.list= | exists |
+| 4 | Accept or decline a provider's terms at a version | =marketdata.v1.ops.accept_provider_terms= | exists |
+| 5, 6 | Read the fixings of up to twelve series | =marketdata.v1.ops.get_fixings= | exists |
+| 2, 3 | Read every adapter's state, heartbeat and counts | =marketdata.v1.ops.list_adapter_status= | exists |
+| 10 | Read where a feed run started | =synthetic.v1.feed_configs.list= | exists |
+| 7 | Pause or resume a provider | none yet | missing |
+| 8 | Ask an adapter for a date range | none yet | missing |
+| 9 | Delete a provider's fixings, with an actor | none yet | missing |
+
+* What is missing
+
+- *Pause and resume a provider.* The download follows demand, so the act is
+  either a demand change or a new provider state. The decision is
+  [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is
+  paused]]. Until it exists the screen states that a provider is fetched
+  because the system party subscribes to it, and names the subscription.
+- *A backfill of a chosen range.* The adapter contract carries announce,
+  demand, tick and heartbeat, and no fetch request. The design is
+  [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the
+  adapter contract]]. Until it exists the screen offers the window the service
+  already fetches and says that the choice cannot yet be made from here.
+- *Deleting a provider's fixings.* The durable table is never deleted today,
+  because the terms in force when a value was stored keep it. A terms version
+  that withdraws storage needs an act with an actor, which
+  [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is
+  paused]] carries alongside the pause.
+- *Freshness in one read.* The fixings read answers one item at a time, so the
+  screen reads the latest fixing of every item a provider serves. A single read
+  that answers the last fixing of each series would make the row cheap; until
+  then the screen reads the provider's best item and says which one it read.
+  The row and the three states are
+  [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness
+  and its adapter's health]].
+
+* Related journeys
+
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] — the party's view of the same providers: which ones a party takes and what each costs.
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data sources running]] — the sources under the providers, their state and their routes.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the quotes a subscription delivers, and the ones that failed.
+- [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — the feed that starts from a fixing, and the choice of which items it may start from.
+
+* Related knowledge
+
+- [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] — the providers, the terms, the adapter, the store and the reader behind this screen.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders the market data cluster.
+- [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — why an official rate is not the live market, and who approves a rate set.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] — how a published value reaches the durable store.
+- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the party entitlement a fixing read carries.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the inventory the prototype answers to.
+- [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] — the task that made a feed start from a fixing and showed where it started.
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]] — how the wireframe above was drawn.

@@ -32,9 +32,9 @@ The analysis this story carries, taken with the user on 2026-10-28:
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The story and its four tasks are scaffolded; the prototype is the first task. |
+| Now           | The journey and the prototype are in PR #4032 for review; the health read is next. |
 | Waiting on    | Nothing.                               |
-| Next          | Start [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]]. |
+| Next          | Start [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]]. |
 | Last touched  | 2026-10-28                               |
 
 * Acceptance
@@ -50,10 +50,11 @@ The analysis this story carries, taken with the user on 2026-10-28:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1048DB09-9987-4199-9129-EDBC94A6A640][Scaffold story: Run the public sources from the Official rates screen]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]] | BACKLOG | | | One static prototype of the row and the page, with competing answers for the paused state and the freshness line, before any control is built. |
+| [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]] | DONE | 2026-10-28 | 2026-10-28 | One static prototype of the row and the page, with competing answers for the paused state and the freshness line, before any control is built. |
 | [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]] | BACKLOG | | | Each public provider states whether its data is arriving, in the words a daily source needs, from the adapter status the marketdata service already reports. |
 | [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] | BACKLOG | | | A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds. |
 | [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]] | BACKLOG | | | A chosen date range is a request only the adapter can answer, and the contract carries no such request today; this task designs it and its window rule. |
+| [[id:9C112C73-10C4-4FAC-A7D3-C182540C99F8][Write the journey that runs the public sources]] | DONE | 2026-10-28 | 2026-10-28 | The journey a system administrator takes through the Official rates screen: the providers, their terms and freshness, the three failures, the acts still to come, and what the screen cannot do yet. |
 
 * Decisions
 
@@ -63,7 +64,8 @@ The analysis this story carries, taken with the user on 2026-10-28:
 - Freshness is not tick age (2026-10-28). A daily source reads hours stale by construction, so freshness is the last fixing's date, the time it was received, and whether the next expected publication is late.
 - Pause is decided before it is built (2026-10-28). The download follows demand, so a pause is a fact about demand unless the state must live on the provider for a cost reason, and the decision task settles it.
 - A chosen backfill range is an adapter request, not a button (2026-10-28). The adapter contract has no such request today, and the service's own window already exists, so the design task settles the request and which window wins.
-- A prototype comes before the controls (2026-10-28). Three new interactions and one new state have no precedent on this screen, so the shape is agreed on a static page first.
+- A prototype comes before the controls (2026-10-28). Three new interactions and one new state have no precedent on this screen, so the shape is agreed on a static page first. The prototype keeps a paused provider in the list, dimmed, because its fixings and the feed that started from one stay; hiding it loses the reason a feed names it.
+- The journey is the design record (2026-10-28). The steps, the judgement table, the wireframe and the operations live in [[id:3888BB1A-F216-46E0-92FA-6C0E6A0CD33C][Run the public sources]]; the story's work is judged against it.
 
 * Out of scope
 

@@ -150,6 +150,65 @@ via its "Verifies task" field.
 
 * Result
 
+The family books. A provisioning run over the ACME tenant produces seventeen
+equity trades across the nine routed tables, and the worst-of basket states its
+constituents and its periods beside the swap:
+
+| Table | Trades |
+|-------+--------|
+| option | 2 |
+| asian option | 1 |
+| barrier option | 3 |
+| digital option | 2 |
+| forward | 1 |
+| swap | 2 |
+| variance swap | 1 |
+| accumulator | 3 |
+| position | 2 |
+| *total* | *17* |
+
+The basket states 2 constituents and 4 periods, which is the shape the corpus
+holds.
+
+Sixteen of the seventeen routed codes book. =EquityOutperformanceOption= does
+not, because it routes to the option table and that table's check admits
+=EquityOption= and =EquityCliquetOption= only, so no row of that type can
+satisfy it. That is a defect in the check.
+
+** What the run cost, in the order it was found
+
+Every one of these was a value the schema refuses, and every one was found by
+running rather than by reading:
+
+1. The catalogue was seeded and never published: it had no artefact type, no
+   publish operation and no bundle membership.
+2. The aggregate registrar never called the equity underlying registration, so
+   the service answered no request for the list.
+3. =underlying_kind= carried the catalogue's =index= or =share= where the
+   vocabulary is =equity=.
+4. The accumulator's =payoff_type= and =target_type= are a fixed set, and an
+   accumulator states no target where a TaRF must.
+5. A digital states an option type and a strike; a touch states a barrier and
+   neither.
+6. The forward's =quantity= is required above zero and was never set.
+7. The swap's =return_type= is =Total= or =Price=.
+8. The constituent's check read the catalogues as the writing session, and the
+   population writes as a service session that holds none, so every
+   constituent was refused. The vocabularies are market facts and are now read
+   past tenancy.
+
+** What this says about the design
+
+The catalogue was made tenant-scoped by copying the commodity precedent. The
+run shows the cost: a check that resolves a code against a catalogue only works
+when both share a tenant, and a service-origin writer has no catalogue at all.
+A vocabulary of market facts belongs to the installation, and the resolver now
+treats it that way even though the rows are published per tenant.
+
+The commodity catalogue is in the same position as the equity one was: seeded,
+never given an artefact type, never published. Any family that draws on a
+catalogue will meet this until it is fixed for all of them.
+
 * Notes
 
 ** Analysis of the catalogue

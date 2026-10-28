@@ -71,6 +71,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:C8C5536D-1FFB-4E63-937D-88A27C05B21F][Design the published curve screens and decide the publish model gaps]] | DONE | 2026-10-27 | 2026-10-27 | The published-curves list, the delta and the queue subject need a prototype; the withdrawal, zero-approval, notification and maker-checker need decisions. |
 | [[id:3E5A507D-85B5-4CBC-AEA0-4F676026ABB8][Build the published curve screens]] | STARTED | 2026-10-27 | | Implement the signed-off prototype: the list, the record page with its four tabs, the last-N overlay, the comparison, the history and the queue subject. |
 | [[id:10F30D46-7821-4831-B756-4AE462A8BEDB][Design the bootstrapping screens]] | DONE | 2026-10-28 | 2026-10-28 | The Qt app has the IR curve bootstrapping screens; the web has none. The journeys and the prototype come before any code. |
+| [[id:5E222CAA-EC8C-4A16-A835-6C76FD660406][Build the curve blueprint screens]] | STARTED | 2026-10-28 | | Implement the signed-off prototype with the standard record infrastructure. |
 
 * Decisions
 

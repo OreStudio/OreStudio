@@ -33,7 +33,8 @@ helper. Two changes make this so.
 - pgbouncer runs in transaction pooling mode as a systemd unit of each
   environment, beside nats-server, and the services connect to it.
 
-The first change comes before the second: transaction pooling hands a server
+The first change delivers [[id:964B4B51-C5C7-4339-AC51-593CE49CFB07][Run every hand-written query on a pooled connection]], and this task
+closes it. The first change comes before the second: transaction pooling hands a server
 connection to another client at each commit, so the session-level settings
 the raw helpers set today would leak to that client.
 
@@ -54,6 +55,10 @@ the raw helpers set today would leak to that client.
   =database::transact=, on the pool or on the bound unit of work's
   transaction.
 - No code sets a tenant, party, actor or service setting at session level.
+- An idle compute claim opens no connection: =strace= on the claim thread
+  shows no =connect= and no name lookup. The idle CPU of
+  =ores.compute.service= is measured before and after, and both numbers are
+  recorded on this task.
 - The change in semantics (a raw helper called inside a unit of work commits
   or rolls back with it, not on its own) is brought to the user for sign-off
   with its evidence before it lands, and the unit-of-work tests state the new

@@ -752,6 +752,44 @@ describe('the curve blueprint read routes', () => {
         expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: null } });
     });
 
+    it('stops walking a catalogue that never comes back short, on the page count', async () => {
+        // A server that ignores the offset answers the same full page for ever.
+        // The read must end anyway, and it must end on its own count.
+        const page = Array.from({ length: 200 }, (_, index) => ({
+            version: 1,
+            id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+            oresmd_uri: `oresmd://ir/USD?type=series&index=${String(index)}`,
+        }));
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: page.length,
+                market_series: page,
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(calls).toHaveLength(50);
+        expect(calls.map((call) => (call.body as { offset: number }).offset)).toEqual(
+            Array.from({ length: 50 }, (_, index) => index * 200),
+        );
+        expect(response.json().series).toHaveLength(10_000);
+    });
+
+    it('stops on an empty page, which is the other end of a catalogue', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.market_series.list': { result: ok, total: 0, market_series: [] },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json().series).toEqual([]);
+        expect(calls).toHaveLength(1);
+    });
+
     it('builds a recipe at an instant and answers the points, without publishing', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'marketdata.v1.ops.compute_curve': {

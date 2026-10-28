@@ -97,8 +97,27 @@ const TENORS = [
     { code: '1Y', display_name: 'One year' },
 ];
 
-function render(path: string): string {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+async function render(
+    path: string,
+    options: {
+        /** Whether the read of the series the party holds fails. */
+        readonly seriesUnread?: boolean;
+        /** The series the list's own read answered for the row, by state. */
+        readonly rowSeriesState?: 'read' | 'missing' | 'unread';
+    } = {},
+): Promise<string> {
+    // The cache is seeded, so nothing reads again on mount: a state a test
+    // seeded is the state the page draws.
+    const client = new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+                retryOnMount: false,
+                staleTime: Infinity,
+                refetchOnMount: false,
+            },
+        },
+    });
     client.setQueryData(
         ['registry', 'refdata'],
         [
@@ -109,7 +128,20 @@ function render(path: string): string {
     );
     client.setQueryData(['my-access'], everything);
     client.setQueryData(['labels'], { labels: [], domains: {}, mapped: {} });
-    client.setQueryData(['held-market-series'], new Map([[SERIES, URI]]));
+    if (options.seriesUnread === true) {
+        // A read that failed, as the page meets it: the entry is in the cache and
+        // its state is an error, so the screen says so rather than claiming the
+        // series is gone.
+        const query = client.getQueryCache().build(client, { queryKey: ['held-market-series'] });
+        query.setState({
+            ...query.state,
+            status: 'error',
+            fetchStatus: 'idle',
+            error: new Error('the catalogue did not answer'),
+        });
+    } else {
+        client.setQueryData(['held-market-series'], new Map([[SERIES, URI]]));
+    }
     client.setQueryData(['tenor-catalogue'], { tenors: TENORS, conventions: [], schedules: [] });
     client.setQueryData(['records', CONFIGS, 'all'], [blueprint]);
     client.setQueryData(['records', CONFIGS, 'funding', ''], { rows: [blueprint], total: 1 });
@@ -121,8 +153,15 @@ function render(path: string): string {
     client.setQueryData(['records', CONFIGS, 'currencies'], [blueprint]);
     // The list's own read names each row's series, so the page the table reads
     // is the row as that read answers it.
+    const rowState = options.rowSeriesState ?? 'read';
     client.setQueryData(pageKey({ key: CONFIGS }, FIRST_PAGE), {
-        rows: [{ ...blueprint, series_uri: URI }],
+        rows: [
+            {
+                ...blueprint,
+                series_uri: rowState === 'read' ? URI : '',
+                series_state: rowState,
+            },
+        ],
         total: 1,
     });
     client.setQueryData(
@@ -166,7 +205,7 @@ function specs(): readonly FieldSpec[] {
 }
 
 describe('the blueprint field table', () => {
-    it('asks for the output series the party holds, first and required', () => {
+    it('asks for the output series the party holds, first and required', async () => {
         const series = specs()[0];
         expect(series?.field).toBe('output_series_id');
         expect(series?.kind).toEqual({ kind: 'pick', choices: [{ value: SERIES, label: URI }] });
@@ -174,11 +213,11 @@ describe('the blueprint field table', () => {
         expect(series?.fixed).toBe(true);
     });
 
-    it('refuses to save a new blueprint that names no series', () => {
+    it('refuses to save a new blueprint that names no series', async () => {
         expect(invalidFields(specs(), {})).toContain('output_series_id');
     });
 
-    it('writes the series the person chose', () => {
+    it('writes the series the person chose', async () => {
         const write = writeOf(specs(), {
             output_series_id: SERIES,
             currency_code: 'USD',
@@ -196,29 +235,42 @@ describe('the blueprint field table', () => {
 });
 
 describe('the blueprint list', () => {
-    it('offers Add, and says nothing about not being able to add', () => {
-        const html = render('/market-data/curve-blueprints');
+    it('offers Add, and says nothing about not being able to add', async () => {
+        const html = await render('/market-data/curve-blueprints');
         expect(html).toContain('Add blueprint');
         expect(html).not.toContain('cannot be added here yet');
     });
 
-    it('names each row by the series it publishes into, with its state line', () => {
-        const html = render('/market-data/curve-blueprints');
+    it('draws the id and says so when a row names a series that no longer resolves', async () => {
+        const html = await render('/market-data/curve-blueprints', { rowSeriesState: 'missing' });
+        expect(html).toContain(SERIES);
+        expect(html).toContain('The series no longer resolves.');
+        expect(html).not.toContain('USD-SOFR-FOMC');
+    });
+
+    it("says the series could not be read when the row's read failed", async () => {
+        const html = await render('/market-data/curve-blueprints', { rowSeriesState: 'unread' });
+        expect(html).toContain(SERIES);
+        expect(html).toContain('The series could not be read.');
+    });
+
+    it('names each row by the series it publishes into, with its state line', async () => {
+        const html = await render('/market-data/curve-blueprints');
         expect(html).toContain('USD-SOFR-FOMC');
         expect(html).toContain('No pillars yet');
     });
 });
 
 describe('the blueprint record page', () => {
-    it('draws the output series as the field it is, linked to the series read', () => {
-        const html = render(`/market-data/curve-blueprints/${blueprint['id']}`);
+    it('draws the output series as the field it is, linked to the series read', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}`);
         expect(html).toContain('USD-SOFR-FOMC');
         expect(html).toContain(`/market-data/series?series=${SERIES}`);
         expect(html).toContain('US Dollar');
     });
 
-    it('lists the pillars in maturity order, with the sequence derived', () => {
-        const html = render(`/market-data/curve-blueprints/${blueprint['id']}?tab=pillars`);
+    it('lists the pillars in maturity order, with the sequence derived', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}?tab=pillars`);
         const deposit = html.indexOf('DEPOSIT');
         const last = html.indexOf('>1Y<');
         expect(deposit).toBeGreaterThan(-1);
@@ -227,8 +279,55 @@ describe('the blueprint record page', () => {
         expect(html.indexOf('>1F<')).toBeGreaterThan(-1);
     });
 
-    it('says a recipe with no pillar holds none, and names the pillars tab', () => {
-        const html = render(`/market-data/curve-blueprints/${blueprint['id']}`);
+    it('draws the id and says the series no longer resolves when the catalogue has lost it', async () => {
+        // The cache is seeded, so nothing reads again on mount: a state a test
+        // seeded is the state the page draws.
+        const client = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                    retryOnMount: false,
+                    staleTime: Infinity,
+                    refetchOnMount: false,
+                },
+            },
+        });
+        client.setQueryData(['held-market-series'], new Map([[SERIES, URI]]));
+        // The record names a series the party's catalogue does not hold.
+        const orphan = { ...blueprint, output_series_id: 'a9a9a9a9-0000-4000-8000-000000000009' };
+        client.setQueryData(['records', CONFIGS, 'key', blueprint['id']], orphan);
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <MemoryRouter
+                        initialEntries={[`/market-data/curve-blueprints/${blueprint['id']}`]}
+                    >
+                        <Routes>
+                            <Route
+                                path="/market-data/curve-blueprints/:id"
+                                element={<CurveBlueprintPage />}
+                            />
+                        </Routes>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+        expect(html).toContain('a9a9a9a9-0000-4000-8000-000000000009');
+        expect(html).toContain('no longer resolves');
+        expect(html).not.toContain(`/market-data/series?series=a9a9a9a9`);
+    });
+
+    it('draws the id and says the series could not be read when the read fails', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}`, {
+            seriesUnread: true,
+        });
+        expect(html).toContain(SERIES);
+        expect(html).toContain('could not be read');
+        expect(html).not.toContain(`/market-data/series?series=${SERIES}`);
+    });
+
+    it('says a recipe with no pillar holds none, and names the pillars tab', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}`);
         expect(html).not.toContain('holds no pillars');
     });
 });

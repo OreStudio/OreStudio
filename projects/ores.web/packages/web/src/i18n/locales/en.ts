@@ -4594,6 +4594,12 @@ export const en: SourceCatalogue = {
                 "The recipe's versions and every pillar's versions, newest first, each named by its part. A pillar deleted from the recipe is not in this stream.",
             usedByNone: 'No projection discounts off this recipe.',
             usedByUnread: 'The projections could not be read.',
+            seriesMissing:
+                'The party holds no series with this id, so the blueprint names a series that no longer resolves. The record itself is sound; the curve cannot be built until the series is back.',
+            seriesMissingShort: 'The series no longer resolves.',
+            seriesUnread:
+                'The series this blueprint names could not be read, so the page cannot say whether it still resolves.',
+            seriesUnreadShort: 'The series could not be read.',
             filterCurrency: 'Currency',
             filterAllCurrencies: 'All currencies',
             filterRole: 'Role',

@@ -4657,6 +4657,12 @@ const fr: SourceCatalogue = {
                 "Les versions de la recette et celles de chaque pilier, de la plus récente à la plus ancienne, chacune nommée par sa partie. Un pilier supprimé de la recette n'est pas dans ce flux.",
             usedByNone: "Aucune projection ne s'actualise sur cette recette.",
             usedByUnread: "Les projections n'ont pas pu être lues.",
+            seriesMissing:
+                "La partie ne détient aucune série portant cet identifiant : le plan nomme donc une série qui ne se résout plus. L'enregistrement lui-même est sain ; la courbe ne peut pas être construite tant que la série n'est pas revenue.",
+            seriesMissingShort: 'La série ne se résout plus.',
+            seriesUnread:
+                "La série que ce plan nomme n'a pas pu être lue : la page ne peut donc pas dire si elle se résout encore.",
+            seriesUnreadShort: "La série n'a pas pu être lue.",
             filterCurrency: 'Devise',
             filterAllCurrencies: 'Toutes les devises',
             filterRole: 'Rôle',

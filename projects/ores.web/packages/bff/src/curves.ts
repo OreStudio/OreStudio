@@ -171,6 +171,17 @@ const publishedSetsBody = z.strictObject({
 const SERIES_PAGE = 200;
 
 /**
+ * The most pages of series one read asks for.
+ *
+ * The read walks the catalogue a page at a time, so it stops on a page that is
+ * short or empty and, failing both, on this count: a server that ignored the
+ * offset would otherwise answer the same full page for ever and the read would
+ * never return. Fifty pages are ten thousand series, more than any one party's
+ * catalogue holds, so the cap bounds the work and never truncates a real list.
+ */
+const SERIES_PAGES = 50;
+
+/**
  * The series a blueprint names, by the URI each is published under.
  *
  * A curve blueprint holds its output series as a soft reference, so the screen
@@ -251,11 +262,11 @@ export function registerCurveRoutes(
         const body = input(seriesByBody, request.body);
         const stated = body.ids.length > 0;
         const series: { id: string; uri: string }[] = [];
-        for (let offset = 0; ; offset += SERIES_PAGE) {
+        for (let page = 0; page < SERIES_PAGES; page += 1) {
             const reply = await session.client.callAuthenticated(
                 marketSeriesSubjects.list_market_series_request,
                 {
-                    offset,
+                    offset: page * SERIES_PAGE,
                     limit: SERIES_PAGE,
                     order: NO_ORDER,
                     filter: {
@@ -275,10 +286,13 @@ export function registerCurveRoutes(
             if (reply.result.outcome !== 'ok') {
                 throw refused(reply.result.message);
             }
-            series.push(...reply.market_series.map((row) => ({ id: row.id, uri: row.oresmd_uri })));
-            // A stated set is one page; the party's catalogue is read until a
-            // page comes back short, so the picker offers all of it.
-            if (stated || reply.market_series.length < SERIES_PAGE) {
+            const rows = reply.market_series;
+            series.push(...rows.map((row) => ({ id: row.id, uri: row.oresmd_uri })));
+            // A stated set is one page. The party's catalogue is walked until a
+            // page is empty, which is the only end a short page is not, and the
+            // loop's own count is the third end: a server that answered a full
+            // page every time would otherwise keep this answer from returning.
+            if (stated || rows.length === 0 || rows.length < SERIES_PAGE) {
                 break;
             }
         }

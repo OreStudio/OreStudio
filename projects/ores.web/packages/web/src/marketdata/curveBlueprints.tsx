@@ -109,12 +109,44 @@ const PILLAR_FIELDS: readonly FieldSpec[] = [
     },
 ];
 
+/**
+ * What the read of a blueprint's output series answered.
+ *
+ * The series is a soft reference, so the record can name an id that nothing
+ * holds any more, or the read can fail: `missing` is an id the catalogue does
+ * not hold, `unread` is a read that did not come back, and `loading` is a read
+ * still in flight, which says nothing yet.
+ */
+export type SeriesState = 'read' | 'missing' | 'unread' | 'loading';
+
+/** The words a screen says about a series, and whether it is a link. */
+function seriesMeaning(state: SeriesState): {
+    readonly means?: { readonly key: string };
+    readonly pathOf?: (value: string) => string;
+} {
+    switch (state) {
+        case 'read':
+            return {
+                means: { key: 'marketdata.curveBlueprints.fields.outputSeriesMeans' },
+                pathOf: (value) => `/market-data/series?series=${encodeURIComponent(value)}`,
+            };
+        case 'missing':
+            return { means: { key: 'marketdata.curveBlueprints.seriesMissing' } };
+        case 'unread':
+            return { means: { key: 'marketdata.curveBlueprints.seriesUnread' } };
+        default:
+            return {};
+    }
+}
+
 /** The fields of a blueprint, in the order the field table reads them. */
 export function blueprintFields(inputs: {
     readonly tenors: readonly { readonly value: string; readonly label: string }[];
     readonly conventions: readonly { readonly value: string; readonly label: string }[];
     readonly fundings: readonly { readonly value: string; readonly label: string }[];
     readonly series: readonly { readonly value: string; readonly label: string }[];
+    /** What the read of this record's own output series answered; a create says `read`. */
+    readonly seriesState?: SeriesState;
 }): readonly FieldSpec[] {
     return [
         {
@@ -122,8 +154,7 @@ export function blueprintFields(inputs: {
             history: 'Output Series Id',
             kind: { kind: 'pick', choices: inputs.series },
             fixed: true,
-            pathOf: (value) => `/market-data/series?series=${encodeURIComponent(value)}`,
-            means: { key: 'marketdata.curveBlueprints.fields.outputSeriesMeans' },
+            ...seriesMeaning(inputs.seriesState ?? 'read'),
         },
         {
             field: 'currency_code',
@@ -196,12 +227,18 @@ export function blueprintFields(inputs: {
  * record's natural key: a desk points a new recipe at a series it already
  * holds, and the server refuses a second blueprint that claims one.
  */
-function useSeriesChoices(): readonly { readonly value: string; readonly label: string }[] {
+function useSeriesChoices(): {
+    readonly choices: readonly { readonly value: string; readonly label: string }[];
+    readonly state: SeriesState;
+} {
     const held = useQuery({ queryKey: ['held-market-series'], queryFn: curves.heldSeries });
-    return [...(held.data ?? new Map<string, string>())].map(([id, uri]) => ({
-        value: id,
-        label: uri,
-    }));
+    return {
+        choices: [...(held.data ?? new Map<string, string>())].map(([id, uri]) => ({
+            value: id,
+            label: uri,
+        })),
+        state: held.isError ? 'unread' : held.isPending ? 'loading' : 'read',
+    };
 }
 
 /** Every tenor and convention the pickers draw from, ready for use as a choice. */
@@ -251,18 +288,21 @@ function useFundingChoices(currency = ''): readonly {
                 },
             }),
     });
-    const ids = (configs.data?.rows ?? []).map((row) => show(row['id']));
+    const ids = (configs.data?.rows ?? [])
+        .map((row) => show(row['output_series_id']))
+        .filter((id) => id !== '');
     const uris = useQuery({
         queryKey: ['curve-series-uris', ids.join(',')],
         queryFn: () => curves.seriesUris(ids),
         enabled: ids.length > 0,
     });
     return (configs.data?.rows ?? []).map((row) => {
-        const id = show(row['id']);
+        const series = show(row['output_series_id']);
         return {
-            value: id,
+            value: show(row['id']),
             label:
-                uris.data?.get(id) ?? `${show(row['currency_code'])} ${show(row['index_tenor'])}`,
+                uris.data?.get(series) ??
+                `${show(row['currency_code'])} ${show(row['index_tenor'])}`,
         };
     });
 }
@@ -326,9 +366,9 @@ function usePillars(configId: string) {
  *
  * The list reads the series URI of each row and the pillars each holds beside
  * the page, because a blueprint has no name of its own and the two facts are
- * what tell two rows apart. Add is not drawn: no operation mints the output
- * series a blueprint is created with, so a blueprint cannot be created from this
- * screen yet.
+ * what tell two rows apart. A series the catalogue no longer holds is drawn as
+ * its id with the sentence that says so, because a soft reference can outlive
+ * the row it names.
  */
 export function CurveBlueprintsPage(): ReactNode {
     const { t } = useTranslation();
@@ -372,13 +412,29 @@ export function CurveBlueprintsPage(): ReactNode {
         filters,
         read: async (page: Parameters<typeof base.read>[0]) => {
             const answer = await base.read(page);
-            const uris = await curves.seriesUris(answer.rows.map((row) => show(row['id'])));
+            const named = answer.rows
+                .map((row) => show(row['output_series_id']))
+                .filter((id) => id !== '');
+            /*
+             * A series that cannot be read at all is not the same fact as a row
+             * that is there: the first is the read's failure and the second is a
+             * soft reference that outlived its series, and a row says which.
+             */
+            let uris: ReadonlyMap<string, string> = new Map();
+            let read = true;
+            try {
+                uris = await curves.seriesUris(named);
+            } catch {
+                read = false;
+            }
             return {
                 ...answer,
-                rows: answer.rows.map((row): RecordRow => ({
-                    ...row,
-                    series_uri: uris.get(show(row['id'])) ?? '',
-                })),
+                rows: answer.rows.map((row): RecordRow => {
+                    const series = show(row['output_series_id']);
+                    const uri = uris.get(series) ?? '';
+                    const state: SeriesState = uri !== '' ? 'read' : read ? 'missing' : 'unread';
+                    return { ...row, series_uri: uri, series_state: state };
+                }),
             };
         },
     };
@@ -401,12 +457,10 @@ export function CurveBlueprintsPage(): ReactNode {
                         id: 'curve',
                         header: t('marketdata.curveBlueprints.columns.curve'),
                         cell: (row) => (
-                            <div>
-                                <span className="font-mono text-xs">{show(row['series_uri'])}</span>
-                                <p className="text-xs text-ink-faint">
-                                    {stateLine(t, row, countOf(show(row['id'])), sets)}
-                                </p>
-                            </div>
+                            <CurveCell
+                                row={row}
+                                stateLine={stateLine(t, row, countOf(show(row['id'])), sets)}
+                            />
                         ),
                     },
                     {
@@ -487,7 +541,7 @@ export function CurveBlueprintsPage(): ReactNode {
                         tenors: ladder.tenors,
                         conventions: ladder.conventions,
                         fundings,
-                        series,
+                        series: series.choices,
                     })}
                     row={undefined}
                     given={{ id: crypto.randomUUID() }}
@@ -518,6 +572,44 @@ function useCurrencyChoices(): readonly { readonly value: string; readonly label
         (configs.data ?? []).map((row) => show(row['currency_code'])).filter((code) => code !== ''),
     );
     return [...codes].sort().map((code) => ({ value: code, label: code }));
+}
+
+/**
+ * A blueprint's first cell: the series it publishes into, or the id it names
+ * when that series no longer resolves, and one line of state under it.
+ *
+ * A soft reference is the record's to keep and not the series': the blueprint
+ * still names the id, so the cell draws the id in place of the URI it cannot
+ * name, and says in words that there is nothing there to open.
+ */
+function CurveCell({
+    row,
+    stateLine,
+}: {
+    readonly row: RecordRow;
+    readonly stateLine: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const uri = show(row['series_uri']);
+    const state = show(row['series_state']) as SeriesState | '';
+    return (
+        <div>
+            <span className="font-mono text-xs">
+                {uri === '' ? show(row['output_series_id']) : uri}
+            </span>
+            {state === 'missing' && (
+                <p className="text-xs text-warn">
+                    {t('marketdata.curveBlueprints.seriesMissingShort')}
+                </p>
+            )}
+            {state === 'unread' && (
+                <p className="text-xs text-warn">
+                    {t('marketdata.curveBlueprints.seriesUnreadShort')}
+                </p>
+            )}
+            <p className="text-xs text-ink-faint">{stateLine}</p>
+        </div>
+    );
 }
 
 /** The line under a blueprint's code: what it holds and what stands on it. */
@@ -577,7 +669,16 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
     const [copying, setCopying] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
-    const uri = series.find((choice) => choice.value === show(config['output_series_id']))?.label;
+    const uri = series.choices.find(
+        (choice) => choice.value === show(config['output_series_id']),
+    )?.label;
+    /*
+     * The series is a soft reference: the record keeps naming an id the
+     * catalogue may have lost, so the page says which of the two it is rather
+     * than drawing a link that opens nothing.
+     */
+    const seriesState: SeriesState =
+        series.state === 'read' ? (uri === undefined ? 'missing' : 'read') : series.state;
     const rows = pillars.data?.rows ?? [];
     const fed = setsOf(sets, id);
     const pageKeys = [
@@ -600,7 +701,8 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
         tenors: ladder.tenors,
         conventions: ladder.conventions,
         fundings,
-        series,
+        series: series.choices,
+        seriesState,
     });
     return (
         <div className="space-y-4">
@@ -800,7 +902,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                         tenors: ladder.tenors,
                         conventions: ladder.conventions,
                         fundings: anyFundings,
-                        series,
+                        series: series.choices,
                     })}
                     row={undefined}
                     given={{ id: crypto.randomUUID() }}

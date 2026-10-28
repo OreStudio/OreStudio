@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/declare-the-ore-input-files-in-ores-ore
-#+pr:
+#+pr: 4004
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4004][#4004]] | [ore] Declare the input files a run names |
 
 * Review
 

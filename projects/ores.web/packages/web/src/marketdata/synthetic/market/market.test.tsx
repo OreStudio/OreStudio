@@ -37,6 +37,7 @@ import {
     coveredSeconds,
     LANE_SLOTS,
     MARKS_AT_MOST,
+    lawSummary,
     meanPaceOf,
     providerOf,
     slotCounts,
@@ -430,6 +431,19 @@ describe('the Arrivals tab', () => {
         ).toBeCloseTo(30);
         expect(coveredSeconds([{ ticks: [at(300)] }], 120, NOW)).toBe(0);
         expect(coveredSeconds([{ ticks: [at(200), at(119)] }], 120, NOW)).toBeCloseTo(119);
+    });
+
+    it('gives the feed, its process and its law columns of their own', () => {
+        const html = arrivals([new Date(NOW - 10_000).toISOString()]);
+        expect(html).toContain('>Process<');
+        expect(html).toContain('>Law<');
+        expect(html).toContain('Hawkes · n 0.6 · β 2');
+    });
+
+    it('names a Hawkes law with its branching and decay, and the others by name', () => {
+        const t = (key: string): string => key.split('.').pop() ?? key;
+        expect(lawSummary(law(), t)).toBe('hawkes · n 0.6 · β 2');
+        expect(lawSummary(law({ mode: 'periodic' }), t)).toBe('periodic');
     });
 
     it('names the provider, which tells two feeds of one pair apart', () => {

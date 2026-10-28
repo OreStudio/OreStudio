@@ -337,6 +337,7 @@ describe('the market regime', () => {
                 {
                     id: '',
                     kind: '',
+                    engine: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -347,6 +348,7 @@ describe('the market regime', () => {
                 {
                     id: '',
                     kind: '',
+                    engine: '',
                     sourceName: 'live.usdsofr',
                     label: 'USD SOFR',
                     assetClass: 'interest_rates',
@@ -423,6 +425,7 @@ describe('the market regime', () => {
                 {
                     id: '',
                     kind: '',
+                    engine: '',
                     sourceName: 'live.gbpusd',
                     label: 'GBP/USD',
                     assetClass: 'fx',
@@ -433,6 +436,7 @@ describe('the market regime', () => {
                 {
                     id: '',
                     kind: '',
+                    engine: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -474,6 +478,7 @@ describe('the market regime', () => {
                 {
                     id: '',
                     kind: '',
+                    engine: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',

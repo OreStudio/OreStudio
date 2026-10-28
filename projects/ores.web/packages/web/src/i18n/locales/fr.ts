@@ -5000,6 +5000,7 @@ const fr: SourceCatalogue = {
                 open: 'Onglet Arrivées →',
                 columns: {
                     feed: 'Flux',
+                    process: 'Processus',
                     law: 'Loi',
                     perHour: 'Ticks par heure',
                     sensitivity: 'Sensibilité',
@@ -5062,6 +5063,12 @@ const fr: SourceCatalogue = {
                     wall: 'Écart réel',
                 },
             },
+        },
+        processSummary: {
+            title: '{process} : ses paramètres',
+            close: 'Fermer',
+            open: 'Ouvrir l’onglet Processus →',
+            none: 'Aucun paramètre n’est enregistré pour ce flux.',
         },
         marketRegime: {
             title: 'Régime de marché',

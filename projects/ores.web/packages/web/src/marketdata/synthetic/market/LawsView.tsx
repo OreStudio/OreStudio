@@ -25,6 +25,7 @@ import { useTranslation } from '../../../i18n/Provider.js';
 import { cx } from '../../../ui/Primitives.js';
 import { assetClassColour } from '../../assetClassColour.js';
 import { feedPageOf } from '../feedTree.js';
+import { ProcessTag } from '../processSummary.js';
 import { markGroups } from '../marketRaster.js';
 import { providerOf } from './ArrivalsView.js';
 import { FactRows, MarketCard, MicroLabel, Segmented } from './MarketCard.js';
@@ -145,6 +146,7 @@ export function LawsView({
                                     {(
                                         [
                                             'feed',
+                                            'process',
                                             'law',
                                             'perHour',
                                             'sensitivity',
@@ -208,6 +210,13 @@ export function LawsView({
                                                             {providerOf(law.sourceName)}
                                                         </span>
                                                     </span>
+                                                </td>
+                                                <td className="px-2 py-1.5">
+                                                    {feed === undefined ? (
+                                                        '—'
+                                                    ) : (
+                                                        <ProcessTag feed={feed} />
+                                                    )}
                                                 </td>
                                                 <td className="px-2 py-1.5">
                                                     {t(`marketdata.marketRegime.modes.${law.mode}`)}

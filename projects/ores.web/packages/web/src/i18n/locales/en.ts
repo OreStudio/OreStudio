@@ -4936,6 +4936,7 @@ export const en: SourceCatalogue = {
                 open: 'Arrivals tab →',
                 columns: {
                     feed: 'Feed',
+                    process: 'Process',
                     law: 'Law',
                     perHour: 'Ticks an hour',
                     sensitivity: 'Sensitivity',
@@ -4998,6 +4999,12 @@ export const en: SourceCatalogue = {
                     wall: 'Wall gap',
                 },
             },
+        },
+        processSummary: {
+            title: '{process}: its parameters',
+            close: 'Close',
+            open: 'Open the Process tab →',
+            none: 'No parameters are stored for this feed.',
         },
         marketRegime: {
             title: 'Market regime',

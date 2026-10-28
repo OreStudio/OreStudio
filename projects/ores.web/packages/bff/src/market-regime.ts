@@ -100,6 +100,7 @@ export const RASTER_LANES = 120;
 const feedRow = z.object({
     id: z.string().default(''),
     kind: z.string().default(''),
+    engine: z.string().default(''),
     label: z.string(),
     source_name: z.string(),
     asset_class_code: z.string().default(''),
@@ -123,6 +124,8 @@ interface RasterRow {
     /** The feed's id and kind, so a screen can open the feed's own page. */
     readonly id: string;
     readonly kind: string;
+    /** The process the feed's prices come from, by its code. */
+    readonly engine: string;
     readonly sourceName: string;
     readonly label: string;
     readonly assetClass: string;
@@ -480,6 +483,7 @@ export function registerMarketRegimeRoutes(
             return {
                 id: row.id,
                 kind: row.kind,
+                engine: row.engine,
                 sourceName: row.source_name,
                 label: row.label,
                 assetClass: row.asset_class_code,

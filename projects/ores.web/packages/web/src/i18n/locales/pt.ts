@@ -4967,6 +4967,7 @@ const pt: SourceCatalogue = {
                 open: 'Separador Chegadas →',
                 columns: {
                     feed: 'Feed',
+                    process: 'Processo',
                     law: 'Lei',
                     perHour: 'Ticks por hora',
                     sensitivity: 'Sensibilidade',
@@ -5029,6 +5030,12 @@ const pt: SourceCatalogue = {
                     wall: 'Intervalo real',
                 },
             },
+        },
+        processSummary: {
+            title: '{process}: os seus parâmetros',
+            close: 'Fechar',
+            open: 'Abrir o separador Processo →',
+            none: 'Não há parâmetros guardados para este feed.',
         },
         marketRegime: {
             title: 'Regime de mercado',

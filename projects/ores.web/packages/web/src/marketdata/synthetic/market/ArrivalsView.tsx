@@ -23,15 +23,22 @@ import type { FeedRaster, MarketTrace, TraceEvent, TraceFeed } from '../../../ap
 import { useTranslation } from '../../../i18n/Provider.js';
 import { cx, Notice } from '../../../ui/Primitives.js';
 import { assetClassColour } from '../../assetClassColour.js';
+import { ProcessTag } from '../processSummary.js';
 import { markGroups, type StateBand } from '../marketRaster.js';
 import { lawText, tauPositions, tauSpan, traceBands } from '../marketTrace.js';
 import { MarketCard, MicroLabel, Segmented } from './MarketCard.js';
 import { FeedLink, type FeedPages } from './FeedLink.js';
-import { compact } from './numbers.js';
+import { clean, compact } from './numbers.js';
 
 /** The windows a person can look back over, in seconds. */
 export const WINDOWS = [30, 60, 120] as const;
 export type ArrivalWindow = (typeof WINDOWS)[number];
+
+/**
+ * The columns of a lane: the feed, its process and its law, each wide enough to read in full,
+ * then the ticks, which take what is left, and the count against what the law asks.
+ */
+const LANE_COLUMNS = 'grid-cols-[minmax(11rem,14rem)_11rem_9rem_minmax(12rem,1fr)_7.5rem]';
 
 /** The slots a dense lane is cut into. */
 export const LANE_SLOTS = 120;
@@ -104,6 +111,17 @@ export function coveredSeconds(
     return Math.min(seconds, Math.max(0, (now - oldest) / 1000));
 }
 
+/** A feed's law in a few words: its name, and a Hawkes law's branching ratio and decay. */
+export function lawSummary(
+    law: TraceFeed,
+    t: (key: string, values?: Readonly<Record<string, string | number>>) => string,
+): string {
+    const name = t(`marketdata.marketRegime.modes.${law.mode}`);
+    return law.mode === 'hawkes'
+        ? `${name} · n ${clean(law.branchingRatio, 3)} · β ${clean(law.decay, 3)}`
+        : name;
+}
+
 /** The provider part of a source name, which tells two feeds of one pair apart. */
 export function providerOf(sourceName: string): string {
     const parts = sourceName.split('.');
@@ -162,12 +180,12 @@ function Lane({
     const perSlot = Math.max(1e-9, asked / LANE_SLOTS);
     return (
         <div
-            className="grid grid-cols-[minmax(0,13rem)_minmax(0,1fr)_5.5rem] items-center border-b border-line-subtle odd:bg-white/[0.012] hover:bg-accent-dim"
+            className={`grid ${LANE_COLUMNS} items-center border-b border-line-subtle odd:bg-white/[0.012] hover:bg-accent-dim`}
             title={law === undefined ? feed.sourceName : lawText(law, t)}
         >
             <span
                 className={cx(
-                    'flex items-center gap-2 truncate px-2.5 font-mono text-xs',
+                    'flex min-w-0 items-center gap-2 px-2.5 font-mono text-xs',
                     !feed.running && 'opacity-50',
                 )}
             >
@@ -178,9 +196,12 @@ function Lane({
                 <span className="truncate text-[10px] text-ink-faint">
                     {providerOf(feed.sourceName)}
                 </span>
-                {law === undefined ? null : (
-                    <span className="ml-auto text-[10px] text-ink-faint">{law.mode}</span>
-                )}
+            </span>
+            <span className="min-w-0 px-2">
+                <ProcessTag feed={feed} />
+            </span>
+            <span className="truncate px-2 font-mono text-[11px] text-ink-muted">
+                {law === undefined ? '—' : lawSummary(law, t)}
             </span>
             <svg
                 aria-hidden
@@ -375,11 +396,19 @@ export function ArrivalsView({
                 <div
                     role="img"
                     aria-label={t('marketdata.marketRegime.raster.label')}
-                    className="overflow-hidden rounded-lg border border-line bg-bg-primary"
+                    className="rounded-lg border border-line bg-bg-primary"
                 >
-                    <div className="grid grid-cols-[minmax(0,13rem)_minmax(0,1fr)_5.5rem] border-b border-line bg-surface-raised py-1.5">
+                    <div
+                        className={`grid ${LANE_COLUMNS} rounded-t-lg border-b border-line bg-surface-raised py-1.5`}
+                    >
                         <span className="px-2.5">
-                            <MicroLabel>{t('marketdata.market.arrivals.feed')}</MicroLabel>
+                            <MicroLabel>{t('marketdata.market.laws.columns.feed')}</MicroLabel>
+                        </span>
+                        <span className="px-2">
+                            <MicroLabel>{t('marketdata.market.laws.columns.process')}</MicroLabel>
+                        </span>
+                        <span className="px-2">
+                            <MicroLabel>{t('marketdata.market.laws.columns.law')}</MicroLabel>
                         </span>
                         <span>
                             <MicroLabel>
@@ -391,7 +420,7 @@ export function ArrivalsView({
                                     : t('marketdata.market.arrivals.clockSpan', { seconds })}
                             </MicroLabel>
                         </span>
-                        <span className="px-2.5 text-right">
+                        <span className="px-2.5 text-right whitespace-nowrap">
                             <MicroLabel>{t('marketdata.market.arrivals.seenAsked')}</MicroLabel>
                         </span>
                     </div>
@@ -406,7 +435,9 @@ export function ArrivalsView({
                             {stopped.map(lane)}
                         </details>
                     )}
-                    <div className="grid grid-cols-[minmax(0,13rem)_minmax(0,1fr)_5.5rem] py-1.5">
+                    <div className={`grid ${LANE_COLUMNS} py-1.5`}>
+                        <span />
+                        <span />
                         <span />
                         <span className="flex justify-between font-mono text-[10px] text-ink-faint">
                             {byTau ? (

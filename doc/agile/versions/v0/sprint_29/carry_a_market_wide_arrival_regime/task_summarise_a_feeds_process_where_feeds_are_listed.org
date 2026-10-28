@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: B44680C6-2B6C-4E7A-B01A-44F608807594
+:END:
+#+title: Task: Summarise a feed's process where feeds are listed
+#+description: The feed listings name a feed's arrival law but not its price process, and nothing shows the process's parameters without opening the feed. Give every listing a process tag that names the process and, opened, summarises its parameters.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/summarise-a-feeds-process-where-feeds-are-listed
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reading any list of feeds sees which process each feed runs and, with one click, its parameters, without leaving the list.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The Provider list, the Market tab's Laws and its Arrivals lanes show each feed's process.
+- Opening a feed's process shows its parameters: a mixture's components, or a curve process's named parameters with their values.
+- The parameters are read only when a summary is opened, so a long list costs one read.
+- The summary links to the feed's Process tab.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every list of feeds names each feed's process with a tag: the Provider list,
+the Market tab's Laws, and its Arrivals lanes. Opening a tag summarises the
+process's parameters (a mixture's components with their weight, mean and
+deviation, or a curve model's parameters named by their definitions) and links
+to the feed's Process tab. The parameters are read only when a tag is opened,
+so a list of a hundred feeds reads no parameters until a person asks; a test
+checks that the closed tag makes no query. One summary is open at a time: a
+click elsewhere, opening another tag included, or Escape closes it.
+
+At the user's request the Arrivals lanes give the feed, its process and its law
+columns of their own, each wide enough to read in full, and the ticks take the
+width that is left. The lanes no longer clip their contents, so a summary opened
+from a lane shows whole. A Hawkes law's column names its branching and decay.
+
+The feed list's rows carry each feed's engine through the BFF, and the
+Provider tab's local engine naming moved into the shared =processName=.
+
+Evidence: web tests pass (221 in marketdata/synthetic), BFF market tests pass
+(23), typecheck clean, and the harness passes 15 of 15 live: it opens a feed's
+process from Laws, sees its parameters and the link to the Process tab, opens a
+second tag and sees one summary, and closes it with Escape. Screenshots of the
+Laws summary for an IR and an FX feed and of the lanes were checked.
+

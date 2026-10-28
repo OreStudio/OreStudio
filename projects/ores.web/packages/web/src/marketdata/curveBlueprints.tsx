@@ -309,7 +309,6 @@ function seriesWords(
  */
 export function CurveBlueprintsPage(): ReactNode {
     const { t } = useTranslation();
-    const navigate = useNavigate();
     const base = useRecordSource(CONFIGS);
     const labels = useLabelCatalogue();
     const sets = usePublishedSets();
@@ -723,7 +722,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                     onPillars={() => void navigate({ search: '?tab=pillars' })}
                 />
             )}
-            {tab === 'sets' && <PublishedSetsTab configId={id} sets={fed} />}
+            {tab === 'sets' && <PublishedSetsTab sets={fed} />}
             {tab === 'history' && (
                 <section className="card space-y-4 p-4">
                     <h2 className="text-sm font-medium">{t('refdata.records.tabs.history')}</h2>
@@ -898,13 +897,7 @@ function UsedBy({ configId }: { readonly configId: string }): ReactNode {
 }
 
 /** The sets one blueprint fed, newest first, each opening the published record. */
-function PublishedSetsTab({
-    configId,
-    sets,
-}: {
-    readonly configId: string;
-    readonly sets: readonly PublishedCurveSet[];
-}): ReactNode {
+function PublishedSetsTab({ sets }: { readonly sets: readonly PublishedCurveSet[] }): ReactNode {
     const { t } = useTranslation();
     const labels = useLabelCatalogue();
     return (
@@ -981,7 +974,6 @@ function PublishedSetsTab({
                 </div>
             )}
             <p className="text-xs text-ink-faint">{t('marketdata.curveBlueprints.setsNote')}</p>
-            <input type="hidden" value={configId} readOnly />
         </section>
     );
 }

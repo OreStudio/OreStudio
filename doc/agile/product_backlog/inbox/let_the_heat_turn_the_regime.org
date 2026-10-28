@@ -2,7 +2,7 @@
 :ID: A86E0A3E-DC69-4406-B383-3B1146BD664B
 :END:
 #+title: Let the heat turn the regime
-#+description: Make the chain's transition rates depend on the heat, and consider a third, stressed state, so a market that runs hot is likelier to turn active and stay there. Today the chain is exogenous: it turns on its own, and the heat only adds to the pace.
+#+description: Make the chain's transition rates depend on the heat, so a market that runs hot is likelier to turn active and stay there. Today the chain is exogenous: it turns on its own, and the heat only adds to the pace.
 #+type: capture
 #+level: cross
 #+filetags: :marketdata:synthetic:arrival:regime:
@@ -15,9 +15,9 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 Make the chain's two transition rates depend on the heat, for example
 =wake = wake_0 * exp(k * C)=, so a market that runs hot is likelier to turn active
-and slower to calm. Consider a third, stressed state above active, entered only
-from active, with its own multiplier and spell. Keep the mean pace at one over
-the long run, which now depends on the heat's own mean.
+and slower to calm. Keep the mean pace at one over the long run, which now
+depends on the heat's own mean. A third, panic state is its own capture; the
+coupling here would apply to its transitions too.
 
 * Why
 
@@ -39,4 +39,5 @@ market volatility channel page.
 
 * See also
 
+- [[id:6A3176DA-D4A5-4F4E-9F5F-5821754C6C64][Add a panic state to the regime]] — the third state, which this would drive as well.
 - [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

@@ -23,8 +23,10 @@
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <ostream>
 #include <sstream>
@@ -32,6 +34,18 @@
 #include <utility>
 
 namespace ores::shell::app::commands {
+
+namespace detail {
+
+inline std::string_view login_logger_name = "ores.shell.app.login_helpers";
+
+inline auto& login_lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger(login_logger_name);
+    return instance;
+}
+
+}
 
 /**
  * @brief Persist a successful login in @p session.
@@ -126,10 +140,29 @@ inline bool sign_in_again(ores::nats::service::nats_client& session,
         req.password = password;
         auto result = ores::nats::service::request_and_decode<iam::messaging::login_response>(
             session, iam::messaging::login_request::nats_subject, req);
-        if (!result || !result->success)
+        if (!result) {
+            BOOST_LOG_SEV(detail::login_lg(), error)
+                << "Re-signing in as " << principal << " failed: the login answer could not be read";
             return false;
-        return complete_login(discarded, session, *result).has_value();
-    } catch (const std::exception&) {
+        }
+        if (!result->success) {
+            BOOST_LOG_SEV(detail::login_lg(), error)
+                << "Re-signing in as " << principal << " was refused: " << result->message;
+            return false;
+        }
+        const auto party = complete_login(discarded, session, *result);
+        if (!party) {
+            BOOST_LOG_SEV(detail::login_lg(), error)
+                << "Re-signing in as " << principal
+                << " signed in but selected no party, so the session has no party scope";
+            return false;
+        }
+        BOOST_LOG_SEV(detail::login_lg(), info)
+            << "Signed in again as " << principal << " after the session's token was refused";
+        return true;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(detail::login_lg(), error)
+            << "Re-signing in as " << principal << " failed: " << e.what();
         return false;
     }
 }

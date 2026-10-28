@@ -46,6 +46,10 @@ void nats_client::disconnect() {
         owned_client_.reset();
     }
     auth_.reset();
+    // The renewer holds the credentials that opened the session, so a
+    // disconnect that kept it would keep a password alive after the session
+    // it belongs to has ended.
+    session_renewer_ = nullptr;
     BOOST_LOG_SEV(lg(), info) << "Disconnected from NATS";
 }
 
@@ -179,6 +183,11 @@ message nats_client::do_authenticated_request(std::string_view subject,
          * Signing in is itself made of requests, and the party selection among
          * them can be refused too. The guard keeps that refusal from calling
          * back into this path: a renewal inside a renewal would never settle.
+         *
+         * The guard is a plain bool, and this holds for an interactive session
+         * only: one thread drives one client, because the command that is
+         * running is the one that renews. A client shared across threads would
+         * need it to be an atomic, together with the credential it protects.
          */
         struct renewing_guard {
             bool& flag;
@@ -212,12 +221,19 @@ nats_client nats_client::with_delegation(std::string token) const {
 nats_client nats_client::with_correlation_id(std::string cid) const {
     nats_client copy = *this;
     copy.correlation_id_ = std::move(cid);
+    // A renewer signs in the client it was given, not this copy. A copy that
+    // kept it would renew the original's session and then send the copy's own
+    // stale token, which the server refuses for a second time.
+    copy.session_renewer_ = nullptr;
     return copy;
 }
 
 nats_client nats_client::with_session_id(std::string sid) const {
     nats_client copy = *this;
     copy.session_id_ = std::move(sid);
+    // See with_correlation_id: a renewer belongs to the client that owns the
+    // session, not to a view of it.
+    copy.session_renewer_ = nullptr;
     return copy;
 }
 

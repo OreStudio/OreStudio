@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/close-the-blueprint-review
-#+pr: 4006
+#+pr: 4009
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -172,6 +172,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4009][#4009]] | [marketdata] Close the curve blueprint review |
 | [[https://github.com/OreStudio/OreStudio/pull/4006][#4006]] | [marketdata] Build the curve blueprint screens |
 
 * Review

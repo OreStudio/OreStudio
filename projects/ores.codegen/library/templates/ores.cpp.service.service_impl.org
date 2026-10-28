@@ -104,6 +104,7 @@ using namespace ores::logging;
 <<paste:4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B>>{}
 {{#protocol_derived}}
 namespace {
+<<paste:ED2E71EE-7410-4696-A732-C09D67DCA1E9>>
 
 /**
  * @brief The current row a key names, or an empty vector when there is none.
@@ -452,6 +453,7 @@ messaging::{{response}}
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
+<<paste:71B64FF3-6991-49F1-BCD4-41115B1E03B2>>
     auto written = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_one(repo_, ctx_, {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_key_from(value));
     if (!written.empty())
         response.{{payload_member}} = std::move(written.front());
@@ -484,6 +486,7 @@ messaging::{{response}}
     for (const auto& change : request.changes)
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
+<<paste:C379A38A-666B-4130-BE6C-419F00081322>>
     response.{{entity_plural_short}}.reserve(batch.size());
 {{#service_batch_reads_by_trade_id}}
     // One read for the whole written set, for the same reason as the batch

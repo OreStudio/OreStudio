@@ -155,6 +155,35 @@ the custom public methods declared above (the standard template only
 generates bodies for the built-in CRUD methods). Multiple blocks
 concatenate with a blank line between them.
 
+** File-local helpers (.cpp)
+:PROPERTIES:
+:ID: ED2E71EE-7410-4696-A732-C09D67DCA1E9
+:END:
+
+Free functions injected at the top of the file's anonymous namespace, before
+any service method, so the write hooks below can call them. The namespace
+exists when the service reads by key, which every protocol-derived service
+does.
+
+** After a single write (.cpp)
+:PROPERTIES:
+:ID: 71B64FF3-6991-49F1-BCD4-41115B1E03B2
+:END:
+
+Statements run in each put method right after the repository writes the row,
+before the method reads the row back. The written value is =value=; the
+service's context is =ctx_=. A hook that writes another table runs inside the
+caller's unit of work when there is one.
+
+** After a batch write (.cpp)
+:PROPERTIES:
+:ID: C379A38A-666B-4130-BE6C-419F00081322
+:END:
+
+The batch counterpart: statements run in each put-many method right after the
+repository writes the set, before the method reads it back. The written values
+are =batch=.
+
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.

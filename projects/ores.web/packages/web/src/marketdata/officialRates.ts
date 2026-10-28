@@ -90,7 +90,12 @@ export function seriesOf(plans: readonly PairPlan[]): readonly string[] {
  */
 export function pairValues(plan: PairPlan, fixings: OfficialFixings): ReadonlyMap<string, number> {
     const values = (series: OfficialSeries | undefined): ReadonlyMap<string, number> =>
-        new Map((series === undefined ? [] : (fixings[series.id] ?? [])).map((f) => [f.date, Number(f.value)]));
+        new Map(
+            (series === undefined ? [] : (fixings[series.id] ?? [])).map((f) => [
+                f.date,
+                Number(f.value),
+            ]),
+        );
     const toQuote = values(plan.toQuote);
     const toBase = values(plan.toBase);
     const out = new Map<string, number>();

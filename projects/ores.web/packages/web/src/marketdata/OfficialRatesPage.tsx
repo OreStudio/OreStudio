@@ -83,7 +83,10 @@ function SeriesChart({
     series,
     label,
 }: {
-    readonly series: readonly { readonly name: string; readonly values: ReadonlyMap<string, number> }[];
+    readonly series: readonly {
+        readonly name: string;
+        readonly values: ReadonlyMap<string, number>;
+    }[];
     readonly label: string;
 }): ReactNode {
     const dates = [...new Set(series.flatMap((s) => [...s.values.keys()]))].sort();
@@ -130,8 +133,11 @@ function ProviderDetail({ provider }: { readonly provider: OfficialProvider }): 
                 <p className="text-sm text-ink-muted">{t('marketdata.official.detail.empty')}</p>
             ) : (
                 <>
-                    <div className="flex flex-wrap gap-1.5" role="radiogroup"
-                        aria-label={t('marketdata.official.detail.series')}>
+                    <div
+                        className="flex flex-wrap gap-1.5"
+                        role="radiogroup"
+                        aria-label={t('marketdata.official.detail.series')}
+                    >
                         {provider.series.map((s) => (
                             <button
                                 key={s.id}
@@ -157,7 +163,9 @@ function ProviderDetail({ provider }: { readonly provider: OfficialProvider }): 
                     ) : fixings.isPending ? (
                         <p className="text-sm text-ink-muted">{t('common.loading')}</p>
                     ) : rows.length === 0 ? (
-                        <p className="text-sm text-ink-muted">{t('marketdata.official.detail.noFixings')}</p>
+                        <p className="text-sm text-ink-muted">
+                            {t('marketdata.official.detail.noFixings')}
+                        </p>
                     ) : (
                         <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                             <SeriesChart
@@ -169,19 +177,29 @@ function ProviderDetail({ provider }: { readonly provider: OfficialProvider }): 
                             <table className="w-full text-sm">
                                 <thead className="text-left text-xs text-ink-faint">
                                     <tr>
-                                        <th className="py-1 font-normal">{t('marketdata.official.columns.date')}</th>
+                                        <th className="py-1 font-normal">
+                                            {t('marketdata.official.columns.date')}
+                                        </th>
                                         <th className="py-1 text-right font-normal">
                                             {t('marketdata.official.columns.value')}
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rows.slice(-LATEST).reverse().map((r) => (
-                                        <tr key={r.date} className="border-t border-line-subtle">
-                                            <td className="py-1 font-mono text-xs">{r.date}</td>
-                                            <td className="py-1 text-right font-mono text-xs tabular-nums">{r.value}</td>
-                                        </tr>
-                                    ))}
+                                    {rows
+                                        .slice(-LATEST)
+                                        .reverse()
+                                        .map((r) => (
+                                            <tr
+                                                key={r.date}
+                                                className="border-t border-line-subtle"
+                                            >
+                                                <td className="py-1 font-mono text-xs">{r.date}</td>
+                                                <td className="py-1 text-right font-mono text-xs tabular-nums">
+                                                    {r.value}
+                                                </td>
+                                            </tr>
+                                        ))}
                                 </tbody>
                             </table>
                         </div>
@@ -193,7 +211,11 @@ function ProviderDetail({ provider }: { readonly provider: OfficialProvider }): 
 }
 
 /** One pair from every provider that gives it, drawn together. */
-function PairCompare({ providers }: { readonly providers: readonly OfficialProvider[] }): ReactNode {
+function PairCompare({
+    providers,
+}: {
+    readonly providers: readonly OfficialProvider[];
+}): ReactNode {
     const { t } = useTranslation();
     const currencies = currenciesOf(providers);
     const [base, setBase] = useState('EUR');
@@ -214,13 +236,16 @@ function PairCompare({ providers }: { readonly providers: readonly OfficialProvi
     });
     const lines = plans.map((plan) => ({
         plan,
-        values: fixings.data === undefined ? new Map<string, number>() : pairValues(plan, fixings.data),
+        values:
+            fixings.data === undefined ? new Map<string, number>() : pairValues(plan, fixings.data),
     }));
     return (
         <section className="card space-y-4 p-6" aria-label={t('marketdata.official.compare.title')}>
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('marketdata.official.compare.title')}</h2>
-                <span className="text-xs text-ink-faint">{t('marketdata.official.compare.lead')}</span>
+                <span className="text-xs text-ink-faint">
+                    {t('marketdata.official.compare.lead')}
+                </span>
             </header>
             <div className="flex flex-wrap items-center gap-2">
                 <div className="w-28">
@@ -261,14 +286,23 @@ function PairCompare({ providers }: { readonly providers: readonly OfficialProvi
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                     <SeriesChart
                         label={t('marketdata.official.detail.chart', { pair: `${base}/${quote}` })}
-                        series={lines.map((l) => ({ name: l.plan.provider.code, values: l.values }))}
+                        series={lines.map((l) => ({
+                            name: l.plan.provider.code,
+                            values: l.values,
+                        }))}
                     />
                     <table className="w-full text-sm">
                         <thead className="text-left text-xs text-ink-faint">
                             <tr>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.provider')}</th>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.route')}</th>
-                                <th className="px-3 py-1 font-normal">{t('marketdata.official.columns.date')}</th>
+                                <th className="py-1 font-normal">
+                                    {t('marketdata.official.columns.provider')}
+                                </th>
+                                <th className="py-1 font-normal">
+                                    {t('marketdata.official.columns.route')}
+                                </th>
+                                <th className="px-3 py-1 font-normal">
+                                    {t('marketdata.official.columns.date')}
+                                </th>
                                 <th className="py-1 text-right font-normal">
                                     {t('marketdata.official.columns.value')}
                                 </th>
@@ -278,20 +312,37 @@ function PairCompare({ providers }: { readonly providers: readonly OfficialProvi
                             {lines.map(({ plan, values }, index) => {
                                 const last = [...values.keys()].sort().at(-1);
                                 return (
-                                    <tr key={plan.provider.code} className="border-t border-line-subtle">
+                                    <tr
+                                        key={plan.provider.code}
+                                        className="border-t border-line-subtle"
+                                    >
                                         <td className="py-1">
-                                            <span className="mr-2 inline-block size-2 rounded-sm"
-                                                style={{ background: SERIES_COLOURS[index % SERIES_COLOURS.length] }} />
+                                            <span
+                                                className="mr-2 inline-block size-2 rounded-sm"
+                                                style={{
+                                                    background:
+                                                        SERIES_COLOURS[
+                                                            index % SERIES_COLOURS.length
+                                                        ],
+                                                }}
+                                            />
                                             {plan.provider.name}
                                         </td>
                                         <td className="py-1">
-                                            <Tag tone={plan.route === 'cross' ? 'muted' : 'neutral'} small>
+                                            <Tag
+                                                tone={plan.route === 'cross' ? 'muted' : 'neutral'}
+                                                small
+                                            >
                                                 {t(`marketdata.official.route.${plan.route}`)}
                                             </Tag>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-1 font-mono text-xs">{last ?? '—'}</td>
+                                        <td className="whitespace-nowrap px-3 py-1 font-mono text-xs">
+                                            {last ?? '—'}
+                                        </td>
                                         <td className="py-1 text-right font-mono text-xs tabular-nums">
-                                            {last === undefined ? '—' : (values.get(last) ?? 0).toPrecision(6)}
+                                            {last === undefined
+                                                ? '—'
+                                                : (values.get(last) ?? 0).toPrecision(6)}
                                         </td>
                                     </tr>
                                 );
@@ -324,7 +375,11 @@ export function OfficialRatesPage(): ReactNode {
     const trail = <AreaTrail area="marketdata" screen={t('marketdata.official.title')} />;
     if (providers.data === undefined) {
         return (
-            <ScreenFrame trail={trail} title={t('marketdata.official.title')} description={t('marketdata.official.lead')}>
+            <ScreenFrame
+                trail={trail}
+                title={t('marketdata.official.title')}
+                description={t('marketdata.official.lead')}
+            >
                 {providers.isError ? (
                     <Notice tone="error">{providers.error.message}</Notice>
                 ) : (
@@ -344,27 +399,50 @@ export function OfficialRatesPage(): ReactNode {
                     title={t('marketdata.official.title')}
                     description={t('marketdata.official.lead')}
                     actions={
-                        <RefreshButton onClick={() => void providers.refetch()} load={load} news={news} />
+                        <RefreshButton
+                            onClick={() => void providers.refetch()}
+                            load={load}
+                            news={news}
+                        />
                     }
                 />
             </div>
             {accept.isError && <Notice tone="error">{accept.error.message}</Notice>}
-            <section className="card space-y-4 p-6" aria-label={t('marketdata.official.providers.title')}>
+            <section
+                className="card space-y-4 p-6"
+                aria-label={t('marketdata.official.providers.title')}
+            >
                 <header className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-lg font-medium">{t('marketdata.official.providers.title')}</h2>
-                    <span className="text-xs text-ink-faint">{t('marketdata.official.providers.lead')}</span>
+                    <h2 className="text-lg font-medium">
+                        {t('marketdata.official.providers.title')}
+                    </h2>
+                    <span className="text-xs text-ink-faint">
+                        {t('marketdata.official.providers.lead')}
+                    </span>
                 </header>
                 {list.length === 0 ? (
-                    <p className="text-sm text-ink-muted">{t('marketdata.official.providers.empty')}</p>
+                    <p className="text-sm text-ink-muted">
+                        {t('marketdata.official.providers.empty')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-xs text-ink-faint">
                             <tr>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.provider')}</th>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.pivot')}</th>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.terms')}</th>
-                                <th className="py-1 font-normal">{t('marketdata.official.columns.source')}</th>
-                                <th className="py-1 text-right font-normal">{t('marketdata.official.columns.series')}</th>
+                                <th className="py-1 font-normal">
+                                    {t('marketdata.official.columns.provider')}
+                                </th>
+                                <th className="py-1 font-normal">
+                                    {t('marketdata.official.columns.pivot')}
+                                </th>
+                                <th className="py-1 font-normal">
+                                    {t('marketdata.official.columns.terms')}
+                                </th>
+                                <th className="py-1 font-normal">
+                                    {t('marketdata.official.columns.source')}
+                                </th>
+                                <th className="py-1 text-right font-normal">
+                                    {t('marketdata.official.columns.series')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -385,7 +463,9 @@ export function OfficialRatesPage(): ReactNode {
                                         >
                                             {p.name}
                                         </button>
-                                        <p className="max-w-md text-xs text-ink-faint">{p.description}</p>
+                                        <p className="max-w-md text-xs text-ink-faint">
+                                            {p.description}
+                                        </p>
                                         <a
                                             href={p.terms_url}
                                             target="_blank"
@@ -395,7 +475,9 @@ export function OfficialRatesPage(): ReactNode {
                                             {t('marketdata.official.terms.read')}
                                         </a>
                                     </td>
-                                    <td className="py-2 align-top font-mono text-xs">{pivotOf(p) ?? '—'}</td>
+                                    <td className="py-2 align-top font-mono text-xs">
+                                        {pivotOf(p) ?? '—'}
+                                    </td>
                                     <td className="py-2 align-top">
                                         <TermsCell
                                             provider={p}
@@ -407,7 +489,9 @@ export function OfficialRatesPage(): ReactNode {
                                     <td className="py-2 align-top font-mono text-xs">
                                         {p.sources.map((s) => s.name).join(', ') || '—'}
                                     </td>
-                                    <td className="py-2 text-right align-top tabular-nums">{p.series.length}</td>
+                                    <td className="py-2 text-right align-top tabular-nums">
+                                        {p.series.length}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

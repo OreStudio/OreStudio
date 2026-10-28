@@ -1387,7 +1387,7 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'marketdata.v1.market_fixings.list': {
         asOf: true,
-        filter: ['id_one_of'],
+        filter: ['series_id', 'id_one_of', 'series_id_one_of'],
         rows: ['market_fixings'],
     },
     'marketdata.v1.market_observations.list': {
@@ -3955,8 +3955,14 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'reporting.v1.report_result_rows.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['report_result_rows'],
+        filter: [
+            'report_instance_id',
+            'measure',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'measure_one_of',
+        ],
+        rows: ['rows'],
     },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,

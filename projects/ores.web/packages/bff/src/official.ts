@@ -76,9 +76,10 @@ const MOST_SERIES = 12;
 export function fixingPair(
     uri: string,
 ): { readonly base: string; readonly quote: string; readonly source: string } | null {
-    const match = /^oresmd:\/\/fx\/([A-Z]{3})\?type=fixing&index=fx&source=([A-Z0-9]+)&ccy=([A-Z]{3})$/.exec(
-        uri,
-    );
+    const match =
+        /^oresmd:\/\/fx\/([A-Z]{3})\?type=fixing&index=fx&source=([A-Z0-9]+)&ccy=([A-Z]{3})$/.exec(
+            uri,
+        );
     if (match === null) {
         return null;
     }
@@ -161,10 +162,15 @@ export function registerOfficialRatesRoutes(
         if (!ids.every((id) => z.uuid().safeParse(id).success)) {
             throw invalidRequest('A series is named by its id.');
         }
-        const rows = await readAll(session, fixingSubjects.list_market_fixings_request, 'market_fixings', {
-            filter: { series_id: null, id_one_of: null, series_id_one_of: ids },
-            as_of: null,
-        });
+        const rows = await readAll(
+            session,
+            fixingSubjects.list_market_fixings_request,
+            'market_fixings',
+            {
+                filter: { series_id: null, id_one_of: null, series_id_one_of: ids },
+                as_of: null,
+            },
+        );
         const bySeries: Record<string, { date: string; value: string }[]> = {};
         for (const id of ids) {
             bySeries[id] = [];

@@ -63,7 +63,7 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief accept-provider-terms <provider_code>
+     * @brief accept-provider-terms <provider_code> [--provider_version <v>]
      */
     static void process_accept_provider_terms(std::ostream& out,
                                               ores::nats::service::nats_client& session,

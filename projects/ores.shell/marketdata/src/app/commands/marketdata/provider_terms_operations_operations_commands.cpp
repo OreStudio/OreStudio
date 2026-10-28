@@ -55,7 +55,7 @@ void provider_terms_operations_operations_commands::register_commands(cli::Menu&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_accept_provider_terms(std::ref(out), std::ref(session), std::move(args));
         },
-        "accept-provider-terms <provider_code>");
+        "accept-provider-terms <provider_code> [--provider_version <v>]");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -75,7 +75,9 @@ void provider_terms_operations_operations_commands::process_accept_provider_term
         }
     }
 
-    const std::vector<flag_spec> specs{};
+    const std::vector<flag_spec> specs{
+        {.name = "provider_version", .requires_value = true, .default_value = ""},
+    };
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
@@ -93,6 +95,11 @@ void provider_terms_operations_operations_commands::process_accept_provider_term
     std::size_t next = 0;
     try {
         req.provider_code = parsed->positionals[next++];
+        if (const auto& raw_provider_version = parsed->flag("provider_version");
+            !raw_provider_version.empty()) {
+            req.provider_version =
+                ores::shell::app::from_token<int>(raw_provider_version, "provider_version");
+        }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

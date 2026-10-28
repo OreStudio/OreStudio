@@ -57,6 +57,23 @@ time from its own clock, so a caller states only which provider it accepts.
  */
 #+end_src
 
+*** provider_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the provider the person read, or zero for the latest.
+ *
+ * A screen sends the version it showed, so the terms accepted are the terms the
+ * person read: when the provider changed in between, the acceptance is refused
+ * and the person reads them again. Zero accepts the terms as they stand, which is
+ * what a person at the shell does after reading the provider.
+ */
+#+end_src
+
 ** accept_provider_terms_response
 :PROPERTIES:
 :END:

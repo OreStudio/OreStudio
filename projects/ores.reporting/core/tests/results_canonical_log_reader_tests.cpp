@@ -62,19 +62,40 @@ TEST_CASE("a log row with the wrong number of fields is refused by line",
 
     CHECK(outcome.rows.empty());
     REQUIRE(outcome.refusals.size() == 1);
-    CHECK(outcome.refusals[0].find("line 2") != std::string::npos);
+    CHECK(outcome.refusals[0].find("record 2") != std::string::npos);
     CHECK(outcome.refusals[0].find("fields, not nine") != std::string::npos);
 }
 
 TEST_CASE("a log row with no severity or no message is refused",
           "[results][canonical_log_reader]") {
-    const auto outcome = read_canonical_log_csv(
-        log_header + "1,,Curve,failed,,,,2026-Oct-27,log.txt\n"
-                 "2,error,Curve,,,,,2026-Oct-27,log.txt\n");
+    const auto outcome =
+        read_canonical_log_csv(log_header + "1,,Curve,failed,,,,2026-Oct-27,log.txt\n"
+                                            "2,error,Curve,,,,,2026-Oct-27,log.txt\n");
 
     CHECK(outcome.rows.empty());
     REQUIRE(outcome.refusals.size() == 2);
     CHECK(outcome.refusals[0].find("no severity or no message") != std::string::npos);
+}
+
+TEST_CASE("a message written over two lines is one record", "[results][canonical_log_reader]") {
+    const auto outcome = read_canonical_log_csv(
+        log_header +
+        "1,error,Trade,\"first line\nsecond line\",trade,T1,,2026-Oct-27 19:42:07,log.txt\n"
+        "2,notice,Report,done,,,,2026-Oct-27 19:42:08,log.txt\n");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 2);
+    CHECK(outcome.rows[0].message == "first line\nsecond line");
+    CHECK(outcome.rows[1].message == "done");
+}
+
+TEST_CASE("a quote that never closes is refused rather than half read",
+          "[results][canonical_log_reader]") {
+    const auto outcome = read_canonical_log_csv(log_header + "1,error,Trade,\"never closed\n");
+
+    CHECK(outcome.rows.empty());
+    REQUIRE(outcome.refusals.size() == 1);
+    CHECK(outcome.refusals[0].find("never closes") != std::string::npos);
 }
 
 TEST_CASE("a quoted message keeps its comma and its quote", "[results][canonical_log_reader]") {

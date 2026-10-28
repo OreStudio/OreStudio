@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/log/engine_log.hpp"
-
 #include <boost/json.hpp>
 #include <sstream>
 #include <string>
@@ -34,8 +33,8 @@ std::string word_at_start(std::string_view text) {
     if (first == std::string_view::npos)
         return {};
     const auto end = text.find_first_of(" \t", first);
-    return std::string(text.substr(first, end == std::string_view::npos ? std::string_view::npos :
-                                                                         end - first));
+    return std::string(
+        text.substr(first, end == std::string_view::npos ? std::string_view::npos : end - first));
 }
 
 std::string string_field(const json::object& obj, std::string_view name) {
@@ -43,20 +42,6 @@ std::string string_field(const json::object& obj, std::string_view name) {
     if (value == nullptr || !value->is_string())
         return {};
     return std::string(value->as_string());
-}
-
-std::string sub_field(const json::object& obj, std::string_view name) {
-    const auto* fields = obj.if_contains("sub_fields");
-    if (fields == nullptr || !fields->is_array())
-        return {};
-    for (const auto& one : fields->as_array()) {
-        if (!one.is_object())
-            continue;
-        const auto& field = one.as_object();
-        if (string_field(field, "name") == name)
-            return string_field(field, "value");
-    }
-    return {};
 }
 
 std::string severity_of_category(std::string_view category) {
@@ -99,6 +84,11 @@ std::string time_between_brackets(std::string_view line) {
  * that names no file falls back to the first separator, and a line with neither
  * is all message. The message itself may hold a separator -- =group = setup :
  * nThreads = 1= is one message -- so the first separator is only a fallback.
+ *
+ * A line that names no file but whose message holds a parenthesis is read as if
+ * the parenthesis named the file, and the message is cut at the separator after
+ * it. The engine states its file on every line it writes, so this is a limit of
+ * the shape rather than of a line it writes today.
  */
 std::string message_after_separator(std::string_view line) {
     const auto file = line.find('(');
@@ -130,7 +120,12 @@ std::string cause_of(std::string_view scope,
                      std::string_view subject_id);
 std::string detail_of(const json::object& fields);
 
-/** Applies one structured message, whose JSON starts at @p from, onto @p event. */
+/**
+ * @brief Applies one structured message, whose JSON starts at @p payload, onto @p event.
+ *
+ * @return Whether the payload held a JSON object, which decides whether the line
+ * keeps its own text as the message.
+ */
 bool apply_structured(std::string_view payload, engine_log_event& event) {
     const auto open = payload.find('{');
     if (open == std::string_view::npos)
@@ -144,14 +139,10 @@ bool apply_structured(std::string_view payload, engine_log_event& event) {
     event.severity = severity_of_category(string_field(obj, "category"));
     event.scope = string_field(obj, "group");
     event.message = string_field(obj, "message");
-    event.cause = sub_field(obj, "curveId");
-    event.subject_id = sub_field(obj, "tradeId");
-    if (!event.subject_id.empty())
-        event.subject = "trade";
 
     json::object fields;
-    if (const auto* stated = obj.if_contains("sub_fields"); stated != nullptr &&
-                                                            stated->is_array()) {
+    if (const auto* stated = obj.if_contains("sub_fields");
+        stated != nullptr && stated->is_array()) {
         for (const auto& one : stated->as_array()) {
             if (!one.is_object())
                 continue;
@@ -238,8 +229,10 @@ json::object subject_of(const json::object& fields, std::string_view scope) {
  * trade's curve nowhere else. Reading it here is the one place that knows the
  * engine's words, which is what spares every client the lesson.
  */
-std::string cause_of(std::string_view scope, std::string_view message,
-                     const json::object& fields, std::string_view subject_id) {
+std::string cause_of(std::string_view scope,
+                     std::string_view message,
+                     const json::object& fields,
+                     std::string_view subject_id) {
     if (scope == "Curve")
         return curve_name_of(value_of(fields, "curveId"));
     if (scope == "Trade") {
@@ -271,12 +264,39 @@ std::string detail_of(const json::object& fields) {
 
 constexpr std::string_view structured_marker = "StructuredMessage";
 
+/**
+ * @brief Calls @p visit once for each line of the log that states anything.
+ *
+ * Both of the engine's logs are one record per line, and both carry a byte order
+ * mark on a host that writes one and a carriage return before each newline on a
+ * host that does. The rules for finding a line, skipping a blank one and taking
+ * the carriage return off are the same for both, so they live here once.
+ *
+ * @param visit Called with the line and its place in the log, from one.
+ */
+template <typename Visit>
+void for_each_line(std::string_view text, Visit&& visit) {
+    if (text.substr(0, 3) == "\xEF\xBB\xBF")
+        text.remove_prefix(3);
+
+    std::size_t ordinal = 0;
+    while (!text.empty()) {
+        const auto break_at = text.find('\n');
+        auto line = text.substr(0, break_at);
+        text = break_at == std::string_view::npos ? std::string_view() : text.substr(break_at + 1);
+        if (line.find_first_not_of(" \t\r") == std::string_view::npos)
+            continue;
+        if (!line.empty() && line.back() == '\r')
+            line.remove_suffix(1);
+        visit(line, ++ordinal);
+    }
+}
 
 }
 
 std::string canonical_log_csv(const std::vector<engine_log_event>& events) {
     const auto quoted = [](std::string_view field) {
-        if (field.find_first_of(",\"\n") == std::string_view::npos)
+        if (field.find_first_of(",\"\n\r") == std::string_view::npos)
             return std::string(field);
         std::string out{"\""};
         for (const auto c : field) {
@@ -300,71 +320,42 @@ std::string canonical_log_csv(const std::vector<engine_log_event>& events) {
 }
 
 std::vector<engine_log_event> parse_engine_log_text(std::string_view text,
-                                                   std::string_view source_file) {
-    if (text.substr(0, 3) == "\xEF\xBB\xBF")
-        text.remove_prefix(3);
-
+                                                    std::string_view source_file) {
     std::vector<engine_log_event> events;
-    std::size_t ordinal = 0;
-    while (!text.empty()) {
-        const auto break_at = text.find('\n');
-        auto line = text.substr(0, break_at);
-        text = break_at == std::string_view::npos ? std::string_view() : text.substr(break_at + 1);
-        if (line.find_first_not_of(" \t\r") == std::string_view::npos)
-            continue;
-        // A log written on a host that ends its lines with a carriage return is
-        // still one line per event, and the carriage return is not part of what
-        // the engine said.
-        if (!line.empty() && line.back() == '\r')
-            line.remove_suffix(1);
-
+    for_each_line(text, [&](std::string_view line, std::size_t ordinal) {
         engine_log_event event;
-        event.ordinal = ++ordinal;
+        event.ordinal = ordinal;
         event.event_time = time_between_brackets(line);
         event.source = std::string(source_file);
         event.severity = severity_of_word(word_at_start(line));
 
         const auto payload = message_after_separator(line);
-        if (payload.starts_with(structured_marker))
-            apply_structured(payload, event);
-        else
+        if (payload.starts_with(structured_marker) && apply_structured(payload, event)) {
+            if (event.message.empty())
+                event.message = payload;
+        } else {
             event.message = payload;
-
-        if (event.message.empty())
-            event.message = payload;
+        }
         events.push_back(std::move(event));
-    }
+    });
     return events;
 }
 
 std::vector<engine_log_event> parse_engine_log_json(std::string_view text,
                                                     std::string_view source_file) {
-    if (text.substr(0, 3) == "\xEF\xBB\xBF")
-        text.remove_prefix(3);
-
     std::vector<engine_log_event> events;
-    std::size_t ordinal = 0;
-    while (!text.empty()) {
-        const auto break_at = text.find('\n');
-        auto line = text.substr(0, break_at);
-        text = break_at == std::string_view::npos ? std::string_view() : text.substr(break_at + 1);
-        if (line.find_first_not_of(" \t\r") == std::string_view::npos)
-            continue;
-        // A log written on a host that ends its lines with a carriage return is
-        // still one line per event, and the carriage return is not part of what
-        // the engine said.
-        if (!line.empty() && line.back() == '\r')
-            line.remove_suffix(1);
-
+    for_each_line(text, [&](std::string_view line, std::size_t ordinal) {
         engine_log_event event;
-        event.ordinal = ++ordinal;
+        event.ordinal = ordinal;
         event.source = std::string(source_file);
         if (!apply_structured(line, event)) {
             event.severity = "notice";
             event.message = std::string(line);
+        } else if (event.message.empty()) {
+            event.message = std::string(line);
         }
         events.push_back(std::move(event));
-    }
+    });
     return events;
 }
 

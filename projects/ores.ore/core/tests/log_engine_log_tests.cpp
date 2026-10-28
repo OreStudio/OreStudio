@@ -46,7 +46,8 @@ const std::string parameters_line =
 }
 
 TEST_CASE("a text log yields one event per line, whatever the severity", "[ore][log]") {
-    const auto events = parse_engine_log_text(parameters_line + "\n" + curve_line + "\n", "log.txt");
+    const auto events =
+        parse_engine_log_text(parameters_line + "\n" + curve_line + "\n", "log.txt");
 
     REQUIRE(events.size() == 2);
     CHECK(events[0].ordinal == 1);
@@ -77,13 +78,13 @@ TEST_CASE("a structured line takes its group, subject and cause", "[ore][log]") 
 }
 
 TEST_CASE("a warning is a warning and an alert is an error", "[ore][log]") {
-    const auto events = parse_engine_log_text(
-        "WARNING  [2026-Oct-27 20:00:00.000000] (a.cpp:1) : careful\n"
-        "ERROR    [2026-Oct-27 20:00:00.000000] (a.cpp:2) : broke\n"
-        "ALERT    [2026-Oct-27 20:00:00.000000] (a.cpp:3) : broke loudly\n"
-        "DEBUG    [2026-Oct-27 20:00:00.000000] (a.cpp:4) : detail\n"
-        "INFO     [2026-Oct-27 20:00:00.000000] (a.cpp:5) : news\n",
-        "log.txt");
+    const auto events =
+        parse_engine_log_text("WARNING  [2026-Oct-27 20:00:00.000000] (a.cpp:1) : careful\n"
+                              "ERROR    [2026-Oct-27 20:00:00.000000] (a.cpp:2) : broke\n"
+                              "ALERT    [2026-Oct-27 20:00:00.000000] (a.cpp:3) : broke loudly\n"
+                              "DEBUG    [2026-Oct-27 20:00:00.000000] (a.cpp:4) : detail\n"
+                              "INFO     [2026-Oct-27 20:00:00.000000] (a.cpp:5) : news\n",
+                              "log.txt");
 
     REQUIRE(events.size() == 5);
     CHECK(events[0].severity == "warning");
@@ -95,7 +96,8 @@ TEST_CASE("a warning is a warning and an alert is an error", "[ore][log]") {
 
 TEST_CASE("a line the reader cannot structure is kept as what it says", "[ore][log]") {
     const auto events = parse_engine_log_text(
-        "ALERT [2026-Oct-27 20:00:00.000000] (x.cpp:1) : StructuredMessage { not json\n", "log.txt");
+        "ALERT [2026-Oct-27 20:00:00.000000] (x.cpp:1) : StructuredMessage { not json\n",
+        "log.txt");
 
     REQUIRE(events.size() == 1);
     CHECK(events[0].severity == "error");
@@ -109,14 +111,16 @@ TEST_CASE("blank lines are not events", "[ore][log]") {
 }
 
 TEST_CASE("a text log with dos line endings keeps its messages whole", "[ore][log]") {
-    const auto events = parse_engine_log_text(parameters_line + "\r\n" + curve_line + "\r\n", "log.txt");
+    const auto events =
+        parse_engine_log_text(parameters_line + "\r\n" + curve_line + "\r\n", "log.txt");
 
     REQUIRE(events.size() == 2);
     CHECK(events[0].message == "group = setup : nThreads = 1");
 }
 
 TEST_CASE("a byte order mark does not become part of the first severity", "[ore][log]") {
-    const auto events = parse_engine_log_text(std::string("\xEF\xBB\xBF") + parameters_line + "\n", "log.txt");
+    const auto events =
+        parse_engine_log_text(std::string("\xEF\xBB\xBF") + parameters_line + "\n", "log.txt");
 
     REQUIRE(events.size() == 1);
     CHECK(events[0].severity == "notice");
@@ -133,7 +137,8 @@ TEST_CASE("a line with no time and no file still states its message", "[ore][log
 TEST_CASE("a structured log is read by the same rules", "[ore][log]") {
     const std::string json_log =
         "{\"category\": \"Error\", \"group\": \"Trade\", \"message\": \"did not find object\", "
-        "\"sub_fields\": [{\"name\": \"tradeId\", \"value\": \"033b4053-fe1d-5901-bc2f-7d95afe91f03\"}]}"
+        "\"sub_fields\": [{\"name\": \"tradeId\", \"value\": "
+        "\"033b4053-fe1d-5901-bc2f-7d95afe91f03\"}]}"
         "\n"
         "{\"category\": \"Info\", \"group\": \"Report\", \"message\": \"done\"}\n";
 
@@ -202,4 +207,35 @@ TEST_CASE("every sub-field the engine stated is available by name", "[ore][log]"
     CHECK(events[0].fields.find("IndexCurve(HKD-HONIA)") != std::string::npos);
     CHECK(events[1].fields.find("tradeType") != std::string::npos);
     CHECK(events[1].fields.find("Bond") != std::string::npos);
+}
+
+TEST_CASE("a message with a newline is quoted so the row stays one record", "[ore][log]") {
+    using ores::ore::log::canonical_log_csv;
+
+    ores::ore::log::engine_log_event event;
+    event.ordinal = 1;
+    event.message = "one\ntwo";
+    const auto text = canonical_log_csv({event});
+
+    CHECK(text.find("\"one\ntwo\"") != std::string::npos);
+}
+
+TEST_CASE("a message with a carriage return is quoted so the row keeps its fields", "[ore][log]") {
+    using ores::ore::log::canonical_log_csv;
+
+    ores::ore::log::engine_log_event event;
+    event.ordinal = 1;
+    event.message = "one\rtwo";
+    const auto text = canonical_log_csv({event});
+
+    CHECK(text.find("\"one\rtwo\"") != std::string::npos);
+}
+
+TEST_CASE("a structured log object that states no message keeps its line", "[ore][log]") {
+    const auto events = parse_engine_log_json("{\"category\": \"Info\", \"group\": \"Report\"}\n",
+                                              "log_structured.json");
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].severity == "info");
+    CHECK(events[0].message.find("Report") != std::string::npos);
 }

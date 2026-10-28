@@ -25,6 +25,7 @@ import { Link, useParams } from 'react-router';
 import { trades, type TradeLink, type TradePageRecord } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { localSource, RecordTable } from '../refdata/RecordList.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
@@ -33,6 +34,18 @@ import { useTabs } from '../ui/Tabs.js';
 
 /** The page's tabs, in the order the prototype settled: the trade first, then its parts. */
 const TABS = ['details', 'instrument', 'identifiers', 'links', 'history'] as const;
+
+/** One row of a part table: the cells it draws and the key it is known by. */
+interface PartRow {
+    readonly key: string;
+    readonly cells: readonly ReactNode[];
+}
+
+/** One row of a part table: the cells it draws and the key it is known by. */
+interface PartRow {
+    readonly key: string;
+    readonly cells: readonly ReactNode[];
+}
 
 /** A table of the trade's parts, with the columns each part has. */
 function PartTable({
@@ -54,28 +67,21 @@ function PartTable({
             {rows.length === 0 ? (
                 <p className="px-3 py-3 text-sm text-ink-muted">{empty}</p>
             ) : (
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-                            {columns.map((column) => (
-                                <th key={column} className="px-3 py-2 font-medium">
-                                    {column}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((cells, index) => (
-                            <tr key={index} className="border-b border-line last:border-0">
-                                {cells.map((cell, cellIndex) => (
-                                    <td key={cellIndex} className="px-3 py-2 text-ink">
-                                        {cell === '' ? '—' : cell}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <RecordTable<PartRow>
+                    source={localSource<PartRow>({
+                        key: `trade-part-${caption}`,
+                        rows: rows.map((cells, index) => ({ key: String(index), cells })),
+                        searchOf: (entry) =>
+                            entry.cells.map((cell) => String(cell ?? '')).join(' '),
+                    })}
+                    plural={caption}
+                    keyOf={(entry) => entry.key}
+                    columns={columns.map((header, index) => ({
+                        id: `column-${index}`,
+                        header,
+                        cell: (entry) => entry.cells[index] ?? '—',
+                    }))}
+                />
             )}
         </section>
     );
@@ -239,23 +245,58 @@ function LinkTable({
     readonly otherOf: (link: TradeLink) => string;
     readonly empty: string;
 }): ReactNode {
-    const { t } = useTranslation();
+    const rows = links.map((link, index) => ({
+        key: `${link.link_type}-${index}`,
+        link_type: link.link_type,
+        other: link.other_label === '' ? otherOf(link) : link.other_label,
+        id: otherOf(link),
+    }));
+    const source = localSource({
+        key: `trade-links-${caption}`,
+        rows,
+        searchOf: (row) => `${row.link_type} ${row.other}`,
+    });
+    if (links.length === 0) {
+        return (
+            <section className="overflow-hidden rounded-md border border-line">
+                <h2 className="border-b border-line bg-surface-2 px-3 py-2 text-sm font-medium text-ink">
+                    {caption}
+                </h2>
+                <p className="px-3 py-3 text-sm text-ink-muted">{empty}</p>
+            </section>
+        );
+    }
     return (
-        <PartTable
-            caption={caption}
-            columns={[t('trading.page.linkType'), t('trading.page.otherTrade')]}
-            rows={links.map((entry) => [
-                entry.link_type,
-                <Link
-                    className="text-accent hover:text-accent-bright"
-                    key={otherOf(entry)}
-                    to={`${PATHS.trades}/${otherOf(entry)}`}
-                >
-                    {entry.other_label === '' ? otherOf(entry) : entry.other_label}
-                </Link>,
-            ])}
-            empty={empty}
-        />
+        <section className="overflow-hidden rounded-md border border-line">
+            <h2 className="border-b border-line bg-surface-2 px-3 py-2 text-sm font-medium text-ink">
+                {caption}
+            </h2>
+            <RecordTable
+                source={source}
+                plural={caption}
+                keyOf={(row) => row.key}
+                pathOf={(row) => `${PATHS.trades}/${row.id}`}
+                columns={[
+                    {
+                        id: 'link_type',
+                        header: 'Link',
+                        cell: (row) => row.link_type,
+                    },
+                    {
+                        id: 'other',
+                        header: 'The other trade',
+                        cell: (row) => (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.trades}/${row.id}`}
+                            >
+                                {row.other}
+                            </Link>
+                        ),
+                    },
+                ]}
+            />
+        </section>
     );
 }
 

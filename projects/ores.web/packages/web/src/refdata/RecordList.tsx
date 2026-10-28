@@ -383,6 +383,47 @@ export function RecordList<Row>({
  * under the kind's header; a record page draws it in a tab for records it
  * only reads, such as a tenant's parties.
  */
+/**
+ * A source over the rows a screen already holds.
+ *
+ * A page's parts arrive with the page — a trade's identifiers, its roles, its
+ * links, a deal's legs — so there is no server page to ask for. The list contract
+ * still wants one, and this is it: the search and the order are applied to the
+ * rows in hand, and the page is a slice of them. A screen with a real server page
+ * passes its own source instead.
+ */
+export function localSource<Row>({
+    key,
+    rows,
+    searchOf,
+    orderOf,
+}: {
+    readonly key: string;
+    readonly rows: readonly Row[];
+    readonly searchOf?: (row: Row) => string;
+    readonly orderOf?: (left: Row, right: Row) => number;
+}): ListSource<Row> {
+    return {
+        key,
+        read: async (page) => {
+            const needle = page.search.toLowerCase();
+            const matched =
+                needle === '' || searchOf === undefined
+                    ? rows
+                    : rows.filter((row) => searchOf(row).toLowerCase().includes(needle));
+            const ordered = orderOf === undefined ? matched : [...matched].sort(orderOf);
+            const orderedWithDirection = page.descending ? [...ordered].reverse() : ordered;
+            return {
+                rows: orderedWithDirection.slice(page.offset, page.offset + page.limit),
+                total: orderedWithDirection.length,
+            };
+        },
+        search: searchOf !== undefined,
+        sortable: [],
+        mayAdd: false,
+    };
+}
+
 export function RecordTable<Row>({
     source,
     plural,

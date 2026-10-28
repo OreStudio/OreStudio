@@ -4806,6 +4806,21 @@ export const en: SourceCatalogue = {
                 unpin: 'handed back',
                 add: 'added',
                 remove: 'removed',
+                configure: 'settings changed',
+            },
+            settings: {
+                title: 'What moves the market',
+                wakeRate: 'Calm to active, a second',
+                calmRate: 'Active to calm, a second',
+                jump: 'Heat one tick adds',
+                decay: 'Heat decay, a second',
+                speed: 'Market speed',
+                calmSpell: 'a calm spell lasts {seconds} s on average',
+                activeSpell: 'an active spell lasts {seconds} s on average',
+                apply: 'Apply',
+                discard: 'Discard',
+                speedNote:
+                    'A change applies from now. A spot feed takes a new speed at its next tick; a curve takes it when it next starts.',
             },
             raster: {
                 axis: { clock: 'Clock time', tau: 'Market time τ', label: 'Place the marks by' },

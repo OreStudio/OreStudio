@@ -22,6 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
+import { invalidRequest } from './errors.js';
 import { input } from './refdata-calls.js';
 import { operationReplySchema, runningSourceNames, upstreamFailure } from './synthetic.js';
 import type { LiveSession } from './sessions.js';
@@ -39,6 +40,7 @@ import type { FeedTickBuffers } from './feed-ticks.js';
 const getSubject = 'synthetic.v1.ops.get_market_regime';
 const pinSubject = 'synthetic.v1.ops.pin_market_regime';
 const traceSubject = 'synthetic.v1.ops.get_market_trace';
+const configureSubject = 'synthetic.v1.ops.configure_market';
 
 /** What a switch may force: a state, or control handed back to the chain. */
 export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
@@ -70,6 +72,8 @@ const answeredRegime = z.object({
     loop_gain: z.number().default(0),
     run_seed: z.coerce.number().default(0),
     speed: z.number().default(0),
+    wake_rate: z.number().default(0),
+    calm_rate: z.number().default(0),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -140,6 +144,9 @@ interface Regime {
     readonly runSeed: number;
     /** The simulated seconds one unit of market time spans. */
     readonly speed: number;
+    /** How often a calm market turns active, and an active one calm, a second. */
+    readonly wakeRate: number;
+    readonly calmRate: number;
 }
 
 /**
@@ -165,12 +172,14 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
         loopGain: reply.loop_gain,
         runSeed: reply.run_seed,
         speed: reply.speed,
+        wakeRate: reply.wake_rate,
+        calmRate: reply.calm_rate,
     };
 }
 
 /** One decision of the scheduler's loop, as the service reports it. */
 const traceEvent = z.object({
-    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove']),
+    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove', 'configure']),
     source_name: z.string().default(''),
     at: z.string(),
     tau: z.number(),
@@ -294,6 +303,43 @@ export function registerMarketRegimeRoutes(
         return answered(
             await session.client.callAuthenticated(pinSubject, { mode: body.mode }, regimeReply),
         );
+    });
+
+    /**
+     * Sets how the market's pace moves from now on: the chain's two rates, the heat's
+     * jump and decay, and the speed. Numbers the market cannot run on are a bad request,
+     * and the service's message names the number.
+     */
+    server.put('/api/synthetic/market-regime/settings', async (request) => {
+        const session = requireSession(request);
+        const positive = z.number().positive().finite();
+        const body = input(
+            z
+                .object({
+                    wakeRate: positive,
+                    calmRate: positive,
+                    jump: z.number().min(0).finite(),
+                    decay: positive,
+                    speed: positive,
+                })
+                .strict(),
+            request.body,
+        );
+        const reply = await session.client.callAuthenticated(
+            configureSubject,
+            {
+                wake_rate: body.wakeRate,
+                calm_rate: body.calmRate,
+                jump: body.jump,
+                decay: body.decay,
+                speed: body.speed,
+            },
+            regimeReply,
+        );
+        if (!reply.success) {
+            throw invalidRequest(reply.message || 'The synthetic service refused the settings.');
+        }
+        return answered(reply);
     });
 
     /**

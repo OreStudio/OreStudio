@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/set-the-market-s-chain-and-heat
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,12 +30,12 @@ service at start.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                             |
 
 * Acceptance
 
@@ -51,9 +51,21 @@ service at start.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The clock gets =reconfigure=. It validates first, through the same check as
+  its constructor, so a refusal changes nothing. It keeps the heat and the
+  dwell's unit draw, and computes the calm multiplier again.
+- The clock counts simulated seconds beside tau, each stretch at the speed in
+  force. A tick's simulated seconds are the change in that count, so a speed
+  change splits correctly across a gap.
+- The scheduler's =configure= is a command like =pin=. It validates in the
+  caller's thread, then applies on the loop and records a =configure= event.
+- A curve keeps the speed it was built with as its step length. A spot feed
+  takes the new speed at once.
+- One NATS verb, =synthetic.v1.ops.configure_market=, system-only like the pin.
+  It replies with the regime, as a pin does. A refusal is =success= false with
+  the clock's message.
+- Shell =synthetic regime set name=value ...=; BFF =PUT
+  /api/synthetic/market-regime/settings=; a form on the tab.
 
 * Measurements
 
@@ -95,3 +107,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The system tenant now sets the chain's two rates, the heat's jump and decay,
+and the market speed while the service runs. The clock validates first and
+then reconfigures from its now, keeping the heat and the dwell's unit draw. It
+counts simulated seconds at the speed in force, so a spot feed takes a new
+speed at its next tick. A curve keeps the step it started with.
+
+The verb is =synthetic.v1.ops.configure_market=, and the pin's system-only
+guard protects it. The shell has =synthetic regime set=, the BFF has =PUT
+/api/synthetic/market-regime/settings=, and the tab has a form. A tenant sees
+the five numbers read only.
+
+Live check on prime_origin:
+- A tenant admin was refused with forbidden.
+- =jump=40= was refused: "the heat's loop gain, jump / decay, is 2".
+- =speed=-1= was refused: "speed is -1".
+- =wake_rate=0.01= was refused, because an active share of 0.75 leaves no
+  positive calm multiplier at an active multiplier of 2.
+- =speed=2880 wake_rate=0.003= applied, the trace showed one =configure=
+  event, and the restore applied.
+
+Tests: the quant suite and the synthetic api suite pass under ctest. The web
+vitest (202) and the BFF regime tests (19) pass. The harness spec passes 9 of 9.
+

@@ -31,7 +31,6 @@ tick_scheduler::tick_scheduler(i_run_clock& clock,
     : clock_(clock)
     , origin_(clock.now())
     , run_seed_(run_seed)
-    , speed_(market.speed)
     , market_(market,
               math::rng_stream(math::stream_key{.run_seed = run_seed,
                                                 .series = math::series_key("market"),
@@ -141,6 +140,7 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
                                     .mark = 0.0,
                                     .last_fired = market_.now(),
                                     .last_tau = market_.tau(),
+                                    .last_simulated = market_.simulated(),
                                     .phase = std::holds_alternative<domain::periodic_law>(law) ?
                                                  std::get<domain::periodic_law>(law).offset :
                                                  0.0})
@@ -180,6 +180,22 @@ void tick_scheduler::pin(std::optional<domain::market_state> state) {
         true);
 }
 
+void tick_scheduler::configure(const domain::market_config& market) {
+    // Refused here, in the caller's thread, so the loop never meets numbers it cannot run on.
+    domain::validate(market);
+    post(
+        [this, market] {
+            market_.reconfigure(market);
+            record(trace_kind::configure, 0);
+        },
+        true);
+}
+
+double tick_scheduler::market_speed() const {
+    const auto guard = std::lock_guard(mutex_);
+    return market_.speed();
+}
+
 market_snapshot tick_scheduler::snapshot() const {
     const auto guard = std::lock_guard(mutex_);
     const auto state = market_.state();
@@ -193,7 +209,10 @@ market_snapshot tick_scheduler::snapshot() const {
                            .decay = market_.decay(),
                            .loop_gain = market_.loop_gain(),
                            .population_rate = market_.population_rate(),
-                           .speed = market_.speed()};
+                           .speed = market_.speed(),
+                           .wake_rate = market_.config().wake_rate,
+                           .calm_rate = market_.config().calm_rate,
+                           .active_multiplier = market_.config().active_multiplier};
 }
 
 std::vector<heat_reading>
@@ -321,11 +340,12 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     market_.record_event();
     const double compensated = domain::compensator(s.law, s.gap);
     domain::record_event(s.law, s.gap);
-    const double market_elapsed = market_.tau() - s.last_tau;
+    const double simulated_elapsed = market_.simulated() - s.last_simulated;
     s.last_tau = market_.tau();
+    s.last_simulated = market_.simulated();
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due)),
-                               .simulated_seconds = speed_ * market_elapsed};
+                               .simulated_seconds = simulated_elapsed};
     record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
     s.last_fired = *due;

@@ -137,6 +137,9 @@ private:
     static void process_regime_pin(std::ostream& out,
                                    ores::nats::service::nats_client& session,
                                    const std::vector<std::string>& args);
+    static void process_regime_set(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::vector<std::string>& args);
     static void process_regime_trace(std::ostream& out,
                                      ores::nats::service::nats_client& session,
                                      const std::vector<std::string>& args);

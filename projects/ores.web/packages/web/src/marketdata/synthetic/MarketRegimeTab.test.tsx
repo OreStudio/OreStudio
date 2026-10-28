@@ -50,6 +50,8 @@ function regime(over: Partial<MarketRegime> = {}): MarketRegime {
         loopGain: 0.025,
         runSeed: 42,
         speed: 1440,
+        wakeRate: 0.002,
+        calmRate: 0.004,
         ...over,
     };
 }
@@ -435,5 +437,67 @@ describe('the market regime tab for a tenant', () => {
         expect(html).not.toContain('>Auto</button>');
         expect(html).not.toContain('>Active</button>');
         expect(html).not.toContain('>Calm</button>');
+    });
+
+    it('shows what moves the market without a way to change it', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <MarketRegimePanel
+                    regime={regime()}
+                    raster={raster()}
+                    now={NOW}
+                    pending={undefined}
+                    error={null}
+                    marked={null}
+                    states={[]}
+                    mayPin={false}
+                    onPin={() => undefined}
+                    onSettings={() => undefined}
+                />
+            </TranslationProvider>,
+        );
+        expect(html).toContain('What moves the market');
+        expect(html).toContain('Calm to active, a second');
+        expect(html).toContain('0.002');
+        expect(html).not.toContain('<input');
+        expect(html).not.toContain('>Apply</button>');
+    });
+});
+
+describe('the market settings for a system session', () => {
+    function settings(error: string | null = null): string {
+        return renderToStaticMarkup(
+            <TranslationProvider>
+                <MarketRegimePanel
+                    regime={regime()}
+                    raster={raster()}
+                    now={NOW}
+                    pending={undefined}
+                    error={null}
+                    marked={null}
+                    states={[]}
+                    mayPin
+                    onPin={() => undefined}
+                    settingsError={error}
+                    onSettings={() => undefined}
+                />
+            </TranslationProvider>,
+        );
+    }
+
+    it('offers the five numbers, filled from the service, and says when a speed lands', () => {
+        const html = settings();
+        expect(html.match(/<input/g)).toHaveLength(5);
+        expect(html).toContain('value="0.002"');
+        expect(html).toContain('value="1440"');
+        expect(html).toContain('a calm spell lasts 500 s on average');
+        expect(html).toContain('a curve takes it when it next starts');
+        // Nothing is edited yet, so there is nothing to apply.
+        expect(button(html, 'Apply')).toContain('disabled');
+    });
+
+    it('shows the service’s refusal, which names the number', () => {
+        const refusal = "the heat's loop gain, jump / decay, is 1.25; it must be below one";
+        expect(settings(refusal)).toContain('is 1.25; it must be below one');
     });
 });

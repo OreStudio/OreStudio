@@ -31,7 +31,7 @@
 namespace ores::analytics::quant::service {
 
 /// What the loop decided.
-enum class trace_kind : std::uint8_t { tick, transition, pin, unpin, add, remove };
+enum class trace_kind : std::uint8_t { tick, transition, pin, unpin, add, remove, configure };
 
 /// The name a reader sees for a kind.
 constexpr std::string_view to_string(trace_kind k) {
@@ -48,6 +48,8 @@ constexpr std::string_view to_string(trace_kind k) {
             return "add";
         case trace_kind::remove:
             return "remove";
+        case trace_kind::configure:
+            return "configure";
     }
     return "unknown";
 }
@@ -85,7 +87,7 @@ struct trace_event final {
 /// Whether an event belongs to the market every series shares, rather than to one series.
 constexpr bool is_market_event(const trace_event& e) {
     return e.kind == trace_kind::transition || e.kind == trace_kind::pin ||
-           e.kind == trace_kind::unpin;
+           e.kind == trace_kind::unpin || e.kind == trace_kind::configure;
 }
 
 /**

@@ -53,6 +53,13 @@ struct market_config final {
 };
 
 /**
+ * @brief Refuse numbers the clock cannot run on.
+ *
+ * @throws std::invalid_argument naming the number, as the clock's constructor does.
+ */
+ORES_ANALYTICS_QUANT_EXPORT void validate(const market_config& config);
+
+/**
  * @brief The market's one clock: the regime chain, the heat, and tau.
  *
  * Every feed is scaled by one bracket, B = M + C / R: the regime's multiplier M,
@@ -89,6 +96,16 @@ public:
     /// The market's operational time.
     [[nodiscard]] double tau() const {
         return tau_;
+    }
+
+    /// The simulated seconds since the start of the run: each stretch of tau
+    /// times the speed in force while it passed.
+    [[nodiscard]] double simulated() const {
+        return simulated_;
+    }
+
+    [[nodiscard]] const market_config& config() const {
+        return config_;
     }
 
     /// The state in force: the pin if there is one, else the chain's.
@@ -152,6 +169,17 @@ public:
     void pin(market_state s);
     void unpin();
 
+    /**
+     * @brief Change the numbers from now on. What has passed stays as it was.
+     *
+     * The heat keeps its level and fades at the new decay. The dwell in progress
+     * keeps its unit draw, so it ends at the new rate's share of it.
+     *
+     * @throws std::invalid_argument as the constructor does, and then nothing
+     *         changes.
+     */
+    void reconfigure(const market_config& config);
+
     /// One event anywhere in the market: the heat rises by the jump.
     void record_event();
 
@@ -181,6 +209,7 @@ private:
 
     double now_ = 0.0;
     double tau_ = 0.0;
+    double simulated_ = 0.0;
     market_state chain_state_ = market_state::calm;
     double remaining_ = 0.0;
     std::optional<market_state> pin_;

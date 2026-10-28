@@ -4837,6 +4837,21 @@ const pt: SourceCatalogue = {
                 unpin: 'devolvido',
                 add: 'adicionado',
                 remove: 'removido',
+                configure: 'definições alteradas',
+            },
+            settings: {
+                title: 'O que move o mercado',
+                wakeRate: 'De calmo a ativo, por segundo',
+                calmRate: 'De ativo a calmo, por segundo',
+                jump: 'Calor que um tick acrescenta',
+                decay: 'Decaimento do calor, por segundo',
+                speed: 'Velocidade do mercado',
+                calmSpell: 'um período calmo dura {seconds} s em média',
+                activeSpell: 'um período ativo dura {seconds} s em média',
+                apply: 'Aplicar',
+                discard: 'Descartar',
+                speedNote:
+                    'Uma alteração aplica-se a partir de agora. Um feed spot adota a nova velocidade no próximo tick; uma curva adota-a quando voltar a arrancar.',
             },
             raster: {
                 axis: { clock: 'Hora', tau: 'Tempo de mercado τ', label: 'Colocar as marcas por' },

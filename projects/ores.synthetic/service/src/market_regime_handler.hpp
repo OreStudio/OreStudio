@@ -27,6 +27,7 @@
 #include <cmath>
 #include <cstddef>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -159,6 +160,66 @@ public:
     }
 
     /**
+     * Sets the chain's rates, the heat's jump and decay, and the speed, keeping the active
+     * multiplier. Numbers the market cannot run on are refused with the number named.
+     */
+    void configure(ores::nats::message msg) {
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting configure_market request: auth failed.";
+            error_reply(nats_, msg, ctx.error());
+            return;
+        }
+        if (!feed_kind_registry::permits_run(*ctx) ||
+            !feed_kind_registry::is_system_caller(*ctx)) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting configure_market request: only the system tenant sets the market.";
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        const auto decoded =
+            ores::nats::default_wire_codec()
+                .decode<ores::synthetic::messaging::configure_market_request>(msg.data);
+        if (!decoded) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting configure_market request: the payload did not decode.";
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        const auto market = scheduler_.snapshot();
+        ores::synthetic::messaging::pin_market_regime_response response;
+        try {
+            scheduler_.configure({.wake_rate = decoded->wake_rate,
+                                  .calm_rate = decoded->calm_rate,
+                                  .active_multiplier = market.active_multiplier,
+                                  .jump = decoded->jump,
+                                  .decay = decoded->decay,
+                                  .speed = decoded->speed});
+        } catch (const std::invalid_argument& ex) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Refusing configure_market request: " << ex.what();
+            response.message = ex.what();
+            reply(nats_, msg, response);
+            return;
+        }
+
+        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+            << "The market was set to wake rate " << decoded->wake_rate << ", calm rate "
+            << decoded->calm_rate << ", jump " << decoded->jump << ", decay " << decoded->decay
+            << ", speed " << decoded->speed << ".";
+        response.success = true;
+        fill(response);
+        fill_heat(response);
+        reply(nats_, msg, response);
+    }
+
+    /**
      * Replies with the scheduler's recent decisions, one feed's and the market's or all of
      * them, and the loop's own numbers.
      */
@@ -259,6 +320,8 @@ private:
         response.loop_gain = market.loop_gain;
         response.run_seed = scheduler_.run_seed();
         response.speed = market.speed;
+        response.wake_rate = market.wake_rate;
+        response.calm_rate = market.calm_rate;
         constexpr auto window = std::chrono::minutes(2);
         const auto from = std::chrono::system_clock::now() - window;
         for (const auto& reading : scheduler_.readings_since(from)) {

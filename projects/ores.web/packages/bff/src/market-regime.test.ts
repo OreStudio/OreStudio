@@ -119,7 +119,7 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
 function send(
     server: ReturnType<typeof buildServer>,
     sessionId: string | undefined,
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PUT',
     url: string,
     payload?: unknown,
 ): ReturnType<ReturnType<typeof buildServer>['inject']> {
@@ -134,6 +134,7 @@ function send(
 const GET_SUBJECT = 'synthetic.v1.ops.get_market_regime';
 const PIN_SUBJECT = 'synthetic.v1.ops.pin_market_regime';
 const TRACE_SUBJECT = 'synthetic.v1.ops.get_market_trace';
+const CONFIGURE_SUBJECT = 'synthetic.v1.ops.configure_market';
 
 /** What the service answers with when nothing has moved the heat. */
 const NO_HEAT = { heat: 0, jump: 0.5, decay: 20, samples: [] };
@@ -471,6 +472,66 @@ describe('the market regime', () => {
                 },
             ],
         });
+    });
+});
+
+describe('the market settings', () => {
+    const SETTINGS = { wakeRate: 0.002, calmRate: 0.004, jump: 0.5, decay: 20, speed: 2880 };
+
+    it('sends the five numbers and reports the regime the service holds after', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [CONFIGURE_SUBJECT]: { ...CALM, speed: 2880, wake_rate: 0.002, calm_rate: 0.004 },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            SETTINGS,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ speed: 2880, wakeRate: 0.002, calmRate: 0.004 });
+        expect(calls).toEqual([
+            {
+                subject: CONFIGURE_SUBJECT,
+                body: { wake_rate: 0.002, calm_rate: 0.004, jump: 0.5, decay: 20, speed: 2880 },
+            },
+        ]);
+    });
+
+    it('reports numbers the service refuses as a bad request, in the service’s words', async () => {
+        const message = "operational_clock: the heat's loop gain, jump / decay, is 1.25";
+        const { server, sessionId } = buildTestServer({
+            [CONFIGURE_SUBJECT]: { success: false, message },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            { ...SETTINGS, jump: 25 },
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json().message).toBe(message);
+    });
+
+    it('refuses a speed that is not positive before the service hears of it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            { ...SETTINGS, speed: 0 },
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 });
 

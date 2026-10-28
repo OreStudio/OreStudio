@@ -32,6 +32,7 @@ import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/rep
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
+import { subjects as proposalSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_proposal_operations_protocol';
 import { HttpFailure, invalidRequest, notFound, otherParty } from './errors.js';
 import {
     input,
@@ -123,6 +124,13 @@ interface EngineSetting {
 interface EngineGroup {
     /** The code of the group, which is the word its part travels under. */
     readonly id: string;
+    /**
+     * Whether a write to this group moves the numbers a run computes, which is
+     * the declaration the settings of the group carry. A write to a group that
+     * does is a proposal once a report binds the configuration; a write to one
+     * that does not lands directly.
+     */
+    readonly changesNumbers: boolean;
     readonly settings: readonly EngineSetting[];
 }
 
@@ -210,7 +218,14 @@ async function readGroups(session: LiveSession): Promise<readonly EngineGroup[]>
         .map((value) => groupRowSchema.parse(value))
         .sort((left, right) => left.position - right.position)
         .filter((group) => TRANSPORT[group.code] !== undefined)
-        .map((group) => ({ id: group.code, settings: settings.get(group.code) ?? [] }));
+        .map((group) => {
+            const ofGroup = settings.get(group.code) ?? [];
+            return {
+                id: group.code,
+                changesNumbers: ofGroup.some((setting) => setting.changesNumbers),
+                settings: ofGroup,
+            };
+        });
 }
 
 /** The group with this code, or a 404 when the data does not hold it. */
@@ -551,6 +566,63 @@ async function putCentral(
     return reply.engine_settings ?? (await readCentral(session, text(writeBody['id'])));
 }
 
+/** The approval a proposal created, as the screen reads it. */
+const proposalReplySchema = z.looseObject({
+    result: resultSchema,
+    request_id: z.string().default(''),
+});
+
+/**
+ * Holds a write to a numbers-changing group in an approval request, and writes
+ * no part.
+ *
+ * The service decides whether the group is numbers-changing and whether a
+ * report binds the configuration; it refuses a proposal that is not one, so a
+ * caller cannot make a governed configuration change in place by asking for a
+ * proposal.
+ */
+async function proposeGroup(
+    session: LiveSession,
+    group: EngineGroup,
+    id: string,
+    version: number | null,
+    values: Readonly<Record<string, unknown>>,
+    intent: z.infer<typeof intentSchema>,
+): Promise<Readonly<Record<string, unknown>>> {
+    const reason = intent.commentary.trim() === ''
+        ? intent.reason_code
+        : `${intent.reason_code}: ${intent.commentary}`;
+    const reply = await session.client.callAuthenticated(
+        proposalSubjects.raise_engine_settings_change_request,
+        {
+            engine_settings_id: id,
+            group_code: group.id,
+            base_version: version ?? 0,
+            values: group.settings.map((setting) => ({
+                setting_code: `${group.id}:${setting.column}`,
+                text_value: textValue(values[setting.column]),
+            })),
+            reason,
+        },
+        proposalReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw writeRefusal(reply.result);
+    }
+    return { requestId: reply.request_id };
+}
+
+/** A value as the text the proposal carries; an empty text is the engine default. */
+function textValue(value: unknown): string {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    if (typeof value === 'boolean') {
+        return value ? 'true' : 'false';
+    }
+    return String(value);
+}
+
 async function createHeader(
     session: LiveSession,
     name: string,
@@ -749,7 +821,16 @@ export function registerEngineSettingsRoutes(
         return documentOf(session, updated, await readGroups(session));
     });
 
-    server.put('/api/reporting/engine-settings/:id/groups/:group', async (request) => {
+    /**
+     * Writes one group, or proposes the write.
+     *
+     * A group that changes the numbers a run computes and a configuration that
+     * at least one report binds make the write a proposal: nothing in force
+     * moves, and the answer is the approval the proposal created. A group that
+     * changes no numbers, or a configuration that no report binds, changes in
+     * place, with the reason the write carried kept against the version.
+     */
+    server.put('/api/reporting/engine-settings/:id/groups/:group', async (request, reply) => {
         const session = requireSession(request);
         const id = paramId(request);
         const code = input(groupSchema, (request.params as { group: string }).group);
@@ -757,7 +838,22 @@ export function registerEngineSettingsRoutes(
         const group = groupOf(groups, code);
         const body = input(groupBodySchema, request.body);
         const values = input(valuesSchema(group), body.values);
-        requireOwningParty(session, await readCentral(session, id));
+        const central = await readCentral(session, id);
+        requireOwningParty(session, central);
+        if (group.changesNumbers) {
+            // A read that fails is not a read that found no report: the
+            // governed case is the one that must not be got wrong, so a
+            // failure proposes rather than writes.
+            const reports = await readBoundReports(
+                session,
+                text(central['configuration_id']),
+            ).catch(() => null);
+            if (reports === null || reports.length > 0) {
+                const proposal = await proposeGroup(session, group, id, body.version, values, body.intent);
+                void reply.code(202);
+                return { document: await documentOf(session, central, groups), proposal };
+            }
+        }
         const existing = (await readParts(session, [id], groups)).get(group.id)?.[0];
         const rowId = existing === undefined ? randomUUID() : text(existing['id']);
         const result = await write(session, transportOf(group).put, {
@@ -773,7 +869,7 @@ export function registerEngineSettingsRoutes(
         if (result.outcome !== 'ok') {
             throw writeRefusal(result);
         }
-        return documentOf(session, await readCentral(session, id), groups);
+        return { document: await documentOf(session, await readCentral(session, id), groups), proposal: null };
     });
 
     server.delete('/api/reporting/engine-settings/:id', async (request, reply) => {

@@ -145,6 +145,27 @@ export type EnginePart = z.infer<typeof partSchema>;
 /** A configuration with its three groups. */
 export type EngineDocument = z.infer<typeof documentSchema>;
 
+/**
+ * The approval a numbers-changing write became, when it became one.
+ *
+ * A write to a group that moves the numbers a run computes, on a configuration
+ * a report binds, is a proposal: nothing in force moves and the approval decides
+ * the change. The screen names the request so a person can follow it.
+ */
+const proposalSchema = z.object({
+    requestId: z.string(),
+});
+
+export type EngineProposal = z.infer<typeof proposalSchema>;
+
+/** What a group write answered: the configuration as it now stands, and the approval when the write was a proposal. */
+const saveResultSchema = z.object({
+    document: documentSchema,
+    proposal: proposalSchema.nullable().default(null),
+});
+
+export type EngineSaveResult = z.infer<typeof saveResultSchema>;
+
 /** The row a list shows for a configuration. */
 export type EngineSummary = z.infer<typeof summarySchema>;
 
@@ -229,6 +250,10 @@ export const engineSettings = {
     /**
      * Writes one group against the version of its row, or null when it has none.
      * The values name every setting of the group, null for the engine default.
+     *
+     * A group that changes the numbers a run computes, on a configuration a
+     * report binds, is proposed instead: the answer then names the approval and
+     * the configuration stands as it was.
      */
     async saveGroup(
         id: string,
@@ -236,8 +261,8 @@ export const engineSettings = {
         version: number | null,
         values: GroupValues,
         intent: EngineIntent,
-    ): Promise<EngineDocument> {
-        return documentSchema.parse(
+    ): Promise<EngineSaveResult> {
+        return saveResultSchema.parse(
             await request(`${ROOT}/${encodeURIComponent(id)}/groups/${group}`, {
                 method: 'PUT',
                 headers: JSON_HEADERS,

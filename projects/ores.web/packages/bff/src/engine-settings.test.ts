@@ -156,6 +156,7 @@ function send(
 
 const SETTINGS_ID = '55555555-5555-4555-8555-555555555555';
 const HEADER_ID = '99999999-9999-4999-8999-999999999999';
+const REQUEST_ID = '99999999-9999-4999-8999-999999999999';
 const PART_ID = '66666666-6666-4666-8666-666666666666';
 const REPORT_ID = '77777777-7777-4777-8777-777777777777';
 const PARTY_ID = '0a12c57f-1111-4222-8333-444444444444';
@@ -646,9 +647,53 @@ describe('engine settings routes', () => {
         });
     });
 
-    it('creates the row of a group that had none', async () => {
+    it('proposes a write to a numbers-changing group of a configuration a report binds', async () => {
         const { server, sessionId, calls } = buildTestServer({
             ...reads,
+            'reporting.v1.ops.raise_engine_settings_change': {
+                result: ok,
+                request_id: REQUEST_ID,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/reporting/engine-settings/${SETTINGS_ID}/groups/fixings`,
+            {
+                version: null,
+                values: {
+                    imply_todays_fixings: true,
+                    include_todays_cash_flows: null,
+                    include_reference_date_events: null,
+                    enrich_index_fixings: null,
+                    ignore_fixing_lag: null,
+                    ignore_fixing_lead: null,
+                },
+                intent: INTENT,
+            },
+        );
+        // The write is a proposal: nothing in force moves, and the answer names
+        // the approval it created.
+        expect(response.statusCode).toBe(202);
+        expect(response.json()).toMatchObject({ proposal: { requestId: REQUEST_ID } });
+        const raise = calls.find((call) => call.subject.endsWith('raise_engine_settings_change'));
+        expect(raise?.body).toMatchObject({
+            engine_settings_id: SETTINGS_ID,
+            group_code: 'fixings',
+            base_version: 0,
+            values: expect.arrayContaining([
+                { setting_code: 'fixings:imply_todays_fixings', text_value: 'true' },
+            ]),
+        });
+        expect(calls.some((call) => call.subject.endsWith('fixings.put'))).toBe(false);
+    });
+
+    it('writes a numbers-changing group directly when no report binds the configuration', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            ...reads,
+            'reporting.v1.report_configurations.list': { result: ok, report_configurations: [] },
+            'reporting.v1.report_definitions.list': { result: ok, definitions: [] },
             'reporting.v1.engine_settings_fixings.put': { result: ok },
         });
         const response = await send(
@@ -670,10 +715,14 @@ describe('engine settings routes', () => {
             },
         );
         expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ proposal: null });
         const put = calls.find((call) => call.subject.endsWith('fixings.put'));
         expect(put?.body).toMatchObject({
             change: { precondition: { kind: 'must_not_exist', version: null } },
         });
+        expect(calls.some((call) => call.subject.endsWith('raise_engine_settings_change'))).toBe(
+            false,
+        );
     });
 
     it.each([

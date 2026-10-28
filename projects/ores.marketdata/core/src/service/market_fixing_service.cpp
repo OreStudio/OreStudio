@@ -124,6 +124,12 @@ market_fixing_service::list_market_fixings(const messaging::list_market_fixings_
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->series_id_one_of &&
+        request.filter->series_id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "series_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.

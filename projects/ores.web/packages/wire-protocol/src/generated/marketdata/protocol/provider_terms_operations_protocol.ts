@@ -35,6 +35,15 @@ export interface AcceptProviderTermsRequest {
      * @brief The provider whose terms are accepted.
      */
     provider_code: string;
+    /**
+     * @brief The version of the provider the person read, or zero for the latest.
+     *
+     * A screen sends the version it showed, so the terms accepted are the terms the
+     * person read: when the provider changed in between, the acceptance is refused
+     * and the person reads them again. Zero accepts the terms as they stand, which is
+     * what a person at the shell does after reading the provider.
+     */
+    provider_version: number;
 }
 
 export interface AcceptProviderTermsResponse {

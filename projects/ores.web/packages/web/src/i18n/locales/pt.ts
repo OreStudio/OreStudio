@@ -4868,6 +4868,51 @@ const pt: SourceCatalogue = {
                     'A curva {curve} não tem candidato, por isso não há nada para comparar com o conjunto publicado.',
             },
         },
+        official: {
+            title: 'Taxas oficiais',
+            lead: 'As taxas diárias que os bancos centrais publicam, os termos de cada um e os fixings que a plataforma guarda.',
+            providers: {
+                title: 'Fornecedores',
+                lead: 'Um fornecedor só é lido depois de os seus termos serem aceites.',
+                empty: 'Nenhum fornecedor publica taxas oficiais.',
+            },
+            columns: {
+                provider: 'Fornecedor',
+                pivot: 'Base',
+                terms: 'Termos',
+                source: 'Fonte',
+                series: 'Séries',
+                date: 'Data',
+                value: 'Valor',
+                route: 'Como',
+            },
+            terms: {
+                accepted: 'Aceites',
+                acceptedBy: 'Por {who} em {when}',
+                notAccepted: 'Não aceites',
+                accept: 'Aceitar os termos',
+                read: 'Ler os termos',
+            },
+            detail: {
+                title: 'As taxas de {provider}',
+                series: 'Séries',
+                empty: 'O fornecedor não alimenta nenhuma série.',
+                noFixings: 'Ainda não há fixings guardados para esta série.',
+                chart: 'Os fixings de {pair}',
+            },
+            compare: {
+                title: 'Um par em cada fornecedor',
+                lead: 'Os fornecedores que publicam o mesmo par concordam a poucos pontos base.',
+                base: 'Moeda base',
+                quote: 'Moeda de cotação',
+                none: 'Nenhum fornecedor dá este par, diretamente ou pela sua base.',
+            },
+            route: {
+                direct: 'Publicado',
+                inverse: 'Invertido',
+                cross: 'Cruzado',
+            },
+        },
         subscriptions: {
             title: 'Subscrições',
             description:

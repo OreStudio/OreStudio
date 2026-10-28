@@ -107,6 +107,7 @@ import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
+import { OfficialRatesPage } from './marketdata/OfficialRatesPage.js';
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
@@ -677,6 +678,18 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <SubscriptionsPage partyId={view.party.id} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.officialRates}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <OfficialRatesPage />
                     ),
                     'workspace',
                 )}

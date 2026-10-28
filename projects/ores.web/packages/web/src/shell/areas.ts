@@ -60,6 +60,7 @@ export const MENU: readonly MenuItem[] = [
             'synthetic::ir_curve_generation_configs:read',
             'marketdata::curve_snapshots:read',
             'marketdata::subscriptions:read',
+            'marketdata::providers:read',
         ],
     },
     {

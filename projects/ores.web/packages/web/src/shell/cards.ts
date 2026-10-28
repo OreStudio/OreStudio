@@ -189,6 +189,14 @@ export const CARDS = {
         permission: 'refdata::ir_curve_bootstrap_configs:read',
         screenTitleKey: 'marketdata.curveBlueprints.title',
     },
+    officialRates: {
+        titleKey: 'marketdata.official.title',
+        bodyKey: 'marketdata.official.lead',
+        to: PATHS.officialRates,
+        icon: 'chart',
+        permission: 'marketdata::providers:read',
+        screenTitleKey: 'marketdata.official.title',
+    },
     publishedCurves: {
         titleKey: 'marketdata.published.title',
         bodyKey: 'marketdata.published.lead',
@@ -381,6 +389,7 @@ export const AREA_CARDS = {
         'curveBlueprints',
         'synthetic',
         'subscriptions',
+        'officialRates',
         'publishedCurves',
         'curveEvolution',
     ],

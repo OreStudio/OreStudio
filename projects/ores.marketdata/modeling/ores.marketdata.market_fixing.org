@@ -62,6 +62,7 @@ ctx.generate_uuid()
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :natural_key: true
+:filterable: true
 :END:
 
 Reference to =ores_marketdata_market_series_tbl(id)= — identifies the fixing index.

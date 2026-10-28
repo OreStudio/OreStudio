@@ -4899,6 +4899,51 @@ const fr: SourceCatalogue = {
                     'La courbe {curve} n’a aucun candidat, donc rien à comparer au jeu publié.',
             },
         },
+        official: {
+            title: 'Taux officiels',
+            lead: 'Les taux quotidiens que publient les banques centrales, les conditions de chacune et les fixings que la plateforme conserve.',
+            providers: {
+                title: 'Fournisseurs',
+                lead: 'Un fournisseur n’est lu qu’après acceptation de ses conditions.',
+                empty: 'Aucun fournisseur ne publie de taux officiels.',
+            },
+            columns: {
+                provider: 'Fournisseur',
+                pivot: 'Base',
+                terms: 'Conditions',
+                source: 'Source',
+                series: 'Séries',
+                date: 'Date',
+                value: 'Valeur',
+                route: 'Comment',
+            },
+            terms: {
+                accepted: 'Acceptées',
+                acceptedBy: 'Par {who} le {when}',
+                notAccepted: 'Non acceptées',
+                accept: 'Accepter les conditions',
+                read: 'Lire les conditions',
+            },
+            detail: {
+                title: 'Les taux de {provider}',
+                series: 'Séries',
+                empty: 'Le fournisseur n’alimente aucune série.',
+                noFixings: 'Aucun fixing n’est encore stocké pour cette série.',
+                chart: 'Les fixings de {pair}',
+            },
+            compare: {
+                title: 'Une paire chez chaque fournisseur',
+                lead: 'Les fournisseurs qui publient la même paire concordent à quelques points de base près.',
+                base: 'Devise de base',
+                quote: 'Devise de cotation',
+                none: 'Aucun fournisseur ne donne cette paire, directement ou par sa base.',
+            },
+            route: {
+                direct: 'Publiée',
+                inverse: 'Inversée',
+                cross: 'Croisée',
+            },
+        },
         subscriptions: {
             title: 'Souscriptions',
             description:

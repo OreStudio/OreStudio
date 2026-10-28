@@ -89,11 +89,20 @@ market_fixing_filter_condition(const std::optional<messaging::market_fixings_fil
     if (!filter)
         return std::nullopt;
     std::vector<query_builder::condition> r;
+    if (filter->series_id)
+        r.push_back(
+            query_builder::equals("series_id", query_builder::filter_value(*filter->series_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("id", std::move(values)));
+    }
+    if (filter->series_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->series_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("series_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }

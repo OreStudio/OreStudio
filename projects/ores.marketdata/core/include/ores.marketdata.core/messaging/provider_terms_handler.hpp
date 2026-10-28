@@ -89,6 +89,10 @@ public:
                 resp.message = "No provider '" + req->provider_code + "'.";
             } else if (!terms::has_terms(found.front())) {
                 resp.message = "The provider '" + req->provider_code + "' states no terms.";
+            } else if (req->provider_version != 0 &&
+                       req->provider_version != found.front().version) {
+                resp.message = "The provider '" + req->provider_code +
+                               "' changed after its terms were read. Read them again.";
             } else {
                 const auto& actor = req_ctx.actor();
                 auto accepted =

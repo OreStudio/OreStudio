@@ -45,6 +45,7 @@ import { registerMarketRegimeRoutes } from './market-regime.js';
 import { registerCurveRoutes } from './curves.js';
 import { registerCurveConfigurationRoutes } from './curve-configuration.js';
 import { registerAdapterRoutes } from './adapters.js';
+import { registerOfficialRatesRoutes } from './official.js';
 import { registerSubscriptionRoutes } from './subscriptions.js';
 import { registerOresmdRoutes } from './oresmd.js';
 import { registerSeriesRoutes } from './series.js';
@@ -2682,6 +2683,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerCurveConfigurationRoutes(server, requireSession);
     registerAdapterRoutes(server, requireSession);
     registerSubscriptionRoutes(server, requireSession);
+    registerOfficialRatesRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
     registerTenorRoutes(server, requireSession);

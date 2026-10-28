@@ -55,6 +55,7 @@ export const PATHS = {
     publishedCurves: '/market-data/published-curves',
     curveBlueprints: '/market-data/curve-blueprints',
     subscriptions: '/market-data/subscriptions',
+    officialRates: '/market-data/official-rates',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
     reporting: '/reporting',

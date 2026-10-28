@@ -23,7 +23,7 @@ Sends =accept_provider_terms_request= and prints =accept_provider_terms_response
 The command is shaped like this:
 
 #+begin_example
-provider_terms_operations accept-provider-terms <provider_code>
+provider_terms_operations accept-provider-terms <provider_code> [--provider_version <v>]
 #+end_example
 
 It is addressed at =marketdata.v1.ops.accept_provider_terms=.

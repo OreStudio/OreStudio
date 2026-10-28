@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-public-sources-control-surface
+#+pr: 4000
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person can see which public providers are in the system, whether their data is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -43,9 +43,27 @@ A person can see which public providers are in the system, whether their data is
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The user asked to stop at a checkpoint: the provider data is in the system and
+a person can see it. So this task delivers the read side and the one write that
+the data needs, the acceptance of a provider's terms. The other actions wait
+for the review at the checkpoint (see Notes).
+
+1. Make =market_fixing.series_id= filterable, so that one read takes the
+   fixings of a few series and not the whole hypertable.
+2. Add three BFF routes in =official.ts=:
+   - =GET /api/marketdata/official= reads each provider that has a terms page,
+     with its sources and its fixing series. The series are parsed from their
+     item.
+   - =GET /api/marketdata/official/fixings?series== reads the fixings of at most
+     12 series, sorted by date.
+   - =POST /api/marketdata/official/:code/accept-terms= calls the server-side
+     acceptance.
+3. Add the Official rates screen under Market data. It has three panels:
+   - the providers, with their terms state and an Accept terms button for a
+     person who holds =marketdata::providers:accept_terms=;
+   - one provider's series, as a chart and a table of the latest fixings;
+   - one pair from every provider, as published, inverted or crossed through
+     the provider's base.
 
 * Measurements
 
@@ -59,9 +77,30 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Official providers and their series | 4 providers, 113 series (BOC 26, TCMB 21, ECB 30, IMF 36) | =curl -b jar localhost:20002/api/marketdata/official= | e167766031 |
+| Fixings of four series in one read | 280, 270, 272, 272 rows in 0.12 s | =curl -b jar 'localhost:20002/api/marketdata/official/fixings?series=…'= | e167766031 |
+| EUR/USD on 2026-10-27 | ECB 1.115, IMF 1/0.89686 = 1.11500, BOC 0.71235/0.63926 = 1.11434 | the same read | e167766031 |
+| Web tests in the touched areas | 365 passed in 30 files | =npx vitest run src/marketdata src/shell src/i18n= | e167766031 |
 
 * Notes
+
+Deferred until the checkpoint review:
+
+- Pause and resume a provider, and start a backfill of a date range. Each
+  action is audited.
+- Delete a provider's fixings. When a provider's new terms withdraw permission
+  to store, a system administrator deletes that provider's fixings from the
+  durable table, and the deletion records who did it. The design is in
+  [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+- The adapter's health and the time of the last fixing in the provider list.
+  The adapter reports them in its INGEST STATUS, but no read carries them to
+  the web yet.
+- A harness test that drives the screen live.
+- A date bound on the fixings read. Today 12 series grow by about 260 rows each a
+  year; the window read is task T6.
+
+A crossed pair is shown as derived. The ECB's terms count a computed rate as a
+change to its data, so the screen names the route of every value.
 
 * Test Scenarios
 
@@ -78,12 +117,34 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4000][#4000]] | [web] Show the official rates and accept their terms |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The terms accepted may not be the terms shown | provider_terms_handler.hpp, official.ts | Accept | The request names the provider version the screen showed; the service refuses when the provider changed since. Zero accepts the terms as they stand, for the shell. The provider must state terms, which the service already checked. |
+| 2 | The BFF does not check the accept permission | official.ts | Decline | The service checks =marketdata::providers:accept_terms= and answers forbidden; the BFF holds no permissions of its own. |
+| 3 | The fixings read has no date bound | official.ts | Defer | 12 series grow by about 260 rows each a year. The window read is task T6, "Read the latest fixing and a window". |
+| 4 | The pivot is the first series' base | officialRates.ts, official.ts | Accept | The BFF logs a warning when a provider's series have more than one base. |
+| 5 | Two series for one quote are chosen silently | officialRates.ts | Decline | The catalogue gives a provider one series per currency: the item names the provider's key and the currency. |
+| 6 | The refusals are checked only live | official.test.ts | Accept | Route tests cover the 13-series and non-id refusals, the grouping, and the acceptance with and without a version. |
+| 7 | Confirm the gate failures are main's | — | Note | The same failures as main: equity_underlying (handler permissions, event registrars, entity writes), shell recipes, ER diagram, codegen tests, protocol drift. |
+| 8 | Version 0 and a stale version are pinned only by the BFF and the shell | messaging_provider_terms_handler_tests.cpp | Accept | Handler tests over NATS: the current version, a stale version, version 0, a provider with no terms, and no permission. |
+| 9 | A stale version is a 400 like every refusal | official.ts | Decline | The screen reloads the providers after any refusal and shows the service's message, so it needs no separate status. |
+| 10 | Keep the date bound noted | task Notes | Accept | Added to the deferred list. |
 
 * Result
+
+Delivered to the checkpoint the user asked for, and signed off. The Official rates
+screen under Market data lists the four providers with their terms state, draws
+one provider's fixings, and compares one pair across every provider, as
+published, inverted or crossed. A system administrator accepts a provider's
+terms at the version the screen showed; the service refuses a version that
+changed since. Fixings are read by series through a new =series_id= filter.
+Route tests, a render test, pair arithmetic tests and handler tests over NATS
+cover it. The PR also links =ores.trading.service.tests= to the refdata core
+repositories, which main's full build needed.
+
+Pause, resume, backfill, deleting fixings, the adapter's health on the screen,
+a date bound on the read, and a harness test stay deferred (see Notes).

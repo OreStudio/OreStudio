@@ -90,6 +90,7 @@ describe('the split tenor', () => {
 
     it('is a tenor inside the ladder for the two-segment method', () => {
         expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', '6M', pillars)).toBe(true);
+        expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', '1M', pillars)).toBe(true);
         expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', '2Y', pillars)).toBe(false);
         expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', 'SPOT', pillars)).toBe(false);
     });

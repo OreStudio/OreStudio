@@ -103,8 +103,7 @@ value shows in a row by default. The Fit table uses the same law tag.
 
 The loop's health moved to the top of Fit. A feed's own Arrivals tab shows that
 feed's trace, without the feed filter. On Arrivals the heat map sits below the
-cards, and its hot end is green, not gold, since gold is the interest-rate
-colour; red was tried and dropped.
+cards. Its hot end stays gold: red and green were tried and dropped.
 
 Evidence: web tests pass (2253), typecheck clean, and the harness passes 16 of
 16 live. It checks the tabs, the overview cards' links and filters, the law and

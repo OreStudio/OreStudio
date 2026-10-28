@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/fold-a-laws-numbers-into-its-tooltip
-#+pr:
+#+pr: 3983
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3983][#3983]] | [web] Fold a law's numbers into its tooltip on the Laws tab |
 
 * Review
 

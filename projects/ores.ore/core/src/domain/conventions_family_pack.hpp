@@ -42,7 +42,7 @@ namespace ores::ore::domain::conventions_family {
  * @brief One family's elements, mapped and packed in document order.
  */
 template <typename Convert>
-void pack_family(refdata::service::conventions_bundle& bundle,
+void pack_family(refdata::messaging::conventions_bundle& bundle,
                  std::string_view family,
                  const std::vector<xml::record_reader>& rows,
                  Convert convert) {
@@ -52,7 +52,7 @@ void pack_family(refdata::service::conventions_bundle& bundle,
 }
 
 template <typename Row>
-void pack_row(refdata::service::conventions_bundle& bundle,
+void pack_row(refdata::messaging::conventions_bundle& bundle,
               std::string_view family,
               int sequence,
               const Row& row) {

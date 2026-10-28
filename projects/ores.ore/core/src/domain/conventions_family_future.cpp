@@ -56,7 +56,7 @@ void conventions_mapper::reverse_future(const refdata::domain::future_convention
 
 namespace conventions_family {
 
-void pack_future(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_future(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "future", root.children("Future"), &conventions_mapper::map_future);
 }
 

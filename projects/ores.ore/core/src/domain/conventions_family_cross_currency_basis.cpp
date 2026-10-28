@@ -93,7 +93,7 @@ void conventions_mapper::reverse_cross_currency_basis(
 namespace conventions_family {
 
 void pack_cross_currency_basis(const record_reader& root,
-                               refdata::service::conventions_bundle& bundle) {
+                               refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "cross_currency_basis",
                 root.children("CrossCurrencyBasis"),

@@ -50,7 +50,7 @@ void conventions_mapper::reverse_overnight_index(
 
 namespace conventions_family {
 
-void pack_overnight_index(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_overnight_index(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "overnight_index",
                 root.children("OvernightIndex"),

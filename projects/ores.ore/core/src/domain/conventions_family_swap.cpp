@@ -56,7 +56,7 @@ void conventions_mapper::reverse_swap(const refdata::domain::swap_convention& v,
 
 namespace conventions_family {
 
-void pack_swap(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_swap(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle, "swap", root.children("Swap"), &conventions_mapper::map_swap);
 }
 

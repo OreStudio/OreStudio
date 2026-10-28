@@ -62,7 +62,6 @@ target_link_libraries(${lib_target_name}
         ores.analytics.api.lib
         ores.ore.api.lib
         ores.refdata.api.lib
-        ores.refdata.core.lib
         ores.reporting.api.lib
         ores.trading.api.lib
     PRIVATE

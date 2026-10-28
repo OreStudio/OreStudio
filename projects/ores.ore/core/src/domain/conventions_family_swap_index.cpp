@@ -47,7 +47,7 @@ void conventions_mapper::reverse_swap_index(const refdata::domain::swap_index_co
 
 namespace conventions_family {
 
-void pack_swap_index(const record_reader& root, refdata::service::conventions_bundle& bundle) {
+void pack_swap_index(const record_reader& root, refdata::messaging::conventions_bundle& bundle) {
     pack_family(
         bundle, "swap_index", root.children("SwapIndex"), &conventions_mapper::map_swap_index);
 }

@@ -60,7 +60,7 @@ void conventions_mapper::reverse_cms_spread_option(
 namespace conventions_family {
 
 void pack_cms_spread_option(const record_reader& root,
-                            refdata::service::conventions_bundle& bundle) {
+                            refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "cms_spread_option",
                 root.children("CmsSpreadOption"),

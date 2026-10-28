@@ -58,7 +58,7 @@ void conventions_mapper::reverse_zero_inflation_index(
 namespace conventions_family {
 
 void pack_zero_inflation_index(const record_reader& root,
-                               refdata::service::conventions_bundle& bundle) {
+                               refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "zero_inflation_index",
                 root.children("ZeroInflationIndex"),

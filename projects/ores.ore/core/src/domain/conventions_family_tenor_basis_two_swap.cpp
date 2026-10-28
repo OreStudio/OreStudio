@@ -65,7 +65,7 @@ void conventions_mapper::reverse_tenor_basis_two_swap(
 namespace conventions_family {
 
 void pack_tenor_basis_two_swap(const record_reader& root,
-                               refdata::service::conventions_bundle& bundle) {
+                               refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "tenor_basis_two_swap",
                 root.children("TenorBasisTwoSwap"),

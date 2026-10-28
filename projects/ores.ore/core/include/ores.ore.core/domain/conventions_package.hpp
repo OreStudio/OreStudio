@@ -23,7 +23,7 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/generated/conventions.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
-#include "ores.refdata.core/service/conventions_bundle.hpp"
+#include "ores.refdata.api/messaging/conventions_bundle.hpp"
 #include <string>
 #include <vector>
 
@@ -48,7 +48,7 @@ using conventions = xml::generated::conventions::conventions;
  * bundle, and never crosses to refdata.
  */
 struct conventions_package {
-    ores::refdata::service::conventions_bundle bundle;
+    ores::refdata::messaging::conventions_bundle bundle;
     std::vector<ores::refdata::messaging::fx_convention> fx;
 };
 

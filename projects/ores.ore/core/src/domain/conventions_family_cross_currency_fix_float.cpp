@@ -80,7 +80,7 @@ void conventions_mapper::reverse_cross_currency_fix_float(
 namespace conventions_family {
 
 void pack_cross_currency_fix_float(const record_reader& root,
-                                   refdata::service::conventions_bundle& bundle) {
+                                   refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "cross_currency_fix_float",
                 root.children("CrossCurrencyFixFloat"),

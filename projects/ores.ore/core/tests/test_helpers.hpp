@@ -23,7 +23,9 @@
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include <fstream>
 #include <set>
+#include <sstream>
 
 using ores::ore::xml::exporter;
 using ores::ore::xml::trade_import_item;

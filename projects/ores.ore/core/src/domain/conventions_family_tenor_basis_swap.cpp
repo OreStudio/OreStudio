@@ -133,7 +133,7 @@ void conventions_mapper::reverse_tenor_basis_swap(
 namespace conventions_family {
 
 void pack_tenor_basis_swap(const record_reader& root,
-                           refdata::service::conventions_bundle& bundle) {
+                           refdata::messaging::conventions_bundle& bundle) {
     // A tenor basis swap is one central convention row plus the parts the
     // document's form populated, and the three are three families.
     int conventions_seen = 0;

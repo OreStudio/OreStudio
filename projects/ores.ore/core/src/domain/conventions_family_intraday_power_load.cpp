@@ -136,7 +136,7 @@ void conventions_mapper::reverse_intraday_power_load(
 namespace conventions_family {
 
 void pack_intraday_power_load(const record_reader& root,
-                              refdata::service::conventions_bundle& bundle) {
+                              refdata::messaging::conventions_bundle& bundle) {
     pack_family(bundle,
                 "intraday_power_load",
                 root.children("IntradayPowerLoad"),

@@ -74,7 +74,7 @@ std::string without_tenor_basis_swap(const conventions_package& p) {
 }
 
 template <typename Row>
-Row decode(const refdata::service::conventions_bundle_row& row) {
+Row decode(const refdata::messaging::conventions_bundle_row& row) {
     auto decoded = rfl::json::read<Row>(row.payload);
     if (!decoded)
         throw std::runtime_error("A conventions payload does not decode: " + row.family);

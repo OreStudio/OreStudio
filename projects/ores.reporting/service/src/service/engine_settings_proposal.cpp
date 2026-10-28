@@ -40,10 +40,11 @@
 #include <algorithm>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <charconv>
 #include <map>
-#include <tuple>
 #include <stdexcept>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::reporting::service {
@@ -57,6 +58,17 @@ namespace {
 constexpr std::string_view fixings_code = "fixings";
 constexpr std::string_view building_code = "building";
 constexpr std::string_view execution_code = "execution";
+
+/**
+ * @brief The words the screen draws when a save claims a version that moved.
+ *
+ * The service answers a stale claim with the sentence the screen shows, so a
+ * person reads one refusal whether it came from the browser or from the server.
+ * The screen holds the same sentence in its own catalogue; this is the service's
+ * copy of it, in the one language the service speaks.
+ */
+constexpr std::string_view stale_words =
+    "These settings changed since you opened them. Read them again before you change them.";
 
 /** A proposed value of one setting, as the screen states it. */
 using value_map = std::map<std::string, std::optional<std::string>>;
@@ -102,13 +114,24 @@ std::optional<bool> as_flag(const std::optional<std::string>& text) {
     throw std::invalid_argument("A flag is true or false, not '" + v + "'.");
 }
 
+/**
+ * @brief The whole a setting's text names, or nothing for the engine default.
+ *
+ * A value that is not a whole, and a value too large for a whole, are both
+ * refusals of the content: they are thrown as invalid_argument, which the apply
+ * reads as permanent. A range error that escaped as out_of_range would be read
+ * as a failure of the infrastructure and retried forever.
+ */
 std::optional<int> as_whole(const std::optional<std::string>& text) {
     const auto v = trim(text.value_or(std::string{}));
     if (v.empty())
         return std::nullopt;
-    std::size_t used = 0;
-    const auto parsed = std::stoi(v, &used);
-    if (used != v.size())
+    int parsed = 0;
+    const auto [end, error] = std::from_chars(v.data(), v.data() + v.size(), parsed);
+    if (error == std::errc::result_out_of_range)
+        throw std::invalid_argument("A whole must be a number the setting can hold, not '" + v +
+                                    "'.");
+    if (error != std::errc{} || end != v.data() + v.size())
         throw std::invalid_argument("A whole is its digits, not '" + v + "'.");
     return parsed;
 }
@@ -350,6 +373,46 @@ void write_group(const ores::database::context& ctx,
     throw std::invalid_argument("No group of engine settings is called " + group_code + ".");
 }
 
+/**
+ * @brief Whether a write to this group of this configuration is a proposal.
+ *
+ * Read in the caller's unit of work, so the statement that asks and the write
+ * that follows it see one state.
+ */
+bool needs_approval_in(const ores::database::context& ctx,
+                       const boost::uuids::uuid& engine_settings_id,
+                       const settings_group& group) {
+    if (!group.changes_numbers)
+        return false;
+
+    const auto settings = repository::engine_settings_repository{}.read_latest(
+        ctx, boost::uuids::to_string(engine_settings_id));
+    if (settings.empty())
+        return false;
+
+    const auto bindings = repository::report_configuration_repository{}
+                              .read_latest_by_configuration_id(
+                                  ctx,
+                                  boost::uuids::to_string(settings.front().configuration_id),
+                                  0,
+                                  1000);
+    return !bindings.empty();
+}
+
+/**
+ * @brief The parts a proposal of this group needs, read in the caller's unit of
+ * work.
+ */
+std::vector<std::string> part_codes_in(const ores::database::context& ctx,
+                                       const std::string& group_code) {
+    ores::inbox::service::approval_lifecycle lifecycle(ctx);
+    const auto named = lifecycle.part_codes_of_kind(
+        std::string(engine_settings_proposal_service::kind_code));
+    if (std::ranges::find(named, group_code) != named.end())
+        return {group_code};
+    return {};
+}
+
 /** The change lines of a request, in group and setting order. */
 std::vector<domain::engine_settings_change> lines_of(const ores::database::context& ctx,
                                                      const std::string& request_id) {
@@ -462,34 +525,21 @@ std::optional<settings_group> engine_settings_proposal_service::group(const std:
 bool engine_settings_proposal_service::needs_approval(const boost::uuids::uuid& engine_settings_id,
                                                       const std::string& group_code) {
     const auto found = group(group_code);
-    if (!found || !found->changes_numbers)
+    if (!found)
         return false;
-
-    const auto settings = repository::engine_settings_repository{}.read_latest(
-        ctx_, boost::uuids::to_string(engine_settings_id));
-    if (settings.empty())
-        return false;
-
-    const auto bindings = repository::report_configuration_repository{}
-                              .read_latest_by_configuration_id(
-                                  ctx_,
-                                  boost::uuids::to_string(settings.front().configuration_id),
-                                  0,
-                                  1000);
-    return !bindings.empty();
+    return needs_approval_in(ctx_, engine_settings_id, *found);
 }
 
 std::vector<std::string> engine_settings_proposal_service::part_codes(const std::string& group_code) {
-    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
-    const auto named = lifecycle.part_codes_of_kind(std::string(kind_code));
-    if (std::ranges::find(named, group_code) != named.end())
-        return {group_code};
-    return {};
+    return part_codes_in(ctx_, group_code);
 }
 
 ores::reporting::messaging::raise_engine_settings_change_response engine_settings_proposal_service::raise(
     const ores::reporting::messaging::raise_engine_settings_change_request& request) {
     ores::reporting::messaging::raise_engine_settings_change_response response;
+
+    // The refusals that need no subject read are answered first, so a typo in a
+    // group or a missing reason costs no database work.
     const auto asked = group(request.group_code);
     if (!asked) {
         response.result = refusal_of(
@@ -503,73 +553,95 @@ ores::reporting::messaging::raise_engine_settings_change_response engine_setting
                                          "and is not a proposal.");
         return response;
     }
-    const auto settings = repository::engine_settings_repository{}.read_latest(
-        ctx_, boost::uuids::to_string(request.engine_settings_id));
-    if (settings.empty()) {
-        response.result = refusal_of(outcome::missing, "No engine run settings have this id.");
-        return response;
-    }
-    if (!needs_approval(request.engine_settings_id, request.group_code)) {
-        response.result =
-            refusal_of(outcome::invalid,
-                       "No report binds these engine run settings, so they are a draft and the "
-                       "group changes in place.");
-        return response;
-    }
     if (trim(request.reason).empty()) {
         response.result = refusal_of(outcome::invalid, "Say why you ask.");
         return response;
     }
 
-    // The proposal states the whole group: a setting the person left alone
-    // travels with the value in force, so the apply writes one group and not a
-    // patch of it.
-    auto values = values_in_force(ctx_, request.group_code, request.engine_settings_id, *asked);
-    for (const auto& v : request.values) {
-        const auto setting = std::ranges::find_if(asked->settings, [&](const auto& s) {
-            return s.code == v.setting_code;
-        });
-        if (setting == asked->settings.end()) {
-            response.result = refusal_of(outcome::invalid,
-                                         v.setting_code + " is not a setting of the " +
-                                             request.group_code + " group.");
-            return response;
-        }
-        try {
-            validate(*setting, v.text_value);
-        } catch (const std::exception& e) {
-            response.result = refusal_of(outcome::invalid, e.what());
-            return response;
-        }
-        const auto text = trim(v.text_value);
-        values[setting->column_name] = text.empty() ? std::nullopt : std::optional{text};
-    }
-
-    const auto in_force =
-        values_in_force(ctx_, request.group_code, request.engine_settings_id, *asked);
-    bool changes = false;
-    for (const auto& [column, value] : values) {
-        if (value != in_force.at(column))
-            changes = true;
-    }
-    if (!changes) {
-        response.result = refusal_of(outcome::invalid, "The proposal changes nothing.");
-        return response;
-    }
-
+    // The kind's parts are the system's catalogue and not the subject's state,
+    // so they are read before the transaction opens: a junction read inside it
+    // sees the transaction's tenant, and the parts are the system tenant's.
     const auto parts = part_codes(request.group_code);
     if (parts.empty()) {
-        response.result =
-            refusal_of(outcome::failed,
-                       "The kind " + std::string(kind_code) + " names no part for the " +
-                           request.group_code + " group, so nobody could sign it.");
+        response.result = refusal_of(outcome::failed,
+                                     "The kind " + std::string(engine_settings_proposal_service::kind_code) +
+                                         " names no part for the " + request.group_code +
+                                         " group, so nobody could sign it.");
         return response;
     }
 
     boost::uuids::uuid request_id{};
     {
+        // One unit of work reads the configuration, the values in force and the
+        // version in force, and writes the proposal. Read outside it, the
+        // version the proposal claims could be stale before the proposal exists;
+        // read inside it, the claim is the version this transaction read and no
+        // other, so the apply's own check refuses a group that moved after the
+        // raise and never one that moved during it.
         db::unit_of_work uow(ctx_);
         const auto& ctx = uow.ctx();
+
+        const auto settings = repository::engine_settings_repository{}.read_latest(
+            ctx, boost::uuids::to_string(request.engine_settings_id));
+        if (settings.empty()) {
+            response.result = refusal_of(outcome::missing, "No engine run settings have this id.");
+            return response;
+        }
+        if (!needs_approval_in(ctx, request.engine_settings_id, *asked)) {
+            response.result =
+                refusal_of(outcome::invalid,
+                           "No report binds these engine run settings, so they are a draft and "
+                           "the group changes in place.");
+            return response;
+        }
+
+        // The proposal names the version it was written on, and that version is
+        // the one in force in this transaction. A client that read another
+        // version is answered as stale, in the words the screen shows, before
+        // anything is held.
+        const auto in_force =
+            values_in_force(ctx, request.group_code, request.engine_settings_id, *asked);
+        const auto claimed =
+            version_in_force(ctx, request.group_code, request.engine_settings_id);
+        if (request.base_version != claimed) {
+            response.result = refusal_of(outcome::conflict, std::string(stale_words));
+            return response;
+        }
+
+        // The proposal states the whole group: a setting the person left alone
+        // travels with the value in force, so the apply writes one group and not
+        // a patch of it.
+        auto values = in_force;
+        for (const auto& v : request.values) {
+            const auto setting = std::ranges::find_if(asked->settings, [&](const auto& s) {
+                return s.code == v.setting_code;
+            });
+            if (setting == asked->settings.end()) {
+                response.result = refusal_of(outcome::invalid,
+                                             v.setting_code + " is not a setting of the " +
+                                                 request.group_code + " group.");
+                return response;
+            }
+            try {
+                validate(*setting, v.text_value);
+            } catch (const std::exception& e) {
+                response.result = refusal_of(outcome::invalid, e.what());
+                return response;
+            }
+            const auto text = trim(v.text_value);
+            values[setting->column_name] = text.empty() ? std::nullopt : std::optional{text};
+        }
+
+        bool changes = false;
+        for (const auto& [column, value] : values) {
+            if (value != in_force.at(column))
+                changes = true;
+        }
+        if (!changes) {
+            response.result = refusal_of(outcome::invalid, "The proposal changes nothing.");
+            return response;
+        }
+
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
         const auto kind = lifecycle.kind(std::string(kind_code));
         if (!kind)
@@ -592,7 +664,9 @@ ores::reporting::messaging::raise_engine_settings_change_response engine_setting
             row.group_code = request.group_code;
             row.setting_code = setting.code;
             row.text_value = values.at(setting.column_name);
-            row.base_version = request.base_version;
+            // The advertised version is not the claim: the version this
+            // transaction read is.
+            row.base_version = claimed;
             row.applied = false;
             row.modified_by = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
             row.performed_by = ctx.service_account();

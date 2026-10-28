@@ -41,6 +41,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -178,6 +179,69 @@ inline world seed_world(ores::testing::scoped_database_helper& h) {
             .maker = maker,
             .decider = decider,
             .ctx = ctx};
+}
+
+/**
+ * @brief Writes a fixings row in force directly, as a screen save does.
+ *
+ * A proposal claims the version it read, so a test that wants the group to move
+ * under a waiting proposal writes the part the way a person would.
+ */
+inline void write_fixings(const ores::database::context& ctx,
+                          const world& w,
+                          bool imply_todays_fixings) {
+    repository::engine_settings_fixings_repository repo;
+    const auto rows = repo.read_latest_by_engine_settings_id(
+        ctx, boost::uuids::to_string(w.bound_id), 0, 1000);
+    domain::engine_settings_fixings row;
+    if (!rows.empty()) {
+        // The row in force keeps its identity and its version, so the write is
+        // the next version of the section and not a second one.
+        row = rows.front();
+    } else {
+        row.id = boost::uuids::random_generator{}();
+        row.engine_settings_id = w.bound_id;
+        row.party_id = w.party_id;
+    }
+    row.imply_todays_fixings = imply_todays_fixings;
+    row.modified_by = w.maker;
+    row.performed_by = ctx.service_account();
+    row.change_reason_code = "system.test";
+    repo.write(ctx, row);
+}
+
+/**
+ * @brief Puts a text on one held line, as a row written before a check existed
+ * would carry it.
+ */
+inline void set_held_value(const ores::database::context& ctx,
+                           const std::string& request_id,
+                           const std::string& setting_code,
+                           const std::string& text) {
+    repository::engine_settings_change_repository repo;
+    auto rows = repo.read_latest_by_request_id(ctx, request_id, 0, 1000);
+    for (auto& row : rows) {
+        if (row.setting_code != setting_code)
+            continue;
+        row.text_value = text;
+        row.modified_by = ctx.actor();
+        row.performed_by = ctx.service_account();
+        row.change_reason_code = "system.test";
+        repo.write(ctx, row);
+        return;
+    }
+}
+
+/** How many proposal lines the tenant holds, over every request. */
+inline std::size_t all_change_lines(const ores::database::context& ctx) {
+    return repository::engine_settings_change_repository{}.read_latest(ctx).size();
+}
+
+/** How many proposal lines one request holds. */
+inline std::uint32_t change_lines(const ores::database::context& ctx,
+                                  const std::string& request_id) {
+    return repository::engine_settings_change_repository{}
+        .get_total_engine_settings_change_count_by_request_id(ctx, request_id);
 }
 
 /**

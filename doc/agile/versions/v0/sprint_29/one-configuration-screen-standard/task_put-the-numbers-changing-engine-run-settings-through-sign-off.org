@@ -143,7 +143,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The base version came from the client | =engine_settings_proposal.cpp= | Fixed | The raise reads the version in force and the values in force in its transaction and stamps the version it read. A client version that does not match is refused as stale, in the screen's words, before anything is held. |
+| 2 | The reads sat outside the unit of work | =engine_settings_proposal.cpp= | Fixed | The configuration, the values in force, the version in force and the proposal's lines are one unit of work. The kind's parts are read before it, because a junction read inside the transaction sees the transaction's tenant and not the system tenant's catalogue. |
+| 3 | A whole out of range was read as a transient failure | =engine_settings_proposal.cpp= | Fixed | =as_whole= parses with =from_chars= and throws =invalid_argument= for text that is not a whole and for a value too large to hold, so the apply refuses it for good rather than retrying it forever. |
+| 7 | The stale refusal had no test | =engine_settings_proposal_tests.cpp= | Fixed | Three cases: a raise against a moved version and one ahead of it, both refused with the screen's words and nothing held; the apply against a moved base version, which the existing moved-group case already covered; and a value too large to hold, refused at the raise and at the apply. |
+| 4, 5 | The remaining review points | — | Deferred | They wait for a later pull request. |
 
 * Result
 

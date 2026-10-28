@@ -201,7 +201,11 @@ const SERVING = {
     ],
 };
 
-function page(tab = '', curve: CurveConfiguration = CURVE): string {
+function page(
+    tab = '',
+    curve: CurveConfiguration = CURVE,
+    permissions: readonly string[] = [],
+): string {
     const address = `/reporting/curve-configurations/${CONFIGURATION_ID}${
         tab === '' ? '' : `?tab=${tab}`
     }`;
@@ -212,9 +216,21 @@ function page(tab = '', curve: CurveConfiguration = CURVE): string {
         (client: QueryClient) => {
             client.setQueryData(curveConfigurationKey(CONFIGURATION_ID), curve);
             client.setQueryData(configurationKey(CONFIGURATION_ID), SERVING);
+            client.setQueryData(['my-access'], {
+                roles: [{ roleId: 'r', permissionCodes: permissions }],
+            });
         },
     );
 }
+
+describe('changing a curve', () => {
+    it('offers the edit only to a person who may write the configuration', () => {
+        expect(page('curves', CURVE, ['refdata::curve_configurations:read'])).not.toContain(
+            '>Edit<',
+        );
+        expect(page('curves', CURVE, ['refdata::curve_configurations:write'])).toContain('>Edit<');
+    });
+});
 
 describe('the curve configuration page', () => {
     it('draws Details first and one Curves tab for the whole document, then Used by and History', () => {

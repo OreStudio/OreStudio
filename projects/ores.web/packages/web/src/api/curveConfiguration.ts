@@ -21,6 +21,8 @@
 import { z } from 'zod';
 import { request } from './transport.js';
 
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+
 /**
  * The curve configuration a report binds, as the curve screen reads it.
  *
@@ -121,6 +123,24 @@ const summarySchema = z.object({
 
 export type CurveConfigurationSummary = z.infer<typeof summarySchema>;
 
+/** One leaf a save changes: the row, the column and the value it takes. */
+export interface CurveChange {
+    readonly entity: string;
+    /** The curve definition the entry is: every family row joins back to it. */
+    readonly entryId: string;
+    readonly column: string;
+    /** The value to hold, or null to unset the leaf and let ORE apply its default. */
+    readonly value: string | null;
+}
+
+/** What a save of a curve configuration states: the changes and the version it read. */
+export interface CurveAmendment {
+    readonly version: number;
+    readonly reasonCode: string;
+    readonly commentary: string;
+    readonly changes: readonly CurveChange[];
+}
+
 export const curveConfiguration = {
     /** The curve configurations the session's parties hold. */
     async list(): Promise<readonly CurveConfigurationSummary[]> {
@@ -143,5 +163,22 @@ export const curveConfiguration = {
                 method: 'GET',
             }),
         );
+    },
+
+    /**
+     * Changes leaves of the curve configuration `id`.
+     *
+     * The server reads the stored document, changes the leaves named here and
+     * writes back only the families it touched, so the rows this screen does not
+     * draw keep their versions. A version that moved on is a 409, which the page
+     * states as a conflict and offers to read again.
+     */
+    async amend(id: string, amendment: CurveAmendment, party?: string): Promise<void> {
+        const query = party === undefined ? '' : `?party=${encodeURIComponent(party)}`;
+        await request(`/api/refdata/curve-configurations/${encodeURIComponent(id)}${query}`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(amendment),
+        });
     },
 };

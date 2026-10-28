@@ -7,41 +7,82 @@
 #+level: s1
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/let-a-person-change-a-curve-parameter
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A person changes one parameter of a curve and saves it. The save states why, the
+configuration moves to its next version, and the rows the screen does not draw
+keep theirs. A value the leaf's set does not accept is refused where the change
+enters the system, because the store's guard does not cover the curve tables yet.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Building and verifying the edit path.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Verify against the running environment, then raise the PR. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
--
+1. A save changes the leaves the screen names and no others. The families the
+   screen does not draw keep their versions, so a change to one curve does not
+   version the whole document.
+2. The save states the version the page read. A row that moved on since the read
+   is refused as =version_conflict=, never overwritten.
+3. Every row the save writes carries the reason and the commentary the person
+   gave, so the new version says why it was made.
+4. A value outside the leaf's value set is refused before it reaches the store,
+   and the refusal names the leaf and the values it accepts.
+5. The workbench offers *Edit* only to a person holding
+   =refdata::curve_configurations:write=, marks the parameters that changed,
+   counts them, asks for the reason the section needs, and offers to read again
+   when the save is a conflict.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Option A, the document echo, was chosen over rebuilding the document from the
+screen. A curve configuration is thirty-four families and the page draws one
+entry of one section at a time; a save assembled from what the screen holds would
+drop the rows it never read. So the route reads the stored document, changes the
+named leaves, and writes back only the families it touched.
+
+The order of the story changed. The nested drawing (task 894F3A64) was the next
+task, and the edit waited behind it. Two findings moved the edit first: the read
+already carries every nested row, so the echo needs no drawing to be safe; and
+the contract documents 22 segment leaves and 3 quote leaves of the forty-odd a
+segment holds, so drawing the blocks now would show mostly gaps. The nested
+drawing stays open as the screen's work, and the documentation gap is its own
+finding.
+
+What the save does, end to end:
+
+1. The browser sends the configuration's version, a reason, a commentary and one
+   change per leaf: the entity, the curve definition the entry is, the column and
+   the value.
+2. The route reads the stored document whole and refuses a version that moved on.
+3. Each change is checked against the leaf: the contract's required mark, the
+   value set's choices, and its bounds and pattern. A leaf the wiring does not
+   know, or a row the entry does not hold, is refused with a message naming it.
+4. The rows touched are collected per family, and only the header and those
+   families are written.
+5. The service derives a claim per row from the version the row states, so the
+   store's version management refuses a stale save, and stamps the reason and
+   commentary on every row it writes.
+6. The page reads the configuration again.
 
 * Measurements
 
@@ -58,6 +99,28 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- *The save states its claim per row.* =curve_configuration_repository::write=
+  derives its claim from the row's current version, so a stale client would be
+  accepted silently. The service now builds a claim from the version each row
+  states, which is the version the screen read, and the store's version
+  management refuses a row that moved on.
+- *The reason is overwritten, not defaulted.* =stamp()= sets
+  =change_reason_code= only when it is empty, and an imported row carries
+  =system.external_data_import=. So the service states the save's reason on every
+  row it writes; otherwise an amendment would be recorded as an import.
+- *Only the touched families are written.* The route sends the header and the
+  families the changes reach, so a change to one curve does not version the other
+  thirty-three families. This is what makes the echo safe without the nested
+  drawing.
+- *The boundary refuses the value.* The value-set trigger does not cover the
+  curve tables (task 050CE731), so the route checks each value against the leaf's
+  choices, bounds and pattern before it writes. The trigger stays the deeper
+  guard when it lands.
+- *What is not editable yet.* A curve's blocks -- Segments, Quotes,
+  BootstrapConfig, Report -- are named and not drawn, so their leaves are not
+  offered for change. Task 894F3A64 gives them their collection shape, and this
+  route already carries what it needs: the entity, the entry and the column.
 
 * Test Scenarios
 

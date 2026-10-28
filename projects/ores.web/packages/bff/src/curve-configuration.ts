@@ -35,7 +35,7 @@ import {
     type CurveSectionWiring,
 } from './curve-sections.generated.js';
 import { NO_VALUE_SET, readValueSets } from './ore-value-sets.js';
-import { notFound } from './errors.js';
+import { HttpFailure, invalidRequest, notFound } from './errors.js';
 import { input, readAll, row, text, valueText } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -76,6 +76,24 @@ const NO_PARTY = '';
 const idSchema = z.guid();
 
 const documentQuerySchema = z.object({ party: idSchema.optional() });
+
+/** One leaf of one row, as a screen changes it: the column and the value it takes. */
+const changeSchema = z.object({
+    entity: z.string().min(1).max(80),
+    /** The curve definition the entry is: every family row joins back to it. */
+    entryId: z.string().min(1).max(80),
+    column: z.string().min(1).max(80),
+    /** The value to hold, or null to unset the leaf and let ORE apply its default. */
+    value: z.string().nullable(),
+});
+
+/** The changes a screen asks for, and the version it read before it asks. */
+const amendSchema = z.object({
+    version: z.number().int().nonnegative(),
+    reasonCode: z.string().min(1).max(120),
+    commentary: z.string().max(4000).default(''),
+    changes: z.array(changeSchema).min(1).max(200),
+});
 
 /** The value set fields of one leaf, as the contract and the set tables state them. */
 type ValueSetOf = (
@@ -341,6 +359,80 @@ function entryOf(
     };
 }
 
+/** The document vector one entity's rows are read from, or the empty name. */
+function vectorByEntity(): ReadonlyMap<string, string> {
+    const found = new Map<string, string>();
+    for (const wiring of CURVE_SECTIONS)
+        for (const entity of wiring.entities) found.set(entity.entity, entity.vector);
+    return found;
+}
+
+/** A leaf as a change is checked against: its words, and the values it accepts. */
+interface LeafRule {
+    readonly label: string;
+    readonly required: boolean;
+    readonly choices: readonly { readonly value: string; readonly label: string }[];
+    readonly minimum: number | null;
+    readonly maximum: number | null;
+    readonly pattern: string;
+}
+
+/**
+ * Why the leaf would not take the value, or null when it would.
+ *
+ * The value set tables are the ORE parser's own lists, so a value outside them
+ * is one ORE refuses to read. The store's guard does not cover the curve tables
+ * yet, so the boundary is where the refusal happens.
+ */
+function refusalOf(rule: LeafRule, value: string | null): string | null {
+    if (value === null || value === '') {
+        return rule.required ? `${rule.label} is required.` : null;
+    }
+    if (rule.choices.length > 0 && !rule.choices.some((choice) => choice.value === value)) {
+        const accepted = rule.choices.map((choice) => choice.value).join(', ');
+        return `${rule.label} must be one of ${accepted}, and "${value}" is not.`;
+    }
+    if (rule.minimum !== null || rule.maximum !== null) {
+        const number = Number(value);
+        if (Number.isNaN(number)) return `${rule.label} must be a number.`;
+        if (rule.minimum !== null && number < rule.minimum)
+            return `${rule.label} must be at least ${String(rule.minimum)}.`;
+        if (rule.maximum !== null && number > rule.maximum)
+            return `${rule.label} must be at most ${String(rule.maximum)}.`;
+    }
+    if (rule.pattern !== '' && !new RegExp(rule.pattern).test(value))
+        return `${rule.label} must match ${rule.pattern}.`;
+    return null;
+}
+
+/** Writes the rows the caller sends, with the reason that says why they changed. */
+async function saveDocument(
+    session: LiveSession,
+    document: Readonly<Record<string, unknown>>,
+    reasonCode: string,
+    commentary: string,
+): Promise<void> {
+    const reply = await session.client.callAuthenticated(
+        documentSubjects.save_curve_configuration_document_request,
+        { document, reason_code: reasonCode, commentary },
+        z.looseObject({
+            success: z.boolean().default(false),
+            message: z.string().default(''),
+            id: z.string().default(''),
+        }),
+    );
+    if (!reply.success) {
+        const stale = /version[_ ]conflict|does not match/i.test(reply.message);
+        throw new HttpFailure(stale ? 409 : 400, {
+            code: stale ? 'conflict' : 'invalid-request',
+            message:
+                reply.message === ''
+                    ? 'The change was refused.'
+                    : reply.message,
+        });
+    }
+}
+
 /** The curve configuration a reporting configuration is filled by, as a screen reads it. */
 export function registerCurveConfigurationRoutes(
     server: FastifyInstance,
@@ -486,5 +578,121 @@ export function registerCurveConfigurationRoutes(
             sections,
         };
         return view;
+    });
+
+    /**
+     * Changes leaves of one curve configuration.
+     *
+     * A save writes every family the document carries, and the screen draws one
+     * entry at a time. So the route reads the stored document whole, changes the
+     * leaves the caller names, and writes back only the families it touched: the
+     * rows the screen does not draw keep their versions and their history stays
+     * a record of what changed. Each row states the version it was read at, so a
+     * row that moved on since the read is refused as a conflict rather than
+     * overwritten.
+     */
+    server.put('/api/refdata/curve-configurations/:id', async (request, reply) => {
+        const session = requireSession(request);
+        const configurationId = input(idSchema, (request.params as { id: string }).id);
+        const { party } = input(documentQuerySchema, request.query);
+        const body = input(amendSchema, request.body);
+        const document = await readDocument(session, configurationId, party);
+        const header = z.looseObject({}).parse(document['config']);
+        if (numberOf(header['version']) !== body.version) {
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message:
+                    'This curve configuration changed since you opened it. Read it again before you change it.',
+            });
+        }
+        const [parameters, sets, values, catalogues, links] = await Promise.all([
+            readAll(session, parameterSubjects.list_ore_parameters_request, 'parameters', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(session, valueSetSubjects.list_ore_parameter_value_sets_request, 'sets', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(
+                session,
+                valueSetValueSubjects.list_ore_parameter_value_set_values_request,
+                'values',
+                { filter: null, as_of: null },
+            ),
+            readAll(
+                session,
+                valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+                'catalogues',
+                { filter: null, as_of: null },
+            ),
+            readAll(
+                session,
+                settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+                'setting_value_sets',
+                { filter: null, as_of: null },
+            ),
+        ]);
+        const contract = new Map(
+            parameters
+                .filter((entry) => text(entry['schema_name']) === SCHEMA_NAME)
+                .map((entry) => [text(entry['xpath']), entry]),
+        );
+        const valueSetOf = await readValueSets(session, { sets, values, catalogues, links });
+        const vectors = vectorByEntity();
+        const touched = new Map<string, Readonly<Record<string, unknown>>[]>();
+        for (const change of body.changes) {
+            const parameter = CURVE_SECTIONS.flatMap((wiring) => wiring.parameters).find(
+                (candidate) =>
+                    candidate.entity === change.entity && candidate.column === change.column,
+            );
+            if (parameter === undefined) {
+                throw invalidRequest(
+                    `${change.entity}.${change.column} is not a leaf of a curve configuration.`,
+                );
+            }
+            const leaf = contract.get(`/${parameter.xpath}`);
+            const scope = text(leaf?.['scope']);
+            const name = text(leaf?.['name']);
+            const set = leaf === undefined ? NO_VALUE_SET : valueSetOf(scope, name);
+            const refusal = refusalOf(
+                {
+                    label: text(leaf?.['label']) || parameter.ore,
+                    required: leaf?.['is_required'] === true,
+                    choices: set.choices,
+                    minimum: set.minimum,
+                    maximum: set.maximum,
+                    pattern: text(leaf?.['pattern']),
+                },
+                change.value,
+            );
+            if (refusal !== null) throw invalidRequest(refusal);
+            const vector = vectors.get(change.entity);
+            if (vector === undefined) {
+                throw invalidRequest(`${change.entity} has no table in a curve configuration.`);
+            }
+            const rows = touched.get(vector) ?? vectorOf(document, vector);
+            const key =
+                change.entity === DEFINITION_ENTITY
+                    ? 'id'
+                    : (CURVE_SECTIONS.find((wiring) =>
+                          wiring.entities.some((entity) => entity.entity === change.entity),
+                      )?.definitionKey ?? '');
+            const row = rows.find((candidate) => text(candidate[key]) === change.entryId);
+            if (row === undefined) {
+                throw invalidRequest(
+                    `No ${change.entity} row of the curve entry ${change.entryId} is stored.`,
+                );
+            }
+            const changed = { ...row, [change.column]: change.value };
+            touched.set(
+                vector,
+                rows.map((candidate) => (candidate === row ? changed : candidate)),
+            );
+        }
+        const partial: Record<string, unknown> = { config: header };
+        for (const [vector, rows] of touched) partial[vector] = rows;
+        await saveDocument(session, partial, body.reasonCode, body.commentary);
+        return reply.code(204).send();
     });
 }

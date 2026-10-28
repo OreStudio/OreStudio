@@ -179,14 +179,18 @@ type Replies = Readonly<Record<string, unknown>>;
 function buildTestServer(replies: Replies): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
+    /** Every subject the request reached, with the payload it sent. */
+    readonly calls: readonly { readonly subject: string; readonly payload: unknown }[];
 } {
     const sessions = createSessionStore({ ttlSeconds: 60 });
+    const calls: { subject: string; payload: unknown }[] = [];
     const client = {
         async callAuthenticated(
             subject: string,
             body: unknown,
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
+            calls.push({ subject, payload: body });
             if (!(subject in replies)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
@@ -219,6 +223,7 @@ function buildTestServer(replies: Replies): {
             createClient: () => ({ client, connect: async () => undefined }),
         }),
         sessionId: session.id,
+        calls,
     };
 }
 
@@ -307,6 +312,90 @@ async function read(
         cookies: { [SESSION_COOKIE]: sessionId },
     });
 }
+
+/** A save of one leaf, as the page sends it. */
+function amendment(version: number, column: string, value: string | null): Record<string, unknown> {
+    return {
+        version,
+        reasonCode: 'common.correction',
+        commentary: 'The interpolation is wrong.',
+        changes: [{ entity: 'yield_curve_config', entryId: DEFINITION_ID, column, value }],
+    };
+}
+
+async function amend(
+    replies: Replies,
+    body: Record<string, unknown>,
+): Promise<{
+    readonly answer: ReturnType<ReturnType<typeof buildServer>['inject']>;
+    readonly calls: readonly { readonly subject: string; readonly payload: unknown }[];
+}> {
+    const { server, sessionId, calls } = buildTestServer(replies);
+    const answer = await server.inject({
+        method: 'PUT',
+        url: `/api/refdata/curve-configurations/${CONFIGURATION_ID}`,
+        cookies: { [SESSION_COOKIE]: sessionId },
+        payload: body,
+    });
+    return { answer, calls };
+}
+
+describe('changing a curve configuration', () => {
+    it('writes the one row it changed, with the reason, and answers no content', async () => {
+        const { answer, calls } = await amend(
+            repliesFor({
+                'refdata.v1.curve_configuration_documents.put': {
+                    success: true,
+                    message: '',
+                    id: '',
+                },
+            }),
+            amendment(3, 'interpolation_method', 'Cubic'),
+        );
+
+        expect(answer.statusCode).toBe(204);
+        const saved = calls.find(
+            (call) => call.subject === 'refdata.v1.curve_configuration_documents.put',
+        );
+        expect(saved).toBeDefined();
+        const payload = saved?.payload as {
+            document: Record<string, unknown>;
+            reason_code: string;
+            commentary: string;
+        };
+        expect(payload.reason_code).toBe('common.correction');
+        expect(payload.commentary).toBe('The interpolation is wrong.');
+        // Only the header and the family it touched, so the rows the screen did
+        // not draw keep their versions.
+        expect(Object.keys(payload.document).sort()).toEqual(['config', 'yield_curves']);
+        const rows = payload.document['yield_curves'] as Record<string, unknown>[];
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.['interpolation_method']).toBe('Cubic');
+        expect(rows[0]?.['currency']).toBe('USD');
+    });
+
+    it('refuses a value the leaf does not accept', async () => {
+        const { answer } = await amend(
+            repliesFor(),
+            amendment(3, 'interpolation_method', 'Cosine'),
+        );
+        expect(answer.statusCode).toBe(400);
+        expect(answer.json()).toMatchObject({ code: 'invalid-request' });
+        expect(answer.body).toContain('must be one of Linear, Cubic');
+    });
+
+    it('refuses a change to a version that moved on, and writes nothing', async () => {
+        const { answer, calls } = await amend(
+            repliesFor(),
+            amendment(2, 'interpolation_method', 'Cubic'),
+        );
+        expect(answer.statusCode).toBe(409);
+        expect(answer.json()).toMatchObject({ code: 'conflict' });
+        expect(calls.map((call) => call.subject)).not.toContain(
+            'refdata.v1.curve_configuration_documents.put',
+        );
+    });
+});
 
 describe('the curve configuration a report binds', () => {
     it('lists the sections in the order the schema declares them, and a section it does not know last', async () => {

@@ -6972,6 +6972,15 @@ const fr: SourceCatalogue = {
             blockAbsent: 'non déclaré',
             blockNotRecorded: 'non enregistré ici',
         },
+        edit: {
+            start: 'Modifier',
+            title: 'Modifier cette courbe',
+            changed: '{count} paramètres modifiés',
+            cancel: 'Annuler',
+            save: 'Enregistrer',
+            conflict:
+                'Cette configuration de courbe a changé depuis son ouverture. Relisez-la avant de la modifier.',
+        },
         details: {
             lead: "Ce qu'est la configuration, qui la détient, et quelle part en décrit le contrat de documentation unique.",
             decides:

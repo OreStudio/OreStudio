@@ -75,11 +75,12 @@ query_builder::order approval_request_list_order(const ores::utility::domain::or
                                                  std::initializer_list<std::string> default_columns,
                                                  bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!approval_request_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of approval requests cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -92,36 +93,39 @@ std::optional<query_builder::condition> approval_request_filter_condition(
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->kind_code)
-        r.push_back(equals("kind_code", filter_value(*filter->kind_code)));
+        r.push_back(
+            query_builder::equals("kind_code", query_builder::filter_value(*filter->kind_code)));
     if (filter->state_code)
-        r.push_back(equals("state_code", filter_value(*filter->state_code)));
+        r.push_back(
+            query_builder::equals("state_code", query_builder::filter_value(*filter->state_code)));
     if (filter->requested_by)
-        r.push_back(equals("requested_by", filter_value(*filter->requested_by)));
+        r.push_back(query_builder::equals("requested_by",
+                                          query_builder::filter_value(*filter->requested_by)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->kind_code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->kind_code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("kind_code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("kind_code", std::move(values)));
     }
     if (filter->state_code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->state_code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("state_code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("state_code", std::move(values)));
     }
     if (filter->requested_by_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->requested_by_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("requested_by", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("requested_by", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -365,7 +369,8 @@ std::vector<domain::approval_request> approval_request_repository::read_latest(
         ctx,
         query,
         approval_request_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), approval_request_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                approval_request_filter_condition(filter)),
         [](const auto& entities) { return approval_request_mapper::map(entities); },
         lg(),
         "Reading latest approval requests with pagination.");
@@ -384,7 +389,8 @@ std::uint32_t approval_request_repository::get_total_request_count(
     return execute_count_query<approval_request_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), approval_request_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                approval_request_filter_condition(filter)),
         lg(),
         "Counting approval requests");
 }

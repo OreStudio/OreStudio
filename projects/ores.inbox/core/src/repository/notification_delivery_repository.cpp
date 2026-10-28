@@ -74,11 +74,12 @@ notification_delivery_list_order(const ores::utility::domain::order& order,
                                  std::initializer_list<std::string> default_columns,
                                  bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!notification_delivery_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of notification deliveries cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -91,20 +92,21 @@ std::optional<query_builder::condition> notification_delivery_filter_condition(
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->notification_id)
-        r.push_back(equals("notification_id", filter_value(*filter->notification_id)));
+        r.push_back(query_builder::equals("notification_id",
+                                          query_builder::filter_value(*filter->notification_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->notification_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->notification_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("notification_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("notification_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -358,7 +360,8 @@ std::vector<domain::notification_delivery> notification_delivery_repository::rea
         ctx,
         query,
         notification_delivery_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), notification_delivery_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                notification_delivery_filter_condition(filter)),
         [](const auto& entities) { return notification_delivery_mapper::map(entities); },
         lg(),
         "Reading latest notification deliveries with pagination.");
@@ -377,7 +380,8 @@ std::uint32_t notification_delivery_repository::get_total_delivery_count(
     return execute_count_query<notification_delivery_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), notification_delivery_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                notification_delivery_filter_condition(filter)),
         lg(),
         "Counting notification deliveries");
 }

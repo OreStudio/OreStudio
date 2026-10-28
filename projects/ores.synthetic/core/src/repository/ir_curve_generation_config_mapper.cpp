@@ -47,7 +47,7 @@ ir_curve_generation_config_mapper::map(const ir_curve_generation_config_entity& 
     domain::ir_curve_generation_config r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
     r.config_id = boost::lexical_cast<boost::uuids::uuid>(v.config_id);

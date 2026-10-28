@@ -72,13 +72,14 @@ query_builder::order lei_relationship_list_order(const ores::utility::domain::or
                                                  std::initializer_list<std::string> default_columns,
                                                  bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns,
-                          default_descending != order.descending,
-                          {"relationship_start_node_node_id"});
+        return query_builder::make_order(default_columns,
+                                         default_descending != order.descending,
+                                         {"relationship_start_node_node_id"});
     if (!lei_relationship_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of LEI relationships cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"relationship_start_node_node_id"});
+    return query_builder::make_order(
+        {order.field}, order.descending, {"relationship_start_node_node_id"});
 }
 
 /*
@@ -93,10 +94,10 @@ std::optional<query_builder::condition> lei_relationship_filter_condition(
     if (filter->relationship_start_node_node_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->relationship_start_node_node_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("relationship_start_node_node_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("relationship_start_node_node_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }

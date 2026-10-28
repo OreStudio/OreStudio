@@ -45,7 +45,7 @@ domain::gmm_component gmm_component_mapper::map(const gmm_component_entity& v) {
     domain::gmm_component r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
     r.fx_spot_config_id = boost::lexical_cast<boost::uuids::uuid>(v.fx_spot_config_id);

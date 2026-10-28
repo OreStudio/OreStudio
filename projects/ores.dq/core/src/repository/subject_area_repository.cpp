@@ -73,12 +73,12 @@ query_builder::order subject_area_list_order(const ores::utility::domain::order&
                                              std::initializer_list<std::string> default_columns,
                                              bool default_descending) {
     if (order.field.empty())
-        return make_order(
+        return query_builder::make_order(
             default_columns, default_descending != order.descending, {"name", "domain_name"});
     if (!subject_area_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of subject areas cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"name", "domain_name"});
+    return query_builder::make_order({order.field}, order.descending, {"name", "domain_name"});
 }
 
 }
@@ -276,7 +276,7 @@ subject_area_repository::read_latest(context ctx,
         ctx,
         query,
         subject_area_list_order(order, {"name", "domain_name"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
         "Reading latest subject areas with pagination.");
@@ -290,7 +290,11 @@ subject_area_repository::get_total_area_count(context ctx,
     const auto query = query_builder::read<std::vector<subject_area_entity>>;
 
     return execute_count_query<subject_area_entity>(
-        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting subject areas");
+        ctx,
+        query,
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
+        lg(),
+        "Counting subject areas");
 }
 
 std::vector<domain::subject_area>

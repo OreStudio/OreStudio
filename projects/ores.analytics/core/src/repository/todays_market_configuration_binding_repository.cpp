@@ -75,12 +75,13 @@ todays_market_configuration_binding_list_order(const ores::utility::domain::orde
                                                std::initializer_list<std::string> default_columns,
                                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!todays_market_configuration_binding_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of today's market configuration bindings cannot be ordered by " + order.field +
             ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -93,21 +94,22 @@ std::optional<query_builder::condition> todays_market_configuration_binding_filt
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->todays_market_configuration_id)
-        r.push_back(equals("todays_market_configuration_id",
-                           filter_value(*filter->todays_market_configuration_id)));
+        r.push_back(query_builder::equals(
+            "todays_market_configuration_id",
+            query_builder::filter_value(*filter->todays_market_configuration_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->todays_market_configuration_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->todays_market_configuration_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("todays_market_configuration_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("todays_market_configuration_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -458,7 +460,8 @@ todays_market_configuration_binding_repository::read_latest(
         ctx,
         query,
         todays_market_configuration_binding_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), todays_market_configuration_binding_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                todays_market_configuration_binding_filter_condition(filter)),
         [](const auto& entities) {
             return todays_market_configuration_binding_mapper::map(entities);
         },
@@ -481,7 +484,8 @@ std::uint32_t todays_market_configuration_binding_repository::get_total_binding_
     return execute_count_query<todays_market_configuration_binding_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), todays_market_configuration_binding_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                todays_market_configuration_binding_filter_condition(filter)),
         lg(),
         "Counting today's market configuration bindings");
 }

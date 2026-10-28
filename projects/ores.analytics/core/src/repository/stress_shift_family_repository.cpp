@@ -73,11 +73,12 @@ stress_shift_family_list_order(const ores::utility::domain::order& order,
                                std::initializer_list<std::string> default_columns,
                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"code"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"code"});
     if (!stress_shift_family_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of stress shift families cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"code"});
+    return query_builder::make_order({order.field}, order.descending, {"code"});
 }
 
 /*
@@ -92,10 +93,10 @@ std::optional<query_builder::condition> stress_shift_family_filter_condition(
     if (filter->code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("code", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -296,7 +297,8 @@ std::vector<domain::stress_shift_family> stress_shift_family_repository::read_la
         ctx,
         query,
         stress_shift_family_list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), stress_shift_family_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                stress_shift_family_filter_condition(filter)),
         [](const auto& entities) { return stress_shift_family_mapper::map(entities); },
         lg(),
         "Reading latest stress shift families with pagination.");
@@ -315,7 +317,8 @@ std::uint32_t stress_shift_family_repository::get_total_family_count(
     return execute_count_query<stress_shift_family_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), stress_shift_family_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                stress_shift_family_filter_condition(filter)),
         lg(),
         "Counting stress shift families");
 }

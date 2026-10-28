@@ -74,11 +74,12 @@ approval_decision_list_order(const ores::utility::domain::order& order,
                              std::initializer_list<std::string> default_columns,
                              bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!approval_decision_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of approval decisions cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -91,20 +92,21 @@ std::optional<query_builder::condition> approval_decision_filter_condition(
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->request_id)
-        r.push_back(equals("request_id", filter_value(*filter->request_id)));
+        r.push_back(
+            query_builder::equals("request_id", query_builder::filter_value(*filter->request_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->request_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->request_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("request_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("request_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -349,7 +351,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
         ctx,
         query,
         approval_decision_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), approval_decision_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                approval_decision_filter_condition(filter)),
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
         lg(),
         "Reading latest approval decisions with pagination.");
@@ -368,7 +371,8 @@ std::uint32_t approval_decision_repository::get_total_decision_count(
     return execute_count_query<approval_decision_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), approval_decision_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                approval_decision_filter_condition(filter)),
         lg(),
         "Counting approval decisions");
 }

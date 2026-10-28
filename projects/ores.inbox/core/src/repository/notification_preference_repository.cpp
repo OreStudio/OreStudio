@@ -76,13 +76,14 @@ notification_preference_list_order(const ores::utility::domain::order& order,
                                    std::initializer_list<std::string> default_columns,
                                    bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns,
-                          default_descending != order.descending,
-                          {"account_id", "kind_code", "channel_code"});
+        return query_builder::make_order(default_columns,
+                                         default_descending != order.descending,
+                                         {"account_id", "kind_code", "channel_code"});
     if (!notification_preference_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of notification preferences cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"account_id", "kind_code", "channel_code"});
+    return query_builder::make_order(
+        {order.field}, order.descending, {"account_id", "kind_code", "channel_code"});
 }
 
 /*
@@ -95,14 +96,15 @@ std::optional<query_builder::condition> notification_preference_filter_condition
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->account_id)
-        r.push_back(equals("account_id", filter_value(*filter->account_id)));
+        r.push_back(
+            query_builder::equals("account_id", query_builder::filter_value(*filter->account_id)));
     if (filter->account_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->account_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("account_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("account_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -394,7 +396,8 @@ std::vector<domain::notification_preference> notification_preference_repository:
         query,
         notification_preference_list_order(
             order, {"account_id", "kind_code", "channel_code"}, false),
-        narrowed(valid_at(as_of), notification_preference_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                notification_preference_filter_condition(filter)),
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
         lg(),
         "Reading latest notification preferences with pagination.");
@@ -413,7 +416,8 @@ std::uint32_t notification_preference_repository::get_total_preference_count(
     return execute_count_query<notification_preference_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), notification_preference_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                notification_preference_filter_condition(filter)),
         lg(),
         "Counting notification preferences");
 }

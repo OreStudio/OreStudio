@@ -111,9 +111,11 @@ market_series_identity_reader::read(ores::database::context ctx,
      * the URI writes in its path, which is the subject field's column.
      */
     std::vector<query_builder::condition> conditions{
-        query_builder::equals("tenant_id", query_builder::filter_value(ctx.tenant_id().to_string())),
+        query_builder::equals("tenant_id",
+                              query_builder::filter_value(ctx.tenant_id().to_string())),
         query_builder::equals("asset_class", query_builder::filter_value(identity.asset)),
-        query_builder::equals("instrument_type", query_builder::filter_value(identity.instrument_type)),
+        query_builder::equals("instrument_type",
+                              query_builder::filter_value(identity.instrument_type)),
         query_builder::equals("quote_type", query_builder::filter_value(identity.quote_type)),
         query_builder::equals(std::string(name_of(row.subject)),
                               query_builder::filter_value(identity.scope))};
@@ -133,8 +135,9 @@ market_series_identity_reader::read(ores::database::context ctx,
      */
     const auto query = query_builder::read<std::vector<market_series_identity_entity>> |
                        query_builder::where("identity_kind"_c == std::string("series"));
-    const auto identities = query_builder::
-        execute_ordered_read_query<market_series_identity_entity, domain::market_series_identity>(
+    const auto identities =
+        query_builder::execute_ordered_read_query<market_series_identity_entity,
+                                                  domain::market_series_identity>(
             ctx,
             query,
             query_builder::make_order({}, false, {"series_id"}),

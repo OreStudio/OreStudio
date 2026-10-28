@@ -107,13 +107,13 @@ public:
     /**
      * @brief Holds a proposed group in an approval request and writes no part.
      */
-    messaging::raise_engine_settings_change_response
-    raise(const messaging::raise_engine_settings_change_request& request);
+    ores::reporting::messaging::raise_engine_settings_change_response
+    raise(const ores::reporting::messaging::raise_engine_settings_change_request& request);
 
     /**
      * @brief The groups a request proposes, each beside the value in force.
      */
-    std::vector<messaging::engine_settings_change_line> lines(const std::string& request_id);
+    std::vector<ores::reporting::messaging::engine_settings_change_line> lines(const std::string& request_id);
 
     /**
      * @brief Runs the proposal against the version in force and writes nothing.

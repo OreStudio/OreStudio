@@ -204,7 +204,8 @@ TEST_CASE("an_approved_proposal_writes_the_group_and_marks_the_line_applied",
 
     // A second apply finds nothing to do, because a line applies once.
     const auto again = svc.apply(raised.request_id);
-    CHECK(again.refusal.find("cannot be applied") != std::string::npos);
+    CHECK(again.applied);
+    CHECK(again.groups_applied == 0);
 }
 
 TEST_CASE("a_group_that_moved_since_the_proposal_is_refused_rather_than_overwritten",

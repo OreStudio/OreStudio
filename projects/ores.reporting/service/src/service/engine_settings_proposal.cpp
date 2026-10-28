@@ -401,10 +401,11 @@ value_map values_of(const std::vector<domain::engine_settings_change>& rows,
  */
 void lock_request(const ores::database::context& ctx, const std::string& request_id) {
     const auto id = boost::uuids::to_string(boost::uuids::string_generator{}(request_id));
-    const ores::database::pq::text_statement statement(
-        {},
-        "select id from ores_inbox_approval_requests_tbl where id = '" + id +
-            "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update");
+    // The statement text is held in a local, because a statement reads it by
+    // view and a temporary would be gone before it runs.
+    const auto sql = "select id from ores_inbox_approval_requests_tbl where id = '" + id +
+                     "'::uuid and valid_to = ores_utility_infinity_timestamp_fn() for update";
+    const ores::database::pq::text_statement statement({}, sql);
     ores::database::transact(
         ctx, [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
 }
@@ -415,9 +416,12 @@ engine_settings_proposal_service::engine_settings_proposal_service(ores::databas
     : ctx_(std::move(ctx)) {}
 
 std::vector<settings_group> engine_settings_proposal_service::groups() {
-    const auto group_rows = repository::engine_settings_group_repository{}.read_latest(ctx_);
+    // The groups and their settings are system-owned lookups, so they are read
+    // under the system tenant whatever tenant the configuration belongs to.
+    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
+    const auto group_rows = repository::engine_settings_group_repository{}.read_latest(system_ctx);
     const auto setting_rows =
-        repository::engine_settings_group_setting_repository{}.read_latest(ctx_);
+        repository::engine_settings_group_setting_repository{}.read_latest(system_ctx);
 
     auto ordered = group_rows;
     std::ranges::sort(ordered, {}, &domain::engine_settings_group::position);
@@ -476,9 +480,9 @@ std::vector<std::string> engine_settings_proposal_service::part_codes(const std:
     return {};
 }
 
-messaging::raise_engine_settings_change_response engine_settings_proposal_service::raise(
-    const messaging::raise_engine_settings_change_request& request) {
-    messaging::raise_engine_settings_change_response response;
+ores::reporting::messaging::raise_engine_settings_change_response engine_settings_proposal_service::raise(
+    const ores::reporting::messaging::raise_engine_settings_change_request& request) {
+    ores::reporting::messaging::raise_engine_settings_change_response response;
     const auto asked = group(request.group_code);
     if (!asked) {
         response.result = refusal_of(
@@ -606,11 +610,11 @@ messaging::raise_engine_settings_change_response engine_settings_proposal_servic
     return response;
 }
 
-std::vector<messaging::engine_settings_change_line>
+std::vector<ores::reporting::messaging::engine_settings_change_line>
 engine_settings_proposal_service::lines(const std::string& request_id) {
     const auto rows = lines_of(ctx_, request_id);
 
-    std::vector<messaging::engine_settings_change_line> out;
+    std::vector<ores::reporting::messaging::engine_settings_change_line> out;
     int line_no = 0;
     for (const auto& code : groups_of(rows)) {
         const auto group_rows = rows_of_group(rows, code);
@@ -619,7 +623,7 @@ engine_settings_proposal_service::lines(const std::string& request_id) {
         const auto& first = group_rows.front();
         const auto settings = group(code);
 
-        messaging::engine_settings_change_line line;
+        ores::reporting::messaging::engine_settings_change_line line;
         line.line_no = ++line_no;
         line.group_code = code;
         line.engine_settings_id = first.engine_settings_id;
@@ -630,7 +634,7 @@ engine_settings_proposal_service::lines(const std::string& request_id) {
             const auto in_force =
                 values_in_force(ctx_, code, first.engine_settings_id, *settings);
             for (const auto& setting : settings->settings) {
-                messaging::engine_settings_value_change field;
+                ores::reporting::messaging::engine_settings_value_change field;
                 field.column_name = setting.column_name;
                 field.ore_name = setting.ore_name;
                 field.before = text_of(in_force.at(setting.column_name));
@@ -751,7 +755,7 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
         out.refusal = e.what();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Applying request " << request_id << " failed: " << e.what();
-        return {.transient = true, .refusal = e.what()};
+        return {.refusal = e.what(), .transient = true};
     }
 
     // The transaction is rolled back, so nothing was written. The request ends
@@ -768,7 +772,7 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Request " << request_id
                                    << " could not be moved to apply_failed: " << e.what();
-        return {.transient = true, .refusal = e.what()};
+        return {.refusal = e.what(), .transient = true};
     }
     return out;
 }

@@ -110,8 +110,11 @@ inline world seed_world(ores::testing::scoped_database_helper& h) {
     auto gen = ores::testing::make_generation_context(h);
     auto& base = h.context();
 
-    const auto maker = "engine-settings-maker";
-    const auto decider = "engine-settings-decider";
+    // The two accounts are named for the run, because a case that seeds the same
+    // tenant twice would collide on the username.
+    const auto suffix = boost::uuids::to_string(boost::uuids::random_generator{}()).substr(0, 8);
+    const auto maker = "engine-settings-maker-" + suffix;
+    const auto decider = "engine-settings-decider-" + suffix;
     const auto maker_id = detail::write_account(h, maker);
     const auto decider_id = detail::write_account(h, decider);
 

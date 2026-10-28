@@ -98,6 +98,17 @@ function record(kind, feed = null, extra = {}) {
   if (sim.events.length > 65536) sim.events.splice(0, sim.events.length - 65536);
 }
 
+/* The market's intensity λ(t): the ticks a second every feed's law asks for now,
+   its rate times its sensitivity times the pace, with a Hawkes feed's excitation
+   on top. The same units as the ticks a second seen, so the two share an axis. */
+function lawRate(f) {
+  if (f.mode !== 'hawkes') return f.rate;
+  return f.rate * (1 - f.n) + f.excess;
+}
+function intensity() {
+  return FEEDS.reduce((sum, f) => sum + lawRate(f) * f.sens, 0) * pace();
+}
+
 function drawGap(f) {
   return f.mode === 'periodic' ? 1 / f.rate : -Math.log(1 - rand()) / f.rate;
 }
@@ -165,7 +176,7 @@ function advance(wall) {
     sampleClock += dt; tpsClock += dt;
     if (sampleClock >= 0.25) {
       sampleClock = 0;
-      sim.paceSamples.push({ t: sim.t, tau: sim.tau, mult: mult(), heat: sim.heat / R, state: sim.pinned || sim.state });
+      sim.paceSamples.push({ t: sim.t, tau: sim.tau, mult: mult(), heat: sim.heat / R, state: sim.pinned || sim.state, lam: intensity() });
     }
     if (tpsClock >= 1) {
       sim.tpsSamples.push({ t: sim.t, v: sim.recentTicks / tpsClock });
@@ -252,11 +263,13 @@ function renderPace() {
     <polyline points="${tot.join(' ')}" fill="none" stroke="#58a6ff" stroke-width="1.5"/>`);
 
   const T = sim.tpsSamples.filter((p) => p.t >= t0);
-  const tmax = Math.max(1, ...T.map((p) => p.v)) * 1.15;
-  const yt = (v) => 66 - (v / tmax) * 58;
-  svgEl($('#fig-tps'), `<line x1="0" x2="${W}" y1="66" y2="66" stroke="#21262d"/>
-    <text x="4" y="12">${clean(tmax / 1.15, 3)}/s</text>
-    <polyline points="${T.map((p) => `${xs(p.t).toFixed(1)},${yt(p.v).toFixed(1)}`).join(' ')}" fill="none" stroke="#3fb950" stroke-width="1.5"/>`);
+  const tmax = Math.max(1, ...T.map((p) => p.v), ...pts.map((p) => p.lam)) * 1.1;
+  const yt = (v) => 116 - (v / tmax) * 106;
+  const bars = T.map((p) => `<rect x="${(xs(p.t - 1)).toFixed(1)}" y="${yt(p.v).toFixed(1)}" width="${(W / span - 1).toFixed(1)}" height="${(116 - yt(p.v)).toFixed(1)}" fill="rgba(63,185,80,.45)"/>`).join('');
+  const lam = pts.map((p) => `${xs(p.t).toFixed(1)},${yt(p.lam).toFixed(1)}`).join(' ');
+  svgEl($('#fig-tps'), `${bands.replaceAll(`height="${H - pad}"`, 'height="116"')}<line x1="0" x2="${W}" y1="116" y2="116" stroke="#21262d"/>
+    <text x="4" y="12">${clean(tmax / 1.1, 3)}/s</text>${bars}
+    <polyline points="${lam}" fill="none" stroke="#58a6ff" stroke-width="1.6"/>`);
 }
 
 const TELL = {
@@ -512,6 +525,35 @@ function feedTip(f) {
   return `<b>${f.name}</b><br>${law}<br>rate ${clean(f.rate, 3)}/s × sensitivity ${clean(f.sens)}<br>now ${clean(f.rate * f.sens * pace(), 3)}/s at pace ×${pace().toFixed(2)}`;
 }
 
+// --- Laws --------------------------------------------------------------------
+
+const FAMILIES = {
+  periodic: { title: 'Periodic', formula: 'gap = 1 / rate', reads: 'One tick each nominal period, from a random phase. The gaps are all one.', stable: 'always' },
+  poisson: { title: 'Poisson', formula: 'λ = rate', reads: 'Memoryless: a gap is an exponential draw, so ticks neither cluster nor space out.', stable: 'always' },
+  hawkes: { title: 'Hawkes', formula: 'λ(t) = μ + Σ n·β·e^(−β(t − tₖ))', reads: 'Each tick raises the intensity, which decays: ticks come in bursts. μ = rate·(1 − n) keeps the mean at the rate.', stable: 'branching n < 1' },
+};
+ui.laws = new Set(['periodic', 'poisson', 'hawkes']);
+
+function renderLaws() {
+  $('#law-families').innerHTML = Object.entries(FAMILIES).map(([k, f]) => {
+    const n = FEEDS.filter((g) => g.mode === k).length;
+    return `<div class="card"><div class="card-head"><div><h2>${f.title}</h2><p>${f.reads}</p></div><div class="act"><span class="v mono" style="font:700 1.2rem var(--mono)">${n}</span><span class="label">feeds</span></div></div>
+      <div class="kv"><div><span>Intensity</span><span>${f.formula}</span></div><div><span>Stable when</span><span>${f.stable}</span></div></div></div>`;
+  }).join('');
+  const t0 = sim.t - 60;
+  $('#law-rows').innerHTML = FEEDS.filter((f) => ui.laws.has(f.mode)).map((f) => {
+    const marks = sim.events.filter((e) => e.kind === 'tick' && e.feed === f && e.t >= t0)
+      .map((e) => `<rect x="${(((e.t - t0) / 60) * 120).toFixed(1)}" y="2" width="1.5" height="12" fill="var(--class-${f.cls})"/>`).join('');
+    const hawkes = f.mode === 'hawkes';
+    return `<tr><td><i style="display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:7px;background:var(--class-${f.cls})"></i>${f.name.replace('synthetic.', '')}</td>
+      <td>${f.mode}</td><td class="num">${clean(f.rate * 3600, 4)}</td><td class="num">${clean(f.sens)}</td>
+      <td class="num">${hawkes ? clean(f.n) : '—'}</td><td class="num">${hawkes ? clean(f.beta) : '—'}</td>
+      <td>${hawkes ? (f.n < 1 ? '<span class="kind add">stable</span>' : '<span class="kind remove">runs away</span>') : '<span class="faint">always</span>'}</td>
+      <td><svg viewBox="0 0 120 16" style="width:120px;height:16px;background:var(--sunk);border-radius:3px">${marks}</svg></td>
+      <td><a href="../control-how-a-market-ticks/" title="The feed's Arrivals tab, as the earlier prototype draws it">Arrivals tab →</a></td></tr>`;
+  }).join('');
+}
+
 // --- Fit ---------------------------------------------------------------------
 
 function renderFit() {
@@ -587,6 +629,7 @@ function render() {
   if (ui.tab === 'now') renderNow();
   if (ui.tab === 'settings') renderSettings();
   if (ui.tab === 'arrivals') { renderFold(); renderRaster(); }
+  if (ui.tab === 'laws') renderLaws();
   if (ui.tab === 'fit') renderFit();
   if (ui.tab === 'trace') renderTrace();
 }
@@ -689,4 +732,11 @@ setInterval(() => {
   render();
 }, 500);
 
-openTab(['now', 'settings', 'arrivals', 'fit', 'trace'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'now');
+$$('#law-filter button').forEach((b) => b.addEventListener('click', () => {
+  const k = b.dataset.law;
+  if (ui.laws.has(k) && ui.laws.size > 1) ui.laws.delete(k); else ui.laws.add(k);
+  $$('#law-filter button').forEach((c) => c.setAttribute('aria-pressed', String(ui.laws.has(c.dataset.law))));
+  renderLaws();
+}));
+
+openTab(['now', 'settings', 'arrivals', 'laws', 'fit', 'trace'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'now');

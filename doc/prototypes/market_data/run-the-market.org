@@ -2,7 +2,7 @@
 :ID: 51E4851F-5F8C-4143-A034-E3E1A2F9C7CE
 :END:
 #+title: Run the market, prototype
-#+description: The market as five tabs, one question each — now, settings, arrivals, fit and trace — in the look Gemini's review argued, with a temporal raster of the last hour and nothing the service does not have
+#+description: The market as six tabs, one question each — now, settings, arrivals, laws, fit and trace — in the look Gemini's review argued, with a temporal raster of the last hour and nothing the service does not have
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:
@@ -22,8 +22,8 @@ The built Market regime tab does six jobs on one page. It reads the market,
 forces it, sets what moves it, draws every feed's arrivals, checks each feed
 against its law, and logs the loop. Gemini reviewed it and drew it twice. This
 prototype takes the review's look and its best ideas. It drops every control and
-model the review invented, and it splits the page into five tabs, one question
-each. Its raster is a temporal raster: an hour folded by the minute, so a regime
+model the service does not have, captures the useful ones for later, and splits
+the page into six tabs, one question each. Its raster is a temporal raster: an hour folded by the minute, so a regime
 spell, which lasts minutes, is visible at all.
 
 It is throwaway. It reads no service, and the market on it is a small model of
@@ -37,9 +37,10 @@ system administrator, who sets the market, and a tenant, who reads it.
 
 | Tab      | The question                     | What it holds |
 |----------+----------------------------------+---------------|
-| Now      | What is the market doing?        | The pace over two minutes, with the regime and the heat stacked and the active spells shaded. Ticks a second on an axis of its own. The force switch, who holds the state, how long it has held, the mean spells and the active share. The last changes. |
+| Now      | What is the market doing?        | The pace over two minutes, with the regime and the heat stacked and the active spells shaded. The market's intensity λ(t) against the ticks a second it produced. The force switch, who holds the state, how long it has held, the mean spells and the active share. The last changes. |
 | Settings | What moves it?                   | The six numbers in four cards: the regime, the heat, simulated time, the tails. Each field shows the number it implies, the old value once it is edited, and the service's own rule as it is typed. Apply shows the change before it is made. |
 | Arrivals | How do the ticks come?           | The last hour as a temporal raster, coloured by all feeds, a class, one feed or the pace. Below it, the zoom: two minutes, feed by feed. |
+| Laws     | Which law does each feed draw from? | The three families with their intensity and their stability rule, and every feed's law, read only, each row linking to that feed's Arrivals tab. |
 | Fit      | Does each feed follow its law?   | Seen against asked per feed on a log scale, the chosen feed's gaps against Exp(1), and the loop's health. |
 | Trace    | What did the loop do?            | Every decision, filtered by kind and by feed, newest first. |
 
@@ -47,6 +48,27 @@ A strip of seven figures stays above every tab: the state, the multiplier, the
 pace, the heat's loop gain, ticks a second, the market speed and the lateness.
 That is the review's strongest idea. A person on any tab can see the market
 without leaving the question they came with.
+
+** The intensity and the ticks
+
+The review's headline chart was the arrival intensity λ(t) with the tick count
+over it. The built tab had no such chart: it drew the pace, which is a
+multiplier, and ticks a second on a separate axis. λ(t) is the sum over the feeds
+of each law's rate, times its sensitivity, times the pace, with a Hawkes feed's
+excitation on top. It is measured in ticks a second, as the count is, so the two
+share an axis, which the review's two axes did not need. A spike in λ is a
+Hawkes burst, and a gap between λ and the bars is the noise of a point process.
+The service already reports each feed's intensity now, so the built chart needs
+the loop to keep their sum in its history beside the heat.
+
+** The laws
+
+The review drew a model selector for the whole engine. The market has no law:
+each feed has its own, chosen on its Arrivals tab. What is worth having is the
+view across feeds, as the GMM components prototype gives for mixtures: how
+many feeds draw from each law, the law's formula and its stability rule, and
+every feed's law with its last minute of ticks. It is read only, and each row
+opens the feed's Arrivals tab, so a law is still edited in one place.
 
 ** The temporal raster
 
@@ -92,7 +114,24 @@ whether the rows densify together, which is what a market-wide factor means.
 | Two units on one axis | The pace and ticks a second have axes of their own |
 | A frame-rate counter and version badges | They describe the page, not the market |
 | A "now" line inset from the axis's end | The axis ends at now |
+| One arrival model for the whole engine | A law is a feed's own; the Laws tab reads them across feeds and links to each |
 | Font Awesome, Chart.js and MathJax | The product has its own icons and draws its own figures |
+
+** Captured for later
+
+Some of what the review drew does not exist but is worth having. Each is a
+capture in the product backlog inbox:
+
+- =pause_and_resume_the_market=: freeze the market's clock and resume where it
+  was.
+- =inject_a_shock_into_the_market=: add heat at once and watch it spread and fade.
+- =let_one_feeds_ticks_excite_anothers=: a multivariate Hawkes over the feeds,
+  the review's cross-asset matrix.
+- =add_an_acd_arrival_law=: the review's ACD model, as a fourth law.
+- =let_the_heat_turn_the_regime=: what the review's heat thresholds and third
+  state were reaching for, without a threshold that flaps.
+- =calibrate_a_feeds_arrival_law_from_its_ticks=: the "calibrate" in the
+  review's selector.
 
 ** What the review missed that the built tab had
 

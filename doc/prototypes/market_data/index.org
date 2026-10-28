@@ -49,7 +49,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:manage-gmm-components.org][Manage GMM components]] | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][prototype]] | none |
 | [[file:manage-yield-curve-process-types.org][Manage yield curve process types]] | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][prototype]] | none |
 | [[file:control-how-a-market-ticks.org][Control how a market ticks]] | A feed's own clustering and the market-wide factor are two surfaces: the feed's tab edits its arrivals and reads the market, and the market's tab is the only place that forces a state and the only figure that shows rows speeding up together. | [[file:control-how-a-market-ticks/][prototype]] | [[file:control-how-a-market-ticks/review/][Gemini review]] |
-| [[file:run-the-market.org][Run the market]] | The market is five questions, so it is five tabs under one strip of figures: now, settings, arrivals, fit and trace. Its raster folds the last hour by the minute, because a regime spell lasts minutes. | [[file:run-the-market/][prototype]] | none |
+| [[file:run-the-market.org][Run the market]] | The market is six questions, so it is six tabs under one strip of figures: now, settings, arrivals, laws, fit and trace. Its raster folds the last hour by the minute, because a regime spell lasts minutes. | [[file:run-the-market/][prototype]] | none |
 
 * Adding a prototype
 

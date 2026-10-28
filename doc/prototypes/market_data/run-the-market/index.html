@@ -32,6 +32,8 @@
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2v12M8 2v12M13 2v12"/><circle cx="3" cy="10" r="1.6" fill="currentColor"/><circle cx="8" cy="5" r="1.6" fill="currentColor"/><circle cx="13" cy="9" r="1.6" fill="currentColor"/></svg>Settings <span class="q">what moves it</span></button>
     <button role="tab" data-tab="arrivals" aria-selected="false">
       <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="1.4" height="2.5"/><rect x="5" y="3" width="1.4" height="2.5"/><rect x="7" y="3" width="1.4" height="2.5"/><rect x="13" y="3" width="1.4" height="2.5"/><rect x="2" y="10" width="1.4" height="2.5"/><rect x="9" y="10" width="1.4" height="2.5"/><rect x="10.6" y="10" width="1.4" height="2.5"/><rect x="12.2" y="10" width="1.4" height="2.5"/></svg>Arrivals <span class="q">how the ticks come</span></button>
+    <button role="tab" data-tab="laws" aria-selected="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13c2-9 4-9 5-5s3 4 5-5"/></svg>Laws <span class="q">which law each feed draws from</span></button>
     <button role="tab" data-tab="fit" aria-selected="false">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 14L14 2"/><circle cx="4" cy="11" r="1" fill="currentColor"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="6" r="1" fill="currentColor"/><circle cx="12" cy="4.5" r="1" fill="currentColor"/></svg>Fit <span class="q">does each feed follow its law</span></button>
     <button role="tab" data-tab="trace" aria-selected="false">
@@ -68,8 +70,11 @@
         </div>
         <svg id="fig-pace" class="fig" viewBox="0 0 800 220" preserveAspectRatio="none" role="img" aria-label="The pace over the last two minutes"></svg>
         <div class="legend"><span><i style="background:rgba(88,166,255,.55)"></i>the regime</span><span><i style="background:rgba(210,153,34,.7)"></i>the heat</span><span><i style="background:rgba(210,153,34,.15);border:1px solid rgba(210,153,34,.4)"></i>an active market</span><span class="faint">last 120 s · now at the right</span></div>
-        <svg id="fig-tps" class="fig" viewBox="0 0 800 70" preserveAspectRatio="none" role="img" aria-label="Ticks a second over the last two minutes"></svg>
-        <div class="legend"><span><i style="background:var(--up)"></i>ticks a second, every feed</span><span class="faint">its own axis: a count is not a pace</span></div>
+        <div class="card-head" style="padding-top:4px">
+          <div><h2>Intensity λ(t) and the ticks it produced</h2><p>The ticks a second every feed's law asks for now, against the ticks that came. Both are ticks a second, so they share an axis; a Hawkes feed's excitation shows as a spike in λ.</p></div>
+        </div>
+        <svg id="fig-tps" class="fig" viewBox="0 0 800 120" preserveAspectRatio="none" role="img" aria-label="The market's intensity and the ticks a second seen, over the last two minutes"></svg>
+        <div class="legend"><span><i style="background:var(--accent)"></i>λ(t), every feed's law at the pace now</span><span><i style="background:rgba(63,185,80,.6)"></i>ticks seen, each second</span></div>
       </div>
 
       <div class="card">
@@ -232,6 +237,26 @@
         <span><i style="background:rgba(210,153,34,.15);border:1px solid rgba(210,153,34,.4)"></i>an active market</span>
         <span class="faint">seen / asked: the ticks in the window against the count the feed's law asks for at the pace that ran</span>
       </div>
+    </div>
+  </section>
+
+  <!-- LAWS ------------------------------------------------------------------ -->
+  <section id="tab-laws" class="grid" role="tabpanel" hidden>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))" id="law-families"></div>
+    <div class="card">
+      <div class="card-head">
+        <span class="ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13c2-9 4-9 5-5s3 4 5-5"/></svg></span>
+        <div><h2>Every feed's law</h2><p>Read here, set on the feed. A law belongs to its feed, so each row opens that feed's Arrivals tab, the one place a law is edited; the feed takes a new law when it next starts.</p></div>
+      </div>
+      <div class="toolbar">
+        <span class="label">Law</span>
+        <span class="seg" role="group" aria-label="Laws" id="law-filter">
+          <button aria-pressed="true" data-law="periodic">Periodic</button>
+          <button aria-pressed="true" data-law="poisson">Poisson</button>
+          <button aria-pressed="true" data-law="hawkes">Hawkes</button>
+        </span>
+      </div>
+      <table><thead><tr><th>Feed</th><th>Law</th><th class="num">Ticks an hour</th><th class="num">Sensitivity</th><th class="num">Branching</th><th class="num">Decay, /τ</th><th>Stable</th><th>Last 60 s</th><th></th></tr></thead><tbody id="law-rows"></tbody></table>
     </div>
   </section>
 

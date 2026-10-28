@@ -37,6 +37,7 @@
 #include <expected>
 #include <map>
 #include <mutex>
+#include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -69,8 +70,18 @@ enum class adapter_tick_drop {
  * @brief A tick that passed the checks: the tick the pipeline stores, and the provider and
  * the source it belongs to.
  */
+/**
+ * @brief What a tick is, which decides the rules it meets and where it is stored.
+ *
+ * A quote is perishable: it ages out and is kept for days. A fixing is an official value of
+ * an index on a date, a durable fact: it never ages out, and it is kept for good in the
+ * fixings table.
+ */
+enum class tick_class { quote, fixing };
+
 struct translated_tick {
     messaging::market_tick tick;
+    tick_class kind = tick_class::quote;
     std::string provider_code;
     boost::uuids::uuid source_id;
 };
@@ -82,7 +93,7 @@ struct translated_tick {
  * provider and the mappings from them to oresmd items. An adapter id is the name of a source,
  * and the source says the provider. @c translate() finds the vendor instrument of the tick,
  * the mapping that holds at the time of the call, and then applies the checks in this order:
- * mapping, number, range, age and order. It counts each drop for each adapter and reason.
+ * mapping, number, range, age and order. A fixing skips the age check. It counts each drop for each adapter and reason.
  *
  * The translator reads the kind of a source nowhere. A live source and a simulated source of
  * one provider take the same path and give the same tick apart from the source id.
@@ -137,6 +148,8 @@ private:
 
     std::unordered_map<std::string, domain::market_data_source> sources_;
     std::map<instrument_key, std::vector<domain::market_data_mapping>> mappings_;
+    /// The items of the mappings that are indices, whose ticks are fixings.
+    std::set<std::string> fixing_items_;
 
     mutable std::mutex mu_;
     std::map<std::pair<std::string, adapter_tick_drop>, std::uint64_t> drops_;

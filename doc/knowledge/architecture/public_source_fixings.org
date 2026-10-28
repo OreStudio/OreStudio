@@ -83,28 +83,29 @@ while the spot quotes stay perishable.
 
 ** A durable class with its own table
 
-Today the ingest drops a tick whose vendor time is older than its age limit, and
-a tick older than the newest one of its vendor id
-(=adapter_tick_translator.cpp=). A fixing published yesterday at 16:00 CET, and
-every day of a backfill, would be dropped. The durable tier of
-[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] is the
-answer, and the fixings are its first class:
+A tick is a quote or a fixing, and the item says which: a fixing's item is an
+index, which =oresmd_uri_codec::read_index= reads. The two classes meet different
+rules.
 
-- The age gate does not apply.
+- The ingest drops a quote whose vendor time is older than its age limit, twice:
+  in the translator and again in the worker that drains the quotes' queue. A
+  fixing skips the age check, and never enters that queue.
+- A fixing takes a path of its own: a queue that never sheds and one thread that
+  stores what it holds. A daily volume is small, and a backfill waits in the
+  queue rather than being lost.
+- The table of the class already exists. =market_fixing= is a hypertable keyed
+  by the party, the series and the fixing date, with no retention, and a
+  correction is a new version. A fixing is stored there, in the series of its
+  index for each consumer, created as the ingest creates a quote's series. The
+  tick table, with its seven days, never sees a fixing.
 - A backfill arrives in order, oldest first, for each vendor id, so the order
   rule still holds.
-- Conflation is =none=: each daily value is kept.
-- A tick whose vendor id and vendor time are already stored is skipped, as the
-  point key already makes it, so a backfill that overlaps what is stored, after a
-  restart, adds nothing.
-- A fixing that has only a date gets the publisher's stated publication time on
-  that date, in UTC, such as 16:00 CET for the ECB. A publisher that states no
-  time gets the end of the day in UTC. The time is part of the provider's
-  catalogue entry, so every fixing of one provider is stamped the same way, and a
-  read "on or before a date" takes the fixing of that date.
-- The class has its own points table, of the same shape as the ticks, because
-  "a class with a different retention needs its own table". It is kept for good.
-  The volume is small: a publisher gives a few dozen rows a day.
+- A fixing whose series already holds that value on that date is skipped, so a
+  backfill that overlaps the store, after a restart, adds nothing. A different
+  value for a stored date is a correction and adds one version.
+- A fixing is a value of a date, so the vendor time gives only its date. The
+  time of day a provider publishes matters to when the adapter asks, not to
+  what the store keeps.
 
 ** The public sources adapter
 

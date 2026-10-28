@@ -29,8 +29,10 @@ namespace {
 using namespace std::chrono_literals;
 using ores::marketdata::service::app::adapter_tick_drop;
 using ores::marketdata::service::app::adapter_tick_translator;
+using ores::marketdata::service::app::tick_class;
 
 const std::string eur_usd_spot = "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
+const std::string ecb_eur_usd_fixing = "oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD";
 
 struct catalogue {
     ores::marketdata::domain::market_data_source live;
@@ -198,6 +200,58 @@ TEST_CASE("a_tick_older_than_the_age_limit_is_stale", "[app][adapter_tick_transl
 
     REQUIRE_FALSE(out.has_value());
     CHECK(out.error() == adapter_tick_drop::stale);
+}
+
+TEST_CASE("a_fixing_older_than_the_age_limit_is_kept_and_a_quote_is_not",
+          "[app][adapter_tick_translator]") {
+    catalogue quote;
+    catalogue fixing;
+    fixing.mapping.oresmd_uri = ecb_eur_usd_fixing;
+    auto quotes = quote.translator();
+    auto fixings = fixing.translator();
+    auto old_quote = quote.tick();
+    old_quote.vendor_time = quote.now - 48h;
+    auto old_fixing = fixing.tick();
+    old_fixing.vendor_time = fixing.now - 48h;
+
+    const auto dropped = quotes.translate("bloomberg-live", old_quote, quote.now);
+    const auto kept = fixings.translate("bloomberg-live", old_fixing, fixing.now);
+
+    REQUIRE_FALSE(dropped.has_value());
+    CHECK(dropped.error() == adapter_tick_drop::stale);
+    REQUIRE(kept.has_value());
+    CHECK(kept->kind == tick_class::fixing);
+    CHECK(kept->tick.oresmd_uri == ecb_eur_usd_fixing);
+}
+
+TEST_CASE("a_quote_is_of_the_quote_class", "[app][adapter_tick_translator]") {
+    catalogue c;
+    auto sut = c.translator();
+
+    const auto out = sut.translate("bloomberg-live", c.tick(), c.now);
+
+    REQUIRE(out.has_value());
+    CHECK(out->kind == tick_class::quote);
+}
+
+TEST_CASE("a_backfill_of_fixings_sent_oldest_first_passes_the_order_check",
+          "[app][adapter_tick_translator]") {
+    catalogue c;
+    c.mapping.oresmd_uri = ecb_eur_usd_fixing;
+    c.mapping.effective_from = c.now - 24h * 30;
+    auto sut = c.translator();
+
+    for (int day = 10; day > 0; --day) {
+        auto t = c.tick();
+        t.vendor_time = c.now - 24h * day;
+        const auto out = sut.translate("bloomberg-live", t, c.now);
+        REQUIRE(out.has_value());
+    }
+    auto earlier = c.tick();
+    earlier.vendor_time = c.now - 24h * 20;
+    const auto out_of_order = sut.translate("bloomberg-live", earlier, c.now);
+    REQUIRE_FALSE(out_of_order.has_value());
+    CHECK(out_of_order.error() == adapter_tick_drop::out_of_order);
 }
 
 TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies",

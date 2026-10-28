@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/adapter_tick_translator.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <cmath>
 #include <map>
@@ -60,8 +61,11 @@ adapter_tick_translator::adapter_tick_translator(
     }
     for (auto& mapping : mappings) {
         const auto found = keys_by_id.find(mapping.vendor_instrument_id);
-        if (found != keys_by_id.end())
-            mappings_[found->second].push_back(std::move(mapping));
+        if (found == keys_by_id.end())
+            continue;
+        if (datum::oresmd_uri_codec::read_index(mapping.oresmd_uri))
+            fixing_items_.insert(mapping.oresmd_uri);
+        mappings_[found->second].push_back(std::move(mapping));
     }
 }
 
@@ -104,7 +108,9 @@ adapter_tick_translator::check(std::string_view adapter_id,
     if (std::fabs(*value) > max_abs_value)
         return std::unexpected(adapter_tick_drop::out_of_range);
 
-    if (now - tick.vendor_time > max_tick_age)
+    const auto kind =
+        fixing_items_.contains(held->oresmd_uri) ? tick_class::fixing : tick_class::quote;
+    if (kind == tick_class::quote && now - tick.vendor_time > max_tick_age)
         return std::unexpected(adapter_tick_drop::stale);
 
     {
@@ -116,6 +122,7 @@ adapter_tick_translator::check(std::string_view adapter_id,
     }
 
     translated_tick out;
+    out.kind = kind;
     out.tick.oresmd_uri = held->oresmd_uri;
     out.tick.value = tick.value;
     out.tick.observation_time = tick.vendor_time;

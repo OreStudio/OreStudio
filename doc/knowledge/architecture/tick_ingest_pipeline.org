@@ -363,9 +363,10 @@ reaches the producer through the acknowledgements, and a restart replays what th
 consumer did not acknowledge. Both tiers share the lane code, the batch writer and the
 gauges.
 
-The first durable class is the FX fixing that public sources publish once a day. Today
-the receiver has one age limit for every tick, so a daily fixing and a backfill are
-both dropped as stale. See
+The first durable class is the fixing, which public sources publish once a day. A
+fixing skips the age check, takes a queue of its own that never sheds, and is stored in
+the fixings table, which keeps it for good. It does not yet take the JetStream entry
+above. See
 [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 
 *** Derived data

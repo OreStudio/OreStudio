@@ -39,7 +39,7 @@ The main pairs are covered by several public providers from the first run, so th
 - Each provider's currencies are vendor instruments mapped to FX fixing items of the form FX-SOURCE-CCY1-CCY2.
 - The system party subscribes and routes to each public provider.
 - EUR/USD, GBP/USD and USD/JPY are each covered by at least three providers.
-- Each provider records the time of day it publishes, in its own zone, and a date-only fixing is stamped with it in UTC; a provider that states none is stamped at the end of the day in UTC.
+- Each provider records the time of day it publishes, in its own zone, so the adapter asks for a day's fixings after they are out. The store keeps the date of a fixing alone.
 
 * Plan
 

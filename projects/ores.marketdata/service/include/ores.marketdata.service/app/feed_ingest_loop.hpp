@@ -31,6 +31,8 @@
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/drop_oldest_queue.hpp"
+#include "ores.marketdata.service/app/feed_series.hpp"
+#include "ores.marketdata.service/app/fixing_ingest.hpp"
 #include "ores.marketdata.service/app/store_backoff.hpp"
 #include "ores.marketdata.service/app/tick_age.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
@@ -58,20 +60,6 @@
 
 namespace ores::marketdata::service::app {
 
-/**
- * @brief The series a tick creates when it lands in one for the first time.
- *
- * Identity and classification come from the datum, and the owner of the series
- * comes from the route the tick arrived under. A series already present keeps
- * its owner, which is why the caller builds one of these only on the create
- * path.
- */
-ORES_MARKETDATA_SERVICE_EXPORT domain::market_series
-make_feed_series(const consumer& owner,
-                 const boost::uuids::uuid& id,
-                 const std::string& series_uri,
-                 const std::string& series_subclass,
-                 const std::string& service_account);
 
 /**
  * @brief The ingest loop: one subscription over every producer's ticks, and one
@@ -415,6 +403,9 @@ private:
     std::thread commit_thread_;
     std::thread announce_thread_;
     std::thread status_thread_;
+    /// The fixings' own path. It reads the consumers through this loop, so it is the last
+    /// member: it is made after them and stopped first.
+    std::unique_ptr<fixing_ingest> fixings_;
 };
 
 }

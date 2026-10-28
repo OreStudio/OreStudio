@@ -21,14 +21,12 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
-#include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
@@ -93,13 +91,21 @@ feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
     , ctx_(std::move(ctx))
     , crm_bridge_(std::move(crm_bridge))
     , tick_writer_(std::move(tick_writer))
-    , pipelined_(pipelined) {}
+    , pipelined_(pipelined)
+    , fixings_(std::make_unique<fixing_ingest>(ctx_, [this](const std::string& source) {
+        std::lock_guard lock(mu_);
+        const auto found = consumers_by_source_->by_source.find(source);
+        return found == consumers_by_source_->by_source.end() ? std::vector<consumer>{}
+                                                               : found->second;
+    })) {}
 
 feed_ingest_loop::~feed_ingest_loop() {
     // The callback of the subscription queues into queue_, which is destroyed before
     // tick_sub_. Stopping the subscription first leaves no callback to run after that.
     tick_sub_.reset();
     adapter_sub_.reset();
+    // The fixings still queued are stored before the loop goes.
+    fixings_.reset();
     drain_deadline_rep_.store(
         (std::chrono::steady_clock::now() + shutdown_drain).time_since_epoch().count(),
         std::memory_order_relaxed);
@@ -248,7 +254,14 @@ feed_ingest_loop::accept_adapter_tick(std::string_view adapter_id,
                 << " (first: " << tick.external_id << " " << tick.field << ")";
         return reason;
     }
-    queue_.push(std::move(translated->tick));
+    if (translated->kind == tick_class::fixing)
+        fixings_->push({.index_uri = std::move(translated->tick.oresmd_uri),
+                        .date = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                            translated->tick.observation_time)},
+                        .value = std::move(translated->tick.value),
+                        .source = std::move(translated->tick.source)});
+    else
+        queue_.push(std::move(translated->tick));
     {
         std::lock_guard lock(mu_);
         auto& arrivals = arrivals_[std::string(adapter_id)];
@@ -828,25 +841,6 @@ feed_ingest_loop::classifier_for(const ores::database::context& tenant_ctx) {
     return classifiers_.try_emplace(tenant, std::move(classifier)).first->second;
 }
 
-domain::market_series make_feed_series(const consumer& owner,
-                                       const boost::uuids::uuid& id,
-                                       const std::string& series_uri,
-                                       const std::string& series_subclass,
-                                       const std::string& service_account) {
-    domain::market_series series;
-    series.id = id;
-    series.tenant_id = owner.tenant_id;
-    series.party_id = owner.party_id;
-    series.oresmd_uri = series_uri;
-    series.series_subclass = series_subclass;
-    series.provider_code = owner.provider_code;
-    series.modified_by = service_account;
-    series.performed_by = service_account;
-    series.change_reason_code = "system.initial_load";
-    series.change_commentary = "Created by the feed ingest loop for source " + owner.source_name;
-    return series;
-}
-
 std::expected<std::shared_ptr<const named_datum>, tick_drop>
 feed_ingest_loop::name_of(const std::string& uri) {
     {
@@ -895,24 +889,8 @@ boost::uuids::uuid feed_ingest_loop::series_id_for(const ores::database::context
             classifier_for(tenant_ctx)->classify(ck.series_type, ck.metric, ck.qualifier);
         BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
-        auto series = make_feed_series(
-            owner, uuid_gen(), series_uri, cl.series_subclass, ctx_.service_account());
-        series_repo.write(tenant_ctx, series);
-
-        std::vector<domain::market_series_asset_class> classes;
-        for (const auto& code : cl.asset_classes) {
-            domain::market_series_asset_class row;
-            row.tenant_id = series.tenant_id.to_string();
-            row.market_series_id = series.id;
-            row.asset_class_code = code;
-            row.modified_by = series.modified_by;
-            row.performed_by = series.performed_by;
-            row.change_reason_code = series.change_reason_code;
-            row.change_commentary = series.change_commentary;
-            classes.push_back(std::move(row));
-        }
-        if (!classes.empty())
-            repository::market_series_asset_class_repository(tenant_ctx).write(classes);
+        auto series = create_feed_series(
+            tenant_ctx, owner, uuid_gen(), series_uri, cl, ctx_.service_account());
         existing.push_back(std::move(series));
     }
 
@@ -954,7 +932,9 @@ void feed_ingest_loop::log_status() const {
         << " ticks_stored=" << ticks_stored_.load(std::memory_order_relaxed)
         << " batches=" << batches_.load(std::memory_order_relaxed)
         << " last_batch_ticks=" << last_batch_ticks_.load(std::memory_order_relaxed)
-        << " last_batch_ms=" << last_batch_ms_.load(std::memory_order_relaxed);
+        << " last_batch_ms=" << last_batch_ms_.load(std::memory_order_relaxed)
+        << " fixings_stored=" << fixings_->stored() << " fixings_failed=" << fixings_->failed()
+        << " fixings_pending=" << fixings_->pending();
     if (stats_.empty()) {
         BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: no active subscriptions";
         return;

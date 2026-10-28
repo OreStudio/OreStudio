@@ -108,8 +108,8 @@ function ProcessParameters({ feed }: { readonly feed: ProcessFeed }): ReactNode 
     }
     return (
         <dl className="grid gap-1 font-mono text-xs">
-            {lines.map((line) => (
-                <div key={line.name} className="flex justify-between gap-4">
+            {lines.map((line, index) => (
+                <div key={`${String(index)}-${line.name}`} className="flex justify-between gap-4">
                     <dt className="text-ink-faint">{line.name}</dt>
                     <dd className="text-right tabular-nums">{line.value}</dd>
                 </div>
@@ -133,6 +133,13 @@ export function ProcessTag({
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const holder = useRef<HTMLSpanElement>(null);
+    const trigger = useRef<HTMLButtonElement>(null);
+    const panel = useRef<HTMLSpanElement>(null);
+    // Closing hands focus back to the tag, so a keyboard user carries on where they were.
+    const close = (): void => {
+        setOpen(false);
+        trigger.current?.focus();
+    };
     // One summary at a time: a click anywhere else, opening another tag included, or Escape
     // closes this one.
     useEffect(() => {
@@ -147,8 +154,11 @@ export function ProcessTag({
         const escape = (event: KeyboardEvent): void => {
             if (event.key === 'Escape') {
                 setOpen(false);
+                trigger.current?.focus();
             }
         };
+        // Opening moves focus into the summary, so its link is the next stop.
+        panel.current?.focus();
         document.addEventListener('mousedown', away);
         document.addEventListener('keydown', escape);
         return () => {
@@ -156,25 +166,33 @@ export function ProcessTag({
             document.removeEventListener('keydown', escape);
         };
     }, [open]);
-    const name = feed.engine === '' ? '—' : processName(t, feed);
+    if (feed.engine === '') {
+        return <span className={cx('text-ink-faint', className)}>—</span>;
+    }
+    const name = processName(t, feed);
     return (
-        <span ref={holder} className={cx('relative inline-block', className)}>
+        <span ref={holder} className={cx('relative inline-block max-w-full', className)}>
             <button
+                ref={trigger}
                 type="button"
                 aria-expanded={open}
+                aria-haspopup="dialog"
+                title={name}
                 onClick={(event) => {
                     event.stopPropagation();
                     setOpen((was) => !was);
                 }}
-                className="rounded-chip border border-line px-1.5 font-mono text-[11px] text-ink-muted hover:border-line-strong hover:text-ink"
+                className="block max-w-full truncate rounded-chip border border-line px-1.5 font-mono text-[11px] text-ink-muted hover:border-line-strong hover:text-ink"
             >
                 {name}
             </button>
             {open ? (
                 <span
+                    ref={panel}
                     role="dialog"
+                    tabIndex={-1}
                     aria-label={t('marketdata.processSummary.title', { process: name })}
-                    className="absolute top-full left-0 z-30 mt-1 grid w-72 gap-2 rounded-md border border-line-strong bg-surface-overlay p-3 text-left shadow-xl"
+                    className="absolute top-full left-0 z-30 mt-1 grid w-72 outline-none gap-2 rounded-md border border-line-strong bg-surface-overlay p-3 text-left shadow-xl"
                 >
                     <span className="flex items-baseline justify-between gap-2">
                         <span className="font-mono text-xs font-bold tracking-wide uppercase">
@@ -183,7 +201,7 @@ export function ProcessTag({
                         <button
                             type="button"
                             aria-label={t('marketdata.processSummary.close')}
-                            onClick={() => setOpen(false)}
+                            onClick={close}
                             className="text-ink-faint hover:text-ink"
                         >
                             ×
@@ -193,6 +211,7 @@ export function ProcessTag({
                     {feed.id === '' ? null : (
                         <Link
                             to={`${feedPageOf(feed)}?tab=${processTab(feed.kind)}`}
+                            onClick={() => setOpen(false)}
                             className="text-xs text-accent hover:underline"
                         >
                             {t('marketdata.processSummary.open')}

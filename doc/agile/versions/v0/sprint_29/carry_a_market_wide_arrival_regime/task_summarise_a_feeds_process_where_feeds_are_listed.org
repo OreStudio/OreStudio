@@ -83,7 +83,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An empty engine still opens a summary | processSummary.tsx | Accept | A plain dash, with a test. |
+| 2 | Duplicate keys for same-named parameters | processSummary.tsx | Accept | Keyed by position and name. |
+| 3 | The summary does not move focus | processSummary.tsx | Accept | Focus moves into it on open and back to the tag on close. |
+| 4 | Narrow screens need about 800px | ArrivalsView.tsx | Decline | Scrolling the lanes would clip the summary again; it needs a portal, out of scope. |
+| 5 | A long process name overflows its column | processSummary.tsx | Accept | The tag truncates, with the full name as its title. |
+| 6 | The summary stays open after its link | processSummary.tsx | Accept | The link closes it. |
+| 7 | Fixed w, μ, σ, n and β | processSummary.tsx | Decline | The notation is standard in every language the product speaks. |
 
 * Result
 

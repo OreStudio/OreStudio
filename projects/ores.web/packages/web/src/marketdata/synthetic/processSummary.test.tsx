@@ -72,6 +72,16 @@ describe('a feed’s process summary', () => {
         ]);
     });
 
+    it('draws a plain dash for a feed whose process is not known, with nothing to open', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <ProcessTag feed={{ id: 'feed-1', kind: 'fx_spot', engine: '' }} />
+            </TranslationProvider>,
+        );
+        expect(html).toContain('—');
+        expect(html).not.toContain('<button');
+    });
+
     it('draws only the process’s name until it is opened, so a list reads no parameters', () => {
         const queries = new QueryClient();
         const html = renderToStaticMarkup(

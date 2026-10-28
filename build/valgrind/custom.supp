@@ -2155,12 +2155,12 @@
 #
 #  libpq connection state
 #
-#  sqlgen opens one libpq connection per pool slot and the pool lives for the
-#  process lifetime, so the connection's own allocations -- the PGconn, its
-#  option strings, the SASL negotiation buffers and the parameter status list --
-#  are still reachable at exit. They are the library's per-connection state, not
-#  a leak the caller can free without closing a connection the rest of the
-#  process may still use. The rule pins the allocator and the entry point that
+#  ores::database::pq::pool opens one libpq connection per pool slot and the
+#  pool lives for the process lifetime, so the connection's own allocations --
+#  the PGconn, its option strings, the SASL negotiation buffers and the
+#  parameter status list -- are still reachable at exit. They are the
+#  library's per-connection state, not a leak the caller can free without
+#  closing a connection the rest of the process may still use. The rule pins the allocator and the entry point that
 #  creates the connection, and matches reachable blocks only: a block that
 #  becomes unreachable is definitely lost, and no rule here suppresses that.
 #

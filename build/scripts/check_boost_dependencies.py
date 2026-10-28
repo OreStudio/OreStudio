@@ -35,7 +35,7 @@ What it cannot see
 ------------------
 
 A header whose port is not named after its directory and not listed in
-PORT_FOR_INCLUDE, and any third-party library that is not Boost -- sqlgen,
+PORT_FOR_INCLUDE, and any third-party library that is not Boost -- libpq,
 reflectcpp or immer landing without a manifest entry would still reach CI.
 
 Usage

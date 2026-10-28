@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_TRIGGER_EVENT_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_TRIGGER_EVENT_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -43,7 +43,7 @@ struct report_trigger_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_trigger_events_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string report_definition_id;
     std::string trigger_type;
@@ -52,6 +52,23 @@ struct report_trigger_event_entity {
     std::string triggered_by;
     std::string triggered_at;
     std::string party_id;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = report_trigger_event_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("report_definition_id", &e::report_definition_id) |
+               query_builder::bind("trigger_type", &e::trigger_type) |
+               query_builder::bind("scheduler_job_id", &e::scheduler_job_id) |
+               query_builder::bind("schedule_job_run_id", &e::schedule_job_run_id) |
+               query_builder::bind("triggered_by", &e::triggered_by) |
+               query_builder::bind("triggered_at", &e::triggered_at) |
+               query_builder::bind("party_id", &e::party_id);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const report_trigger_event_entity& v);

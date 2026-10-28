@@ -43,7 +43,7 @@ ore_parameter_value_domain_mapper::map(const ore_parameter_value_domain_entity& 
     domain::ore_parameter_value_domain r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.storage_kind = v.storage_kind;
     r.referenced_entity = v.referenced_entity;

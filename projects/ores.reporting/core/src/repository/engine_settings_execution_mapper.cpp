@@ -46,7 +46,7 @@ engine_settings_execution_mapper::map(const engine_settings_execution_entity& v)
     domain::engine_settings_execution r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.engine_settings_id = boost::lexical_cast<boost::uuids::uuid>(v.engine_settings_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.n_threads = v.n_threads;

@@ -48,7 +48,7 @@ domain::report_result_row report_result_row_mapper::map(const report_result_row_
 
     domain::report_result_row r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
     r.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(v.report_instance_id);

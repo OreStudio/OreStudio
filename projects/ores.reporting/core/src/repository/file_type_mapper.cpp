@@ -42,7 +42,7 @@ domain::file_type file_type_mapper::map(const file_type_entity& v) {
     domain::file_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.analytic_type_code = v.analytic_type_code;
     r.ore_parameter = v.ore_parameter;
     r.direction = v.direction;

@@ -19,12 +19,11 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_type_configuration_type.hpp"
@@ -36,16 +35,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -53,13 +42,13 @@
 
 namespace ores::reporting::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string report_type_configuration_type_repository::sql() {
-    return generate_create_table_sql<report_type_configuration_type_entity>(lg());
+    return query_builder::insert_statement_sql<report_type_configuration_type_entity>(lg());
 }
 
 report_type_configuration_type_repository::report_type_configuration_type_repository(context ctx)
@@ -122,10 +111,10 @@ void report_type_configuration_type_repository::write(
                                << report_type_configuration_type.report_type_code << "/"
                                << report_type_configuration_type.configuration_type_code;
     const auto t = apply_claim(report_type_configuration_type, claim);
-    execute_write_query(ctx_,
-                        report_type_configuration_type_mapper::map(t),
-                        lg(),
-                        "writing report type configuration type to database");
+    query_builder::execute_write_query(ctx_,
+                                       report_type_configuration_type_mapper::map(t),
+                                       lg(),
+                                       "writing report type configuration type to database");
 }
 
 void report_type_configuration_type_repository::write(
@@ -137,22 +126,22 @@ void report_type_configuration_type_repository::write(
     batch.reserve(report_type_configuration_types.size());
     for (std::size_t i = 0; i < report_type_configuration_types.size(); ++i)
         batch.push_back(apply_claim(report_type_configuration_types[i], claims[i]));
-    execute_write_query(ctx_,
-                        report_type_configuration_type_mapper::map(batch),
-                        lg(),
-                        "writing report type configuration types to database");
+    query_builder::execute_write_query(ctx_,
+                                       report_type_configuration_type_mapper::map(batch),
+                                       lg(),
+                                       "writing report type configuration types to database");
 }
 
 std::vector<domain::report_type_configuration_type>
 report_type_configuration_type_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_type_configuration_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("report_type_code"_c, "configuration_type_code"_c);
+    const auto query = query_builder::read<std::vector<report_type_configuration_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("report_type_code"_c, "configuration_type_code"_c);
 
-    return execute_read_query<report_type_configuration_type_entity,
-                              domain::report_type_configuration_type>(
+    return query_builder::execute_read_query<report_type_configuration_type_entity,
+                                             domain::report_type_configuration_type>(
         ctx_,
         query,
         [](const auto& entities) { return report_type_configuration_type_mapper::map(entities); },
@@ -166,13 +155,13 @@ report_type_configuration_type_repository::read_latest(std::uint32_t offset, std
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_type_configuration_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("report_type_code"_c, "configuration_type_code"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<report_type_configuration_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("report_type_code"_c, "configuration_type_code"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<report_type_configuration_type_entity,
-                              domain::report_type_configuration_type>(
+    return query_builder::execute_read_query<report_type_configuration_type_entity,
+                                             domain::report_type_configuration_type>(
         ctx_,
         query,
         [](const auto& entities) { return report_type_configuration_type_mapper::map(entities); },
@@ -190,13 +179,14 @@ report_type_configuration_type_repository::read_latest(const std::string& report
     const auto report_type_code_str = report_type_code;
     const auto configuration_type_code_str = configuration_type_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_type_configuration_type_entity>> |
-                       where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
+    const auto query =
+        query_builder::read<std::vector<report_type_configuration_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
                              "configuration_type_code"_c == configuration_type_code &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<report_type_configuration_type_entity,
-                              domain::report_type_configuration_type>(
+    return query_builder::execute_read_query<report_type_configuration_type_entity,
+                                             domain::report_type_configuration_type>(
         ctx_,
         query,
         [](const auto& entities) { return report_type_configuration_type_mapper::map(entities); },
@@ -209,19 +199,12 @@ report_type_configuration_type_repository::get_total_report_type_configuration_t
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report type configuration types count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<report_type_configuration_type_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<report_type_configuration_type_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<report_type_configuration_type_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting report type configuration types");
     BOOST_LOG_SEV(lg(), debug) << "Total active report type configuration types count: " << count;
     return count;
 }
@@ -234,13 +217,14 @@ report_type_configuration_type_repository::read_latest_by_report_type(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_type_configuration_type_entity>> |
-                       where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
+    const auto query =
+        query_builder::read<std::vector<report_type_configuration_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("configuration_type_code"_c);
+        query_builder::order_by("configuration_type_code"_c);
 
-    auto rows = execute_read_query<report_type_configuration_type_entity,
-                                   domain::report_type_configuration_type>(
+    auto rows = query_builder::execute_read_query<report_type_configuration_type_entity,
+                                                  domain::report_type_configuration_type>(
         ctx_,
         query,
         [](const auto& entities) { return report_type_configuration_type_mapper::map(entities); },
@@ -260,13 +244,14 @@ report_type_configuration_type_repository::read_latest_by_configuration_type(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<report_type_configuration_type_entity>> |
-        where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code &&
-              "valid_to"_c == max.value()) |
-        order_by("report_type_code"_c);
+        query_builder::read<std::vector<report_type_configuration_type_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "configuration_type_code"_c == configuration_type_code &&
+                             "valid_to"_c == max.value()) |
+        query_builder::order_by("report_type_code"_c);
 
-    auto rows = execute_read_query<report_type_configuration_type_entity,
-                                   domain::report_type_configuration_type>(
+    auto rows = query_builder::execute_read_query<report_type_configuration_type_entity,
+                                                  domain::report_type_configuration_type>(
         ctx_,
         query,
         [](const auto& entities) { return report_type_configuration_type_mapper::map(entities); },
@@ -284,14 +269,15 @@ report_type_configuration_type_repository::read_latest_by_report_type(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_type_configuration_type_entity>> |
-                       where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
+    const auto query =
+        query_builder::read<std::vector<report_type_configuration_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("configuration_type_code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+        query_builder::order_by("configuration_type_code"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
-    auto rows = execute_read_query<report_type_configuration_type_entity,
-                                   domain::report_type_configuration_type>(
+    auto rows = query_builder::execute_read_query<report_type_configuration_type_entity,
+                                                  domain::report_type_configuration_type>(
         ctx_,
         query,
         [](const auto& entities) { return report_type_configuration_type_mapper::map(entities); },
@@ -309,21 +295,14 @@ std::uint32_t report_type_configuration_type_repository::
         << report_type_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<report_type_configuration_type_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<report_type_configuration_type_entity>> |
+        query_builder::where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<report_type_configuration_type_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting report type configuration types");
     BOOST_LOG_SEV(lg(), debug)
         << "Total active report type configuration types count by report_type: " << count;
     return count;
@@ -337,21 +316,15 @@ std::uint32_t report_type_configuration_type_repository::
         << configuration_type_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<report_type_configuration_type_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        query_builder::read<std::vector<report_type_configuration_type_entity>> |
+        query_builder::where("tenant_id"_c == tid &&
+                             "configuration_type_code"_c == configuration_type_code &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<report_type_configuration_type_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting report type configuration types");
     BOOST_LOG_SEV(lg(), debug)
         << "Total active report type configuration types count by configuration_type: " << count;
     return count;
@@ -385,12 +358,13 @@ report_type_configuration_type_repository::remove(const std::string& report_type
     const auto report_type_code_str = report_type_code;
     const auto configuration_type_code_str = configuration_type_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<report_type_configuration_type_entity> |
-                       where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
+    const auto query =
+        query_builder::delete_from<report_type_configuration_type_entity> |
+        query_builder::where("tenant_id"_c == tid && "report_type_code"_c == report_type_code &&
                              "configuration_type_code"_c == configuration_type_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx_, query, lg(), "removing report type configuration type from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -419,10 +393,11 @@ void report_type_configuration_type_repository::remove_by_report_type(
                                << report_type_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<report_type_configuration_type_entity> |
-                       where("tenant_id"_c == tid && "report_type_code"_c == report_type_code);
+    const auto query =
+        query_builder::delete_from<report_type_configuration_type_entity> |
+        query_builder::where("tenant_id"_c == tid && "report_type_code"_c == report_type_code);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all report type configuration types from database");
 }
 

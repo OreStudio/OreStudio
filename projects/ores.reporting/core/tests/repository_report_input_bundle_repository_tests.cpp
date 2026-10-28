@@ -75,7 +75,7 @@ TEST_CASE("create_and_find_report_input_bundle_by_instance_id", "[repository]") 
     const auto found = repo.find_by_instance_id(h.context(), instance_id);
 
     REQUIRE(found.has_value());
-    CHECK(found->id.value() == bundle.id.value());
+    CHECK(found->id == bundle.id);
     CHECK(found->tenant_id == tenant_id);
     CHECK(found->report_instance_id == instance_id);
     CHECK(found->definition_id == definition_id);

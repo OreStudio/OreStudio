@@ -1104,6 +1104,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_execution:read', 'View engine settings execution');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_execution:write', 'Create and modify engine settings execution');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_execution:delete', 'Delete engine settings execution');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_changes:read', 'View engine settings changes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::configuration_parameters:read', 'View configuration parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::configuration_parameters:write', 'Create and modify configuration parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::configuration_parameters:delete', 'Delete configuration parameters');
@@ -1746,6 +1747,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kinds:read',            'Read and list approval kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kinds:write',           'Create and update approval kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kinds:delete',          'Delete approval kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kind_parts:read',       'Read and list the parts of approval kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kind_parts:write',      'Create and update the parts of approval kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kind_parts:delete',     'Delete the parts of approval kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_states:read',   'Read and list approval request states');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_states:write',  'Create and update approval request states');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_states:delete', 'Delete approval request states');

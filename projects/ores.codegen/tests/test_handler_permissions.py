@@ -61,3 +61,22 @@ def test_a_code_missing_from_the_seeds_is_reported(tmp_path):
     assert [(path.split("/")[-1], code) for path, code in violations] == [
         ("currency_country_handler.hpp", dropped)
     ]
+
+
+def test_a_code_built_at_run_time_needs_a_seed_with_its_prefix(tmp_path):
+    """The engine settings proposal checks "reporting::engine_settings_" plus
+    its group code, so the literal is a prefix, and only a seed that starts
+    with it can satisfy the check."""
+    built = "reporting::engine_settings_*"
+    required = check.required_codes("reporting")
+    assert any(built in codes for codes in required.values())
+
+    seeded = check.seeded_codes()
+    partial = tmp_path / "iam_permissions_populate.sql"
+    partial.write_text(
+        "\n".join(f"'{code}'" for code in sorted(seeded)
+                  if not code.startswith("reporting::engine_settings_")),
+        encoding="utf-8",
+    )
+    reported = {code for _, code in check.check(seed_path=partial)}
+    assert built in reported

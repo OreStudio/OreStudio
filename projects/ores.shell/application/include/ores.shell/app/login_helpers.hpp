@@ -141,27 +141,27 @@ inline bool sign_in_again(ores::nats::service::nats_client& session,
         auto result = ores::nats::service::request_and_decode<iam::messaging::login_response>(
             session, iam::messaging::login_request::nats_subject, req);
         if (!result) {
-            BOOST_LOG_SEV(detail::login_lg(), error)
+            BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
                 << "Re-signing in as " << principal << " failed: the login answer could not be read";
             return false;
         }
         if (!result->success) {
-            BOOST_LOG_SEV(detail::login_lg(), error)
+            BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
                 << "Re-signing in as " << principal << " was refused: " << result->message;
             return false;
         }
         const auto party = complete_login(discarded, session, *result);
         if (!party) {
-            BOOST_LOG_SEV(detail::login_lg(), error)
+            BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
                 << "Re-signing in as " << principal
                 << " signed in but selected no party, so the session has no party scope";
             return false;
         }
-        BOOST_LOG_SEV(detail::login_lg(), info)
+        BOOST_LOG_SEV(detail::login_lg(), ores::logging::info)
             << "Signed in again as " << principal << " after the session's token was refused";
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(detail::login_lg(), error)
+        BOOST_LOG_SEV(detail::login_lg(), ores::logging::error)
             << "Re-signing in as " << principal << " failed: " << e.what();
         return false;
     }

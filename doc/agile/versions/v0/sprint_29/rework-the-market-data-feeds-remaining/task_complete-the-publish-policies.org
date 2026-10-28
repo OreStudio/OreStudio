@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/complete-the-publish-policies
-#+pr:
+#+pr: 4020
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4020][#4020]] | [marketdata] Complete the publish policies |
 
 * Review
 

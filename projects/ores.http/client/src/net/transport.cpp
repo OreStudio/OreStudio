@@ -25,6 +25,7 @@
 #include <boost/asio/ssl/error.hpp>
 #include <boost/asio/ssl/host_name_verification.hpp>
 #include <boost/asio/ssl/stream.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http/empty_body.hpp>
@@ -140,26 +141,50 @@ std::expected<response, failure> beast_transport::get(std::string_view url,
     if (!secure && u.scheme() != "http")
         return std::unexpected(
             failed(failure_kind::bad_url, url, "only http and https addresses are read"));
-    const std::string host(u.host());
+    // The address without the brackets of an IPv6 literal, which the resolver and the name
+    // check take; the Host header keeps the brackets.
+    const std::string host(u.host_address());
     if (host.empty())
         return std::unexpected(failed(failure_kind::bad_url, url, "the address names no host"));
+    const bool named = u.host_type() == boost::urls::host_type::name;
     const std::string port = u.has_port() ? std::string(u.port()) : (secure ? "443" : "80");
     std::string target(u.encoded_target());
     if (target.empty())
         target = "/";
 
     bhttp::request<bhttp::empty_body> request{bhttp::verb::get, target, 11};
-    request.set(bhttp::field::host, u.has_port() ? host + ":" + port : host);
+    request.set(bhttp::field::host, std::string(u.encoded_host_and_port()));
     request.set(bhttp::field::user_agent, options_.user_agent);
     request.set(bhttp::field::accept, "*/*");
 
     const auto deadline = std::chrono::steady_clock::now() + limits.timeout;
     asio::io_context io;
     beast::error_code ec;
+
+    // A stream's deadline does not cover the resolver, so a timer on the same deadline
+    // cancels a lookup that takes too long.
     tcp::resolver resolver(io);
-    const auto endpoints = resolver.resolve(host, port, ec);
-    if (ec)
-        return std::unexpected(failed(failure_kind::network, url, ec.message()));
+    asio::steady_timer timer(io, deadline);
+    tcp::resolver::results_type endpoints;
+    beast::error_code resolved;
+    bool timed_out = false;
+    resolver.async_resolve(
+        host, port, [&](beast::error_code e, tcp::resolver::results_type results) {
+            resolved = e;
+            endpoints = std::move(results);
+            timer.cancel();
+        });
+    timer.async_wait([&](beast::error_code e) {
+        if (!e) {
+            timed_out = true;
+            resolver.cancel();
+        }
+    });
+    io.run();
+    if (timed_out)
+        return std::unexpected(failed(failure_kind::timeout, url, "the host name took too long"));
+    if (resolved)
+        return std::unexpected(failed(failure_kind::network, url, resolved.message()));
 
     if (!secure) {
         beast::tcp_stream stream(io);
@@ -168,6 +193,7 @@ std::expected<response, failure> beast_transport::get(std::string_view url,
                 run(io, [&](auto handler) { stream.async_connect(endpoints, std::move(handler)); }))
             return std::unexpected(failed(kind_of(connected), url, connected.message()));
         auto out = exchange(io, stream, stream, request, limits, deadline, url);
+        // The answer is read; a failure to close the connection changes nothing.
         stream.socket().shutdown(tcp::socket::shutdown_both, ec);
         return out;
     }
@@ -182,7 +208,8 @@ std::expected<response, failure> beast_transport::get(std::string_view url,
         return std::unexpected(failed(failure_kind::tls, url, ec.message()));
 
     asio::ssl::stream<beast::tcp_stream> stream(io, ctx);
-    if (!SSL_set_tlsext_host_name(stream.native_handle(), host.c_str()))
+    // A server name goes in the handshake only for a name: RFC 6066 forbids an address.
+    if (named && !SSL_set_tlsext_host_name(stream.native_handle(), host.c_str()))
         return std::unexpected(failed(failure_kind::tls, url, "the host name cannot be sent"));
     stream.set_verify_callback(asio::ssl::host_name_verification(host));
 
@@ -195,11 +222,10 @@ std::expected<response, failure> beast_transport::get(std::string_view url,
     if (const auto shaken = run(io, [&](auto handler) {
             stream.async_handshake(asio::ssl::stream_base::client, std::move(handler));
         }))
-        return std::unexpected(failed(
-            kind_of(shaken) == failure_kind::timeout ? failure_kind::timeout : failure_kind::tls,
-            url,
-            shaken.message()));
+        return std::unexpected(failed(kind_of(shaken), url, shaken.message()));
     auto out = exchange(io, stream, layer, request, limits, deadline, url);
+    // The answer is read; a server that closes without a TLS goodbye, as many do, changes
+    // nothing.
     layer.expires_at(deadline);
     run(io, [&](auto handler) { stream.async_shutdown(std::move(handler)); });
     return out;
@@ -210,6 +236,11 @@ std::string redacted(std::string_view url) {
     if (!parsed)
         return std::string(url);
     boost::urls::url u(*parsed);
+    if (u.has_userinfo()) {
+        u.set_user("***");
+        if (u.has_password())
+            u.set_password("***");
+    }
     auto params = u.params();
     for (auto it = params.begin(); it != params.end(); ++it) {
         const auto param = *it;

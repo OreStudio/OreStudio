@@ -112,8 +112,10 @@ struct reply {
 /// certificate.
 class local_server {
 public:
-    explicit local_server(reply r, std::optional<certificate> cert = std::nullopt)
-        : acceptor_(io_, tcp::endpoint(asio::ip::make_address("127.0.0.1"), 0)) {
+    explicit local_server(reply r,
+                          std::optional<certificate> cert = std::nullopt,
+                          const std::string& address = "127.0.0.1")
+        : acceptor_(io_, tcp::endpoint(asio::ip::make_address(address), 0)) {
         port_ = acceptor_.local_endpoint().port();
         thread_ = std::thread([this, r = std::move(r), cert = std::move(cert)] {
             boost::system::error_code ec;
@@ -240,6 +242,27 @@ TEST_CASE("an_address_that_is_not_http_or_https_is_refused", "[net][transport]")
 
     CHECK(sut.get("ftp://example.org/x").error().kind == failure_kind::bad_url);
     CHECK(sut.get("not an address").error().kind == failure_kind::bad_url);
+}
+
+TEST_CASE("an_ipv6_literal_host_is_read", "[net][transport]") {
+    std::unique_ptr<local_server> server;
+    try {
+        server = std::make_unique<local_server>(reply{.body = "six"}, std::nullopt, "::1");
+    } catch (const std::exception&) {
+        SKIP("This host has no IPv6 loopback");
+    }
+    beast_transport sut;
+
+    const auto out = sut.get(server->url("http", "[::1]"));
+
+    REQUIRE(out.has_value());
+    CHECK(out->body == "six");
+}
+
+TEST_CASE("the_user_and_password_of_an_address_are_masked", "[net][transport]") {
+    CHECK(redacted("https://alice:s3cret@api.example.org/series?from=2026-10-01") ==
+          "https://***:***@api.example.org/series?from=2026-10-01");
+    CHECK(redacted("https://alice@api.example.org/series") == "https://***@api.example.org/series");
 }
 
 TEST_CASE("a_secret_in_the_query_is_masked_and_the_rest_kept", "[net][transport]") {

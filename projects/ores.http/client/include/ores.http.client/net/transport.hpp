@@ -81,8 +81,13 @@ public:
  * @brief A transport over the network, on Boost.Beast and Boost.Asio, with OpenSSL for TLS.
  *
  * Over https it checks the server's certificate against the trusted authorities and its
- * name against the host asked for, and refuses either that does not match. It follows no
- * redirect: a caller that wants one reads the status and asks again.
+ * name against the host asked for, and refuses either that does not match. One deadline
+ * bounds the whole request, the lookup of the host name included. It follows no redirect,
+ * and an answer of any status is a response: a caller reads the status.
+ *
+ * Without trusted_authorities it trusts the authorities OpenSSL's default paths name, which
+ * on Linux are the system's. Windows and macOS keep theirs elsewhere, so a deployment there
+ * names a PEM file.
  */
 class ORES_HTTP_CLIENT_EXPORT beast_transport final : public transport {
 public:
@@ -103,9 +108,10 @@ private:
 };
 
 /**
- * @brief @p url with the value of every query parameter that may hold a secret masked, so it
- * can be logged or stored: a parameter whose name holds "key", "token", "secret" or
- * "password", in any case.
+ * @brief @p url with what may hold a secret masked, so it can be logged or stored: the user
+ * and password of the address, and the value of every query parameter whose name holds
+ * "key", "token", "secret" or "password", in any case. A key put in the path or the
+ * fragment is not found: an adapter passes a key as a query parameter.
  */
 [[nodiscard]] ORES_HTTP_CLIENT_EXPORT std::string redacted(std::string_view url);
 

@@ -97,7 +97,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The host name lookup is outside the deadline | transport.cpp | Accept | Resolved asynchronously; a timer on the same deadline cancels it. |
+| 2 | An IPv6 literal keeps its brackets | transport.cpp | Accept | Resolve and verify on host_address; the Host header keeps the brackets; test added. |
+| 3 | SNI is sent for an address | transport.cpp | Accept | Sent only when the host is a name. |
+| 4 | Userinfo is not masked | transport.cpp | Accept | User and password masked; test added. |
+| 5 | Fragments and path keys are not masked | transport.hpp | Accept | Scope stated on redacted. |
+| 6 | The system trust store on Windows and macOS | transport.hpp | Accept | Documented: name a PEM file there. |
+| 7 | The handshake mapping duplicates kind_of | transport.cpp | Accept | Uses kind_of alone. |
+| 8 | The header size limit | transport.hpp | Note | Beast's default of 8 KB is enough for the APIs in view. |
+| 9 | Cleanup errors are ignored | transport.cpp | Accept | Commented. |
+| 10 | Any status is a response | transport.hpp | Accept | Stated; the adapter checks the status. |
 
 * Result
 

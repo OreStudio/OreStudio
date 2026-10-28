@@ -71,6 +71,38 @@ cannot be observed, let alone measured, until the build gets past the errors in
 front of it. The Windows job also reports =nats-server did not become ready
 within 30s=, which is its own problem and does not stop the compile.
 
+* What the Windows job says next
+
+With the environment read fixed, the 2026-10-28 run
+[[https://github.com/OreStudio/OreStudio/actions/runs/40722677906][40722677906]]
+gets past it and stops somewhere else, in each of its two compilers.
+
+MSVC stops on a unity-build name clash in this project's own header:
+
+#+begin_example
+ores.nats/service/retry.hpp(56): warning C4459: declaration of 'logger_name'
+hides global declaration  -> error C2220
+note: see declaration of 'ores::nats::service::`anonymous-namespace'::logger_name
+#+end_example
+
+The local in =retry_with_backoff= is now named for the retry, so it hides
+nothing.
+
+clang-cl stops inside third-party headers, on a preprocessor error rather than
+on anything this project wrote:
+
+#+begin_example
+vcpkg_installed/x64-windows/include/rfl/Literal.hpp:413:75: error: too few
+arguments provided to function-like macro invocation
+(same in rfl/Variant.hpp:31 and rfl/Generic.hpp:211)
+#+end_example
+
+That is a separate failure with a separate owner: it is an =rfl=/clang-cl
+interaction, it appears in headers the project does not own, and nothing in the
+configuration document is involved. It is recorded here so the split is not
+blamed for it, and it wants its own task before the clang-cl job can prove
+anything about this one.
+
 * Plan
 
 ** The order of work

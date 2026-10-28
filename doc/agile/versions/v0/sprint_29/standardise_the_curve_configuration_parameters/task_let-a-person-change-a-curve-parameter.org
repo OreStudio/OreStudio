@@ -29,11 +29,11 @@ enters the system, because the store's guard does not cover the curve tables yet
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Building and verifying the edit path.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Verify against the running environment, then raise the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -96,9 +96,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Browser suite | 2327 tests, 187 files | =npm test --workspace @ores/web= | 4db0712d8a |
+| BFF suite | 1140 tests, 83 files | =npm test --workspace @ores/bff= | 4db0712d8a |
+| Tests this change adds | 3 BFF and 1 browser | the same two commands | 4db0712d8a |
+| Families the payload names, and the one it fills | 34 named, 1 filled | the BFF test asserts the payload's keys | 4db0712d8a |
+| Rows the save versioned, by table | curve_definitions 1, yield_curve_configs 2, curve_configurations 2 | =select max(version) from each table= | 4db0712d8a |
 
 * Notes
+
+- *The document states every family.* A save names all thirty-four families and
+  leaves the untouched ones empty. The service reads the document as a whole, so
+  a family the payload omits is a document it cannot decode, and the refusal is a
+  bare =bad_request= with nothing in the log. The empty families are not written,
+  so their rows keep their versions: a save that changed one leaf of one curve
+  left =curve_definitions= at version 1 and moved =yield_curve_configs= and the
+  header to version 2.
 
 - *The save states its claim per row.* =curve_configuration_repository::write=
   derives its claim from the row's current version, so a stale client would be
@@ -146,3 +158,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A person changes a curve parameter and saves it. The page offers *Edit* to a
+person holding =refdata::curve_configurations:write=, turns each leaf into the
+shared control, marks and counts the changes, and asks for the reason the section
+needs. The save states the version the page read.
+
+Against the running environment, on a freshly provisioned database: a change to
+one curve's interpolation answered 204, moved the configuration from version 1 to
+2, changed that curve's leaf and no other, and put a version on the history that
+carries the reason and the commentary. The other families stayed at version 1. A
+save claiming the old version was refused 409 with the words the page shows, and a
+value outside the leaf's set was refused 400 naming the leaf and the values it
+accepts. A person without the write code was refused 403 at the door.
+

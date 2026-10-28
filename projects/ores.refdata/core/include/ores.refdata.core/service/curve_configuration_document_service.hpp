@@ -55,8 +55,8 @@ public:
      * not version the families the caller did not read.
      */
     void save(messaging::curve_configuration_document v,
-              std::string reason_code,
-              std::string commentary);
+              std::string reason_code = {},
+              std::string commentary = {});
 
     /**
      * @brief The document whose header has @p id.

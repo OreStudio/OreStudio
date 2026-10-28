@@ -365,9 +365,14 @@ describe('changing a curve configuration', () => {
         };
         expect(payload.reason_code).toBe('common.correction');
         expect(payload.commentary).toBe('The interpolation is wrong.');
-        // Only the header and the family it touched, so the rows the screen did
-        // not draw keep their versions.
-        expect(Object.keys(payload.document).sort()).toEqual(['config', 'yield_curves']);
+        // Every family is named, empty where nothing changed: the service reads
+        // the document whole, and writes only the rows it is sent.
+        expect(Object.keys(payload.document)).toContain('config');
+        expect(Object.keys(payload.document)).toHaveLength(34);
+        const empty = Object.entries(payload.document).filter(
+            ([family, rows]) => family !== 'config' && family !== 'yield_curves',
+        );
+        expect(empty.every(([, rows]) => Array.isArray(rows) && rows.length === 0)).toBe(true);
         const rows = payload.document['yield_curves'] as Record<string, unknown>[];
         expect(rows).toHaveLength(1);
         expect(rows[0]?.['interpolation_method']).toBe('Cubic');

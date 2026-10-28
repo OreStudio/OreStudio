@@ -359,6 +359,50 @@ function entryOf(
     };
 }
 
+/**
+ * Every family a curve configuration document carries.
+ *
+ * A save states each one, empty where the screen changed nothing: the service
+ * reads the document as a whole, so a family it does not name is a document it
+ * cannot read. The families left empty are not written, so their rows keep their
+ * versions.
+ */
+const DOCUMENT_FAMILIES = [
+    'sections',
+    'definitions',
+    'yield_curves',
+    'equity_curves',
+    'inflation_curves',
+    'default_curves',
+    'commodity_curves',
+    'fx_volatilities',
+    'yield_volatilities',
+    'base_correlations',
+    'correlations',
+    'report_configurations',
+    'cds_volatilities',
+    'cds_volatility_terms',
+    'volatility_configs',
+    'inflation_cap_floor_volatilities',
+    'swaption_volatilities',
+    'cap_floor_volatilities',
+    'parametric_smiles',
+    'parametric_smile_parameters',
+    'equity_volatilities',
+    'commodity_volatilities',
+    'bond_future_volatilities',
+    'global_reports',
+    'commodity_price_segments',
+    'default_curve_configurations',
+    'seasonality_factors',
+    'securities',
+    'intraday_power_curves',
+    'bootstrap_configs',
+    'segments',
+    'segment_curves',
+    'quotes',
+] as const;
+
 /** The document vector one entity's rows are read from, or the empty name. */
 function vectorByEntity(): ReadonlyMap<string, string> {
     const found = new Map<string, string>();
@@ -691,6 +735,7 @@ export function registerCurveConfigurationRoutes(
             );
         }
         const partial: Record<string, unknown> = { config: header };
+        for (const family of DOCUMENT_FAMILIES) partial[family] = [];
         for (const [vector, rows] of touched) partial[vector] = rows;
         await saveDocument(session, partial, body.reasonCode, body.commentary);
         return reply.code(204).send();

@@ -2,18 +2,18 @@
 :ID: 6F8D224E-C71E-4902-AE18-A43850F6245B
 :END:
 #+title: Task: Get clang-cl past rfl's macros
-#+description: The windows-clang job fails inside rfl's own headers, before this project's code matters: 'too few arguments provided for function-like macro invocation' in rfl/Literal.hpp:413, rfl/Variant.hpp:31 and rfl/Generic.hpp:211. It is a clang-cl/preprocessor interaction with a third-party library, and it blocks the same nightly the configuration document split needs to prove itself.
+#+description: The windows-clang job fails inside rfl's own headers: 'too few arguments provided for function-like macro invocation'. The macro is Windows.h's min/max, which breaks std::numeric_limits<T>::max(); NOMINMAX removes it. It blocks the same nightly the configuration document split needs to prove itself.
 #+type: task
 #+level: s1
 #+filetags: :fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/get-clang-cl-past-rfls-macros
 #+pr: 4013
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,18 +21,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 The windows-clang job compiles this project's code again, so a change can be
-judged by both Windows compilers rather than one. The failure it stops on is in
-a third-party library's own macros, ahead of anything this project wrote.
+judged by both Windows compilers rather than one. The failure it stops on is
+inside a third-party library's own headers, ahead of anything this project
+wrote.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Fixed in the root =CMakeLists.txt=; no Windows job has run it yet. |
+| Waiting on   | The next nightly-windows run.          |
+| Next         | Read the next error, in this project's code or in another header. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -61,20 +62,49 @@ vcpkg_installed/x64-windows/include/rfl/Generic.hpp:211:73: (same)
 
 "Too few arguments provided to function-like macro invocation" is a
 preprocessor complaint: a macro is invoked with fewer arguments than it
-declares. Under clang-cl the preprocessor is the conforming one, so a variadic
-macro that relies on MSVC's traditional leniency expands differently.
+declares.
 
-** What to try, in order
+** What the macros are
 
-1. Read the three macro definitions and the invocations the compiler points at.
-   The error names the invocation site, so the macro and the argument list are
-   both in the message's context.
-2. Establish whether a newer =rfl= fixes it. If upstream has the fix, the work
-   is a version bump and a rebuild, not a patch to a vendored header.
-3. If the two compilers need different preprocessing, say which and why in this
-   page before changing anything. Adding a flag to make the macros expand is
-   the outcome this task exists to avoid, and the project has a recorded rule
-   about suppressing diagnostics rather than fixing them.
+The compiler says which macro, and the answer is not in rfl. The full log of the
+2026-10-28 run
+[[https://github.com/OreStudio/OreStudio/actions/runs/40734148623][40734148623]]
+names both the definition and the expansion:
+
+#+begin_example
+rfl/Literal.hpp:413:75: error: too few arguments provided to
+  function-like macro invocation
+  413 | static_assert(sizeof...(fields_) <= std::numeric_limits<ValueType>::max(),
+...\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h:193:9: note:
+  macro 'max' defined here
+  193 | #define max(a,b) (((a) > (b)) ? (a) : (b))
+#+end_example
+
+=minwindef.h:197= defines =min= the same way, and that is what stops
+=rfl/Generic.hpp= on =std::numeric_limits<int>::min()=. The failing macro is
+=Windows.h='s =min=/=max=, and the invocation it breaks is
+=std::numeric_limits<T>::max()= with no arguments.
+
+The earlier reading of this page -- that a variadic macro relies on MSVC's
+traditional leniency -- was wrong. Nothing in rfl is variadic, and the failure
+reproduces with clang on Linux given the two macros and a header that has
+already pulled in =<limits>=.
+
+Include order makes it a unity-build problem. Something earlier in the unit
+includes =<windows.h>=, which defines both macros after =<limits>= has already
+undone them, and rfl's headers are reached afterwards through
+=ores.nats/domain/wire_codec.hpp=.
+
+** The fix
+
+=Windows.h= defines =min= and =max= only when =NOMINMAX= is not defined, so the
+root =CMakeLists.txt= defines it for every Windows target, beside the
+=WIN32_LEAN_AND_MEAN= it already sets. That removes the macros at their source.
+It suppresses no diagnostic, and no flag is added to make a macro expand.
+
+Both Windows compilers can reach this: the MSVC job stopped earlier, in
+=ores.database=, so it had not compiled the units that fail. The definition is
+therefore not clang-specific.
 
 ** What it is not
 
@@ -87,3 +117,22 @@ apart so neither is blamed for the other.
 
 - Found while clearing the errors in front of C1202; recorded there first so
   the split was not blamed for it.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Errors the clang leg stops on | 4, all `numeric_limits<T>::max()` or `min()` under the `minwindef.h` macro | `gh run view --job 122980960595 --log` | `0d97232d7f` |
+| Where the MSVC leg stopped in the same run | `ores.database` unity, C4459 in `codec.cpp` -- before the failing units | `gh run view --job 122980960175 --log` | `0d97232d7f` |
+
+* Result
+
+The root =CMakeLists.txt= defines =NOMINMAX= on Windows, beside
+=WIN32_LEAN_AND_MEAN=. =cmake -S . -B build/output/linux-clang-release-ninja=
+configures clean; the definition sits inside =if(WIN32)=, so no Linux build
+changes. No Windows job has run it yet, so the acceptance's first line is
+unproven until the next nightly-windows.
+
+The failure is also recorded where a reader looks for it rather than in this
+page: [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] now states why both
+Windows definitions exist.

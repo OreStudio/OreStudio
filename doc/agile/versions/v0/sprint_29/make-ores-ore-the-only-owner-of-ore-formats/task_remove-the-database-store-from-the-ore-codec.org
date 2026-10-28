@@ -26,11 +26,11 @@ The ORE codec holds no database session and calls no other component's repositor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -99,3 +99,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as #3990. The codec holds no database session: the database import and
+export are gone, and the layout of an ORE input directory lives in
+=xml/run_package.hpp=, where the rest of the ORE package knowledge is.
+
+The declared libraries fall from 22 to 19: =reporting.core=, =analytics.core=
+and =scheduler.api= are no longer loaded. =ores.database= is no longer a direct
+link; it still arrives through =ores.refdata.core=, until the conventions bundle
+moves, and through the profile's =nats= and =service=, which the story's Notes
+count as a finding of their own.
+
+Proven: the ore suites pass, no header or source includes the three removed
+libraries, and the component regenerates to exactly what is committed.

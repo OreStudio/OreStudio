@@ -44,9 +44,40 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The first slice loads the ECB through Frankfurter, and nothing else. Each step
+ends in a check.
+
+1. Read the terms. Frankfurter (MIT) and the ECB disclaimer were read on
+   2026-10-28 and recorded on the sources page. Done.
+2. Model the five entities in =ores.marketdata/modeling= and generate them:
+   =publisher=, =publisher_series=, =quote_load=, =quote_fetch= and
+   =published_quote=. =published_quote= is a hypertable on =ts= with a one year
+   chunk, after the pattern of =tick=. Check: the schema creates, and pgTAP
+   tests pass.
+3. Seed the ECB publisher, with its terms URL, =terms_read_at= and credit,
+   and its series mapping for the pairs the ECB carries. Check: a test reads
+   the mapping.
+4. Add an HTTPS GET for the fetcher. The only outbound client today,
+   =ores.storage='s =http_client=, takes =http://= only. OpenSSL and
+   Boost.Beast are already linked, so this adds no dependency. The fetcher
+   takes the transport as an interface, so its tests run on stored payloads
+   with no network. Check: a test against a stored body.
+5. Write the Frankfurter fetcher: =/v2/providers/ecb/rates?from=&to== for one
+   provider, never the blended rate. Check: tests on stored payloads,
+   including a missing day and an empty range.
+6. Write the loader behind =marketdata.v1.ops.seed_published_quotes=, with the
+   permission =marketdata::published_quotes:seed=. It records the load and the
+   fetch, keeps the raw body in =ores.storage= with its SHA-256, skips a day
+   already loaded unless asked to refresh, and refuses a publisher with no
+   =terms_read_at=. Check: a service test seeds twice and counts once.
+7. Add the shell command =quotes seed --publisher ecb --from --to
+   [--refresh]=. Check: a live run against the hosted API.
+8. Write the reader: =latest(item, on_or_before)= and =window(item, to, days)=,
+   each with its provenance, and a cross rate marked derived. Check: unit
+   tests, and one that reads with no calibration present.
+
+Not in this slice: the other publishers, the daily job, the calibration task,
+and the acceptance screen of [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]].
 
 * Measurements
 

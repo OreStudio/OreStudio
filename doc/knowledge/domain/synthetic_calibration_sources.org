@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:calibration:
 #+created: 2026-10-23
-#+updated: 2026-10-23
+#+updated: 2026-10-28
 
 * Summary
 
@@ -42,8 +42,9 @@ On 2026-10-23 the pages below were read from the official site. The rows of the 
 | New York Fed content and reference rates | the New York Fed terms page | read |
 | Bank of England | a search summary of the Bank's legal page, not the page | not read |
 | US Treasury | the feed page and an archived copy of the old policy | not read |
-| Frankfurter | the repository and the documentation | licence page not read |
-| Each Frankfurter provider | the list of terms pages in =/v2/providers= | not read, and some have none |
+| Frankfurter | the =LICENSE= file of the repository and the documentation, on 2026-10-28 | read |
+| The ECB as a Frankfurter provider | the ECB disclaimer page that =/v2/providers= names, on 2026-10-28 | read |
+| Each other Frankfurter provider | the list of terms pages in =/v2/providers= | not read; 65 of 106 have none |
 
 A source in the last four rows blocks the storing of its values until its terms page is read and the result is written here.
 
@@ -58,7 +59,11 @@ Three rules keep the provenance honest:
 - The hosted service is a convenience. The step reads the address from a setting, so a team can point it at its own Frankfurter in Docker without a change of code.
 - Frankfurter is the route for FX only. The Treasury curve and the overnight rates are read from their own sources.
 
-Two things are not settled. The licence page of Frankfurter was not read, because its address redirects. The terms of each provider are the ones its own page states.
+What the terms say, read on 2026-10-28:
+
+- Frankfurter is under the MIT licence, "Copyright (c) Hakan Ensari". Its documentation says that storing daily observations locally "is encouraged to keep API traffic light", that there are no quotas but requests are rate-limited, and that "direct queries to individual provider endpoints remain subject to each provider's terms".
+- For the ECB, =/v2/providers= names the ECB disclaimer page. It allows free use of the information when it "must appear accurately and the ECB must be cited as the source", and a change to the information "must be stated explicitly". This agrees with the statistics usage policy above. A cross rate computed from ECB rates is such a change, so it is marked derived and names its inputs.
+- Of the 106 providers that =/v2/providers= lists, 65 give no terms page. A provider without one is not loaded until its own site is read.
 
 ** What this page does not settle
 

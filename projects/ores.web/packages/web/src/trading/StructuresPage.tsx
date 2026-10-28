@@ -19,21 +19,14 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import { structures, type StructureListRow } from '../api/structures.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Crumbs } from '../refdata/shared.js';
-import { ScreenFrame } from '../shell/ScreenFrame.js';
+import { RecordList, type ListSource } from '../refdata/RecordList.js';
+import { Link } from 'react-router';
 import { PATHS } from '../shell/paths.js';
-import { Button, Input, Select, Tag } from '../ui/Primitives.js';
-
-/** How long the search waits after the last keystroke before it asks the server. */
-const SEARCH_DELAY_MS = 250;
-
-/** How many structures one page holds. */
-const PAGE_SIZE = 25;
+import { Button, Tag } from '../ui/Primitives.js';
 
 /** The path of a structure, by the reference the desk knows it by. */
 export function structurePathFor(row: {
@@ -43,215 +36,143 @@ export function structurePathFor(row: {
     return `${PATHS.structures}/${encodeURIComponent(row.reference === '' ? row.id : row.reference)}`;
 }
 
-/** What a row holds, in the words the prototype uses. */
-function insideLabel(row: StructureListRow, t: (key: string, values?: Record<string, string>) => string): string {
-    const parts: string[] = [];
-    if (row.inner_structures > 0) {
-        parts.push(
-            t('trading.structures.innerCount', { count: String(row.inner_structures) }),
-        );
-    }
-    if (row.legs > 0) {
-        parts.push(t('trading.structures.legCount', { count: String(row.legs) }));
-    }
-    return parts.join(' · ');
-}
-
 /**
  * The structures a tenant holds.
  *
  * A structure is a tree: the deal the customer sees at the root, with strategies,
- * packages and trades inside. The list draws the trees rather than the rows, so a
- * structure that is inside another is indented under it and a person reads the
- * composition before they open anything.
+ * packages and trades inside. The list is the application's own, so its search,
+ * its filter, its paging and its footer are the ones every list screen has; what
+ * this screen adds is the indent that draws a tree, and the columns that say what
+ * a row holds and what it means.
  */
 export function StructuresPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [search, setSearch] = useSearchParams();
-    const [typed, setTyped] = useState(search.get('search') ?? '');
-    const [kind, setKind] = useState(search.get('kind') ?? '');
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            const next = new URLSearchParams(search);
-            if (typed === '') {
-                next.delete('search');
-            } else {
-                next.set('search', typed);
-            }
-            setSearch(next, { replace: true });
-        }, SEARCH_DELAY_MS);
-        return () => clearTimeout(timer);
-        // The address is the state the page reads, so the timer is reset by it.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [typed]);
-
-    const page = useQuery({
-        queryKey: ['structures', 'list', typed, kind],
-        queryFn: () =>
-            structures.list({ offset: 0, limit: PAGE_SIZE, search: typed, kind }),
-    });
-
-    const rows = page.data?.rows ?? [];
-    // The page's own name closes the trail, as every list screen's does.
-    const trail = [
-        { label: t('shell.menu.home'), to: '/' },
-        { label: t('shell.menu.trading'), to: PATHS.trading },
-        { label: t('trading.structures.title') },
-    ];
+    const source: ListSource<StructureListRow> = {
+        key: 'structures',
+        read: (page) =>
+            structures.list({
+                offset: page.offset,
+                limit: page.limit,
+                search: page.search,
+                kind: page.filters['kind'] ?? '',
+            }),
+        search: true,
+        sortable: [],
+        filters: [
+            {
+                kind: 'choice',
+                id: 'kind',
+                label: t('trading.structures.kind'),
+                all: t('trading.structures.allKinds'),
+                choices: KINDS.map((kind) => ({ value: kind, label: kind })),
+            },
+        ],
+        mayAdd: false,
+    };
 
     return (
-        <ScreenFrame
-            trail={<Crumbs parts={trail} />}
+        <RecordList
+            source={source}
             title={t('trading.structures.title')}
-            description={t('trading.structures.lead')}
-        >
-            <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative min-w-72 flex-1">
-                        <Input
-                            type="search"
-                            value={typed}
-                            placeholder={t('trading.structures.search')}
-                            aria-label={t('trading.structures.search')}
-                            onChange={(event) => setTyped(event.target.value)}
-                        />
-                    </div>
-                    <Select
-                        aria-label={t('trading.structures.kindFilter')}
-                        value={kind}
-                        onChange={(event) => {
-                            setKind(event.target.value);
-                            const next = new URLSearchParams(search);
-                            if (event.target.value === '') {
-                                next.delete('kind');
-                            } else {
-                                next.set('kind', event.target.value);
-                            }
-                            setSearch(next, { replace: true });
-                        }}
-                    >
-                        <option value="">{t('trading.structures.allKinds')}</option>
-                        {(page.data?.kinds ?? []).map((code) => (
-                            <option key={code} value={code}>
-                                {code}
-                            </option>
-                        ))}
-                    </Select>
-                    <Button
-                        type="button"
-                        variant="primary"
-                        onClick={() => {
-                            void navigate(PATHS.groupStructures);
-                        }}
-                    >
-                        {t('trading.group.open')}
-                    </Button>
-                </div>
-
-                <section className="overflow-hidden rounded-md border border-line">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-line bg-surface-2 text-xs uppercase tracking-wide text-ink-faint">
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.identifier')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.kind')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.template')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.counterparty')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.inside')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.confirms')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structures.priced')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {rows.length === 0 ? (
-                                <tr>
-                                    <td
-                                        className="px-3 py-3 text-sm text-ink-muted"
-                                        colSpan={7}
-                                    >
-                                        {page.isPending
-                                            ? t('common.loading')
-                                            : t('trading.structures.none')}
-                                    </td>
-                                </tr>
-                            ) : (
-                                rows.map((row) => (
-                                    <tr
-                                        key={row.id}
-                                        className="border-b border-line last:border-0 hover:bg-surface-2"
-                                    >
-                                        <td className="px-3 py-2 font-mono">
-                                            <span
-                                                style={{ paddingLeft: `${row.depth * 18}px` }}
-                                                className="inline-block"
-                                            >
-                                                {row.depth > 0 ? '└ ' : ''}
-                                                <Link
-                                                    className="text-accent hover:text-accent-bright"
-                                                    to={structurePathFor(row)}
-                                                >
-                                                    {row.reference === ''
-                                                        ? row.id
-                                                        : row.reference}
-                                                </Link>
-                                            </span>
-                                        </td>
-                                        <td className="px-3 py-2">
-                                            <Tag tone={row.kind === 'Package' ? 'muted' : 'neutral'}>
-                                                {row.kind}
-                                            </Tag>
-                                        </td>
-                                        <td className="px-3 py-2 text-ink">
-                                            {row.template_code === '' ? '—' : row.template_code}
-                                        </td>
-                                        <td className="px-3 py-2 text-ink">
-                                            {row.counterparty_id === '' ? (
-                                                row.counterparty_name
-                                            ) : (
-                                                <Link
-                                                    className="text-accent hover:text-accent-bright"
-                                                    to={`${PATHS.counterparties}/${row.counterparty_id}`}
-                                                >
-                                                    {row.counterparty_name}
-                                                </Link>
-                                            )}
-                                        </td>
-                                        <td className="px-3 py-2 text-ink-muted">
-                                            {insideLabel(row, t)}
-                                        </td>
-                                        <td className="px-3 py-2 text-ink-muted">
-                                            {row.confirms}
-                                        </td>
-                                        <td className="px-3 py-2 text-ink-muted">{row.prices}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </section>
-
-                <p className="text-xs text-ink-faint">
-                    {t('trading.structures.showing', {
-                        shown: String(Math.min(rows.length, page.data?.total ?? 0)),
-                        total: String(page.data?.total ?? 0),
-                    })}
-                </p>
-            </div>
-        </ScreenFrame>
+            lead={t('trading.structures.lead')}
+            crumbs={[
+                { label: t('shell.menu.home'), to: '/' },
+                { label: t('shell.menu.trading'), to: PATHS.trading },
+                { label: t('trading.structures.title') },
+            ]}
+            keyOf={(row) => row.id}
+            pathOf={(row) => structurePathFor(row)}
+            actions={
+                <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                        void navigate(PATHS.groupStructures);
+                    }}
+                >
+                    {t('trading.group.open')}
+                </Button>
+            }
+            columns={[
+                {
+                    id: 'reference',
+                    header: t('trading.structures.identifier'),
+                    mono: true,
+                    cell: (row) => (
+                        <span style={{ paddingLeft: `${row.depth * 18}px` }} className="inline-block">
+                            {row.depth > 0 ? '└ ' : ''}
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={structurePathFor(row)}
+                            >
+                                {row.reference === '' ? row.id : row.reference}
+                            </Link>
+                        </span>
+                    ),
+                },
+                {
+                    id: 'kind',
+                    header: t('trading.structures.kind'),
+                    cell: (row) => (
+                        <Tag tone={row.kind === 'Package' ? 'muted' : 'neutral'}>{row.kind}</Tag>
+                    ),
+                },
+                {
+                    id: 'template',
+                    header: t('trading.structures.template'),
+                    cell: (row) => (row.template_code === '' ? '—' : row.template_code),
+                },
+                {
+                    id: 'counterparty',
+                    header: t('trading.structures.counterparty'),
+                    cell: (row) =>
+                        row.counterparty_id === '' ? (
+                            row.counterparty_name
+                        ) : (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.counterparties}/${row.counterparty_id}`}
+                            >
+                                {row.counterparty_name}
+                            </Link>
+                        ),
+                },
+                {
+                    id: 'inside',
+                    header: t('trading.structures.inside'),
+                    cell: (row) => {
+                        const parts: string[] = [];
+                        if (row.inner_structures > 0) {
+                            parts.push(
+                                t('trading.structures.innerCount', {
+                                    count: String(row.inner_structures),
+                                }),
+                            );
+                        }
+                        if (row.legs > 0) {
+                            parts.push(
+                                t('trading.structures.legCount', { count: String(row.legs) }),
+                            );
+                        }
+                        return parts.join(' · ');
+                    },
+                },
+                {
+                    id: 'confirms',
+                    header: t('trading.structures.confirms'),
+                    cell: (row) => row.confirms,
+                },
+                {
+                    id: 'priced',
+                    header: t('trading.structures.priced'),
+                    cell: (row) => row.prices,
+                },
+            ]}
+        />
     );
 }
+
+/** The kinds a structure can be, as the grouping screen offers them. */
+const KINDS = ['Package', 'Strategy', 'Typed', 'Dynamic'];

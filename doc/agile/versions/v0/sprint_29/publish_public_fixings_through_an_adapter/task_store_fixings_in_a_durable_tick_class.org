@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/store-fixings-in-a-durable-tick-class
+#+pr: 3987
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,26 +26,36 @@ A fixing published yesterday, and every day of a backfill, reaches the store and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
 
-- A class policy keyed by instrument type says whether a class is durable; the FX fixing is durable and every other class keeps today's rules.
+- The class of a tick follows from its item: an index's tick is a durable fixing, and every quote keeps today's rules. (Amended on 2026-10-28: a policy table keyed by instrument type waits for a second durable class; see Notes.)
 - A durable tick skips the age gate; a backfill sent oldest first for each vendor id passes the order rule.
-- Durable ticks go to their own points table, of the shape of the ticks table, with no retention policy.
+- Fixings go to the fixings table, =market_fixing=, which has no retention policy, and never to the ticks table. (Amended on 2026-10-28: the durable table already existed.)
 - A test sends a fixing a day old and a ten-day backfill through the ingest and reads them all back; a live quote of the same age is still dropped.
 - A durable tick whose vendor id and vendor time are already stored is skipped, so a backfill that overlaps the store after a restart adds no row; a test shows it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Mark each adapter tick with its class. The translator holds the items of its
+   mappings that are indices (=oresmd_uri_codec::read_index=), and a tick of one
+   of them is a fixing. A fixing skips the age check; a quote keeps it.
+2. Give the fixings their own path. A quote is age-checked twice, in the
+   translator and in the worker that drains the quotes' queue, and that queue
+   drops its oldest tick when full. A fixing never enters it: =fixing_ingest=
+   holds a queue that never sheds and one thread that stores what it holds.
+3. Store a fixing in =market_fixing=, which already is the durable table: a
+   hypertable keyed by party, series and fixing date, with no retention. The
+   series of an index is found or created for each consumer, through
+   =create_feed_series=, which the quote path now shares.
+4. Skip a fixing whose series already holds that value on that date, so an
+   overlapping backfill adds nothing and a correction adds one version.
 
 * Measurements
 
@@ -63,6 +73,15 @@ task and name that file in the Command column.
 
 * Notes
 
+- The tick pipeline is built around =market_datum=, which =oresmd_uri_codec::read= reads.
+  A fixing's item is a =market_index=, which =read= refuses, so before this task a
+  fixing tick was dropped as =unnameable_datum= before any age check.
+- The class policy is keyed by what the item is (quote or index), not yet by a policy
+  table per instrument type. A second durable class, such as a trade, would add that
+  table.
+- Two burst tests of the ingest loop fail while a live =ores.marketdata.service= runs,
+  because it consumes the tests' NATS ticks too. They pass with the service stopped.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -78,12 +97,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3987][#3987]] | [marketdata] Store fixings in a durable class of their own |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The order check still drops a fixing older than the newest | adapter_tick_translator.cpp | Accept | Only a quote meets it; a test sends a backfill out of order and a correction after it. |
+| 2 | A failure part way through a batch leaves the cache claiming unstored rows | fixing_ingest.cpp | Accept | The cache changes only after the insert; a test fails a batch and stores its good fixing on resend. |
+| 3 | A failed batch is dropped, so a transient error loses durable facts | fixing_ingest.cpp | Accept | Retried at the front of the queue with backoff, 2 s to 60 s, up to five attempts. |
+| 4 | The comment of translated_tick sits above the enum | adapter_tick_translator.hpp | Accept | Moved back. |
+| 5 | Values compare as text | fixing_ingest.hpp | Note | Intended: the published digits are the fact; documented on adds_to. |
+| 6 | The fixing date is the UTC date of the vendor time | fixing_ingest.hpp | Accept | Documented; the adapter stamps a fixing at midday UTC of its date. |
+| 7 | The fixings queue is unbounded | fixing_ingest.hpp | Note | INGEST STATUS already reports fixings_pending. |
+| 8 | The member order of fixings_ matters | feed_ingest_loop.hpp | Accept | Comment says why it is last. |
+| 9 | Burst tests depend on no live service | app_feed_ingest_loop_tests.cpp | Decline | Outside this PR; the tests predate it. |
+| 10 | A date corrected and reverted in one batch keeps the wrong value | fixing_ingest.cpp | Accept | Duplicates collapse, last sent wins, before the comparison; test added. |
+| 11 | One unreadable fixing fails and drops its whole batch | fixing_ingest.cpp | Accept | Rejected up front and counted (fixings_rejected); only database errors are retried; test added; design page notes the wait blocks other sources. |
 
 * Result
+
+A fixing is now a class of its own in the ingest. The translator knows the items
+of its mappings that are indices, and their ticks skip the age check. They never
+enter the quotes' queue, which drops its oldest tick and ages ticks out a second
+time: =fixing_ingest= holds a queue that never sheds and one thread that stores
+into =market_fixing=, the existing fixings table, which keeps them for good. The
+series of an index is created for each consumer through =create_feed_series=,
+now shared with the quote path. A fixing whose series already holds that value on
+that date is skipped, so an overlapping backfill adds nothing and a correction
+adds one version.
+
+Evidence: =ores.marketdata.service.tests= passes 191 of 191 (2111 assertions).
+New cases: a fixing two days old is kept while a quote of that age is stale; a
+ten-day backfill sent oldest first passes the order check; a backfill stored once,
+sent again after a restart adds nothing, and a correction adds one row; and a
+fixing of yesterday with a ten-day backfill, sent through the loop's adapter path,
+reaches =market_fixing= with no stale drop. The live service runs the new build
+and reports =fixings_stored=, =fixings_failed= and =fixings_pending= beside 8274
+quote ticks stored.
+

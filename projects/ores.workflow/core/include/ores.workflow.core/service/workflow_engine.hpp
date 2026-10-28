@@ -380,6 +380,16 @@ private:
                                       std::chrono::seconds silent_for);
 
     /**
+     * @brief When the service that owns a command subject last reported.
+     *
+     * Empty when nothing has reported as that component since this engine
+     * started. The deadline reads it to tell a command whose handler is absent
+     * from one whose handler is simply busy with earlier work.
+     */
+    std::optional<std::chrono::system_clock::time_point>
+    last_seen_of(const std::string& subject);
+
+    /**
      * @brief Publishes a step command to the domain service.
      *
      * Includes X-Workflow-Instance-Id, X-Workflow-Step-Id, and X-Tenant-Id

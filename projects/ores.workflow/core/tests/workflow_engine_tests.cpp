@@ -35,6 +35,7 @@
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
+#include "ores.workflow.core/repository/step_claim_repository.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
@@ -1753,6 +1754,87 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", "[engi
     // a pass that ran twice cannot fail the same step twice.
     CHECK(f.engine->expire_overdue_steps() == 0);
     BOOST_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
+}
+
+TEST_CASE("workflow_engine leaves a queued step alone",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * A step whose service is busy is still waiting in a queue, not silent. Its
+     * command has not reached a worker -- nothing claims it until one takes it
+     * -- so the time it spends there measures the service's load rather than
+     * the step, and failing it would fail healthy work.
+     */
+    fixture f;
+    f.register_steps(
+        "test_queued_workflow", {"one"}, failure_policy::compensate, std::chrono::seconds{60});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_queued_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    backdate_dispatch(f.h.context(), steps, instance_id, std::chrono::seconds(120));
+
+    // The service that owes the answer is reporting, so the command is in its
+    // queue rather than lost, and no worker has claimed the step.
+    f.engine->note_service_seen("ores.test.service", std::chrono::system_clock::now());
+
+    CHECK(f.engine->expire_overdue_steps() == 0);
+
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().state_id == f.step_states.require("in_progress"));
+}
+
+TEST_CASE("workflow_engine gives a claimed step its whole budget",
+          "[engine][integration]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * The clock belongs to the step from the moment a worker takes it. A step
+     * that waited two minutes in a queue and is then claimed has not been
+     * silent for two minutes -- nobody was running it -- so the deadline must
+     * not fail it on the strength of the wait alone.
+     */
+    // The engine holds the system tenant, as the deployed service does, and the
+    // claim is granted to a worker in that same tenant. The claim row belongs to
+    // the service's tenant, so an engine in the run's tenant could not see it.
+    fixture f(engine_tenant::service);
+    f.register_steps(
+        "test_claimed_workflow", {"one"}, failure_policy::compensate, std::chrono::seconds{60});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_claimed_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    const auto before = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(before.size() == 1);
+
+    // The command has been waiting for two minutes, and only now does a worker
+    // take it.
+    backdate_dispatch(f.h.context(), steps, instance_id, std::chrono::seconds(120));
+    ores::workflow::repository::step_claim_repository claims;
+    REQUIRE(claims
+                .claim(ores::database::service::tenant_context::with_system_tenant(f.h.context()),
+                       before.front().id,
+                       boost::lexical_cast<boost::uuids::uuid>(f.tenant()),
+                       "ores.test.service",
+                       std::chrono::seconds{120})
+                .has_value());
+    f.engine->note_service_seen("ores.test.service", std::chrono::system_clock::now());
+
+    CHECK(f.engine->expire_overdue_steps() == 0);
+
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().state_id == f.step_states.require("in_progress"));
 }
 
 TEST_CASE("workflow_engine keeps a failure when the step answers later", "[engine][integration]") {

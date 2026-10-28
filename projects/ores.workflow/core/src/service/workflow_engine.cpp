@@ -1278,6 +1278,18 @@ void workflow_engine::recover_in_progress() {
     BOOST_LOG_SEV(lg(), info) << "Workflow recovery pass complete.";
 }
 
+std::optional<std::chrono::system_clock::time_point>
+workflow_engine::last_seen_of(const std::string& subject) {
+    const auto component = component_of_subject(subject);
+    std::optional<std::chrono::system_clock::time_point> last_seen;
+    const std::lock_guard<std::mutex> guard(service_last_seen_mutex_);
+    for (const auto& [name, seen_at] : service_last_seen_) {
+        if (service_owns_component(name, component) && (!last_seen || seen_at > *last_seen))
+            last_seen = seen_at;
+    }
+    return last_seen;
+}
+
 std::string workflow_engine::deadline_failure_text(const domain::workflow_step& step,
                                                    std::chrono::seconds budget,
                                                    std::chrono::seconds silent_for) {
@@ -1289,14 +1301,7 @@ std::string workflow_engine::deadline_failure_text(const domain::workflow_step& 
     // It states the evidence and stops there: a service that is running but
     // wedged reports for duty as well, so presence is not proof of handling.
     const auto component = component_of_subject(step.command_subject);
-    std::optional<std::chrono::system_clock::time_point> last_seen;
-    {
-        const std::lock_guard<std::mutex> guard(service_last_seen_mutex_);
-        for (const auto& [name, seen_at] : service_last_seen_) {
-            if (service_owns_component(name, component) && (!last_seen || seen_at > *last_seen))
-                last_seen = seen_at;
-        }
-    }
+    const auto last_seen = last_seen_of(step.command_subject);
 
     if (!last_seen) {
         reason += " Nothing has reported as the " + component +
@@ -1385,8 +1390,37 @@ std::size_t workflow_engine::expire_overdue_steps() {
                 ++it;
                 continue;
             }
+            /*
+             * A step no worker has taken holds no claim, and a step with no
+             * claim has not gone silent: its command is still queued behind
+             * whatever that service is running. Counting that queue as silence
+             * fails a healthy step for the load of the service it waits on,
+             * which is how a provisioning step that had waited two minutes
+             * behind a password change was failed without ever starting.
+             *
+             * The deadline still catches a command whose service has stopped
+             * reporting, because then nothing is coming back for it: the
+             * engine must not wait for a handler that is not there.
+             */
+            const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
+            if (!claimed_at) {
+                const auto seen = last_seen_of(step.command_subject);
+                if (seen && *seen >= *step.command_published_at) {
+                    ++it;
+                    continue;
+                }
+            }
+            /*
+             * Silence is measured from the later of the dispatch and the claim:
+             * a worker taking the step is the first moment the work could go
+             * silent, so a command that waited in a queue still gets the whole
+             * budget once someone takes it.
+             */
+            const auto since = claimed_at && *claimed_at > *step.command_published_at
+                                   ? *claimed_at
+                                   : *step.command_published_at;
             const auto silent_for =
-                std::chrono::duration_cast<std::chrono::seconds>(now - *step.command_published_at);
+                std::chrono::duration_cast<std::chrono::seconds>(now - since);
             if (silent_for < waiting.budget) {
                 ++it;
                 continue;

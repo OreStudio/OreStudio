@@ -4800,9 +4800,11 @@ export const en: SourceCatalogue = {
                     heat: 'the heat',
                     active: 'an active market',
                 },
-                rates: {
-                    title: 'Ticks a second, by asset class',
-                    lead: 'A feed’s mean, per class, so a class with more feeds does not look busier. On its own axis: a count is not a pace.',
+                intensity: {
+                    title: 'Intensity λ(t) and the ticks it produced',
+                    lead: 'The ticks a second every feed’s law asks for now, against the ticks that came each second. Both are ticks a second, so they share an axis; a Hawkes burst shows as a spike in λ.',
+                    lambda: 'λ(t), every feed’s law at the pace then',
+                    seen: 'ticks seen, each second',
                 },
                 force: {
                     title: 'Force the state',
@@ -4887,6 +4889,17 @@ export const en: SourceCatalogue = {
                     what: 'What a tilt does',
                     whatValue: 'spreads the stdevs; mean and variance hold',
                 },
+            },
+            fold: {
+                titles: {
+                    second: 'The last hour, folded by the minute',
+                    tenth: 'The last ten minutes, folded by ten seconds',
+                },
+                lead: 'A temporal raster: each column a stretch of time, each cell a slot of it, coloured by how many ticks came. A spell lasts minutes, so a busy market shows as a band of columns, and the strip above says which were active. A cell is a count, so the picture holds at any tick rate.',
+                colourBy: 'Colour by',
+                series: { all: 'Every feed', pace: 'Pace' },
+                fold: 'Fold',
+                folds: { second: 'An hour, by the second', tenth: 'Ten minutes, by the tenth' },
             },
             arrivals: {
                 title: 'The last minutes, feed by feed',

@@ -128,6 +128,10 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
         [this, id, spec, law = std::move(law), stream, body = std::move(body)] {
             market_.enrol(spec.arrival.ticks_per_hour / 3600.0);
             names_[spec.series] = spec.name;
+            const auto known = std::ranges::find(groups_, spec.group);
+            const auto group = static_cast<std::size_t>(known - groups_.begin());
+            if (known == groups_.end())
+                groups_.push_back(spec.group);
             record(trace_kind::add, spec.series);
             auto& s =
                 series_
@@ -143,7 +147,8 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
                                     .last_simulated = market_.simulated(),
                                     .phase = std::holds_alternative<domain::periodic_law>(law) ?
                                                  std::get<domain::periodic_law>(law).offset :
-                                                 0.0})
+                                                 0.0,
+                                    .group = group})
                     .first->second;
             schedule(id, s);
         },
@@ -265,8 +270,7 @@ std::vector<series_state> tick_scheduler::series_states() const {
             .mode = s.spec.arrival.mode,
             .rate = s.spec.arrival.ticks_per_hour / 3600.0,
             .sensitivity = sensitivity,
-            .effective_rate =
-                domain::intensity_after(s.law, elapsed) * sensitivity * market_.pace(),
+            .effective_rate = intensity_of(s),
             .phase = s.phase,
             .excess = hawkes ? hawkes->excess * std::exp(-hawkes->decay * elapsed) : 0.0,
             .branching_ratio = hawkes ? s.spec.arrival.branching_ratio : 0.0,
@@ -303,9 +307,35 @@ void tick_scheduler::sample(i_run_clock::time_point t) {
     }
     fired_since_sample_ = 0;
     last_sample_ = now;
-    history_.push_back(heat_reading{.at = at, .heat = market_.heat()});
+    double intensity = 0.0;
+    for (const auto& [id, s] : series_)
+        intensity += intensity_of(s);
+    history_.push_back(heat_reading{.at = at, .heat = market_.heat(), .intensity = intensity});
+    const bool active = market_.state() == domain::market_state::active;
+    by_second_.sample(now, market_.pace(), active);
+    by_tenth_.sample(now, market_.pace(), active);
     while (history_.size() > history_capacity)
         history_.pop_front();
+}
+
+double tick_scheduler::intensity_of(const series& s) const {
+    const double elapsed = (market_.tau() - s.last_tau) * s.spec.sensitivity;
+    return domain::intensity_after(s.law, elapsed) * s.spec.sensitivity * market_.pace();
+}
+
+market_history tick_scheduler::history(history_resolution resolution, double seconds) const {
+    const auto guard = std::lock_guard(mutex_);
+    const auto& source = resolution == history_resolution::second ? by_second_ : by_tenth_;
+    market_history out{.slot_seconds = source.slot_seconds(), .groups = groups_, .bins = {}};
+    for (const auto& bin : source.since(market_.now() - seconds)) {
+        const double start = static_cast<double>(bin.slot) * source.slot_seconds();
+        out.bins.push_back(history_bin{
+            .at = clock_.wall(time_at(start)),
+            .counts = bin.counts,
+            .pace = bin.samples == 0 ? 0.0 : bin.pace_sum / bin.samples,
+            .active_share = bin.samples == 0 ? 0.0 : bin.active_sum / bin.samples});
+    }
+    return out;
 }
 
 void tick_scheduler::rebuild_heap() {
@@ -352,6 +382,8 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
                                .tail_tilt = market_.tail_tilt()};
     record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
+    by_second_.tick(*due, s.group);
+    by_tenth_.tick(*due, s.group);
     s.last_fired = *due;
     const fired_tick fired{.id = id, .at = *due, .tau = market_.tau()};
     auto body = s.body;

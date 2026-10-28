@@ -26,11 +26,11 @@ A person who opens the market finds one question per tab: what is the market doi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -109,3 +109,38 @@ via its "Verifies task" field.
 | 6 | Housekeeping: compass check, the dropped keys | — | Note | compass check skipped at the user's request; the catalogue test passes. |
 
 * Result
+
+The Synthetic screen's Market tab is now the signed-off prototype: a strip of
+seven figures over six tabs, in Gemini's look on the product's tokens.
+
+- *Now*: the pace, stacked as regime and heat, with active spells shaded;
+  the market's intensity λ(t) against the ticks seen each second, on one
+  axis; the force switch with who holds the state, for how long, the mean
+  spells and the active share; and what changed the market.
+- *Settings*: four cards. Spells are entered in seconds, each field shows the
+  number it implies, the service's rules run as a person types, the change is
+  listed before it is applied, and only the edited fields are sent. A tenant
+  reads the same numbers.
+- *Arrivals*: the last hour folded by the minute, or ten minutes by ten seconds,
+  coloured by every feed, a class or the pace; below it the feed lanes, with
+  density cells once marks would saturate, curve pillars counted once per
+  instant, and asked counted over the stretch the ticks cover.
+- *Laws*: read only, each row linking to the feed's Arrivals tab.
+- *Fit* and *Trace*: as before, in cards.
+
+The service gained what the screens needed: each heat reading carries λ(t);
+an arrival history counts ticks by asset class, an hour by the second and ten
+minutes by the tenth (=synthetic.v1.ops.get_market_history=); and the reads
+carry a Hawkes law's branching and decay, each feed's id and kind, and the
+active multiplier.
+
+Evidence: the quant and synthetic api suites pass under ctest, with tests for
+the history's slots, groups and ageing, and for λ at a pinned pace. Web tests
+for the market and i18n pass (206), the BFF market tests pass (22), and the
+harness passes 13 of 13 live, as a tenant and as the system administrator.
+Screenshots of every tab were checked against the live service.
+
+The one-feed fold the prototype offered is not built: the history counts by
+class, and a per-feed count would grow with the feeds. The load control was the
+prototype's own.
+

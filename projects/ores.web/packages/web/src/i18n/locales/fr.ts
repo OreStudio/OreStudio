@@ -4864,9 +4864,11 @@ const fr: SourceCatalogue = {
                     heat: 'la chaleur',
                     active: 'un marché actif',
                 },
-                rates: {
-                    title: 'Ticks par seconde, par classe d’actifs',
-                    lead: 'La moyenne d’un flux, par classe, pour qu’une classe plus nombreuse ne paraisse pas plus active. Sur son propre axe : un compte n’est pas une allure.',
+                intensity: {
+                    title: 'Intensité λ(t) et les ticks produits',
+                    lead: 'Les ticks par seconde que demande la loi de chaque flux, face aux ticks venus chaque seconde. Les deux sont des ticks par seconde et partagent un axe ; une rafale de Hawkes apparaît comme un pic de λ.',
+                    lambda: 'λ(t), la loi de chaque flux à l’allure d’alors',
+                    seen: 'ticks vus, chaque seconde',
                 },
                 force: {
                     title: 'Forcer l’état',
@@ -4951,6 +4953,17 @@ const fr: SourceCatalogue = {
                     what: 'Effet d’une inclinaison',
                     whatValue: 'écarte les écarts-types ; moyenne et variance conservées',
                 },
+            },
+            fold: {
+                titles: {
+                    second: 'La dernière heure, pliée par minute',
+                    tenth: 'Les dix dernières minutes, pliées par dix secondes',
+                },
+                lead: 'Un raster temporel : chaque colonne une tranche de temps, chaque cellule une fraction de celle-ci, colorée selon le nombre de ticks. Une période dure des minutes, donc un marché actif apparaît comme une bande de colonnes, et la bande du haut dit lesquelles étaient actives. Une cellule est un compte, l’image tient à tout rythme de ticks.',
+                colourBy: 'Colorer par',
+                series: { all: 'Tous les flux', pace: 'Allure' },
+                fold: 'Pliage',
+                folds: { second: 'Une heure, par seconde', tenth: 'Dix minutes, par dixième' },
             },
             arrivals: {
                 title: 'Les dernières minutes, flux par flux',

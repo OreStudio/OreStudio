@@ -24,6 +24,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type {
     FeedRaster,
+    MarketHistory,
     MarketRegime,
     MarketTrace,
     TraceEvent,
@@ -41,6 +42,8 @@ import {
     slotCounts,
 } from './ArrivalsView.js';
 import { FitView, ratioPosition } from './FitView.js';
+import { FoldCard } from './FoldCard.js';
+import { foldHistory, ticksBySecond } from './fold.js';
 import { LawsView, lawRows, lawStable } from './LawsView.js';
 import { MarketStrip } from './MarketStrip.js';
 import { NowView, heldFor, marketChanges } from './NowView.js';
@@ -173,6 +176,26 @@ function raster(ticks: readonly string[] = [new Date(NOW - 10_000).toISOString()
     };
 }
 
+/** Two classes over the last minute: busy for ten seconds, quiet after. */
+function history(): MarketHistory {
+    const second = (ago: number): string =>
+        new Date(Math.floor(NOW / 1000) * 1000 - ago * 1000).toISOString();
+    return {
+        slotSeconds: 1,
+        groups: ['fx', 'interest_rates'],
+        bins: [
+            { at: second(3700), counts: [99], pace: 1, activeShare: 0 },
+            ...Array.from({ length: 10 }, (_, i) => ({
+                at: second(60 - i),
+                counts: [8, 1],
+                pace: 2,
+                activeShare: 1,
+            })),
+            { at: second(5), counts: [2], pace: 0.5, activeShare: 0 },
+        ],
+    };
+}
+
 function render(node: ReactNode): string {
     return renderToStaticMarkup(
         <TranslationProvider>
@@ -234,7 +257,7 @@ describe('the Now tab', () => {
             <NowView
                 regime={regime(over)}
                 trace={trace()}
-                raster={raster()}
+                history={history()}
                 now={NOW}
                 mayPin={mayPin}
                 pending={undefined}
@@ -471,5 +494,90 @@ describe('the Trace tab', () => {
         const html = render(<TraceView trace={trace()} />);
         expect(html).toContain('4 decisions match');
         expect(html).toContain('turn');
+    });
+});
+
+describe('the folded hour', () => {
+    it('puts each second in the column of its minute and the row of its place in it', () => {
+        const picture = foldHistory(history(), 'second', 'all', NOW);
+        expect(picture.cells).toHaveLength(11);
+        const minute = Math.floor((Math.floor(NOW / 1000) - 5) / 60);
+        const latest = picture.cells.find((cell) => cell.value === 2);
+        expect(latest?.column).toBe(minute - (Math.floor(Math.floor(NOW / 1000) / 60) - 59));
+        expect(latest?.row).toBe((Math.floor(NOW / 1000) - 5) % 60);
+    });
+
+    it('leaves out what is older than the hour, and counts ticks a second', () => {
+        const picture = foldHistory(history(), 'second', 'all', NOW);
+        expect(picture.cells.some((cell) => cell.value === 99)).toBe(false);
+        expect(picture.cells.filter((cell) => cell.value === 9)).toHaveLength(10);
+    });
+
+    it('colours by one class, or by the pace', () => {
+        const rates = foldHistory(history(), 'second', { group: 'interest_rates' }, NOW);
+        expect(rates.cells.filter((cell) => cell.value === 1)).toHaveLength(10);
+        expect(rates.cells.find((cell) => cell.value === 2)).toBeUndefined();
+        const pace = foldHistory(history(), 'second', 'pace', NOW);
+        expect(pace.cells.filter((cell) => cell.value === 2)).toHaveLength(10);
+    });
+
+    it('marks the minutes the market was active', () => {
+        const picture = foldHistory(history(), 'second', 'all', NOW);
+        expect(picture.activeShares.some((share) => share > 0.9)).toBe(true);
+        expect(picture.activeShares.at(-1)).toBe(0);
+    });
+
+    it('scales a tenth by its length, so a cell still reads in ticks a second', () => {
+        const tenths: MarketHistory = {
+            slotSeconds: 0.1,
+            groups: ['fx'],
+            bins: [
+                { at: new Date(NOW - 2000).toISOString(), counts: [3], pace: 1, activeShare: 0 },
+            ],
+        };
+        expect(foldHistory(tenths, 'tenth', 'all', NOW).cells[0]?.value).toBeCloseTo(30);
+    });
+
+    it('draws a cell for each slot that had ticks or a reading', () => {
+        const html = render(
+            <FoldCard
+                history={history()}
+                resolution="second"
+                onResolution={() => undefined}
+                now={NOW}
+            />,
+        );
+        expect(html.match(/data-cell/g)).toHaveLength(11);
+        expect(html).toContain('The last hour, folded by the minute');
+    });
+});
+
+describe('the intensity on Now', () => {
+    it('counts the ticks of every class in each second of the window', () => {
+        const seen = ticksBySecond(history(), 120, NOW);
+        expect(seen).toHaveLength(11);
+        expect(seen.at(-1)?.ticks).toBe(2);
+    });
+
+    it('draws λ(t) over the ticks seen, on one axis', () => {
+        const samples = [
+            { at: new Date(NOW - 20_000).toISOString(), heat: 0.1, intensity: 6 },
+            { at: new Date(NOW - 10_000).toISOString(), heat: 0.1, intensity: 9 },
+        ];
+        const html = render(
+            <NowView
+                regime={regime({ samples })}
+                trace={trace()}
+                history={history()}
+                now={NOW}
+                mayPin
+                pending={undefined}
+                error={null}
+                onPin={() => undefined}
+                onOpenTrace={() => undefined}
+            />,
+        );
+        expect(html).toContain('data-lambda');
+        expect(html.match(/data-seen/g)).toHaveLength(11);
     });
 });

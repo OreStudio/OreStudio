@@ -22,6 +22,7 @@
 set(files
     "affine_term_structure_process_tests.cpp"
     "arithmetic_gaussian_mixture_model_process_tests.cpp"
+    "arrival_history_tests.cpp"
     "arrival_law_tests.cpp"
     "black_derman_toy_process_tests.cpp"
     "black_karasinski_process_tests.cpp"

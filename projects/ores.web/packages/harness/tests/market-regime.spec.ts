@@ -48,6 +48,9 @@ test.describe('the market, read by a tenant', () => {
     test('reads the state on Now and offers no switch', async ({ page }) => {
         await openMarket(page);
         await expect(page.getByRole('img', { name: 'How fast market time runs' })).toBeVisible();
+        await expect(
+            page.getByRole('img', { name: 'Intensity λ(t) and the ticks it produced' }),
+        ).toBeVisible();
         const force = page.getByRole('region', { name: 'Force the state' });
         await expect(force.getByText('Set by', { exact: true })).toBeVisible();
         await expect(
@@ -65,6 +68,22 @@ test.describe('the market, read by a tenant', () => {
             '',
         );
         await expect(page.getByRole('button', { name: 'Apply' })).toHaveCount(0);
+    });
+
+    test('folds the last hour, and the last ten minutes, on Arrivals', async ({ page }) => {
+        await openMarket(page, 'arrivals');
+        await expect(
+            page.getByRole('img', { name: 'The last hour, folded by the minute' }),
+        ).toBeVisible();
+        await page.getByRole('radio', { name: 'Ten minutes, by the tenth' }).click();
+        await expect(
+            page.getByRole('img', { name: 'The last ten minutes, folded by ten seconds' }),
+        ).toBeVisible();
+        await page.getByRole('radio', { name: 'Pace' }).click();
+        await expect(page.getByRole('radio', { name: 'Pace' })).toHaveAttribute(
+            'aria-checked',
+            'true',
+        );
     });
 
     test('draws every running feed on Arrivals', async ({ page }) => {

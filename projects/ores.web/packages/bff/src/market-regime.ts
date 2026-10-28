@@ -40,6 +40,7 @@ import type { FeedTickBuffers } from './feed-ticks.js';
 const getSubject = 'synthetic.v1.ops.get_market_regime';
 const pinSubject = 'synthetic.v1.ops.pin_market_regime';
 const traceSubject = 'synthetic.v1.ops.get_market_trace';
+const historySubject = 'synthetic.v1.ops.get_market_history';
 const configureSubject = 'synthetic.v1.ops.configure_market';
 
 /** What a switch may force: a state, or control handed back to the chain. */
@@ -53,6 +54,7 @@ const stateSchema = z.enum(['calm', 'active']);
 const heatSample = z.object({
     at: z.string(),
     heat: z.number(),
+    intensity: z.number().default(0),
 });
 
 /** The factor the service reports: all of it, because the request was answered. */
@@ -233,6 +235,29 @@ const answeredTrace = z.object({
 
 const traceReply = z.union([answeredTrace, refusedRegime]);
 
+/** The ticks of the last stretch of the run, slot by slot and asset class by asset class. */
+const answeredHistory = z.object({
+    success: z.literal(true),
+    message: z.string().default(''),
+    slot_seconds: z.number(),
+    groups: z.array(z.string()).default([]),
+    bins: z
+        .array(
+            z.object({
+                at: z.string(),
+                counts: z.array(z.number()).default([]),
+                pace: z.number().default(0),
+                active_share: z.number().default(0),
+            }),
+        )
+        .default([]),
+});
+
+const historyReply = z.union([answeredHistory, refusedRegime]);
+
+/** What each resolution reads: an hour by the second, ten minutes by the tenth. */
+export const HISTORY_SPANS = { second: 3600, tenth: 600 } as const;
+
 /** The most events one read returns; the newest are kept. */
 export const TRACE_LIMIT = 20000;
 
@@ -302,6 +327,39 @@ export function registerMarketRegimeRoutes(
                 excess: f.excess,
                 branchingRatio: f.branching_ratio,
                 decay: f.decay,
+            })),
+        };
+    });
+
+    /**
+     * The ticks of the last hour by the second, or of the last ten minutes by the tenth, by
+     * asset class, with the pace and the active share of each slot: what a temporal raster
+     * folds. Counts rather than ticks, so the read costs the same at any tick rate.
+     */
+    server.get('/api/synthetic/market-history', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z.object({ resolution: z.enum(['second', 'tenth']).default('second') }).strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            historySubject,
+            { resolution: query.resolution, seconds: HISTORY_SPANS[query.resolution] },
+            historyReply,
+        );
+        if (!reply.success) {
+            throw upstreamFailure(
+                reply.message || 'The synthetic service refused the history read.',
+            );
+        }
+        return {
+            slotSeconds: reply.slot_seconds,
+            groups: reply.groups,
+            bins: reply.bins.map((bin) => ({
+                at: bin.at,
+                counts: bin.counts,
+                pace: bin.pace,
+                activeShare: bin.active_share,
             })),
         };
     });

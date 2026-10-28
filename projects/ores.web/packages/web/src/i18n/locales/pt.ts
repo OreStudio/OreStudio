@@ -4831,9 +4831,11 @@ const pt: SourceCatalogue = {
                     heat: 'o calor',
                     active: 'um mercado ativo',
                 },
-                rates: {
-                    title: 'Ticks por segundo, por classe de ativos',
-                    lead: 'A média de um feed, por classe, para que uma classe com mais feeds não pareça mais ativa. No seu próprio eixo: uma contagem não é um ritmo.',
+                intensity: {
+                    title: 'Intensidade λ(t) e os ticks que produziu',
+                    lead: 'Os ticks por segundo que a lei de cada feed pede agora, face aos ticks que chegaram em cada segundo. Ambos são ticks por segundo e partilham um eixo; uma rajada de Hawkes surge como um pico em λ.',
+                    lambda: 'λ(t), a lei de cada feed ao ritmo de então',
+                    seen: 'ticks vistos, em cada segundo',
                 },
                 force: {
                     title: 'Forçar o estado',
@@ -4918,6 +4920,17 @@ const pt: SourceCatalogue = {
                     what: 'O que faz uma inclinação',
                     whatValue: 'afasta os desvios-padrão; média e variância mantêm-se',
                 },
+            },
+            fold: {
+                titles: {
+                    second: 'A última hora, dobrada por minuto',
+                    tenth: 'Os últimos dez minutos, dobrados por dez segundos',
+                },
+                lead: 'Um raster temporal: cada coluna é um troço de tempo, cada célula uma fatia dele, colorida pelo número de ticks. Um período dura minutos, por isso um mercado ativo surge como uma faixa de colunas, e a faixa de cima diz quais estavam ativas. Uma célula é uma contagem, por isso a imagem aguenta qualquer ritmo de ticks.',
+                colourBy: 'Colorir por',
+                series: { all: 'Todos os feeds', pace: 'Ritmo' },
+                fold: 'Dobra',
+                folds: { second: 'Uma hora, por segundo', tenth: 'Dez minutos, por décimo' },
             },
             arrivals: {
                 title: 'Os últimos minutos, feed a feed',

@@ -45,7 +45,7 @@ export const MARKS_AT_MOST = 250;
 export type LaneDraw = 'auto' | 'marks' | 'density';
 
 /** A sequential ramp from the sunk ground through the accent to gold: more is brighter. */
-const RAMP = ['#16181d', '#1d2a3d', '#26466b', '#3a6ea5', '#58a6ff', '#a7c7e7', '#e3b341'];
+export const RAMP = ['#16181d', '#1d2a3d', '#26466b', '#3a6ea5', '#58a6ff', '#a7c7e7', '#e3b341'];
 
 export function ramp(value: number): string {
     const x = Math.max(0, Math.min(1, value)) * (RAMP.length - 1);

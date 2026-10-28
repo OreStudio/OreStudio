@@ -135,6 +135,7 @@ const GET_SUBJECT = 'synthetic.v1.ops.get_market_regime';
 const PIN_SUBJECT = 'synthetic.v1.ops.pin_market_regime';
 const TRACE_SUBJECT = 'synthetic.v1.ops.get_market_trace';
 const CONFIGURE_SUBJECT = 'synthetic.v1.ops.configure_market';
+const HISTORY_SUBJECT = 'synthetic.v1.ops.get_market_history';
 
 /** What the service answers with when nothing has moved the heat. */
 const NO_HEAT = { heat: 0, jump: 0.5, decay: 20, samples: [] };
@@ -579,6 +580,51 @@ describe('the market settings', () => {
             'PUT',
             '/api/synthetic/market-regime/settings',
             { ...SETTINGS, speed: 0 },
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+});
+
+describe('the market history', () => {
+    it('reads an hour by the second, or ten minutes by the tenth, and reports the counts', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [HISTORY_SUBJECT]: {
+                success: true,
+                message: '',
+                slot_seconds: 0.1,
+                groups: ['fx', 'interest_rates'],
+                bins: [{ at: '2026-10-28T12:00:00Z', counts: [3, 1], pace: 2, active_share: 1 }],
+            },
+        });
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=tenth',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            slotSeconds: 0.1,
+            groups: ['fx', 'interest_rates'],
+            bins: [{ at: '2026-10-28T12:00:00Z', counts: [3, 1], pace: 2, activeShare: 1 }],
+        });
+        expect(calls).toEqual([
+            { subject: HISTORY_SUBJECT, body: { resolution: 'tenth', seconds: 600 } },
+        ]);
+    });
+
+    it('refuses a resolution it does not know before the service hears of it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=minute',
         );
 
         expect(response.statusCode).toBe(400);

@@ -23,6 +23,7 @@ import { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import {
     api,
+    type HistoryResolution,
     type MarketRegime,
     type MarketSettings,
     type RegimeMode,
@@ -34,6 +35,7 @@ import { tabAddress, useTabs } from '../../../ui/Tabs.js';
 import { REGIME_KEY, useMarketRegimeQuery, useMarketTrace } from '../useMarketRegime.js';
 import { ArrivalsView, type ArrivalWindow } from './ArrivalsView.js';
 import { FitView } from './FitView.js';
+import { FoldCard } from './FoldCard.js';
 import { Glyph, type GlyphName } from './MarketCard.js';
 import { LawsView } from './LawsView.js';
 import { MarketStrip } from './MarketStrip.js';
@@ -82,6 +84,19 @@ export function MarketTab(): ReactNode {
         queryFn: () => api.feedRaster({ seconds: arrivalWindow }),
         refetchInterval: RASTER_EVERY_MS,
     });
+    const [resolution, setResolution] = useState<HistoryResolution>('second');
+    // By the second always, for Now's seen ticks; by the tenth only while the fold shows it.
+    const bySecond = useQuery({
+        queryKey: ['market-history', 'second'],
+        queryFn: () => api.marketHistory('second'),
+        refetchInterval: RASTER_EVERY_MS,
+    });
+    const byTenth = useQuery({
+        queryKey: ['market-history', 'tenth'],
+        queryFn: () => api.marketHistory('tenth'),
+        refetchInterval: RASTER_EVERY_MS,
+        enabled: resolution === 'tenth',
+    });
     const pin = useMutation({
         mutationFn: (mode: RegimeMode) => api.pinMarketRegime(mode),
         onSuccess: (after: MarketRegime) => queries.setQueryData(REGIME_KEY, after),
@@ -129,7 +144,7 @@ export function MarketTab(): ReactNode {
                 <NowView
                     regime={regime.data}
                     trace={trace.data}
-                    raster={raster.data}
+                    history={bySecond.data}
                     now={now}
                     mayPin={mayChange}
                     pending={pin.isPending ? pin.variables : undefined}
@@ -147,6 +162,14 @@ export function MarketTab(): ReactNode {
                     pending={configure.isPending}
                     error={configure.error === null ? null : configure.error.message}
                     onApply={(settings) => configure.mutate(settings)}
+                />
+            ) : null}
+            {view === 'arrivals' ? (
+                <FoldCard
+                    history={resolution === 'second' ? bySecond.data : byTenth.data}
+                    resolution={resolution}
+                    onResolution={setResolution}
+                    now={now}
                 />
             ) : null}
             {view === 'arrivals' ? (

@@ -21,7 +21,7 @@
 import type { ReactNode } from 'react';
 import {
     REGIME_MODES,
-    type FeedRaster,
+    type MarketHistory,
     type MarketRegime,
     type MarketTrace,
     type RegimeMode,
@@ -29,8 +29,8 @@ import {
 } from '../../../api/client.js';
 import { useTranslation } from '../../../i18n/Provider.js';
 import { cx, Notice } from '../../../ui/Primitives.js';
-import { assetClassColour } from '../../assetClassColour.js';
-import { curvePath, RASTER_SECONDS, rateCurves } from '../marketRaster.js';
+import { RASTER_SECONDS } from '../marketRaster.js';
+import { ticksBySecond } from './fold.js';
 import { paceSteps, traceBands } from '../marketTrace.js';
 import { stateName } from '../useMarketRegime.js';
 import { FactRows, MarketCard } from './MarketCard.js';
@@ -75,12 +75,12 @@ function TimeAxis({ seconds }: { readonly seconds: number }): ReactNode {
 function PaceCard({
     regime,
     trace,
-    raster,
+    history,
     now,
 }: {
     readonly regime: MarketRegime;
     readonly trace: MarketTrace | undefined;
-    readonly raster: FeedRaster | undefined;
+    readonly history: MarketHistory | undefined;
     readonly now: number;
 }): ReactNode {
     const { t } = useTranslation();
@@ -89,7 +89,19 @@ function PaceCard({
         trace === undefined ? { steps: [], peak: 0 } : paceSteps(trace.events, seconds, now);
     const bands = trace === undefined ? [] : traceBands(trace.events, seconds, now);
     const top = Math.max(2.4, pace.peak) * 1.1;
-    const rates = rateCurves(raster?.feeds ?? [], seconds, now);
+    // The ticks a second every law asked for, and the ticks that came: both in ticks a second,
+    // so they share an axis.
+    const lambda = regime.samples
+        .map((sample) => ({ at: Date.parse(sample.at), intensity: sample.intensity }))
+        .filter((point) => Number.isFinite(point.at) && now - point.at <= seconds * 1000);
+    const seen = history === undefined ? [] : ticksBySecond(history, seconds, now);
+    const lambdaTop =
+        Math.max(
+            1,
+            ...lambda.map((point) => point.intensity),
+            ...seen.map((second) => second.ticks),
+        ) * 1.1;
+    const placeAt = (at: number): number => 100 * (1 - (now - at) / (seconds * 1000));
     return (
         <MarketCard
             glyph="pace"
@@ -167,40 +179,63 @@ function PaceCard({
                     {t('marketdata.market.now.pace.active')}
                 </span>
             </div>
-            {rates.curves.length === 0 ? null : (
-                <div className="grid gap-1.5 border-t border-line-subtle pt-3">
-                    <div className="flex items-baseline justify-between">
-                        <span className="font-mono text-xs font-bold tracking-wider uppercase">
-                            {t('marketdata.market.now.rates.title')}
-                        </span>
-                        <span className="font-mono text-[10px] text-ink-faint">
-                            {`${clean(rates.peak, 3)}/s`}
-                        </span>
-                    </div>
-                    <svg
-                        role="img"
-                        aria-label={t('marketdata.market.now.rates.title')}
-                        viewBox="0 0 100 1"
-                        preserveAspectRatio="none"
-                        className="h-20 w-full"
-                    >
-                        {rates.curves.map((curve) => (
-                            <path
-                                key={curve.assetClass}
-                                d={curvePath(curve.points, rates.peak)}
-                                className={assetClassColour(curve.assetClass).text}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                vectorEffect="non-scaling-stroke"
-                            />
-                        ))}
-                    </svg>
-                    <p className="text-[11px] text-ink-faint">
-                        {t('marketdata.market.now.rates.lead')}
-                    </p>
+            <div className="grid gap-1.5 border-t border-line-subtle pt-3">
+                <div className="flex items-baseline justify-between">
+                    <span className="font-mono text-xs font-bold tracking-wider uppercase">
+                        {t('marketdata.market.now.intensity.title')}
+                    </span>
+                    <span className="font-mono text-[10px] text-ink-faint">
+                        {`${clean(lambdaTop, 3)}/s`}
+                    </span>
                 </div>
-            )}
+                <svg
+                    role="img"
+                    aria-label={t('marketdata.market.now.intensity.title')}
+                    viewBox="0 0 100 1"
+                    preserveAspectRatio="none"
+                    className="h-24 w-full"
+                >
+                    {seen.map((second) => (
+                        <rect
+                            key={second.at}
+                            data-seen
+                            x={placeAt(second.at)}
+                            width={100 / seconds - 0.1}
+                            y={1 - second.ticks / lambdaTop}
+                            height={second.ticks / lambdaTop}
+                            className="fill-up/45"
+                        />
+                    ))}
+                    {lambda.length < 2 ? null : (
+                        <path
+                            data-lambda
+                            d={lambda
+                                .map(
+                                    (point, index) =>
+                                        `${index === 0 ? 'M' : 'L'}${String(placeAt(point.at))},${String(1 - point.intensity / lambdaTop)}`,
+                                )
+                                .join(' ')}
+                            fill="none"
+                            className="stroke-accent"
+                            strokeWidth="1.6"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                    )}
+                </svg>
+                <div className="flex flex-wrap gap-4 font-mono text-[11px] text-ink-muted">
+                    <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-accent" />
+                        {t('marketdata.market.now.intensity.lambda')}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-sm bg-up/60" />
+                        {t('marketdata.market.now.intensity.seen')}
+                    </span>
+                </div>
+                <p className="text-[11px] text-ink-faint">
+                    {t('marketdata.market.now.intensity.lead')}
+                </p>
+            </div>
         </MarketCard>
     );
 }
@@ -390,7 +425,7 @@ export function KindChip({ kind }: { readonly kind: TraceEvent['kind'] }): React
 export function NowView({
     regime,
     trace,
-    raster,
+    history,
     now,
     mayPin,
     pending,
@@ -400,7 +435,7 @@ export function NowView({
 }: {
     readonly regime: MarketRegime;
     readonly trace: MarketTrace | undefined;
-    readonly raster: FeedRaster | undefined;
+    readonly history: MarketHistory | undefined;
     readonly now: number;
     readonly mayPin: boolean;
     readonly pending: RegimeMode | undefined;
@@ -411,7 +446,7 @@ export function NowView({
     return (
         <div className="grid gap-4">
             <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-                <PaceCard regime={regime} trace={trace} raster={raster} now={now} />
+                <PaceCard regime={regime} trace={trace} history={history} now={now} />
                 <ForceCard
                     regime={regime}
                     trace={trace}

@@ -90,6 +90,8 @@ struct get_market_regime_response {
     double wake_rate = 0.0;
     /** @brief How often an active market turns calm, per second; zero when not reported. */
     double calm_rate = 0.0;
+    /** @brief How far activity tilts a price's shape toward its tails; zero is off. */
+    double tail_loading = 0.0;
 };
 
 /**
@@ -207,11 +209,12 @@ struct pin_market_regime_response {
     double speed = 0.0;
     double wake_rate = 0.0;
     double calm_rate = 0.0;
+    double tail_loading = 0.0;
 };
 
 /**
- * @brief Set how the market's pace moves, from now on: the chain's two rates, the
- * heat's jump and decay, and the market speed.
+ * @brief Set how the market moves, from now on: the chain's two rates, the heat's
+ * jump and decay, the market speed, and the tail loading.
  *
  * Numbers the market cannot run on are refused with success false and a message that
  * names the number. The reply is the regime after the request, as a pin replies.
@@ -230,6 +233,8 @@ struct configure_market_request {
     double decay = 0.0;
     /** @brief The simulated seconds one unit of market time spans. */
     double speed = 0.0;
+    /** @brief How far activity tilts a price's shape toward its tails; zero is off. */
+    double tail_loading = 0.0;
 };
 
 }

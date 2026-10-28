@@ -210,18 +210,30 @@ must accept that tolerance rather than an exact one.
 
 A diffusion whose sigma doubles gives wider returns but the same shape. A panic
 does not look like that: prices gap, and the kurtosis rises faster than the
-variance. An FX feed's law is already a Gaussian mixture, so the tail channel is
-a reweighting rather than a new model: as =A= rises, weight moves from the narrow
-components to the wide ones, renormalised so the mixture stays a distribution and
-the mean is unchanged.
+variance. An FX feed's law is already a Gaussian mixture, so the tail channel
+changes the mixture rather than the model.
 
-That is the cheapest way to make a pinned panic produce the gaps a person expects,
-and it composes with the loading only if it is *variance-preserving*: after the
-weights move, the stdevs are rescaled so the mixture's variance is what it was,
-and the loading remains the only channel to sigma. Without that rescaling the
-reweighting raises the variance too, and the calibration test in the table below
-would fail for a second reason that has nothing to do with the loading. The
-reweighting sets the shape; the loading sets the scale.
+The first design moved weight from the narrow components to the wide ones as =A=
+rose, with the stdevs rescaled to hold the variance. That rule does not always
+fatten the tails. At a fixed variance a scale mixture's kurtosis peaks at a small
+wide weight, so moving weight past that peak thins the tails. Weights of 0.8 and
+0.2 on stdevs in the ratio one to four have a kurtosis of 9.75. When the weight
+moves at a tilt of 2 ln 2, the kurtosis falls to about 4.4.
+
+*The rule adopted* spreads the stdevs instead. At a tick, the tilt is
+=tail_loading * ln A=, and each stdev becomes =stdev ^ (1 + tilt)=. Then one
+factor scales all of them, so the mixture's variance is what it was. The weights
+and the means do not move, so neither does the mean. The kurtosis is
+=3 E[s^2a] / E[s^a]^2= over the components' variances =s=, with =a = 1 + tilt=.
+That is one plus the squared coefficient of variation of =s^a=, which rises with
+=a= for any mixture whose stdevs differ. So the kurtosis rises with activity. A
+calm market, =A < 1=, draws the stdevs together, down to one shared stdev at a
+tilt of minus one, which is as far as it goes.
+
+The rule is variance-preserving, so it composes with the loading: the tilt sets
+the shape, and the loading sets the scale. =tail_loading= is one number for the
+market. It defaults to zero, which leaves every mixture as configured, and the
+system tenant sets it beside the market's other numbers.
 
 ** The control plane
 

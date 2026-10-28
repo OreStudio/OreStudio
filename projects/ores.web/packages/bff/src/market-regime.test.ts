@@ -476,11 +476,24 @@ describe('the market regime', () => {
 });
 
 describe('the market settings', () => {
-    const SETTINGS = { wakeRate: 0.002, calmRate: 0.004, jump: 0.5, decay: 20, speed: 2880 };
+    const SETTINGS = {
+        wakeRate: 0.002,
+        calmRate: 0.004,
+        jump: 0.5,
+        decay: 20,
+        speed: 2880,
+        tailLoading: 1.5,
+    };
 
     it('sends the five numbers and reports the regime the service holds after', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            [CONFIGURE_SUBJECT]: { ...CALM, speed: 2880, wake_rate: 0.002, calm_rate: 0.004 },
+            [CONFIGURE_SUBJECT]: {
+                ...CALM,
+                speed: 2880,
+                wake_rate: 0.002,
+                calm_rate: 0.004,
+                tail_loading: 1.5,
+            },
         });
 
         const response = await send(
@@ -492,11 +505,23 @@ describe('the market settings', () => {
         );
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toMatchObject({ speed: 2880, wakeRate: 0.002, calmRate: 0.004 });
+        expect(response.json()).toMatchObject({
+            speed: 2880,
+            wakeRate: 0.002,
+            calmRate: 0.004,
+            tailLoading: 1.5,
+        });
         expect(calls).toEqual([
             {
                 subject: CONFIGURE_SUBJECT,
-                body: { wake_rate: 0.002, calm_rate: 0.004, jump: 0.5, decay: 20, speed: 2880 },
+                body: {
+                    wake_rate: 0.002,
+                    calm_rate: 0.004,
+                    jump: 0.5,
+                    decay: 20,
+                    speed: 2880,
+                    tail_loading: 1.5,
+                },
             },
         ]);
     });

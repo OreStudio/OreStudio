@@ -160,7 +160,7 @@ public:
     }
 
     /**
-     * Sets the chain's rates, the heat's jump and decay, and the speed, keeping the active
+     * Sets the chain's rates, the heat's jump and decay, the speed and the tail loading, keeping the active
      * multiplier. Numbers the market cannot run on are refused with the number named.
      */
     void configure(ores::nats::message msg) {
@@ -200,7 +200,8 @@ public:
                                   .active_multiplier = market.active_multiplier,
                                   .jump = decoded->jump,
                                   .decay = decoded->decay,
-                                  .speed = decoded->speed});
+                                  .speed = decoded->speed,
+                                  .tail_loading = decoded->tail_loading});
         } catch (const std::invalid_argument& ex) {
             BOOST_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Refusing configure_market request: " << ex.what();
@@ -212,7 +213,8 @@ public:
         BOOST_LOG_SEV(market_regime_handler_lg(), info)
             << "The market was set to wake rate " << decoded->wake_rate << ", calm rate "
             << decoded->calm_rate << ", jump " << decoded->jump << ", decay " << decoded->decay
-            << ", speed " << decoded->speed << ".";
+            << ", speed " << decoded->speed << ", tail loading " << decoded->tail_loading
+            << ".";
         response.success = true;
         fill(response);
         fill_heat(response);
@@ -322,6 +324,7 @@ private:
         response.speed = market.speed;
         response.wake_rate = market.wake_rate;
         response.calm_rate = market.calm_rate;
+        response.tail_loading = market.tail_loading;
         constexpr auto window = std::chrono::minutes(2);
         const auto from = std::chrono::system_clock::now() - window;
         for (const auto& reading : scheduler_.readings_since(from)) {

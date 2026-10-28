@@ -505,17 +505,20 @@ const marketRegimeSchema = z.object({
     wakeRate: z.number().default(0),
     /** How often an active market turns calm, a second. */
     calmRate: z.number().default(0),
+    /** How far activity tilts a price's shape toward its tails; zero is off. */
+    tailLoading: z.number().default(0),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;
 
-/** The five numbers a system session sets on the market. */
+/** The numbers a system session sets on the market. */
 export interface MarketSettings {
     readonly wakeRate: number;
     readonly calmRate: number;
     readonly jump: number;
     readonly decay: number;
     readonly speed: number;
+    readonly tailLoading: number;
 }
 
 /**

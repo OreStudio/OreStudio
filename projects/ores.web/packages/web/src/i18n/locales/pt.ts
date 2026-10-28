@@ -4846,6 +4846,8 @@ const pt: SourceCatalogue = {
                 jump: 'Calor que um tick acrescenta',
                 decay: 'Decaimento do calor, por segundo',
                 speed: 'Velocidade do mercado',
+                tailLoading: 'Carga das caudas',
+                tailHint: 'um mercado ativo inclina as caudas spot em {tilt}',
                 calmSpell: 'um período calmo dura {seconds} s em média',
                 activeSpell: 'um período ativo dura {seconds} s em média',
                 apply: 'Aplicar',

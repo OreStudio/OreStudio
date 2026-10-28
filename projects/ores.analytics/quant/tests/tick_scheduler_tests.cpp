@@ -440,3 +440,30 @@ TEST_CASE("a configure is in force on return, in the trace, and sets the simulat
     });
     CHECK(configured == 1);
 }
+
+TEST_CASE("a body is told the tail tilt the market's pace gives", "[tick_scheduler]") {
+    auto loaded = no_heat;
+    loaded.tail_loading = 2.0;
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, loaded, 1);
+    scheduler.pin(market_state::active);
+    std::vector<double> tilts;
+    scheduler.add({.series = 1, .arrival = per_second("periodic", 1.0)},
+                  [&](const tick_context& c) {
+                      tilts.push_back(c.tail_tilt);
+                      return std::string{};
+                  });
+    scheduler.step();
+    auto off = loaded;
+    off.tail_loading = 0.0;
+    scheduler.configure(off);
+    scheduler.step();
+
+    REQUIRE(tilts.size() == 2);
+    // Active at two with no heat: a pace of two.
+    CHECK(tilts[0] == Catch::Approx(2.0 * std::log(2.0)));
+    CHECK(tilts[1] == 0.0);
+    auto negative = loaded;
+    negative.tail_loading = -1.0;
+    CHECK_THROWS_AS(scheduler.configure(negative), std::invalid_argument);
+}

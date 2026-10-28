@@ -74,6 +74,7 @@ const answeredRegime = z.object({
     speed: z.number().default(0),
     wake_rate: z.number().default(0),
     calm_rate: z.number().default(0),
+    tail_loading: z.number().default(0),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -147,6 +148,8 @@ interface Regime {
     /** How often a calm market turns active, and an active one calm, a second. */
     readonly wakeRate: number;
     readonly calmRate: number;
+    /** How far activity tilts a price's shape toward its tails; zero is off. */
+    readonly tailLoading: number;
 }
 
 /**
@@ -174,6 +177,7 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
         speed: reply.speed,
         wakeRate: reply.wake_rate,
         calmRate: reply.calm_rate,
+        tailLoading: reply.tail_loading,
     };
 }
 
@@ -306,8 +310,8 @@ export function registerMarketRegimeRoutes(
     });
 
     /**
-     * Sets how the market's pace moves from now on: the chain's two rates, the heat's
-     * jump and decay, and the speed. Numbers the market cannot run on are a bad request,
+     * Sets how the market moves from now on: the chain's two rates, the heat's jump and
+     * decay, the speed and the tail loading. Numbers the market cannot run on are a bad request,
      * and the service's message names the number.
      */
     server.put('/api/synthetic/market-regime/settings', async (request) => {
@@ -321,6 +325,7 @@ export function registerMarketRegimeRoutes(
                     jump: z.number().min(0).finite(),
                     decay: positive,
                     speed: positive,
+                    tailLoading: z.number().min(0).finite(),
                 })
                 .strict(),
             request.body,
@@ -333,6 +338,7 @@ export function registerMarketRegimeRoutes(
                 jump: body.jump,
                 decay: body.decay,
                 speed: body.speed,
+                tail_loading: body.tailLoading,
             },
             regimeReply,
         );

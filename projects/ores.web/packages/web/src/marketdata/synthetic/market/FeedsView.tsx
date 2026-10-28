@@ -55,10 +55,10 @@ export const MARKS_AT_MOST = 250;
 export type LaneDraw = 'auto' | 'marks' | 'density';
 
 /**
- * A sequential ramp from the sunk ground through the accent to red: more is brighter. Its top is
- * red, not gold, since gold is the colour of an interest-rate feed.
+ * A sequential ramp from the sunk ground through the accent to green: more is brighter. Its top
+ * is green, not gold, since gold is the colour of an interest-rate feed.
  */
-export const RAMP = ['#16181d', '#1d2a3d', '#26466b', '#3a6ea5', '#58a6ff', '#a7c7e7', '#f85149'];
+export const RAMP = ['#16181d', '#1d2a3d', '#26466b', '#3a6ea5', '#58a6ff', '#a7c7e7', '#3fb950'];
 
 export function ramp(value: number): string {
     const x = Math.max(0, Math.min(1, value)) * (RAMP.length - 1);

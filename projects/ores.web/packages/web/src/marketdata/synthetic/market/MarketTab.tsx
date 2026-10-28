@@ -173,14 +173,6 @@ export function MarketTab(): ReactNode {
                 />
             ) : null}
             {view === 'arrivals' ? (
-                <FoldCard
-                    history={folded.data}
-                    resolution={resolution}
-                    onResolution={setResolution}
-                    now={now}
-                />
-            ) : null}
-            {view === 'arrivals' ? (
                 <FamiliesView
                     trace={trace.data}
                     raster={raster.data}
@@ -190,6 +182,14 @@ export function MarketTab(): ReactNode {
                             [param]: value,
                         }).toString()}`
                     }
+                />
+            ) : null}
+            {view === 'arrivals' ? (
+                <FoldCard
+                    history={folded.data}
+                    resolution={resolution}
+                    onResolution={setResolution}
+                    now={now}
                 />
             ) : null}
             {view === 'feeds' ? (

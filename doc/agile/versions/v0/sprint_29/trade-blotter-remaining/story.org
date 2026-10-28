@@ -66,6 +66,7 @@ authorisation queue (see =* Decisions=).
 | [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | BACKLOG | | | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
 | [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | BACKLOG | | | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
 | [[id:C3D61F4A-C71A-4884-A35A-2F10ADCD8D44][Grant the Trade Blotter its reads and writes]] | DONE | 2026-10-25 | 2026-10-25 | Every code each Trade Blotter screen needs is seeded and granted to no human role, so each screen would open dark. Decide which human role owns the blotter, grant it the reads and writes the arc needs, and add the check that would have caught the gap. |
+| [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]] | BACKLOG | | | A notional column was drawn on the structure screens because the prototype draws one. It states a bond's convention for every family, and an FX trade has no such number at all, so the column read as a fault. This task settles what a screen states as a trade's size, if anything. |
 
 
 * Permissioning

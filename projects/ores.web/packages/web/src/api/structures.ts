@@ -34,9 +34,6 @@ export interface StructureLeg {
     readonly product: string;
     /** The state the trade is in, empty when the read could not name it. */
     readonly state: string;
-    /** The notional the trade holds, and its currency, empty when unread. */
-    readonly notional: string;
-    readonly currency: string;
     readonly external_version: number | null;
 }
 
@@ -80,10 +77,8 @@ export interface StructureTreeNode {
     /** The role this node takes under its parent. */
     readonly role: string;
     readonly sequence_number: number;
-    /** The product's name on a leaf, and what it is worth. */
+    /** The product's name on a leaf. */
     readonly product: string;
-    readonly notional: string;
-    readonly currency: string;
     readonly external_version: number | null;
     readonly children: readonly StructureTreeNode[];
 }
@@ -136,8 +131,6 @@ const treeNodeSchema: z.ZodType<StructureTreeNode> = z.lazy(() =>
         role: z.string().default(''),
         sequence_number: z.coerce.number().int().default(0),
         product: z.string().default(''),
-        notional: z.string().default(''),
-        currency: z.string().default(''),
         external_version: z.coerce.number().int().nullable().default(null),
         children: z.array(treeNodeSchema).default([]),
     }),
@@ -173,8 +166,6 @@ const structurePageRecordSchema = z.object({
                 kind: z.string().default(''),
                 product: z.string().default(''),
                 state: z.string().default(''),
-                notional: z.string().default(''),
-                currency: z.string().default(''),
                 external_version: z.coerce.number().int().nullable().default(null),
             }),
         )

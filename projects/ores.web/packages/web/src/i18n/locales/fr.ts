@@ -3820,7 +3820,6 @@ const fr: SourceCatalogue = {
             leg: 'Jambe',
             type: 'Type',
             state: 'État',
-            notional: 'Notionnel',
             party: 'Partie',
             counterpartyLabel: 'Contrepartie',
             partyShared: 'Partagée par chaque jambe, pour la durée de la structure.',

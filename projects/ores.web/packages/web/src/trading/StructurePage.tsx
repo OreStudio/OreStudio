@@ -93,10 +93,6 @@ function TreeNodeRow({
 }): ReactNode {
     const isStructure = node.role === 'structure' || node.children.length > 0;
     const isHere = node.id === current;
-    const money =
-        node.notional === ''
-            ? ''
-            : `${node.notional}${node.currency === '' ? '' : ` ${node.currency}`}`;
     return (
         <li>
             <div
@@ -127,9 +123,6 @@ function TreeNodeRow({
                         {node.role === '' ? null : <span> · {node.role}</span>}
                     </div>
                 </div>
-                {money === '' ? null : (
-                    <span className="whitespace-nowrap text-xs text-ink-muted">{money}</span>
-                )}
             </div>
             {node.children.length === 0 ? null : (
                 <ul className="m-0 list-none p-0">
@@ -309,9 +302,6 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
                         <th className="px-2 py-2 font-medium">{t('trading.structure.trade')}</th>
                         <th className="px-2 py-2 font-medium">{t('trading.structure.type')}</th>
                         <th className="px-2 py-2 font-medium">{t('trading.structure.state')}</th>
-                        <th className="px-2 py-2 text-right font-medium">
-                            {t('trading.structure.notional')}
-                        </th>
                         <th className="px-2 py-2 font-medium">
                             {t('trading.structure.externalVersion')}
                         </th>
@@ -335,11 +325,6 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
                             </td>
                             <td className="px-2 py-2">
                                 {leg.state === '' ? '—' : <Tag tone="up">{leg.state}</Tag>}
-                            </td>
-                            <td className="px-2 py-2 text-right text-ink">
-                                {leg.notional === ''
-                                    ? '—'
-                                    : `${leg.notional}${leg.currency === '' ? '' : ` ${leg.currency}`}`}
                             </td>
                             <td className="px-2 py-2 text-ink-muted">
                                 {leg.external_version === null

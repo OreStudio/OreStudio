@@ -3776,7 +3776,6 @@ export const en: SourceCatalogue = {
             leg: 'Leg',
             type: 'Type',
             state: 'State',
-            notional: 'Notional',
             party: 'Party',
             counterpartyLabel: 'Counterparty',
             partyShared: 'Shared by every leg, for the life of the structure.',

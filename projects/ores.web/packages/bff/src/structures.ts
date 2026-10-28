@@ -26,10 +26,7 @@ import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/
 import { subjects as partySubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
-import { subjects as bondSubject } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_kind_protocol';
-import { subjects as swapLegAmountSubjects } from '@ores/wire-protocol/generated/trading/protocol/swap_leg_amount_protocol';
-import { subjects as swapLegSubjects } from '@ores/wire-protocol/generated/trading/protocol/swap_leg_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
@@ -226,8 +223,6 @@ interface TreeNode {
     sequence_number: number;
     /** The product's name on a leaf, which is the type's description. */
     product: string;
-    notional: string;
-    currency: string;
     external_version: number | null;
     children: TreeNode[];
 }
@@ -253,7 +248,6 @@ function assembleTree(
     tradeReferences: ReadonlyMap<string, string>,
     trades: ReadonlyMap<string, Record<string, unknown>>,
     products: ReadonlyMap<string, string>,
-    notionals: ReadonlyMap<string, { notional: string; currency: string }>,
 ): TreeNode | null {
     const byId = new Map(structures.map((entry) => [text(entry['id']), entry]));
     if (!byId.has(structureId)) {
@@ -287,8 +281,6 @@ function assembleTree(
             role,
             sequence_number: sequence,
             product: '',
-            notional: '',
-            currency: '',
             external_version: null,
             children: [
                 ...childrenOf(id).map((childId) => assemble(childId, 'structure', 0)),
@@ -304,8 +296,6 @@ function assembleTree(
                         role: text(member['role']),
                         sequence_number: Number(member['sequence_number'] ?? 0),
                         product: products.get(type) ?? type,
-                        notional: notionals.get(tradeId)?.notional ?? '',
-                        currency: notionals.get(tradeId)?.currency ?? '',
                         external_version:
                             trade === undefined ? null : Number(trade['external_version'] ?? 0),
                         children: [],
@@ -433,65 +423,6 @@ async function statesOf(
     }
     return states;
 }
-
-/**
- * The notional each trade holds, keyed by the trade's id.
- *
- * Two families are read, and they hold the number in different places: a bond
- * states it on its instrument, and a rate trade states it as the amount of its
- * first leg. The rest are not read, and a leg of one states nothing rather than a
- * wrong number: an FX trade holds bought and sold amounts, not a notional, and
- * the tables that would answer for the others have no reader here yet.
- */
-async function notionalsOf(
-    session: LiveSession,
-    tradeIds: readonly string[],
-): Promise<ReadonlyMap<string, { notional: string; currency: string }>> {
-    const notionals = new Map<string, { notional: string; currency: string }>();
-    if (tradeIds.length === 0) {
-        return notionals;
-    }
-    const [bonds, amounts, legs] = await Promise.all([
-        readAll(session, bondSubject.list_bond_instruments_request, 'bond_instruments', {
-            filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
-            as_of: null,
-        }),
-        readAll(session, swapLegAmountSubjects.list_swap_leg_amounts_request, 'swap_leg_amounts', {
-            filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
-            as_of: null,
-        }),
-        readAll(session, swapLegSubjects.list_swap_legs_request, 'swap_legs', {
-            filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
-            as_of: null,
-        }),
-    ]);
-    for (const entry of bonds) {
-        const id = text(entry['trade_id']);
-        if (id !== '') {
-            notionals.set(id, {
-                notional: text(entry['notional']),
-                currency: '',
-            });
-        }
-    }
-    // A rate trade's amount is stated per leg and per period; the first one is
-    // the trade's size, and the currency is the leg's.
-    const currencyOf = new Map(
-        legs.map((entry) => [text(entry['trade_id']), text(entry['currency'])] as const),
-    );
-    for (const entry of amounts) {
-        const id = text(entry['trade_id']);
-        if (id === '' || notionals.has(id)) {
-            continue;
-        }
-        notionals.set(id, {
-            notional: text(entry['amount']),
-            currency: currencyOf.get(id) ?? '',
-        });
-    }
-    return notionals;
-}
-
 
 /**
  * The answer to a read the page can do without, or nothing.
@@ -825,7 +756,7 @@ export function registerStructureRoutes(
                 ...structures.map((entry) => text(entry['parent_structure_id'])),
             ]),
         ];
-        const [structureReferences, tradeReferences, trades, history, products, states, notionals] =
+        const [structureReferences, tradeReferences, trades, history, products, states] =
             await Promise.all([
             referencesOf(
                 session,
@@ -840,10 +771,6 @@ export function registerStructureRoutes(
             }),
             optional(() => productNames(session), new Map<string, string>()),
             optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
-            optional(
-                () => notionalsOf(session, allTradeIds),
-                new Map<string, { notional: string; currency: string }>(),
-            ),
         ]);
         void allIds;
 
@@ -860,8 +787,6 @@ export function registerStructureRoutes(
                     kind: type,
                     product: products.get(type) ?? type,
                     state: states.get(tradeId) ?? '',
-                    notional: notionals.get(tradeId)?.notional ?? '',
-                    currency: notionals.get(tradeId)?.currency ?? '',
                     external_version:
                         trade === undefined ? null : Number(trade['external_version'] ?? 0),
                 };
@@ -925,7 +850,6 @@ export function registerStructureRoutes(
                 tradeReferences,
                 trades,
                 products,
-                notionals,
             ),
             legs,
             roles: [...FREE_ROLES],

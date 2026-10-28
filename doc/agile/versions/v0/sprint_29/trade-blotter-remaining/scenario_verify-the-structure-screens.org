@@ -132,11 +132,13 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
   * *How it confirms and prices*: Confirmation, Pricing and External version,
     each with the sentence that explains it, and each matching the kind's row in
     Step 3.
-  * *Trades*: the legs table, with *LEG · TRADE · TYPE · STATE · NOTIONAL ·
-    EXTERNAL VERSION* and an *Unlink* per row.
+  * *Trades*: the legs table, with *LEG · TRADE · TYPE · STATE · EXTERNAL
+    VERSION* and an *Unlink* per row.
 - Passes when every leg shows its product name, a *live* state chip and its
-  external version, and when a bond or rate leg states a notional (an FX leg
-  states =—=: no reader names that family's size yet).
+  external version. There is no size column: a bond states a notional, a rate
+  leg an amount and an FX trade two amounts, so a single column would state a
+  bond's convention for families that do not have it. The analysis is
+  [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]].
 
 *** Result
 
@@ -222,3 +224,4 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 - The population's pairs carry two counterparties each, so Step 8 may find no
   valid pair. That is the inconsistency the * Before you start section states,
   and it is filed as a capture rather than fixed here.
+- No size column is drawn on purpose; see the analysis task named in Step 5.

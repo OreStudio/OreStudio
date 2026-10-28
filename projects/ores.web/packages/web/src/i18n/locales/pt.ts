@@ -3803,7 +3803,6 @@ const pt: SourceCatalogue = {
             leg: 'Perna',
             type: 'Tipo',
             state: 'Estado',
-            notional: 'Notional',
             party: 'Parte',
             counterpartyLabel: 'Contraparte',
             partyShared: 'Partilhada por cada perna, durante a vida da estrutura.',

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 6D920523-3110-4FA8-A91E-0AE57244BB30
+:END:
+#+title: The synthetic population carries its generated values in a p…
+#+description: The synthetic population carries its generated values in a per-family bag: trade_terms is a std::variant of bond_terms, commodity_terms, rate_terms, fx_terms, equity_terms and now credit_terms, and equity_terms alone is about forty members. The planner fills it, the writer reads it and constructs the real trading domain rows from it.
+
+It is not persisted and it is not JSON, so it does not repeat the JSON column defect literally. It repeats it in kind: a generic container standing in for domain concepts, one level up from the database.
+
+Why it is not DDD:
+
+- It models the union of what nine tables state rather than any product. An equity_terms can carry a barrier and a variance strike and a cliquet frequency at once, and no product does.
+- The trade type lives in a string beside the bag, and the writer branches on that string to decide what to read. The compiler enforces none of the couplings that the schema's checks enforce, so illegal states are representable and were in fact produced.
+- It duplicates the domain: the real types exist, and the writer's job is a translation from a bag into them. A translator that can disagree with both ends is where the eight refusals of the equity population came from, one per provisioning run.
+
+The evidence is the cost. An accumulator with a target, a touch with an option type, a forward with no quantity and a swap returning PriceReturn were all writable into the bag and all refused by the database, one run at a time. A planner that constructed equity_accumulator_instrument, equity_digital_option_instrument and the rest would have made most of those a compile error.
+
+The correction: the plan states domain rows. The planner constructs the trading domain types the routing names, plus their children, and the writer persists them and stops translating. The plan keeps only what is genuinely the generator's own: the slot, the book, the counterparty, the identifiers, the trade date and the netting set.
+
+That change is a refactor of the synthetic family planners and the writer, and it should be one task, not folded into a family.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

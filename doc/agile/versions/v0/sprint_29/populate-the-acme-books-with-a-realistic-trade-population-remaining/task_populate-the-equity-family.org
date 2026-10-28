@@ -26,11 +26,11 @@ ACME's books hold equity trades: total return swaps, vanilla, barrier, digital, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Paused after the catalogue. The payload and the planner wait on the basket modelling. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Resume at step 2 once a basket constituent is a row rather than a blob, because EquityWorstOfBasketSwap has no other representation. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance

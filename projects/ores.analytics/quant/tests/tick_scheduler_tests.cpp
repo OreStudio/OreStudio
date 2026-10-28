@@ -470,3 +470,59 @@ TEST_CASE("a body is told the tail tilt the market's pace gives", "[tick_schedul
     extreme.tail_loading = 11.0;
     CHECK_THROWS_AS(scheduler.configure(extreme), std::invalid_argument);
 }
+
+TEST_CASE("the history counts each group's ticks by the second and by the tenth",
+          "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
+    scheduler.pin(market_state::active);
+    scheduler.add({.series = 1, .arrival = per_second("periodic", 1.0), .group = "fx"}, quiet);
+    scheduler.add({.series = 2, .arrival = per_second("periodic", 0.5), .group = "rates"}, quiet);
+    for (int i = 0; i < 30; ++i)
+        scheduler.step();
+
+    const auto by_second = scheduler.history(ores::analytics::quant::service::history_resolution::second, 3600);
+    REQUIRE(by_second.groups == std::vector<std::string>{"fx", "rates"});
+    CHECK(by_second.slot_seconds == 1.0);
+    std::uint32_t fx = 0;
+    std::uint32_t rates = 0;
+    for (const auto& bin : by_second.bins) {
+        fx += bin.counts.empty() ? 0 : bin.counts[0];
+        rates += bin.counts.size() < 2 ? 0 : bin.counts[1];
+    }
+    CHECK(fx + rates == 30);
+    // Stepped, the loop took no reading, so each slot carries the pace the market ran at.
+    for (const auto& bin : by_second.bins)
+        CHECK(bin.pace == Catch::Approx(2.0));
+    // Twice the rate, so about two thirds; each law starts at a random phase.
+    CHECK(fx >= 19);
+    CHECK(fx <= 21);
+
+    const auto by_tenth = scheduler.history(ores::analytics::quant::service::history_resolution::tenth, 600);
+    CHECK(by_tenth.slot_seconds == 0.1);
+    std::uint32_t all = 0;
+    for (const auto& bin : by_tenth.bins)
+        for (const auto count : bin.counts)
+            all += count;
+    CHECK(all == 30);
+    // Active at two, so the thirty ticks span about ten seconds of the run.
+    CHECK(std::chrono::duration<double>(by_second.bins.back().at - by_second.bins.front().at).count() ==
+          Catch::Approx(9.0).margin(1.0));
+}
+
+TEST_CASE("a reading carries the ticks a second every law asks for", "[tick_scheduler]") {
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    scheduler.pin(market_state::active);
+    scheduler.add({.series = 1, .arrival = per_second("poisson", 3.0), .group = "fx"}, quiet);
+    scheduler.add({.series = 2, .arrival = per_second("poisson", 1.0), .group = "fx"}, quiet);
+    std::thread loop([&] { scheduler.run(); });
+    std::this_thread::sleep_for(250ms);
+    scheduler.stop();
+    loop.join();
+
+    const auto readings = scheduler.readings_since(std::chrono::system_clock::time_point{});
+    REQUIRE_FALSE(readings.empty());
+    // Four a second at a pace of two, with no heat.
+    CHECK(readings.back().intensity == Catch::Approx(8.0));
+}

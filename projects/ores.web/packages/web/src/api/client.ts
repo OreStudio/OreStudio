@@ -478,6 +478,8 @@ const marketStateSchema = z.enum(['calm', 'active']);
 const heatSampleSchema = z.object({
     at: z.string(),
     heat: z.number(),
+    /** The ticks a second every law asked for then: the market's λ(t). */
+    intensity: z.number().default(0),
 });
 
 /** The market-wide arrival factor in force: what a screen shows and a switch forces. */
@@ -507,6 +509,8 @@ const marketRegimeSchema = z.object({
     calmRate: z.number().default(0),
     /** How far activity tilts a price's shape toward its tails; zero is off. */
     tailLoading: z.number().default(0),
+    /** The pace of an active market; the calm pace follows from it so the mean is one. */
+    activeMultiplier: z.number().default(0),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;
@@ -548,6 +552,9 @@ const traceFeedSchema = z.object({
     effectiveRate: z.number(),
     phase: z.number(),
     excess: z.number(),
+    /** For a Hawkes law: its branching ratio and its decay; zero for the other laws. */
+    branchingRatio: z.number().default(0),
+    decay: z.number().default(0),
 });
 
 /** The scheduler's recent decisions, its own numbers, and every running feed's law. */
@@ -563,6 +570,23 @@ const marketTraceSchema = z.object({
 });
 
 export type MarketTrace = z.infer<typeof marketTraceSchema>;
+
+/** The ticks of the last stretch of the run, slot by slot and asset class by asset class. */
+const marketHistorySchema = z.object({
+    slotSeconds: z.number(),
+    groups: z.array(z.string()),
+    bins: z.array(
+        z.object({
+            at: z.string(),
+            counts: z.array(z.number()),
+            pace: z.number(),
+            activeShare: z.number(),
+        }),
+    ),
+});
+
+export type MarketHistory = z.infer<typeof marketHistorySchema>;
+export type HistoryResolution = 'second' | 'tenth';
 export type TraceEvent = z.infer<typeof traceEventSchema>;
 export type TraceFeed = z.infer<typeof traceFeedSchema>;
 export type MarketState = z.infer<typeof marketStateSchema>;
@@ -576,6 +600,9 @@ const feedRasterSchema = z.object({
     seconds: z.number(),
     feeds: z.array(
         z.object({
+            /** The feed's id and kind, so a screen can open the feed's own page. */
+            id: z.string().default(''),
+            kind: z.string().default(''),
             sourceName: z.string(),
             label: z.string(),
             assetClass: z.string(),
@@ -2426,6 +2453,19 @@ export const api = {
      * The scheduler's decisions over the last window, with its own numbers and
      * every running feed's law: one feed's events and the market's, or all.
      */
+    /**
+     * The ticks of the last hour by the second, or of the last ten minutes by the tenth, by
+     * asset class: what the market's temporal raster folds.
+     */
+    async marketHistory(resolution: HistoryResolution, seconds?: number): Promise<MarketHistory> {
+        const span = seconds === undefined ? '' : `&seconds=${String(seconds)}`;
+        return marketHistorySchema.parse(
+            await request(`/api/synthetic/market-history?resolution=${resolution}${span}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
     async marketTrace(input: {
         readonly seconds: number;
         readonly source?: string | undefined;

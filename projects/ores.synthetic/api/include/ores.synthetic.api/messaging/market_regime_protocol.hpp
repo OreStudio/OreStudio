@@ -45,6 +45,8 @@ struct market_regime_sample {
     std::chrono::system_clock::time_point at;
     /** @brief The shared heat then, in units of a rate: what any event adds and decay fades. */
     double heat = 0.0;
+    /** @brief The ticks a second every running feed's law asked for then: the market's lambda(t). */
+    double intensity = 0.0;
 };
 
 /**
@@ -92,6 +94,8 @@ struct get_market_regime_response {
     double calm_rate = 0.0;
     /** @brief How far activity tilts a price's shape toward its tails; zero is off. */
     double tail_loading = 0.0;
+    /** @brief The pace of an active market; the calm pace follows from it. Zero when not reported. */
+    double active_multiplier = 0.0;
 };
 
 /**
@@ -151,6 +155,10 @@ struct market_series_state {
     double phase = 0.0;
     /** @brief For a Hawkes law: the excess intensity now, above the baseline. */
     double excess = 0.0;
+    /** @brief For a Hawkes law: the branching ratio; zero for the other laws. */
+    double branching_ratio = 0.0;
+    /** @brief For a Hawkes law: the decay, per unit of operational time; zero otherwise. */
+    double decay = 0.0;
 };
 
 struct get_market_trace_response {
@@ -171,6 +179,42 @@ struct get_market_trace_response {
     std::vector<market_trace_event> events;
     /** @brief Every running feed and its law now, in name order. */
     std::vector<market_series_state> series_states;
+};
+
+/**
+ * @brief Reads the ticks of the last stretch of the run, slot by slot and asset class by
+ * asset class: an hour by the second, or ten minutes by the tenth of a second.
+ */
+struct get_market_history_request {
+    using response_type = struct get_market_history_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.get_market_history";
+    static constexpr bool requires_session = true;
+    /** @brief "second" or "tenth". */
+    std::string resolution = "second";
+    /** @brief How far back to read, in seconds of the run. */
+    double seconds = 3600.0;
+};
+
+/** @brief One slot of the history. */
+struct market_history_bin {
+    std::chrono::system_clock::time_point at;
+    /** @brief The ticks of each group in the slot, by the group's index. */
+    std::vector<std::uint32_t> counts;
+    /** @brief The mean pace over the slot; zero when the loop took no reading in it. */
+    double pace = 0.0;
+    /** @brief The share of the slot the market was active. */
+    double active_share = 0.0;
+};
+
+struct get_market_history_response {
+    bool success = false;
+    std::string message;
+    /** @brief The length of a slot, in seconds. */
+    double slot_seconds = 0.0;
+    /** @brief The groups the counts are by: the feeds' asset classes. */
+    std::vector<std::string> groups;
+    /** @brief The slots with a tick or a reading in them, oldest first. */
+    std::vector<market_history_bin> bins;
 };
 
 struct pin_market_regime_request {
@@ -210,6 +254,7 @@ struct pin_market_regime_response {
     double wake_rate = 0.0;
     double calm_rate = 0.0;
     double tail_loading = 0.0;
+    double active_multiplier = 0.0;
 };
 
 /**

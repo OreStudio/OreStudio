@@ -285,7 +285,53 @@ public:
                 .sensitivity = state.sensitivity,
                 .effective_rate = state.effective_rate,
                 .phase = state.phase,
-                .excess = state.excess});
+                .excess = state.excess,
+                .branching_ratio = state.branching_ratio,
+                .decay = state.decay});
+        reply(nats_, msg, response);
+    }
+
+    /** Replies with the ticks of the last stretch of the run, by slot and by asset class. */
+    void history(ores::nats::message msg) {
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+        namespace quant = ores::analytics::quant;
+
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting get_market_history request: auth failed.";
+            error_reply(nats_, msg, ctx.error());
+            return;
+        }
+        const auto decoded =
+            ores::nats::default_wire_codec()
+                .decode<ores::synthetic::messaging::get_market_history_request>(msg.data);
+        if (!decoded || !std::isfinite(decoded->seconds) || decoded->seconds <= 0.0 ||
+            (decoded->resolution != "second" && decoded->resolution != "tenth")) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+                << "Rejecting get_market_history request: the payload did not decode, names no "
+                   "window or names no resolution.";
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        const auto history = scheduler_.history(decoded->resolution == "tenth"
+                                                    ? quant::service::history_resolution::tenth
+                                                    : quant::service::history_resolution::second,
+                                                decoded->seconds);
+        ores::synthetic::messaging::get_market_history_response response;
+        response.success = true;
+        response.slot_seconds = history.slot_seconds;
+        response.groups = history.groups;
+        response.bins.reserve(history.bins.size());
+        for (const auto& bin : history.bins)
+            response.bins.push_back(ores::synthetic::messaging::market_history_bin{
+                .at = bin.at,
+                .counts = bin.counts,
+                .pace = bin.pace,
+                .active_share = bin.active_share});
         reply(nats_, msg, response);
     }
 
@@ -323,11 +369,12 @@ private:
         response.wake_rate = market.wake_rate;
         response.calm_rate = market.calm_rate;
         response.tail_loading = market.tail_loading;
+        response.active_multiplier = market.active_multiplier;
         constexpr auto window = std::chrono::minutes(2);
         const auto from = std::chrono::system_clock::now() - window;
         for (const auto& reading : scheduler_.readings_since(from)) {
             response.samples.push_back(ores::synthetic::messaging::market_regime_sample{
-                .at = reading.at, .heat = reading.heat});
+                .at = reading.at, .heat = reading.heat, .intensity = reading.intensity});
         }
     }
 

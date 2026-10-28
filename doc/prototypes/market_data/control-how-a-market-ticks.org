@@ -7,12 +7,14 @@
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-28
 
 | Item      | Where                                        |
 |-----------+----------------------------------------------|
-| Prototype | [[file:control-how-a-market-ticks/][the prototype page]] |
-| Group     | [[file:index.org][Market data prototypes]]       |
+| Prototype     | [[file:control-how-a-market-ticks/][the prototype page]] |
+| Gemini review | [[file:control-how-a-market-ticks/review/][the review]]          |
+| Group         | [[file:index.org][Market data prototypes]]       |
+| Successor     | [[file:run-the-market.org][Run the market]]                  |
 
 * Summary
 
@@ -225,3 +227,12 @@ page.
 Build order: the Arrivals tab first, because its controls already exist in the
 editor; the Market regime tab second, because its verbs already exist on the
 service; the raster last, since it is the only part with no backend yet.
+
+* Superseded
+
+On 2026-10-28 Gemini reviewed the built Market regime tab, and the
+[[file:run-the-market.org][Run the market]] prototype answers that review. The
+split between a feed's Arrivals tab and the market stands. The market's own tab
+becomes five tabs, one question each, and its raster becomes a temporal raster
+of the last hour with the two-minute lanes kept as its zoom.
+

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime & Stochastic Tick Arrival Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            950: '#07090e',
+                            900: '#0b0f17',
+                            850: '#111622',
+                            800: '#171d2e',
+                            700: '#232a3f',
+                            600: '#323c57',
+                        },
+                        neon: {
+                            cyan: '#00f0ff',
+                            gold: '#ffb703',
+                            blue: '#3a86ff',
+                            green: '#06d6a0',
+                            rose: '#ff0055',
+                            purple: '#8338ec'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #232a3f; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #323c57; }
+        
+        .glow-cyan { box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); }
+        .glow-gold { box-shadow: 0 0 12px rgba(255, 183, 3, 0.25); }
+        .glow-rose { box-shadow: 0 0 12px rgba(255, 0, 85, 0.25); }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #171d2e;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #00f0ff;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0,240,255,0.6);
+        }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-300 font-sans antialiased min-h-screen flex flex-col selection:bg-neon-cyan selection:text-dark-950">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-dark-900 border-b border-dark-700 px-5 py-2.5 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <div class="h-8 w-8 rounded bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-dark-950 font-bold text-lg shadow-lg">
+                    <i class="fa-solid font-mono text-base font-black">λ</i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-100 text-sm tracking-wide flex items-center gap-2">
+                        STOCHASTIC_TICK_ENGINE <span class="text-[10px] font-mono font-normal px-2 py-0.5 rounded bg-dark-700 text-neon-cyan border border-dark-600">v3.2.0-HAWKES</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">High-Frequency Point Process Simulator & Multi-Feed Spillover Timeline</p>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex space-x-1 text-xs font-medium border-l border-dark-700 pl-6">
+                <button onclick="setActiveTab('market-regime')" id="tab-market-regime" class="px-3 py-1.5 rounded text-neon-cyan bg-dark-800 border border-dark-600 font-mono transition-all">
+                    Market Regime
+                </button>
+                <button onclick="setActiveTab('hawkes-config')" id="tab-hawkes-config" class="px-3 py-1.5 rounded hover:text-slate-100 text-slate-400 font-mono transition-all">
+                    Hawkes & Parameters
+                </button>
+                <button onclick="setActiveTab('analytics')" id="tab-analytics" class="px-3 py-1.5 rounded hover:text-slate-100 text-slate-400 font-mono transition-all">
+                    Metrics & Latency
+                </button>
+            </nav>
+        </div>
+
+        <div class="flex items-center space-x-4 font-mono text-xs">
+            <div class="flex items-center space-x-2 bg-dark-850 px-3 py-1.5 rounded border border-dark-700">
+                <span class="inline-block w-2 h-2 rounded-full bg-neon-green animate-pulse"></span>
+                <span class="text-slate-400">FPS:</span>
+                <span id="fps-counter" class="text-neon-green font-bold">60.0</span>
+            </div>
+            <div class="flex items-center space-x-2 bg-dark-850 px-3 py-1.5 rounded border border-dark-700">
+                <i class="fa-solid fa-bolt text-neon-gold text-xs"></i>
+                <span class="text-slate-400">Events/s:</span>
+                <span id="global-eps" class="text-slate-100 font-bold">142.8</span>
+            </div>
+            <button id="btn-pause" onclick="toggleSimulation()" class="bg-dark-800 hover:bg-dark-700 text-slate-200 border border-dark-600 px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-pause text-neon-gold"></i> <span>Pause Engine</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sub-header description block -->
+    <div class="bg-dark-900/60 border-b border-dark-800/80 px-6 py-2 text-xs text-slate-400 flex justify-between items-center">
+        <div>
+            The global state scales baseline arrival rates across all feeds. Feed-specific clustering and cross-excitation parameters are set in the model configuration.
+        </div>
+        <div class="font-mono text-[11px] text-slate-500">
+            Window: <span id="time-window-label" class="text-slate-300">120s</span> | Resolution: <span class="text-slate-300">10ms</span>
+        </div>
+    </div>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 p-4 md:p-6 space-y-6 max-w-[1800px] mx-auto w-full">
+
+        <!-- Top Row: Market State Metrics Bar -->
+        <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3 relative overflow-hidden">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">STATE</div>
+                <div class="flex items-center mt-1 space-x-2">
+                    <span id="regime-badge" class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950/80 text-neon-green border border-emerald-500/30">
+                        ACTIVE
+                    </span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">MULTIPLIER</div>
+                <div id="stat-multiplier" class="text-lg font-mono font-bold text-slate-100 mt-0.5">×2.00</div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">HEAT LOOP GAIN</div>
+                <div id="stat-heat-gain" class="text-lg font-mono font-bold text-neon-cyan mt-0.5">0.025 / 1.0</div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">RUN SEED</div>
+                <div id="stat-run-seed" class="text-lg font-mono font-bold text-slate-200 mt-0.5">42890</div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">MARKET SPEED</div>
+                <div id="stat-market-speed" class="text-sm font-mono text-slate-200 mt-1">
+                    <span class="font-bold text-base text-slate-100">1440</span> <span class="text-[10px] text-slate-400">sim-sec/unit</span>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">AGGREGATE TICKS/S</div>
+                <div id="stat-ticks-sec" class="text-lg font-mono font-bold text-neon-gold mt-0.5">142.8</div>
+            </div>
+
+            <div class="bg-dark-900 border border-dark-700/70 rounded-lg p-3">
+                <div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">PROCESSING LATENESS</div>
+                <div id="stat-lateness" class="text-xs font-mono text-slate-200 mt-1">
+                    <span class="text-sm font-bold text-slate-100">0.8 ms</span> <span class="text-slate-500">max 18.2ms</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Regime State Controls Bar -->
+        <section class="bg-dark-900 border border-dark-700/80 rounded-lg p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">FORCE REGIME STATE:</span>
+                <div class="inline-flex rounded-md shadow-sm bg-dark-950 p-1 border border-dark-700">
+                    <button onclick="setRegime('Auto')" id="btn-regime-auto" class="px-3 py-1 text-xs font-mono rounded font-semibold text-slate-400 hover:text-slate-200 transition-all">Auto</button>
+                    <button onclick="setRegime('Calm')" id="btn-regime-calm" class="px-3 py-1 text-xs font-mono rounded font-semibold text-slate-400 hover:text-slate-200 transition-all">Calm</button>
+                    <button onclick="setRegime('Active')" id="btn-regime-active" class="px-3 py-1 text-xs font-mono rounded font-semibold bg-neon-cyan text-dark-950 font-bold transition-all shadow-sm">Active</button>
+                    <button onclick="setRegime('Volatile')" id="btn-regime-volatile" class="px-3 py-1 text-xs font-mono rounded font-semibold text-slate-400 hover:text-slate-200 transition-all">Volatile Burst</button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-6 text-xs font-mono">
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">SET BY:</span>
+                    <span id="regime-setter" class="text-slate-200 bg-dark-800 px-2.5 py-1 rounded border border-dark-700">The chain, self-oscillating</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">SPILLOVER OVERDRIVE:</span>
+                    <button id="btn-cross-toggle" onclick="toggleCrossExcitation()" class="px-2.5 py-1 rounded bg-indigo-950 text-neon-blue border border-indigo-700/50 hover:bg-indigo-900">
+                        <i class="fa-solid fa-diagram-project mr-1"></i> Hawkes Cross-Firing: ON
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN DUAL SYNCHRONIZED TIMELINE CANVAS CONTAINER -->
+        <section class="bg-dark-900 border border-dark-700/80 rounded-lg p-4 space-y-3">
+            
+            <!-- Controls & Timeline Header -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-dark-800">
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-xs font-mono font-bold text-slate-200 tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-neon-cyan"></i> DUAL SYNCHRONIZED TIMELINE & MULTI-FEED RASTER
+                    </h2>
+                    <span class="text-[10px] font-mono text-slate-500">Shared Time Axis (-120s to NOW)</span>
+                </div>
+
+                <!-- Timeline Controls -->
+                <div class="flex items-center space-x-3 text-xs font-mono">
+                    <div class="flex items-center space-x-1 bg-dark-850 px-2 py-1 rounded border border-dark-700">
+                        <span class="text-slate-400 text-[11px]">Zoom:</span>
+                        <button onclick="setWindowTime(30)" id="zoom-30" class="px-2 py-0.5 rounded text-slate-400 hover:text-slate-200">30s</button>
+                        <button onclick="setWindowTime(60)" id="zoom-60" class="px-2 py-0.5 rounded text-slate-400 hover:text-slate-200">60s</button>
+                        <button onclick="setWindowTime(120)" id="zoom-120" class="px-2 py-0.5 rounded bg-dark-700 text-neon-cyan font-bold">120s</button>
+                    </div>
+
+                    <div class="flex items-center space-x-2 bg-dark-850 px-2.5 py-1 rounded border border-dark-700">
+                        <span class="text-slate-400 text-[11px]">Spillover Arcs:</span>
+                        <input type="checkbox" id="chk-draw-arcs" checked class="accent-neon-cyan cursor-pointer">
+                    </div>
+
+                    <button onclick="clearTimeline()" class="px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-slate-400 hover:text-slate-200 border border-dark-700 text-xs transition-colors">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Wrapper for synchronized layout -->
+            <div class="relative w-full overflow-hidden space-y-1">
+                
+                <!-- TOP SPARKLINE CANVAS (SHARED HEAT & TICKS/SEC) -->
+                <div class="relative">
+                    <div class="absolute top-2 left-3 z-10 pointer-events-none flex items-center space-x-4 font-mono text-[11px]">
+                        <span class="text-neon-cyan font-semibold flex items-center gap-1.5">
+                            <span class="w-2.5 h-0.5 bg-neon-cyan inline-block"></span> Shared Market Heat
+                        </span>
+                        <span class="text-neon-gold font-semibold flex items-center gap-1.5">
+                            <span class="w-2.5 h-0.5 bg-neon-gold inline-block"></span> Aggregate Ticks / sec
+                        </span>
+                    </div>
+                    <canvas id="sparklineCanvas" class="w-full h-24 bg-dark-950 rounded border border-dark-800 block cursor-crosshair"></canvas>
+                </div>
+
+                <!-- BOTTOM MULTI-FEED RASTER CANVAS -->
+                <div class="relative">
+                    <div class="absolute top-2 left-3 z-10 pointer-events-none flex items-center space-x-4 font-mono text-[10px]">
+                        <span class="text-slate-400 uppercase tracking-widest font-bold">EVERY FEED'S TICK ARRIVALS</span>
+                        <span class="text-slate-500">|</span>
+                        <span class="flex items-center gap-1 text-slate-400"><span class="w-2 h-2 rounded-full bg-neon-cyan inline-block"></span> Standard Tick</span>
+                        <span class="flex items-center gap-1 text-slate-400"><span class="w-2 h-2 rounded-full bg-neon-rose inline-block"></span> Clustered Burst</span>
+                        <span class="flex items-center gap-1 text-slate-400"><span class="w-2 h-2 rounded-full bg-neon-gold inline-block"></span> Cross-Excited Trigger</span>
+                    </div>
+                    <canvas id="rasterCanvas" class="w-full h-[460px] bg-dark-950 rounded border border-dark-800 block cursor-crosshair"></canvas>
+                </div>
+
+                <!-- Shared Time Scrubber / Cursor Legend Overlay -->
+                <div class="flex justify-between items-center px-2 py-1 text-[11px] font-mono text-slate-500 bg-dark-950/80 rounded border border-dark-800">
+                    <span id="label-time-min">-120s</span>
+                    <span id="label-time-mid" class="text-slate-400">-60s</span>
+                    <span class="text-neon-cyan font-bold flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-neon-cyan animate-ping"></span> LIVE (NOW)
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARAMETER EDITING & DRIVERS PANEL ("WHAT MOVES THE MARKET") -->
+        <section class="bg-dark-900 border border-dark-700/80 rounded-lg p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-dark-800 pb-3">
+                <div>
+                    <h3 class="text-xs font-mono font-bold text-slate-200 tracking-wider uppercase">WHAT MOVES THE MARKET (REGIME & HAWKES CONFIGURATION)</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Parameters drive regime transition probabilities, baseline rates, self-excitation, and cross-asset feedback.</p>
+                </div>
+                <button onclick="applyModelParameters()" class="bg-neon-cyan hover:bg-cyan-400 text-dark-950 font-mono text-xs font-bold px-4 py-2 rounded shadow-lg transition-all glow-cyan flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i> Apply Configuration
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 font-mono text-xs">
+                <!-- Calm to Active Transition -->
+                <div class="bg-dark-950 p-3 rounded border border-dark-800 flex flex-col justify-between space-y-2">
+                    <label class="text-slate-400 text-[11px]">Calm to active, a second</label>
+                    <input type="text" id="input-calm-to-active" value="0.0016666666" class="bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-slate-100 font-mono text-xs focus:border-neon-cyan outline-none">
+                    <span class="text-[10px] text-slate-500">a calm spell lasts 600 s on average</span>
+                </div>
+
+                <!-- Active to Calm Transition -->
+                <div class="bg-dark-950 p-3 rounded border border-dark-800 flex flex-col justify-between space-y-2">
+                    <label class="text-slate-400 text-[11px]">Active to calm, a second</label>
+                    <input type="text" id="input-active-to-calm" value="0.0033333333" class="bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-slate-100 font-mono text-xs focus:border-neon-cyan outline-none">
+                    <span class="text-[10px] text-slate-500">an active spell lasts 300 s on average</span>
+                </div>
+
+                <!-- Heat One Tick Adds -->
+                <div class="bg-dark-950 p-3 rounded border border-dark-800 flex flex-col justify-between space-y-2">
+                    <label class="text-slate-400 text-[11px]">Heat one tick adds</label>
+                    <input type="number" step="0.05" id="input-heat-add" value="0.50" class="bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-slate-100 font-mono text-xs focus:border-neon-cyan outline-none">
+                    <span class="text-[10px] text-slate-500">incremental volatility push per event</span>
+                </div>
+
+                <!-- Heat Decay per second -->
+                <div class="bg-dark-950 p-3 rounded border border-dark-800 flex flex-col justify-between space-y-2">
+                    <label class="text-slate-400 text-[11px]">Heat decay, a second ($\beta$)</label>
+                    <input type="number" step="1" id="input-heat-decay" value="20" class="bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-slate-100 font-mono text-xs focus:border-neon-cyan outline-none">
+                    <span class="text-[10px] text-slate-500">memory dissipation rate</span>
+                </div>
+
+                <!-- Market Speed -->
+                <div class="bg-dark-950 p-3 rounded border border-dark-800 flex flex-col justify-between space-y-2">
+                    <label class="text-slate-400 text-[11px]">Market speed factor</label>
+                    <input type="number" id="input-market-speed" value="1440" class="bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-slate-100 font-mono text-xs focus:border-neon-cyan outline-none">
+                    <span class="text-[10px] text-slate-500">simulated time acceleration</span>
+                </div>
+
+                <!-- Hawkes Self-Excitation Alpha -->
+                <div class="bg-dark-950 p-3 rounded border border-dark-800 flex flex-col justify-between space-y-2">
+                    <label class="text-slate-400 text-[11px]">Hawkes Self-Excitation ($\alpha$)</label>
+                    <input type="number" step="0.05" id="input-hawkes-alpha" value="0.45" class="bg-dark-900 border border-dark-700 rounded px-2.5 py-1.5 text-neon-gold font-mono text-xs focus:border-neon-cyan outline-none">
+                    <span class="text-[10px] text-slate-500">clustering coefficient ($\alpha < 1.0$)</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Status Banner -->
+    <footer class="bg-dark-900 border-t border-dark-800 px-6 py-3 text-xs font-mono text-slate-500 flex flex-wrap justify-between items-center gap-2">
+        <div class="flex items-center space-x-4">
+            <span class="flex items-center gap-1.5 text-slate-400">
+                <span class="w-2 h-2 rounded-full bg-neon-green"></span> Engine Online
+            </span>
+            <span>C++ Core Emulation (O(1) Recursive Intensity Updates)</span>
+        </div>
+        <div>
+            <span>A change applies instantly. Spot feeds take new parameters on next tick.</span>
+        </div>
+    </footer>
+
+    <!-- SIMULATION ENGINE & RASTER CANVAS SCRIPT -->
+    <script>
+        // --- 1. CONFIGURATION & FEED DEFINITIONS ---
+        const FEEDS = [
+            // Major FX Spot Pairs (High Frequency)
+            { id: 'EUR/USD', category: 'FX SPOT', baseRate: 18.0, alpha: 0.55, beta: 2.2, color: '#00f0ff', active: true },
+            { id: 'GBP/USD', category: 'FX SPOT', baseRate: 14.0, alpha: 0.50, beta: 2.0, color: '#3a86ff', active: true },
+            { id: 'AUD/USD', category: 'FX SPOT', baseRate: 11.0, alpha: 0.45, beta: 1.8, color: '#00f0ff', active: true },
+            { id: 'NZD/USD', category: 'FX SPOT', baseRate: 9.0,  alpha: 0.40, beta: 1.8, color: '#3a86ff', active: true },
+            
+            // Benchmark Overnight Rates
+            { id: 'AUD AONIA', category: 'RATES', baseRate: 2.5, alpha: 0.25, beta: 1.2, color: '#ffb703', active: true },
+            { id: 'CAD CORRA', category: 'RATES', baseRate: 2.2, alpha: 0.20, beta: 1.2, color: '#ffb703', active: true },
+            { id: 'CHF SARON', category: 'RATES', baseRate: 2.0, alpha: 0.20, beta: 1.2, color: '#ffb703', active: true },
+            { id: 'CNY SHIBOR',category: 'RATES', baseRate: 3.0, alpha: 0.30, beta: 1.5, color: '#ffb703', active: true },
+            { id: 'DKK DESTR', category: 'RATES', baseRate: 1.8, alpha: 0.15, beta: 1.0, color: '#ffb703', active: true },
+            { id: 'EUR ESTR',  category: 'RATES', baseRate: 3.5, alpha: 0.30, beta: 1.4, color: '#ffb703', active: true },
+            { id: 'GBP SONIA', category: 'RATES', baseRate: 3.2, alpha: 0.28, beta: 1.4, color: '#ffb703', active: true },
+            { id: 'HKD HONIA', category: 'RATES', baseRate: 2.1, alpha: 0.20, beta: 1.1, color: '#ffb703', active: true },
+            { id: 'INR MIBOR', category: 'RATES', baseRate: 2.8, alpha: 0.25, beta: 1.3, color: '#ffb703', active: true },
+            { id: 'JPY TONA',  category: 'RATES', baseRate: 3.8, alpha: 0.35, beta: 1.6, color: '#ffb703', active: true },
+            { id: 'KRW KOFR',  category: 'RATES', baseRate: 2.4, alpha: 0.22, beta: 1.2, color: '#ffb703', active: true },
+            { id: 'NOK NOWA',  category: 'RATES', baseRate: 1.9, alpha: 0.18, beta: 1.1, color: '#ffb703', active: true },
+            { id: 'SEK SWESTR',category: 'RATES', baseRate: 2.0, alpha: 0.20, beta: 1.1, color: '#ffb703', active: true }
+        ];
+
+        // --- 2. ENGINE GLOBAL STATE ---
+        let simRunning = true;
+        let windowDurationSec = 120; // 120s sliding window
+        let globalMultiplier = 2.0;
+        let regimeState = 'Active'; // Auto, Calm, Active, Volatile
+        let crossExcitationEnabled = true;
+        let drawSpilloverArcs = true;
+
+        // Hawkes & Heat Loop Parameters
+        let params = {
+            calmToActive: 0.00166666,
+            activeToCalm: 0.00333333,
+            heatAdd: 0.50,
+            heatDecay: 20.0,
+            marketSpeed: 1440,
+            hawkesAlpha: 0.45
+        };
+
+        // Shared Heat & Intensity Tracking
+        let sharedHeat = 0.25;
+        let aggregateTicksPerSec = 142.8;
+
+        // Event Storage Structure
+        // Array of events: { time: relativeSec, feedIndex: int, type: 'standard'|'burst'|'cross', intensity: float, sourceFeed: int|null }
+        let eventHistory = [];
+        let sparklineData = []; // { time, heat, ticksPerSec }
+
+        // Cross-firing animation links: { x1, y1, x2, y2, progress, color }
+        let activeArcs = [];
+
+        // Performance / FPS tracking
+        let lastTimestamp = performance.now();
+        let frameCount = 0;
+        let currentFps = 60.0;
+
+        // --- 3. DOM & CANVAS ELEMENTS ---
+        const sparklineCanvas = document.getElementById('sparklineCanvas');
+        const sparklineCtx = sparklineCanvas.getContext('2d');
+
+        const rasterCanvas = document.getElementById('rasterCanvas');
+        const rasterCtx = rasterCanvas.getContext('2d');
+
+        // Resizing Canvas for High-DPI Display
+        function resizeCanvases() {
+            const dpr = window.devicePixelRatio || 1;
+            
+            [sparklineCanvas, rasterCanvas].forEach(canvas => {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+            });
+        }
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // --- 4. STOCHASTIC Hawkes SIMULATION STEP ---
+        // Generates ticks for all feeds using recursive exponential intensity
+        function simulationStep(dt) {
+            if (!simRunning) return;
+
+            const now = performance.now() / 1000;
+
+            // Decay shared heat
+            sharedHeat = Math.max(0.05, sharedHeat - (params.heatDecay * 0.001 * dt));
+
+            // Regime State Auto Logic
+            if (regimeState === 'Auto') {
+                if (Math.random() < params.calmToActive * dt) {
+                    globalMultiplier = 2.5;
+                } else if (Math.random() < params.activeToCalm * dt) {
+                    globalMultiplier = 0.8;
+                }
+            } else if (regimeState === 'Calm') {
+                globalMultiplier = 0.6;
+            } else if (regimeState === 'Active') {
+                globalMultiplier = 2.0;
+            } else if (regimeState === 'Volatile') {
+                globalMultiplier = 4.2;
+            }
+
+            let generatedThisStep = 0;
+
+            FEEDS.forEach((feed, feedIdx) => {
+                // Compute current feed intensity: lambda_i(t) = (mu_i + alpha * heat) * multiplier
+                let intensity = (feed.baseRate + (feed.alpha * sharedHeat * 25.0)) * globalMultiplier;
+                
+                // Poisson / Hawkes thinning check for event occurrence in dt window
+                let eventProb = 1 - Math.exp(-intensity * dt);
+
+                if (Math.random() < eventProb) {
+                    generatedThisStep++;
+                    
+                    // Determine event type
+                    let isBurst = (sharedHeat > 0.6) || (Math.random() < feed.alpha * 0.4);
+                    let eventType = isBurst ? 'burst' : 'standard';
+
+                    // Add heat bump
+                    sharedHeat += params.heatAdd * 0.02;
+
+                    // Record Event
+                    let eventObj = {
+                        time: now,
+                        feedIndex: feedIdx,
+                        type: eventType,
+                        intensity: intensity,
+                        sourceFeed: null
+                    };
+                    eventHistory.push(eventObj);
+
+                    // Cross-Excitation Spillover (Triggering event on secondary feed)
+                    if (crossExcitationEnabled && feed.category === 'FX SPOT' && Math.random() < 0.35) {
+                        // Pick a rate feed to cross-excite
+                        let targetIdx = 4 + Math.floor(Math.random() * (FEEDS.length - 4));
+                        eventHistory.push({
+                            time: now + (Math.random() * 0.05), // micro delay
+                            feedIndex: targetIdx,
+                            type: 'cross',
+                            intensity: intensity * 1.2,
+                            sourceFeed: feedIdx
+                        });
+
+                        // Trigger Arc Animation if enabled
+                        if (drawSpilloverArcs) {
+                            activeArcs.push({
+                                sourceIdx: feedIdx,
+                                targetIdx: targetIdx,
+                                timeCreated: now,
+                                duration: 0.45
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Smooth Aggregate Ticks per second
+            let instantaneousEps = generatedThisStep / dt;
+            aggregateTicksPerSec = (aggregateTicksPerSec * 0.92) + (instantaneousEps * 0.08);
+
+            // Append Sparkline Data Point
+            sparklineData.push({
+                time: now,
+                heat: sharedHeat,
+                ticksPerSec: aggregateTicksPerSec
+            });
+
+            // Clean up old history outside window
+            const cutoffTime = now - windowDurationSec;
+            eventHistory = eventHistory.filter(e => e.time >= cutoffTime);
+            sparklineData = sparklineData.filter(s => s.time >= cutoffTime);
+            activeArcs = activeArcs.filter(a => (now - a.timeCreated) < a.duration);
+        }
+
+        // --- 5. SYNCHRONIZED CANVAS RENDER LOOP ---
+        function render() {
+            const now = performance.now() / 1000;
+
+            // Frame Rate Calculation
+            frameCount++;
+            if (now - lastTimestamp >= 1.0) {
+                currentFps = frameCount / (now - lastTimestamp);
+                frameCount = 0;
+                lastTimestamp = now;
+                document.getElementById('fps-counter').innerText = currentFps.toFixed(1);
+            }
+
+            // Update Header Stats
+            document.getElementById('stat-multiplier').innerText = `×${globalMultiplier.toFixed(2)}`;
+            document.getElementById('stat-heat-gain').innerText = `${sharedHeat.toFixed(3)} / 1.0`;
+            document.getElementById('stat-ticks-sec').innerText = aggregateTicksPerSec.toFixed(1);
+            document.getElementById('global-eps').innerText = aggregateTicksPerSec.toFixed(1);
+
+            // ----------------------------------------------------
+            // A. DRAW TOP SPARKLINE CANVAS
+            // ----------------------------------------------------
+            const sWidth = sparklineCanvas.getBoundingClientRect().width;
+            const sHeight = sparklineCanvas.getBoundingClientRect().height;
+            
+            sparklineCtx.clearRect(0, 0, sWidth, sHeight);
+
+            // Grid lines
+            sparklineCtx.strokeStyle = '#171d2e';
+            sparklineCtx.lineWidth = 1;
+            for (let x = 0; x < sWidth; x += sWidth / 6) {
+                sparklineCtx.beginPath();
+                sparklineCtx.moveTo(x, 0);
+                sparklineCtx.lineTo(x, sHeight);
+                sparklineCtx.stroke();
+            }
+
+            if (sparklineData.length > 1) {
+                const startTime = now - windowDurationSec;
+
+                // 1. Draw Shared Heat Curve (Neon Cyan)
+                sparklineCtx.beginPath();
+                sparklineCtx.strokeStyle = '#00f0ff';
+                sparklineCtx.lineWidth = 1.5;
+
+                sparklineData.forEach((pt, i) => {
+                    let normX = (pt.time - startTime) / windowDurationSec;
+                    let x = normX * sWidth;
+                    let y = sHeight - (Math.min(pt.heat, 1.5) / 1.5) * (sHeight - 12);
+
+                    if (i === 0) sparklineCtx.moveTo(x, y);
+                    else sparklineCtx.lineTo(x, y);
+                });
+                sparklineCtx.stroke();
+
+                // 2. Draw Ticks/Sec Curve (Neon Gold)
+                sparklineCtx.beginPath();
+                sparklineCtx.strokeStyle = '#ffb703';
+                sparklineCtx.lineWidth = 1.5;
+
+                sparklineData.forEach((pt, i) => {
+                    let normX = (pt.time - startTime) / windowDurationSec;
+                    let x = normX * sWidth;
+                    let y = sHeight - (Math.min(pt.ticksPerSec, 300) / 300) * (sHeight - 12);
+
+                    if (i === 0) sparklineCtx.moveTo(x, y);
+                    else sparklineCtx.lineTo(x, y);
+                });
+                sparklineCtx.stroke();
+            }
+
+            // ----------------------------------------------------
+            // B. DRAW BOTTOM MULTI-FEED RASTER CANVAS
+            // ----------------------------------------------------
+            const rWidth = rasterCanvas.getBoundingClientRect().width;
+            const rHeight = rasterCanvas.getBoundingClientRect().height;
+
+            rasterCtx.clearRect(0, 0, rWidth, rHeight);
+
+            const rowHeight = rHeight / FEEDS.length;
+            const labelWidth = 120;
+            const timelineWidth = rWidth - labelWidth;
+            const startTime = now - windowDurationSec;
+
+            // Draw Feed Lanes & Rows
+            FEEDS.forEach((feed, idx) => {
+                let y = idx * rowHeight;
+
+                // Alternate row background
+                if (idx % 2 === 0) {
+                    rasterCtx.fillStyle = '#0a0d14';
+                    rasterCtx.fillRect(0, y, rWidth, rowHeight);
+                }
+
+                // Row divider
+                rasterCtx.strokeStyle = '#161a26';
+                rasterCtx.lineWidth = 1;
+                rasterCtx.beginPath();
+                rasterCtx.moveTo(0, y + rowHeight);
+                rasterCtx.lineTo(rWidth, y + rowHeight);
+                rasterCtx.stroke();
+
+                // Feed Labels (Monospace Left Column)
+                rasterCtx.fillStyle = feed.category === 'FX SPOT' ? '#00f0ff' : '#ffb703';
+                rasterCtx.font = '600 11px "JetBrains Mono", monospace';
+                rasterCtx.fillText(feed.id, 12, y + rowHeight / 2 + 4);
+
+                // Right side total tick count badge
+                let feedEvents = eventHistory.filter(e => e.feedIndex === idx);
+                rasterCtx.fillStyle = '#475569';
+                rasterCtx.font = '10px "JetBrains Mono", monospace';
+                rasterCtx.fillText(`${feedEvents.length}`, rWidth - 30, y + rowHeight / 2 + 4);
+            });
+
+            // Draw Vertical Time Grid Lines
+            rasterCtx.strokeStyle = '#171d2e';
+            for (let i = 0; i <= 6; i++) {
+                let x = labelWidth + (i * (timelineWidth / 6));
+                rasterCtx.beginPath();
+                rasterCtx.moveTo(x, 0);
+                rasterCtx.lineTo(x, rHeight);
+                rasterCtx.stroke();
+            }
+
+            // Draw Tick Arrivals (Dots/Markers on Raster Lanes)
+            eventHistory.forEach(evt => {
+                if (evt.time < startTime) return;
+
+                let normX = (evt.time - startTime) / windowDurationSec;
+                let x = labelWidth + (normX * timelineWidth);
+                let y = (evt.feedIndex * rowHeight) + (rowHeight / 2);
+
+                rasterCtx.beginPath();
+
+                if (evt.type === 'cross') {
+                    // Cross-Excited Trigger (Gold Dot with Outer Glow)
+                    rasterCtx.fillStyle = '#ffb703';
+                    rasterCtx.arc(x, y, 3.5, 0, Math.PI * 2);
+                    rasterCtx.fill();
+                } else if (evt.type === 'burst') {
+                    // High Intensity Burst (Rose Red Dot)
+                    rasterCtx.fillStyle = '#ff0055';
+                    rasterCtx.arc(x, y, 3.0, 0, Math.PI * 2);
+                    rasterCtx.fill();
+                } else {
+                    // Standard Tick (Cyan / Blue Dot)
+                    rasterCtx.fillStyle = FEEDS[evt.feedIndex].color;
+                    rasterCtx.arc(x, y, 2.2, 0, Math.PI * 2);
+                    rasterCtx.fill();
+                }
+            });
+
+            // Draw Cross-Firing Hawkes Spillover Arcs
+            if (drawSpilloverArcs) {
+                activeArcs.forEach(arc => {
+                    let progress = (now - arc.timeCreated) / arc.duration;
+                    if (progress > 1.0) return;
+
+                    let y1 = (arc.sourceIdx * rowHeight) + (rowHeight / 2);
+                    let y2 = (arc.targetIdx * rowHeight) + (rowHeight / 2);
+                    let x = labelWidth + timelineWidth - (progress * 40); // animate near NOW line
+
+                    rasterCtx.beginPath();
+                    rasterCtx.strokeStyle = `rgba(255, 183, 3, ${1.0 - progress})`;
+                    rasterCtx.lineWidth = 1.5;
+                    rasterCtx.moveTo(x, y1);
+                    rasterCtx.quadraticCurveTo(x - 30, (y1 + y2) / 2, x, y2);
+                    rasterCtx.stroke();
+                });
+            }
+
+            // Draw "NOW" Live Red / Cyan Vertical Indicator
+            rasterCtx.strokeStyle = '#00f0ff';
+            rasterCtx.lineWidth = 1.5;
+            rasterCtx.beginPath();
+            rasterCtx.moveTo(rWidth - 40, 0);
+            rasterCtx.lineTo(rWidth - 40, rHeight);
+            rasterCtx.stroke();
+
+            // Run next frame loop
+            requestAnimationFrame(render);
+        }
+
+        // --- 6. USER INTERACTION & CONTROLS ---
+
+        function toggleSimulation() {
+            simRunning = !simRunning;
+            const btn = document.getElementById('btn-pause');
+            if (simRunning) {
+                btn.innerHTML = `<i class="fa-solid fa-pause text-neon-gold"></i> <span>Pause Engine</span>`;
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-play text-neon-green"></i> <span>Resume Engine</span>`;
+            }
+        }
+
+        function setRegime(mode) {
+            regimeState = mode;
+            
+            ['auto', 'calm', 'active', 'volatile'].forEach(m => {
+                const el = document.getElementById(`btn-regime-${m}`);
+                if (m === mode.toLowerCase()) {
+                    el.className = 'px-3 py-1 text-xs font-mono rounded font-bold bg-neon-cyan text-dark-950 shadow-sm transition-all';
+                } else {
+                    el.className = 'px-3 py-1 text-xs font-mono rounded font-semibold text-slate-400 hover:text-slate-200 transition-all';
+                }
+            });
+
+            const badge = document.getElementById('regime-badge');
+            const setter = document.getElementById('regime-setter');
+
+            if (mode === 'Calm') {
+                badge.innerText = 'CALM';
+                badge.className = 'px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-950 text-neon-blue border border-blue-500/30';
+                setter.innerText = 'Forced manually: Calm';
+            } else if (mode === 'Active') {
+                badge.innerText = 'ACTIVE';
+                badge.className = 'px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950 text-neon-green border border-emerald-500/30';
+                setter.innerText = 'Forced manually: Active';
+            } else if (mode === 'Volatile') {
+                badge.innerText = 'VOLATILE BURST';
+                badge.className = 'px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-950 text-neon-rose border border-rose-500/30';
+                setter.innerText = 'Forced manually: Volatile Burst';
+            } else {
+                badge.innerText = 'AUTO (SELF-OSCILLATING)';
+                badge.className = 'px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-950 text-neon-gold border border-amber-500/30';
+                setter.innerText = 'The chain, turning on its own';
+            }
+        }
+
+        function toggleCrossExcitation() {
+            crossExcitationEnabled = !crossExcitationEnabled;
+            const btn = document.getElementById('btn-cross-toggle');
+            if (crossExcitationEnabled) {
+                btn.className = 'px-2.5 py-1 rounded bg-indigo-950 text-neon-blue border border-indigo-700/50 hover:bg-indigo-900';
+                btn.innerHTML = `<i class="fa-solid fa-diagram-project mr-1"></i> Hawkes Cross-Firing: ON`;
+            } else {
+                btn.className = 'px-2.5 py-1 rounded bg-dark-800 text-slate-400 border border-dark-700 hover:bg-dark-700';
+                btn.innerHTML = `<i class="fa-solid fa-diagram-project mr-1"></i> Hawkes Cross-Firing: OFF`;
+            }
+        }
+
+        function setWindowTime(sec) {
+            windowDurationSec = sec;
+            document.getElementById('time-window-label').innerText = `${sec}s`;
+            document.getElementById('label-time-min').innerText = `-${sec}s`;
+            document.getElementById('label-time-mid').innerText = `-${sec / 2}s`;
+
+            [30, 60, 120].forEach(s => {
+                const btn = document.getElementById(`zoom-${s}`);
+                if (s === sec) {
+                    btn.className = 'px-2 py-0.5 rounded bg-dark-700 text-neon-cyan font-bold';
+                } else {
+                    btn.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-slate-200';
+                }
+            });
+        }
+
+        function clearTimeline() {
+            eventHistory = [];
+            sparklineData = [];
+            activeArcs = [];
+        }
+
+        function applyModelParameters() {
+            params.calmToActive = parseFloat(document.getElementById('input-calm-to-active').value) || 0.0016666;
+            params.activeToCalm = parseFloat(document.getElementById('input-active-to-calm').value) || 0.0033333;
+            params.heatAdd = parseFloat(document.getElementById('input-heat-add').value) || 0.50;
+            params.heatDecay = parseFloat(document.getElementById('input-heat-decay').value) || 20.0;
+            params.marketSpeed = parseInt(document.getElementById('input-market-speed').value) || 1440;
+            params.hawkesAlpha = parseFloat(document.getElementById('input-hawkes-alpha').value) || 0.45;
+
+            document.getElementById('stat-market-speed').innerHTML = `<span class="font-bold text-base text-slate-100">${params.marketSpeed}</span> <span class="text-[10px] text-slate-400">sim-sec/unit</span>`;
+        }
+
+        function setActiveTab(tabId) {
+            ['market-regime', 'hawkes-config', 'analytics'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabId) {
+                    btn.className = 'px-3 py-1.5 rounded text-neon-cyan bg-dark-800 border border-dark-600 font-mono transition-all';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded hover:text-slate-100 text-slate-400 font-mono transition-all';
+                }
+            });
+        }
+
+        // Connect Arc Checkbox
+        document.getElementById('chk-draw-arcs').addEventListener('change', (e) => {
+            drawSpilloverArcs = e.target.checked;
+        });
+
+        // --- 7. INITIALIZATION ---
+        window.onload = function() {
+            resizeCanvases();
+            
+            // Start simulation clock loop at 10ms resolution
+            setInterval(() => {
+                simulationStep(0.01);
+            }, 10);
+
+            // Start 60fps render loop
+            requestAnimationFrame(render);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: B5A025B8-D67D-4394-A011-976455D35985
+:END:
+#+title: Inject an exogenous tick burst
+#+description: A system verb that makes the market receive a burst of ticks from outside at once: either real ticks the feeds publish, which raise the heat and excite every Hawkes feed, or the heat alone, as a shock. Recorded in the trace, so a tester can watch a panic spread and fade without waiting for the chain or pinning the state.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:regime:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A system verb, applied at the loop's now and recorded in the trace as its own
+kind, that injects a burst from outside the market. Two forms, one verb:
+
+- *A tick burst.* N ticks arrive at once, shared over the running feeds by their
+  rates, or aimed at an asset class or one feed. Each is a real tick: the feed
+  steps its price and publishes, the heat rises by the jump, and a Hawkes feed's
+  own intensity rises by its excitation. The burst then propagates by the laws
+  already in place, so the market's response is the system's own and not a
+  scripted one.
+- *A heat shock.* The heat alone rises by a stated amount, with no tick
+  published. Every feed's pace rises by the heat's share and decays at the
+  heat's rate: the market's impulse response, with no price moving.
+
+The Market screen offers both beside the force switch, as the review drew them
+(+25 and +100 ticks).
+
+* Why
+
+Gemini's review drew an *Inject exogenous tick burst* control with *+25 ticks*
+and *+100 ticks shock*. Today a tester who wants to see a panic either pins the
+market active, which holds a level rather than a spike, or waits for a burst to
+happen. An injected burst is the one input that shows what the jump, the decay
+and a Hawkes feed's branching ratio mean, and it is what a stress scenario
+starts from: news arrives, then the market reacts.
+
+The tick burst touches more than the loop: a feed's body must take an
+injected tick as it takes a scheduled one, outside its law's draw, and the
+price steps by a gap of its own. The heat shock is cheap, because the heat is
+one number the loop already owns. Neither changes the loop gain, so both stay
+inside the stability rule.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:51E4851F-5F8C-4143-A034-E3E1A2F9C7CE][Run the market, prototype]]
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

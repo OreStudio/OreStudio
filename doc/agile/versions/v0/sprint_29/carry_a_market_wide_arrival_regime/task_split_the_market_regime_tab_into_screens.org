@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 797C9E4E-8F40-49C2-ACC3-5BB8C4243A27
+:END:
+#+title: Task: Split the market regime tab into screens of their own
+#+description: The Market regime tab does every job on one page: it reads the market, forces it, sets what moves it, draws every feed's arrivals, checks each feed against its law and logs the loop. Give each job a tab of its own, in the look Gemini's review argued, and drop what the review invented.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/split-the-market-regime-tab-into-screens
+#+pr: 3963
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who opens the market finds one question per tab: what is the market doing now, what moves it, how every feed's ticks arrive, whether each feed follows its law, and what the loop did. The page takes the review's look: a telemetry strip, cards with a titled header and an action on the right, each setting with the number it implies under it, and figures printed without float noise. It keeps the product's tokens, and nothing on it claims a control or a model the service does not have.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The Gemini prototypes are kept as a review of the Control how a market ticks prototype, and the note says what was taken and what was dropped, and why.
+- A new prototype draws the market as specialised tabs, on the product's tokens, and is listed on the market data prototypes page.
+- The Market regime screen is split into those tabs, a system session sets and a tenant reads, and every number prints without float noise.
+- The harness spec covers each tab.
+
+* Plan
+
+The prototype [[id:51E4851F-5F8C-4143-A034-E3E1A2F9C7CE][Run the market]] was
+signed off on 2026-10-28, and the build follows it: a strip of seven figures
+over six tabs (Now, Settings, Arrivals, Laws, Fit, Trace), in the review's look on
+the product's tokens. Two pull requests, because two figures need history the
+service does not keep yet.
+
+1. *The screens, on the reads that exist.* The Market regime tab of the
+   Synthetic screen becomes the Market tab with its own six tabs, addressed by
+   =?tab=regime&view=<tab>=. The strip; Now with the pace, the switch, who holds
+   the state and the last changes; Settings as four cards, spells entered in
+   seconds, each field with the number it implies; Arrivals with the
+   feed-by-feed lanes, the 30, 60 and 120 second windows, and density once marks
+   would saturate; Laws, read only, each row linking to the feed's Arrivals tab;
+   Fit; and Trace with its filters. Every figure prints without float noise.
+2. *The history.* The scheduler's sampler keeps the summed intensity λ beside
+   the heat, and per-second tick counts by asset class for an hour, with tenths
+   for the last ten minutes. A series carries its asset class so the loop can
+   count by it. Now gains λ(t) against the ticks seen; Arrivals gains the folded
+   raster in its two folds.
+
+The prototype's load control is the prototype's own and is not built.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3963][#3963]] | [web] Split the market regime tab into six tabs under one strip |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Apply re-sends untouched fields rounded to six figures | SettingsView.tsx | Accept | Apply sends the held rates and overlays only the edited fields. |
+| 2 | =Date.now()= read in render | MarketTab.tsx | Decline | The reads poll every few seconds, which redraws; a hidden tab has nothing to show. |
+| 3 | A stale draft keeps Discard enabled and could overwrite | SettingsView.tsx | Accept | Discard needs a real change; with 1, an untouched field never overwrites another's change. |
+| 4 | The tilt expression is duplicated, with a magic 2 | SettingsView.tsx | Accept | Hoisted; a dash replaces the stand-in when no multiplier is reported. |
+| 5 | The speed note reads the old namespace | SettingsView.tsx | Accept | Moved to =marketdata.market.settings.time.note=. |
+| 6 | Housekeeping: compass check, the dropped keys | — | Note | compass check skipped at the user's request; the catalogue test passes. |
+| 7 | The slot still filling reads low | fold.ts | Accept | The fold reads it over the part that passed; Now leaves the second out. |
+| 8 | A slot with ticks and no reading reports pace zero | tick_scheduler.cpp | Accept | The read carries the last known pace and state into it. |
+| 9 | A late tick can revive an aged-out slot | arrival_history.hpp | Accept | A tick or reading older than the span is dropped. |
+| 10 | Now pulls a full hour every 4 s | MarketTab.tsx, market-regime.ts | Accept | An optional, capped =seconds=; Now asks for 150 s, the fold only while shown. |
+| 11 | Parse order, a memo, groups that outlive feeds | fold.ts | Accept / Decline / Note | Parse checked first; no memo, as sorting 3600 numbers every 4 s is cheap; a group stays while its counts do. |
+
+* Result
+
+The Synthetic screen's Market tab is now the signed-off prototype: a strip of
+seven figures over six tabs, in Gemini's look on the product's tokens.
+
+- *Now*: the pace, stacked as regime and heat, with active spells shaded;
+  the market's intensity λ(t) against the ticks seen each second, on one
+  axis; the force switch with who holds the state, for how long, the mean
+  spells and the active share; and what changed the market.
+- *Settings*: four cards. Spells are entered in seconds, each field shows the
+  number it implies, the service's rules run as a person types, the change is
+  listed before it is applied, and only the edited fields are sent. A tenant
+  reads the same numbers.
+- *Arrivals*: the last hour folded by the minute, or ten minutes by ten seconds,
+  coloured by every feed, a class or the pace; below it the feed lanes, with
+  density cells once marks would saturate, curve pillars counted once per
+  instant, and asked counted over the stretch the ticks cover.
+- *Laws*: read only, each row linking to the feed's Arrivals tab.
+- *Fit* and *Trace*: as before, in cards.
+
+The service gained what the screens needed: each heat reading carries λ(t);
+an arrival history counts ticks by asset class, an hour by the second and ten
+minutes by the tenth (=synthetic.v1.ops.get_market_history=); and the reads
+carry a Hawkes law's branching and decay, each feed's id and kind, and the
+active multiplier.
+
+Evidence: the quant and synthetic api suites pass under ctest, with tests for
+the history's slots, groups and ageing, and for λ at a pinned pace. Web tests
+for the market and i18n pass (206), the BFF market tests pass (22), and the
+harness passes 13 of 13 live, as a tenant and as the system administrator.
+Screenshots of every tab were checked against the live service.
+
+The one-feed fold the prototype offered is not built: the history counts by
+class, and a per-feed count would grow with the feeds. The load control was the
+prototype's own.
+

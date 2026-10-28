@@ -210,7 +210,8 @@ void fx_spot_feed::start() {
     handle_ = scheduler_.add({.series = ores::analytics::quant::math::series_key(source_name_),
                               .arrival = arrival_,
                               .sensitivity = sensitivity_,
-                              .name = source_name_},
+                              .name = source_name_,
+                              .group = "fx"},
                              [this](const ores::analytics::quant::service::tick_context& context) {
                                  return tick(context);
                              });

@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 845C8594-0A69-4938-9F12-32CCFEE5AD0B
+:END:
+#+title: Pause and resume the market
+#+description: Freeze the market's clock so every feed stops at once and resumes where it was, with tau, the heat and the chain's dwell held, so a person can stop a demonstration or inspect a moment without stopping and restarting feeds one by one.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:arrival:regime:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A system verb, =pause= and =resume=, on the market's one loop. While paused the
+loop takes no tick and the market's clock stands still: tau, the heat, the
+chain's dwell in progress and every series' next mark keep their values. On
+resume the run time the pause took is skipped, not replayed, so no feed catches
+up with a burst of the ticks it missed. The trace records both, and the Market
+screen's strip says the market is paused.
+
+* Why
+
+Gemini's review drew a *Pause engine* button in the header, and it is a real
+need: a demonstration or an investigation wants to stop the whole market at a
+moment and look at it. Today the only way is to stop every feed, which loses
+their place, empties the screens and restarts each law from scratch.
+
+The scheduler already owns the market and applies commands at its now, so a
+pause is one more command. The open questions are what the wall clock means to
+a paused run (the tick times a consumer sees) and whether a pause is the system
+tenant's alone, as the pin is.
+
+* References
+
+- [[file:../../../prototypes/market_data/control-how-a-market-ticks/review/][Gemini's review of the Market regime tab]]
+- [[id:51E4851F-5F8C-4143-A034-E3E1A2F9C7CE][Run the market, prototype]]
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][Tick arrival]]
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story that built the market these extend.

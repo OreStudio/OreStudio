@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 3D0DECE4-B91C-4855-96E9-A302A6B99E19
+:END:
+#+title: Story: Run the public sources from the Official rates screen
+#+description: The Official rates screen becomes the place a person runs the public sources from: each provider carries its terms, its freshness and its adapter's health, and its controls rest on decisions the architecture can carry.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:official_rates:journey:prototype:ui:sprint_29:v0:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Official rates screen answers one question about one object: the provider, over time. Today it lists the providers, their terms and their fixings, and leaves a person to infer whether the data is arriving. The screen serves two different jobs for two different people: governance, which decides whether a publisher's data may be fetched and kept, and operations, which decides whether it is arriving and what to do when it is not.
+
+The analysis this story carries, taken with the user on 2026-10-28:
+
+- Health is data the system already has. The marketdata adapter read answers for every adapter, the official ones included, with its state, its heartbeat, the ids it serves and refuses, and the age of its last tick. The screen does not use it.
+- Tick age is the wrong freshness for a daily source. A provider that publishes once a day reads hours stale by construction. Freshness is the last fixing's date, the time it was received, and whether the next expected publication is late.
+- Pause is not a property of the provider. The download follows demand, so a pause is a decision about the subscription and the demand, unless the state must live on the provider for a cost reason, and this story decides which.
+- Backfill is not a button either. The adapter contract carries announce, demand, tick and heartbeat and no request to fetch a window, so a person-chosen range needs a new request and a rule that does not fight the service's own backfill window.
+- New terms may withdraw permission to store, so deleting a provider's fixings is an act with an actor, and the screen shows it as a consequence of accepting new terms rather than as a command to remember.
+- Three new interactions and one new state have no precedent on this screen, so a prototype comes before the controls.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The story and its four tasks are scaffolded; the prototype is the first task. |
+| Waiting on    | Nothing.                               |
+| Next          | Start [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]]. |
+| Last touched  | 2026-10-28                               |
+
+* Acceptance
+
+- Each provider states its freshness in the words a daily source needs: the last fixing's date, when it was received, and whether the next expected publication is late.
+- An adapter that is down, a provider whose fixing is late, and a provider that has never had a fixing read as three different states.
+- A prototype of the provider row and the provider page is agreed before any control is built, and it answers what a paused provider looks like, what a backfill in progress shows, how staleness differs from an adapter being down, and whether withdrawn terms make deleting fixings a consequence of acceptance.
+- Pause is decided as a fact about demand, or the decision says why it needs a provider state instead.
+- A backfill of a chosen range is decided as a request on the adapter contract, with its window rule against the service's own stated before it is built.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1048DB09-9987-4199-9129-EDBC94A6A640][Scaffold story: Run the public sources from the Official rates screen]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB][Prototype the provider row and the provider page]] | BACKLOG | | | One static prototype of the row and the page, with competing answers for the paused state and the freshness line, before any control is built. |
+| [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]] | BACKLOG | | | Each public provider states whether its data is arriving, in the words a daily source needs, from the adapter status the marketdata service already reports. |
+| [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] | BACKLOG | | | A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds. |
+| [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]] | BACKLOG | | | A chosen date range is a request only the adapter can answer, and the contract carries no such request today; this task designs it and its window rule. |
+
+* Decisions
+
+- The screen serves two jobs that belong to different people (2026-10-28). Governance decides whether a publisher's data may be fetched and kept, and the screen already does it. Operations decides whether the data is arriving and what to do when it is not, and it is missing. The story keeps them apart instead of adding buttons to one list.
+- The provider is the object, over time (2026-10-28). A provider row carries its terms state, its freshness, its fetching state and the actions that follow; its page carries its fixings, its window, who accepted what and the trail of acts.
+- Health is a read the system already has (2026-10-28). The marketdata adapter read answers every adapter, the official ones included. No new read is needed for the health; freshness is joined from the stored fixings.
+- Freshness is not tick age (2026-10-28). A daily source reads hours stale by construction, so freshness is the last fixing's date, the time it was received, and whether the next expected publication is late.
+- Pause is decided before it is built (2026-10-28). The download follows demand, so a pause is a fact about demand unless the state must live on the provider for a cost reason, and the decision task settles it.
+- A chosen backfill range is an adapter request, not a button (2026-10-28). The adapter contract has no such request today, and the service's own window already exists, so the design task settles the request and which window wins.
+- A prototype comes before the controls (2026-10-28). Three new interactions and one new state have no precedent on this screen, so the shape is agreed on a static page first.
+
+* Out of scope
+
+- Building the controls themselves: pause is task [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]], and the chosen range is task [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]].
+- Deleting a provider's fixings, which follows from terms that withdraw storage and is decided with the pause task.
+- The first-run terms journey, which is its own task on the story that published the fixings.

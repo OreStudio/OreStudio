@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 7F3AB01E-C043-46EB-BABD-A5F3DE9DEDCB
+:END:
+#+title: Task: Prototype the provider row and the provider page
+#+description: One static prototype of the provider row and the provider page, answering what paused, backfilling, late and down look like before any control is built.
+#+type: task
+#+level: s1
+#+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-the-public-sources-from-the-official-rates-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Official rates screen is where a person runs the public sources. Three
+interactions are planned on it and one new state: pausing a provider, starting a
+backfill of a chosen range, and reading the adapter's health. None of them has a
+precedent on this screen, and two of them rest on decisions the architecture has
+not taken yet: pause is a fact about demand, and a backfill is a request the
+adapter contract does not carry. So the design is settled on a prototype before
+any control is built.
+
+The prototype answers four questions:
+
+1. What does a paused provider look like, and what happens to its fixings, its
+   chart and its pair on the comparison while it is paused?
+2. While a backfill of a chosen range runs, what does the person see: a
+   progress, the fixing table filling day by day, or nothing until it ends?
+3. How does a late fixing read differently from an adapter that is down, and how
+   does a provider with no fixing yet read, without three colours meaning the
+   same thing?
+4. Does accepting new terms that withdraw permission to store show deleting the
+   provider's fixings as a consequence, or as a command the person must
+   remember?
+
+Where the design space is open, the prototype carries two or three competing
+answers beside each other rather than one guessed shape: the paused state and
+the freshness line are the two places this is expected.
+
+The provider is the object, over time: terms, freshness, fetching state and the
+actions that follow from them on one row, and a page of the provider's fixings,
+its window, who accepted what, and the trail of the acts done to it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A static prototype exists at =doc/prototypes/market_data/official-rates/= with
+  its design note beside it, and the design note says what it argues and links
+  the page, as every prototype in that index does.
+- The row and the page answer the four questions in the goal, in the words a
+  person uses, with mock provider data only.
+- The paused state and the freshness line each show two or three competing
+  answers side by side, so the choice is made by looking, not by imagining.
+- The prototype states what it does not decide: the pause and the backfill
+  remain the two decision tasks of this story.
+- No screen changes ship from this task; the prototype is a page that opens with
+  no build and no session.
+
+* Plan
+
+- Build the page from the existing Official rates screen's vocabulary: the same
+  provider table, the same fixings chart and pair comparison, the same tags and
+  cards, so what the prototype shows is a shape this screen can take.
+- Extend the row with terms state, freshness (last fixing date, received at,
+  next expected publication) and the adapter's state, using the counts the
+  adapter read already answers.
+- Draw the paused state twice: a muted provider whose fixings stay and whose
+  feeds keep their start, and a provider hidden from the list with a count
+  saying how many are paused.
+- Draw the backfill in progress twice: a range with a progress that names the
+  days fetched, and a table that fills as the days arrive.
+- Draw the late-fixing and adapter-down states once each, with the sentences that
+  tell a person what to do.
+- Take the next review as the design review; the two decision tasks take the
+  open questions from it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 3003F16C-C239-4C5C-A36A-29A2D376EEE1
+:END:
+#+title: Task: Show each provider's freshness and its adapter's health
+#+description: Each public provider states whether its data is arriving, in the words a daily source needs, from the adapter status the marketdata service already reports.
+#+type: task
+#+level: s1
+#+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/run-the-public-sources-from-the-official-rates-screen
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads, for each public provider, whether the data is arriving. The marketdata adapter read already answers for every adapter with its state, heartbeat, served and refused counts and the age of its last tick; this task joins it to the provider on the Official rates screen. Tick age alone says nothing about a source that publishes once a day, so the freshness is the last fixing's date, when it was received, and whether the next expected publication is late. An adapter that is down, a provider whose fixing is late and a provider that has never had a fixing must read as three different states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- Each provider on the Official rates screen shows its last fixing's date, when it was received, and whether the next expected publication is late.
+- An adapter that is down, a late fixing and a provider with no fixing read as three distinct states, each with the sentence that says what to do.
+- The freshness comes from the adapter status read and the stored fixings; no new protocol op is added unless the read cannot answer.
+- The screen's route tests and a render test cover the three states.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -21,13 +21,12 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
-
-namespace tests = ores::platform::tests;
 #include <ctime>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+namespace tests = ores::platform::tests;
 
 namespace {
 

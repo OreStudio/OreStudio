@@ -198,6 +198,10 @@ TEST_CASE("real_environment_provider_set_overwrites_an_existing_value", "[enviro
     provider.unset(name);
 }
 
+// On Windows this holds because the provider writes through _putenv_s, which
+// touches the CRT's own block, and the read goes through _dupenv_s, which reads
+// it. A provider that moved to SetEnvironmentVariable would break the case, so
+// the dependency is written here rather than discovered there.
 TEST_CASE("real_environment_provider_set_is_visible_to_the_c_runtime", "[environment]") {
     real_environment_provider provider;
     const std::string name("ORES_PLATFORM_TEST_VISIBLE_TO_C_RUNTIME");

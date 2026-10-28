@@ -56,9 +56,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journey pages added to the market data group | 2 | =git show --stat 13287c06= | 13287c06381f |
+| Prototypes the market data group lists | 25 | =python3 build/scripts/check_prototype_inventory.py= | 8742f4888acd |
+| Query states of the prototype that render their markers | 29 | =google-chrome --headless=new --dump-dom 'file://\$PWD/doc/prototypes/market_data/curve-blueprints/index.html?bp=SEK-STIBOR-6M&tab=check'=, run for each state, with a =--user-data-dir= because the headless browser cannot create one | 8742f4888acd |
 
 * Notes
+
+The journeys name the record a *curve blueprint*, the word the market data group
+already uses for the IR curve bootstrap config, and keep the model's words for
+the permission codes.
+
+The Qt workbench is prior art for the job and not for the layout. The journeys
+record each place they part from it: a record page replaces the three-tab
+workbench, the pillars become parts written one at a time, the source series is
+not asked for at all, the output series is minted by the server, the derived
+pillar order is stated rather than silently applied, and the copy becomes the
+kind's own action with the three fields that name the curve.
+
+Two defects in the prior art are named in the journey so they are not inherited:
+the delete confirmation names a UUID twice instead of the curve, and the
+discount-curve picker's first column is headed "Output Series Id" while it draws
+the series' qualifier.
+
+The prototype was rendered headless for every state the design note lists. The
+verification needs a =--user-data-dir= and a writable profile: bare headless
+Chrome fails with "Failed to create a unique user data directory".
 
 * Test Scenarios
 
@@ -84,3 +106,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The journeys and the prototype are on branch =feature/design-the-bootstrapping-screens=
+in two commits:
+
+| Commit | What it holds |
+|--------+---------------|
+| =13287c06= | The journeys: maintain the curve blueprints, and check that a curve blueprint builds |
+| =8742f48= | The prototype, its design note, the group row and the counts |
+
+The prototype answers both journeys and does not mirror them. The design note
+carries a coverage table for each, naming every step, the part of the screen
+that carries it, and what is deliberately not drawn.
+
+Four things a journey asks for have no home on the page, and each is recorded in
+the note: a *retire* action, because the record has no status; a message under a
+wrong field, because the only wrong value the page can draw is a pillar the Check
+tab judges; a test result held against a version; and a save that writes the
+recipe and its pillars together.
+
+No code changed. No route, no BFF entry and no React screen was added.

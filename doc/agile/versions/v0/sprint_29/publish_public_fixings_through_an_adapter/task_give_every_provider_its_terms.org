@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-every-provider-its-terms
-#+pr:
+#+pr: 3992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3992][#3992]] | [marketdata] Give every provider its terms |
 
 * Review
 

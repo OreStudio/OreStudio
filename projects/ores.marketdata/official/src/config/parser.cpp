@@ -26,6 +26,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <algorithm>
 #include <ostream>
 
 namespace {
@@ -126,6 +127,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.nats = nats_configuration::read_options(vm);
     r.frankfurter_url = vm[frankfurter_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
+    if (r.backfill_days < 1 || r.backfill_days > 3650)
+        BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));
     r.poll_minutes = std::max<std::uint32_t>(1, vm[poll_minutes_arg].as<std::uint32_t>());
     if (vm.count(source_arg)) {
         for (const auto& text : vm[source_arg].as<std::vector<std::string>>()) {
@@ -134,6 +137,10 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                 BOOST_THROW_EXCEPTION(parser_exception(
                     "A source is <source name>:<provider code>:<Frankfurter key>, not '" + text +
                     "'."));
+            if (std::ranges::any_of(
+                    r.sources, [&](const auto& s) { return s.source_name == source->source_name; }))
+                BOOST_THROW_EXCEPTION(
+                    parser_exception("The source '" + source->source_name + "' is given twice."));
             r.sources.push_back(std::move(*source));
         }
     }

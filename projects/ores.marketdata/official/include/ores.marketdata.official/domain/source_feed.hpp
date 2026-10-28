@@ -108,6 +108,7 @@ private:
     std::set<std::string> universe_;
     std::set<std::string> demanded_;
     std::map<std::string, std::chrono::year_month_day> last_sent_;
+    std::map<std::string, std::chrono::year_month_day> read_through_;
     std::uint64_t sequence_ = 0;
     std::uint64_t misbased_ = 0;
 };

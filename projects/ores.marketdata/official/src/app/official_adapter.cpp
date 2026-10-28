@@ -84,10 +84,15 @@ void official_adapter::on_demand(served& s, const ores::nats::message& msg) {
                                   << "': " << request.error().what();
         return;
     }
-    // Until its universe is read, a source accepts nothing; it has not announced either.
-    const auto response = s.ready.load(std::memory_order_acquire) ?
-                              s.feed->answer(*request) :
-                              messaging::adapter_demand_response{};
+    // Until its universe is read, a source has not announced, and it rejects every id as not
+    // ready rather than leave the service to read an empty answer.
+    messaging::adapter_demand_response response;
+    if (s.ready.load(std::memory_order_acquire)) {
+        response = s.feed->answer(*request);
+    } else {
+        for (const auto& id : request->ids)
+            response.rejected.push_back({id, "not_ready"});
+    }
     {
         std::lock_guard lock(s.mu);
         s.pending = std::move(*request);
@@ -172,10 +177,17 @@ bool official_adapter::serve(served& s, clock::time_point now, bool may_refresh)
 
     const auto today = std::chrono::year_month_day{
         std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())};
-    const auto sent = s.feed->refresh(today, [&](const messaging::adapter_tick& tick) {
-        nats_.publish(subjects::adapter_ingress_subject(name, tick.external_id),
-                      ores::nats::default_wire_codec().encode(tick));
-    });
+    // A publish that fails, such as on a lost connection, ends this refresh only: what was
+    // not sent is sent again on the next.
+    std::expected<std::size_t, std::string> sent = 0;
+    try {
+        sent = s.feed->refresh(today, [&](const messaging::adapter_tick& tick) {
+            nats_.publish(subjects::adapter_ingress_subject(name, tick.external_id),
+                          ores::nats::default_wire_codec().encode(tick));
+        });
+    } catch (const std::exception& e) {
+        sent = std::unexpected(std::string(e.what()));
+    }
     if (!sent) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << name << "': " << sent.error();
         s.next_refresh = now + timing_.retry_interval;

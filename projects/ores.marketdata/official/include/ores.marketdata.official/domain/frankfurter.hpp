@@ -83,7 +83,8 @@ public:
      * against @p pivot.
      *
      * Frankfurter rebases every provider to the euro unless asked for another base, so the
-     * request always names the provider's own pivot.
+     * request always names the provider's own pivot. The answer is one list, unpaged: a
+     * window of 400 days of the ECB came back as 8,190 rows in one response.
      */
     [[nodiscard]] std::expected<std::vector<published_rate>, std::string>
     rates(std::string_view key,

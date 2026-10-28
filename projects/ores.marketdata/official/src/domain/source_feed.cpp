@@ -75,12 +75,18 @@ std::expected<std::size_t, std::string> source_feed::refresh(std::chrono::year_m
     if (demanded_.empty())
         return 0;
     const auto window_start = std::chrono::year_month_day{sys_days{today} - days{backfill_days_}};
+    // A currency starts after the later of the last day it sent and the last day it was read
+    // through, so one that publishes nothing costs a read of a day, not of the window.
+    const auto after = [](std::chrono::year_month_day d) {
+        return std::chrono::year_month_day{sys_days{d} + days{1}};
+    };
     auto from = today;
     for (const auto& currency : demanded_) {
-        const auto sent = last_sent_.find(currency);
-        const auto start = sent == last_sent_.end() ?
-                               window_start :
-                               std::chrono::year_month_day{sys_days{sent->second} + days{1}};
+        auto start = window_start;
+        if (const auto sent = last_sent_.find(currency); sent != last_sent_.end())
+            start = std::max(start, after(sent->second));
+        if (const auto read = read_through_.find(currency); read != read_through_.end())
+            start = std::max(start, after(read->second));
         from = std::min(from, start);
     }
     if (from > today)
@@ -107,6 +113,10 @@ std::expected<std::size_t, std::string> source_feed::refresh(std::chrono::year_m
         last_sent_.insert_or_assign(rate.quote, rate.date);
         ++sent;
     }
+    // Today's rate may not be published yet, so a read counts only through yesterday.
+    const auto yesterday = std::chrono::year_month_day{sys_days{today} - days{1}};
+    for (const auto& currency : demanded_)
+        read_through_.insert_or_assign(currency, yesterday);
     return sent;
 }
 

@@ -21,6 +21,7 @@
 #include "ores.marketdata.official/domain/source_feed.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -176,4 +177,56 @@ TEST_CASE("a_rate_against_another_base_than_the_pivot_is_refused", "[domain][sou
     REQUIRE(sent_count.value() == 1);
     CHECK(sent.front().value == "1.3389");
     CHECK(sut.misbased() == 1);
+}
+
+TEST_CASE("a_demanded_currency_with_no_rates_reads_only_the_new_day_next_time",
+          "[domain][source_feed]") {
+    stored_transport transport;
+    const std::string base = "https://x";
+    transport.bodies[base + "/v2/providers"] = providers;
+    transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-19&to=2026-10-21&base=EUR"] =
+        "[]";
+    transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-21&to=2026-10-22&base=EUR"] =
+        "[]";
+    frankfurter_fetcher fetcher(transport, base);
+    source_feed sut({"ecb-frankfurter", "ecb", "ECB"}, fetcher, 2);
+    REQUIRE(sut.load_universe().has_value());
+    sut.demand({{{"iso4217", "CZK", "rate"}}});
+    const auto none = [](const ores::marketdata::messaging::adapter_tick&) {
+    };
+
+    REQUIRE(sut.refresh(d(21), none).value() == 0);
+    REQUIRE(sut.refresh(d(22), none).value() == 0);
+
+    REQUIRE(transport.asked.size() == 3);
+    CHECK(transport.asked.back().contains("from=2026-10-21&to=2026-10-22"));
+}
+
+TEST_CASE("a_publish_that_fails_ends_the_refresh_and_the_next_sends_what_was_not_sent",
+          "[domain][source_feed]") {
+    stored_transport transport;
+    const std::string base = "https://x";
+    transport.bodies[base + "/v2/providers"] = providers;
+    transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-19&to=2026-10-21&base=EUR"] =
+        ecb_rates;
+    transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-21&to=2026-10-21&base=EUR"] =
+        ecb_rates;
+    frankfurter_fetcher fetcher(transport, base);
+    source_feed sut({"ecb-frankfurter", "ecb", "ECB"}, fetcher, 2);
+    REQUIRE(sut.load_universe().has_value());
+    sut.demand({{{"iso4217", "USD", "rate"}}});
+
+    int calls = 0;
+    CHECK_THROWS(sut.refresh(d(21), [&](const ores::marketdata::messaging::adapter_tick&) {
+        if (++calls == 2)
+            throw std::runtime_error("lost connection");
+    }));
+
+    std::vector<std::string> resent;
+    REQUIRE(sut.refresh(d(21),
+                        [&](const ores::marketdata::messaging::adapter_tick& t) {
+                            resent.push_back(t.value);
+                        })
+                .value() == 1);
+    CHECK(resent == std::vector<std::string>{"1.1598"});
 }

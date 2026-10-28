@@ -192,30 +192,49 @@ def _service_text(root: Path, env: dict, start_epoch: float, log_path: Path) -> 
     return "\n".join(parts)
 
 
+def _tenant_status(root: Path, tenant: str) -> str:
+    """The tenant's status, or an empty string when the tenant does not exist."""
+    return _sql(root, (
+        "select status from ores_iam_tenants_tbl "
+        f"where code = '{tenant}' and valid_to = ores_utility_infinity_timestamp_fn()"))
+
+
 def _provision(root: Path, tenant: str, tenant_name: str, profile: str,
-               password: str, super_email: str) -> subprocess.CompletedProcess:
+               password: str, super_email: str,
+               bootstrapped: bool = False) -> subprocess.CompletedProcess:
     """Provision @p tenant the way the recipe does, without the compute packages.
 
     The recipe's own script also publishes the vendored ORE engine packages.
-    A ticks check does not need a compute package, so it runs the bootstrap
+    A ticks check does not need a compute package, so it runs the provisioning
     step alone and keeps the check to the path it measures.
 
-    The session starts logged out: `bootstrap setup` refuses to run while a
-    session is open, and the .env login default points at the very tenant the
-    bootstrap is about to create.
+    Two systems have two first steps. A database the wizard has not touched is
+    bootstrapped, and `bootstrap setup` refuses to run while a session is open,
+    so that one starts logged out. A system that is already bootstrapped
+    provisions a tenant as its own administrator, which needs a session, so that
+    one signs in as the super administrator.
     """
-    script = (
-        "connect $ORES_NATS_URL\n"
-        f"bootstrap setup {SUPER_ADMIN} {password} {super_email} "
-        f"--tenant-admin-password {password} "
-        f"--tenant-code {tenant} --tenant-name \"{tenant_name}\" "
-        f"--tenant-hostname {tenant} --profile {profile}\n"
-        "logout\n")
+    if bootstrapped:
+        script = (
+            "connect $ORES_NATS_URL\n"
+            f"provision tenant --tenant-admin-password {password} "
+            f"--tenant-code {tenant} --tenant-name \"{tenant_name}\" "
+            f"--tenant-hostname {tenant} --profile {profile}\n")
+        argv = ["./compass.sh", "shell", "-u", SUPER_ADMIN, "-p", password, "-l"]
+    else:
+        script = (
+            "connect $ORES_NATS_URL\n"
+            f"bootstrap setup {SUPER_ADMIN} {password} {super_email} "
+            f"--tenant-admin-password {password} "
+            f"--tenant-code {tenant} --tenant-name \"{tenant_name}\" "
+            f"--tenant-hostname {tenant} --profile {profile}\n"
+            "logout\n")
+        argv = ["./compass.sh", "shell", "--no-login", "-l"]
     with tempfile.NamedTemporaryFile("w", suffix=".ores", delete=False) as handle:
         handle.write(script)
         path = handle.name
     try:
-        return _run(["./compass.sh", "shell", "--no-login", "-l", path], root)
+        return _run([*argv, path], root)
     finally:
         Path(path).unlink(missing_ok=True)
 
@@ -283,13 +302,22 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
             return 1
 
     if not args.skip_provision:
-        result = _provision(root, tenant, args.tenant_name, args.profile,
-                            args.bootstrap_password, args.super_admin_email)
-        if result.returncode != 0:
-            print(result.stdout)
-            print(result.stderr, file=sys.stderr)
-            print("error: the provisioning step failed", file=sys.stderr)
-            return 1
+        status = _tenant_status(root, tenant)
+        if status == "active":
+            # A tenant that is already built is what this check wants; building
+            # it again would be a different check, and its provisioning refuses
+            # a code that exists rather than resuming it.
+            print(f"tenant '{tenant}' is already active; checking the ticks it receives")
+        else:
+            bootstrapped = not bool(compass_db.bootstrap_mode(env))
+            result = _provision(root, tenant, args.tenant_name, args.profile,
+                                args.bootstrap_password, args.super_admin_email,
+                                bootstrapped=bootstrapped)
+            if result.returncode != 0:
+                print(result.stdout)
+                print(result.stderr, file=sys.stderr)
+                print("error: the provisioning step failed", file=sys.stderr)
+                return 1
 
     subs, routes = _tenant_geometry(root, tenant)
     count, first, last, future, lines, waited = _wait_evidence(

@@ -26,11 +26,11 @@ A person can see which public providers are in the system, whether their data is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | The Official rates screen is built and runs against live data. |
-| Waiting on   | The user's sign-off on the screen.     |
-| Next         | Raise the PR and hold it for the sign-off. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -136,8 +136,15 @@ via its "Verifies task" field.
 
 * Result
 
-Delivered up to the checkpoint. The Official rates screen is under Market data
-and runs against the live fixings. It lists the four providers with their terms
-state, draws one provider's fixings, and compares one pair across every
-provider. The PR waits for the user's sign-off on the screen. The deferred
-actions in Notes stay open on this task.
+Delivered to the checkpoint the user asked for, and signed off. The Official rates
+screen under Market data lists the four providers with their terms state, draws
+one provider's fixings, and compares one pair across every provider, as
+published, inverted or crossed. A system administrator accepts a provider's
+terms at the version the screen showed; the service refuses a version that
+changed since. Fixings are read by series through a new =series_id= filter.
+Route tests, a render test, pair arithmetic tests and handler tests over NATS
+cover it. The PR also links =ores.trading.service.tests= to the refdata core
+repositories, which main's full build needed.
+
+Pause, resume, backfill, deleting fixings, the adapter's health on the screen,
+a date bound on the read, and a harness test stay deferred (see Notes).

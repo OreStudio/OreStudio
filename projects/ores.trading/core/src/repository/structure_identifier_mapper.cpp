@@ -47,8 +47,8 @@ structure_identifier_mapper::map(const structure_identifier_entity& v) {
     domain::structure_identifier r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.structure_id = boost::lexical_cast<boost::uuids::uuid>(v.structure_id.value());
-    r.id_type = v.id_type.value();
+    r.structure_id = boost::lexical_cast<boost::uuids::uuid>(v.structure_id);
+    r.id_type = v.id_type;
     r.id_value = v.id_value;
     r.issuing_party_id =
         v.issuing_party_id.has_value() ?

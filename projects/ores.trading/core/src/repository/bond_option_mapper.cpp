@@ -46,7 +46,7 @@ domain::bond_option bond_option_mapper::map(const bond_option_entity& v) {
     domain::bond_option r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.option_type = v.option_type;
     r.option_strike = ores::utility::decimal::decimal::from_string(v.option_strike).value();

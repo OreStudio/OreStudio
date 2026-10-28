@@ -49,7 +49,7 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     domain::bond_issue r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
+    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
     r.security_id = v.security_id;
     r.issuer = v.issuer.value_or("");
     r.face_value =

@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_OPTION_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_OPTION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct instrument_option_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_instrument_options_tbl";
 
-    sqlgen::PrimaryKey<std::string> trade_id;
+    std::string trade_id;
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
@@ -83,6 +83,58 @@ struct instrument_option_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = instrument_option_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("trade_id", &e::trade_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("trade_activity_id", &e::trade_activity_id) |
+               query_builder::bind("long_short", &e::long_short) |
+               query_builder::bind("option_type", &e::option_type) |
+               query_builder::bind("payoff_type", &e::payoff_type) |
+               query_builder::bind("payoff_type_2", &e::payoff_type_2) |
+               query_builder::bind("style", &e::style) |
+               query_builder::bind("notice_period", &e::notice_period) |
+               query_builder::bind("notice_calendar", &e::notice_calendar) |
+               query_builder::bind("notice_convention", &e::notice_convention) |
+               query_builder::bind("mid_coupon_exercise", &e::mid_coupon_exercise) |
+               query_builder::bind("settlement", &e::settlement) |
+               query_builder::bind("settlement_method", &e::settlement_method) |
+               query_builder::bind("pay_off_at_expiry", &e::pay_off_at_expiry) |
+               query_builder::bind("premium_amount", &e::premium_amount) |
+               query_builder::bind("premium_currency", &e::premium_currency) |
+               query_builder::bind("premium_pay_date", &e::premium_pay_date) |
+               query_builder::bind("exercise_fee_settlement_period",
+                                   &e::exercise_fee_settlement_period) |
+               query_builder::bind("exercise_fee_settlement_calendar",
+                                   &e::exercise_fee_settlement_calendar) |
+               query_builder::bind("exercise_fee_settlement_convention",
+                                   &e::exercise_fee_settlement_convention) |
+               query_builder::bind("automatic_exercise", &e::automatic_exercise) |
+               query_builder::bind("has_exercise_data", &e::has_exercise_data) |
+               query_builder::bind("exercise_date", &e::exercise_date) |
+               query_builder::bind("exercise_price", &e::exercise_price) |
+               query_builder::bind("has_payment_data", &e::has_payment_data) |
+               query_builder::bind("payment_lag", &e::payment_lag) |
+               query_builder::bind("payment_calendar", &e::payment_calendar) |
+               query_builder::bind("payment_convention", &e::payment_convention) |
+               query_builder::bind("payment_relative_to", &e::payment_relative_to) |
+               query_builder::bind("has_settlement_data", &e::has_settlement_data) |
+               query_builder::bind("settlement_pay_currency", &e::settlement_pay_currency) |
+               query_builder::bind("settlement_fx_index", &e::settlement_fx_index) |
+               query_builder::bind("settlement_fixing_date", &e::settlement_fixing_date) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const instrument_option_entity& v);

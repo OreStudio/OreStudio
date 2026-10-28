@@ -305,11 +305,11 @@ range_bound_repository::read_by_instruments_batch(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<range_bound_entity>> |
-                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+    const auto query = query_builder::read<std::vector<range_bound_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
                              "valid_to"_c == max.value()) |
-                       order_by("trade_id"_c, "sequence_number"_c);
-    return execute_read_query<range_bound_entity, domain::range_bound>(
+                       query_builder::order_by("trade_id"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<range_bound_entity, domain::range_bound>(
         ctx,
         query,
         [](const auto& entities) { return range_bound_mapper::map(entities); },

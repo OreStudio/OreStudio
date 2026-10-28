@@ -45,9 +45,9 @@ domain::trade_link trade_link_mapper::map(const trade_link_entity& v) {
     domain::trade_link r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.from_trade_id = boost::lexical_cast<boost::uuids::uuid>(v.from_trade_id.value());
-    r.to_trade_id = boost::lexical_cast<boost::uuids::uuid>(v.to_trade_id.value());
-    r.link_type = v.link_type.value();
+    r.from_trade_id = boost::lexical_cast<boost::uuids::uuid>(v.from_trade_id);
+    r.to_trade_id = boost::lexical_cast<boost::uuids::uuid>(v.to_trade_id);
+    r.link_type = v.link_type;
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -42,7 +42,7 @@ counterparty_scope_type_mapper::map(const counterparty_scope_type_entity& v) {
 
     domain::counterparty_scope_type r;
     r.version = v.version;
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

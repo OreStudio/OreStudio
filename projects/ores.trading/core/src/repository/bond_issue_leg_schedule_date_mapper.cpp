@@ -49,11 +49,11 @@ bond_issue_leg_schedule_date_mapper::map(const bond_issue_leg_schedule_date_enti
     domain::bond_issue_leg_schedule_date r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
-    r.schedule_role = v.schedule_role.value();
-    r.schedule_sequence_number = boost::lexical_cast<int>(v.schedule_sequence_number.value());
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.leg_number = boost::lexical_cast<int>(v.leg_number);
+    r.schedule_role = v.schedule_role;
+    r.schedule_sequence_number = boost::lexical_cast<int>(v.schedule_sequence_number);
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.schedule_date = ores::platform::time::datetime::from_iso8601_date(v.schedule_date);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -30,7 +30,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <sqlgen/postgres.hpp>
+#include "ores.database/query_builder/execute.hpp"
 #include <string>
 #include <vector>
 
@@ -97,17 +97,18 @@ bond_leg_amount make_amount(database_helper& h,
 std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
                                                   const std::string& trade_id) {
     using namespace ores::database::repository;
-    using namespace sqlgen::literals;
+    namespace query_builder = ores::database::query_builder;
+    using namespace ores::database::query_builder::literals;
 
     auto lg = make_logger(test_suite);
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_amount_entity>> |
-                       sqlgen::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+    const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                                      "valid_to"_c == max.value()) |
-                       sqlgen::order_by("sequence_number"_c);
+                       query_builder::order_by("sequence_number"_c);
 
-    return execute_read_query<bond_leg_amount_entity, bond_leg_amount_entity>(
+    return query_builder::execute_read_query<bond_leg_amount_entity, bond_leg_amount_entity>(
         ctx,
         query,
         [](const auto& entities) { return entities; },

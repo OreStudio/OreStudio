@@ -49,9 +49,9 @@ domain::equity_swap_period equity_swap_period_mapper::map(const equity_swap_peri
     domain::equity_swap_period r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id.value());
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.period_date =
         v.period_date.has_value() ?
             std::optional(ores::platform::time::datetime::from_iso8601_date(*v.period_date)) :

@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_EQUITY_ACCUMULATOR_INSTRUMENT_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_ACCUMULATOR_INSTRUMENT_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct equity_accumulator_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_equity_accumulator_instruments_tbl";
 
-    sqlgen::PrimaryKey<std::string> trade_id;
+    std::string trade_id;
     std::string tenant_id;
     int version = 0;
     std::string trade_type_code;
@@ -67,6 +67,39 @@ struct equity_accumulator_instrument_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = equity_accumulator_instrument_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("trade_id", &e::trade_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("trade_type_code", &e::trade_type_code) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("trade_activity_id", &e::trade_activity_id) |
+               query_builder::bind("underlying_name", &e::underlying_name) |
+               query_builder::bind("currency", &e::currency) |
+               query_builder::bind("strike", &e::strike) |
+               query_builder::bind("fixing_amount", &e::fixing_amount) |
+               query_builder::bind("start_date", &e::start_date) |
+               query_builder::bind("expiry_date", &e::expiry_date) |
+               query_builder::bind("fixing_frequency", &e::fixing_frequency) |
+               query_builder::bind("long_short", &e::long_short) |
+               query_builder::bind("knock_out_level", &e::knock_out_level) |
+               query_builder::bind("target_amount", &e::target_amount) |
+               query_builder::bind("target_type", &e::target_type) |
+               query_builder::bind("payoff_type", &e::payoff_type) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const equity_accumulator_instrument_entity& v);

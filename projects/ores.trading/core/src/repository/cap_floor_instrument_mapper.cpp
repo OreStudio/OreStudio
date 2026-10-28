@@ -46,7 +46,7 @@ cap_floor_instrument_mapper::map(const cap_floor_instrument_entity& v) {
     domain::cap_floor_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

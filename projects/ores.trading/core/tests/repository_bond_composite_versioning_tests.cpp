@@ -41,7 +41,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <sqlgen/postgres.hpp>
+#include "ores.database/query_builder/execute.hpp"
 #include <string>
 #include <vector>
 
@@ -67,15 +67,16 @@ using namespace ores::logging;
  */
 std::vector<trade_entity> read_trade_versions(context ctx, const std::string& trade_id) {
     using namespace ores::database::repository;
-    using namespace sqlgen::literals;
+    namespace query_builder = ores::database::query_builder;
+    using namespace ores::database::query_builder::literals;
 
     auto lg = make_logger(test_suite);
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_entity>> |
-                       sqlgen::where("tenant_id"_c == tid && "id"_c == trade_id) |
-                       sqlgen::order_by("version"_c);
+    const auto query = query_builder::read<std::vector<trade_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == trade_id) |
+                       query_builder::order_by("version"_c);
 
-    return execute_read_query<trade_entity, trade_entity>(
+    return query_builder::execute_read_query<trade_entity, trade_entity>(
         ctx,
         query,
         [](const auto& entities) { return entities; },
@@ -86,15 +87,16 @@ std::vector<trade_entity> read_trade_versions(context ctx, const std::string& tr
 /* The leg rows themselves, so a leg counted as "current" is a row that exists. */
 std::vector<bond_leg_entity> read_leg_versions(context ctx, const std::string& trade_id) {
     using namespace ores::database::repository;
-    using namespace sqlgen::literals;
+    namespace query_builder = ores::database::query_builder;
+    using namespace ores::database::query_builder::literals;
 
     auto lg = make_logger(test_suite);
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_entity>> |
-                       sqlgen::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
-                       sqlgen::order_by("valid_from"_c);
+    const auto query = query_builder::read<std::vector<bond_leg_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
+                       query_builder::order_by("valid_from"_c);
 
-    return execute_read_query<bond_leg_entity, bond_leg_entity>(
+    return query_builder::execute_read_query<bond_leg_entity, bond_leg_entity>(
         ctx, query, [](const auto& entities) { return entities; }, lg, "Reading raw bond leg rows");
 }
 
@@ -272,5 +274,5 @@ TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version",
     /* The leg is a row in the store, not a version counter on the trade. */
     const auto rows = read_leg_versions(ctx, id_str);
     REQUIRE(rows.size() == 1);
-    CHECK(rows[0].leg_role.value() == "trs_funding");
+    CHECK(rows[0].leg_role == "trs_funding");
 }

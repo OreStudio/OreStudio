@@ -47,7 +47,7 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
     domain::bond_trs r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.return_type = v.return_type;
     r.funding_leg_type = v.funding_leg_type;

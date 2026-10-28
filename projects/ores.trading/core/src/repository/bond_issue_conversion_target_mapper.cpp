@@ -47,8 +47,8 @@ bond_issue_conversion_target_mapper::map(const bond_issue_conversion_target_enti
     domain::bond_issue_conversion_target r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.underlying_id = v.underlying_id;
     r.conversion_ratio = v.conversion_ratio;
     r.modified_by = v.modified_by;

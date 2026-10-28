@@ -179,6 +179,16 @@ annotations; domain and repository profiles regenerate correctly.
 
 ** Custom repository methods
 
+** Write observation
+
+The trade's economic digest observes every write of this component. The
+observer's specialisation must be visible where the repository writes, so the
+repository includes it.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.trading.core/repository/trade_write_observation.hpp"
+#+end_src
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

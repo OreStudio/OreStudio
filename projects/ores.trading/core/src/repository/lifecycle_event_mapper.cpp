@@ -46,7 +46,7 @@ domain::lifecycle_event lifecycle_event_mapper::map(const lifecycle_event_entity
     domain::lifecycle_event r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.fsm_state_id = v.fsm_state_id.has_value() ?
                          std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) :

@@ -50,7 +50,7 @@ equity_variance_swap_instrument_mapper::map(const equity_variance_swap_instrumen
     domain::equity_variance_swap_instrument r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);

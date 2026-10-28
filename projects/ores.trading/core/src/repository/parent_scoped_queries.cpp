@@ -64,12 +64,12 @@
 #include "ores.trading.core/repository/instrument_strike_mapper.hpp"
 #include "ores.trading.core/repository/range_bound_entity.hpp"
 #include "ores.trading.core/repository/range_bound_mapper.hpp"
-#include <sqlgen/postgres.hpp>
+#include "ores.database/query_builder/execute.hpp"
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
@@ -90,11 +90,11 @@ read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_call_date_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_issue_call_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_call_date_entity, domain::bond_issue_call_date>(
+    return query_builder::execute_read_query<bond_issue_call_date_entity, domain::bond_issue_call_date>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_call_date_mapper::map(entities); },
@@ -109,11 +109,11 @@ read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_issue_conversion_target_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_conversion_target_entity,
+    return query_builder::execute_read_query<bond_issue_conversion_target_entity,
                               domain::bond_issue_conversion_target>(
         ctx,
         query,
@@ -129,11 +129,11 @@ std::vector<domain::bond_leg> read_legs_by_trade_ids(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
+        query_builder::read<std::vector<bond_leg_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
 
-    return execute_read_query<bond_leg_entity, domain::bond_leg>(
+    return query_builder::execute_read_query<bond_leg_entity, domain::bond_leg>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_mapper::map(entities); },
@@ -148,11 +148,11 @@ read_leg_amounts_by_trade_ids(context ctx, const std::vector<std::string>& trade
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+    return query_builder::execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
@@ -167,11 +167,11 @@ read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_rate_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
+        query_builder::read<std::vector<bond_leg_rate_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
 
-    return execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
+    return query_builder::execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_rate_mapper::map(entities); },
@@ -186,11 +186,11 @@ read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_leg_amortization_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
+    return query_builder::execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amortization_mapper::map(entities); },
@@ -205,11 +205,11 @@ read_issue_legs_by_issue_ids(context ctx, const std::vector<std::string>& issue_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_leg_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "leg_number"_c);
+        query_builder::read<std::vector<bond_issue_leg_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "leg_number"_c);
 
-    return execute_read_query<bond_issue_leg_entity, domain::bond_issue_leg>(
+    return query_builder::execute_read_query<bond_issue_leg_entity, domain::bond_issue_leg>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_leg_mapper::map(entities); },
@@ -224,11 +224,11 @@ read_issue_leg_amounts_by_issue_ids(context ctx, const std::vector<std::string>&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_issue_leg_amount_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_leg_amount_entity, domain::bond_issue_leg_amount>(
+    return query_builder::execute_read_query<bond_issue_leg_amount_entity, domain::bond_issue_leg_amount>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_leg_amount_mapper::map(entities); },
@@ -243,11 +243,11 @@ read_issue_leg_rates_by_issue_ids(context ctx, const std::vector<std::string>& i
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_leg_rate_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "leg_number"_c);
+        query_builder::read<std::vector<bond_issue_leg_rate_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "leg_number"_c);
 
-    return execute_read_query<bond_issue_leg_rate_entity, domain::bond_issue_leg_rate>(
+    return query_builder::execute_read_query<bond_issue_leg_rate_entity, domain::bond_issue_leg_rate>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_leg_rate_mapper::map(entities); },
@@ -262,11 +262,11 @@ read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::st
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_leg_amortization_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "leg_number"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_issue_leg_amortization_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "leg_number"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_leg_amortization_entity,
+    return query_builder::execute_read_query<bond_issue_leg_amortization_entity,
                               domain::bond_issue_leg_amortization>(
         ctx,
         query,
@@ -282,11 +282,11 @@ read_issue_schedules_by_issue_ids(context ctx, const std::vector<std::string>& i
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_leg_schedule_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c, "leg_number"_c, "schedule_role"_c, "sequence_number"_c);
+        query_builder::read<std::vector<bond_issue_leg_schedule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c, "leg_number"_c, "schedule_role"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_leg_schedule_entity, domain::bond_issue_leg_schedule>(
+    return query_builder::execute_read_query<bond_issue_leg_schedule_entity, domain::bond_issue_leg_schedule>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_leg_schedule_mapper::map(entities); },
@@ -301,15 +301,15 @@ read_issue_schedule_dates_by_issue_ids(context ctx, const std::vector<std::strin
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_issue_leg_schedule_date_entity>> |
-        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c,
+        query_builder::read<std::vector<bond_issue_leg_schedule_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("issue_id"_c,
                  "leg_number"_c,
                  "schedule_role"_c,
                  "schedule_sequence_number"_c,
                  "sequence_number"_c);
 
-    return execute_read_query<bond_issue_leg_schedule_date_entity,
+    return query_builder::execute_read_query<bond_issue_leg_schedule_date_entity,
                               domain::bond_issue_leg_schedule_date>(
         ctx,
         query,
@@ -325,12 +325,12 @@ read_schedules_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_schedule_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by(
+        query_builder::read<std::vector<instrument_schedule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by(
             "trade_id"_c, "owner_role"_c, "owner_number"_c, "schedule_role"_c, "sequence_number"_c);
 
-    return execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
+    return query_builder::execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
         ctx,
         query,
         [](const auto& entities) { return instrument_schedule_mapper::map(entities); },
@@ -345,16 +345,16 @@ read_schedule_dates_by_trade_ids(context ctx, const std::vector<std::string>& tr
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_schedule_date_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c,
+        query_builder::read<std::vector<instrument_schedule_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c,
                  "owner_role"_c,
                  "owner_number"_c,
                  "schedule_role"_c,
                  "schedule_sequence_number"_c,
                  "sequence_number"_c);
 
-    return execute_read_query<instrument_schedule_date_entity, domain::instrument_schedule_date>(
+    return query_builder::execute_read_query<instrument_schedule_date_entity, domain::instrument_schedule_date>(
         ctx,
         query,
         [](const auto& entities) { return instrument_schedule_date_mapper::map(entities); },
@@ -369,11 +369,11 @@ read_options_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_option_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c);
+        query_builder::read<std::vector<instrument_option_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c);
 
-    return execute_read_query<instrument_option_entity, domain::instrument_option>(
+    return query_builder::execute_read_query<instrument_option_entity, domain::instrument_option>(
         ctx,
         query,
         [](const auto& entities) { return instrument_option_mapper::map(entities); },
@@ -388,11 +388,11 @@ read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& t
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_option_premium_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<instrument_option_premium_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
-    return execute_read_query<instrument_option_premium_entity, domain::instrument_option_premium>(
+    return query_builder::execute_read_query<instrument_option_premium_entity, domain::instrument_option_premium>(
         ctx,
         query,
         [](const auto& entities) { return instrument_option_premium_mapper::map(entities); },
@@ -407,11 +407,11 @@ read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::strin
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_option_exercise_fee_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<instrument_option_exercise_fee_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
-    return execute_read_query<instrument_option_exercise_fee_entity,
+    return query_builder::execute_read_query<instrument_option_exercise_fee_entity,
                               domain::instrument_option_exercise_fee>(
         ctx,
         query,
@@ -427,11 +427,11 @@ read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::strin
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<instrument_option_payment_date_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
-    return execute_read_query<instrument_option_payment_date_entity,
+    return query_builder::execute_read_query<instrument_option_payment_date_entity,
                               domain::instrument_option_payment_date>(
         ctx,
         query,
@@ -447,11 +447,11 @@ read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::str
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_option_exercise_price_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<instrument_option_exercise_price_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
-    return execute_read_query<instrument_option_exercise_price_entity,
+    return query_builder::execute_read_query<instrument_option_exercise_price_entity,
                               domain::instrument_option_exercise_price>(
         ctx,
         query,
@@ -467,11 +467,11 @@ read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trad
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<range_bound_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
+        query_builder::read<std::vector<range_bound_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c, "sequence_number"_c);
 
-    return execute_read_query<range_bound_entity, domain::range_bound>(
+    return query_builder::execute_read_query<range_bound_entity, domain::range_bound>(
         ctx,
         query,
         [](const auto& entities) { return range_bound_mapper::map(entities); },
@@ -486,11 +486,11 @@ read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<instrument_strike_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c);
+        query_builder::read<std::vector<instrument_strike_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c);
 
-    return execute_read_query<instrument_strike_entity, domain::instrument_strike>(
+    return query_builder::execute_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
         query,
         [](const auto& entities) { return instrument_strike_mapper::map(entities); },
@@ -505,11 +505,11 @@ read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_id
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<bond_forward_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c);
+        query_builder::read<std::vector<bond_forward_entity>> |
+        query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        query_builder::order_by("trade_id"_c);
 
-    return execute_read_query<bond_forward_entity, domain::bond_forward>(
+    return query_builder::execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
         query,
         [](const auto& entities) { return bond_forward_mapper::map(entities); },

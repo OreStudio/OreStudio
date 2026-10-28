@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -46,6 +47,7 @@
 #include "test_helpers.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -374,4 +376,52 @@ TEST_CASE("a filter on a column only a trade has leaves the structure out",
     auto filter = repository_trade_summary_on(f.counterparty);
     filter.book_id = std::optional<uuid>{f.book};
     CHECK(repository_trade_summary_ids(f.read(filter)) == std::vector<uuid>{a});
+}
+
+namespace {
+
+std::string stored_digest(const ores::database::context& ctx, const uuid& trade_id) {
+    const auto trades = ores::trading::repository::trade_repository().read_latest(
+        ctx, boost::uuids::to_string(trade_id));
+    REQUIRE(trades.size() == 1);
+    return trades.front().economic_digest;
+}
+
+ores::trading::domain::trade_identifier identifier_of(repository_trade_summary_fixture& f,
+                                                      const uuid& trade_id) {
+    auto gen = ores::testing::make_generation_context(f.h);
+    auto id = ores::trading::generators::generate_synthetic_trade_identifier(gen);
+    id.trade_id = trade_id;
+    id.trade_activity_id = f.write_activity();
+    id.id_value = "digest-" + boost::uuids::to_string(trade_id);
+    return id;
+}
+
+}
+
+TEST_CASE("a component write refreshes the digest of its trade", "[repository][write_observer]") {
+    repository_trade_summary_fixture f;
+    const auto trade_id = f.write("Swap", f.counterparty);
+    const auto before = stored_digest(f.ctx, trade_id);
+
+    ores::trading::repository::trade_identifier_repository().write(f.ctx,
+                                                                   identifier_of(f, trade_id));
+
+    const auto after = stored_digest(f.ctx, trade_id);
+    CHECK_FALSE(after.empty());
+    CHECK(after != before);
+}
+
+TEST_CASE("a component write rolled back with its unit of work leaves the digest",
+          "[repository][write_observer]") {
+    repository_trade_summary_fixture f;
+    const auto trade_id = f.write("Swap", f.counterparty);
+    const auto before = stored_digest(f.ctx, trade_id);
+    const auto identifier = identifier_of(f, trade_id);
+    {
+        ores::database::repository::unit_of_work uow(f.ctx);
+        ores::trading::repository::trade_identifier_repository().write(uow.ctx(), identifier);
+    }
+
+    CHECK(stored_digest(f.ctx, trade_id) == before);
 }

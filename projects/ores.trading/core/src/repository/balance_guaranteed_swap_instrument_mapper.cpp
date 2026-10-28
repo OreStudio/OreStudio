@@ -46,7 +46,7 @@ balance_guaranteed_swap_instrument_mapper::map(const balance_guaranteed_swap_ins
     domain::balance_guaranteed_swap_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.reference_security = v.reference_security;
     r.lockout_days = v.lockout_days;

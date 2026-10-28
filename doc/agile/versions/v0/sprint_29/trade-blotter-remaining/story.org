@@ -57,7 +57,7 @@ authorisation queue (see =* Decisions=).
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] | DONE | 2026-10-24 | 2026-10-25 | Build the trade list and the trade page in the web client from the two prototypes. |
-| [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] | STARTED | 2026-10-25 | | Build the booking screen from its prototype, with the structure card for a leg. |
+| [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] | DONE | 2026-10-25 | 2026-10-28 | Build the booking screen from its prototype, with the structure card for a leg. |
 | [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] | BACKLOG | | | Build the structure page from its prototype: members, leg checks, a Price tab and history. |
 | [[id:0FDD4D67-C1EF-4D8A-9A1D-8F652362893A][Import real deals through the authorisation queue]] | BACKLOG | | | Make the ORE import raise authorisation requests, report the rows it cannot book, and prove a second run is safe. |
 | [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] | BACKLOG | | | Build the Operations screen that works the operational authorisation queue. |
@@ -85,6 +85,12 @@ Every screen of this story reads and writes =ores.trading=, and the story is whe
 * Decisions
 
 - Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- A leg is a membership, not a trade. Unlinking removes the membership and leaves the trade booked and groupable, which is what the desk means by unlinking.
+- The deal's tree is drawn beside its page and selects the leg being read; the selection is in the address, so it is shareable.
+- History is the shared timeline over the record and the parts it holds now. The two-pane compare of =HistoryPanel= is the retired shape and is not used on the trading screens.
+- A history read is gated twice: the service must register a provider for the entity type, and the route must allow it. Both were missing for the trade and its parts.
+- A screen's party is named from the login session when the read is party-scoped, rather than reading the parties table the trading roles may not see.
+- A trade booked from a deal joins it: the deal and the role travel with the form, and the trade is a leg before the form closes.
 
 * Out of scope
 

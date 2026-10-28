@@ -491,7 +491,7 @@ to differ.
 | Value in force, documentation and Simple/Advanced | Meets | Gap: no collapsible documentation, no Simple/Advanced, no default-in-force; the product card is where both must appear |
 | Reach | Meets | Gap: the page says the reach cannot be read |
 | History | Meets | Gap |
-| Numbers-changing lifecycle | Gap | Gap: the model has no status or sign-off |
+| Numbers-changing lifecycle | Meets | Gap: the model has no status or sign-off |
 | Import | Not drawn: these settings are the =Setup= section of the run's =ore.xml=, and the run document owns that import | Gap |
 | What it decides and related | Partial: the lead says what it is | Partial: the lead says what it is |
 | Screen words | Meets, after the prototype update | Meets in the prototype; the built screen still says *Settings* |

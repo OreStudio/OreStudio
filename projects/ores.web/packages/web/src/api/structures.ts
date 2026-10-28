@@ -29,9 +29,40 @@ export interface StructureLeg {
     readonly reference: string;
     readonly role: string;
     readonly sequence_number: number;
-    /** The trade's product, which is the type it is booked under. */
+    /** The trade's type code, and the name that type is known by. */
     readonly kind: string;
+    readonly product: string;
+    /** The state the trade is in, empty when the read could not name it. */
+    readonly state: string;
+    /** The notional the trade holds, and its currency, empty when unread. */
+    readonly notional: string;
+    readonly currency: string;
     readonly external_version: number | null;
+}
+
+/** One row of the structures list: a deal or the container above one. */
+export interface StructureListRow {
+    readonly id: string;
+    readonly reference: string;
+    readonly kind: string;
+    readonly template_code: string;
+    readonly counterparty_id: string;
+    readonly counterparty_name: string;
+    /** How many trades are inside it, and how many structures under it. */
+    readonly legs: number;
+    readonly inner_structures: number;
+    readonly confirms: string;
+    readonly prices: string;
+    readonly parent_id: string;
+    /** How deep the row sits, which is how far it is indented. */
+    readonly depth: number;
+}
+
+/** One page of structures and the kinds the tenant holds. */
+export interface StructureListPage {
+    readonly rows: readonly StructureListRow[];
+    readonly total: number;
+    readonly kinds: readonly string[];
 }
 
 /**
@@ -49,6 +80,10 @@ export interface StructureTreeNode {
     /** The role this node takes under its parent. */
     readonly role: string;
     readonly sequence_number: number;
+    /** The product's name on a leaf, and what it is worth. */
+    readonly product: string;
+    readonly notional: string;
+    readonly currency: string;
     readonly external_version: number | null;
     readonly children: readonly StructureTreeNode[];
 }
@@ -73,6 +108,11 @@ export interface StructurePageRecord {
     readonly counterparty_name: string;
     /** The structure one rung up, when this one is not the root of its tree. */
     readonly parent_id: string;
+    /** The party every leg is booked as, and whether they all agree. */
+    readonly party: { readonly id: string; readonly name: string; readonly shared: boolean };
+    /** How the kind confirms and prices. */
+    readonly confirms: string;
+    readonly prices: string;
     readonly tree: StructureTreeNode | null;
     readonly legs: readonly StructureLeg[];
     /** The roles a leg may take on this deal. */
@@ -95,6 +135,9 @@ const treeNodeSchema: z.ZodType<StructureTreeNode> = z.lazy(() =>
         template_code: z.string().default(''),
         role: z.string().default(''),
         sequence_number: z.coerce.number().int().default(0),
+        product: z.string().default(''),
+        notional: z.string().default(''),
+        currency: z.string().default(''),
         external_version: z.coerce.number().int().nullable().default(null),
         children: z.array(treeNodeSchema).default([]),
     }),
@@ -110,6 +153,15 @@ const structurePageRecordSchema = z.object({
     }),
     reference: z.string().default(''),
     parent_id: z.string().default(''),
+    party: z
+        .looseObject({
+            id: z.string().default(''),
+            name: z.string().default(''),
+            shared: z.boolean().default(true),
+        })
+        .default({ id: '', name: '', shared: true }),
+    confirms: z.string().default(''),
+    prices: z.string().default(''),
     tree: treeNodeSchema.nullable().default(null),
     legs: z
         .array(
@@ -119,6 +171,10 @@ const structurePageRecordSchema = z.object({
                 role: z.string().default(''),
                 sequence_number: z.coerce.number().int().default(0),
                 kind: z.string().default(''),
+                product: z.string().default(''),
+                state: z.string().default(''),
+                notional: z.string().default(''),
+                currency: z.string().default(''),
                 external_version: z.coerce.number().int().nullable().default(null),
             }),
         )
@@ -171,11 +227,61 @@ export const structures = {
             counterparty_id: parsed.structure.counterparty_id,
             counterparty_name: parsed.structure.counterparty_name,
             parent_id: parsed.parent_id,
+            party: parsed.party,
+            confirms: parsed.confirms,
+            prices: parsed.prices,
             tree: parsed.tree,
             legs: parsed.legs,
             roles: parsed.roles,
             history: parsed.history,
         };
+    },
+
+    /** One page of the structures the tenant holds, as the list screen draws it. */
+    async list(query: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search: string;
+        readonly kind: string;
+    }): Promise<StructureListPage> {
+        const params = new URLSearchParams({
+            offset: String(query.offset),
+            limit: String(query.limit),
+            search: query.search,
+            kind: query.kind,
+        });
+        return z
+            .object({
+                rows: z.array(
+                    z.looseObject({
+                        id: z.string(),
+                        reference: z.string().default(''),
+                        kind: z.string().default(''),
+                        template_code: z.string().default(''),
+                        counterparty_id: z.string().default(''),
+                        counterparty_name: z.string().default(''),
+                        legs: z.coerce.number().int().default(0),
+                        inner_structures: z.coerce.number().int().default(0),
+                        confirms: z.string().default(''),
+                        prices: z.string().default(''),
+                        parent_id: z.string().default(''),
+                        depth: z.coerce.number().int().default(0),
+                    }),
+                ),
+                total: z.coerce.number().int().default(0),
+                kinds: z.array(z.string()).default([]),
+            })
+            .parse(
+                await request(`/api/structures?${params.toString()}`, { method: 'GET' }),
+            ) as StructureListPage;
+    },
+
+    /** Takes a trade out of the structure: the trade stays, the leg goes. */
+    async unlink(key: string, tradeId: string): Promise<void> {
+        await request(
+            `/api/structures/${encodeURIComponent(key)}/legs/${encodeURIComponent(tradeId)}`,
+            { method: 'DELETE' },
+        );
     },
 
     /** The trades no structure has grouped, which are the ones this one may take. */

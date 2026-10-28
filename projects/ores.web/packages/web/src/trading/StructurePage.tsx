@@ -21,12 +21,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import {
     structures,
     type StructurePageRecord,
     type StructureTreeNode,
-    type StructureVersion,
 } from '../api/structures.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
@@ -34,34 +33,55 @@ import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
 import { Button, Field, Notice, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
+import { structurePathFor } from './StructuresPage.js';
 
-/** The page's tabs, in the order the prototype settled: the parts, the price, the record. */
-const TABS = ['members', 'price', 'history'] as const;
+const TABS = ['details', 'members', 'price', 'history'] as const;
 
-/**
- * The kinds that confirm as one document.
- *
- * The kind is chosen at grouping, and it decides what the customer receives: a
- * package's legs each confirm on their own, and every other kind confirms as one
- * document. The page states which it is, because a person should not have to
- * know the ladder by heart to read the screen.
- */
-const CONFIRMS_AS_ONE = ['Strategy', 'Typed', 'Dynamic'];
-
-/** The tone a kind is drawn in, so the tree reads at a glance. */
 function kindTone(kind: string): 'neutral' | 'muted' | 'up' {
-    if (kind === 'Package') {
-        return 'muted';
-    }
-    return CONFIRMS_AS_ONE.includes(kind) ? 'neutral' : 'up';
+    return kind === 'Package' ? 'muted' : 'neutral';
 }
 
-/** The path of a structure, by the reference the desk knows it by. */
-function structurePath(node: { readonly id: string; readonly reference: string }): string {
-    return `${PATHS.structures}/${encodeURIComponent(node.reference === '' ? node.id : node.reference)}`;
+function Card({
+    title,
+    version,
+    actions,
+    children,
+}: {
+    readonly title: string;
+    readonly version?: string;
+    readonly actions?: ReactNode;
+    readonly children: ReactNode;
+}): ReactNode {
+    return (
+        <section className="rounded-md border border-line bg-surface-raised">
+            <header className="flex items-center gap-2 border-b border-line px-4 py-2">
+                <h2 className="text-sm font-medium text-ink">{title}</h2>
+                {version === undefined ? null : <Tag tone="muted">{version}</Tag>}
+                <div className="ml-auto flex items-center gap-2">{actions}</div>
+            </header>
+            <div className="space-y-4 px-4 py-4">{children}</div>
+        </section>
+    );
 }
 
-/** One node of the tree, and the nodes under it. */
+function Explained({
+    label,
+    value,
+    prose,
+}: {
+    readonly label: string;
+    readonly value: ReactNode;
+    readonly prose?: string;
+}): ReactNode {
+    return (
+        <div className="space-y-1">
+            <div className="text-xs uppercase tracking-wide text-ink-faint">{label}</div>
+            <div className="text-sm text-ink">{value}</div>
+            {prose === undefined ? null : <p className="text-xs text-ink-faint">{prose}</p>}
+        </div>
+    );
+}
+
 function TreeNodeRow({
     node,
     depth,
@@ -71,35 +91,44 @@ function TreeNodeRow({
     readonly depth: number;
     readonly current: string;
 }): ReactNode {
-    const { t } = useTranslation();
-    const isStructure = node.kind !== '' && node.template_code !== '' ? true : node.children.length > 0;
+    const isStructure = node.role === 'structure' || node.children.length > 0;
     const isHere = node.id === current;
+    const money =
+        node.notional === ''
+            ? ''
+            : `${node.notional}${node.currency === '' ? '' : ` ${node.currency}`}`;
     return (
         <li>
             <div
-                className={`flex items-center gap-2 py-1 ${isHere ? 'font-medium text-ink' : 'text-ink-muted'}`}
-                style={{ paddingLeft: `${depth * 16}px` }}
+                className={`flex items-start gap-2 py-1 ${isHere ? 'text-ink' : 'text-ink-muted'}`}
+                style={{ paddingLeft: `${depth * 14}px` }}
             >
                 <Tag tone={kindTone(node.kind)}>{node.kind === '' ? 'trade' : node.kind}</Tag>
-                {node.reference === '' ? (
-                    <span className="font-mono text-xs">{node.id}</span>
-                ) : isStructure ? (
-                    <Link
-                        className="font-mono text-xs text-accent hover:text-accent-bright"
-                        to={structurePath(node)}
-                    >
-                        {node.reference}
-                    </Link>
-                ) : (
-                    <Link
-                        className="font-mono text-xs text-accent hover:text-accent-bright"
-                        to={`${PATHS.trades}/${node.id}`}
-                    >
-                        {node.reference}
-                    </Link>
-                )}
-                {node.role === '' ? null : (
-                    <span className="text-xs text-ink-faint">{node.role}</span>
+                <div className="min-w-0 flex-1">
+                    {node.product === '' ? null : (
+                        <div className="text-sm text-ink">{node.product}</div>
+                    )}
+                    <div className="font-mono text-xs">
+                        {isStructure ? (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={structurePathFor(node)}
+                            >
+                                {node.reference === '' ? node.id : node.reference}
+                            </Link>
+                        ) : (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.trades}/${node.id}`}
+                            >
+                                {node.reference === '' ? node.id : node.reference}
+                            </Link>
+                        )}
+                        {node.role === '' ? null : <span> · {node.role}</span>}
+                    </div>
+                </div>
+                {money === '' ? null : (
+                    <span className="whitespace-nowrap text-xs text-ink-muted">{money}</span>
                 )}
             </div>
             {node.children.length === 0 ? null : (
@@ -118,114 +147,282 @@ function TreeNodeRow({
     );
 }
 
-/** The whole tree of the root, beside the page. */
-function TreePanel({
-    record,
-}: {
-    readonly record: StructurePageRecord;
-}): ReactNode {
+function TreePanel({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     if (record.tree === null) {
         return null;
     }
+    const inner = record.tree.children.filter(
+        (child) => child.role === 'structure' || child.children.length > 0,
+    ).length;
     return (
-        <aside className="h-fit rounded-md border border-line bg-surface-raised p-3">
-            <h2 className="mb-2 text-sm font-medium text-ink">{t('trading.structure.tree')}</h2>
-            <ul className="m-0 list-none p-0">
+        <aside className="h-fit rounded-md border border-line bg-surface-raised">
+            <header className="flex items-baseline gap-2 border-b border-line px-3 py-2">
+                <h2 className="text-xs uppercase tracking-wide text-ink-faint">
+                    {t('trading.structure.tree')}
+                </h2>
+                <span className="ml-auto text-xs text-ink-faint">
+                    {t('trading.structure.treeMeta', {
+                        inner: String(inner),
+                        root: record.tree.reference,
+                    })}
+                </span>
+            </header>
+            <ul className="m-0 list-none p-3">
                 <TreeNodeRow node={record.tree} depth={0} current={record.id} />
             </ul>
-            <p className="mt-3 text-xs text-ink-faint">{t('trading.structure.treeNote')}</p>
+            <p className="border-t border-line px-3 py-2 text-xs text-ink-faint">
+                {t('trading.structure.treeNote')}
+            </p>
         </aside>
     );
 }
 
-/** The legs of the deal, as the members tab draws them. */
+function IdentityCard({ record }: { readonly record: StructurePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <Card title={t('trading.structure.identity')} version="v1">
+            <div className="grid gap-4 md:grid-cols-2">
+                <Explained
+                    label={t('trading.structure.party')}
+                    value={
+                        record.party.id === '' ? (
+                            '—'
+                        ) : (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.parties}/${record.party.id}`}
+                            >
+                                {record.party.name === '' ? record.party.id : record.party.name}
+                            </Link>
+                        )
+                    }
+                    prose={
+                        record.party.shared
+                            ? t('trading.structure.partyShared')
+                            : t('trading.structure.partyMixed')
+                    }
+                />
+                <Explained
+                    label={t('trading.structure.counterpartyLabel')}
+                    value={
+                        record.counterparty_id === '' ? (
+                            '—'
+                        ) : (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.counterparties}/${record.counterparty_id}`}
+                            >
+                                {record.counterparty_name}
+                            </Link>
+                        )
+                    }
+                    prose={t('trading.structure.counterpartyShared')}
+                />
+                <Explained
+                    label={t('trading.structure.kind')}
+                    value={<Tag tone={kindTone(record.kind)}>{record.kind}</Tag>}
+                    prose={
+                        record.kind === 'Package'
+                            ? t('trading.structure.kindProsePackage')
+                            : t('trading.structure.kindProseOther')
+                    }
+                />
+                <Explained
+                    label={t('trading.structure.inside')}
+                    value={record.parent_id === '' ? '—' : record.parent_id}
+                    prose={
+                        record.parent_id === ''
+                            ? t('trading.structure.insideRoot')
+                            : t('trading.structure.insideChild')
+                    }
+                />
+            </div>
+        </Card>
+    );
+}
+
+function VerdictCard({ record }: { readonly record: StructurePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    const asOne = record.kind !== 'Package';
+    return (
+        <Card title={t('trading.structure.verdicts')} version="v1">
+            <div className="grid gap-4 md:grid-cols-2">
+                <Explained
+                    label={t('trading.structure.confirmation')}
+                    value={record.confirms}
+                    prose={
+                        asOne
+                            ? t('trading.structure.confirmsProseOne')
+                            : t('trading.structure.confirmsProseLegs')
+                    }
+                />
+                <Explained
+                    label={t('trading.structure.pricing')}
+                    value={record.prices}
+                    prose={
+                        asOne
+                            ? t('trading.structure.pricesProseOne')
+                            : t('trading.structure.pricesProseLegs')
+                    }
+                />
+                <Explained
+                    label={t('trading.structure.externalVersion')}
+                    value={
+                        asOne
+                            ? t('trading.structure.ofTheDeal')
+                            : t('trading.structure.ofEachTrade')
+                    }
+                    prose={
+                        asOne
+                            ? t('trading.structure.externalProseOne')
+                            : t('trading.structure.externalProseLegs')
+                    }
+                />
+            </div>
+        </Card>
+    );
+}
+
+function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    const queries = useQueryClient();
+    const key = record.reference === '' ? record.id : record.reference;
+    const unlink = useMutation({
+        mutationFn: (tradeId: string) => structures.unlink(key, tradeId),
+        onSuccess: async () => {
+            await queries.invalidateQueries({ queryKey: ['structure'] });
+            await queries.invalidateQueries({ queryKey: ['structures'] });
+        },
+    });
+
+    if (record.legs.length === 0) {
+        return <p className="py-2 text-sm text-ink-muted">{t('trading.structure.noLegs')}</p>;
+    }
+    return (
+        <div className="space-y-2">
+            {unlink.isError && <Notice tone="error">{unlink.error.message}</Notice>}
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                        <th className="px-2 py-2 font-medium">{t('trading.structure.leg')}</th>
+                        <th className="px-2 py-2 font-medium">{t('trading.structure.trade')}</th>
+                        <th className="px-2 py-2 font-medium">{t('trading.structure.type')}</th>
+                        <th className="px-2 py-2 font-medium">{t('trading.structure.state')}</th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t('trading.structure.notional')}
+                        </th>
+                        <th className="px-2 py-2 font-medium">
+                            {t('trading.structure.externalVersion')}
+                        </th>
+                        <th className="px-2 py-2" />
+                    </tr>
+                </thead>
+                <tbody>
+                    {record.legs.map((leg, index) => (
+                        <tr key={leg.trade_id} className="border-b border-line last:border-0">
+                            <td className="px-2 py-2 text-ink-muted">{index + 1}</td>
+                            <td className="px-2 py-2 font-mono">
+                                <Link
+                                    className="text-accent hover:text-accent-bright"
+                                    to={`${PATHS.trades}/${leg.trade_id}`}
+                                >
+                                    {leg.reference === '' ? leg.trade_id : leg.reference}
+                                </Link>
+                            </td>
+                            <td className="px-2 py-2 text-ink">
+                                {leg.product === '' ? leg.kind : leg.product}
+                            </td>
+                            <td className="px-2 py-2">
+                                {leg.state === '' ? '—' : <Tag tone="up">{leg.state}</Tag>}
+                            </td>
+                            <td className="px-2 py-2 text-right text-ink">
+                                {leg.notional === ''
+                                    ? '—'
+                                    : `${leg.notional}${leg.currency === '' ? '' : ` ${leg.currency}`}`}
+                            </td>
+                            <td className="px-2 py-2 text-ink-muted">
+                                {leg.external_version === null
+                                    ? '—'
+                                    : `ext ${leg.external_version}`}
+                            </td>
+                            <td className="px-2 py-2 text-right">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    pending={unlink.isPending}
+                                    onClick={() => unlink.mutate(leg.trade_id)}
+                                >
+                                    {t('trading.structure.unlink')}
+                                </Button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function DetailsTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const asOne = record.kind !== 'Package';
+    return (
+        <div className="space-y-4">
+            <IdentityCard record={record} />
+            <VerdictCard record={record} />
+            <Card
+                title={t('trading.structure.trades')}
+                version={t('trading.structure.legCount', { count: String(record.legs.length) })}
+                actions={
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                            void navigate(PATHS.newTrade);
+                        }}
+                    >
+                        {t('trading.structure.bookLeg')}
+                    </Button>
+                }
+            >
+                <p className="text-xs text-ink-muted">
+                    {asOne
+                        ? t('trading.structure.tradesProseOne')
+                        : t('trading.structure.tradesProseLegs')}
+                </p>
+                <LegsTable record={record} />
+            </Card>
+        </div>
+    );
+}
+
 function MembersTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
     const [tradeId, setTradeId] = useState('');
     const [role, setRole] = useState(record.roles[0] ?? '');
+    const key = record.reference === '' ? record.id : record.reference;
 
     const candidates = useQuery({
         queryKey: ['structure', record.id, 'leg-candidates'],
-        queryFn: () => structures.legCandidates(record.reference === '' ? record.id : record.reference),
+        queryFn: () => structures.legCandidates(key),
     });
     const roles = record.roles.length > 0 ? record.roles : ['leg'];
     const add = useMutation({
-        mutationFn: () =>
-            structures.addLeg(record.reference === '' ? record.id : record.reference, tradeId, role),
+        mutationFn: () => structures.addLeg(key, tradeId, role),
         onSuccess: async () => {
             setTradeId('');
-            // The page is keyed by the reference the address carries, and the
-            // picker by the id, so the whole set is invalidated rather than one
-            // key this form would have to guess.
             await queries.invalidateQueries({ queryKey: ['structure'] });
+            await queries.invalidateQueries({ queryKey: ['structures'] });
         },
     });
-    const rows = candidates.data ?? [];
 
+    const rows = candidates.data ?? [];
     return (
         <div className="space-y-4">
-            <section className="overflow-hidden rounded-md border border-line">
-                <h2 className="border-b border-line bg-surface-2 px-3 py-2 text-sm font-medium text-ink">
-                    {t('trading.structure.legsCaption')}
-                </h2>
-                {record.legs.length === 0 ? (
-                    <p className="px-3 py-3 text-sm text-ink-muted">
-                        {t('trading.structure.noLegs')}
-                    </p>
-                ) : (
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structure.sequence')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structure.trade')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structure.product')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structure.role')}
-                                </th>
-                                <th className="px-3 py-2 font-medium">
-                                    {t('trading.structure.externalVersion')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {record.legs.map((leg) => (
-                                <tr
-                                    key={leg.trade_id}
-                                    className="border-b border-line last:border-0"
-                                >
-                                    <td className="px-3 py-2 text-ink-muted">
-                                        {leg.sequence_number}
-                                    </td>
-                                    <td className="px-3 py-2 font-mono text-ink">
-                                        <Link
-                                            className="text-accent hover:text-accent-bright"
-                                            to={`${PATHS.trades}/${leg.trade_id}`}
-                                        >
-                                            {leg.reference === ''
-                                                ? leg.trade_id
-                                                : leg.reference}
-                                        </Link>
-                                    </td>
-                                    <td className="px-3 py-2 text-ink">{leg.kind}</td>
-                                    <td className="px-3 py-2 text-ink">{leg.role}</td>
-                                    <td className="px-3 py-2 text-ink-muted">
-                                        {leg.external_version ?? '—'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </section>
-
+            <LegsTable record={record} />
             <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">
                 <h2 className="text-sm font-medium text-ink">{t('trading.structure.addLeg')}</h2>
                 <p className="text-sm text-ink-muted">{t('trading.structure.addLegLead')}</p>
@@ -272,7 +469,6 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
     );
 }
 
-/** The versions the structure was written at, newest first. */
 function HistoryTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     if (record.history.length === 0) {
@@ -288,13 +484,11 @@ function HistoryTab({ record }: { readonly record: StructurePageRecord }): React
                         </th>
                         <th className="px-3 py-2 font-medium">{t('trading.structure.by')}</th>
                         <th className="px-3 py-2 font-medium">{t('trading.structure.when')}</th>
-                        <th className="px-3 py-2 font-medium">
-                            {t('trading.structure.reason')}
-                        </th>
+                        <th className="px-3 py-2 font-medium">{t('trading.structure.reason')}</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {record.history.map((version: StructureVersion) => (
+                    {record.history.map((version) => (
                         <tr key={version.version} className="border-b border-line last:border-0">
                             <td className="px-3 py-2 text-ink-muted">{version.version}</td>
                             <td className="px-3 py-2 text-ink">{version.modified_by}</td>
@@ -316,45 +510,20 @@ function HistoryTab({ record }: { readonly record: StructurePageRecord }): React
  * The price tab.
  *
  * FIXME: pricing is not read yet. The prototype reads a market snapshot and says
- * when it was read, and the read that would serve it does not exist: an
- * inception P&L report is the work that comes first. The tab states that rather
- * than showing a number nothing produced.
+ * when it was read, and the read that would serve it does not exist: an inception
+ * P&L report is the work that comes first.
  */
 function PriceTab(): ReactNode {
     const { t } = useTranslation();
     return <Notice tone="info">{t('trading.structure.priceNotRead')}</Notice>;
 }
 
-/** The frame a structure's page is drawn in, shared by its states. */
-function Frame({
-    trail,
-    title,
-    description,
-    children,
-}: {
-    readonly trail: readonly { readonly label: string; readonly to?: string }[];
-    readonly title: string;
-    readonly description: string;
-    readonly children: ReactNode;
-}): ReactNode {
-    return (
-        <ScreenFrame
-            trail={<Crumbs parts={[...trail]} />}
-            title={title}
-            description={description}
-        >
-            {children}
-        </ScreenFrame>
-    );
-}
-
 /**
  * The page a deal opens on: what it is, the tree it sits in, and its parts.
  *
- * The address carries the reference the desk gave the deal, not its id, because a
- * reference is what a person says. The tree shows the whole tree of the root
- * whichever node is open, which is what lets a person see where the deal they are
- * reading sits.
+ * The title is the kind, which is what the customer receives, and the reference
+ * sits under it with the kind's chip: a person reading the screen knows what they
+ * are looking at before they read its name.
  */
 export function StructurePage(): ReactNode {
     const { t } = useTranslation();
@@ -372,82 +541,73 @@ export function StructurePage(): ReactNode {
     const trail = [
         { label: t('shell.menu.home'), to: '/' },
         { label: t('shell.menu.trading'), to: PATHS.trading },
-        { label: t('trading.trades.title'), to: PATHS.trades },
+        { label: t('trading.structures.title'), to: PATHS.structures },
     ];
 
     if (open.isPending) {
         return (
-            <Frame
-                trail={trail}
+            <ScreenFrame
+                trail={<Crumbs parts={trail} />}
                 title={t('trading.structure.title')}
                 description={t('trading.structure.lead')}
             >
                 <p className="text-sm text-ink-muted" role="status">
                     {t('common.loading')}
                 </p>
-            </Frame>
+            </ScreenFrame>
         );
     }
 
     if (open.isError) {
         return (
-            <Frame
-                trail={[...trail, { label: reference }]}
+            <ScreenFrame
+                trail={<Crumbs parts={[...trail, { label: reference }]} />}
                 title={t('trading.structure.title')}
                 description={t('trading.structure.lead')}
             >
                 <div className="space-y-3">
                     <Notice tone="info">{t('trading.structure.notFound')}</Notice>
                     <Link
-                        to={PATHS.trades}
+                        to={PATHS.structures}
                         className="text-sm text-accent hover:text-accent-bright"
                     >
                         {t('trading.structure.backToList')}
                     </Link>
                 </div>
-            </Frame>
+            </ScreenFrame>
         );
     }
 
     const record = open.data;
-    const heading = record.reference === '' ? record.id : record.reference;
-    const confirms = CONFIRMS_AS_ONE.includes(record.kind)
-        ? t('trading.structure.confirmsAsOne')
-        : t('trading.structure.confirmsLegByLeg');
-    const prices = CONFIRMS_AS_ONE.includes(record.kind)
-        ? t('trading.structure.pricesAsWhole')
-        : t('trading.structure.pricesLegByLeg');
+    const heading = record.kind === '' ? t('trading.structure.title') : record.kind;
+    const subheading = record.reference === '' ? record.id : record.reference;
 
     return (
-        <Frame
-            trail={[...trail, { label: heading }]}
+        <ScreenFrame
+            trail={<Crumbs parts={[...trail, { label: subheading }]} />}
             title={heading}
-            description={t('trading.structure.lead')}
+            description={
+                record.template_code === ''
+                    ? t('trading.structure.lead')
+                    : t('trading.structure.withTemplate', { template: record.template_code })
+            }
         >
             <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-sm text-ink-muted">{subheading}</span>
                     <Tag tone={kindTone(record.kind)}>{record.kind}</Tag>
-                    <Tag tone="muted">{confirms}</Tag>
-                    <Tag tone="muted">{prices}</Tag>
-                    {record.counterparty_id === '' ? null : (
-                        <Link
-                            className="text-sm text-accent hover:text-accent-bright"
-                            to={`${PATHS.counterparties}/${record.counterparty_id}`}
-                        >
-                            {record.counterparty_name}
-                        </Link>
-                    )}
                 </div>
                 <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
                     <TreePanel record={record} />
                     <div className="space-y-4">
                         {tabs.bar}
+                        {tabs.tab === 'details' && <DetailsTab record={record} />}
                         {tabs.tab === 'members' && <MembersTab record={record} />}
                         {tabs.tab === 'price' && <PriceTab />}
                         {tabs.tab === 'history' && <HistoryTab record={record} />}
                     </div>
                 </div>
             </div>
-        </Frame>
+        </ScreenFrame>
     );
 }

@@ -100,6 +100,7 @@ const OTHER_STRUCTURE = '12121212-1212-4212-8212-121212121212';
 const LEG = '55555555-5555-4555-8555-555555555555';
 const FREE_TRADE = '56565656-5656-4565-8656-565656565656';
 const COUNTERPARTY = '88888888-8888-4888-8888-888888888888';
+const PARTY = '99999999-9999-4999-8999-999999999999';
 
 const lists = {
     structures: 'trading.v1.structures.list',
@@ -109,6 +110,8 @@ const lists = {
     tradeIdentifiers: 'trading.v1.trade_identifiers.list',
     counterparties: 'refdata.v1.counterparties.list',
     summaries: 'trading.v1.trade_summaries.list',
+    trades: 'trading.v1.trades.list',
+    versions: 'trading.v1.structures_versions.list',
 };
 
 const structureRow = {
@@ -140,6 +143,29 @@ function repliesWith(extra: Readonly<Record<string, unknown>> = {}) {
             result: ok,
             counterparties: [{ id: COUNTERPARTY, full_name: 'Banque Banorient France' }],
         },
+        [lists.trades]: {
+            result: ok,
+            trades: [
+                {
+                    id: LEG,
+                    party_id: PARTY,
+                    trade_type: 'Swap',
+                    external_version: 3,
+                },
+            ],
+        },
+        [lists.versions]: {
+            result: ok,
+            versions: [
+                {
+                    version: 1,
+                    modified_by: 'diane.kay',
+                    recorded_at: '2026-10-27 10:00:00+00',
+                    change_reason_code: 'system.new_record',
+                    change_commentary: 'Grouped by the population.',
+                },
+            ],
+        },
         ...extra,
     };
 }
@@ -170,7 +196,16 @@ describe('the structure page route', () => {
         expect(body.reference).toBe('PKG-83ffae10');
         expect(body.legs).toHaveLength(1);
         // The leg is named by the reference the desk reads, never by its uuid.
-        expect(body.legs[0]).toMatchObject({ reference: 'POP-1', role: 'leg', sequence_number: 1 });
+        expect(body.legs[0]).toMatchObject({
+            reference: 'POP-1',
+            role: 'leg',
+            sequence_number: 1,
+            // The product is the type's name, and the state and the notional are
+            // the facts the page states beside it.
+            kind: 'Swap',
+            external_version: 3,
+        });
+        expect(body.history).toHaveLength(1);
         expect(body.structure.counterparty_name).toBe('Banque Banorient France');
         expect(body.roles).toEqual(['leg']);
     });

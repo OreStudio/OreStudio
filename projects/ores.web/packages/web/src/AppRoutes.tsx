@@ -96,6 +96,7 @@ import { CurrenciesPage, CurrencyImportPage, CurrencyPage } from './refdata/curr
 import { BookTradePage } from './trading/BookTradePage.js';
 import { GroupStructuresPage } from './trading/GroupStructuresPage.js';
 import { StructurePage } from './trading/StructurePage.js';
+import { StructuresPage } from './trading/StructuresPage.js';
 import { TradePage } from './trading/TradePage.js';
 import { TradingPage } from './trading/TradingPage.js';
 import { TradesPage } from './trading/TradesPage.js';
@@ -1241,6 +1242,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <TradePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.structures}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <StructuresPage />
                     ),
                     'workspace',
                 )}

@@ -23,12 +23,15 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { subjects as partySubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
+import { subjects as bondSubject } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_kind_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as tradeTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_type_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { input, readAll, resultSchema, text } from './refdata-calls.js';
@@ -57,6 +60,15 @@ const structureKeySchema = z.object({
 });
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const listQuerySchema = z.object({
+    offset: z.coerce.number().int().min(0).default(0),
+    limit: z.coerce.number().int().min(1).max(200).default(25),
+    search: z.string().trim().max(256).default(''),
+    kind: z.string().trim().max(64).default(''),
+});
+
+const unlinkParamsSchema = z.object({ tradeId: z.uuid() });
 
 const legBodySchema = z.object({
     tradeId: z.uuid(),
@@ -210,6 +222,10 @@ interface TreeNode {
     /** The role this node takes under its parent. */
     role: string;
     sequence_number: number;
+    /** The product's name on a leaf, which is the type's description. */
+    product: string;
+    notional: string;
+    currency: string;
     external_version: number | null;
     children: TreeNode[];
 }
@@ -234,6 +250,8 @@ function assembleTree(
     structureReferences: ReadonlyMap<string, string>,
     tradeReferences: ReadonlyMap<string, string>,
     trades: ReadonlyMap<string, Record<string, unknown>>,
+    products: ReadonlyMap<string, string>,
+    notionals: ReadonlyMap<string, { notional: string; currency: string }>,
 ): TreeNode | null {
     const byId = new Map(structures.map((entry) => [text(entry['id']), entry]));
     if (!byId.has(structureId)) {
@@ -266,19 +284,26 @@ function assembleTree(
             template_code: text(row?.['template_code']),
             role,
             sequence_number: sequence,
+            product: '',
+            notional: '',
+            currency: '',
             external_version: null,
             children: [
                 ...childrenOf(id).map((childId) => assemble(childId, 'structure', 0)),
                 ...legsOf(id).map((member) => {
                     const tradeId = text(member['trade_id']);
                     const trade = trades.get(tradeId);
+                    const type = text(trade?.['trade_type']);
                     return {
                         id: tradeId,
                         reference: tradeReferences.get(tradeId) ?? '',
-                        kind: text(trade?.['trade_type']),
+                        kind: type,
                         template_code: '',
                         role: text(member['role']),
                         sequence_number: Number(member['sequence_number'] ?? 0),
+                        product: products.get(type) ?? type,
+                        notional: notionals.get(tradeId)?.notional ?? '',
+                        currency: notionals.get(tradeId)?.currency ?? '',
                         external_version:
                             trade === undefined ? null : Number(trade['external_version'] ?? 0),
                         children: [],
@@ -359,6 +384,100 @@ async function ungroupedTrades(
             text(entry['counterparty_id']),
         trade_date: text(entry['trade_date']),
     }));
+}
+
+
+/** How a kind confirms and prices, which the screen states beside the kind. */
+function verdictsOf(kind: string): { confirms: string; prices: string } {
+    const asOne = kind !== 'Package';
+    return {
+        confirms: asOne
+            ? 'Confirmed as one document'
+            : 'Each leg confirms on its own',
+        prices: asOne ? 'Priced as a whole' : 'Priced leg by leg',
+    };
+}
+
+/** The name each trade type is known by, keyed by its code. */
+async function productNames(session: LiveSession): Promise<ReadonlyMap<string, string>> {
+    const types = await readAll(session, tradeTypeSubjects.list_trade_types_request, 'trade_types', {
+        filter: { code: null, code_one_of: null },
+    });
+    return new Map(
+        types.map((entry) => [text(entry['code']), text(entry['description'])] as const),
+    );
+}
+
+/** The state each trade is in, keyed by the trade's id. */
+async function statesOf(
+    session: LiveSession,
+    tradeIds: readonly string[],
+): Promise<ReadonlyMap<string, string>> {
+    const states = new Map<string, string>();
+    if (tradeIds.length === 0) {
+        return states;
+    }
+    const summaries = await readAll(
+        session,
+        summarySubjects.list_trade_summaries_request,
+        'trade_summaries',
+        { filter: { id_one_of: [...tradeIds] } },
+    );
+    for (const entry of summaries) {
+        const id = text(entry['id']);
+        if (id !== '') {
+            states.set(id, text(entry['status']));
+        }
+    }
+    return states;
+}
+
+/**
+ * The notional each trade holds, keyed by the trade's id.
+ *
+ * Only the bond instrument is read: the other families are booked into their own
+ * tables and no reader in this service names them yet, so a leg of another
+ * family states no notional rather than a wrong one. Reading the rest is the
+ * same shape repeated per family, and it belongs with the instrument screens.
+ */
+async function notionalsOf(
+    session: LiveSession,
+    tradeIds: readonly string[],
+): Promise<ReadonlyMap<string, { notional: string; currency: string }>> {
+    const notionals = new Map<string, { notional: string; currency: string }>();
+    if (tradeIds.length === 0) {
+        return notionals;
+    }
+    const bonds = await readAll(session, bondSubject.list_bond_instruments_request, 'bond_instruments', {
+        filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+    });
+    for (const entry of bonds) {
+        const id = text(entry['trade_id']);
+        if (id !== '') {
+            notionals.set(id, {
+                notional: text(entry['notional']),
+                currency: text(entry['currency']),
+            });
+        }
+    }
+    return notionals;
+}
+
+
+/**
+ * The answer to a read the page can do without, or nothing.
+ *
+ * The product's name, the trade's state, its notional and its party are
+ * enrichment: a caller who may read a deal and not the catalogues still gets the
+ * deal, and the page states nothing where it could not read. A refusal of a read
+ * the page is about still refuses loudly.
+ */
+async function optional<T>(read: () => Promise<T>, fallback: T): Promise<T> {
+    try {
+        return await read();
+    } catch {
+        return fallback;
+    }
 }
 
 export function registerStructureRoutes(
@@ -489,6 +608,171 @@ export function registerStructureRoutes(
         return { id: structureId, reference: references.get(structureId) ?? '' };
     });
 
+
+    /**
+     * The structures the tenant holds, as the list screen draws them.
+     *
+     * The list is a tree flattened for reading: a root row, then its children
+     * indented under it. Each row states what it holds — the trades inside it
+     * and the structures under it — because that is what tells a person whether
+     * they are looking at a deal or a container.
+     */
+
+    /**
+     * The structures the tenant holds, as the list screen draws them.
+     *
+     * The list is a tree flattened for reading: a root row, then its children
+     * indented under it. Each row states what it holds — the trades inside it and
+     * the structures under it — because that is what tells a person whether they
+     * are looking at a deal or a container.
+     */
+    server.get('/api/structures', async (request) => {
+        const session = requireSession(request);
+        const query = input(listQuerySchema, request.query);
+
+        const structures = await allStructures(session);
+        const [members, references] = await Promise.all([
+            allMembers(session),
+            referencesOf(
+                session,
+                'structure',
+                structures.map((entry) => text(entry['id'])).filter((id) => id !== ''),
+            ),
+        ]);
+        const counterpartyIds = [
+            ...new Set(
+                structures.map((entry) => text(entry['counterparty_id'])).filter((id) => id !== ''),
+            ),
+        ];
+        const counterparties =
+            counterpartyIds.length === 0
+                ? []
+                : await readAll(
+                      session,
+                      counterpartySubjects.list_counterparties_request,
+                      'counterparties',
+                      { filter: { id_one_of: counterpartyIds } },
+                  );
+        const counterpartyOf = new Map(
+            counterparties.map((entry) => [text(entry['id']), text(entry['full_name'])]),
+        );
+
+        const byId = new Map(structures.map((entry) => [text(entry['id']), entry] as const));
+        const parentOf = (id: string): string => {
+            const parent = text(byId.get(id)?.['parent_structure_id']);
+            return parent === NO_PARENT ? '' : parent;
+        };
+        const rootOf = (id: string): string => {
+            let current = id;
+            for (let step = 0; step < structures.length; step += 1) {
+                const parent = parentOf(current);
+                if (parent === '' || !byId.has(parent)) {
+                    return current;
+                }
+                current = parent;
+            }
+            return current;
+        };
+        const depthOf = (id: string): number => {
+            let current = parentOf(id);
+            let depth = 0;
+            while (current !== '' && byId.has(current) && depth < structures.length) {
+                depth += 1;
+                current = parentOf(current);
+            }
+            return depth;
+        };
+
+        const legsOf = (id: string): number =>
+            members.filter((entry) => text(entry['structure_id']) === id).length;
+        const innerOf = (id: string): number =>
+            structures.filter((entry) => parentOf(text(entry['id'])) === id).length;
+
+        const rows = structures.map((entry) => {
+            const id = text(entry['id']);
+            const kind = text(entry['kind']);
+            return {
+                id,
+                reference: references.get(id) ?? '',
+                kind,
+                template_code: text(entry['template_code']),
+                counterparty_id: text(entry['counterparty_id']),
+                counterparty_name: counterpartyOf.get(text(entry['counterparty_id'])) ?? '',
+                legs: legsOf(id),
+                inner_structures: innerOf(id),
+                ...verdictsOf(kind),
+                parent_id: parentOf(id),
+                depth: depthOf(id),
+            };
+        });
+
+        /*
+         * A search keeps the rows it matches, everything under them and the
+         * path above them: a tree with a hole in it is not readable, so a match
+         * brings its root and its children with it.
+         */
+        const needle = query.search.toLowerCase();
+        const matches = (row: (typeof rows)[number]): boolean => {
+            const kindOk = query.kind === '' || row.kind === query.kind;
+            const textOk =
+                needle === '' ||
+                [row.reference, row.kind, row.template_code, row.counterparty_name]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(needle);
+            return kindOk && textOk;
+        };
+
+        const visible = new Set<string>();
+        if (needle === '' && query.kind === '') {
+            for (const row of rows) {
+                visible.add(row.id);
+            }
+        } else {
+            const childrenOf = new Map<string, string[]>();
+            for (const row of rows) {
+                childrenOf.set(row.parent_id, [...(childrenOf.get(row.parent_id) ?? []), row.id]);
+            }
+            const addUnder = (id: string): void => {
+                visible.add(id);
+                for (const child of childrenOf.get(id) ?? []) {
+                    addUnder(child);
+                }
+            };
+            for (const row of rows) {
+                if (!matches(row)) {
+                    continue;
+                }
+                addUnder(row.id);
+                let above = row.parent_id;
+                while (above !== '' && byId.has(above)) {
+                    visible.add(above);
+                    above = parentOf(above);
+                }
+            }
+        }
+
+        const ordered = rows
+            .filter((row) => visible.has(row.id))
+            .sort((left, right) => {
+                const leftRoot = rootOf(left.id);
+                const rightRoot = rootOf(right.id);
+                if (leftRoot !== rightRoot) {
+                    return (references.get(leftRoot) ?? leftRoot).localeCompare(
+                        references.get(rightRoot) ?? rightRoot,
+                    );
+                }
+                return left.depth - right.depth;
+            });
+
+        const kinds = [...new Set(rows.map((row) => row.kind))].filter((kind) => kind !== '');
+        return {
+            rows: ordered.slice(query.offset, query.offset + query.limit),
+            total: ordered.length,
+            kinds: kinds.sort(),
+        };
+    });
+
     server.get('/api/structures/:key', async (request) => {
         const session = requireSession(request);
         const { key } = input(structureKeySchema, request.params);
@@ -506,7 +790,14 @@ export function registerStructureRoutes(
             ),
         ];
 
-        const [structureReferences, tradeReferences, trades, history] = await Promise.all([
+        const allIds = [
+            ...new Set([
+                ...allTradeIds,
+                ...structures.map((entry) => text(entry['parent_structure_id'])),
+            ]),
+        ];
+        const [structureReferences, tradeReferences, trades, history, products, states, notionals] =
+            await Promise.all([
             referencesOf(
                 session,
                 'structure',
@@ -518,23 +809,63 @@ export function registerStructureRoutes(
                 key: { id: structureId },
                 order: { field: 'version', descending: true },
             }),
+            optional(() => productNames(session), new Map<string, string>()),
+            optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
+            optional(
+                () => notionalsOf(session, allTradeIds),
+                new Map<string, { notional: string; currency: string }>(),
+            ),
         ]);
+        void allIds;
 
         const legs = mine
             .map((member) => {
                 const tradeId = text(member['trade_id']);
                 const trade = trades.get(tradeId);
+                const type = text(trade?.['trade_type']);
                 return {
                     trade_id: tradeId,
                     reference: tradeReferences.get(tradeId) ?? '',
                     role: text(member['role']),
                     sequence_number: Number(member['sequence_number'] ?? 0),
-                    kind: text(trade?.['trade_type']),
+                    kind: type,
+                    product: products.get(type) ?? type,
+                    state: states.get(tradeId) ?? '',
+                    notional: notionals.get(tradeId)?.notional ?? '',
+                    currency: notionals.get(tradeId)?.currency ?? '',
                     external_version:
                         trade === undefined ? null : Number(trade['external_version'] ?? 0),
                 };
             })
             .sort((left, right) => left.sequence_number - right.sequence_number);
+
+        /*
+         * A structure holds no party of its own: every leg is booked as the same
+         * party, which the database enforces, so the party is read from the legs
+         * and stated once on the page.
+         */
+        const legPartyIds = [
+            ...new Set(
+                legs
+                    .map((leg) => text(trades.get(leg.trade_id)?.['party_id']))
+                    .filter((id) => id !== ''),
+            ),
+        ];
+        const parties =
+            legPartyIds.length === 0
+                ? []
+                : await optional(
+                      () =>
+                          readAll(session, partySubjects.list_parties_request, 'parties', {
+                              filter: { id_one_of: legPartyIds, search: null },
+                          }),
+                      [] as readonly Record<string, unknown>[],
+                  );
+        const party = {
+            id: legPartyIds[0] ?? '',
+            name: text(parties[0]?.['full_name']),
+            shared: legPartyIds.length <= 1,
+        };
 
         const counterpartyId = text(structure['counterparty_id']);
         const counterparties =
@@ -554,6 +885,8 @@ export function registerStructureRoutes(
                 counterparty_name: text(counterparties[0]?.['full_name']) || counterpartyId,
             },
             reference: structureReferences.get(structureId) ?? '',
+            party,
+            ...verdictsOf(text(structure['kind'])),
             parent_id: parentId === NO_PARENT ? '' : parentId,
             tree: assembleTree(
                 structureId,
@@ -562,11 +895,48 @@ export function registerStructureRoutes(
                 structureReferences,
                 tradeReferences,
                 trades,
+                products,
+                notionals,
             ),
             legs,
             roles: [...FREE_ROLES],
             history,
         };
+    });
+
+
+    /**
+     * Taking a trade out of a structure.
+     *
+     * The leg is removed, not the trade: the trade stays booked and becomes
+     * groupable again, which is what "unlink" means to the desk.
+     */
+    server.delete('/api/structures/:key/legs/:tradeId', async (request, reply) => {
+        const session = requireSession(request);
+        const { key } = input(structureKeySchema, request.params);
+        const { tradeId } = input(unlinkParamsSchema, request.params);
+        const structure = await resolveStructure(session, key);
+        const structureId = text(structure['id']);
+
+        const written = await session.client.callAuthenticated(
+            memberSubjects.delete_structure_member_request,
+            {
+                removal: {
+                    key: { trade_id: tradeId },
+                    precondition: { kind: 'must_match_version', version: null },
+                },
+                intent: {
+                    reason_code: 'system.amend_record',
+                    commentary: 'Taken out of the structure from its page.',
+                },
+            },
+            z.looseObject({ result: resultSchema }),
+        );
+        if (written.result.outcome !== 'ok') {
+            throw refusalOfLeg(written.result);
+        }
+        reply.status(204);
+        return null;
     });
 
     server.get('/api/structures/:key/leg-candidates', async (request) => {

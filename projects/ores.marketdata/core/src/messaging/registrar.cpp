@@ -33,6 +33,7 @@
 #include "ores.marketdata.core/messaging/delivery_count_registrar.hpp"
 #include "ores.marketdata.core/messaging/demand_interval_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/demand_interval_registrar.hpp"
+#include "ores.marketdata.core/messaging/fixing_read_handler.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
 #include "ores.marketdata.core/messaging/market_data_mapping_history_provider_registrar.hpp"
@@ -135,6 +136,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         [&nats, ctx, verifier](ores::nats::message msg) mutable {
                                             provider_terms_handler h(nats, ctx, verifier);
                                             h.accept(std::move(msg));
+                                        }));
+
+    // The durable fixings of an item: the latest on or before a date, and a window of days.
+    subs.push_back(nats.queue_subscribe(std::string(get_fixing_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            fixing_read_handler h(nats, ctx, verifier);
+                                            h.get_fixing(std::move(msg));
+                                        }));
+    subs.push_back(nats.queue_subscribe(std::string(get_fixing_window_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            fixing_read_handler h(nats, ctx, verifier);
+                                            h.get_fixing_window(std::move(msg));
                                         }));
 
     // Market series export: the one market-series verb with no generated

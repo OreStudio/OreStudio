@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: fix/give-generated-tenant-codes-a-unique-suffix
-#+pr:
+#+pr: 3965
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3965][#3965]] | [iam] Give generated tenant codes and hostnames a suffix unique across runs |
 
 * Review
 

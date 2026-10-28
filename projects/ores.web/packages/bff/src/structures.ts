@@ -536,6 +536,30 @@ export function registerStructureRoutes(
             );
         }
 
+        const knownKinds = await readAll(
+            session,
+            structureKindSubjects.list_structure_kinds_request,
+            'structure_kinds',
+            { filter: { code_one_of: null } },
+        );
+        if (!knownKinds.some((entry) => text(entry['code']) === body.kind)) {
+            throw invalidRequest('The tenant has no structure kind with that code.');
+        }
+
+        if (new Set(body.tradeIds).size !== body.tradeIds.length) {
+            throw invalidRequest('A trade appears twice in the grouping.');
+        }
+        const memberships = await allMembers(session);
+        const heldAlready = memberships.filter((entry) =>
+            body.tradeIds.includes(text(entry['trade_id'])),
+        );
+        if (heldAlready.length > 0) {
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message: 'A trade in the grouping is already a leg of a structure.',
+            });
+        }
+
         const structureId = randomUUID();
         const written = await session.client.callAuthenticated(
             structureSubjects.put_structure_request,
@@ -775,12 +799,6 @@ export function registerStructureRoutes(
             ),
         ];
 
-        const allIds = [
-            ...new Set([
-                ...allTradeIds,
-                ...structures.map((entry) => text(entry['parent_structure_id'])),
-            ]),
-        ];
         const [structureReferences, tradeReferences, trades, history, products, states] =
             await Promise.all([
             referencesOf(
@@ -797,7 +815,6 @@ export function registerStructureRoutes(
             optional(() => productNames(session), new Map<string, string>()),
             optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
         ]);
-        void allIds;
 
         const nameOf = (type: string): string => {
             const named = products.get(type) ?? '';
@@ -814,7 +831,7 @@ export function registerStructureRoutes(
                     role: text(member['role']),
                     sequence_number: Number(member['sequence_number'] ?? 0),
                     kind: type,
-                    product: products.get(type) ?? type,
+                    product: nameOf(type),
                     state: states.get(tradeId) ?? '',
                     external_version:
                         trade === undefined ? null : Number(trade['external_version'] ?? 0),
@@ -899,6 +916,26 @@ export function registerStructureRoutes(
         const { tradeId } = input(unlinkParamsSchema, request.params);
         const structure = await resolveStructure(session, key);
         const structureId = text(structure['id']);
+
+        /*
+         * The key is the trade and the trade alone, so a deletion says nothing
+         * about which structure it is running from: without this check, a key of
+         * one structure takes a leg out of another. The member is read and its
+         * structure compared before anything is written.
+         */
+        const held = await readAll(
+            session,
+            memberSubjects.list_structure_members_request,
+            'members',
+            { filter: { trade_id_one_of: [tradeId] } },
+        );
+        const member = held[0];
+        if (member === undefined || text(member['structure_id']) !== structureId) {
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message: 'That trade is not a leg of this structure.',
+            });
+        }
 
         const written = await session.client.callAuthenticated(
             memberSubjects.delete_structure_member_request,

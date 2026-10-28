@@ -83,6 +83,15 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
         passwordResetRequired: false,
         sessionId: '33333333-3333-3333-3333-333333333333',
     });
+    // A grouping is made for a party, and a session that works for none cannot
+    // make one: the party is switched in as the browser does it.
+    const partySummary = {
+        id: PARTY,
+        name: 'Acme UK',
+        partyCategory: 'Operational',
+        businessCenterCode: 'GBLO',
+    };
+    sessions.switchParty(session.id, partySummary, [partySummary], 1800);
     return {
         server: buildServer({
             config,
@@ -112,6 +121,9 @@ const lists = {
     summaries: 'trading.v1.trade_summaries.list',
     trades: 'trading.v1.trades.list',
     versions: 'trading.v1.structures_versions.list',
+    kinds: 'trading.v1.structure_kinds.list',
+    putStructure: 'trading.v1.structures.put',
+    deleteMember: 'trading.v1.structure_members.delete',
 };
 
 const structureRow = {
@@ -142,6 +154,22 @@ function repliesWith(extra: Readonly<Record<string, unknown>> = {}) {
         [lists.counterparties]: {
             result: ok,
             counterparties: [{ id: COUNTERPARTY, full_name: 'Banque Banorient France' }],
+        },
+        [lists.summaries]: {
+            result: ok,
+            trade_summaries: [
+                { id: LEG, row_kind: 'trade', status: 'live', counterparty_id: COUNTERPARTY },
+                {
+                    id: FREE_TRADE,
+                    row_kind: 'trade',
+                    status: 'live',
+                    counterparty_id: COUNTERPARTY,
+                },
+            ],
+        },
+        [lists.kinds]: {
+            result: ok,
+            structure_kinds: [{ code: 'Package', confirms_as_whole: false }],
         },
         [lists.trades]: {
             result: ok,
@@ -175,15 +203,14 @@ function send(
     sessionId: string,
     url: string,
     body?: unknown,
+    method: 'GET' | 'POST' | 'DELETE' = body === undefined ? 'GET' : 'POST',
 ): ReturnType<ReturnType<typeof buildServer>['inject']> {
-    return body === undefined
-        ? server.inject({ method: 'GET', url, cookies: { [SESSION_COOKIE]: sessionId } })
-        : server.inject({
-              method: 'POST',
-              url,
-              cookies: { [SESSION_COOKIE]: sessionId },
-              payload: body as Record<string, unknown>,
-          });
+    return server.inject({
+        method,
+        url,
+        cookies: { [SESSION_COOKIE]: sessionId },
+        ...(body === undefined ? {} : { payload: body as Record<string, unknown> }),
+    });
 }
 
 describe('the structure page route', () => {
@@ -299,5 +326,64 @@ describe('the add-a-leg picker', () => {
         expect(answer.statusCode).toBe(200);
         const rows = answer.json().rows as readonly { id: string }[];
         expect(rows.map((row) => row.id)).toEqual([FREE_TRADE]);
+    });
+});
+
+describe('what the routes refuse', () => {
+    it('refuses to unlink a trade that is another structure\'s leg', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            repliesWith({
+                [lists.members]: {
+                    result: ok,
+                    members: [
+                        {
+                            trade_id: FREE_TRADE,
+                            structure_id: OTHER_STRUCTURE,
+                            role: 'leg',
+                            sequence_number: 1,
+                        },
+                    ],
+                },
+            }),
+        );
+        const answer = await send(
+            server,
+            sessionId,
+            `/api/structures/${STRUCTURE}/legs/${FREE_TRADE}`,
+            undefined,
+            'DELETE',
+        );
+
+        expect(answer.statusCode).toBe(409);
+        expect(answer.json().message).toBe('That trade is not a leg of this structure.');
+        // The member belongs to another structure, so nothing was deleted.
+        expect(calls.some((call) => call.subject === lists.deleteMember)).toBe(false);
+    });
+
+    it('refuses to group a trade a structure already holds, before writing one', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            repliesWith({
+                [lists.members]: {
+                    result: ok,
+                    members: [
+                        {
+                            trade_id: FREE_TRADE,
+                            structure_id: OTHER_STRUCTURE,
+                            role: 'leg',
+                            sequence_number: 1,
+                        },
+                    ],
+                },
+            }),
+        );
+        const answer = await send(server, sessionId, '/api/structures', {
+            kind: 'Package',
+            tradeIds: [FREE_TRADE, LEG],
+        });
+
+        expect(answer.json()).toMatchObject({ message: 'A trade in the grouping is already a leg of a structure.' });
+        expect(answer.statusCode).toBe(409);
+        // The refusal comes before the structure write: no orphan is left.
+        expect(calls.some((call) => call.subject === lists.putStructure)).toBe(false);
     });
 });

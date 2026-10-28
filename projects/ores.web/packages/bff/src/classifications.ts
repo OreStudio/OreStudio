@@ -105,6 +105,9 @@ const HISTORY_TYPES = new Set([
     // A curve configuration is refdata's own record and is reached through the
     // report configuration it fills, not through the record table.
     'ores.refdata.curve_configuration',
+    // The central convention entity, which the conventions screen edits. Its
+    // versions are the ones its terms hang off, so its record page reads them.
+    'ores.refdata.convention',
     // A sensitivity template is analytics' own record too, and its history tab reads it here.
     'ores.analytics.sensitivity_template',
     // The publish record is market data's own: its versions are served by the

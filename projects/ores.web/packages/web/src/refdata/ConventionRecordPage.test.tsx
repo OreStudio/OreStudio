@@ -108,14 +108,18 @@ const DOCUMENT: ConventionDocument = {
     ],
 };
 
-function render(permissionCodes: readonly string[] = [], document = DOCUMENT): string {
+function render(
+    permissionCodes: readonly string[] = [],
+    document = DOCUMENT,
+    entry = '/refdata/conventions/swap/EUR-6M-SWAP',
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['conventions', 'swap', 'documents', 'EUR-6M-SWAP', ''], document);
     client.setQueryData(['my-access'], { roles: [{ roleId: 'r', permissionCodes }] });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter initialEntries={['/refdata/conventions/swap/EUR-6M-SWAP']}>
+                <MemoryRouter initialEntries={[entry]}>
                     <Routes>
                         <Route
                             path="/refdata/conventions/:family/:id"
@@ -256,6 +260,24 @@ describe('a term in edit', () => {
         expect(html).toContain('role="alert"');
         expect(html).toContain('Invalid value Q for Swap.FixedFrequency');
         expect(html).toContain('aria-invalid="true"');
+    });
+});
+
+describe('the tabs of a convention record', () => {
+    it('offers the record and its history, and draws the terms first', () => {
+        const html = render();
+
+        expect(html).toContain('role="tablist"');
+        expect(html).toContain('>Details<');
+        expect(html).toContain('>History<');
+        expect(html).toContain('Fixed frequency');
+    });
+
+    it("reads the convention's versions on its history tab instead of the terms", () => {
+        const html = render([], DOCUMENT, '/refdata/conventions/swap/EUR-6M-SWAP?tab=history');
+
+        expect(html).toMatch(/aria-selected="true"[^>]*>History</);
+        expect(html).not.toContain('Fixed frequency');
     });
 });
 

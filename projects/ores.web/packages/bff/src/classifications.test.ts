@@ -570,6 +570,20 @@ describe('GET /api/history', () => {
         expect(calls[0]?.subject).toBe('refdata.v1.history.get');
     });
 
+    it('serves the versions of the central convention the conventions screen edits', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.history.get': { success: true, versions: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/history?entityType=ores.refdata.convention&entityId=EUR-6M-SWAP',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.subject).toBe('refdata.v1.history.get');
+    });
+
     it('answers the versions of a tenant on the IAM subject', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'iam.v1.history.get': {

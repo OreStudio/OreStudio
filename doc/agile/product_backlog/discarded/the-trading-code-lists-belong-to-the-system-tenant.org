@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 6D14A3B8-2E75-4C90-8F31-B5E7C6A02D94
-:END
+:END:
 #+title: The trading code lists belong to the system tenant (fixed)
 #+description: The trade types, identifier schemes and link types are seeded for the system tenant only, so a tenant session reads none of them, while the writes still accept their codes.
 #+type: capture

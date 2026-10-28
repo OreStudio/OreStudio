@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 2F81C4D9-6B37-4A05-8E12-97D3B5A6C048
-:END
+:END:
 #+title: A structure has no name to offer
 #+description: The structure table holds a kind and a template code but no name, so a screen that asks a person to choose a structure can only show a uuid.
 #+type: capture

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:ingest:ticks:performance:architecture:
 #+created: 2026-10-20
-#+updated: 2026-10-26
+#+updated: 2026-10-28
 
 * Summary
 
@@ -362,6 +362,11 @@ acknowledges a tick after the commit. The consumer feeds lanes of its own. Back-
 reaches the producer through the acknowledgements, and a restart replays what the
 consumer did not acknowledge. Both tiers share the lane code, the batch writer and the
 gauges.
+
+The first durable class is the FX fixing that public sources publish once a day. Today
+the receiver has one age limit for every tick, so a daily fixing and a backfill are
+both dropped as stale. See
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 
 *** Derived data
 

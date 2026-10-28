@@ -976,10 +976,16 @@ void synthetic_commands::process_regime_set(std::ostream& out,
                       << "'. Use wake_rate=, calm_rate=, jump=, decay= or speed=." << std::endl;
             return;
         }
+        const auto text = arg.substr(eq + 1);
+        std::size_t used = 0;
         try {
-            *field->second = std::stod(arg.substr(eq + 1));
+            *field->second = std::stod(text, &used);
         } catch (const std::exception&) {
-            fail(out) << "The value of " << field->first << " must be a number." << std::endl;
+            used = 0;
+        }
+        if (used == 0 || used != text.size()) {
+            fail(out) << "The value of " << field->first << " must be a number, not '" << text
+                      << "'." << std::endl;
             return;
         }
     }

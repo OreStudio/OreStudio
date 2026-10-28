@@ -385,6 +385,10 @@ function MarketSettingsForm({
         Setting,
         number
     >;
+    // An empty or unreadable field is not a zero, so it holds the form back until it reads.
+    const unreadable = SETTINGS.filter(
+        (key) => value(key).trim() === '' || !Number.isFinite(numbers[key]),
+    );
     const gain = numbers.decay > 0 ? numbers.jump / numbers.decay : Number.POSITIVE_INFINITY;
     // A draft stays after a save, so a refused one can be corrected; once the service holds
     // the same numbers, there is nothing left to apply.
@@ -443,7 +447,11 @@ function MarketSettingsForm({
                                     step="any"
                                     min={key === 'jump' ? 0 : undefined}
                                     value={value(key)}
-                                    aria-invalid={key === 'decay' && gain >= 1 ? true : undefined}
+                                    aria-invalid={
+                                        unreadable.includes(key) || (key === 'decay' && gain >= 1)
+                                            ? true
+                                            : undefined
+                                    }
                                     onChange={(event) =>
                                         setDraft((was) => ({ ...was, [key]: event.target.value }))
                                     }
@@ -457,7 +465,7 @@ function MarketSettingsForm({
                             size="sm"
                             variant="primary"
                             pending={pending}
-                            disabled={!edited || pending}
+                            disabled={!edited || pending || unreadable.length > 0}
                         >
                             {t('marketdata.marketRegime.settings.apply')}
                         </Button>

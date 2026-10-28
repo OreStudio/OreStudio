@@ -104,7 +104,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shell accepts a partial number such as =2880x= | synthetic_commands.cpp | Accept | The whole value must parse. |
+| 2 | Read, change, write is not atomic | shell, web | Decline | Only the system tenant sets the market; a lost edit shows on the next read. |
+| 3 | Handler reads the active multiplier from a snapshot | market_regime_handler.hpp | Decline | Nothing sets the active multiplier; a task that adds a setter changes this function. |
+| 4 | A variable-step curve at a high speed could pass its scheme's step | ir_curve_feed.cpp | Decline | No curve process takes a variable step today; only the mixtures and OU do, and none bounds its step. |
+| 5 | An empty field sends zero | MarketRegimeTab.tsx | Accept | An empty or unreadable field is marked invalid and holds Apply back. |
+| 6 | Test that a refused reconfigure changes nothing | operational_clock_tests.cpp | Already done | "a refused reconfigure names the number and changes nothing" checks the gain, the speed and the dwell. |
 
 * Result
 

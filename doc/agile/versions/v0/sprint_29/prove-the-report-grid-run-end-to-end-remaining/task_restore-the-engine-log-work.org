@@ -26,11 +26,11 @@ The engine's log is read by one parser in ores.ore, a node writes the canonical 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Restored, adapted and green; waiting on the PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and merge it.             |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance

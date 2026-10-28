@@ -8,7 +8,7 @@
 #+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-the-public-sources-from-the-official-rates-screen
-#+pr:
+#+pr: 4038
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -26,11 +26,11 @@ A person reads, for each public provider, whether the data is arriving. The mark
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
-| Now          | Not yet started.                       |
+| Now          | Building the read and the row.         |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Join the adapter read and the fixings onto the provider row. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -45,6 +45,17 @@ A person reads, for each public provider, whether the data is arriving. The mark
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Late is a fact about a schedule, and the provider model carries none today. The
+row can say the last fixing's date and when it was received, and it can say the
+adapter is not serving. It cannot say "today's fixing is late" until the
+catalogue states each publisher's expected rhythm: daily, weekly, monthly, and
+the time of day it publishes. That fact belongs on the provider record, beside
+its terms, and the run's schedule follows it. Until it exists the screen says
+"no fixing today" and names the adapter's heartbeat, rather than claiming a
+lateness it cannot compute.
 
 * Measurements
 
@@ -77,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4038][#4038]] | [doc] Keep Gemini's review and split the screen into five surfaces |
 
 * Review
 

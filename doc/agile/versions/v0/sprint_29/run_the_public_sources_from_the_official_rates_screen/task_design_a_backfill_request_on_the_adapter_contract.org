@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: B9BCE538-9616-4C0F-A56F-BBE981CB2043
 :END:
-#+title: Task: Design a backfill request on the adapter contract
-#+description: A chosen date range is a request only the adapter can answer, and the contract carries no such request today; this task designs it and its window rule.
+#+title: Task: Design the refresh request the scheduler and the screen share
+#+description: One refresh request on the adapter contract serves the scheduler's job and the screen's Fetch tab, with the window rule settled and the audit that follows.
 #+type: task
 #+level: s1
 #+filetags: :run_the_public_sources_from_the_official_rates_screen:sprint_29:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The backfill window lives in the service's command line today: the adapter fetches the last --backfill-days for an item the first time it is demanded, then polls. A person-chosen range is a new request on the adapter contract, which carries announce, demand, tick and heartbeat and nothing else. This task designs that request: who may ask, how a range is stated, what the adapter answers while it fetches and when it is done, how the store's own duplicate rule keeps a repeated range free of duplicates, and which of the two windows wins when a range is asked for. It also decides whether the service's window becomes a default the request may narrow, or whether the service keeps its window and the request adds to it.
+The backfill window lives in the service's command line today: the adapter fetches the last --backfill-days for an item the first time it is demanded, then polls. A person-chosen range and a scheduled refresh are one request on the adapter contract, which carries announce, demand, tick and heartbeat and nothing else. This task designs that request: who may ask, how a range is stated, what the adapter answers while it fetches and when it is done, how the store's own duplicate rule keeps a repeated range free of duplicates, and which of the two windows wins when a range is asked for. It also decides whether the service's window becomes a default the request may narrow, or whether the service keeps its window and the request adds to it.
 
 * Status
 
@@ -33,7 +33,13 @@ The backfill window lives in the service's command line today: the adapter fetch
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-28                               |
 
-* Acceptance
+* Notes
+
+The review of 2026-10-28 widened this task's premise. The platform's scheduler
+runs the periodic refresh; the screen's Fetch tab sends the same request on
+demand. One request serves both, so the design settles the scopes they share: a
+day, a range, one publisher or all, one pair or every pair.
+
 
 - The design states the request and response on the adapter contract, with who may send it and what happens when the adapter is not running.
 - The design states the window rule: how a chosen range and the service's --backfill-days relate, and which one wins.

@@ -55,6 +55,12 @@ The analysis this story carries, taken with the user on 2026-10-28:
 | [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is paused]] | BACKLOG | | | A decision, not a control: whether a pause is a fact about demand or a provider state, and what it does to the provider's fixings and its feeds. |
 | [[id:B9BCE538-9616-4C0F-A56F-BBE981CB2043][Design a backfill request on the adapter contract]] | BACKLOG | | | A chosen date range is a request only the adapter can answer, and the contract carries no such request today; this task designs it and its window rule. |
 | [[id:9C112C73-10C4-4FAC-A7D3-C182540C99F8][Write the journey that runs the public sources]] | DONE | 2026-10-28 | 2026-10-28 | The journey a system administrator takes through the Official rates screen: the providers, their terms and freshness, the three failures, the acts still to come, and what the screen cannot do yet. |
+| [[id:ACDB335D-F7AC-44FF-9B7D-023CEA074012][Schedule the public sources' fetch]] | BACKLOG | | | A scheduler job asks the adapters to refresh on each publisher's rhythm, so the poll leaves the adapter's own timer and no screen owns a schedule. |
+| [[id:721FBA47-ABB2-48F9-BBD0-70AA7ED8B030][Force a fetch from the Official rates screen]] | BACKLOG | | | A Fetch tab that asks for a day or a range, for all providers or one, for a pair or every pair, with permission and audit. |
+| [[id:5FCD261F-8B93-4A84-891B-AE907F4AA91B][Show what each provider holds for an underlying]] | BACKLOG | | | For one pair, every publisher's coverage, gaps and last value, so a person sees who fixes it and how far back. |
+| [[id:9D82560D-D2F6-43D5-A0EF-782D498E69D6][Measure the distance between providers]] | BACKLOG | | | For one pair, each publisher's values against the others in basis points, the dispersion, and the publisher furthest from the rest. |
+| [[id:98441CF0-7EBF-4056-BB6D-E91C22A23B82][Show one publisher's history for an underlying]] | BACKLOG | | | One publisher and one pair over time: its fixings, corrections, gaps, and the feeds that started from a value. |
+| [[id:A6855E9A-3607-48C0-AF62-B3B90B35D377][See a provider's configuration and its history]] | BACKLOG | | | The provider record page: terms, credit, credential reference and kind on Details, and every version and acceptance on the shared timeline. |
 
 * Decisions
 
@@ -66,6 +72,10 @@ The analysis this story carries, taken with the user on 2026-10-28:
 - A chosen backfill range is an adapter request, not a button (2026-10-28). The adapter contract has no such request today, and the service's own window already exists, so the design task settles the request and which window wins.
 - A prototype comes before the controls (2026-10-28). Three new interactions and one new state have no precedent on this screen, so the shape is agreed on a static page first. The prototype keeps a paused provider in the list, dimmed, because its fixings and the feed that started from one stay; hiding it loses the reason a feed names it.
 - The journey is the design record (2026-10-28). The steps, the judgement table, the wireframe and the operations live in [[id:3888BB1A-F216-46E0-92FA-6C0E6A0CD33C][Run the public sources]]; the story's work is judged against it.
+- Three levels, three words (2026-10-28). An access route reaches a publisher, and a publisher fixes an item: Frankfurter is a route, the ECB is a publisher, =FX-ECB-EUR-CAD= is an item. The provider entity is the publisher. The screen groups publishers by route only to show the adapter's health.
+- The screen is five surfaces, not one (2026-10-28). Providers, a publisher's page, availability across publishers for one underlying, a comparison of their values, and a Fetch tab; the provider's configuration and its history sit on its record page.
+- The schedule is the scheduler's, the trigger is the screen's (2026-10-28). A scheduler job asks the adapters to refresh on each publisher's rhythm. The Fetch tab sends the same request on demand, a day or a range, one publisher or all, one pair or every pair. The adapter owns neither the timer nor the interval.
+- The difference between publishers is a measure, not a guess (2026-10-28). For one underlying, the Compare tab draws the publishers' values together, the difference of each in basis points, and names the one furthest from the rest.
 
 * Out of scope
 

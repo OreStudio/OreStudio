@@ -15,7 +15,7 @@
 | Design note   | this page                                          |
 | Group         | [[file:index.org][Market data prototypes]]           |
 | Journey       | [[file:../../knowledge/journeys/market_data/journey_run-the-public-sources.org][Run the public sources]] |
-| Review        | none                                               |
+| Review        | [[file:official-rates/review/][Gemini's alternative]] |
 
 * Summary
 

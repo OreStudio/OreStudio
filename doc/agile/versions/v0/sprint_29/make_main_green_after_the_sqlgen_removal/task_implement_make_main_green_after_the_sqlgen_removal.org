@@ -8,7 +8,7 @@
 #+filetags: :make_main_green_after_the_sqlgen_removal:sprint_29:v0:
 #+owner: marco
 #+branch: feature/make-main-green-after-the-sqlgen-removal
-#+pr:
+#+pr: 4015
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4015][#4015]] | [build] Make main green after the sqlgen removal |
 
 * Review
 

@@ -178,6 +178,8 @@ describe('the place of the screen', () => {
             'reports',
             'pricingEngines',
             'sensitivityTemplates',
+            'curveConfigurations',
+            'conventions',
             'engineSettings',
         ]);
         expect(CARDS.sensitivityTemplates.to).toBe(PATHS.sensitivityTemplates);

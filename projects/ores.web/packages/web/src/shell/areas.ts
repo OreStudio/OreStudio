@@ -81,6 +81,7 @@ export const MENU: readonly MenuItem[] = [
             'analytics::pricing_model_configs:read',
             'analytics::sensitivity_templates:read',
             'reporting::engine_settings:read',
+            'refdata::curve_configurations:read',
         ],
     },
     { nameKey: 'shell.menu.development', to: '/development' },

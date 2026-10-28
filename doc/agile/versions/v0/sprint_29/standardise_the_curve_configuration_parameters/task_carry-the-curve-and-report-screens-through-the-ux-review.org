@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: 6B5C7C96-79F2-4877-BADC-C3CD12B3DF58
+:END:
+#+title: Task: Carry the curve and report screens through the UX review
+#+description: The owner's review of the two screens: a curve's documentation shows its help twice and never lists the values a closed list accepts; the report page calls its first tab Definition and carries a latest-run card that the runs tab already covers; the report's configurations deserve a tab with a sentence per kind; and a multi-party reader sees copies of the same report with no party on the row.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/carry-the-curve-and-report-screens-through-the-ux-review
+#+pr: 4003
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| History-provider registrars generated in ores.refdata | 167 | =ls projects/ores.refdata/core/src/messaging/*_history_provider_registrar.cpp= | 7ddece7ffd |
+| Of those, composed in the refdata registrar before and after | 107, then 167 | =python3 projects/ores.codegen/scripts/check_history_registrar_composition.py= | 7ddece7ffd |
+| Composed of generated, per component | refdata 167/167; trading 72/96; analytics 11/27; reporting 0/28; iam 17/18; dq 20/21; synthetic 10/13; inbox 16/16; marketdata 17/17; assets 0/2; compute 0/7; scheduler 1/1; variability 0/1; workflow 2/4 | the same check, run over each component's directory | 7ddece7ffd |
+| Tests of the new check | 6 | =python3 -m pytest projects/ores.codegen/tests/test_check_history_registrar_composition.py -q= | 7ddece7ffd |
+
+* Notes
+
+- *The review is running on the live environment.* Findings arrive against
+  =http://localhost:21202=, and each is answered on the branch named for this
+  task. Nothing is merged and nothing is rebuilt until the owner says so, because
+  the screen is being judged while it changes.
+- *A leaf's documentation is read once.* The contract gives a curve leaf a =help=
+  and a =description= that are the same guide line, so the row's hint and the
+  panel printed it twice. The row now states the label, the required mark and the
+  value, and the sentence is read in the panel it is collapsed into, as the leaf
+  standard states for a leaf that is read and not changed.
+- *A closed list shows the values it accepts.* The panel now states
+  =Valid values: ...= from the leaf's value set, so a person who reads "the
+  allowable values are given in the guide" sees the values rather than a
+  sentence sending them elsewhere. The shared panel carries it, so every screen
+  of leaves gains it.
+- *The report page reads like the other screens.* Its first tab is *Details*, not
+  *Definition*, and the card inside it is headed the same way; the latest-run
+  card is gone, because a run is read on the *Runs* tab and the health of the
+  latest run stays in Details as a field.
+- *The configurations are a tab.* Each binding is a card that names the kind, the
+  configuration it binds and links to it, and one sentence that says what that
+  kind is for (product pricing, engine run settings, today's market, curve
+  configuration, conventions, run settings). A kind the screen does not know
+  still gets a sentence, so a new kind reads as one of the report's
+  configurations rather than as nothing. The sentence belongs on
+  =configuration_type= once that row holds one; until then it is in one place,
+  =blurbOf=, in the screen that draws the bindings.
+- *A configuration is reached from the area, not only from a report.* The
+  reporting area gains a *Curve configurations* card, and with it the list
+  screen the area needs: the header rows and their definitions, with the party,
+  the sections filled and the curve count of each. The card is gated on
+  =refdata::curve_configurations:read=, which is now one of the reads the area's
+  door asks for. The other kinds still reach the area through their own screens;
+  a kind with no list of its own has no card.
+- *Two dead translations were removed.* =fr.ts= and =pt.ts= carried
+  =reporting.results.oneRowPer.tradeId= and =.tradeType=, which the English
+  source catalogue does not have, so the i18n catalogue test failed for every
+  branch. Both were unused and are gone.
+- *A person could not start a run.* The report page offers *Start* only to a
+  person who holds =reporting::report_instances:write=, and only the =ReportRun=
+  service role held it, so the button never rendered. =Operations= now holds it:
+  starting a run costs compute, so the role that owns operations has it and a
+  reader does not. The screen was right and the seed was wrong.
+- *A curve configuration's party is not named in the list.* The parties read the
+  list would need is a read the screen is not granted, and the session's parties
+  are already what scope the rows, so the column is left out rather than drawn
+  empty. It returns when the parties read is granted to the screen.
+- *The copies of a report are a party-scope defect, not a display one.* The
+  owner's account works in four parties, so the list reads the definitions of
+  all four (78 of them) with no party on the row and no party selector on the
+  screen, and the four copies of =Exposure= look identical. The party filter is
+  a query parameter the list already accepts, so the fix is the list's: offer
+  the filter, and name the party on a row when the reader is in more than one.
+  It is filed here and not fixed in this change.
+
+- *The history of a refdata entity was never served.* The refdata service
+  builds its history registry in =core/src/messaging/registrar.cpp=, and 60 of
+  the 167 generated =register_<entity>_history_provider= calls were missing from
+  it. So =/api/history= answered =No history provider registered for
+  entity_type: ores.refdata.curve_configuration=, and the same for every
+  convention kind, every curve section and every curve segment. All 167 calls
+  are now present. Nothing caught the gap, because the generated registrar
+  compiles into the library and the service starts and serves every other
+  subject.
+- *The composition is now checked.* =check_history_registrar_composition.py=
+  fails when a generated registrar of a checked component is not called from
+  that component's registrar, and =--fix= wires the missing ones. It joins
+  =compass check= as =history-registrars= and runs in its own workflow, as the
+  event-registrar check already does. ores.refdata is the only component in the
+  checked list.
+- *The same gap is in twelve other components.* ores.trading composes 72 of 96,
+  ores.analytics 11 of 27, ores.reporting 0 of 28, ores.reference data's siblings
+  and the rest less. Each needs its own story; the check's docstring states the
+  census so the next person does not measure it again.
+- *A convention's record page had no History tab.* The page now draws *Details*
+  and *History*, and the tab reads =ores.refdata.convention=, the central entity
+  the page edits. The BFF serves that entity type. The tab keeps =?party=,
+  because the convention is read under a party and a tab change must not lose
+  it; =useRecordTabs= gained the =keep= parameter for it.
+- *The check suite recreated the database.* =compass check= runs a =db= step
+  that rebuilds the schema, so the tenant was gone when the run finished. The
+  Acme script provisioned it again, and the history reads below were taken on
+  that fresh database: a curve configuration answers one version, a convention
+  of the caller's party answers two, and a convention held by the system party
+  stays hidden by row-level security, which is right.
+- *The equity underlying permission codes were not seeded at all.*
+  =refdata::equity_underlyings:read/write/delete= were checked by the entity's
+  handler and absent from =iam_permissions_populate.sql=, so the history
+  provider wired here could never have answered. The three rows are added and
+  =handler-permissions= is green.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4003][#4003]] | [web] Carry the curve and report screens through the UX review |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The list route's comment says the rows come "newest name first", and they are in name order. | curve-configuration.ts | Accept | The comment says name order. |
+| 2 | The curve count filters the definitions once per configuration, which is quadratic. | curve-configuration.ts | Accept | The sections and the curves are counted in one pass, and the per-row filter is gone. |
+| 3 | =partyId= is returned and never drawn. | curve-configuration.ts | Accept | The summary no longer carries it; the detail response keeps the party the page reads. |
+| 4 | The list page's doc comment sits between the imports and the exported key. | CurveConfigurationsPage.tsx | Accept | It moved above the component it documents. |
+| 5 | A change to the populate script may reach fresh installs only; check the upgrade path. | iam_roles_populate.sql | No change | The seed runs when a tenant is provisioned. An existing tenant takes the grant by re-provisioning it with =compass db reset-tenant -t <tenant>= and then the provisioning script, or by applying the =ores_iam_role_permissions_assign_fn= calls by hand. This environment took both, and the task records it. |
+| 6 | The card gates on =curve_configurations:read= while the route also needs =curve_definitions:read=. | cards.ts | No change | Both codes go to Member, so there is no gap today. A card carries one permission; a custom role that holds one and not the other is the role's to decide, and the route answers the refusal. |
+| 7 | The panel's =choices= is optional and guarded, and the three catalogues carry the key. | OreParameter.tsx | No change | The i18n catalogue test passes, which is the check the reviewer asked for. |
+| 8 | The card gates on =curve_configurations:read= only, while the route also reads the definitions; record it. | cards.ts | Accept | The card carries a comment saying what it asks for and what the route reads, and that the route answers a role that holds one and not the other. |
+|   |                 |      |          |       |
+
+* Result
+
+The curve page's documentation is read once, in the panel it is collapsed into,
+and the panel states the values a closed list accepts. The report page draws
+Details, Configurations and Runs: its first tab is named as every other screen
+names it, the latest-run card is gone, and each configuration it binds is a card
+with the sentence that says what its kind is for.
+
+The reporting area gains the *Curve configurations* card and the list screen
+behind it, so a person reaches a curve configuration without a report that binds
+it. The list route reads the headers and the definitions and answers the party,
+the sections filled and the curve count of each.
+
+The BFF suite passes with 1,088 tests, seven of them for the curve configuration
+route and its list, and the browser suite with the ten tests of the curve page
+among them. The two dead French and Portuguese translations that failed the i18n
+catalogue for every branch are removed.
+
+A refdata record's history now answers. The refdata registrar composes every
+one of its 167 generated history providers, a check keeps it that way, and the
+conventions record page draws the History tab it never had.
+
+Still open in this round: the party scope of the reports list, which is filed
+above and is the reports list's change rather than this page's. The other twelve
+components whose generated history providers are not composed are their own
+story.

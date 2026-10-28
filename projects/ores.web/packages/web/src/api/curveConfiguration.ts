@@ -108,7 +108,28 @@ const configurationSchema = z.object({
 
 export type CurveConfiguration = z.infer<typeof configurationSchema>;
 
+/** One curve configuration as the list draws it. */
+const summarySchema = z.object({
+    configurationId: z.string(),
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    version: z.number(),
+    sections: z.number(),
+    curves: z.number(),
+});
+
+export type CurveConfigurationSummary = z.infer<typeof summarySchema>;
+
 export const curveConfiguration = {
+    /** The curve configurations the session's parties hold. */
+    async list(): Promise<readonly CurveConfigurationSummary[]> {
+        const answer = z
+            .object({ rows: z.array(summarySchema), total: z.number() })
+            .parse(await request('/api/refdata/curve-configurations', { method: 'GET' }));
+        return answer.rows;
+    },
+
     /**
      * The curve configuration the reporting configuration `id` is filled by.
      *

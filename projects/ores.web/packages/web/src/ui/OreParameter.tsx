@@ -40,6 +40,8 @@ export interface ParameterDocumentation {
     readonly introducedIn: string;
     readonly removedIn: string;
     readonly xpath: string;
+    /** The values a closed list accepts, in the order the value set gives them. */
+    readonly choices?: readonly string[];
 }
 
 /** The documentation panel: what the parameter means, and in Advanced its schema. */
@@ -64,6 +66,11 @@ export function ParameterDocumentationPanel({
             <p className="text-xs text-ink-faint">
                 {t('oreParameter.defaultIs', { text: doc.defaultText })}
             </p>
+            {doc.choices !== undefined && doc.choices.length > 0 && (
+                <p className="text-xs text-ink-faint">
+                    {t('oreParameter.validValues', { values: doc.choices.join(', ') })}
+                </p>
+            )}
             {mode === 'advanced' && (
                 <dl className="grid gap-x-6 gap-y-2 border-t border-line-subtle pt-2 sm:grid-cols-2">
                     <Detail label={t('oreParameter.schema.xml')} value={doc.xpath} mono />

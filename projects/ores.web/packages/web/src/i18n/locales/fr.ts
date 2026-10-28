@@ -6594,7 +6594,8 @@ const fr: SourceCatalogue = {
             error: 'erreur',
         },
         tabs: {
-            definition: 'Définition',
+            details: 'Détails',
+            configurations: 'Configurations',
             runs: 'Exécutions',
             results: 'Résultats',
         },
@@ -6614,6 +6615,9 @@ const fr: SourceCatalogue = {
             title: 'Rapports',
             lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",
             screens: {
+                curveConfigurations: 'Configurations de courbes',
+                curveConfigurationsBody:
+                    'Comment chaque courbe d’une exécution est définie et calibrée : ses cotations, ses segments et son interpolation.',
                 engineSettings: "Réglages d'exécution du moteur",
                 engineSettingsBody:
                     'Avec quels paramètres le moteur exécute les rapports, pour la partie dans laquelle vous travaillez.',
@@ -6721,6 +6725,21 @@ const fr: SourceCatalogue = {
         configurations: {
             title: 'Configurations',
             lead: 'Une configuration est partagée par les rapports qui la lient.',
+            configurationsLead:
+                'Les configurations que ce rapport lie. Une modification atteint la prochaine exécution de ce rapport, et une exécution déjà produite garde ce avec quoi elle a couru.',
+            kinds: {
+                pricingEngines:
+                    'Comment chaque type de produit est valorisé : le modèle, le moteur et leurs paramètres.',
+                engineSettings:
+                    'Comment le moteur prépare ses entrées et exécute la tâche : fixings, construction, exécution.',
+                todaysMarket:
+                    'Comment les courbes et les surfaces d’une exécution sont construites.',
+                curveConfiguration: 'Comment chaque courbe est définie et calibrée.',
+                conventions: 'Les conditions de marché sur lesquelles une transaction est lue.',
+                runSettings:
+                    'Les chemins, la devise, le type de marché et la portée de l’exécution.',
+                other: 'Une des configurations que ce rapport lie.',
+            },
             record: 'Configuration',
             fields: {
                 name: 'Nom',
@@ -6915,6 +6934,18 @@ const fr: SourceCatalogue = {
             history: 'Historique',
         },
 
+        list: {
+            title: 'Configurations de courbes',
+            lead: 'Comment chaque courbe d’une exécution est définie et calibrée, une ligne par configuration.',
+            none: 'Aucune partie où vous travaillez ne détient de configuration de courbes.',
+            columns: {
+                name: 'Configuration',
+                party: 'Partie',
+                sections: 'Sections',
+                curves: 'Courbes',
+                version: 'Version',
+            },
+        },
         curves: {
             title: 'Courbes',
             count: '{count} dans {filled} des {sections} sections',
@@ -7004,6 +7035,7 @@ const fr: SourceCatalogue = {
             settings: 'réglages',
             terms: 'termes',
         },
+        validValues: 'Valeurs acceptées : {values}',
         documentation: 'Documentation',
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",

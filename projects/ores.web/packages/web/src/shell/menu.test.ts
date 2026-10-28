@@ -103,16 +103,14 @@ describe('the Reporting area', () => {
     const pricingRead = 'analytics::pricing_model_configs:read';
     const templatesRead = 'analytics::sensitivity_templates:read';
     const settingsRead = 'reporting::engine_settings:read';
+    const curvesRead = 'refdata::curve_configurations:read';
     const entry = entryAt('/reporting');
 
     it('is in the menu, guarded by the read of each of its screens', () => {
         expect(entry.to).toBe('/reporting');
-        expect([entry.permission].flat().sort()).toEqual([
-            pricingRead,
-            templatesRead,
-            settingsRead,
-            reportRead,
-        ]);
+        expect([entry.permission].flat().sort()).toEqual(
+            [curvesRead, pricingRead, templatesRead, settingsRead, reportRead].sort(),
+        );
     });
 
     it('is drawn for a person who holds either read', () => {

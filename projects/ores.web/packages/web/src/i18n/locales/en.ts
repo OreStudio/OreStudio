@@ -6493,7 +6493,8 @@ export const en: SourceCatalogue = {
             error: 'error',
         },
         tabs: {
-            definition: 'Definition',
+            details: 'Details',
+            configurations: 'Configurations',
             runs: 'Runs',
             results: 'Results',
         },
@@ -6513,6 +6514,9 @@ export const en: SourceCatalogue = {
             title: 'Reporting',
             lead: 'The reports a party runs, and how the latest run of each one went.',
             screens: {
+                curveConfigurations: 'Curve configurations',
+                curveConfigurationsBody:
+                    'How each curve of a run is defined and bootstrapped: its quotes, its segments and its interpolation.',
                 engineSettings: 'Engine run settings',
                 engineSettingsBody:
                     'How the engine runs every report: the fixings, the building and the execution.',
@@ -6630,6 +6634,19 @@ export const en: SourceCatalogue = {
             noAnalytics: 'This configuration holds no analytic.',
             off: 'Off',
             usedBy: 'Reports that use it',
+            configurationsLead:
+                'The configurations this report binds. A change reaches the next run of this report, and a run already produced keeps what it ran with.',
+            kinds: {
+                pricingEngines:
+                    'How each product type is priced: the model, the engine and their parameters.',
+                engineSettings:
+                    'How the engine prepares its inputs and runs the job: fixings, building, execution.',
+                todaysMarket: 'How the curves and surfaces of a run are built.',
+                curveConfiguration: 'How each curve is defined and bootstrapped.',
+                conventions: 'The market terms a trade is read on.',
+                runSettings: 'The run’s paths, currency, market kind and scope.',
+                other: 'One of the configurations this report binds.',
+            },
             noReports: 'No report that you may see uses this configuration.',
             curveDocument: 'Curve configuration',
             curveDocumentLead:
@@ -6813,6 +6830,18 @@ export const en: SourceCatalogue = {
             history: 'History',
         },
 
+        list: {
+            title: 'Curve configurations',
+            lead: 'How each curve of a run is defined and bootstrapped, one row per configuration.',
+            none: 'No party you work in holds a curve configuration.',
+            columns: {
+                name: 'Configuration',
+                party: 'Party',
+                sections: 'Sections',
+                curves: 'Curves',
+                version: 'Version',
+            },
+        },
         curves: {
             title: 'Curves',
             count: '{count} in {filled} of {sections} sections',
@@ -6902,6 +6931,7 @@ export const en: SourceCatalogue = {
             settings: 'settings',
             terms: 'terms',
         },
+        validValues: 'Valid values: {values}',
         documentation: 'Documentation',
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',

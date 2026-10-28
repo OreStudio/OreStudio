@@ -6540,7 +6540,8 @@ const pt: SourceCatalogue = {
             error: 'erro',
         },
         tabs: {
-            definition: 'Definição',
+            details: 'Detalhes',
+            configurations: 'Configurações',
             runs: 'Execuções',
             results: 'Resultados',
         },
@@ -6560,6 +6561,9 @@ const pt: SourceCatalogue = {
             title: 'Relatórios',
             lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',
             screens: {
+                curveConfigurations: 'Configurações de curvas',
+                curveConfigurationsBody:
+                    'Como cada curva de uma execução é definida e calibrada: as suas cotações, os seus segmentos e a sua interpolação.',
                 engineSettings: 'Configurações de execução do motor',
                 engineSettingsBody:
                     'Com quais configurações o motor executa os relatórios, para a parte em que você trabalha.',
@@ -6667,6 +6671,19 @@ const pt: SourceCatalogue = {
         configurations: {
             title: 'Configurações',
             lead: 'Uma configuração é partilhada pelos relatórios que a associam.',
+            configurationsLead:
+                'As configurações que este relatório liga. Uma alteração chega à próxima execução deste relatório, e uma execução já produzida mantém aquilo com que correu.',
+            kinds: {
+                pricingEngines:
+                    'Como cada tipo de produto é avaliado: o modelo, o motor e os seus parâmetros.',
+                engineSettings:
+                    'Como o motor prepara as suas entradas e executa a tarefa: fixings, construção, execução.',
+                todaysMarket: 'Como as curvas e superfícies de uma execução são construídas.',
+                curveConfiguration: 'Como cada curva é definida e calibrada.',
+                conventions: 'As condições de mercado sobre as quais uma transação é lida.',
+                runSettings: 'Os caminhos, a moeda, o tipo de mercado e o âmbito da execução.',
+                other: 'Uma das configurações que este relatório liga.',
+            },
             record: 'Configuração',
             fields: {
                 name: 'Nome',
@@ -6860,6 +6877,18 @@ const pt: SourceCatalogue = {
             history: 'Histórico',
         },
 
+        list: {
+            title: 'Configurações de curvas',
+            lead: 'Como cada curva de uma execução é definida e calibrada, uma linha por configuração.',
+            none: 'Nenhuma parte em que trabalha tem uma configuração de curvas.',
+            columns: {
+                name: 'Configuração',
+                party: 'Parte',
+                sections: 'Secções',
+                curves: 'Curvas',
+                version: 'Versão',
+            },
+        },
         curves: {
             title: 'Curvas',
             count: '{count} em {filled} das {sections} secções',
@@ -6949,6 +6978,7 @@ const pt: SourceCatalogue = {
             settings: 'definições',
             terms: 'termos',
         },
+        validValues: 'Valores aceites: {values}',
         documentation: 'Documentação',
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',

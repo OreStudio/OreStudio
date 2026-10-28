@@ -27,8 +27,8 @@ import { tabAddress, useTabs } from './Tabs.js';
 
 const TABS = ['details', 'parties', 'people'] as const;
 
-function Bar(): ReactNode {
-    const { bar } = useTabs({ label: 'Tenant', tabs: TABS, titleOf: (tab) => tab });
+function Bar({ keep = {} }: { readonly keep?: Readonly<Record<string, string>> }): ReactNode {
+    const { bar } = useTabs({ label: 'Tenant', tabs: TABS, titleOf: (tab) => tab, keep });
     return bar;
 }
 
@@ -50,5 +50,13 @@ describe('the tabs of a page', () => {
     it('addresses a tab by its name alone, and the first tab by nothing', () => {
         expect(tabAddress(TABS, 'parties')).toEqual({ tab: 'parties' });
         expect(tabAddress(TABS, 'details')).toEqual({});
+    });
+
+    it('keeps the parameters the page needs on every tab', () => {
+        expect(tabAddress(TABS, 'parties', 'tab', { party: 'p1' })).toEqual({
+            tab: 'parties',
+            party: 'p1',
+        });
+        expect(tabAddress(TABS, 'details', 'tab', { party: 'p1' })).toEqual({ party: 'p1' });
     });
 });

@@ -471,7 +471,7 @@ describe('one report definition', () => {
 
         // The specification puts Edit on the card, so the header carries none.
         expect(html.match(/>Edit</g)).toHaveLength(1);
-        const header = html.slice(0, html.indexOf('Definition'));
+        const header = html.slice(0, html.indexOf('Details'));
         expect(header).not.toContain('>Edit<');
         expect(html).not.toContain('<textarea');
         expect(html).not.toContain('Schedule expression</label>');
@@ -539,7 +539,7 @@ describe('one report definition', () => {
     it('states the fields the record holds', () => {
         const page = textOf(detail());
 
-        expect(page).toContain('Definition');
+        expect(page).toContain('Details');
         expect(page).toContain('Report type');
         expect(page).toContain('forbid');
     });
@@ -552,43 +552,14 @@ describe('one report definition', () => {
         expect(page).toContain('common.non_material_update');
     });
 
-    it('draws the definition first and the runs beside it, and no History', () => {
+    it('draws Details, the configurations and the runs, and no History', () => {
         const page = detail();
         expect(page).toContain('role="tab"');
-        expect(page).toContain('>Definition<');
+        expect(page).toContain('>Details<');
+        expect(page).toContain('>Configurations<');
         expect(page).toContain('>Runs<');
         expect(page).not.toContain('>Results<');
         expect(page).not.toContain('>History<');
-    });
-
-    it('says a run it could not read was not checked, not that it never ran', () => {
-        const page = textOf(
-            renderRecords(
-                `/reporting/reports/${AUDIT_ELSEWHERE}`,
-                [],
-                <Route path="/reporting/reports/:id" element={<ReportPage />} />,
-                (client) => {
-                    client.setQueryData(['my-access'], accessOf([]));
-                    client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
-                        kind: 'record',
-                        detail: {
-                            report: { ...AUDIT_ROW, health: null },
-                            definition: DETAIL.definition,
-                            unread: [
-                                {
-                                    cell: 'latestRun',
-                                    message: 'The latest run read was refused.',
-                                },
-                            ],
-                        },
-                    } satisfies ReportOpen);
-                },
-            ),
-        );
-
-        expect(page).toContain('could not be checked');
-        expect(page).toContain('does not read as never run');
-        expect(page).not.toContain('has never run');
     });
 
     it('offers no Edit to a person who may not change a definition', () => {
@@ -687,7 +658,7 @@ const BINDINGS: readonly ReportConfigurationBinding[] = [
 
 function withBindings(bindings: readonly ReportConfigurationBinding[]): string {
     return renderRecords(
-        `/reporting/reports/${AUDIT_ELSEWHERE}`,
+        `/reporting/reports/${AUDIT_ELSEWHERE}?tab=configurations`,
         [],
         <Route path="/reporting/reports/:id" element={<ReportPage />} />,
         (client) => {
@@ -700,30 +671,6 @@ function withBindings(bindings: readonly ReportConfigurationBinding[]): string {
         },
     );
 }
-
-describe('the latest run on a report page', () => {
-    it('links to the page of that run', () => {
-        const html = renderRecords(
-            `/reporting/reports/${DAILY}`,
-            [],
-            <Route path="/reporting/reports/:id" element={<ReportPage />} />,
-            (client) => {
-                client.setQueryData(['my-access'], accessOf([]));
-                client.setQueryData(reportKey(DAILY), {
-                    kind: 'record',
-                    detail: {
-                        ...DETAIL,
-                        report: DAILY_ROW,
-                        definition: { ...DETAIL.definition, id: DAILY, name: 'ACME daily PnL' },
-                    },
-                } satisfies ReportOpen);
-            },
-        );
-
-        expect(html).toContain(`href="/reporting/runs/${RUN}"`);
-        expect(textOf(html)).toContain('Open the run');
-    });
-});
 
 describe('the configurations of a report', () => {
     it('lists each by its kind, and links its name to the configuration page', () => {

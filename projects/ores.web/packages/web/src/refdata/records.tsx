@@ -260,12 +260,20 @@ export function markStale(queries: QueryClient, keys: readonly QueryKey[]): void
 export function useRecordTabs({
     label,
     tabs,
+    keep = {},
 }: {
     readonly label: string;
     readonly tabs: readonly string[];
+    /** The address parameters the page needs on every tab, such as the party it reads under. */
+    readonly keep?: Readonly<Record<string, string>>;
 }): { readonly tab: string; readonly bar: ReactNode } {
     const { t } = useTranslation();
-    return useTabs({ label, tabs, titleOf: (tab) => t(`refdata.records.tabs.${tab}`) });
+    return useTabs({
+        label,
+        tabs,
+        keep,
+        titleOf: (tab) => t(`refdata.records.tabs.${tab}`),
+    });
 }
 
 /** The resources of the store in context, with what each searches, sorts and needs. */

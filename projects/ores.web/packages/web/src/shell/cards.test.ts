@@ -125,9 +125,16 @@ describe('the cards', () => {
         }
     });
 
-    it('are drawn by no area twice', () => {
-        const drawn = Object.values(AREA_CARDS).flatMap((ids) => [...ids]);
+    it('are drawn by no area twice, except the configurations a report binds', () => {
+        // A configuration's home is the area that authors it; the reporting area
+        // repeats the ones a report binds, so a person reads them where a report
+        // is read. Every other card has one home.
+        const repeated = new Set(['conventions']);
+        const drawn = Object.entries(AREA_CARDS).flatMap(([area, ids]) =>
+            [...ids].filter((id) => (area === 'reporting' && repeated.has(id) ? false : true)),
+        );
 
+        expect(drawn.length + repeated.size).toBeGreaterThan(0);
         expect(new Set(drawn).size).toBe(drawn.length);
     });
 });

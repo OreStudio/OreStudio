@@ -20,7 +20,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useHeld } from '../access/holds.js';
 import {
@@ -39,8 +39,13 @@ import { ParameterRow } from '../parameters/ParameterRow.js';
 import { controlOfValueSet, shortDefault } from '../parameters/control.js';
 import { ParameterDocuments, ParameterFilters } from '../ui/OreParameter.js';
 import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
-import { markStale } from './records.js';
+import { TabPane } from './parties.js';
+import { RecordTimeline } from './RecordTimeline.js';
+import { markStale, useRecordTabs } from './records.js';
 import { Crumbs, ReasonFields, useReason } from './shared.js';
+
+/** The entity type the refdata service registers a convention's history under. */
+const CONVENTION_ENTITY = 'ores.refdata.convention';
 
 /**
  * The record page of one convention, its terms drawn as the ORE element and
@@ -62,6 +67,19 @@ export function ConventionRecordPage(): ReactNode {
         queryFn: () => conventions.document(family, id, party),
     });
     const [mode, setMode] = useEditingMode();
+    /*
+     * The convention is read under a party, and the party is the page's, not the
+     * tab's: a tab change keeps it so the record stays the one in view.
+     */
+    const panel = useRecordTabs({
+        label: t('refdata.conventions.title'),
+        tabs: ['details', 'history'],
+        ...(party === undefined ? {} : { keep: { party } }),
+    });
+    const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([panel.tab]));
+    useEffect(() => {
+        setSeen((before) => (before.has(panel.tab) ? before : new Set(before).add(panel.tab)));
+    }, [panel.tab]);
     const crumbs = [
         ...useAreaRoot('refdata'),
         { label: t('refdata.conventions.title'), to: PATHS.conventions },
@@ -107,8 +125,19 @@ export function ConventionRecordPage(): ReactNode {
                 actions={<EditingModeToggle mode={mode} onChange={setMode} words="leaves" />}
             />
             {record.shared && <Notice tone="warn">{t('refdata.conventions.record.shared')}</Notice>}
-            <KindCard document={record} mode={mode} />
-            <TermsCard document={record} party={party} mode={mode} />
+            {panel.bar}
+            <TabPane name="details" tab={panel.tab} seen={seen}>
+                <div className="space-y-4">
+                    <KindCard document={record} mode={mode} />
+                    <TermsCard document={record} party={party} mode={mode} />
+                </div>
+            </TabPane>
+            <TabPane name="history" tab={panel.tab} seen={seen}>
+                <section className="card space-y-4 p-4">
+                    <h2 className="text-sm font-medium">{t('refdata.records.tabs.history')}</h2>
+                    <RecordTimeline entityType={CONVENTION_ENTITY} entityId={record.id} />
+                </section>
+            </TabPane>
         </div>
     );
 }

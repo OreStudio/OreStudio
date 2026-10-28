@@ -22,6 +22,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/refdata/protocol/configuration_document_protocol';
 import { subjects as sectionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_section_protocol';
+import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_configuration_protocol';
+import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_definition_protocol';
 import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
 import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
 import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
@@ -136,6 +138,17 @@ export interface CurveSectionView {
     readonly description: string;
     readonly mapped: boolean;
     readonly entries: readonly CurveEntryView[];
+}
+
+/** One curve configuration as the list draws it, without reading its document. */
+export interface CurveConfigurationSummary {
+    readonly configurationId: string;
+    readonly id: string;
+    readonly name: string;
+    readonly description: string;
+    readonly version: number;
+    readonly sections: number;
+    readonly curves: number;
 }
 
 /** The curve configuration a reporting configuration is filled by. */
@@ -333,6 +346,56 @@ export function registerCurveConfigurationRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
+    /*
+     * The curve configurations the session's parties hold, in name order.
+     *
+     * The list reads the header rows and the definitions, and counts the curves
+     * of each by the section their definition names, so a person reaches a
+     * configuration without a report that binds it.
+     */
+    server.get('/api/refdata/curve-configurations', async (request) => {
+        const session = requireSession(request);
+        const [configurations, definitions] = await Promise.all([
+            readAll(
+                session,
+                configurationSubjects.list_curve_configurations_request,
+                'configurations',
+                {
+                    filter: null,
+                    as_of: null,
+                },
+            ),
+            readAll(session, definitionSubjects.list_curve_definitions_request, 'curves', {
+                filter: null,
+                as_of: null,
+            }),
+        ]);
+        const counted = new Map<string, { sections: Set<string>; curves: number }>();
+        for (const definition of definitions) {
+            const key = text(definition['curve_configuration_id']);
+            const counts = counted.get(key) ?? { sections: new Set<string>(), curves: 0 };
+            counts.sections.add(text(definition['section_code']));
+            counts.curves += 1;
+            counted.set(key, counts);
+        }
+        const rows: CurveConfigurationSummary[] = configurations
+            .map((configuration) => {
+                const id = text(configuration['id']);
+                const counts = counted.get(id) ?? { sections: new Set<string>(), curves: 0 };
+                return {
+                    configurationId: text(configuration['configuration_id']),
+                    id,
+                    name: text(configuration['name']),
+                    description: text(configuration['description']),
+                    version: numberOf(configuration['version']),
+                    sections: counts.sections.size,
+                    curves: counts.curves,
+                };
+            })
+            .sort((left, right) => left.name.localeCompare(right.name));
+        return { rows, total: rows.length };
+    });
+
     server.get('/api/refdata/curve-configurations/:id', async (request) => {
         const session = requireSession(request);
         const configurationId = input(idSchema, (request.params as { id: string }).id);

@@ -4147,6 +4147,9 @@ const fr: SourceCatalogue = {
                 ticks: 'Cotations',
                 process: 'Processus',
                 template: 'Modèle de courbe',
+                pillars: 'Piliers',
+                check: 'Contrôle',
+                sets: 'Ensembles publiés',
             },
         },
         fields: {
@@ -4254,6 +4257,14 @@ const fr: SourceCatalogue = {
             end_tenor_code: 'Durée de fin',
             instrument_code: 'Instrument',
             component_index: 'Indice',
+            index_tenor: "Tenor de l'indice",
+            curve_family_role: 'Rôle',
+            discount_curve_config_id: "Courbe d'actualisation",
+            interpolation_method: "Méthode d'interpolation",
+            day_count_convention: 'Base de calcul',
+            tenor_convention_code: 'Convention de tenor',
+            split_tenor_code: 'Tenor de scission',
+            curve_role_code: 'Rôle de courbe',
         },
         choices: {
             ore_currency_type: { Major: 'Majeure', Metal: 'Métal', Crypto: 'Crypto' },
@@ -4572,6 +4583,155 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        curveBlueprints: {
+            title: 'Plans de courbe',
+            lead: "Les recettes dont chaque courbe est construite : ses piliers, ses conventions et les ensembles qu'elle a alimentés.",
+            copy: 'Copier le plan',
+            copyTitle: 'Copier {code}',
+            copyNote:
+                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, et le serveur frappe la série dans laquelle elle publie.",
+            noAdd: "Un plan ne peut pas encore être ajouté ici : rien ne frappe la série de sortie avec laquelle un plan est créé, et une valeur qui découle de la devise et de l'indice n'est pas une question (RS-WRITE-07).",
+            noPillarsNotice:
+                "Cette recette ne tient aucun pilier : il n'y a rien à partir de quoi construire une courbe.",
+            openPillars: 'Ouvrir les piliers.',
+            allSetsEnded:
+                "Tous les ensembles alimentés par cette recette ont quitté l'usage : le dernier a été retiré le {date} par {account}. Rien n'est retiré du service, car la recette n'a pas de statut propre.",
+            noneYet: 'Aucun pour le moment.',
+            addPillar: 'Ajouter un pilier',
+            onePillar: 'Pilier',
+            removePillar: 'Supprimer le pilier',
+            pillarName: '{start} à {end}, {role}',
+            pillarsLead:
+                "Un pilier est la plage de dates d'un instrument et non un point isolé : un dépôt à un mois commençant aujourd'hui a donc un tenor de début SPOT et un tenor de fin 1M. L'ordre suit le tenor de fin de chaque pilier et il est dérivé, jamais saisi.",
+            checkLead:
+                "Si cette recette se construit, lu d'abord sur la recette elle-même puis sur le marché dont elle a besoin.",
+            notChecked: 'Pas encore vérifié.',
+            checksTitle: 'Ce que la recette doit satisfaire',
+            marketTitle: 'Ce que le marché a fourni',
+            pointsTitle: 'Les points renvoyés par la construction',
+            findingsTitle: "Ce que l'écran a lu sur les points",
+            discountFactors: "Facteurs d'actualisation",
+            forwards: 'Taux forward instantanés',
+            asOf: "Date d'arrêté",
+            runTest: 'Lancer le test',
+            notRun: 'Non lancé',
+            pass: 'Réussi',
+            fail: 'Échec',
+            observed: 'Observé',
+            noRate: 'Aucun taux',
+            builtNothing: "La construction n'a renvoyé aucun point.",
+            validationFailed:
+                "La recette échoue à {count} de ses propres contrôles : le marché n'a pas été lu et aucune courbe n'a été construite.",
+            noFindings: 'Rien ne ressort des points.',
+            derivedNote:
+                "Les forwards et les constats sont l'arithmétique de cet écran sur les points renvoyés par le serveur. Le serveur répond avec les points et rien à leur sujet.",
+            setsLead:
+                "Les ensembles publiés depuis cette recette, du plus récent au plus ancien. Une ligne ouvre l'enregistrement publié. Les ensembles sont lus ici et jamais modifiés : un retrait est un acte à part, avec un motif.",
+            setsNoneLead:
+                "Un ensemble le devient lorsqu'une personne publie un candidat approuvé, dans le parcours de publication.",
+            setsNote:
+                "Un ensemble se retrouve par le plan dont il a été construit, que la lecture transporte ; le contrat de liste n'a pas encore de filtre pour cela, donc l'onglet lit les ensembles de la partie et retient le sien.",
+            historyLead:
+                "Les versions de la recette et celles de chaque pilier, de la plus récente à la plus ancienne, chacune nommée par sa partie. Un pilier supprimé de la recette n'est pas dans ce flux.",
+            usedByNone: "Aucune projection ne s'actualise sur cette recette.",
+            usedByUnread: "Les projections n'ont pas pu être lues.",
+            seriesUnknown: "La série n'a pas pu être lue.",
+            filterCurrency: 'Devise',
+            filterAllCurrencies: 'Toutes les devises',
+            filterRole: 'Rôle',
+            filterAllRoles: 'Tous les rôles',
+            roles: { FUNDING: 'Financement', PROJECTION: 'Projection' },
+            state: {
+                noPillars: 'Aucun pilier pour le moment',
+                neverPublished: 'Jamais publié',
+                published: 'En usage',
+                noSetInUse: 'Aucun ensemble en usage depuis le {date}',
+            },
+            columns: {
+                curve: 'Courbe',
+                currency: 'Devise',
+                role: 'Rôle',
+                indexTenor: "Tenor de l'indice",
+                interpolation: 'Interpolation',
+                dayCount: 'Base de calcul',
+                pillars: 'Piliers',
+                lastChanged: 'Dernière modification',
+                sequence: 'Séquence',
+                startTenor: 'Tenor de début',
+                endTenor: 'Tenor de fin',
+                curveRole: 'Rôle',
+                changedBy: 'Modifié par',
+                asOf: "Date d'arrêté",
+                party: 'Partie',
+                publisher: 'Publication par',
+                publishedAt: 'Publié le',
+                points: 'Points',
+                state: 'État',
+                date: 'Date',
+                discountFactor: "Facteur d'actualisation",
+                forward: 'Forward',
+            },
+            fields: {
+                currencyMeans: 'La devise dans laquelle les piliers de cette courbe sont cotés.',
+                indexTenorMeans:
+                    "Le tenor de l'indice à taux variable que la courbe représente, par exemple 1D pour un indice au jour le jour.",
+                roleMeans: {
+                    FUNDING: "Ancre sa famille : la courbe sur laquelle les autres s'actualisent.",
+                    PROJECTION: 'Une courbe dépendante, actualisée sur une courbe de financement.',
+                    other: 'Un rôle que cet écran ne connaît pas.',
+                },
+                discountMeans:
+                    "La courbe de financement sur laquelle cette projection s'actualise pendant la construction.",
+                interpolationMeans: {
+                    LOG_LINEAR_DISCOUNT:
+                        "Interpole le logarithme du facteur d'actualisation entre les piliers.",
+                    FLAT_FORWARD_THEN_LOG_LINEAR:
+                        "Un début à forward plat jusqu'au tenor de scission, puis log-linéaire au-delà.",
+                    CUBIC_SPLINE: 'Une spline cubique passant par les piliers.',
+                    other: 'Une méthode que cet écran ne connaît pas.',
+                },
+                dayCountMeans: 'La base de calcul que le bootstrap applique entre deux piliers.',
+                tenorConventionMeans:
+                    "La convention sous laquelle les piliers résolvent leurs dates, que la courbe possède et n'emprunte jamais au nom d'une série.",
+                splitTenorMeans:
+                    "Où les deux segments se rejoignent : un tenor dans l'échelle pour la méthode à deux segments.",
+                startTenorMeans:
+                    "Où l'instrument commence. Un dépôt commence à SPOT, parce qu'il commence aujourd'hui.",
+                endTenorMeans: "Où l'instrument arrive à échéance, et donc où se tient le pilier.",
+                curveRoleMeans: {
+                    DEPOSIT: 'Se construit comme un dépôt : du spot à son tenor de fin.',
+                    FRA: 'Se construit comme un accord de taux futur sur sa propre période.',
+                    SWAP: 'Se construit comme un swap du spot à son tenor de fin.',
+                    other: 'Un rôle que cet écran ne connaît pas.',
+                },
+                outputSeries: 'Série de sortie',
+                outputSeriesMeans:
+                    'La série de marché dans laquelle la courbe est publiée. Le serveur la frappe ; personne ne la choisit.',
+                usedBy: 'Utilisée par',
+                fed: 'Ensembles alimentés',
+                fedCount: '{count} publiés',
+            },
+            acts: {
+                addPillar: 'Ajouter un pilier',
+                openPillars: 'Ouvrir les piliers',
+                editBlueprint: 'Modifier le plan',
+            },
+            checks: {
+                one_pillar: 'La recette tient au moins un pilier.',
+                maturity_order: 'Chaque pilier arrive à échéance après le précédent.',
+                deposit_from_spot: 'Chaque pilier de dépôt commence au spot.',
+                split_tenor: "Le tenor de scission ferme l'échelle comme la méthode le dit.",
+                projection_funding:
+                    'Une projection nomme un plan de financement de sa devise, et pas elle-même.',
+                funding_not_projection:
+                    "Le plan qu'une projection nomme n'est pas lui-même une projection.",
+            },
+            findings: {
+                negative_forward: 'Le forward à {pillar} est sous zéro ({value}).',
+                jump: 'Le forward saute à {pillar}, à {value}.',
+                gap: "Le marché n'avait aucun taux pour {pillar} : la courbe a été construite par-dessus l'écart.",
+            },
+        },
         published: {
             title: 'Courbes publiées',
             plural: 'courbes publiées',

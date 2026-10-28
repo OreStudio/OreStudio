@@ -53,6 +53,7 @@ export const PATHS = {
     marketDataSources: '/operations/market-data-sources',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',
+    curveBlueprints: '/market-data/curve-blueprints',
     subscriptions: '/market-data/subscriptions',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
@@ -69,6 +70,18 @@ export const PATHS = {
 /** The address of the documents of one convention kind. */
 export function conventionPath(family: string): string {
     return `${PATHS.conventions}/${encodeURIComponent(family)}`;
+}
+
+/**
+ * The address of one curve blueprint's record page.
+ *
+ * A blueprint's key is a UUID and it has no name of its own, so the address
+ * carries the id and the page names the record by the series it publishes into.
+ */
+export function curveBlueprintPath(id?: string): string {
+    return id === undefined || id === ''
+        ? PATHS.curveBlueprints
+        : `${PATHS.curveBlueprints}/${encodeURIComponent(id)}`;
 }
 
 /** The address of one convention's record page: its id within its family, and the party that holds it. */

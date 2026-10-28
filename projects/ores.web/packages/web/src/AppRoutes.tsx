@@ -106,6 +106,7 @@ import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
+import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
@@ -687,6 +688,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PublishedCurvesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.curveBlueprints}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurveBlueprintsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.curveBlueprints}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurveBlueprintPage />
                     ),
                     'workspace',
                 )}

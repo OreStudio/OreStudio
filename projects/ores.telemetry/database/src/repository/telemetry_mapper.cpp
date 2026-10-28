@@ -22,7 +22,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
-#include "sqlgen/Timestamp.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
@@ -78,8 +77,8 @@ messaging::telemetry_log_entry telemetry_mapper::to_domain(const telemetry_entit
     messaging::telemetry_log_entry r;
     using boost::uuids::uuid;
 
-    r.id = boost::lexical_cast<uuid>(entity.id.value());
-    r.timestamp = timestamp_to_timepoint(entity.timestamp.value());
+    r.id = boost::lexical_cast<uuid>(entity.id);
+    r.timestamp = timestamp_to_timepoint(entity.timestamp);
     r.source = domain::telemetry_source_from_string(entity.source);
     r.source_name = entity.source_name;
     r.session_id = entity.session_id.has_value() ?
@@ -153,7 +152,7 @@ nats_server_sample_entity telemetry_mapper::to_entity(const messaging::nats_serv
 
 messaging::nats_server_sample telemetry_mapper::to_domain(const nats_server_sample_entity& entity) {
     messaging::nats_server_sample r;
-    r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
+    r.sampled_at = timestamp_to_timepoint(entity.sampled_at);
     r.in_msgs = static_cast<std::uint64_t>(entity.in_msgs);
     r.out_msgs = static_cast<std::uint64_t>(entity.out_msgs);
     r.in_bytes = static_cast<std::uint64_t>(entity.in_bytes);
@@ -178,8 +177,8 @@ nats_stream_sample_entity telemetry_mapper::to_entity(const messaging::nats_stre
 
 messaging::nats_stream_sample telemetry_mapper::to_domain(const nats_stream_sample_entity& entity) {
     messaging::nats_stream_sample r;
-    r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
-    r.stream_name = entity.stream_name.value();
+    r.sampled_at = timestamp_to_timepoint(entity.sampled_at);
+    r.stream_name = entity.stream_name;
     r.messages = static_cast<std::uint64_t>(entity.messages);
     r.bytes = static_cast<std::uint64_t>(entity.bytes);
     r.consumer_count = entity.consumer_count;
@@ -198,9 +197,9 @@ service_sample_entity telemetry_mapper::to_entity(const messaging::service_sampl
 
 messaging::service_sample telemetry_mapper::to_domain(const service_sample_entity& entity) {
     messaging::service_sample r;
-    r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
-    r.service_name = entity.service_name.value();
-    r.instance_id = entity.instance_id.value();
+    r.sampled_at = timestamp_to_timepoint(entity.sampled_at);
+    r.service_name = entity.service_name;
+    r.instance_id = entity.instance_id;
     r.host_id = entity.host_id;
     r.version = entity.version;
     return r;

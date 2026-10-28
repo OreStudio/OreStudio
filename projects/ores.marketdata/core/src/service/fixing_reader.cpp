@@ -21,6 +21,7 @@
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.marketdata.core/repository/fixing_read_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
 #include <set>
 #include <string>
@@ -45,16 +46,21 @@ resolve(ores::database::context ctx, const std::string& item, const std::string&
     if (series.empty())
         return refuse(outcome_code::not_found, {.entity = "fixing item " + item});
     if (series.size() > 1) {
+        // One provider can reach a session through two parties, so the refusal names both
+        // counts; naming the provider settles only the second.
+        std::set<std::string> parties;
         std::set<std::string> providers;
-        for (const auto& s : series)
+        for (const auto& s : series) {
+            parties.insert(boost::uuids::to_string(s.party_id));
             providers.insert(s.provider_code);
+        }
         std::string list;
         for (const auto& p : providers)
             list += (list.empty() ? "" : ", ") + p;
         return refuse(outcome_code::series_ambiguous,
                       {.entity = "fixings",
                        .value = std::to_string(series.size()),
-                       .reason = "providers " + list});
+                       .reason = std::to_string(parties.size()) + " parties; providers " + list});
     }
     return series.front();
 }

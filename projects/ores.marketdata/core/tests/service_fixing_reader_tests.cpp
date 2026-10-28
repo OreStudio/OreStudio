@@ -209,6 +209,19 @@ TEST_CASE("two_providers_of_one_item_are_ambiguous_until_the_request_names_one",
     CHECK(b.value == "1.1497");
 }
 
+TEST_CASE("one_provider_under_two_parties_is_refused_and_the_refusal_names_both",
+          "[fixing_reader][integration]") {
+    reader_fixture f;
+    const auto uri = reader_fixture::item("TWOPARTY");
+    f.fix(f.series(uri, "ore"), d(2026, 10, 23), "1.1500");
+    f.fix(f.series(uri, "ore", f.other), d(2026, 10, 23), "1.1501", f.other);
+
+    const auto r = f.latest(uri, d(2026, 10, 23), "ore");
+
+    CHECK(r.result.code == "series_ambiguous");
+    CHECK(r.result.message.find("2 parties; providers ore") != std::string::npos);
+}
+
 TEST_CASE("an_item_that_names_no_series_is_refused_as_not_found", "[fixing_reader][integration]") {
     reader_fixture f;
 

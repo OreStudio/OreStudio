@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/put-the-numbers-changing-engine-run-settings-through-sign-off
-#+pr:
+#+pr: 4011
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4011][#4011]] | [reporting] Put the numbers-changing engine run settings through sign-off |
 
 * Review
 

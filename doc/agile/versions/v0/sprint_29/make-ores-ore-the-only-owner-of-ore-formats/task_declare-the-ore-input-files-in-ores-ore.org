@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/declare-the-ore-input-files-in-ores-ore
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ores.ore states which setup parameter names each document it imports, and a test
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,17 @@ ores.ore states which setup parameter names each document it imports, and a test
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The codec gains =xml/run_document_files.hpp=: one row for each configuration
+document a run can name, with the configuration type and the Setup parameter
+whose value is its file, and a lookup by type. The service drops its
+=document_kinds_of= and the =list_file_types= request it made to reporting, and
+iterates the codec's table in both directions.
+
+=ore.xsd= types the Setup parameter list without naming any of its entries, so
+the names cannot be read from the schema. They come from the run documents ORE
+ships, which is also where the seed generator that filled the table learned
+them, and the new test holds the table against that corpus: each declared
+parameter must be exercised by at least one sample.
 
 * Measurements
 
@@ -57,9 +65,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Configuration types whose file a run names | 4 | =ores::ore::xml::configuration_documents= | HEAD |
+| Declared parameters the ORE samples exercise | 4 of 4 | =ores.ore.core.tests "every declared parameter is exercised..."= | HEAD |
+| Requests the import makes to reporting to learn a parameter | 0, where it made one =list_file_types= per import and per export | =grep -n 'list_file_types\|file_types' projects/ores.ore/service/src/messaging/run_configuration_operations.cpp= | HEAD |
+| Where the parameter names are read from | =ore.xsd= has no entry for them; the sample run documents do | =grep -c conventionsFile external/ore/xsd/ore.xsd= | 0c3c85cc68 |
 
 * Notes
+
+The schema types the Setup list as a repeatable =Parameter= with a free name,
+so it cannot say which parameter carries the conventions file. That is why the
+knowledge was in a generated table rather than in the schema, and why this
+table's check is the corpus ORE ships rather than the schema.
 
 * Test Scenarios
 

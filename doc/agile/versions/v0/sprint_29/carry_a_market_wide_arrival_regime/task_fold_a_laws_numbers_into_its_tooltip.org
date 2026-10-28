@@ -82,7 +82,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A law filter shows no feeds while the trace loads | FeedsView.tsx | Accept | The table shows Loading until the laws arrive; a test covers it. |
+| 2 | An unknown law in the address reads as all | FeedsView.tsx | Note | Kept forgiving: the control shows All, as the rows do. |
+| 3 | A pinned card stays open when focus leaves it | SummaryTag.tsx | Note | Deliberate: a click keeps it until Escape, a click outside or close. |
+| 4 | Touch untested | SummaryTag.tsx | Note | A tap pins and a tap outside closes; no touch device here. |
+| 5 | Dead locale keys | en/fr/pt.ts | Accept | laws.always removed; laws.open is used again by the law card. |
+| 6 | A fragment around one span | FeedsView.tsx | Accept | Removed. |
+| 7 | markGroups runs twice a row | FeedsView.tsx | Note | Fine at a hundred feeds. |
+| 8 | Title and summary describe the earlier scope | — | Accept | Retitled, and the scope noted in a comment. |
+| 9 | compass check skipped | — | Note | At the user's request, as in the earlier rounds. |
 
 * Result
 

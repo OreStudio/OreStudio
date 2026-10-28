@@ -374,28 +374,26 @@ export function FeedsView({
                     />
                 </span>
                 {classes.length < 2 ? null : (
-                    <>
-                        <span className="flex items-center gap-2.5">
-                            <MicroLabel>{t('marketdata.market.arrivals.show')}</MicroLabel>
-                            <Segmented
-                                label={t('marketdata.market.arrivals.show')}
-                                options={classes}
-                                value={shown}
-                                onChange={(option) =>
-                                    setHidden((was) => {
-                                        const next = new Set(was);
-                                        if (next.has(option)) {
-                                            next.delete(option);
-                                        } else if (shown.size > 1) {
-                                            next.add(option);
-                                        }
-                                        return next;
-                                    })
-                                }
-                                titleOf={(option) => t(`marketdata.market.classes.${option}`)}
-                            />
-                        </span>
-                    </>
+                    <span className="flex items-center gap-2.5">
+                        <MicroLabel>{t('marketdata.market.arrivals.show')}</MicroLabel>
+                        <Segmented
+                            label={t('marketdata.market.arrivals.show')}
+                            options={classes}
+                            value={shown}
+                            onChange={(option) =>
+                                setHidden((was) => {
+                                    const next = new Set(was);
+                                    if (next.has(option)) {
+                                        next.delete(option);
+                                    } else if (shown.size > 1) {
+                                        next.add(option);
+                                    }
+                                    return next;
+                                })
+                            }
+                            titleOf={(option) => t(`marketdata.market.classes.${option}`)}
+                        />
+                    </span>
                 )}
                 <span className="flex items-center gap-2.5">
                     <MicroLabel>{t('marketdata.market.laws.law')}</MicroLabel>
@@ -443,7 +441,7 @@ export function FeedsView({
                     </span>
                 ) : null}
             </div>
-            {raster === undefined ? (
+            {raster === undefined || (lawShown !== 'all' && trace === undefined) ? (
                 <p className="text-[13px] text-ink-muted">{t('common.loading')}</p>
             ) : feeds.length === 0 ? (
                 <Notice tone="info">{t('marketdata.marketRegime.raster.none')}</Notice>

@@ -468,6 +468,22 @@ describe('the Feeds tab', () => {
         expect(hawkes).not.toContain('USD SOFR');
     });
 
+    it('waits for the laws before it narrows to one, rather than showing no feeds', () => {
+        const html = render(
+            <FeedsView
+                raster={raster()}
+                trace={undefined}
+                now={NOW}
+                window={120}
+                onWindow={() => undefined}
+                pages={feedPages(raster())}
+            />,
+            '/?law=hawkes',
+        );
+        expect(html).toContain('Loading');
+        expect(html).not.toContain('There are no feeds to draw');
+    });
+
     it('shows only the feeds of the process the address names, with a way back to all', () => {
         const html = feedsAt('/?process=ir_curve:vasicek');
         expect(html).toContain('USD SOFR');

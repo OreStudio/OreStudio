@@ -4971,7 +4971,6 @@ const pt: SourceCatalogue = {
                 none: 'Nenhum feed está a correr.',
                 stable: 'estável',
                 runsAway: 'descontrola-se',
-                always: 'sempre',
                 open: 'Abrir o separador Chegadas →',
                 summary: '{feed}: a sua lei',
                 columns: {

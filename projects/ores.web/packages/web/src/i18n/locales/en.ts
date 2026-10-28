@@ -4940,7 +4940,6 @@ export const en: SourceCatalogue = {
                 none: 'No feed is running.',
                 stable: 'stable',
                 runsAway: 'runs away',
-                always: 'always',
                 open: 'Open the Arrivals tab →',
                 summary: '{feed}: its law',
                 columns: {

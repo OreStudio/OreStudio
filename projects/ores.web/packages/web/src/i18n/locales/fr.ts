@@ -5004,7 +5004,6 @@ const fr: SourceCatalogue = {
                 none: 'Aucun flux ne tourne.',
                 stable: 'stable',
                 runsAway: 's’emballe',
-                always: 'toujours',
                 open: 'Ouvrir l’onglet Arrivées →',
                 summary: '{feed} : sa loi',
                 columns: {

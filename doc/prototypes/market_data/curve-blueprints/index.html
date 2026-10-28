@@ -69,14 +69,16 @@ body.nogaps .gap{display:none}
 .btn.small{padding:4px 12px;font-size:12px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.on{border-color:var(--accent);color:var(--accent-bright)}
-.badge{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap}
-.badge.ok{color:var(--ok)}
-.badge.pending{color:var(--info)}
-.badge.caution{color:var(--warn)}
-.badge.bad{color:var(--bad)}
-.badge.inactive{color:var(--inactive)}
-.badge.class{color:var(--violet)}
-.badge.mono{font-family:var(--mono);font-size:11px}
+/* A coded value, drawn as the catalogue's badge: the app's Label, which is a
+   filled pill in the badge's own colours, 11px, with its description on hover. */
+.label{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11px;line-height:1.35;white-space:nowrap}
+/* A coded value the catalogue does not paint: the code itself, as CodedValue draws it. */
+.plaincode{font-family:var(--mono);font-size:12px;color:var(--ink)}
+/* A word the screen owns, such as Observed or Built: no badge, because it is no code. */
+.word{font-size:12px;white-space:nowrap}
+.word.ok{color:var(--ok)}
+.word.caution{color:var(--warn)}
+.word.bad{color:var(--bad)}
 .access{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink-dim)}
 .notice{border-radius:var(--radius);padding:12px 16px;font-size:13px;margin:0 0 16px;border:1px solid}
 .notice.info{background:#12161f;border-color:#24344d}
@@ -98,6 +100,17 @@ body.nogaps .gap{display:none}
 .panelhead .ml-auto{margin-left:auto}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* The area page's cards, as Tiles.tsx draws them: a glyph beside the name and one line. */
+.tilegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:1020px){.tilegrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.tilegrid{grid-template-columns:1fr}}
+.tile{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;cursor:pointer;text-align:left}
+.tile:hover{border-color:var(--accent)}
+.tile .glyph{flex:0 0 28px;width:28px;height:28px;border-radius:6px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-dim)}
+.tile .nm{display:block;font-size:13px;font-weight:600;color:var(--ink)}
+.tile .body{display:block;margin-top:2px;font-size:12px;color:var(--ink-dim)}
+.tile.here .glyph{color:var(--accent-bright);border-color:var(--accent)}
 
 /* Lists: tools, tables, pager. */
 .listtools{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
@@ -222,6 +235,7 @@ body.nogaps .gap{display:none}
   The curve blueprint screens: the list, the record page a row opens with its
   five tabs, and the dialogs the record opens.
 
+    ?surface=area                            the Market data area page and its cards
     ?bp=<code>&tab=details|pillars|check|sets|history
 
   The other parameters:
@@ -254,6 +268,7 @@ body.nogaps .gap{display:none}
     var Q = new URLSearchParams(location.search);
 
     var S = {
+        surface: Q.get('surface') || 'list',
         state: Q.get('state') || '',
         q: Q.get('q') || '',
         fcur: Q.get('fcur') || 'all',
@@ -431,7 +446,52 @@ body.nogaps .gap{display:none}
     }
     function person(id) { return PEOPLE[id] || { name: id, initials: '??' }; }
     function who(id) { return person(id).name; }
-    function badge(kind, text) { return '<span class="badge ' + kind + '">' + esc(text) + '</span>'; }
+    function word(kind, text) { return '<span class="word ' + kind + '">' + esc(text) + '</span>'; }
+
+    /* The label catalogue, as the deployment would hold it: a badge is a code
+       with a colour, a name and a description, and the words in the pill are
+       the badge's own. The five curve domains are this prototype's proposal --
+       the seed holds no entry for any of them yet, and the note records that. */
+    var CATALOGUE = {
+        curve_family_role: {
+            FUNDING: { label: 'Funding', bg: '#22c55e', fg: '#ffffff', description: 'Anchors the discounting of its family.' },
+            PROJECTION: { label: 'Projection', bg: '#3b82f6', fg: '#ffffff', description: 'Discounts off a funding curve of the same currency.' }
+        },
+        interpolation_method: {
+            LOG_LINEAR_DISCOUNT: { label: 'Log-linear discount', bg: '#7c3aed', fg: '#ffffff', description: 'Discount factors joined by a straight line in log space.' },
+            FLAT_FORWARD_THEN_LOG_LINEAR: { label: 'Flat forward then log-linear', bg: '#7c3aed', fg: '#ffffff', description: 'Two segments: a flat forward to the split tenor, then log-linear discount factors.' },
+            CUBIC_SPLINE: { label: 'Cubic spline', bg: '#7c3aed', fg: '#ffffff', description: 'Discount factors joined by a cubic spline.' }
+        },
+        day_count_convention: {
+            A360: { label: 'A360', bg: '#6b7280', fg: '#ffffff', description: 'Actual over 360.' },
+            A365: { label: 'A365', bg: '#6b7280', fg: '#ffffff', description: 'Actual over 365.' },
+            A365F: { label: 'A365F', bg: '#6b7280', fg: '#ffffff', description: 'Actual over 365, fixed.' },
+            '30/360': { label: '30/360', bg: '#6b7280', fg: '#ffffff', description: 'Thirty days a month, 360 a year.' }
+        },
+        tenor_convention: {
+            RATES_SPOT_FORWARD: { label: 'Rates, spot forward', bg: '#0ea5e9', fg: '#ffffff', description: 'The pillars step by anchor offsets from spot.' },
+            RATES_SPOT_FOMC: { label: 'Rates, spot FOMC', bg: '#0ea5e9', fg: '#ffffff', description: 'The pillars step through the meeting schedule.' }
+        },
+        curve_publish_state: {
+            Published: { label: 'Published', bg: '#22c55e', fg: '#ffffff', description: 'The set the desk prices from.' },
+            Withdrawn: { label: 'Withdrawn', bg: '#ef4444', fg: '#ffffff', description: 'The set left use, with a reason.' },
+            Superseded: { label: 'Superseded', bg: '#6b7280', fg: '#ffffff', description: 'A later set replaced it.' }
+        },
+        bootstrap_curve_role: {
+            DEPOSIT: { label: 'Deposit', bg: '#14b8a6', fg: '#ffffff', description: 'A cash deposit, starting today.' },
+            FRA: { label: 'FRA', bg: '#14b8a6', fg: '#ffffff', description: 'A forward rate agreement.' },
+            SWAP: { label: 'Swap', bg: '#14b8a6', fg: '#ffffff', description: 'An interest rate swap.' }
+        }
+    };
+
+    /* One renderer for a coded value, as CodedValue is: the catalogue's pill
+       when it paints the code, and the code itself when it does not. */
+    function coded(domain, code) {
+        var entry = (CATALOGUE[domain] || {})[code];
+        if (!entry) { return '<span class="plaincode">' + esc(code) + '</span>'; }
+        return '<span class="label" style="background:' + entry.bg + ';color:' + entry.fg +
+            '" title="' + esc(entry.description) + '">' + esc(entry.label) + '</span>';
+    }
     function mono(v) { return '<span class="mono">' + esc(v) + '</span>'; }
     function dash() { return '<span class="dash">—</span>'; }
     function bp(code) {
@@ -441,13 +501,7 @@ body.nogaps .gap{display:none}
     function inUse(code) {
         return setsOf(code).filter(function (s) { return s.state === 'Published'; })[0] || null;
     }
-    function roleBadge(role) {
-        return badge(role === 'FUNDING' ? 'ok' : 'pending', role);
-    }
-    function stateBadge(state) {
-        var cls = state === 'Published' ? 'ok' : state === 'Withdrawn' ? 'bad' : 'inactive';
-        return badge(cls, state);
-    }
+
     function relTime(iso) {
         var then = new Date(iso).getTime();
         var now = new Date('2026-10-07T17:20:00Z').getTime();
@@ -656,8 +710,56 @@ body.nogaps .gap{display:none}
         return rows;
     }
 
+    /* The Market data area's cards, in the order the area draws them. The words
+       are the ones the card carries: title, one line, route and the read it needs. */
+    var AREA_CARDS = [
+        {
+            id: 'curveBlueprints', title: 'Curve blueprints', icon: '▤',
+            body: 'The recipes each curve is built from: its pillars, its conventions and the sets it fed.',
+            to: '/market-data/curve-blueprints', permission: 'refdata::ir_curve_bootstrap_configs:read',
+            here: true
+        },
+        {
+            id: 'synthetic', title: 'Synthetic', icon: '◷',
+            body: 'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
+            to: '/market-data/synthetic', permission: 'synthetic::ir_curve_generation_configs:read'
+        },
+        {
+            id: 'subscriptions', title: 'Subscriptions', icon: '☰',
+            body: 'The providers a party takes, with the rights it holds, and the source that serves each one.',
+            to: '/market-data/subscriptions', permission: 'marketdata::subscriptions:read'
+        },
+        {
+            id: 'publishedCurves', title: 'Published curves', icon: '◠',
+            body: 'The sets the desk prices from, the act that published each, and the candidates nobody has approved.',
+            to: '/market-data/published-curves', permission: 'marketdata::curve_snapshots:read'
+        },
+        {
+            id: 'curveEvolution', title: 'Watch a curve evolve', icon: '◴',
+            body: 'Read a curve or surface over a range of instants, and as it stands now.',
+            to: '/market-data/evolution', permission: 'marketdata::curve_snapshots:read'
+        }
+    ];
+
+    function areaSurface() {
+        var out = crumbs([{ t: 'Home', act: 'list' }, { t: 'Market data' }]);
+        out += pagehead('Market data', 'The prices and curves the platform receives or generates.');
+        out += '<div class="tilegrid">' + AREA_CARDS.map(function (c) {
+            return '<button class="tile' + (c.here ? ' here' : '') + '" data-act="' +
+                (c.id === 'curveBlueprints' ? 'list' : 'tile') + '">' +
+                '<span class="glyph" aria-hidden="true">' + c.icon + '</span>' +
+                '<span><span class="nm">' + esc(c.title) + '</span>' +
+                '<span class="body">' + esc(c.body) + '</span></span></button>';
+        }).join('') + '</div>';
+        out += '<p class="listnote">This screen\'s card is <b>Curve blueprints</b>, at ' +
+            '/market-data/curve-blueprints, drawn for a person who holds ' +
+            'refdata::ir_curve_bootstrap_configs:read. The four beside it are the cards the area draws ' +
+            'today, with the words they already carry.</p>';
+        return out;
+    }
+
     function listSurface() {
-        var out = crumbs([{ t: 'Home', act: 'list' }, { t: 'Market data', act: 'list' }, { t: 'Curves' }]);
+        var out = crumbs([{ t: 'Home', act: 'area' }, { t: 'Market data', act: 'area' }, { t: 'Curve blueprints' }]);
         out += pagehead('Curve blueprints',
             'The recipes that turn a raw instrument grid into a discount curve.',
             '<button class="btn" data-act="refresh">↻ Refresh</button>' +
@@ -721,10 +823,10 @@ body.nogaps .gap{display:none}
             return '<tr class="pick ' + (ended ? 'ended' : '') + '" data-act="open" data-arg="' + esc(b.code) + '">' +
                 '<td><span class="key">' + esc(b.code) + '</span>' + left + '</td>' +
                 '<td class="mono">' + esc(b.cur) + '</td>' +
-                '<td>' + roleBadge(b.role) + '</td>' +
+                '<td>' + coded('curve_family_role', b.role) + '</td>' +
                 '<td class="mono">' + esc(b.idx) + '</td>' +
-                '<td class="mono">' + esc(b.interp) + '</td>' +
-                '<td class="mono">' + esc(b.dc) + '</td>' +
+                '<td>' + coded('interpolation_method', b.interp) + '</td>' +
+                '<td>' + coded('day_count_convention', b.dc) + '</td>' +
                 '<td class="num">' + b.pillars.length + '</td>' +
                 '<td class="num">' + b.version + '</td>' +
                 '<td>' + esc(relTime(b.at)) + '</td></tr>';
@@ -752,14 +854,14 @@ body.nogaps .gap{display:none}
         var b = bp(S.bp);
         if (!b) { return listSurface(); }
         var out = crumbs([
-            { t: 'Home', act: 'list' },
-            { t: 'Market data', act: 'list' },
-            { t: 'Curves', act: 'list' },
+            { t: 'Home', act: 'area' },
+            { t: 'Market data', act: 'area' },
+            { t: 'Curve blueprints', act: 'list' },
             { t: b.code }
         ]);
         out += '<div class="pagehead"><div>' +
             '<h1 class="mono">' + esc(b.code) + '</h1>' +
-            '<p class="lead">' + esc(b.cur) + ' · index tenor ' + esc(b.idx) + ' · ' + roleBadge(b.role) +
+            '<p class="lead">' + esc(b.cur) + ' · index tenor ' + esc(b.idx) + ' · ' + coded('curve_family_role', b.role) +
             ' · version ' + b.version + ' <span class="access">Editable</span></p></div>' +
             '<div class="actions">' +
             '<button class="btn" data-act="dlg" data-arg="copy">Copy blueprint</button>' +
@@ -805,16 +907,16 @@ body.nogaps .gap{display:none}
             field('Currency', '<span class="mono">' + esc(b.cur) + '</span>') +
             field('Index tenor', '<span class="mono">' + esc(b.idx) + '</span>',
                 'The tenor of the floating-rate index this curve stands for.') +
-            field('Role', roleBadge(b.role),
+            field('Role', coded('curve_family_role', b.role),
                 b.role === 'FUNDING' ? 'Anchors the discounting of its family.' :
                     'Discounts off a funding curve of the same currency.') +
             field('Discount curve', b.disc ?
                 '<a href="#" data-act="open" data-arg="' + esc(b.disc) + '">' + esc(b.disc) + '</a>' :
                 '<span class="dash">—</span>',
                 b.role === 'FUNDING' ? 'A funding blueprint needs none.' : '') +
-            field('Interpolation method', '<span class="mono">' + esc(b.interp) + '</span>') +
-            field('Day count', '<span class="mono">' + esc(b.dc) + '</span>') +
-            field('Tenor convention', '<span class="mono">' + esc(b.conv) + '</span>') +
+            field('Interpolation method', coded('interpolation_method', b.interp)) +
+            field('Day count', coded('day_count_convention', b.dc)) +
+            field('Tenor convention', coded('tenor_convention', b.conv)) +
             field('Split tenor', '<span class="mono">' + esc(b.split) + '</span>',
                 b.interp === 'FLAT_FORWARD_THEN_LOG_LINEAR' ? 'The knot between the two segments.' :
                     'For a single-segment method this is the last pillar\'s end tenor.') +
@@ -851,7 +953,7 @@ body.nogaps .gap{display:none}
             return '<tr><td class="num">' + p.seq + '</td>' +
                 '<td class="mono">' + esc(p.start) + '</td>' +
                 '<td class="mono">' + esc(p.end) + '</td>' +
-                '<td class="mono">' + esc(p.role) + '</td>' +
+                '<td>' + coded('bootstrap_curve_role', p.role) + '</td>' +
                 '<td class="num">' + p.version + '</td>' +
                 '<td>' + esc(who(p.by)) + '</td>' +
                 '<td>' + esc(relTime(p.at)) + '</td>' +
@@ -931,8 +1033,8 @@ body.nogaps .gap{display:none}
             b.pillars.map(function (p) {
                 var gone = missing.indexOf(p.end) >= 0;
                 return '<tr><td class="num">' + p.seq + '</td><td class="mono">' + esc(p.start) + '</td>' +
-                    '<td class="mono">' + esc(p.end) + '</td><td class="mono">' + esc(p.role) + '</td>' +
-                    '<td>' + (gone ? badge('caution', 'No rate') : badge('ok', 'Observed')) + '</td></tr>';
+                    '<td class="mono">' + esc(p.end) + '</td><td>' + coded('bootstrap_curve_role', p.role) + '</td>' +
+                    '<td>' + (gone ? word('caution', 'No rate') : word('ok', 'Observed')) + '</td></tr>';
             }).join('') + '</tbody></table>' +
             '<p class="listnote">Every pillar resolves to the series its currency, start tenor and index tenor name. ' +
             'No read returns that list for a whole recipe; the screen resolves what it can and says where it could not.</p></div>';
@@ -940,7 +1042,7 @@ body.nogaps .gap{display:none}
         var drawn = points.filter(function (p) { return missing.indexOf(p.tenor) < 0; });
         out += '<div class="panel"><div class="panelhead"><h2>The points <span class="sub">' + drawn.length +
             ' of ' + points.length + ' computed</span></h2>' +
-            '<span class="ml-auto">' + badge(missing.length ? 'caution' : 'ok', missing.length ? 'Built with gaps' : 'Built') +
+            '<span class="ml-auto">' + word(missing.length ? 'caution' : 'ok', missing.length ? 'Built with gaps' : 'Built') +
             '</span></div>' +
             '<table class="rows"><thead><tr><th>Pillar</th><th>Date</th><th>Discount factor</th>' +
             '<th>Instantaneous forward</th></tr></thead><tbody>' +
@@ -1023,7 +1125,7 @@ body.nogaps .gap{display:none}
                     '<td>' + esc(who(s.by)) + '</td>' +
                     '<td>' + esc(relTime(s.published)) + '</td>' +
                     '<td class="num">' + s.points + '</td>' +
-                    '<td>' + stateBadge(s.state) + '</td></tr>';
+                    '<td>' + coded('curve_publish_state', s.state) + '</td></tr>';
             }).join('') + '</tbody></table>' +
             '<p class="listnote">A row opens the published record. The sets are read, never changed here: a ' +
             'withdrawal is its own act with a reason.</p></div>';
@@ -1272,6 +1374,7 @@ body.nogaps .gap{display:none}
 
     function sync() {
         var p = new URLSearchParams();
+        if (S.surface === 'area') { p.set('surface', 'area'); }
         if (S.bp) { p.set('bp', S.bp); }
         if (S.bp && S.tab !== 'details') { p.set('tab', S.tab); }
         if (S.state) { p.set('state', S.state); }
@@ -1299,7 +1402,8 @@ body.nogaps .gap{display:none}
         var out = '';
         var onRecord = S.bp && TABS.indexOf(S.tab) >= 0;
         out += '<span class="label">Screen</span>' +
-            '<button data-act="list" class="' + (!S.bp ? 'on' : '') + '">List</button>';
+            '<button data-act="area" class="' + (S.surface === 'area' ? 'on' : '') + '">Area</button>' +
+            '<button data-act="list" class="' + (S.surface !== 'area' && !S.bp ? 'on' : '') + '">List</button>';
         out += '<span class="sep">|</span><span class="label">Record</span>' +
             BPS.map(function (b) {
                 return '<button data-act="open" data-arg="' + esc(b.code) + '" class="' +
@@ -1347,11 +1451,12 @@ body.nogaps .gap{display:none}
         if (TABS.indexOf(S.tab) < 0) { S.tab = 'details'; }
         if (['rows', 'none', 'nomatch', 'loading', 'error', 'removed'].indexOf(S.state) < 0) { S.state = 'rows'; }
         document.getElementById('shell').innerHTML = shell();
-        var body = S.bp ? recordSurface() : listSurface();
+        var body = S.surface === 'area' ? areaSurface() : (S.bp ? recordSurface() : listSurface());
         document.getElementById('app').innerHTML = body + dialogSurface();
         document.getElementById('bar').innerHTML = bar();
         document.getElementById('note').textContent = 'Prototype · mock data · reads no server · ' +
-            (S.bp ? S.bp + ' · ' + S.tab : 'list · ' + (S.state || 'rows')) + (S.dlg ? ' · ' + S.dlg : '');
+            (S.surface === 'area' ? 'area' : (S.bp ? S.bp + ' · ' + S.tab : 'list · ' + (S.state || 'rows'))) +
+            (S.dlg ? ' · ' + S.dlg : '');
         sync();
         wire();
     }
@@ -1387,7 +1492,7 @@ body.nogaps .gap{display:none}
     }
 
     function openRecord(code) {
-        go({ bp: code, tab: 'details', state: 'rows', dlg: '', pick: '', check: '', notrun: false });
+        go({ surface: 'list', bp: code, tab: 'details', state: 'rows', dlg: '', pick: '', check: '', notrun: false });
     }
 
     document.addEventListener('click', function (ev) {
@@ -1401,7 +1506,9 @@ body.nogaps .gap{display:none}
         ev.preventDefault();
 
         if (act === 'scrim' && ev.target === el) { go({ dlg: '', pick: '' }); return; }
-        if (act === 'list') { go({ bp: '', dlg: '', pick: '', tab: 'details' }); return; }
+        if (act === 'area') { go({ surface: 'area', bp: '', dlg: '', pick: '', tab: 'details' }); return; }
+        if (act === 'list') { go({ surface: 'list', bp: '', dlg: '', pick: '', tab: 'details' }); return; }
+        if (act === 'tile') { return; }
         if (act === 'open') { openRecord(arg); return; }
         if (act === 'tab') { go({ tab: arg }); return; }
         if (act === 'lstate') { go({ state: arg, bp: '', dlg: '' }); return; }

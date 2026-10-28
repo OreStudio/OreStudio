@@ -21,13 +21,15 @@ The curve blueprint screens, as one plain page: the list of the party's
 blueprints, the record page a row opens with five tabs, and the four dialogs the
 record opens. A curve blueprint is the recipe one curve is built from.
 
-The page argues four things. A blueprint is a record a person maintains, so it
+The page argues five things. A blueprint is a record a person maintains, so it
 is a list and a record page rather than a workbench with three modes. Its pillars
 are parts of it, ordered by maturity and not by the order a person typed. Its
 check is a tab, because what a recipe must satisfy is something a person reads
-beside the recipe and not a third of the act of authoring it. And the published
-sets that stand on it belong on the same page, so a person sees what a change
-reaches before making it.
+beside the recipe and not a third of the act of authoring it. The published sets
+that stand on it belong on the same page, so a person sees what a change reaches
+before making it. And every coded value wears the label catalogue's badge, or
+else the code, and never a pill the screen made up. The page also draws the
+Market data card the screen gets on its area page.
 
 It is throwaway. It reads no service, it holds no session, and every value on it
 is mock data. It exists because the journeys settle what a blueprint *is* and
@@ -60,6 +62,7 @@ Switch with the bottom bar, or with the query string.
 
 | Surface | Query | What it draws |
 |---------+-------+---------------|
+| The area page | =?surface=area= | The Market data area's cards, with this screen's card first |
 | List | =?= or =?state=rows= | The party's blueprints, the filters, the states and the pager |
 | Record page | =?bp=USD-SOFR-1D&tab=details= | One blueprint, on one of its five tabs |
 | Add dialog | =?bp=USD-SOFR-1D&dlg=add= | The record dialog, empty |
@@ -75,17 +78,17 @@ The tab is in the address, so a link reopens the page where it was left:
 ** The list
 
 The list follows the record standard: the breadcrumb Home › Market data ›
-Curves, the plural as the title, one sentence, a search, two filters, the table
-and the pager.
+Curve blueprints, the plural as the title, one sentence, a search, two filters,
+the table and the pager.
 
 | Column | What it holds |
 |--------+---------------|
 | Curve | The curve code, monospace, and the first column. Under it, one line of state: *No pillars yet*, *Never published*, or *No set in use since <date>* |
 | Currency | The currency the curve is quoted in |
-| Role | =FUNDING= or =PROJECTION=, as a badge |
-| Index tenor | The tenor of the index the curve stands for |
-| Interpolation | The method that joins the pillars |
-| Day count | The day count applied |
+| Role | =FUNDING= or =PROJECTION=, as its label badge |
+| Index tenor | The tenor of the index the curve stands for, as its code |
+| Interpolation | The method that joins the pillars, as its label badge |
+| Day count | The day count applied, as its label badge |
 | Pillars | How many parts the blueprint holds, right-aligned |
 | Version | The record's version |
 | Last changed | Relative, with the exact value on hover in the product |
@@ -204,12 +207,100 @@ and the role blank, because those are what make it another curve. The delete
 dialog says what is lost, and refuses in the server's own words when a projection
 names the blueprint as its discount curve.
 
+** The coded values and the label catalogue
+
+A coded value is drawn one way and only one way, as the application's =CodedValue=
+does it: a pill in the label catalogue's own shape and colours when the catalogue
+paints the code, and the code itself when it does not. The prototype carries one
+renderer for that, =coded(domain, code)=, and every coded value on the page goes
+through it. The pill is the app's =Label=: a filled pill, 11 pixels, the badge's
+background and text colour, the badge's own name inside it, and the badge's
+description on hover. The screen never builds a pill of its own, and it never
+paints a value the catalogue does not paint.
+
+| Value | Domain | In the catalogue today | Drawn as |
+|-------+--------+------------------------+----------|
+| Curve family role, =FUNDING= and =PROJECTION= | =curve_family_role= | No entry | Badge, proposed below |
+| Interpolation method | =interpolation_method= | No entry | Badge, proposed below |
+| Day count convention | =day_count_convention= | No entry | Badge, proposed below |
+| Tenor convention | =tenor_convention= | No entry | Badge, proposed below |
+| Pillar curve role, =DEPOSIT=, =FRA= and =SWAP= | =bootstrap_curve_role= | No entry | Badge, proposed below |
+| Published set state | =curve_publish_state= | No entry | Badge, proposed below; the published-curves prototype draws the same three words |
+| Index tenor, pillar tenors, split tenor | none | The catalogue paints a tenor's *unit* and *kind* (=tenor_unit=, =tenor_kind=), and no domain keys a tenor code | Plain: the code, monospace |
+| Currency | none | The catalogue paints a currency's tier and nature, and neither is drawn here | Plain: the code, monospace |
+| Output series' type and metric | none | No entry | Plain: the words the series carries |
+| Party | =party_type= | A mapping for each party type | Not drawn: the list is scoped to the session's party, so no cell shows one |
+
+Six domains are proposed, and the note states them as proposals and not as fact:
+the seed holds no entry for any of the six. Until it does, the product screen
+draws the same codes plain, exactly as =CodedValue= does for a field the
+catalogue has not painted. The proposal is what the catalogue needs, and it is
+one row for each code:
+
+| Domain | Code | Badge | Name in the pill | Colour |
+|--------+------+-------+------------------+--------|
+| =curve_family_role= | =FUNDING= | =curve_family_role_funding= | Funding | =#22c55e= |
+| =curve_family_role= | =PROJECTION= | =curve_family_role_projection= | Projection | =#3b82f6= |
+| =interpolation_method= | =LOG_LINEAR_DISCOUNT= | =interpolation_method_log_linear= | Log-linear discount | =#7c3aed= |
+| =interpolation_method= | =FLAT_FORWARD_THEN_LOG_LINEAR= | =interpolation_method_flat_forward= | Flat forward then log-linear | =#7c3aed= |
+| =interpolation_method= | =CUBIC_SPLINE= | =interpolation_method_cubic_spline= | Cubic spline | =#7c3aed= |
+| =day_count_convention= | =A360=, =A365=, =A365F=, =30/360= | =day_count_a360= and three more | The code | =#6b7280= |
+| =tenor_convention= | =RATES_SPOT_FORWARD=, =RATES_SPOT_FOMC= | =tenor_convention_spot_forward= and one more | Rates, spot forward; Rates, spot FOMC | =#0ea5e9= |
+| =bootstrap_curve_role= | =DEPOSIT=, =FRA=, =SWAP= | =bootstrap_curve_role_deposit= and two more | Deposit; FRA; Swap | =#14b8a6= |
+| =curve_publish_state= | =Published=, =Withdrawn=, =Superseded= | =curve_publish_state_published= and two more | The state's word | =#22c55e=, =#ef4444=, =#6b7280= |
+
+The colours are the palette's own, not new ones: =#22c55e= is the catalogue's
+success, =#3b82f6= its info, =#7c3aed= its primary, =#14b8a6= and =#0ea5e9= its
+other informational tones, =#6b7280= its secondary, and =#ef4444= its danger. One
+domain carries one colour except the curve family role, whose two codes are
+painted apart because the value says which curve a curve depends on.
+
+Two things on the page are not coded values and are drawn as words: *Observed*
+and *No rate* say what the market holds for a pillar, and *Built* and *Built with
+gaps* say what the test returned. They are the screen's own sentences about a
+read, so they carry a semantic colour and no pill, and the screen invents no
+catalogue entry for them.
+
+A dialog keeps its select's own text: a control shows the option the person
+chose, and the badge is for a value that is read, not for a control. The
+prototype draws both, and the note records the difference rather than leaving it
+to be found.
+
+** The card on the Market data area
+
+The screen is one card on the Market data area page, in the words and the shape
+the other cards carry. The area's cards are defined once in
+=web/src/shell/cards.ts=, listed in =AREA_CARDS= in the order the page draws
+them, and worded in =web/src/i18n/locales/*.ts=.
+
+| Field | Value |
+|-------+-------|
+| Card id | =curveBlueprints= |
+| Title key | =marketdata.curveBlueprints.title=, whose words are *Curve blueprints* |
+| One line | =marketdata.curveBlueprints.lead=: "The recipes each curve is built from: its pillars, its conventions and the sets it fed." |
+| Route | =/market-data/curve-blueprints=, added to =PATHS= in =web/src/shell/paths.ts= |
+| Record page | =/market-data/curve-blueprints/:key= |
+| Read | =refdata::ir_curve_bootstrap_configs:read=, the permission the generated handler checks |
+| Icon | =document= |
+| Order | First in =AREA_CARDS.marketdata=, before =synthetic=, because a blueprint is where a curve starts |
+| Menu | The area's entry in =MENU= in =web/src/shell/areas.ts= gains the read, so a person who may read a blueprint is offered the area |
+
+The prototype draws the area page at =?surface=area=, with the card first and
+the four cards the area draws today beside it. Those four keep the words they
+already carry, so a reviewer reads the new card against them and not in
+isolation.
+
+The card's words name the record and stop there, as the other cards do: a
+blueprint's pillars, its conventions and the sets it fed. It does not say
+*bootstrap* and it does not say *config*, because the screen says neither.
+
 ** The states
 
 Switch with the bottom bar, or with the query string.
 
 | Surface | State | What it shows |
 |---------+-------+---------------|
+| Area | =?surface=area= | The Market data cards, with this screen's card first and its route and read stated |
 | List | =?state=none= | There are no curve blueprints yet |
 | List | =?state=nomatch= | No curve blueprint matches the search |
 | List | =?state=loading= | Loading, in the body of the table |
@@ -242,12 +333,12 @@ draw.
 
 | Step | Intent | How the prototype covers it | What it does not draw |
 |------+--------+-----------------------------+-----------------------|
-| 1 | List the party's blueprints | The list, with the code first and the state under it | The column menu that hides and orders columns, and the audit columns (RS-LIST-13) |
+| 1 | List the party's blueprints | The list, with the code first, the state line under it, and the role, the interpolation method and the day count as their label badges | The column menu that hides and orders columns, and the audit columns (RS-LIST-13) |
 | 2 | Search and filter | The search over code and currency, the currency and role filters, and the no-match state | A server search: the prototype filters on the page, and RS-LIST-04 wants the filter on the contract |
-| 3 | Open a blueprint and read its fields | The Details tab, the fields in the field table's order, the output series and *Used by* as links | The output series' own read, which is a different component's screen |
+| 3 | Open a blueprint and read its fields | The Details tab, the fields in the field table's order, each coded value as its label badge or its code, the output series and *Used by* as links | The output series' own read, which is a different component's screen |
 | 4 | Read the pillars | The Pillars tab in maturity order, with the empty state and its Add | Nothing |
 | 5 | Add a blueprint | The Add dialog: six fields, plus the discount curve for a projection and the split tenor for the two-segment method; the output series is not asked | The write, and the new page it opens: nothing on the page writes |
-| 6 | Define the pillars | The Add a pillar dialog's three fields, over the parts panel | Editing a pillar: the dialog is drawn in its Add state only, though it is the same shape |
+| 6 | Define the pillars | The Add a pillar dialog's three fields, over the parts panel, whose rows carry the pillar's role as its label badge | Editing a pillar: the dialog is drawn in its Add state only, though it is the same shape |
 | 7 | Read the order, and the refusal a DEPOSIT gets | The panel says the order follows the end tenor; the Check tab names a =DEPOSIT= that does not start at =SPOT= and the act that fixes it | The message under the start tenor field: the standard puts a failed field's message under the field (RS-WRITE-05), and the dialog is not drawn with one |
 | 8 | Change a blueprint | The Edit dialog with the current values, the version it claims, and the discount curve asked when the role becomes =PROJECTION= | The notice for a role change the server refuses, because a projection still discounts off the blueprint; the delete dialog's refusal is the pattern it would use |
 | 9 | Copy a blueprint | The Copy dialog: the conventions and the pillar count carried over, the currency, the index tenor and the role asked | The reason each copied pillar carries: the journey leaves it open |
@@ -256,7 +347,7 @@ draw.
 | 12 | Read what it feeds | The output series and *Used by* on Details | The link to the list filtered by this blueprint when more than three name it: no filter exists to carry it |
 | 13 | Read the history | The History tab: the blueprint's versions and its pillars' in one rail, with the difference of each | The event chart over the entries; Revert is drawn as its words and no dialog |
 | 14 | Delete a blueprint | The delete dialog in both states: what is lost, and the refusal while a projection names it; then the list's notice | The delete that succeeds: nothing on the page writes |
-| 15 | Leave | The breadcrumb and the List control of the bar | Nothing |
+| 15 | Leave | The breadcrumb, which leads back to the Market data area and its card, and the bar's controls | Nothing |
 
 The journey's *retire* has no home on the page, because the record has no status
 and no end date. The nearest expression is drawn: a blueprint whose published
@@ -316,6 +407,13 @@ that its forwards jump and a finding has something to say. =USD-SOFR-1D= carries
 three published sets and is named by another blueprint's discount curve, so the
 Published sets tab and the *Used by* value both have something to hold.
 
+The label catalogue on the page is a proposal and not a read: the six domains
+the curve screens need are not in the seed, so the prototype carries the rows the
+note sets out, and a product screen would draw the same codes plain until the
+catalogue paints them. The area page's five cards are the app's own words for
+four of them and this prototype's words for the fifth, and the four are drawn to
+show the new card in context.
+
 The reviewer should know two assumptions. The role of a blueprint and the
 currency it is quoted in are drawn as the fields the model holds, and the curve
 code is a stand-in for the output series' URI, which the model does not store and
@@ -340,6 +438,8 @@ The product screens would live here:
 | The two charts | =web/src/marketdata/LineChart.tsx=, as the check tab draws them |
 | The list, the record and the writes | The BFF's record routes, which need an entry in =REFDATA_RECORDS= in =wire-protocol/src/records.ts= and a write schema in =bff/src/records.ts=; the subjects exist in the generated protocol |
 | The check | A read over =marketdata.v1.ops.compute_curve=, which has a handler and no web route, and the checks the screen derives |
+| The area card | A =curveBlueprints= entry in =web/src/shell/cards.ts=, its id in =AREA_CARDS.marketdata=, its route in =PATHS=, its read in the Market data entry of =MENU=, and its two strings in each locale |
+| The label badges | Six domains in the badge seed, =projects/ores.sql/populate/dq/dq_badge_system_populate.sql=, and nothing in the screen: the screen reads =CodedValue= and the catalogue paints what it paints |
 
 Three reads are missing, and the note names them where the screen draws them: a
 filter by =bootstrap_config_id= on the pillars and on the published curves, and
@@ -350,14 +450,22 @@ one operation that answers a blueprint's dependants.
 Open. It is offered for sign-off as the shape of the two journeys' screens: the
 list with its state line, the record page with five tabs and no button that
 repeats one, the pillars as parts in maturity order, the Check tab with its six
-checks and its two lines, the published sets on the record, and four dialogs with
-eight fields between them.
+checks and its two lines, the published sets on the record, four dialogs with
+eight fields between them, the label catalogue's badges on every coded value, and
+the screen's card on the Market data area.
 
 What sign-off settles is that the Qt window is not the web's layout: a record
 page is where a person acts on a blueprint, and the test is a tab a person
 arrives at rather than the third panel of an editor.
 
 ** What it does not settle
+
+The badge catalogue. Six domains carry the codes this screen draws, and the seed
+holds none of them. Whether the seed gains all six, whether the curve family role
+keeps two colours where the other five domains carry one, and whether the three
+words of a published set state belong to this screen or to the published-curves
+one, are the catalogue's decisions. The prototype's rows are the proposal the
+note sets out, and a screen draws plain until the catalogue is seeded.
 
 The place in the menu. The
 [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] gives Market data

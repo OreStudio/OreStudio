@@ -1,0 +1,56 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: History-provider registrar composition
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/*/core/**"
+      - "projects/ores.codegen/scripts/check_history_registrar_composition.py"
+      - "projects/ores.codegen/tests/test_check_history_registrar_composition.py"
+      - ".github/workflows/history-registrar-composition.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # A component generates one history-provider registrar per audited entity,
+  # and something has to call each of them to put the provider in the dispatch
+  # registry. A registrar nothing calls leaves the entity's history verb
+  # answering "No history provider registered for entity_type", while the
+  # generated code, the build and every other subject look healthy. This job
+  # fails when a registrar of a checked component is left uncomposed.
+  history-registrars:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every generated history-provider registrar is composed
+        run: |
+          python3 projects/ores.codegen/scripts/check_history_registrar_composition.py
+      - name: Install test dependencies
+        run: |
+          pip install --quiet pytest
+      - name: Test the check
+        run: |
+          python3 -m pytest projects/ores.codegen/tests/test_check_history_registrar_composition.py -q

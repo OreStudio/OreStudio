@@ -784,6 +784,15 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_event_registrar_composition.py"),
         classes=("services", "cpp", "modeling", "codegen"),
     ),
+    # A history provider nothing registers answers every request with "No
+    # history provider registered for entity_type". No build, check or screen
+    # catches that: the generated file compiles and the service serves.
+    Check(
+        id="history-registrars",
+        title="Every generated history-provider registrar is composed",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_history_registrar_composition.py"),
+        classes=("services", "cpp", "modeling", "codegen"),
+    ),
     # A durable subject with no stream times out at the publisher, and two
     # streams over one subject stop the second service starting. The server
     # refuses both, so no running broker can show them; the check reads the

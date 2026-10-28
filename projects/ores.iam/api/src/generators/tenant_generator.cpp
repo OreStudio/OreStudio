@@ -47,20 +47,28 @@ domain::tenant generate_synthetic_tenant(utility::generation::generation_context
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = // no_generator_suffix: the "-<idx>" the template appends is not a shape this
-             // code may have, so the index that keeps it unique is joined with an
-             // underscore instead, and the noun is lowercased because a faker noun can be
-             // an abbreviation such as "CD".
+             // code may have, and the index starts again with every run, so a second run
+             // against the same database would ask for codes the first run's tenants hold.
+             // The index is joined with an underscore and followed by eight hex digits of
+             // a uuid, and the noun is lowercased because a faker noun can be an
+             // abbreviation such as "CD".
         [idx] {
             std::string code(faker::word::noun());
             for (auto& character : code)
                 if (character >= 'A' && character <= 'Z')
                     character = static_cast<char>(character - 'A' + 'a');
-            return code + "_tenant_" + std::to_string(idx);
+            return code + "_tenant_" + std::to_string(idx) + "_" +
+                   std::string(faker::string::uuidV4()).substr(0, 8);
         }();
     r.name = std::string(faker::company::companyName());
     r.type = "automation";
     r.description = std::string(faker::lorem::sentence());
-    r.hostname = std::string(faker::word::noun()) + ".example.com" + "-" + std::to_string(idx);
+    r.hostname = // no_generator_suffix: the "-<idx>" the template appends is a process counter
+                 // that starts again with every run, so a second run against the same database
+                 // would ask for hostnames the first run's tenants hold. The hostname carries
+                 // eight hex digits of a uuid instead.
+        std::string(faker::word::noun()) + "-" + std::string(faker::string::uuidV4()).substr(0, 8) +
+        ".example.com";
     r.status = "active";
     r.is_registration_default = false;
     r.modified_by = modified_by;

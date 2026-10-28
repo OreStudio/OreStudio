@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 9BB217A3-C60C-482C-9384-DC2E7DF8E322
+:END:
+#+title: Story: Let the plan state domain rows, not a bag
+#+description: The trade population describes each trade twice: once in a per-asset-class *_terms bag and once in the domain rows the writer builds from it. The bag mixes the generator's drawing parameters with the product's economic content, so a product can be assembled from whichever fields happen to be present and eight SQL refusals police the difference. Let the plan carry the domain rows, construct products by name so an illegal combination cannot be stated, and reduce the writer to a persister.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A trade has one description, in the domain. The planner draws a product and constructs the domain's own rows; the writer persists them. The per-asset-class =*_terms= bag disappears, and a product can no longer be assembled from whichever fields happen to be present.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-28                               |
+
+* Acceptance
+
+- No =*_terms= bag remains, and the plan states the domain's own rows.
+- Every routed product is constructed by a named constructor that states what that product is, and that constructor cannot fill a column the product does not have.
+- The writer persists and no longer translates.
+- The families that book today still book, proved by a provisioning run and not by a unit test alone.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0FF2943A-687E-434A-A673-ACD9C10CEF06][Scaffold story: Let the plan state domain rows, not a bag]] | STARTED | 2026-10-28 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E68EF41E-CF67-4B93-9787-E24D278FAFBB][Implement Let the plan state domain rows, not a bag]] | BACKLOG | | | Initial task for: Let the plan state domain rows, not a bag |
+
+* Decisions
+
+- *Constructors beside the types, not in the synthetic component.* The
+  couplings are facts about the products, so they live with the products. The
+  synthetic component then depends on the trading domain the way any producer
+  does, which it already does through the writer.
+- *One family at a time.* Each family's move deletes that family's bag and
+  proves itself with a run, so there is never a state where nothing books.
+- *The config and the scope stay.* They are the generator's own language and
+  they do not describe trades.
+
+* Out of scope
+
+- The trading model's own normalisation, where several products share a table
+  and a check constraint says which columns each may fill. That stays as the
+  backstop; this story stops a generator from having to guess at it.
+
+* Why
+
+The synthetic population carries each trade's values in a per-asset-class bag.
+=trade_terms= is a =std::variant= of =bond_terms=, =commodity_terms=,
+=rate_terms=, =fx_terms=, =equity_terms= and now =credit_terms=, and
+=equity_terms= alone is about forty members. A planner fills the bag and a
+writer reads it and constructs the trading domain's rows from it.
+
+The cost is measured. In one family the bag let eight values through that the
+schema refuses, and each one was found by a provisioning run: a target on an
+accumulator, an option type on a touch, a forward with no quantity, a swap
+returning a value nobody defined, a kind that named a classification rather than
+a vocabulary. None of them was visible by reading the schema, because the
+invariant is not in the schema a reader reads; it is in the check constraints.
+
+* What the bag is
+
+Three kinds of thing mixed together:
+
+| Kind | Examples | Owner |
+|------+----------+-------|
+| The generator's own facts | book, counterparty, trader, trade date, netting set, trade id | the generator |
+| Drawing parameters | seed, tenor band, notional band, which catalogue | the generator |
+| The product's economic content | strike, expiry, barrier, basket | the domain |
+
+Only the first two are the generator's language. The third belongs to the
+domain, and the bag is a second, weaker description of it.
+
+It is not an anti-corruption layer: an ACL translates once, at a boundary, in
+one direction, against a contract a test can hold still. This bag is interpreted
+independently by both ends, is per asset class rather than per product, and
+leaves the product's identity as a string that the writer branches on.
+
+* The defect underneath
+
+The trading model states a product's identity as data: a =trade_type_code=
+column plus check constraints naming the columns each code may fill. That is a
+legitimate storage normalisation -- two products whose facts coincide share a
+table -- but it puts half of a product's type in SQL, where a generator cannot
+see it.
+
+So this story is not only about the bag. It is about giving a product one
+description, in the domain, and a way to construct it that cannot state an
+illegal combination.
+
+* The model
+
+| Part | Owner | What it is |
+|------+-------+------------|
+| =trade_generation_config= | generator | A specification: asset class, book, bands, seed, counts. |
+| the scope | generator | The resolved drawing context: party, books, counterparties, catalogues, as-of date, seed. |
+| the population | domain | A list of trades: a trade envelope and its instrument batch. |
+
+The planner draws the product and constructs the domain rows; the writer
+persists them. The generator keeps specification and drawing and stops
+describing products.
+
+The couplings move into named constructors beside the types, one per routed
+product, each taking that product's own facts and filling exactly the columns it
+states. The rule becomes: *a product is constructed, never assembled*. The SQL
+check stays as the backstop it should always have been.
+
+* Design record
+
+The reasoning is written up in
+[[file:../../../../knowledge/domain/what-a-trade-population-is-made-of.org][What a trade population is made of]],
+which states the three kinds of thing, the defect underneath and the order of
+work.

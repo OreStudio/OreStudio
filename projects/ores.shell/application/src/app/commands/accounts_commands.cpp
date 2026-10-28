@@ -179,8 +179,8 @@ void accounts_commands::process_login(std::ostream& out,
                                       std::string principal,
                                       std::string password) {
     iam::messaging::login_request req;
-    req.principal = std::move(principal);
-    req.password = std::move(password);
+    req.principal = principal;
+    req.password = password;
 
     auto result = do_request<iam::messaging::login_response>(
         out, session, iam::messaging::login_request::nats_subject, req);
@@ -195,6 +195,11 @@ void accounts_commands::process_login(std::ostream& out,
     auto selected = complete_login(out, session, *result);
     if (!selected)
         return;
+
+    // A command that outlives this session's token is renewed with the
+    // credentials just entered, rather than ending with a request to log in.
+    session.set_session_renewer(
+        [&session, principal, password] { return sign_in_again(session, principal, password); });
 
     out << "✓ Login successful!" << std::endl;
     out << "  User: " << result->username << std::endl;

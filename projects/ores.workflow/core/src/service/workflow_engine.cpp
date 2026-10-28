@@ -218,6 +218,18 @@ std::string component_of_subject(const std::string& subject) {
     return dot == std::string::npos ? subject : subject.substr(0, dot);
 }
 
+/**
+ * @brief How many step budgets a command may wait in a queue before it fails.
+ *
+ * A step no worker has claimed is not silent, so its budget measures the wrong
+ * thing and the sweep waits. But waiting must end: a service that is alive and
+ * reporting, with no consumer bound to the command's stream, would otherwise
+ * hold the step for ever and leave the run in progress with no error. Ten
+ * budgets is long enough for any queue this deployment produces and short
+ * enough that a missing consumer is reported rather than waited out.
+ */
+constexpr int unclaimed_queue_budget_multiple = 10;
+
 /// Whether a service name is the one a component's commands belong to.
 bool service_owns_component(const std::string& service_name, const std::string& component) {
     return service_name == "ores." + component + ".service" ||
@@ -1278,25 +1290,39 @@ void workflow_engine::recover_in_progress() {
     BOOST_LOG_SEV(lg(), info) << "Workflow recovery pass complete.";
 }
 
+std::optional<std::chrono::system_clock::time_point>
+workflow_engine::last_seen_of(const std::string& subject) {
+    const auto component = component_of_subject(subject);
+    std::optional<std::chrono::system_clock::time_point> last_seen;
+    const std::lock_guard<std::mutex> guard(service_last_seen_mutex_);
+    for (const auto& [name, seen_at] : service_last_seen_) {
+        if (service_owns_component(name, component) && (!last_seen || seen_at > *last_seen))
+            last_seen = seen_at;
+    }
+    return last_seen;
+}
+
 std::string workflow_engine::deadline_failure_text(const domain::workflow_step& step,
                                                    std::chrono::seconds budget,
-                                                   std::chrono::seconds silent_for) {
+                                                   std::chrono::seconds silent_for,
+                                                   bool claimed) {
     std::string reason = "The step did not answer within " + describe_seconds(budget) +
                          " of its command being published (subject " + step.command_subject +
                          "); it has been silent for " + describe_seconds(silent_for) + ".";
+
+    if (!claimed) {
+        reason += " No worker ever claimed it, so it waited in the " +
+                  component_of_subject(step.command_subject) +
+                  " service's queue for its whole budget and longer; the command may have had "
+                  "no consumer bound to it.";
+        return reason;
+    }
 
     // What the engine knows about the service that owes this step an answer.
     // It states the evidence and stops there: a service that is running but
     // wedged reports for duty as well, so presence is not proof of handling.
     const auto component = component_of_subject(step.command_subject);
-    std::optional<std::chrono::system_clock::time_point> last_seen;
-    {
-        const std::lock_guard<std::mutex> guard(service_last_seen_mutex_);
-        for (const auto& [name, seen_at] : service_last_seen_) {
-            if (service_owns_component(name, component) && (!last_seen || seen_at > *last_seen))
-                last_seen = seen_at;
-        }
-    }
+    const auto last_seen = last_seen_of(step.command_subject);
 
     if (!last_seen) {
         reason += " Nothing has reported as the " + component +
@@ -1385,13 +1411,47 @@ std::size_t workflow_engine::expire_overdue_steps() {
                 ++it;
                 continue;
             }
+            /*
+             * A step no worker has taken holds no claim, and a step with no
+             * claim has not gone silent: its command is still queued behind
+             * whatever that service is running. Counting that queue as silence
+             * fails a healthy step for the load of the service it waits on,
+             * which is how a provisioning step that had waited two minutes
+             * behind a password change was failed without ever starting.
+             *
+             * The deadline still catches a command whose service has stopped
+             * reporting, because then nothing is coming back for it: the
+             * engine must not wait for a handler that is not there.
+             */
+            const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
+            if (!claimed_at) {
+                const auto seen = last_seen_of(step.command_subject);
+                const auto queued_for =
+                    std::chrono::duration_cast<std::chrono::seconds>(now -
+                                                                    *step.command_published_at);
+                if (seen && *seen >= *step.command_published_at &&
+                    queued_for < waiting.budget * unclaimed_queue_budget_multiple) {
+                    ++it;
+                    continue;
+                }
+            }
+            /*
+             * Silence is measured from the later of the dispatch and the claim:
+             * a worker taking the step is the first moment the work could go
+             * silent, so a command that waited in a queue still gets the whole
+             * budget once someone takes it.
+             */
+            const auto since = claimed_at && *claimed_at > *step.command_published_at
+                                   ? *claimed_at
+                                   : *step.command_published_at;
             const auto silent_for =
-                std::chrono::duration_cast<std::chrono::seconds>(now - *step.command_published_at);
+                std::chrono::duration_cast<std::chrono::seconds>(now - since);
             if (silent_for < waiting.budget) {
                 ++it;
                 continue;
             }
-            const auto reason = deadline_failure_text(step, waiting.budget, silent_for);
+            const auto reason =
+                deadline_failure_text(step, waiting.budget, silent_for, claimed_at.has_value());
             BOOST_LOG_SEV(lg(), error) << "Step outlived its deadline:" << " workflow="
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;
@@ -1516,6 +1576,16 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
     set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
     publish_command(*target, instance.id, instance.tenant_id.to_uuid());
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
+
+    /*
+     * The resumed step is watched from here, exactly as a dispatched one is:
+     * the sweep walks the steps the engine handed out, and a retry hands one
+     * out just as a start does. Its clock is restamped for the same reason a
+     * recovery restamps it -- the budget belongs to this attempt, not to the
+     * failed one it replaces.
+     */
+    note_awaiting(*target, instance.id, instance.tenant_id.to_uuid());
+    stamp_command_published(target->id);
 
     BOOST_LOG_SEV(lg(), info) << "Retried step " << target->step_index << " (" << target->name
                               << ") for instance " << instance_id_str;

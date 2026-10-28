@@ -23,12 +23,15 @@
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_period.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <array>
 #include <chrono>
@@ -37,6 +40,7 @@
 #include <optional>
 #include <span>
 #include <stdexcept>
+#include <vector>
 #include <string>
 #include <string_view>
 
@@ -297,7 +301,37 @@ struct equity_forward_terms final {
 };
 
 /**
- * @brief The facts an equity swap states, other than its children.
+ * @brief The facts one member of a basket states.
+ */
+struct equity_basket_member_terms final {
+    std::string underlying_name;
+    std::string underlying_kind;
+    std::optional<double> weight;
+    std::optional<decimal> initial_price;
+};
+
+/**
+ * @brief The facts one period of a basket swap states.
+ */
+struct equity_swap_period_terms final {
+    std::chrono::year_month_day period_date;
+    std::optional<double> knock_out_level;
+    std::optional<double> fixed_trigger_level;
+};
+
+/**
+ * @brief The facts one range bound of an accumulator states.
+ *
+ * The bound's start date is the product's, so it is not repeated here.
+ */
+struct equity_range_bound_terms final {
+    std::optional<decimal> range_from;
+    std::optional<decimal> range_to;
+    std::optional<double> leverage;
+};
+
+/**
+ * @brief The facts an equity swap states, including its children.
  */
 struct equity_swap_terms final {
     std::string underlying_name;
@@ -308,6 +342,8 @@ struct equity_swap_terms final {
     std::chrono::year_month_day maturity_date;
     std::string long_short;
     std::string payment_frequency_code;
+    std::vector<equity_basket_member_terms> basket;
+    std::vector<equity_swap_period_terms> periods;
 };
 
 /**
@@ -324,6 +360,8 @@ struct equity_basket_swap_terms final {
     std::chrono::year_month_day maturity_date;
     std::string long_short;
     std::string payment_frequency_code;
+    std::vector<equity_basket_member_terms> basket;
+    std::vector<equity_swap_period_terms> periods;
 };
 
 /**
@@ -356,6 +394,7 @@ struct equity_accumulator_terms final {
     std::string long_short;
     std::optional<decimal> knock_out_level;
     std::string payoff_type;
+    std::vector<equity_range_bound_terms> range_bounds;
 };
 
 /**
@@ -377,6 +416,24 @@ struct equity_tarf_terms final {
     std::string payoff_type;
     decimal target_amount;
     std::string target_type;
+    std::vector<equity_range_bound_terms> range_bounds;
+};
+
+/**
+ * @brief An equity swap and the rows its children state.
+ */
+struct equity_swap_product final {
+    equity_swap_instrument row;
+    std::vector<equity_basket_constituent> constituents;
+    std::vector<equity_swap_period> periods;
+};
+
+/**
+ * @brief An equity accumulator and the rows its children state.
+ */
+struct equity_accumulator_product final {
+    equity_accumulator_instrument row;
+    std::vector<range_bound> range_bounds;
 };
 
 /**
@@ -704,23 +761,109 @@ swap_common(std::string_view product, const std::string& trade_type_code,
 
 }
 
-[[nodiscard]] inline equity_swap_instrument construct_equity_swap(const equity_swap_terms& terms) {
+namespace equity_builders {
+
+/**
+ * @brief Numbers the basket's members in the order they were given.
+ */
+inline std::vector<equity_basket_constituent>
+basket_rows(std::string_view product, const std::vector<equity_basket_member_terms>& members) {
     using namespace equity_terms;
-    require_text("equity swap", "an underlying name", terms.underlying_name);
-    auto row = equity_builders::swap_common("equity swap", "EquitySwap", terms.currency,
-                                            terms.notional, terms.return_type, terms.start_date,
-                                            terms.maturity_date, terms.long_short,
-                                            terms.payment_frequency_code);
-    row.underlying_name = terms.underlying_name;
-    return row;
+    std::vector<equity_basket_constituent> rows;
+    rows.reserve(members.size());
+    int ordinal = 1;
+    for (const auto& member : members) {
+        require_text(product, "a name for each of its members", member.underlying_name);
+        require_text(product, "a kind for each of its members", member.underlying_kind);
+        if (member.weight.has_value() && !(*member.weight > 0.0 && std::isfinite(*member.weight)))
+            refuse(product, "a positive weight where it states one");
+        equity_basket_constituent row;
+        row.sequence_number = ordinal++;
+        row.underlying_name = member.underlying_name;
+        row.underlying_kind = member.underlying_kind;
+        row.weight = member.weight;
+        row.initial_price = member.initial_price;
+        rows.push_back(row);
+    }
+    return rows;
 }
 
-[[nodiscard]] inline equity_swap_instrument
+/**
+ * @brief Numbers the periods in the order they were given.
+ */
+inline std::vector<equity_swap_period>
+period_rows(std::string_view product, const std::vector<equity_swap_period_terms>& periods) {
+    using namespace equity_terms;
+    std::vector<equity_swap_period> rows;
+    rows.reserve(periods.size());
+    int ordinal = 1;
+    for (const auto& period : periods) {
+        require_date(product, "a date for each of its periods", period.period_date);
+        equity_swap_period row;
+        row.sequence_number = ordinal++;
+        row.period_date = period.period_date;
+        row.knock_out_level = period.knock_out_level;
+        row.fixed_trigger_level = period.fixed_trigger_level;
+        rows.push_back(row);
+    }
+    return rows;
+}
+
+/**
+ * @brief Numbers the range bounds and states the product's start date on each.
+ */
+inline std::vector<range_bound>
+range_bound_rows(std::string_view product, std::chrono::year_month_day start_date,
+                 const std::vector<equity_range_bound_terms>& bounds) {
+    using namespace equity_terms;
+    std::vector<range_bound> rows;
+    rows.reserve(bounds.size());
+    int ordinal = 1;
+    for (const auto& bound : bounds) {
+        if (!bound.range_from.has_value() && !bound.range_to.has_value())
+            refuse(product, "a lower or an upper bound on each of its ranges");
+        if (bound.leverage.has_value() && !std::isfinite(*bound.leverage))
+            refuse(product, "a finite leverage on each of its ranges");
+        range_bound row;
+        row.sequence_number = ordinal++;
+        row.start_date = start_date;
+        row.range_from = bound.range_from;
+        row.range_to = bound.range_to;
+        row.leverage = bound.leverage;
+        rows.push_back(row);
+    }
+    return rows;
+}
+
+}
+
+[[nodiscard]] inline equity_swap_product construct_equity_swap(const equity_swap_terms& terms) {
+    using namespace equity_terms;
+    require_text("equity swap", "an underlying name", terms.underlying_name);
+    equity_swap_product product;
+    product.row = equity_builders::swap_common("equity swap", "EquitySwap", terms.currency,
+                                               terms.notional, terms.return_type, terms.start_date,
+                                               terms.maturity_date, terms.long_short,
+                                               terms.payment_frequency_code);
+    product.row.underlying_name = terms.underlying_name;
+    product.constituents = equity_builders::basket_rows("equity swap", terms.basket);
+    product.periods = equity_builders::period_rows("equity swap", terms.periods);
+    return product;
+}
+
+[[nodiscard]] inline equity_swap_product
 construct_equity_worst_of_basket_swap(const equity_basket_swap_terms& terms) {
-    return equity_builders::swap_common("equity worst-of basket swap", "EquityWorstOfBasketSwap",
-                                        terms.currency, terms.notional, terms.return_type,
-                                        terms.start_date, terms.maturity_date, terms.long_short,
-                                        terms.payment_frequency_code);
+    using namespace equity_terms;
+    if (terms.basket.empty())
+        refuse("equity worst-of basket swap", "a basket, because that is what it is worst of");
+    equity_swap_product product;
+    product.row = equity_builders::swap_common(
+        "equity worst-of basket swap", "EquityWorstOfBasketSwap", terms.currency, terms.notional,
+        terms.return_type, terms.start_date, terms.maturity_date, terms.long_short,
+        terms.payment_frequency_code);
+    product.constituents = equity_builders::basket_rows("equity worst-of basket swap", terms.basket);
+    product.periods = equity_builders::period_rows("equity worst-of basket swap", terms.periods);
+    return product;
 }
 
 [[nodiscard]] inline equity_variance_swap_instrument
@@ -786,28 +929,35 @@ accumulator_common(std::string_view product, const std::string& trade_type_code,
 
 }
 
-[[nodiscard]] inline equity_accumulator_instrument
+[[nodiscard]] inline equity_accumulator_product
 construct_equity_accumulator(const equity_accumulator_terms& terms) {
-    return equity_builders::accumulator_common(
+    equity_accumulator_product product;
+    product.row = equity_builders::accumulator_common(
         "equity accumulator", "EquityAccumulator", terms.underlying_name, terms.currency,
         terms.strike, terms.fixing_amount, terms.start_date, terms.expiry_date,
         terms.fixing_frequency, terms.long_short, terms.knock_out_level, terms.payoff_type);
+    product.range_bounds = equity_builders::range_bound_rows("equity accumulator", terms.start_date,
+                                                             terms.range_bounds);
+    return product;
 }
 
-[[nodiscard]] inline equity_accumulator_instrument
+[[nodiscard]] inline equity_accumulator_product
 construct_equity_target_redemption_forward(const equity_tarf_terms& terms) {
     using namespace equity_terms;
     require_money("equity target redemption forward", "a positive target amount",
                   terms.target_amount);
     require_one_of("equity target redemption forward", "a target type the table holds",
                    terms.target_type, target_types);
-    auto row = equity_builders::accumulator_common(
+    equity_accumulator_product product;
+    product.row = equity_builders::accumulator_common(
         "equity target redemption forward", "EquityTaRF", terms.underlying_name, terms.currency,
         terms.strike, terms.fixing_amount, terms.start_date, terms.expiry_date,
         terms.fixing_frequency, terms.long_short, terms.knock_out_level, terms.payoff_type);
-    row.target_amount = terms.target_amount;
-    row.target_type = terms.target_type;
-    return row;
+    product.row.target_amount = terms.target_amount;
+    product.row.target_type = terms.target_type;
+    product.range_bounds = equity_builders::range_bound_rows(
+        "equity target redemption forward", terms.start_date, terms.range_bounds);
+    return product;
 }
 
 namespace equity_builders {

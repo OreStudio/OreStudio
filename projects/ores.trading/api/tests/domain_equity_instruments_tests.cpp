@@ -207,10 +207,18 @@ TEST_CASE("an_accumulator_states_no_target_and_a_tarf_requires_one", "[domain]")
     accumulator.long_short = "Long";
     accumulator.payoff_type = "Accumulator";
 
+    accumulator.range_bounds.push_back({money("4400"), std::nullopt, 1.0});
+    accumulator.range_bounds.push_back({std::nullopt, money("4600"), 2.0});
+
     const auto sut = construct_equity_accumulator(accumulator);
-    CHECK(sut.identity.trade_type_code == "EquityAccumulator");
-    CHECK_FALSE(sut.target_amount.has_value());
-    CHECK(sut.target_type.empty());
+    CHECK(sut.row.identity.trade_type_code == "EquityAccumulator");
+    CHECK_FALSE(sut.row.target_amount.has_value());
+    CHECK(sut.row.target_type.empty());
+    REQUIRE(sut.range_bounds.size() == 2);
+    CHECK(sut.range_bounds[0].sequence_number == 1);
+    CHECK(sut.range_bounds[0].range_from->to_string() == "4400");
+    CHECK(sut.range_bounds[1].sequence_number == 2);
+    CHECK(sut.range_bounds[1].leverage.has_value());
 }
 
 TEST_CASE("a_forward_without_a_quantity_is_refused", "[domain]") {
@@ -228,6 +236,22 @@ TEST_CASE("a_forward_without_a_quantity_is_refused", "[domain]") {
     CHECK_THROWS_AS(construct_equity_forward(terms), equity_product_error);
 }
 
+TEST_CASE("a_worst_of_basket_swap_without_a_basket_is_refused", "[domain]") {
+    auto lg(make_logger(test_suite));
+
+    equity_basket_swap_terms terms;
+    terms.currency = "USD";
+    terms.notional = money("1000000");
+    terms.return_type = "Price";
+    terms.start_date = a_date();
+    terms.maturity_date = a_date();
+    terms.long_short = "Long";
+    terms.payment_frequency_code = "Quarterly";
+    BOOST_LOG_SEV(lg, info) << "Refusing a worst-of basket with no members";
+
+    CHECK_THROWS_AS(construct_equity_worst_of_basket_swap(terms), equity_product_error);
+}
+
 TEST_CASE("a_worst_of_basket_swap_states_no_single_underlying", "[domain]") {
     auto lg(make_logger(test_suite));
 
@@ -240,10 +264,19 @@ TEST_CASE("a_worst_of_basket_swap_states_no_single_underlying", "[domain]") {
     terms.long_short = "Long";
     terms.payment_frequency_code = "Quarterly";
 
-    const auto sut = construct_equity_worst_of_basket_swap(terms);
-    BOOST_LOG_SEV(lg, info) << "Basket swap type: " << sut.identity.trade_type_code;
+    terms.basket.push_back({".SPX", "equity", 0.5, money("4500")});
+    terms.basket.push_back({".NDX", "equity", 0.5, money("15000")});
+    terms.periods.push_back({a_date(), std::nullopt, std::nullopt});
 
-    CHECK(sut.identity.trade_type_code == "EquityWorstOfBasketSwap");
-    CHECK(sut.underlying_name.empty());
-    CHECK(sut.return_type == "Price");
+    const auto sut = construct_equity_worst_of_basket_swap(terms);
+    BOOST_LOG_SEV(lg, info) << "Basket swap type: " << sut.row.identity.trade_type_code;
+
+    CHECK(sut.row.identity.trade_type_code == "EquityWorstOfBasketSwap");
+    CHECK(sut.row.underlying_name.empty());
+    CHECK(sut.row.return_type == "Price");
+    REQUIRE(sut.constituents.size() == 2);
+    CHECK(sut.constituents[0].sequence_number == 1);
+    CHECK(sut.constituents[1].underlying_name == ".NDX");
+    REQUIRE(sut.periods.size() == 1);
+    CHECK(sut.periods[0].sequence_number == 1);
 }

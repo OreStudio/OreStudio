@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 5CDF5CAE-5201-4EC8-AC42-DBA07E048428
+:END:
+#+title: Task: Construct the children with their product
+#+description: A swap's constituents and periods and an accumulator's range bounds are still assembled by the writer after the header row is constructed. They are part of the product, so the constructor that states the product states them too, numbered in the order it was given them.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/construct-the-children-with-their-product
+#+pr: 4028
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A product with children is constructed whole. The writer appends what the constructor returned instead of rebuilding the children from the bag, so a basket swap cannot be constructed without a basket and the children's ordinals come from one place.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The basket swap's constructor refuses an empty basket and numbers its constituents and periods.
+- The accumulator's constructor numbers the range bounds it is given, taking their start date from the product rather than from the bag.
+- The writer appends the constructed children and stamps their audit columns; it assembles no child itself.
+- A provisioning run books the equity family with the same rows and the same children, and the suites are green.
+
+* Plan
+
+A product with children returns them: =equity_swap_product= holds the swap's
+row, its constituents and its periods, and =equity_accumulator_product= holds
+the accumulator's row and its range bounds. The constructor numbers the
+children from the order it was given them, so no caller can leave a gap or a
+duplicate.
+
+The terms gain the children as their own fact structs, so a caller states
+what a member or a bound is rather than a row's fields. A bound's start date
+is the product's, so it is stated once.
+
+The writer keeps only the audit stamp: it appends what the constructor
+returned and fills the audit columns, which is persistence and not product.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Equity rows after provisioning | 17 | =compass db sql= over the nine =ores_trading_equity_*_instruments_tbl= tables | =b9b59be0dd= |
+| Basket constituents and periods | 2 and 4, numbered 1..n | the same, on the two child tables | =b9b59be0dd= |
+| Range bounds | 4 across 3 accumulator rows | the same, on =ores_trading_range_bounds_tbl= | =b9b59be0dd= |
+| =ores.trading.api.tests= | 447 assertions in 116 test cases | the suite binary | =b9b59be0dd= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =b9b59be0dd= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4028][#4028]] | [trading] Construct a product's children with the product |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A product with children is constructed whole. The swap's and the accumulator's
+constructors return their children alongside their row, numbering each child
+from the order the terms stated it. A worst-of basket swap with an empty
+basket is refused, which was previously an unstated assumption: the writer
+looped over whatever the bag held, so a basket swap could be constructed with
+no members and the database would accept it.
+
+Proved by a provisioning run on a recreated database: =generate_trades=
+completed, the family holds the same 17 rows, the same 2 constituents and 4
+periods numbered from one, and the same 4 range bounds over 3 accumulator
+rows. Both suites are green: =ores.trading.api.tests= at 447 assertions in 116
+test cases, =ores.synthetic.core.tests= at 1733 assertions in 78.
+
+The branch is held locally until PR #4025 merges, so that this lands as its
+own change against main rather than as a stack.

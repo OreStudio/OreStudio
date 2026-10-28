@@ -781,20 +781,6 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.change_commentary = "Generated trade population.";
         };
 
-        /// The bounds an accumulator or a target redemption forward observes.
-        const auto append_range_bounds = [&] {
-            std::uint32_t ordinal = 1;
-            for (const auto& bound : equity->range_bounds) {
-                ores::trading::domain::range_bound child;
-                child.sequence_number = static_cast<int>(ordinal++);
-                child.start_date = equity->start_date;
-                child.range_from = maybe_money(bound.range_from);
-                child.range_to = maybe_money(bound.range_to);
-                child.leverage = bound.leverage;
-                book_req.instruments.range_bounds.push_back(child);
-            }
-        };
-
         /*
          * The routing table puts seventeen codes in nine tables, so a table
          * serves more than one type and the payload states the fields all of
@@ -933,7 +919,24 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             const auto payment_frequency = equity->payment_frequency_code.empty()
                                                ? "Quarterly"
                                                : equity->payment_frequency_code;
-            auto swap_row = [&] {
+            auto basket = std::vector<ores::trading::domain::equity_basket_member_terms>{};
+            for (const auto& member : equity->basket) {
+                ores::trading::domain::equity_basket_member_terms terms;
+                terms.underlying_name = member.name;
+                terms.underlying_kind = member.kind;
+                terms.weight = member.weight;
+                terms.initial_price = maybe_money(member.initial_price);
+                basket.push_back(terms);
+            }
+            auto periods = std::vector<ores::trading::domain::equity_swap_period_terms>{};
+            for (const auto& period : equity->periods) {
+                ores::trading::domain::equity_swap_period_terms terms;
+                terms.period_date = period.period_date.value_or(equity->start_date);
+                terms.knock_out_level = period.knock_out_level;
+                terms.fixed_trigger_level = period.fixed_trigger_level;
+                periods.push_back(terms);
+            }
+            auto product = [&] {
                 if (type == "EquitySwap") {
                     ores::trading::domain::equity_swap_terms terms;
                     terms.underlying_name = equity->underlying_name;
@@ -944,6 +947,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                     terms.maturity_date = equity->maturity_date;
                     terms.long_short = equity->long_short;
                     terms.payment_frequency_code = payment_frequency;
+                    terms.basket = basket;
+                    terms.periods = periods;
                     return ores::trading::domain::construct_equity_swap(terms);
                 }
                 ores::trading::domain::equity_basket_swap_terms terms;
@@ -954,33 +959,19 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                 terms.maturity_date = equity->maturity_date;
                 terms.long_short = equity->long_short;
                 terms.payment_frequency_code = payment_frequency;
+                terms.basket = basket;
+                terms.periods = periods;
                 return ores::trading::domain::construct_equity_worst_of_basket_swap(terms);
             }();
-            swap_row.description = "Generated equity trade.";
-            stamp(swap_row);
-            book_req.instruments.equity_swap_instruments.push_back(swap_row);
-
-            std::uint32_t ordinal = 1;
-            for (const auto& member : equity->basket) {
-                ores::trading::domain::equity_basket_constituent constituent;
-                constituent.sequence_number = static_cast<int>(ordinal++);
-                constituent.underlying_name = member.name;
-                constituent.underlying_kind = member.kind;
-                constituent.weight = member.weight;
-                constituent.initial_price = maybe_money(member.initial_price);
+            product.row.description = "Generated equity trade.";
+            stamp(product.row);
+            book_req.instruments.equity_swap_instruments.push_back(product.row);
+            for (auto& constituent : product.constituents) {
                 stamp_child(constituent);
                 book_req.instruments.equity_basket_constituents.push_back(constituent);
             }
-
-            ordinal = 1;
-            for (const auto& period : equity->periods) {
-                ores::trading::domain::equity_swap_period child;
-                child.sequence_number = static_cast<int>(ordinal++);
-                child.period_date = period.period_date;
-                child.knock_out_level = period.knock_out_level;
-                child.fixed_trigger_level = period.fixed_trigger_level;
+            for (const auto& child : product.periods)
                 book_req.instruments.equity_swap_periods.push_back(child);
-            }
         } else if (type == "EquityVarianceSwap") {
             ores::trading::domain::equity_variance_swap_terms terms;
             terms.underlying_name = equity->underlying_name;
@@ -995,7 +986,15 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             stamp(row);
             book_req.instruments.equity_variance_swap_instruments.push_back(row);
         } else if (type == "EquityAccumulator" || type == "EquityTaRF") {
-            auto row = [&] {
+            auto bounds = std::vector<ores::trading::domain::equity_range_bound_terms>{};
+            for (const auto& bound : equity->range_bounds) {
+                ores::trading::domain::equity_range_bound_terms terms;
+                terms.range_from = maybe_money(bound.range_from);
+                terms.range_to = maybe_money(bound.range_to);
+                terms.leverage = bound.leverage;
+                bounds.push_back(terms);
+            }
+            auto product = [&] {
                 if (type == "EquityAccumulator") {
                     ores::trading::domain::equity_accumulator_terms terms;
                     terms.underlying_name = equity->underlying_name;
@@ -1010,6 +1009,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                     terms.knock_out_level = maybe_money(equity->knock_out_level);
                     terms.payoff_type =
                         equity->payoff_type.empty() ? "Accumulator" : equity->payoff_type;
+                    terms.range_bounds = bounds;
                     return ores::trading::domain::construct_equity_accumulator(terms);
                 }
                 ores::trading::domain::equity_tarf_terms terms;
@@ -1027,12 +1027,14 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                     equity->payoff_type.empty() ? "Accumulator" : equity->payoff_type;
                 terms.target_amount = money(equity->target_amount.value_or(0.0));
                 terms.target_type = equity->target_type;
+                terms.range_bounds = bounds;
                 return ores::trading::domain::construct_equity_target_redemption_forward(terms);
             }();
-            row.description = "Generated equity trade.";
-            stamp(row);
-            book_req.instruments.equity_accumulator_instruments.push_back(row);
-            append_range_bounds();
+            product.row.description = "Generated equity trade.";
+            stamp(product.row);
+            book_req.instruments.equity_accumulator_instruments.push_back(product.row);
+            for (auto& bound : product.range_bounds)
+                book_req.instruments.range_bounds.push_back(bound);
         } else if (type == "EquityPosition" || type == "EquityOptionPosition") {
             ores::trading::domain::equity_position_terms terms;
             terms.underlying_name = equity->underlying_name;

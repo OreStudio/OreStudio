@@ -867,6 +867,7 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
          resolved_pillar("3M", "6M", "FRA", 90, 180)},
         idle,
         1.0,
+        1.0,
         std::move(targets));
 
     feed.tick({.elapsed_seconds = 1.0, .observed_at = std::chrono::system_clock::now()});
@@ -908,6 +909,7 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
         ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 3600},
         {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90)},
         idle,
+        1.0,
         1.0,
         {{.start_tenor_code = "SPOT",
           .end_tenor_code = "3M",

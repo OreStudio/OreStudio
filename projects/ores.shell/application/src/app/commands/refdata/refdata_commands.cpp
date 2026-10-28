@@ -91,6 +91,7 @@
 #include "ores.shell/app/commands/refdata/diary_entry_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/entity_classification_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/equity_underlying_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
@@ -261,6 +262,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     diary_entry_type_commands::register_commands(root_menu, session);
     entity_classification_commands::register_commands(root_menu, session);
     equity_curve_config_commands::register_commands(root_menu, session);
+    equity_underlying_commands::register_commands(root_menu, session);
     equity_volatility_config_commands::register_commands(root_menu, session);
     floating_index_type_commands::register_commands(root_menu, session);
     fra_convention_commands::register_commands(root_menu, session);

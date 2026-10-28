@@ -124,6 +124,7 @@
 #include "ores.refdata.service/messaging/derivation_kind_event_registrar.hpp"
 #include "ores.refdata.service/messaging/diary_entry_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/equity_curve_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/equity_underlying_event_registrar.hpp"
 #include "ores.refdata.service/messaging/equity_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/floating_index_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fra_convention_event_registrar.hpp"
@@ -348,6 +349,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_deposit_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_derivation_kind_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_equity_curve_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_equity_underlying_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_equity_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fra_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_future_convention_event_mapping(event_source, event_bus, nats));

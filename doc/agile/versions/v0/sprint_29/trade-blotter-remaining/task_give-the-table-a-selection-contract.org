@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch: feature/the-booking-task-continues
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:

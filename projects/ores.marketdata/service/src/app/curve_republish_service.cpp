@@ -237,7 +237,14 @@ curve_computation compute_curve(ores::database::context ctx,
     std::optional<ores::refdata::domain::ir_curve_bootstrap_config> discount_config;
     const bool is_projection = config.curve_family_role == "PROJECTION";
     if (is_projection) {
-        discount_config = read_config(ctx, config.discount_curve_config_id);
+        // A projection discounts off a funding curve, so a projection naming none is
+        // a config the schema refuses: say so rather than discount off nothing.
+        if (!config.discount_curve_config_id)
+            throw std::invalid_argument(
+                "curve_republish_service: PROJECTION bootstrap config names no discount "
+                "curve: " +
+                boost::uuids::to_string(config.id));
+        discount_config = read_config(ctx, *config.discount_curve_config_id);
         discount_curve = read_discount_curve(ctx, discount_config->output_series_id, as_of, refctx);
     }
 

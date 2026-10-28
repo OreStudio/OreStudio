@@ -222,10 +222,13 @@ private:
         c.version = 0;
         c.tenant_id = h.tenant_id();
         c.party_id = party_id;
+        // The name is unique per party among the active rows, and a fixture may
+        // write more than one config, so it is taken from the id it writes.
+        c.name = "USD-SOFR-" + boost::uuids::to_string(id).substr(0, 8);
         c.currency_code = "USD";
         c.index_tenor = "1D";
         c.curve_family_role = "FUNDING";
-        c.discount_curve_config_id = boost::uuids::nil_uuid();
+        c.discount_curve_config_id = std::nullopt;
         c.interpolation_method = "FLAT_FORWARD_THEN_LOG_LINEAR";
         c.day_count_convention = "A360";
         c.tenor_convention_code = "RATES_SPOT_FORWARD";

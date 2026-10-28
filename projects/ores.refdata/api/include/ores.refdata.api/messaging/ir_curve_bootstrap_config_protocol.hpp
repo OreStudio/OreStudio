@@ -42,10 +42,11 @@ struct ir_curve_bootstrap_config_key {
 struct ir_curve_bootstrap_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid output_series_id;
+    std::string name;
     std::string currency_code;
     std::string index_tenor;
     std::string curve_family_role;
-    boost::uuids::uuid discount_curve_config_id;
+    std::optional<boost::uuids::uuid> discount_curve_config_id;
     std::string interpolation_method;
     std::string day_count_convention;
     std::string tenor_convention_code;
@@ -70,7 +71,7 @@ struct ir_curve_bootstrap_config_lookup {
 struct ir_curve_bootstrap_configs_filter {
     std::optional<std::string> currency_code;
     std::optional<std::string> curve_family_role;
-    std::optional<boost::uuids::uuid> discount_curve_config_id;
+    std::optional<std::optional<boost::uuids::uuid>> discount_curve_config_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> currency_code_one_of;
     std::optional<std::vector<std::string>> curve_family_role_one_of;

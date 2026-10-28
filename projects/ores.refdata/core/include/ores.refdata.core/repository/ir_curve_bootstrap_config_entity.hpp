@@ -48,10 +48,11 @@ struct ir_curve_bootstrap_config_entity {
     std::string output_series_id;
 
     std::string party_id;
+    std::string name;
     std::string currency_code;
     std::string index_tenor;
     std::string curve_family_role = "FUNDING";
-    std::string discount_curve_config_id;
+    std::optional<std::string> discount_curve_config_id;
     std::string interpolation_method = "LOG_LINEAR_DISCOUNT";
     std::string day_count_convention;
     std::string tenor_convention_code;
@@ -74,6 +75,7 @@ struct ir_curve_bootstrap_config_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("output_series_id", &e::output_series_id) |
                query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("name", &e::name) |
                query_builder::bind("currency_code", &e::currency_code) |
                query_builder::bind("index_tenor", &e::index_tenor) |
                query_builder::bind("curve_family_role", &e::curve_family_role) |

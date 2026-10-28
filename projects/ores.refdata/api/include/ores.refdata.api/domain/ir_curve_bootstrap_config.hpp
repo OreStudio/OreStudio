@@ -26,9 +26,9 @@
 #define ORES_REFDATA_API_DOMAIN_IR_CURVE_BOOTSTRAP_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -71,8 +71,7 @@ namespace ores::refdata::domain {
  * second spelling of the same input, with nothing keeping the two in step.
  *
  * curve_family_role (FUNDING/PROJECTION) and
- * discount_curve_config_id (self-referencing, nil-uuid sentinel for
- * FUNDING) encode
+ * discount_curve_config_id (self-referencing, null for FUNDING) encode
  * [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection
  * build-order dependency as data: a PROJECTION config's discount_curve_config_id must point at a
  * FUNDING config (strict two-tier, no chaining -- Multi-Curve Construction names
@@ -132,6 +131,17 @@ struct ir_curve_bootstrap_config final {
     boost::uuids::uuid party_id;
 
     /**
+     * @brief The record's display name, as a person writes it: a short handle such as USD-SOFR-ACME
+     * that tells one blueprint from another in a list, a breadcrumb or a record header. It is typed
+     * by the caller and never derived: the web browser does not parse the output series' oresmd URI
+     * for a name, and no operation composes one from the config's own fields.
+     *
+     * Unique per tenant and per party among the active rows, stated by the party_name index below.
+     * It is the name and not the URI a person searches and sorts by.
+     */
+    std::string name;
+
+    /**
      * @brief References currency.iso_code -- the currency this curve's pillars are quoted in, and
      * the one segment of a pillar's ORE key the pillar itself cannot supply: a pillar carries tenor
      * codes and a role, so a reader resolving a pillar to its series has to be told the currency
@@ -161,12 +171,14 @@ struct ir_curve_bootstrap_config final {
 
     /**
      * @brief Self-referencing: the FUNDING config this config's own pillars discount off during
-     * bootstrap, when this config's own curve_family_role is PROJECTION -- the
-     * ores_utility_nil_uuid_fn() sentinel when it is FUNDING instead. Strict two-tier only
-     * (validated in the insert trigger, not just shape-checked): the referenced config must itself
-     * have a curve_family_role of FUNDING, and must not equal this config's own id.
+     * bootstrap, when this config's own curve_family_role is PROJECTION. It is null when the role
+     * is FUNDING, because a funding config discounts off nothing: there is no discount curve to
+     * name and no sentinel standing in for one. Strict two-tier only (validated in the insert
+     * trigger, not just shape-checked): the referenced config must itself have a curve_family_role
+     * of FUNDING, and must not equal this config's own id. No code compares this column to a nil
+     * UUID, because an absent discount curve is null and not the zero UUID.
      */
-    boost::uuids::uuid discount_curve_config_id = boost::uuids::nil_uuid();
+    std::optional<boost::uuids::uuid> discount_curve_config_id;
 
     /**
      * @brief Interpolation method for discount factors between pillars (LOG_LINEAR_DISCOUNT,

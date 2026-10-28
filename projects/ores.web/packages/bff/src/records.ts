@@ -316,10 +316,13 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
     'ir-curve-bootstrap-configs': z.object({
         id: anyUuid,
         output_series_id: anyUuid,
+        name: z.string().trim().min(1).max(120),
         currency_code: isoCode,
         index_tenor: code,
         curve_family_role: z.enum(['FUNDING', 'PROJECTION']),
-        discount_curve_config_id: anyUuid,
+        // A funding blueprint discounts off nothing, so it names no discount
+        // curve; the column is nullable and null is what a funding write sends.
+        discount_curve_config_id: anyUuid.nullable(),
         interpolation_method: z.enum([
             'LOG_LINEAR_DISCOUNT',
             'FLAT_FORWARD_THEN_LOG_LINEAR',

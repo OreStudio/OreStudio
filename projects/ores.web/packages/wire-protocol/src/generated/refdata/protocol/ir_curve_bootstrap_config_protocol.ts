@@ -35,10 +35,11 @@ export interface IrCurveBootstrapConfigKey {
 export interface IrCurveBootstrapConfigWrite {
     id: string;
     output_series_id: string;
+    name: string;
     currency_code: string;
     index_tenor: string;
     curve_family_role: string;
-    discount_curve_config_id: string;
+    discount_curve_config_id: string | null;
     interpolation_method: string;
     day_count_convention: string;
     tenor_convention_code: string;
@@ -63,7 +64,7 @@ export interface IrCurveBootstrapConfigLookup {
 export interface IrCurveBootstrapConfigsFilter {
     currency_code: string | null;
     curve_family_role: string | null;
-    discount_curve_config_id: string | null;
+    discount_curve_config_id: string | null | null;
     id_one_of: string[] | null;
     currency_code_one_of: string[] | null;
     curve_family_role_one_of: string[] | null;

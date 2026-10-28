@@ -58,6 +58,7 @@ std::string ir_curve_bootstrap_config_repository::sql() {
 
 bool ir_curve_bootstrap_config_repository::is_sortable(std::string_view field) {
     const std::initializer_list<std::string_view> sortable = {
+        "name",
         "currency_code",
         "index_tenor",
         "curve_family_role",
@@ -103,9 +104,11 @@ std::optional<query_builder::condition> ir_curve_bootstrap_config_filter_conditi
         r.push_back(query_builder::equals("curve_family_role",
                                           query_builder::filter_value(*filter->curve_family_role)));
     if (filter->discount_curve_config_id)
-        r.push_back(
-            query_builder::equals("discount_curve_config_id",
-                                  query_builder::filter_value(*filter->discount_curve_config_id)));
+        r.push_back(*filter->discount_curve_config_id ?
+                        query_builder::equals(
+                            "discount_curve_config_id",
+                            query_builder::filter_value(**filter->discount_curve_config_id)) :
+                        query_builder::is_null("discount_curve_config_id"));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
@@ -131,7 +134,8 @@ std::optional<query_builder::condition> ir_curve_bootstrap_config_filter_conditi
         r.push_back(query_builder::one_of("discount_curve_config_id", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
-        r.push_back(query_builder::contains_any({"currency_code", "index_tenor"}, *filter->search));
+        r.push_back(
+            query_builder::contains_any({"name", "currency_code", "index_tenor"}, *filter->search));
     return query_builder::all_of(std::move(r));
 }
 

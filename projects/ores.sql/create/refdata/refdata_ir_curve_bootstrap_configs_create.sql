@@ -57,8 +57,7 @@
  * second spelling of the same input, with nothing keeping the two in step.
  *
  * curve_family_role (FUNDING/PROJECTION) and
- * discount_curve_config_id (self-referencing, nil-uuid sentinel for
- * FUNDING) encode
+ * discount_curve_config_id (self-referencing, null for FUNDING) encode
  * [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection build-order
  * dependency as data: a PROJECTION config's discount_curve_config_id
  * must point at a FUNDING config (strict two-tier, no chaining --
@@ -92,10 +91,11 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     "version" integer not null,
     "output_series_id" uuid not null,
     "party_id" uuid not null,
+    "name" text not null,
     "currency_code" text not null,
     "index_tenor" text not null,
     "curve_family_role" text not null,
-    "discount_curve_config_id" uuid not null,
+    "discount_curve_config_id" uuid null,
     "interpolation_method" text not null,
     "day_count_convention" text not null,
     "tenor_convention_code" text not null,
@@ -115,11 +115,12 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("curve_family_role" in ('FUNDING', 'PROJECTION')),
+    check ("name" <> ''),
     check ("index_tenor" <> ''),
     check ("day_count_convention" <> ''),
     check ("split_tenor_code" <> ''),
-    check ("discount_curve_config_id" <> "id"),
-    check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()))
+    check ("discount_curve_config_id" is null or "discount_curve_config_id" <> "id"),
+    check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" is null) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" is not null))
 );
 
 -- Unique output_series_id for active records
@@ -138,6 +139,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ir_curve_bootstrap_configs_tenant_idx
 on "ores_refdata_ir_curve_bootstrap_configs_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists ir_curve_bootstrap_configs_party_name_idx
+on "ores_refdata_ir_curve_bootstrap_configs_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_ir_curve_bootstrap_configs_insert_fn()

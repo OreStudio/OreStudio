@@ -46,8 +46,7 @@ the feed's tick for that pillar landed in. A raw-grid reference would be a
 second spelling of the same input, with nothing keeping the two in step.
 
 =curve_family_role= (=FUNDING=/=PROJECTION=) and
-=discount_curve_config_id= (self-referencing, nil-uuid sentinel for
-=FUNDING=) encode
+=discount_curve_config_id= (self-referencing, null for =FUNDING=) encode
 [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection build-order
 dependency as data: a =PROJECTION= config's =discount_curve_config_id=
 must point at a =FUNDING= config (strict two-tier, no chaining --
@@ -79,18 +78,38 @@ comment is explicit isn't a sentinel hack either.
 The curve blueprint screens list, search, filter and order these rows on the
 server, so the columns those reads need declare what they support:
 
-- =currency_code= and =index_tenor= are searchable, because a blueprint has no
-  name and a person looks for one by the currency and the index it is quoted
-  for.
+- =name= is searchable and sortable: it is the record's display name, the handle
+  a person knows a blueprint by, and the screens draw it in the list's first
+  cell, in the record header and its breadcrumb, and as the first fact on
+  Details. A blueprint is named in the database and is never named by parsing
+  its output series' oresmd URI, so the screen has no name to derive and must
+  not try.
+- =currency_code= and =index_tenor= are searchable, so a person who knows the
+  currency and the index it is quoted for finds a blueprint whose name they do
+  not remember.
 - =currency_code= and =curve_family_role= are filterable, so the currency and
   role filters reach the server as filter members rather than narrowing a page
   the screen was given.
-- =currency_code=, =index_tenor=, =curve_family_role=, =interpolation_method=
-  and =day_count_convention= are sortable.
+- =currency_code=, =index_tenor=, =name=, =curve_family_role=,
+  =interpolation_method= and =day_count_convention= are sortable.
+- =discount_curve_config_id= is filterable, so a funding blueprint can read the
+  projection blueprints that discount off it without reading every config of
+  the tenant.
 
-=discount_curve_config_id= is filterable too, so a funding blueprint can read
-the projection blueprints that discount off it without reading every config of
-the tenant.
+* Uniqueness
+
+The name is unique per tenant and per party among the active rows: two of a
+party's blueprints never carry one name, and one party's name does not spend
+another party's. The model expresses that as a declared unique index,
+=ir_curve_bootstrap_configs_party_name_idx= on
+=(tenant_id, party_id, name) where the row is current, because the natural-key
+machinery emits one index per entity and that one already carries
+=output_series_id= -- exactly one active config, tenant-wide, may produce any
+given output series. The name is therefore a plain column and not a second
+natural key: two natural keys would be emitted as one composite index over both
+columns, which would drop the output-series rule and let two blueprints claim
+one series as long as their names differ.
+
 
 * Flags
 :PROPERTIES:
@@ -127,6 +146,29 @@ claiming the same output series.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:sortable:   true
+:searchable: true
+:END:
+
+The record's display name, as a person writes it: a short handle such as
+=USD-SOFR-ACME= that tells one blueprint from another in a list, a breadcrumb
+or a record header. It is typed by the caller and never derived: the web
+browser does not parse the output series' oresmd URI for a name, and no
+operation composes one from the config's own fields.
+
+Unique per tenant and per party among the active rows, stated by the
+=party_name= index below. It is the name and not the URI a person searches and
+sorts by.
+
+#+begin_src cpp :name generator
+std::string("USD-SOFR-ACME")
 #+end_src
 
 ** currency_code
@@ -211,23 +253,20 @@ std::string("FUNDING")
 ** discount_curve_config_id
 :PROPERTIES:
 :type:          uuid
-:cpp_type:      boost::uuids::uuid
-:nullable:      false
-:default_value: boost::uuids::nil_uuid()
+:cpp_type:      std::optional<boost::uuids::uuid>
+:nullable:      true
 :filterable:    true
 :END:
 
 Self-referencing: the =FUNDING= config this config's own pillars
 discount off during bootstrap, when this config's own
-=curve_family_role= is =PROJECTION= -- the =ores_utility_nil_uuid_fn()=
-sentinel when it is =FUNDING= instead. Strict two-tier only (validated
-in the insert trigger, not just shape-checked): the referenced config
-must itself have a =curve_family_role= of =FUNDING=, and must not
-equal this config's own =id=.
-
-#+begin_src cpp :name generator
-boost::uuids::nil_uuid()
-#+end_src
+=curve_family_role= is =PROJECTION=. It is null when the role is
+=FUNDING=, because a funding config discounts off nothing: there is no
+discount curve to name and no sentinel standing in for one. Strict two-tier
+only (validated in the insert trigger, not just shape-checked): the referenced
+config must itself have a =curve_family_role= of =FUNDING=, and must not
+equal this config's own =id=. No code compares this column to a nil UUID,
+because an absent discount curve is null and not the zero UUID.
 
 ** interpolation_method
 :PROPERTIES:
@@ -319,11 +358,18 @@ std::string("1Y")
 | expression                                                                |
 |-----------------------------------------------------------------------------|
 | "curve_family_role" in ('FUNDING', 'PROJECTION')                          |
+| "name" <> ''                                                              |
 | "index_tenor" <> ''                                                        |
 | "day_count_convention" <> ''                                               |
 | "split_tenor_code" <> ''                                                   |
-| "discount_curve_config_id" <> "id"                                        |
-| ("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()) |
+| "discount_curve_config_id" is null or "discount_curve_config_id" <> "id"    |
+| ("curve_family_role" = 'FUNDING' and "discount_curve_config_id" is null) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" is not null) |
+
+** Indexes
+
+| name       | columns                    | unique | current_only | where_extra |
+|------------+----------------------------+--------+--------------+-------------|
+| party_name | tenant_id, party_id, name  | true   | true         |             |
 
 * Insert trigger
 ** Validations
@@ -397,8 +443,8 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 #+end_src
 
@@ -451,6 +497,7 @@ minimal (plain =line_edit= throughout), not a real editing UX.
 | field                     | label                | widget    | type      | is_key | is_required | placeholder |
 |---------------------------+----------------------+-----------+-----------+--------+-------------+-------------|
 | id                        | Id                   | idEdit    | line_edit | true   | true        |             |
+| name                      | Name                 | nameEdit  | line_edit |        | true        |             |
 | output_series_id          | Output Series Id     | outputSeriesIdEdit | line_edit |  | true  |             |
 | curve_family_role         | Curve Family Role    | curveFamilyRoleEdit | line_edit | | true |            |
 | discount_curve_config_id  | Discount Curve Config Id | discountCurveConfigIdEdit | line_edit | | |     |
@@ -462,6 +509,7 @@ minimal (plain =line_edit= throughout), not a real editing UX.
 
 | enum_name                | field                    | header                | type      | width | is_badge | badge_key |
 |---------------------------+--------------------------+-----------------------+-----------+-------+----------+-----------|
+| Name                     | name                     | Name                  | string    | auto  |          |           |
 | OutputSeriesId            | output_series_id         | Output Series         | uuid      | auto  |          |           |
 | CurveFamilyRole           | curve_family_role        | Role                  | string    | 100   |          |           |
 | DiscountCurveConfigId     | discount_curve_config_id | Discount Curve Config | uuid      | auto  |          |           |

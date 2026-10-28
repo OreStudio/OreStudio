@@ -49,7 +49,6 @@
 namespace ores::synthetic::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -200,10 +199,10 @@ fx_spot_generation_config_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<fx_spot_generation_config_entity,
                                              domain::fx_spot_generation_config>(
@@ -221,8 +220,8 @@ fx_spot_generation_config_repository::read_latest(context ctx, const std::string
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<fx_spot_generation_config_entity,
                                              domain::fx_spot_generation_config>(
@@ -240,9 +239,10 @@ fx_spot_generation_config_repository::read_all(context ctx, const std::string& i
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<fx_spot_generation_config_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<fx_spot_generation_config_entity,
                                              domain::fx_spot_generation_config>(
@@ -262,8 +262,8 @@ fx_spot_generation_config_repository::read_at_version(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
-                             "version"_c == version) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<fx_spot_generation_config_entity,
@@ -297,8 +297,8 @@ fx_spot_generation_config_repository::remove_status fx_spot_generation_config_re
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<fx_spot_generation_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing FX spot generation config from database.");
@@ -326,7 +326,7 @@ std::vector<domain::fx_spot_generation_config> fx_spot_generation_config_reposit
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<fx_spot_generation_config_entity,
@@ -350,7 +350,7 @@ std::uint32_t fx_spot_generation_config_repository::get_total_fx_spot_generation
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<fx_spot_generation_config_entity>(
         ctx,
@@ -370,8 +370,8 @@ fx_spot_generation_config_repository::read_latest(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<fx_spot_generation_config_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<fx_spot_generation_config_entity,
                                                     domain::fx_spot_generation_config>(
         ctx,
@@ -394,8 +394,9 @@ void fx_spot_generation_config_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<fx_spot_generation_config_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<fx_spot_generation_config_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing FX spot generation configs.");
 }

@@ -47,7 +47,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -175,7 +174,7 @@ void lei_relationship_repository::write(
 
 std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(context ctx) {
     const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
-                       order_by("relationship_start_node_node_id"_c);
+                       query_builder::order_by("relationship_start_node_node_id"_c);
 
     return query_builder::execute_read_query<lei_relationship_entity, domain::lei_relationship>(
         ctx,
@@ -191,9 +190,9 @@ lei_relationship_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI relationship. "
                                << "relationship_start_node_node_id: "
                                << relationship_start_node_node_id;
-    const auto query =
-        query_builder::read<std::vector<lei_relationship_entity>> |
-        where("relationship_start_node_node_id"_c == relationship_start_node_node_id);
+    const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
+                       query_builder::where("relationship_start_node_node_id"_c ==
+                                            relationship_start_node_node_id);
 
     return query_builder::execute_read_query<lei_relationship_entity, domain::lei_relationship>(
         ctx,
@@ -210,10 +209,10 @@ lei_relationship_repository::read_all(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading all LEI relationship versions. "
                                << "relationship_start_node_node_id: "
                                << relationship_start_node_node_id;
-    const auto query =
-        query_builder::read<std::vector<lei_relationship_entity>> |
-        where("relationship_start_node_node_id"_c == relationship_start_node_node_id) |
-        order_by("relationship_start_node_node_id"_c);
+    const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
+                       query_builder::where("relationship_start_node_node_id"_c ==
+                                            relationship_start_node_node_id) |
+                       query_builder::order_by("relationship_start_node_node_id"_c);
 
     return query_builder::execute_read_query<lei_relationship_entity, domain::lei_relationship>(
         ctx,
@@ -239,8 +238,9 @@ lei_relationship_repository::remove(context ctx,
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<lei_relationship_entity> |
-                       where("tenant_id"_c == tid && "relationship_start_node_node_id"_c ==
+    const auto query =
+        query_builder::delete_from<lei_relationship_entity> |
+        query_builder::where("tenant_id"_c == tid && "relationship_start_node_node_id"_c ==
                                                          relationship_start_node_node_id);
 
     query_builder::execute_delete_query(
@@ -289,9 +289,9 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
     context ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
     if (relationship_start_node_node_ids.empty())
         return {};
-    const auto query =
-        query_builder::read<std::vector<lei_relationship_entity>> |
-        where("relationship_start_node_node_id"_c.in(relationship_start_node_node_ids));
+    const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
+                       query_builder::where("relationship_start_node_node_id"_c.in(
+                           relationship_start_node_node_ids));
     auto result =
         query_builder::execute_read_query<lei_relationship_entity, domain::lei_relationship>(
             ctx,
@@ -313,8 +313,9 @@ void lei_relationship_repository::remove(
     if (relationship_start_node_node_ids.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<lei_relationship_entity> |
-                       where("tenant_id"_c == tid && "relationship_start_node_node_id"_c.in(
+    const auto query =
+        query_builder::delete_from<lei_relationship_entity> |
+        query_builder::where("tenant_id"_c == tid && "relationship_start_node_node_id"_c.in(
                                                          relationship_start_node_node_ids));
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing LEI relationships.");
 }

@@ -50,7 +50,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -196,8 +195,8 @@ notification_preference_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("account_id"_c, "kind_code"_c, "channel_code"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("account_id"_c, "kind_code"_c, "channel_code"_c);
 
     return query_builder::execute_read_query<notification_preference_entity,
                                              domain::notification_preference>(
@@ -220,8 +219,9 @@ notification_preference_repository::read_latest(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_preference_entity>> |
-        where("tenant_id"_c == tid && "account_id"_c == account_id && "kind_code"_c == kind_code &&
-              "channel_code"_c == channel_code && "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
+                             "kind_code"_c == kind_code && "channel_code"_c == channel_code &&
+                             "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<notification_preference_entity,
                                              domain::notification_preference>(
@@ -242,10 +242,11 @@ notification_preference_repository::read_all(context ctx,
                                << "account_id: " << account_id << " kind_code: " << kind_code
                                << " channel_code: " << channel_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id &&
+    const auto query =
+        query_builder::read<std::vector<notification_preference_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
                              "kind_code"_c == kind_code && "channel_code"_c == channel_code) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<notification_preference_entity,
                                              domain::notification_preference>(
@@ -268,8 +269,9 @@ notification_preference_repository::read_at_version(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_preference_entity>> |
-        where("tenant_id"_c == tid && "account_id"_c == account_id && "kind_code"_c == kind_code &&
-              "channel_code"_c == channel_code && "version"_c == version) |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
+                             "kind_code"_c == kind_code && "channel_code"_c == channel_code &&
+                             "version"_c == version) |
         query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<notification_preference_entity,
@@ -297,10 +299,10 @@ notification_preference_repository::read_latest_by_account_id(
                                << account_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_preference_entity>> |
-        where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value()) |
-        query_builder::offset(offset) | query_builder::limit(limit);
+    const auto query = query_builder::read<std::vector<notification_preference_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<notification_preference_entity,
                                                      domain::notification_preference>(
@@ -323,9 +325,9 @@ std::uint32_t notification_preference_repository::get_total_preference_count_by_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_preference_entity>> |
-        where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<notification_preference_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
+                                            "valid_to"_c == max.value());
 
     return query_builder::execute_count_query<notification_preference_entity>(
         ctx,
@@ -358,8 +360,9 @@ notification_preference_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<notification_preference_entity> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id &&
+    const auto query =
+        query_builder::delete_from<notification_preference_entity> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id &&
                              "kind_code"_c == kind_code && "channel_code"_c == channel_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -391,7 +394,7 @@ std::vector<domain::notification_preference> notification_preference_repository:
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<notification_preference_entity,
@@ -415,7 +418,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count(
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid);
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<notification_preference_entity>(
         ctx,
@@ -435,8 +438,9 @@ notification_preference_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c.in(account_ids) &&
+    const auto query =
+        query_builder::read<std::vector<notification_preference_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c.in(account_ids) &&
                              "kind_code"_c.in(kind_codes) && "channel_code"_c.in(channel_codes) &&
                              "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<notification_preference_entity,

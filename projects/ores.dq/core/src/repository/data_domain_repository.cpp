@@ -47,7 +47,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -171,7 +170,8 @@ void data_domain_repository::write(context ctx,
 std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c);
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("name"_c);
 
     return query_builder::execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -186,7 +186,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
-                       where("name"_c == name && "valid_to"_c == max.value());
+                       query_builder::where("name"_c == name && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -201,8 +201,8 @@ std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
                                                                   const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. " << "name: " << name;
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
-                       where("name"_c == name) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("name"_c == name) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -218,7 +218,8 @@ std::optional<domain::data_domain> data_domain_repository::read_at_version(conte
     BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. " << "name: " << name
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
-                       where("name"_c == name && "version"_c == version) | query_builder::limit(1);
+                       query_builder::where("name"_c == name && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<data_domain_entity, domain::data_domain>(
@@ -250,8 +251,8 @@ data_domain_repository::remove_status data_domain_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<data_domain_entity> |
-                       where("tenant_id"_c == tid && "name"_c == name &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing data domain from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -312,7 +313,7 @@ data_domain_repository::read_latest(context ctx, const std::vector<std::string>&
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
-                       where("name"_c.in(names) && "valid_to"_c == max.value());
+                       query_builder::where("name"_c.in(names) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
         query,
@@ -333,9 +334,9 @@ void data_domain_repository::remove(context ctx, const std::vector<std::string>&
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<data_domain_entity> |
-        where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max.value());
+    const auto query = query_builder::delete_from<data_domain_entity> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c.in(names) &&
+                                            "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing data domains.");
 }
 

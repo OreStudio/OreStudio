@@ -48,7 +48,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -173,10 +172,10 @@ std::vector<domain::hold_reason> hold_reason_repository::read_latest(context ctx
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        query_builder::read<std::vector<hold_reason_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+    const auto query = query_builder::read<std::vector<hold_reason_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<hold_reason_entity, domain::hold_reason>(
         ctx,
@@ -193,8 +192,8 @@ std::vector<domain::hold_reason> hold_reason_repository::read_latest(context ctx
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<hold_reason_entity, domain::hold_reason>(
         ctx,
@@ -210,9 +209,10 @@ std::vector<domain::hold_reason> hold_reason_repository::read_all(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading all hold reason versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = query_builder::read<std::vector<hold_reason_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<hold_reason_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<hold_reason_entity, domain::hold_reason>(
         ctx,
@@ -230,8 +230,8 @@ std::optional<domain::hold_reason> hold_reason_repository::read_at_version(conte
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
-                             "version"_c == version) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities =
@@ -264,8 +264,8 @@ hold_reason_repository::remove_status hold_reason_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<hold_reason_entity> |
-                       where("tenant_id"_c == tid && "code"_c == code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing hold reason from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -292,7 +292,7 @@ hold_reason_repository::read_latest(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<hold_reason_entity, domain::hold_reason>(
@@ -315,7 +315,7 @@ std::uint32_t hold_reason_repository::get_total_reason_count(
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<hold_reason_entity>(
         ctx,
@@ -334,8 +334,8 @@ hold_reason_repository::read_latest(context ctx, const std::vector<std::string>&
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<hold_reason_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<hold_reason_entity, domain::hold_reason>(
         ctx,
         query,
@@ -356,9 +356,9 @@ void hold_reason_repository::remove(context ctx, const std::vector<std::string>&
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<hold_reason_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    const auto query = query_builder::delete_from<hold_reason_entity> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+                                            "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing hold reasons.");
 }
 

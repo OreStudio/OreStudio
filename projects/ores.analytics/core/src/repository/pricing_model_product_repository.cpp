@@ -48,7 +48,6 @@
 namespace ores::analytics::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -184,8 +183,8 @@ pricing_model_product_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<pricing_model_product_entity,
                                              domain::pricing_model_product>(
@@ -201,8 +200,9 @@ pricing_model_product_repository::read_latest(context ctx, const std::string& id
     BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<pricing_model_product_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<pricing_model_product_entity,
                                              domain::pricing_model_product>(
@@ -223,8 +223,9 @@ pricing_model_product_repository::read_latest_by_pricing_engine_type_code(
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<pricing_model_product_entity>> |
-        where("tenant_id"_c == tid && "pricing_engine_type_code"_c == pricing_engine_type_code &&
-              "valid_to"_c == max.value());
+        query_builder::where("tenant_id"_c == tid &&
+                             "pricing_engine_type_code"_c == pricing_engine_type_code &&
+                             "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
@@ -247,10 +248,10 @@ pricing_model_product_repository::read_any_by_pricing_engine_type_code(
     BOOST_LOG_SEV(lg(), debug) << "Reading any pricing model product by pricing_engine_type_code: "
                                << pricing_engine_type_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<pricing_model_product_entity>> |
-        where("tenant_id"_c == tid && "pricing_engine_type_code"_c == pricing_engine_type_code) |
-        order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "pricing_engine_type_code"_c ==
+                                                                        pricing_engine_type_code) |
+                       query_builder::order_by("valid_from"_c.desc());
 
     auto found = query_builder::execute_read_query<pricing_model_product_entity,
                                                    domain::pricing_model_product>(
@@ -277,8 +278,8 @@ pricing_model_product_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all pricing model product versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<pricing_model_product_entity,
                                              domain::pricing_model_product>(
@@ -294,9 +295,10 @@ std::optional<domain::pricing_model_product> pricing_model_product_repository::r
     BOOST_LOG_SEV(lg(), debug) << "Reading pricing model product at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<pricing_model_product_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<pricing_model_product_entity,
                                                             domain::pricing_model_product>(
@@ -328,8 +330,8 @@ pricing_model_product_repository::remove_status pricing_model_product_repository
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<pricing_model_product_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing pricing model product from database.");
@@ -356,7 +358,7 @@ std::vector<domain::pricing_model_product> pricing_model_product_repository::rea
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<pricing_model_product_entity,
@@ -379,7 +381,7 @@ std::uint32_t pricing_model_product_repository::get_total_product_count(
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid);
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<pricing_model_product_entity>(
         ctx,
@@ -396,8 +398,9 @@ pricing_model_product_repository::read_latest(context ctx, const std::vector<std
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<pricing_model_product_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<pricing_model_product_entity,
                                                     domain::pricing_model_product>(
         ctx,
@@ -419,8 +422,9 @@ void pricing_model_product_repository::remove(context ctx, const std::vector<std
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<pricing_model_product_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<pricing_model_product_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing pricing model products.");
 }
 

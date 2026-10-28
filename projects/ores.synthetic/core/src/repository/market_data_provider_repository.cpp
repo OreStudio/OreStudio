@@ -48,7 +48,6 @@
 namespace ores::synthetic::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -183,10 +182,10 @@ market_data_provider_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        query_builder::read<std::vector<market_data_provider_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+    const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<market_data_provider_entity,
                                              domain::market_data_provider>(
@@ -204,8 +203,8 @@ market_data_provider_repository::read_latest(context ctx, const std::string& cod
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<market_data_provider_entity,
                                              domain::market_data_provider>(
@@ -222,9 +221,10 @@ market_data_provider_repository::read_all(context ctx, const std::string& code) 
     BOOST_LOG_SEV(lg(), debug) << "Reading all market data provider versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<market_data_provider_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<market_data_provider_entity,
                                              domain::market_data_provider>(
@@ -242,8 +242,8 @@ std::optional<domain::market_data_provider> market_data_provider_repository::rea
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
-                             "version"_c == version) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<market_data_provider_entity,
@@ -276,8 +276,8 @@ market_data_provider_repository::remove_status market_data_provider_repository::
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<market_data_provider_entity> |
-                       where("tenant_id"_c == tid && "code"_c == code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing market data provider from database.");
@@ -305,7 +305,7 @@ std::vector<domain::market_data_provider> market_data_provider_repository::read_
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<market_data_provider_entity,
@@ -329,7 +329,7 @@ std::uint32_t market_data_provider_repository::get_total_provider_count(
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<market_data_provider_entity>(
         ctx,
@@ -348,8 +348,8 @@ market_data_provider_repository::read_latest(context ctx, const std::vector<std:
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
-                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
-                             "valid_to"_c == max.value());
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<market_data_provider_entity,
                                                     domain::market_data_provider>(
         ctx,
@@ -371,9 +371,9 @@ void market_data_provider_repository::remove(context ctx, const std::vector<std:
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<market_data_provider_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    const auto query = query_builder::delete_from<market_data_provider_entity> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+                                            "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing market data providers.");
 }
 

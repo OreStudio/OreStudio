@@ -48,7 +48,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -172,7 +171,8 @@ void methodology_repository::write(context ctx,
 std::vector<domain::methodology> methodology_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<methodology_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("id"_c);
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -187,7 +187,7 @@ std::vector<domain::methodology> methodology_repository::read_latest(context ctx
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodology. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<methodology_entity>> |
-                       where("id"_c == id && "valid_to"_c == max.value());
+                       query_builder::where("id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -202,7 +202,7 @@ methodology_repository::read_latest_by_name(context ctx, const std::string& name
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodology by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<methodology_entity>> |
-                       where("name"_c == name && "valid_to"_c == max.value());
+                       query_builder::where("name"_c == name && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -216,8 +216,8 @@ std::vector<domain::methodology> methodology_repository::read_any_by_name(contex
                                                                           const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any methodology by name: " << name;
     const auto query = query_builder::read<std::vector<methodology_entity>> |
-                       where("name"_c == name) | order_by("valid_from"_c.desc()) |
-                       query_builder::limit(1);
+                       query_builder::where("name"_c == name) |
+                       query_builder::order_by("valid_from"_c.desc()) | query_builder::limit(1);
 
     return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -231,8 +231,9 @@ std::vector<domain::methodology> methodology_repository::read_any_by_name(contex
 std::vector<domain::methodology> methodology_repository::read_all(context ctx,
                                                                   const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all methodology versions. " << "id: " << id;
-    const auto query = query_builder::read<std::vector<methodology_entity>> | where("id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
+                       query_builder::where("id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -247,7 +248,8 @@ methodology_repository::read_at_version(context ctx, const std::string& id, std:
     BOOST_LOG_SEV(lg(), debug) << "Reading methodology at version. " << "id: " << id
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<methodology_entity>> |
-                       where("id"_c == id && "version"_c == version) | query_builder::limit(1);
+                       query_builder::where("id"_c == id && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<methodology_entity, domain::methodology>(
@@ -279,8 +281,8 @@ methodology_repository::remove_status methodology_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<methodology_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing methodology from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -341,7 +343,7 @@ methodology_repository::read_latest(context ctx, const std::vector<std::string>&
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<methodology_entity>> |
-                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+                       query_builder::where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
@@ -362,8 +364,9 @@ void methodology_repository::remove(context ctx, const std::vector<std::string>&
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<methodology_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<methodology_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing methodologies.");
 }
 

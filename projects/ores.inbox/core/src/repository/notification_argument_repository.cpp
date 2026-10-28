@@ -46,7 +46,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -137,8 +136,8 @@ std::vector<domain::notification_argument> notification_argument_repository::rea
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c, "name"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("notification_id"_c, "name"_c);
 
     return query_builder::execute_read_query<notification_argument_entity,
                                              domain::notification_argument>(
@@ -156,9 +155,9 @@ notification_argument_repository::read_latest(std::uint32_t offset, std::uint32_
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c, "name"_c) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("notification_id"_c, "name"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_read_query<notification_argument_entity,
                                              domain::notification_argument>(
@@ -179,8 +178,9 @@ notification_argument_repository::read_latest(const boost::uuids::uuid& notifica
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto name_str = name;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_argument_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "name"_c == name && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<notification_argument_entity,
@@ -198,7 +198,7 @@ std::uint32_t notification_argument_repository::get_total_argument_count() {
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<notification_argument_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification arguments");
@@ -215,10 +215,11 @@ notification_argument_repository::read_latest_by_notification(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_argument_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+        query_builder::order_by("name"_c);
 
     auto rows = query_builder::execute_read_query<notification_argument_entity,
                                                   domain::notification_argument>(
@@ -237,10 +238,10 @@ notification_argument_repository::read_latest_by_name(const std::string& name) {
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_argument_entity>> |
-        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value()) |
-        order_by("notification_id"_c);
+    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
+                                            "valid_to"_c == max.value()) |
+                       query_builder::order_by("notification_id"_c);
 
     auto rows = query_builder::execute_read_query<notification_argument_entity,
                                                   domain::notification_argument>(
@@ -262,11 +263,12 @@ notification_argument_repository::read_latest_by_notification(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_argument_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("name"_c) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+        query_builder::order_by("name"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
     auto rows = query_builder::execute_read_query<notification_argument_entity,
                                                   domain::notification_argument>(
@@ -288,8 +290,9 @@ std::uint32_t notification_argument_repository::get_total_argument_count_by_noti
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_argument_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<notification_argument_entity>(
@@ -306,9 +309,9 @@ notification_argument_repository::get_total_argument_count_by_name(const std::st
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<notification_argument_entity>> |
-        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
+                                            "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<notification_argument_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification arguments");
@@ -324,9 +327,10 @@ notification_argument_repository::read_all_by_notification(
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_argument_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str) |
-                       order_by("name"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<notification_argument_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str) |
+        query_builder::order_by("name"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<notification_argument_entity,
                                              notification_argument_history_row>(
@@ -391,8 +395,9 @@ notification_argument_repository::remove(const boost::uuids::uuid& notification_
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
         query_builder::delete_from<notification_argument_entity> |
-        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
-              "name"_c == name && "valid_to"_c == max.value() && "version"_c == expected);
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+                             "name"_c == name && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing notification argument from database");
@@ -424,8 +429,9 @@ void notification_argument_repository::remove_by_notification(
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::delete_from<notification_argument_entity> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str);
+    const auto query =
+        query_builder::delete_from<notification_argument_entity> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all notification arguments from database");

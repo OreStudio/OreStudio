@@ -48,7 +48,6 @@
 namespace ores::synthetic::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -194,8 +193,8 @@ trade_generation_counterparty_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<trade_generation_counterparty_entity,
                                              domain::trade_generation_counterparty>(
@@ -211,8 +210,9 @@ trade_generation_counterparty_repository::read_latest(context ctx, const std::st
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade generation counterparty. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<trade_generation_counterparty_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<trade_generation_counterparty_entity,
                                              domain::trade_generation_counterparty>(
@@ -230,8 +230,8 @@ trade_generation_counterparty_repository::read_all(context ctx, const std::strin
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<trade_generation_counterparty_entity,
                                              domain::trade_generation_counterparty>(
@@ -249,9 +249,10 @@ trade_generation_counterparty_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading trade generation counterparty at version. "
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<trade_generation_counterparty_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<trade_generation_counterparty_entity,
                                                             domain::trade_generation_counterparty>(
@@ -286,8 +287,8 @@ trade_generation_counterparty_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<trade_generation_counterparty_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing trade generation counterparty from database.");
@@ -315,7 +316,7 @@ trade_generation_counterparty_repository::read_latest(
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<trade_generation_counterparty_entity,
@@ -339,7 +340,7 @@ trade_generation_counterparty_repository::get_total_trade_generation_counterpart
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid);
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<trade_generation_counterparty_entity>(
         ctx,
@@ -357,8 +358,9 @@ trade_generation_counterparty_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<trade_generation_counterparty_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<trade_generation_counterparty_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<trade_generation_counterparty_entity,
                                                     domain::trade_generation_counterparty>(
         ctx,
@@ -381,8 +383,9 @@ void trade_generation_counterparty_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<trade_generation_counterparty_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<trade_generation_counterparty_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing trade generation counterparties.");
 }

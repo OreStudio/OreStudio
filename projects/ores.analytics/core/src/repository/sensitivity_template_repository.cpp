@@ -47,7 +47,6 @@
 namespace ores::analytics::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -187,8 +186,8 @@ sensitivity_template_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<sensitivity_template_entity,
                                              domain::sensitivity_template>(
@@ -204,9 +203,9 @@ sensitivity_template_repository::read_latest(context ctx, const std::string& cod
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sensitivity template. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<sensitivity_template_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<sensitivity_template_entity,
                                              domain::sensitivity_template>(
@@ -223,8 +222,8 @@ sensitivity_template_repository::read_all(context ctx, const std::string& code) 
     BOOST_LOG_SEV(lg(), debug) << "Reading all sensitivity template versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<sensitivity_template_entity,
                                              domain::sensitivity_template>(
@@ -240,9 +239,10 @@ std::optional<domain::sensitivity_template> sensitivity_template_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading sensitivity template at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
-                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<sensitivity_template_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<sensitivity_template_entity,
                                                             domain::sensitivity_template>(
@@ -274,8 +274,8 @@ sensitivity_template_repository::remove_status sensitivity_template_repository::
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<sensitivity_template_entity> |
-                       where("tenant_id"_c == tid && "code"_c == code &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing sensitivity template from database.");
@@ -302,7 +302,7 @@ std::vector<domain::sensitivity_template> sensitivity_template_repository::read_
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<sensitivity_template_entity,
@@ -324,8 +324,8 @@ std::uint32_t sensitivity_template_repository::get_total_sensi_template_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sensitivity template count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<sensitivity_template_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<sensitivity_template_entity>(
         ctx,
@@ -342,9 +342,9 @@ sensitivity_template_repository::read_latest(context ctx, const std::vector<std:
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<sensitivity_template_entity>> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<sensitivity_template_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+                                            "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<sensitivity_template_entity,
                                                     domain::sensitivity_template>(
         ctx,
@@ -366,9 +366,9 @@ void sensitivity_template_repository::remove(context ctx, const std::vector<std:
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::delete_from<sensitivity_template_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    const auto query = query_builder::delete_from<sensitivity_template_entity> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) &&
+                                            "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing sensitivity templates.");
 }
 

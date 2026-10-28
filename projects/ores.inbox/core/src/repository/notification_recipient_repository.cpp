@@ -46,7 +46,6 @@
 namespace ores::inbox::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -137,8 +136,8 @@ std::vector<domain::notification_recipient> notification_recipient_repository::r
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c, "notification_id"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("notification_id"_c, "notification_id"_c);
 
     return query_builder::execute_read_query<notification_recipient_entity,
                                              domain::notification_recipient>(
@@ -156,8 +155,8 @@ notification_recipient_repository::read_latest(std::uint32_t offset, std::uint32
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c, "notification_id"_c) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("notification_id"_c, "notification_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_read_query<notification_recipient_entity,
@@ -179,8 +178,9 @@ notification_recipient_repository::read_latest(const boost::uuids::uuid& notific
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "account_id"_c == account_id_str && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<notification_recipient_entity,
@@ -198,7 +198,7 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count() {
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
@@ -215,10 +215,11 @@ notification_recipient_repository::read_latest_by_notification(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c);
+        query_builder::order_by("notification_id"_c);
 
     auto rows = query_builder::execute_read_query<notification_recipient_entity,
                                                   domain::notification_recipient>(
@@ -238,10 +239,11 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c);
+        query_builder::order_by("notification_id"_c);
 
     auto rows = query_builder::execute_read_query<notification_recipient_entity,
                                                   domain::notification_recipient>(
@@ -263,8 +265,9 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_no
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
@@ -284,11 +287,12 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+        query_builder::order_by("notification_id"_c) | query_builder::offset(offset) |
+        query_builder::limit(limit);
 
     auto rows = query_builder::execute_read_query<notification_recipient_entity,
                                                   domain::notification_recipient>(
@@ -309,8 +313,9 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_ac
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value());
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
@@ -327,9 +332,10 @@ notification_recipient_repository::read_all_by_account(const boost::uuids::uuid&
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
-                       where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
-                       order_by("notification_id"_c, "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<notification_recipient_entity>> |
+        query_builder::where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
+        query_builder::order_by("notification_id"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<notification_recipient_entity,
                                              notification_recipient_history_row>(
@@ -393,8 +399,9 @@ notification_recipient_repository::remove(const boost::uuids::uuid& notification
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::delete_from<notification_recipient_entity> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+    const auto query =
+        query_builder::delete_from<notification_recipient_entity> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "account_id"_c == account_id_str && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -428,8 +435,9 @@ void notification_recipient_repository::remove_by_notification(
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::delete_from<notification_recipient_entity> |
-                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str);
+    const auto query =
+        query_builder::delete_from<notification_recipient_entity> |
+        query_builder::where("tenant_id"_c == tid && "notification_id"_c == notification_id_str);
 
     query_builder::execute_delete_query(
         ctx_, query, lg(), "removing all notification recipients from database");

@@ -47,7 +47,6 @@
 namespace ores::analytics::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -185,8 +184,8 @@ sensitivity_asset_class_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("asset_class_code"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("asset_class_code"_c);
 
     return query_builder::execute_read_query<sensitivity_asset_class_entity,
                                              domain::sensitivity_asset_class>(
@@ -203,8 +202,9 @@ sensitivity_asset_class_repository::read_latest(context ctx, const std::string& 
                                << "asset_class_code: " << asset_class_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
+    const auto query =
+        query_builder::read<std::vector<sensitivity_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
                              "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<sensitivity_asset_class_entity,
@@ -222,9 +222,10 @@ sensitivity_asset_class_repository::read_all(context ctx, const std::string& ass
     BOOST_LOG_SEV(lg(), debug) << "Reading all sensitivity asset class versions. "
                                << "asset_class_code: " << asset_class_code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        query_builder::read<std::vector<sensitivity_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<sensitivity_asset_class_entity,
                                              domain::sensitivity_asset_class>(
@@ -241,10 +242,11 @@ std::optional<domain::sensitivity_asset_class> sensitivity_asset_class_repositor
                                << "asset_class_code: " << asset_class_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
+    const auto query =
+        query_builder::read<std::vector<sensitivity_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
                              "version"_c == version) |
-                       query_builder::limit(1);
+        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<sensitivity_asset_class_entity,
                                                             domain::sensitivity_asset_class>(
@@ -276,8 +278,9 @@ sensitivity_asset_class_repository::remove_status sensitivity_asset_class_reposi
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<sensitivity_asset_class_entity> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
+    const auto query =
+        query_builder::delete_from<sensitivity_asset_class_entity> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
@@ -305,7 +308,7 @@ std::vector<domain::sensitivity_asset_class> sensitivity_asset_class_repository:
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<sensitivity_asset_class_entity,
@@ -328,7 +331,7 @@ std::uint32_t sensitivity_asset_class_repository::get_total_asset_class_count(
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid);
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<sensitivity_asset_class_entity>(
         ctx,
@@ -346,8 +349,9 @@ sensitivity_asset_class_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c.in(asset_class_codes) &&
+    const auto query =
+        query_builder::read<std::vector<sensitivity_asset_class_entity>> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c.in(asset_class_codes) &&
                              "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<sensitivity_asset_class_entity,
                                                     domain::sensitivity_asset_class>(
@@ -371,8 +375,9 @@ void sensitivity_asset_class_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<sensitivity_asset_class_entity> |
-                       where("tenant_id"_c == tid && "asset_class_code"_c.in(asset_class_codes) &&
+    const auto query =
+        query_builder::delete_from<sensitivity_asset_class_entity> |
+        query_builder::where("tenant_id"_c == tid && "asset_class_code"_c.in(asset_class_codes) &&
                              "valid_to"_c == max.value());
     query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing sensitivity asset classes.");

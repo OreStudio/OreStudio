@@ -48,7 +48,6 @@
 namespace ores::analytics::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -180,8 +179,8 @@ std::vector<domain::stress_test_library> stress_test_library_repository::read_la
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<stress_test_library_entity,
                                              domain::stress_test_library>(
@@ -197,8 +196,9 @@ stress_test_library_repository::read_latest(context ctx, const std::string& id) 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest stress test library. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<stress_test_library_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<stress_test_library_entity,
                                              domain::stress_test_library>(
@@ -215,8 +215,8 @@ stress_test_library_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all stress test library versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<stress_test_library_entity,
                                              domain::stress_test_library>(
@@ -232,9 +232,10 @@ std::optional<domain::stress_test_library> stress_test_library_repository::read_
     BOOST_LOG_SEV(lg(), debug) << "Reading stress test library at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto query =
+        query_builder::read<std::vector<stress_test_library_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<stress_test_library_entity, domain::stress_test_library>(
@@ -267,8 +268,8 @@ stress_test_library_repository::remove_status stress_test_library_repository::re
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<stress_test_library_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing stress test library from database.");
@@ -295,7 +296,7 @@ std::vector<domain::stress_test_library> stress_test_library_repository::read_la
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
-                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<stress_test_library_entity,
@@ -317,8 +318,8 @@ std::uint32_t stress_test_library_repository::get_total_stress_test_library_coun
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active stress test library count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<stress_test_library_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<stress_test_library_entity>(
         ctx,
@@ -335,8 +336,9 @@ stress_test_library_repository::read_latest(context ctx, const std::vector<std::
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<stress_test_library_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<stress_test_library_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result =
         query_builder::execute_read_query<stress_test_library_entity, domain::stress_test_library>(
             ctx,
@@ -358,8 +360,9 @@ void stress_test_library_repository::remove(context ctx, const std::vector<std::
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<stress_test_library_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<stress_test_library_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing stress test libraries.");
 }
 

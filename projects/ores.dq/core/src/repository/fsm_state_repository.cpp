@@ -48,7 +48,6 @@
 namespace ores::dq::repository {
 
 namespace query_builder = ores::database::query_builder;
-using namespace ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
@@ -172,7 +171,8 @@ void fsm_state_repository::write(context ctx,
 std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("id"_c);
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -187,7 +187,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("id"_c == id && "valid_to"_c == max.value());
+                       query_builder::where("id"_c == id && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -202,7 +202,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(context
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("name"_c == name && "valid_to"_c == max.value());
+                       query_builder::where("name"_c == name && "valid_to"_c == max.value());
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -216,8 +216,8 @@ std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(context ct
                                                                       const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any fsm state by name: " << name;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("name"_c == name) | order_by("valid_from"_c.desc()) |
-                       query_builder::limit(1);
+                       query_builder::where("name"_c == name) |
+                       query_builder::order_by("valid_from"_c.desc()) | query_builder::limit(1);
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -230,8 +230,9 @@ std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(context ct
 
 std::vector<domain::fsm_state> fsm_state_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all fsm state versions. " << "id: " << id;
-    const auto query = query_builder::read<std::vector<fsm_state_entity>> | where("id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<fsm_state_entity>> |
+                       query_builder::where("id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -246,7 +247,8 @@ fsm_state_repository::read_at_version(context ctx, const std::string& id, std::u
     BOOST_LOG_SEV(lg(), debug) << "Reading fsm state at version. " << "id: " << id
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("id"_c == id && "version"_c == version) | query_builder::limit(1);
+                       query_builder::where("id"_c == id && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
@@ -277,8 +279,8 @@ fsm_state_repository::remove_status fsm_state_repository::remove(
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<fsm_state_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
     query_builder::execute_delete_query(ctx, query, lg(), "Removing fsm state from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -337,7 +339,7 @@ fsm_state_repository::read_latest(context ctx, const std::vector<std::string>& i
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("id"_c.in(ids) && "valid_to"_c == max.value());
+                       query_builder::where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = query_builder::execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
@@ -358,8 +360,9 @@ void fsm_state_repository::remove(context ctx, const std::vector<std::string>& i
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::delete_from<fsm_state_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::delete_from<fsm_state_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing fsm states.");
 }
 
@@ -372,22 +375,23 @@ fsm_state_repository::read_latest_by_machine_name(context ctx, const std::string
     // The raw read takes the timestamp as text: MAX_TIMESTAMP is the same
     // instant make_timestamp parses for the generated reads below, so the two
     // agree on which row is current.
-    const auto machine_ids =
-        execute_parameterized_string_query(ctx,
-                                           "select id::text from ores_dq_fsm_machines_tbl "
-                                           "where name = $1 and valid_to = $2",
-                                           {machine_name, std::string(MAX_TIMESTAMP)},
-                                           lg(),
-                                           "Reading fsm machine id by name");
+    const auto machine_ids = query_builder::execute_parameterized_string_query(
+        ctx,
+        "select id::text from ores_dq_fsm_machines_tbl "
+        "where name = $1 and valid_to = $2",
+        {machine_name, std::string(MAX_TIMESTAMP)},
+        lg(),
+        "Reading fsm machine id by name");
 
     if (machine_ids.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No fsm machine named: " << machine_name;
         return {};
     }
 
-    const auto query = query_builder::read<std::vector<fsm_state_entity>> |
-                       where("machine_id"_c == machine_ids.front() && "valid_to"_c == max.value()) |
-                       order_by("name"_c);
+    const auto query =
+        query_builder::read<std::vector<fsm_state_entity>> |
+        query_builder::where("machine_id"_c == machine_ids.front() && "valid_to"_c == max.value()) |
+        query_builder::order_by("name"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,

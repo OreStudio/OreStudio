@@ -40,7 +40,7 @@ blueprint.
 The trigger is one of five events. The desk quotes a currency that has no curve.
 The desk must publish a curve it does not publish yet. The market no longer
 quotes a pillar. A convention is wrong for a currency. A bootstrap failed and
-the recipe is the cause. The journey starts at *Market data*, then *Curves*, and
+the recipe is the cause. The journey starts at *Market data*, then *Curve blueprints*, and
 ends on the blueprint's record page.
 
 Four facts shape the screens.
@@ -64,9 +64,9 @@ The screens are the record screens of the
 record page with the tabs Details, Pillars, Check, Published sets and History,
 and dialogs for add, edit, copy and delete. This journey adds no layout of its
 own. The breadcrumb follows [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]]:
-Home, Market data, Curves.
+Home, Market data, Curve blueprints.
 
-1. *List the blueprints.* The person opens *Market data* and then *Curves*. The
+1. *List the blueprints.* The person opens *Market data* and then *Curve blueprints*. The
    system lists the blueprints of the party the session acts in: the output
    series' URI first and in monospace, then the currency, the role, the index
    tenor, the interpolation method, the day count, the pillars the blueprint
@@ -131,7 +131,7 @@ Home, Market data, Curves.
     The output series is a link, and its points are the curve the market reads.
     A value *Used by* lists the projection blueprints that name this one as
     their discount curve, each as a link; when there are more than three the
-    value links to the list filtered by this blueprint.
+    value links to the list filtered by this blueprint, a filter the list read does not have yet (see What is missing, item 5).
 13. *Read the history.* The person opens the *History* tab, the shared timeline
     of the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]].
     The stream is the blueprint's own versions and every pillar's versions,
@@ -140,14 +140,14 @@ Home, Market data, Curves.
 14. *Delete a blueprint.* The person chooses *Delete*. The remove dialog names
     what is lost: the pillars are deleted first with the same reason, the
     output series and the points already published into it stay, and the
-    published sets keep their history and name a blueprint that no longer
+    today the published sets keep their history and name a blueprint that no longer
     exists. The server refuses the delete while a projection names this
     blueprint as its discount curve, and the dialog says so before the person
     asks.
 15. *Leave.* The person goes back to the list. Nothing has been published, and
     no curve has been built.
 
-Step 10 is the only step this journey reads and does not change. Step 6 is one
+Step 10 is the only step another journey owns. Step 6 is one
 write for each pillar and step 8 is one more, so a blueprint with eight pillars
 is ten writes and not one. The journey records it rather than hiding it: see
 /What is missing/.

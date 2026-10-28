@@ -64,7 +64,9 @@ struct market_fixing_lookup {
 };
 
 struct market_fixings_filter {
+    std::optional<boost::uuids::uuid> series_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> series_id_one_of;
 };
 
 struct market_fixing_event {

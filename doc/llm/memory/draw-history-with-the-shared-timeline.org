@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E1FBDFD4-1DFC-4283-B025-2D29DDE81E74
+:END:
+#+title: Draw a record's history with the shared timeline
+#+description: The record screen standard names RecordTimeline as the history; HistoryPanel's two-pane compare is the retired shape.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:web:ux:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A record's History tab is drawn with RecordTimeline, over the shared Timeline, and its stream is the record's versions merged with those of every part it holds now; HistoryPanel is the legacy shape and is not to be used.
+
+*Why:* I read the codebase and found HistoryPanel used on several record pages, took that for the house component, and shipped it on the structures page. The record screen standard says the opposite: the History tab is the shared timeline, and the two-pane compare of HistoryPanel is the legacy shape (decided 2026-10-25). Usage in the tree was not evidence; the standard was.
+
+*How to apply:* Before choosing a screen component, read the matching page under doc/knowledge/ui (the record screen standard for a record page) rather than copying the nearest caller. For history, use RecordTimeline at src/refdata/RecordTimeline.tsx, passing entityType, entityId and parts, and give each part a name of the kind plus its identity.

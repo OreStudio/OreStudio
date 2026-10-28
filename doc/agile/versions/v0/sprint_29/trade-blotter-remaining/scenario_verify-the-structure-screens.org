@@ -196,13 +196,20 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 ** Read the history and the price notice
 
 - Open the *History* tab.
-- Passes when it shows the application's own history panel: a timeline of
-  versions with the person who wrote each, when, and why — the reason you
-  typed when grouping it, or =system.new_record= for a population's deal.
-- Read the *Record* picker: it names the deal and each of its legs.
-- Choose a leg.
-- Passes when the timeline changes to that leg's membership versions, and a
-  version that linked or unlinked it is among them.
+- Passes when it shows the shared timeline: the event chart, then one line per
+  version newest first, with *Hide system activity*, the reason code, the person
+  who wrote each and the time — the reason you typed when grouping it, or
+  =system.new_record= for a population's deal. There is no record picker and no
+  two-pane compare: those are the legacy shapes the standard retired.
+- Passes when the stream is the deal's story as one account: its own versions
+  and the versions of every leg it holds, each leg's entry named *Leg <the
+  reference> · leg*, merged newest first.
+- Open an entry's detail.
+- Passes when it draws the fields that changed, the old and the new, and a first
+  version draws the whole record.
+- Read the note under the stream.
+- Passes when it states that a part deleted from the deal is not in the stream,
+  because the screen reads the history of the legs the deal holds now.
 - Open the *Price* tab.
 - Passes when it states that pricing is not read yet, rather than a number.
 

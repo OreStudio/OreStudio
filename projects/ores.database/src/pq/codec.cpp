@@ -148,16 +148,16 @@ void codec<utility::decimal::decimal>::encode(const utility::decimal::decimal& v
         ++first;
         --weight;
     }
-    std::size_t last = digits.size();
-    while (last > first && digits[last - 1] == 0)
-        --last;
-    const bool zero = first == last;
+    std::size_t past_last = digits.size();
+    while (past_last > first && digits[past_last - 1] == 0)
+        --past_last;
+    const bool zero = first == past_last;
 
-    wire::put_u16(out, static_cast<std::uint16_t>(last - first));
+    wire::put_u16(out, static_cast<std::uint16_t>(past_last - first));
     wire::put_u16(out, static_cast<std::uint16_t>(zero ? 0 : weight));
     wire::put_u16(out, negative && !zero ? 0x4000 : 0x0000);
     wire::put_u16(out, dscale);
-    for (std::size_t i = first; i < last; ++i)
+    for (std::size_t i = first; i < past_last; ++i)
         wire::put_u16(out, digits[i]);
 }
 

@@ -100,10 +100,8 @@ resolve_publish_subject(const ores::database::context& ctx,
  * missing.
  * @throws std::runtime_error when the store refuses the detail row.
  */
-ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request
-raise_publish_request(const ores::database::context& ctx,
-                      const publish_subject& subject,
-                      const std::string& reason);
+ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request raise_publish_request(
+    const ores::database::context& ctx, const publish_subject& subject, const std::string& reason);
 
 /**
  * @brief Asks the approval record whether a publish may go ahead.

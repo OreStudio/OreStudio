@@ -26,8 +26,8 @@
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
@@ -64,7 +64,8 @@ published_set publish_one(curve_fixture& f,
                           const person& decider,
                           std::chrono::system_clock::time_point at = as_of) {
     const auto subject = f.subject(at);
-    const auto raised = raise_publish_request(maker.ctx, subject, "The desk prices from this curve");
+    const auto raised =
+        raise_publish_request(maker.ctx, subject, "The desk prices from this curve");
     const auto id = boost::uuids::to_string(raised.id);
     const auto decided =
         approval_lifecycle(maker.ctx).decide(id, raised.version, "approve", decider.account.id, "");
@@ -99,14 +100,15 @@ ores::marketdata::messaging::list_published_curves_request scoped(const curve_fi
 }
 
 /// The set the list draws by itself: the sets in use and no others.
-ores::marketdata::messaging::list_published_curves_response list_of(
-    const curve_fixture& f, const ores::database::context& ctx) {
+ores::marketdata::messaging::list_published_curves_response
+list_of(const curve_fixture& f, const ores::database::context& ctx) {
     return list_published_curves(ctx, scoped(f));
 }
 
 }
 
-TEST_CASE("the_list_answers_every_set_with_its_curve_party_publisher_and_state", published_curve_tags) {
+TEST_CASE("the_list_answers_every_set_with_its_curve_party_publisher_and_state",
+          published_curve_tags) {
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
@@ -156,9 +158,8 @@ TEST_CASE("the_list_hides_a_candidate_and_the_sets_that_ended", published_curve_
     REQUIRE(with_candidates.success);
     REQUIRE(with_candidates.total == 2);
 
-    const auto candidate =
-        std::ranges::find_if(with_candidates.sets,
-                             [](const auto& s) { return s.state_code == "candidate"; });
+    const auto candidate = std::ranges::find_if(
+        with_candidates.sets, [](const auto& s) { return s.state_code == "candidate"; });
     REQUIRE(candidate != with_candidates.sets.end());
     // A candidate names no publisher and no instant, so a reader cannot take it
     // for the set a desk prices from.
@@ -168,7 +169,8 @@ TEST_CASE("the_list_hides_a_candidate_and_the_sets_that_ended", published_curve_
     CHECK(candidate->as_of == as_of + std::chrono::hours{24});
 }
 
-TEST_CASE("an_ended_set_reads_as_its_last_known_values_and_states_that_it_ended", published_curve_tags) {
+TEST_CASE("an_ended_set_reads_as_its_last_known_values_and_states_that_it_ended",
+          published_curve_tags) {
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
@@ -227,17 +229,15 @@ TEST_CASE("a_second_publish_supersedes_the_set_it_replaced", published_curve_tag
     REQUIRE(listed.success);
     REQUIRE(listed.total == 2);
 
-    const auto live = std::ranges::count_if(listed.sets,
-                                            [](const auto& s) { return s.state_code == "published"; });
+    const auto live = std::ranges::count_if(
+        listed.sets, [](const auto& s) { return s.state_code == "published"; });
     // One live set is the promise a reader is given, whatever the series holds.
     CHECK(live == 1);
 
-    const auto superseded =
-        std::ranges::find_if(listed.sets,
-                             [](const auto& s) { return s.state_code == "superseded"; });
+    const auto superseded = std::ranges::find_if(
+        listed.sets, [](const auto& s) { return s.state_code == "superseded"; });
     REQUIRE(superseded != listed.sets.end());
-    CHECK(superseded->superseded_by_request_id ==
-          boost::uuids::to_string(successor.request_id));
+    CHECK(superseded->superseded_by_request_id == boost::uuids::to_string(successor.request_id));
     CHECK(superseded->superseded_as_of == as_of);
     REQUIRE(superseded->superseded_at.has_value());
     // A supersession is not a withdrawal: the set was replaced, not taken away.
@@ -313,7 +313,8 @@ TEST_CASE("the_list_filters_by_party_and_by_the_requests_a_screen_holds", publis
     CHECK(rows.sets.front().request_id == request_id);
 }
 
-TEST_CASE("a_withdrawal_refuses_a_set_that_is_not_in_use_and_a_reason_cut_short", published_curve_tags) {
+TEST_CASE("a_withdrawal_refuses_a_set_that_is_not_in_use_and_a_reason_cut_short",
+          published_curve_tags) {
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
@@ -321,8 +322,9 @@ TEST_CASE("a_withdrawal_refuses_a_set_that_is_not_in_use_and_a_reason_cut_short"
     // A candidate is not in use, so there is nothing to take out of use.
     const auto subject = f.subject();
     const auto raised = raise_publish_request(maker.ctx, subject, "Not decided yet");
-    const auto candidate = ores::marketdata::repository::curve_publish_repository{}
-                               .read_latest_by_request(maker.ctx, boost::uuids::to_string(raised.id));
+    const auto candidate =
+        ores::marketdata::repository::curve_publish_repository{}.read_latest_by_request(
+            maker.ctx, boost::uuids::to_string(raised.id));
     REQUIRE(candidate.has_value());
 
     ores::marketdata::messaging::withdraw_curve_request withdrawal;
@@ -397,8 +399,8 @@ TEST_CASE("a_withdrawal_request_that_nobody_approved_authorises_nothing", publis
     // The withdrawal kind is seeded, so a person can raise the ask. It is
     // waiting here, and a waiting request authorises no act.
     approval_lifecycle lifecycle(maker.ctx);
-    const auto kind = lifecycle.kind(std::string(ores::marketdata::service::app::
-                                                     curve_withdrawal_kind_code));
+    const auto kind =
+        lifecycle.kind(std::string(ores::marketdata::service::app::curve_withdrawal_kind_code));
     REQUIRE(kind.has_value());
     const auto raised = lifecycle.raise(*kind, "The 2Y pillar was stale.", maker.account.id);
 
@@ -412,11 +414,12 @@ TEST_CASE("a_withdrawal_request_that_nobody_approved_authorises_nothing", publis
     CHECK(waiting.message.find("waiting") != std::string::npos);
 
     // Approved, the same request authorises the act and the record names it.
-    REQUIRE(lifecycle.decide(boost::uuids::to_string(raised.id),
-                             raised.version,
-                             "approve",
-                             decider.account.id,
-                             "")
+    REQUIRE(lifecycle
+                .decide(boost::uuids::to_string(raised.id),
+                        raised.version,
+                        "approve",
+                        decider.account.id,
+                        "")
                 .state_code == "approved");
     const auto ended = withdraw_curve(maker.ctx, withdrawal);
     REQUIRE(ended.success);

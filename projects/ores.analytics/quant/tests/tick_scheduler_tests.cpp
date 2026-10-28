@@ -481,7 +481,8 @@ TEST_CASE("the history counts each group's ticks by the second and by the tenth"
     for (int i = 0; i < 30; ++i)
         scheduler.step();
 
-    const auto by_second = scheduler.history(ores::analytics::quant::service::history_resolution::second, 3600);
+    const auto by_second =
+        scheduler.history(ores::analytics::quant::service::history_resolution::second, 3600);
     REQUIRE(by_second.groups == std::vector<std::string>{"fx", "rates"});
     CHECK(by_second.slot_seconds == 1.0);
     std::uint32_t fx = 0;
@@ -498,7 +499,8 @@ TEST_CASE("the history counts each group's ticks by the second and by the tenth"
     CHECK(fx >= 19);
     CHECK(fx <= 21);
 
-    const auto by_tenth = scheduler.history(ores::analytics::quant::service::history_resolution::tenth, 600);
+    const auto by_tenth =
+        scheduler.history(ores::analytics::quant::service::history_resolution::tenth, 600);
     CHECK(by_tenth.slot_seconds == 0.1);
     std::uint32_t all = 0;
     for (const auto& bin : by_tenth.bins)
@@ -506,8 +508,8 @@ TEST_CASE("the history counts each group's ticks by the second and by the tenth"
             all += count;
     CHECK(all == 30);
     // Active at two, so the thirty ticks span about ten seconds of the run.
-    CHECK(std::chrono::duration<double>(by_second.bins.back().at - by_second.bins.front().at).count() ==
-          Catch::Approx(9.0).margin(1.0));
+    CHECK(std::chrono::duration<double>(by_second.bins.back().at - by_second.bins.front().at)
+              .count() == Catch::Approx(9.0).margin(1.0));
 }
 
 TEST_CASE("a reading carries the ticks a second every law asks for", "[tick_scheduler]") {

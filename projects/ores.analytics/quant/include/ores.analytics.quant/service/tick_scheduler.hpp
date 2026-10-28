@@ -24,8 +24,8 @@
 #include "ores.analytics.quant/domain/operational_clock.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
-#include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/arrival_history.hpp"
+#include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/scheduler_trace.hpp"
 #include <queue>
 #include <atomic>

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -30,7 +31,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.database/query_builder/execute.hpp"
 #include <string>
 #include <vector>
 
@@ -105,7 +105,7 @@ std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_leg_amount_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                                     "valid_to"_c == max.value()) |
+                                            "valid_to"_c == max.value()) |
                        query_builder::order_by("sequence_number"_c);
 
     return query_builder::execute_read_query<bond_leg_amount_entity, bond_leg_amount_entity>(

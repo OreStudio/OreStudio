@@ -317,9 +317,9 @@ public:
             return;
         }
 
-        const auto history = scheduler_.history(decoded->resolution == "tenth"
-                                                    ? quant::service::history_resolution::tenth
-                                                    : quant::service::history_resolution::second,
+        const auto history = scheduler_.history(decoded->resolution == "tenth" ?
+                                                    quant::service::history_resolution::tenth :
+                                                    quant::service::history_resolution::second,
                                                 decoded->seconds);
         ores::synthetic::messaging::get_market_history_response response;
         response.success = true;
@@ -327,11 +327,11 @@ public:
         response.groups = history.groups;
         response.bins.reserve(history.bins.size());
         for (const auto& bin : history.bins)
-            response.bins.push_back(ores::synthetic::messaging::market_history_bin{
-                .at = bin.at,
-                .counts = bin.counts,
-                .pace = bin.pace,
-                .active_share = bin.active_share});
+            response.bins.push_back(
+                ores::synthetic::messaging::market_history_bin{.at = bin.at,
+                                                               .counts = bin.counts,
+                                                               .pace = bin.pace,
+                                                               .active_share = bin.active_share});
         reply(nats_, msg, response);
     }
 

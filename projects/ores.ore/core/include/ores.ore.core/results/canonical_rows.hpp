@@ -94,7 +94,7 @@ struct marshal_outcome {
  * @param source_file  the file name, written to every row's source.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT marshal_outcome marshal_npv_csv(std::string_view csv,
-                                                                 std::string_view source_file);
+                                                                   std::string_view source_file);
 
 /**
  * @brief The canonical rows as the newline-delimited CSV the loader reads.

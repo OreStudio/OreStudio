@@ -107,8 +107,8 @@ struct collection_codec {
 template <typename Wrapper, typename Entry, typename ReadEntry, typename WriteEntry>
 collection_codec codec(std::string_view name,
                        std::string_view entry_name,
-                       std::vector<Wrapper> todays_market_projection_xg::todaysmarket::* member,
-                       std::vector<Entry> Wrapper::* entries,
+                       std::vector<Wrapper> todays_market_projection_xg::todaysmarket::*member,
+                       std::vector<Entry> Wrapper::*entries,
                        ReadEntry read_entry,
                        WriteEntry write_entry) {
     const auto read = [=](reading& in, const todays_market_projection_xg::todaysmarket& doc) {
@@ -191,10 +191,10 @@ const std::string& required_key(const todays_market_entry& r) {
 template <typename Wrapper, typename Entry>
 collection_codec keyed(std::string_view name,
                        std::string_view entry_name,
-                       std::vector<Wrapper> todays_market_projection_xg::todaysmarket::* member,
-                       std::vector<Entry> Wrapper::* entries,
+                       std::vector<Wrapper> todays_market_projection_xg::todaysmarket::*member,
+                       std::vector<Entry> Wrapper::*entries,
                        std::string_view key_name,
-                       std::string Entry::* key) {
+                       std::string Entry::*key) {
     return codec(
         name,
         entry_name,
@@ -217,8 +217,8 @@ template <typename Wrapper, typename Entry>
 collection_codec
 optionally_keyed(std::string_view name,
                  std::string_view entry_name,
-                 std::vector<Wrapper> todays_market_projection_xg::todaysmarket::* member,
-                 std::vector<Entry> Wrapper::* entries) {
+                 std::vector<Wrapper> todays_market_projection_xg::todaysmarket::*member,
+                 std::vector<Entry> Wrapper::*entries) {
     return codec(
         name,
         entry_name,
@@ -427,7 +427,7 @@ const std::vector<collection_codec>& collections() {
 struct binding_attribute {
     std::string_view collection;
     std::string_view attribute;
-    std::string todays_market_projection_xg::configuration_type::* member;
+    std::string todays_market_projection_xg::configuration_type::*member;
 };
 
 const std::vector<binding_attribute>& binding_attributes() {

@@ -45,8 +45,8 @@ void pricing_engines_document_service::save(messaging::pricing_engines_document 
     // not act for would rewrite its party and, if the acting party already
     // holds a configuration of the same name, collide with it. The person has
     // to switch to the configuration's own party instead.
-    const auto held = pricing_model_config_repository().read_latest(
-        ctx_, boost::uuids::to_string(v.config.id));
+    const auto held =
+        pricing_model_config_repository().read_latest(ctx_, boost::uuids::to_string(v.config.id));
     if (!held.empty()) {
         if (const auto acting = ctx_.party_id();
             acting.has_value() && held.front().party_id != *acting) {

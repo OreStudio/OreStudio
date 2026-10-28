@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/results/canonical_reader.hpp"
-
 #include <charconv>
 #include <cstddef>
 #include <string>

@@ -19,10 +19,10 @@
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
-#include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -82,8 +82,7 @@ bool request_already_ended_a_set(const ores::database::context& ctx,
  * The request is read through the inbox's own lifecycle, so the rule that a
  * withdrawal waits for a decision is the inbox's and not a copy of it here.
  */
-std::string refusal_of_request(const ores::database::context& ctx,
-                               const std::string& request_id) {
+std::string refusal_of_request(const ores::database::context& ctx, const std::string& request_id) {
     std::optional<ores::inbox::domain::approval_request> request;
     try {
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
@@ -114,10 +113,12 @@ std::string refusal_of_request(const ores::database::context& ctx,
 
 }
 
-messaging::withdraw_curve_response withdraw_curve(const ores::database::context& ctx,
-                                                 const messaging::withdraw_curve_request& request) {
+messaging::withdraw_curve_response
+withdraw_curve(const ores::database::context& ctx,
+               const messaging::withdraw_curve_request& request) {
     if (request.publish_id.empty())
-        return refuse("Name the published set to end, so the act ends one set and not any of them.");
+        return refuse(
+            "Name the published set to end, so the act ends one set and not any of them.");
     if (request.reason_code.empty())
         return refuse("Say why the set leaves use, so the record keeps a reason against the act.");
 
@@ -132,8 +133,8 @@ messaging::withdraw_curve_response withdraw_curve(const ores::database::context&
                       "nothing to withdraw.");
     if (record.withdrawn_at)
         return refuse("That set was withdrawn at " +
-                      ores::platform::time::datetime::to_iso8601_utc(*record.withdrawn_at) + " by " +
-                      record.withdrawn_by + ".");
+                      ores::platform::time::datetime::to_iso8601_utc(*record.withdrawn_at) +
+                      " by " + record.withdrawn_by + ".");
     if (record.superseded_at)
         return refuse("That set was superseded at " +
                       ores::platform::time::datetime::to_iso8601_utc(*record.superseded_at) +
@@ -155,16 +156,16 @@ messaging::withdraw_curve_response withdraw_curve(const ores::database::context&
     record.modified_by = actor;
     record.performed_by = ctx.service_account();
     record.change_reason_code = "system.curve_withdrawn";
-    record.change_commentary =
-        request.comment.empty() ? "Withdrawn by " + actor : request.comment;
+    record.change_commentary = request.comment.empty() ? "Withdrawn by " + actor : request.comment;
 
     repo.write(ctx,
-              record,
-              {ores::utility::domain::precondition_kind::must_match_version,
-               static_cast<std::uint32_t>(record.version)});
+               record,
+               {ores::utility::domain::precondition_kind::must_match_version,
+                static_cast<std::uint32_t>(record.version)});
 
-    BOOST_LOG_SEV(curve_withdrawal_lg(), info) << "Withdrew published set " << request.publish_id << " of series "
-                              << record.output_series_id << " as " << request.reason_code;
+    BOOST_LOG_SEV(curve_withdrawal_lg(), info)
+        << "Withdrew published set " << request.publish_id << " of series "
+        << record.output_series_id << " as " << request.reason_code;
 
     messaging::withdraw_curve_response response;
     response.success = true;

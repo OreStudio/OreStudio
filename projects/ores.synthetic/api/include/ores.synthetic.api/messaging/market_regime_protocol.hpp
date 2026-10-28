@@ -45,7 +45,8 @@ struct market_regime_sample {
     std::chrono::system_clock::time_point at;
     /** @brief The shared heat then, in units of a rate: what any event adds and decay fades. */
     double heat = 0.0;
-    /** @brief The ticks a second every running feed's law asked for then: the market's lambda(t). */
+    /** @brief The ticks a second every running feed's law asked for then: the market's lambda(t).
+     */
     double intensity = 0.0;
 };
 
@@ -94,7 +95,8 @@ struct get_market_regime_response {
     double calm_rate = 0.0;
     /** @brief How far activity tilts a price's shape toward its tails; zero is off. */
     double tail_loading = 0.0;
-    /** @brief The pace of an active market; the calm pace follows from it. Zero when not reported. */
+    /** @brief The pace of an active market; the calm pace follows from it. Zero when not reported.
+     */
     double active_multiplier = 0.0;
 };
 

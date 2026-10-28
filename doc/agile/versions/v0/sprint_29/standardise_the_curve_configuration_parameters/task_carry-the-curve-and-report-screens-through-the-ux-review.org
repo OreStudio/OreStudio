@@ -140,6 +140,12 @@ task and name that file in the Command column.
   the page edits. The BFF serves that entity type. The tab keeps =?party=,
   because the convention is read under a party and a tab change must not lose
   it; =useRecordTabs= gained the =keep= parameter for it.
+- *The check suite recreated the database.* =compass check= runs a =db= step
+  that rebuilds the schema, so the tenant was gone when the run finished. The
+  Acme script provisioned it again, and the history reads below were taken on
+  that fresh database: a curve configuration answers one version, a convention
+  of the caller's party answers two, and a convention held by the system party
+  stays hidden by row-level security, which is right.
 - *The equity underlying permission codes were not seeded at all.*
   =refdata::equity_underlyings:read/write/delete= were checked by the entity's
   handler and absent from =iam_permissions_populate.sql=, so the history

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A product with children is constructed whole. The writer appends what the constr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,18 @@ A product with children is constructed whole. The writer appends what the constr
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A product with children returns them: =equity_swap_product= holds the swap's
+row, its constituents and its periods, and =equity_accumulator_product= holds
+the accumulator's row and its range bounds. The constructor numbers the
+children from the order it was given them, so no caller can leave a gap or a
+duplicate.
+
+The terms gain the children as their own fact structs, so a caller states
+what a member or a bound is rather than a row's fields. A bound's start date
+is the product's, so it is stated once.
+
+The writer keeps only the audit stamp: it appends what the constructor
+returned and fills the audit columns, which is persistence and not product.
 
 * Measurements
 
@@ -58,6 +67,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Equity rows after provisioning | 17 | =compass db sql= over the nine =ores_trading_equity_*_instruments_tbl= tables | =b9b59be0dd= |
+| Basket constituents and periods | 2 and 4, numbered 1..n | the same, on the two child tables | =b9b59be0dd= |
+| Range bounds | 4 across 3 accumulator rows | the same, on =ores_trading_range_bounds_tbl= | =b9b59be0dd= |
+| =ores.trading.api.tests= | 447 assertions in 116 test cases | the suite binary | =b9b59be0dd= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =b9b59be0dd= |
 |      |       |         |        |
 
 * Notes
@@ -86,3 +100,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A product with children is constructed whole. The swap's and the accumulator's
+constructors return their children alongside their row, numbering each child
+from the order the terms stated it. A worst-of basket swap with an empty
+basket is refused, which was previously an unstated assumption: the writer
+looped over whatever the bag held, so a basket swap could be constructed with
+no members and the database would accept it.
+
+Proved by a provisioning run on a recreated database: =generate_trades=
+completed, the family holds the same 17 rows, the same 2 constituents and 4
+periods numbered from one, and the same 4 range bounds over 3 accumulator
+rows. Both suites are green: =ores.trading.api.tests= at 447 assertions in 116
+test cases, =ores.synthetic.core.tests= at 1733 assertions in 78.
+
+The branch is held locally until PR #4025 merges, so that this lands as its
+own change against main rather than as a stack.

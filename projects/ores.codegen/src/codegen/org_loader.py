@@ -1526,6 +1526,18 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 {"column": r["column"], "is_nullable": _parse_typed(r.get("nullable", "false"))}
                 for r in rows if r.get("column")
             ]
+        # The close-on-insert names the row it replaces by the key it is given.
+        # With no key it closes every current row of the tenant instead, so one
+        # report's rows would close the rows of every report before it. That is
+        # never what a model means, so a model that states the trigger without
+        # the key stops the generation rather than losing the rows.
+        if (de.get("sql", {}).get("bitemporal_trigger") == "soft_update_delete"
+                and not de.get("sql", {}).get("bitemporal_natural_keys")):
+            raise ValueError(
+                f"{de.get('entity_singular') or 'entity'}: "
+                "':bitemporal_trigger: soft_update_delete' needs a "
+                "'** Bitemporal natural keys' table under '* SQL'; without it "
+                "the insert trigger closes every current row of the tenant")
         # party_id_from_book_id is a struct feature: the insert trigger
         # derives both party_id and portfolio_id from book_id, because the
         # book states both. The struct supplies the book table and the

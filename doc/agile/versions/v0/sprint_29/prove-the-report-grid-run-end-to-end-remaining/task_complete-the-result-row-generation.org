@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The reporting component regenerates to exactly what is committed, and a run's rows are read through the generated handler, which honours the page, the filters and the read permission.
+The reporting component regenerates to exactly what is committed, a run's rows are read
+through the generated handler, which honours the page, the filters and the read
+permission, and posting a run leaves every earlier run's rows live.
 
 * Status
 
@@ -28,9 +30,9 @@ The reporting component regenerates to exactly what is committed, and a run's ro
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Built and proven; the pull request is open for review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge, then close the task.            |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -39,6 +41,10 @@ The reporting component regenerates to exactly what is committed, and a run's ro
 - A run's rows are read through reporting.v1.report_result_rows.list, and the service applies limit, offset and every filter member.
 - The read checks reporting::report_result_rows:read, and the permission is seeded and granted to Member.
 - The hand-written run_result_rows_handler and its read_by_run are gone.
+- Inserting a run's rows closes nothing of another run: the soft-update trigger names
+  the natural key, which includes the run.
+- Codegen refuses a model that states the soft-update trigger without a bitemporal
+  natural key, so the trigger cannot be generated with a tenant-wide close.
 
 * Plan
 

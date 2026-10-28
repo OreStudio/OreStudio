@@ -154,6 +154,23 @@ The file and the row the marshal read, for provenance.
 :rls_tenant_isolation:         true
 :END:
 
+** Bitemporal natural keys
+
+A run's rows are its own. The insert trigger closes the current row of the same
+key, and the key names the run, so posting one run never closes another run's
+rows. Without the key the trigger would close every current row of the tenant,
+and a report would erase the reports before it.
+
+| column             | nullable |
+|--------------------+----------|
+| party_id           | false    |
+| report_instance_id | false    |
+| as_of              | false    |
+| subject_type       | false    |
+| subject_id         | false    |
+| measure            | false    |
+| currency           | false    |
+
 * C++
 
 ** Flags

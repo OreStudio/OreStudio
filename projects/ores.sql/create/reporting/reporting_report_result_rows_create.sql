@@ -67,6 +67,13 @@ begin
     update "ores_reporting_report_result_rows_tbl"
     set valid_to = current_timestamp
     where tenant_id = new.tenant_id
+      and party_id = new.party_id
+      and report_instance_id = new.report_instance_id
+      and as_of = new.as_of
+      and subject_type = new.subject_type
+      and subject_id = new.subject_id
+      and measure = new.measure
+      and currency = new.currency
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < current_timestamp;
 
@@ -86,6 +93,13 @@ begin
     update "ores_reporting_report_result_rows_tbl"
     set valid_to = current_timestamp
     where tenant_id = old.tenant_id
+      and party_id = old.party_id
+      and report_instance_id = old.report_instance_id
+      and as_of = old.as_of
+      and subject_type = old.subject_type
+      and subject_id = old.subject_id
+      and measure = old.measure
+      and currency = old.currency
       and valid_to = ores_utility_infinity_timestamp_fn();
     return null;
 end;

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: 7E2B91D4-3C58-4F0A-8D61-2A9E5B7C4F13
+:END:
+#+title: ores.marketdata.provider_terms_operations
+#+description: Codegen operation model for accepting a provider's terms: the one write that records an acceptance.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: provider_terms_operations
+#+namespace: ores::marketdata::messaging
+#+brief: Accepting a provider's terms.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A provider with a terms page is fetched only when its terms, as they stand, were
+accepted. This operation is the one writer of an acceptance: the service computes
+the digest of the terms it holds, and takes the account from the session and the
+time from its own clock, so a caller states only which provider it accepts.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+* Messages
+
+** accept_provider_terms_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.accept_provider_terms
+:response: accept_provider_terms_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Accepts the terms of a provider as they stand.
+ *
+ * The caller names the provider and nothing else: what is accepted is the terms
+ * the service holds, by whom is the session's account, and when is the service's
+ * clock. Terms that change afterwards no longer match, so they must be accepted
+ * again.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider whose terms are accepted.
+ */
+#+end_src
+
+** accept_provider_terms_response
+:PROPERTIES:
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the acceptance was recorded.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, or what was recorded.
+ */
+#+end_src
+
+*** accepted_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account recorded as accepting.
+ */
+#+end_src
+
+*** accepted_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the acceptance was recorded.
+ */
+#+end_src
+
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.
+- [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] — why a provider has terms.

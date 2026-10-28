@@ -123,7 +123,13 @@ answers its demand set, sends a heartbeat, and publishes ticks.
   curves. The fetcher takes its transport as an interface, so its tests run on
   stored responses with no network.
 - *One publisher a request.* The Frankfurter fetcher asks for one provider at a
-  time, =/v2/providers/<key>/rates=, and never for the blended rate. The blended
+  time, =/v2/providers/<key>/rates=, and never for the blended rate. Frankfurter
+  rebases every provider's rates to the euro unless the request names a base, so
+  the fetcher names the provider's own pivot, =base=<pivot>=, and refuses a row
+  in any other base: an item names the pivot, and a row in another base would be
+  filed under the wrong item. For a provider whose pivot is not the euro, the
+  digits are Frankfurter's division back to the pivot, which may differ from the
+  publisher's in the last place. The blended
   rate is Frankfurter's own sum and hides which bank the number came from.
 - *Backfill, then daily.* On start the adapter fetches the window that the
   calibration needs for each demanded item, oldest first. After that it polls

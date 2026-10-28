@@ -48,7 +48,7 @@ std::ostream& operator<<(std::ostream& s, const options& v);
 
 /**
  * @brief Reads one source as =<source name>:<provider code>:<Frankfurter key>=, such as
- * =ecb.frankfurter:ecb:ECB=.
+ * =ecb-frankfurter:ecb:ECB=.
  */
 std::optional<domain::hosted_source> parse_source(const std::string& text);
 

@@ -51,11 +51,19 @@ struct published_rate final {
     parse_rates(std::string_view json);
 
 /**
- * @brief The currencies that the provider @p key quotes against its pivot, from a response of
- * =/v2/providers=. The pivot itself is left out.
+ * @brief What a provider quotes: its pivot, and the currencies it quotes against it.
  */
-[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::expected<std::vector<std::string>, std::string>
-parse_currencies(std::string_view json, std::string_view key);
+struct provider_universe final {
+    std::string pivot;
+    std::vector<std::string> currencies;
+};
+
+/**
+ * @brief The universe of the provider @p key, from a response of =/v2/providers=. The pivot is
+ * left out of the currencies.
+ */
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::expected<provider_universe, std::string>
+parse_universe(std::string_view json, std::string_view key);
 
 /**
  * @brief Reads one provider at a time through Frankfurter, never the blended rate.
@@ -67,13 +75,21 @@ class ORES_MARKETDATA_OFFICIAL_EXPORT frankfurter_fetcher final {
 public:
     frankfurter_fetcher(http::client::net::transport& transport, std::string base_url);
 
-    /// The currencies the provider @p key quotes against its pivot.
-    [[nodiscard]] std::expected<std::vector<std::string>, std::string>
-    currencies(std::string_view key);
+    /// What the provider @p key quotes.
+    [[nodiscard]] std::expected<provider_universe, std::string> universe(std::string_view key);
 
-    /// The rates the provider @p key published from @p from to @p to, both included.
+    /**
+     * @brief The rates the provider @p key published from @p from to @p to, both included,
+     * against @p pivot.
+     *
+     * Frankfurter rebases every provider to the euro unless asked for another base, so the
+     * request always names the provider's own pivot.
+     */
     [[nodiscard]] std::expected<std::vector<published_rate>, std::string>
-    rates(std::string_view key, std::chrono::year_month_day from, std::chrono::year_month_day to);
+    rates(std::string_view key,
+          std::string_view pivot,
+          std::chrono::year_month_day from,
+          std::chrono::year_month_day to);
 
 private:
     std::expected<std::string, std::string> read(const std::string& url);

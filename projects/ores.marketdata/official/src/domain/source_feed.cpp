@@ -29,10 +29,11 @@ source_feed::source_feed(hosted_source source, frankfurter_fetcher& fetcher, int
     , backfill_days_(backfill_days) {}
 
 std::expected<void, std::string> source_feed::load_universe() {
-    auto currencies = fetcher_.currencies(source_.frankfurter_key);
-    if (!currencies)
-        return std::unexpected(currencies.error());
-    universe_ = {currencies->begin(), currencies->end()};
+    auto universe = fetcher_.universe(source_.frankfurter_key);
+    if (!universe)
+        return std::unexpected(universe.error());
+    pivot_ = std::move(universe->pivot);
+    universe_ = {universe->currencies.begin(), universe->currencies.end()};
     return {};
 }
 
@@ -85,12 +86,18 @@ std::expected<std::size_t, std::string> source_feed::refresh(std::chrono::year_m
     if (from > today)
         return 0;
 
-    auto rates = fetcher_.rates(source_.frankfurter_key, from, today);
+    auto rates = fetcher_.rates(source_.frankfurter_key, pivot_, from, today);
     if (!rates)
         return std::unexpected(rates.error());
     std::ranges::stable_sort(*rates, {}, &published_rate::date);
     std::size_t sent = 0;
     for (const auto& rate : *rates) {
+        // A rate against another base would be filed under the wrong item, since an item names
+        // the pivot; it is refused rather than sent.
+        if (rate.base != pivot_) {
+            ++misbased_;
+            continue;
+        }
         if (!demanded_.contains(rate.quote))
             continue;
         const auto last = last_sent_.find(rate.quote);

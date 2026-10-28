@@ -91,6 +91,11 @@ public:
     std::expected<std::size_t, std::string> refresh(std::chrono::year_month_day today,
                                                     const publish_fn& publish);
 
+    /// The rates refused because their base was not the provider's pivot.
+    [[nodiscard]] std::uint64_t misbased() const {
+        return misbased_;
+    }
+
     /// The fixing of a rate: the tick a rate becomes, stamped at midday UTC of its date.
     [[nodiscard]] static messaging::adapter_tick tick_of(const published_rate& rate,
                                                          std::uint64_t sequence);
@@ -99,10 +104,12 @@ private:
     hosted_source source_;
     frankfurter_fetcher& fetcher_;
     int backfill_days_;
+    std::string pivot_;
     std::set<std::string> universe_;
     std::set<std::string> demanded_;
     std::map<std::string, std::chrono::year_month_day> last_sent_;
     std::uint64_t sequence_ = 0;
+    std::uint64_t misbased_ = 0;
 };
 
 }

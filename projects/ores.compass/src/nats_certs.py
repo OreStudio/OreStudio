@@ -40,6 +40,7 @@ _SERVICES = [
     "ores.http.server",
     "ores.shell",
     "ores.compute.wrapper",
+    "ores.marketdata.official",
     "ores.analytics.service",
     "ores.web.service",
 ]

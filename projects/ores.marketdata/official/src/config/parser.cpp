@@ -66,7 +66,7 @@ options_description make_options_description() {
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<Frankfurter key>, such as "
-        "ecb.frankfurter:ecb:ECB (repeatable)")(
+        "ecb-frankfurter:ecb:ECB (repeatable)")(
         backfill_days_arg.c_str(),
         value<std::uint32_t>()->default_value(400),
         "Days a source sends when a currency is first demanded")(

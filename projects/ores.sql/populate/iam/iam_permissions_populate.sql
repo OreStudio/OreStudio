@@ -1618,6 +1618,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::providers:read',  'View providers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::providers:write', 'Create and modify providers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::providers:delete', 'Delete providers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::providers:accept_terms', 'Accept the terms of a provider, so its data may be fetched');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_data_sources:read',  'View market data sources');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_data_sources:write', 'Create and modify market data sources');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_data_sources:delete', 'Delete market data sources');

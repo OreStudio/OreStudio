@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 0B96E0C3-F288-537D-94A6-54F411A41E60
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the provider_terms_operations commands from the shell?
+#+description: Every command the provider_terms_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provider_terms_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> provider_terms_operations accept-provider-terms=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =accept-provider-terms=
+:PROPERTIES:
+:ID: 4F24B827-DE82-592D-8C40-32C7EDB0E2E4
+:END:
+
+Sends =accept_provider_terms_request= and prints =accept_provider_terms_response=, so the shape is the protocol's and the meaning is the service's. It reads =provider_code=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+provider_terms_operations accept-provider-terms <provider_code>
+#+end_example
+
+It is addressed at =marketdata.v1.ops.accept_provider_terms=.
+
+#+name: provider_terms_operations-accept-provider-terms
+#+begin_src ores-shell :tangle provider_terms_operations-accept-provider-terms.ores :exports none
+provider_terms_operations accept-provider-terms __none__
+#+end_src
+

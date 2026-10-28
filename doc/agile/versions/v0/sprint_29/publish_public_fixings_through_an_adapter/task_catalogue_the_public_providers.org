@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/catalogue-the-public-providers
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,16 @@ The main pairs are covered by several public providers from the first run, so th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
 
-- Each daily Frankfurter provider with a terms page has its terms read and recorded on the sources page, and those that allow storage are providers with a source.
+- Each daily Frankfurter provider with a terms page has its terms read and recorded on the sources page, and those that allow storage are providers with a source. (Amended on 2026-10-28: the first catalogue takes the four whose terms allow storage among the eleven read; the rest wait for their terms pages, see Notes.)
 - Each provider's currencies are vendor instruments mapped to FX fixing items of the form FX-SOURCE-CCY1-CCY2.
 - The system party subscribes and routes to each public provider.
 - EUR/USD, GBP/USD and USD/JPY are each covered by at least three providers.
@@ -63,6 +63,21 @@ task and name that file in the Command column.
 
 * Notes
 
+- The terms were read on 2026-10-28. Kept, as they allow storage: the ECB, the IMF,
+  the Bank of Canada and the Central Bank of the Republic of Türkiye. Left out: the
+  Bank of England, whose spot rates are LSEG's; FRED, whose terms forbid storing or
+  caching; and Norges Bank, the Czech National Bank, the Riksbank and Banxico, whose
+  terms pages could not be read. The IMF and TCMB ask permission for commercial use,
+  which the administrator weighs when accepting.
+- A source name takes no dot, so the sources are =<code>-frankfurter=.
+- The first live run stored the IMF, Bank of Canada and TCMB rates under the wrong
+  items: Frankfurter rebases every provider to the euro unless asked for a base, and
+  the fetcher had assumed the provider's own pivot. The fetcher now names the pivot
+  and refuses a row in another base; the run was repeated on a fresh database.
+- Acceptance needed its writer before any data could flow, so the server-side
+  operation =marketdata.v1.ops.accept_provider_terms=, with its shell command, is
+  built here rather than with the first-run screen.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -87,3 +102,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The official rates catalogue is seeded by a generator,
+=projects/ores.sql/utility/generate_official_catalogue.py=, from Frankfurter's
+provider list: four providers whose terms allow storage (the ECB, the IMF, the Bank of
+Canada and the Central Bank of the Republic of Türkiye), each with its terms and credit,
+a =<code>-frankfurter= source, its currencies as =iso4217= vendor instruments mapped to
+the FX fixings =FX-<KEY>-<PIVOT>-<CCY>= (140 in all), and the system party's subscription
+and route. The terms are accepted through =marketdata.v1.ops.accept_provider_terms=, the
+one writer of an acceptance, which takes the account from the session and the time from
+the service; the shell command =provider_terms_operations accept-provider-terms= calls it.
+The official rates adapter is registered as a deployment-only process with the four
+sources, with its own NATS certificate.
+
+Evidence, live on a fresh database: the four sources announced 140 ids with none unknown;
+their demand was refused as =terms_not_accepted= until the super administrator accepted
+the terms, and Bloomberg, which states none, was refused acceptance; the backfill then
+stored 29,331 fixings (ECB 8,190, IMF 8,974, Bank of Canada 6,378, TCMB 5,789) from about
+400 days back to the last published day, with =fixings_failed=0=. EUR/USD is covered by
+the four, each on its own pivot, and they agree: ECB 1.1150, IMF 1/0.89686 = 1.1150, Bank
+of Canada 0.71235/0.63926 = 1.1143, TCMB 0.020103/0.018026 = 1.1152. GBP and JPY are quoted
+by all four too. The first run had filed three providers' rates under the wrong items,
+which this check caught; see Notes.
+

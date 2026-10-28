@@ -97,8 +97,8 @@ std::expected<std::vector<published_rate>, std::string> parse_rates(std::string_
     return out;
 }
 
-std::expected<std::vector<std::string>, std::string> parse_currencies(std::string_view json,
-                                                                      std::string_view key) {
+std::expected<provider_universe, std::string> parse_universe(std::string_view json,
+                                                             std::string_view key) {
     boost::system::error_code ec;
     const auto doc = boost::json::parse(json, ec);
     if (ec)
@@ -115,13 +115,14 @@ std::expected<std::vector<std::string>, std::string> parse_currencies(std::strin
             continue;
         const auto* pivot = row->if_contains("pivot_currency");
         const auto* currencies = row->if_contains("currencies");
+        if (pivot == nullptr || !pivot->is_string() || pivot->as_string().empty())
+            return std::unexpected("the provider '" + std::string(key) + "' names no pivot");
         if (currencies == nullptr || !currencies->is_array())
             return std::unexpected("the provider '" + std::string(key) + "' lists no currencies");
-        std::vector<std::string> out;
+        provider_universe out{std::string(pivot->as_string()), {}};
         for (const auto& c : currencies->as_array())
-            if (c.is_string() &&
-                (pivot == nullptr || !pivot->is_string() || c.as_string() != pivot->as_string()))
-                out.emplace_back(c.as_string());
+            if (c.is_string() && c.as_string() != pivot->as_string())
+                out.currencies.emplace_back(c.as_string());
         return out;
     }
     return std::unexpected("Frankfurter lists no provider '" + std::string(key) + "'");
@@ -144,18 +145,24 @@ std::expected<std::string, std::string> frankfurter_fetcher::read(const std::str
     return std::move(answer->body);
 }
 
-std::expected<std::vector<std::string>, std::string>
-frankfurter_fetcher::currencies(std::string_view key) {
+std::expected<provider_universe, std::string> frankfurter_fetcher::universe(std::string_view key) {
     auto body = read(base_url_ + "/v2/providers");
     if (!body)
         return std::unexpected(body.error());
-    return parse_currencies(*body, key);
+    return parse_universe(*body, key);
 }
 
-std::expected<std::vector<published_rate>, std::string> frankfurter_fetcher::rates(
-    std::string_view key, std::chrono::year_month_day from, std::chrono::year_month_day to) {
-    auto body = read(std::format(
-        "{}/v2/providers/{}/rates?from={}&to={}", base_url_, lower(key), iso(from), iso(to)));
+std::expected<std::vector<published_rate>, std::string>
+frankfurter_fetcher::rates(std::string_view key,
+                           std::string_view pivot,
+                           std::chrono::year_month_day from,
+                           std::chrono::year_month_day to) {
+    auto body = read(std::format("{}/v2/providers/{}/rates?from={}&to={}&base={}",
+                                 base_url_,
+                                 lower(key),
+                                 iso(from),
+                                 iso(to),
+                                 pivot));
     if (!body)
         return std::unexpected(body.error());
     return parse_rates(*body);

@@ -78,11 +78,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| BFF suite | 1105 tests pass | =npm run test --workspace @ores/bff= | f8f75d8c2a |
-| Web suite | 2273 tests pass | =npm run test --workspace @ores/web= | df4c37fb3a |
+| BFF suite | 1105 tests pass, 81 files | =npm run test --workspace @ores/bff= | f98fa38218 |
+| Web suite | 2273 tests pass, 180 files | =npm run test --workspace @ores/web= | f98fa38218 |
 | Wire protocol suite | 225 tests pass | =npm run test --workspace @ores/wire-protocol= | f98fa38218 |
 | Web typecheck | clean, every workspace | =npm run typecheck= | df4c37fb3a |
-| Refdata C++ suites | build, and pass under ctest | =compass build ores.refdata.core.tests ores.refdata.api.tests= | 27e7896c82 |
+| Refdata C++ suites | core: 5637 assertions in 474 cases; api: 598 in 83 | =publish/bin/ores.refdata.core.tests=, =.api.tests= | f98fa38218 |
 | Docs checks | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | 0e2f638e1b |
 | Lint | filetags and generator markers valid | =compass lint= | 0e2f638e1b |
 | Live walk-through | =evidence/curve_blueprint_live_walkthrough.txt= | =evidence/curve_blueprint_walkthrough_seed.sql= | f8f75d8c2a |

@@ -96,6 +96,8 @@ Deferred until the checkpoint review:
   The adapter reports them in its INGEST STATUS, but no read carries them to
   the web yet.
 - A harness test that drives the screen live.
+- A date bound on the fixings read. Today 12 series grow by about 260 rows each a
+  year; the window read is task T6.
 
 A crossed pair is shown as derived. The ECB's terms count a computed rate as a
 change to its data, so the screen names the route of every value.
@@ -128,6 +130,9 @@ via its "Verifies task" field.
 | 5 | Two series for one quote are chosen silently | officialRates.ts | Decline | The catalogue gives a provider one series per currency: the item names the provider's key and the currency. |
 | 6 | The refusals are checked only live | official.test.ts | Accept | Route tests cover the 13-series and non-id refusals, the grouping, and the acceptance with and without a version. |
 | 7 | Confirm the gate failures are main's | — | Note | The same failures as main: equity_underlying (handler permissions, event registrars, entity writes), shell recipes, ER diagram, codegen tests, protocol drift. |
+| 8 | Version 0 and a stale version are pinned only by the BFF and the shell | messaging_provider_terms_handler_tests.cpp | Accept | Handler tests over NATS: the current version, a stale version, version 0, a provider with no terms, and no permission. |
+| 9 | A stale version is a 400 like every refusal | official.ts | Decline | The screen reloads the providers after any refusal and shows the service's message, so it needs no separate status. |
+| 10 | Keep the date bound noted | task Notes | Accept | Added to the deferred list. |
 
 * Result
 

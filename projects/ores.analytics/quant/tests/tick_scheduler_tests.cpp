@@ -491,6 +491,9 @@ TEST_CASE("the history counts each group's ticks by the second and by the tenth"
         rates += bin.counts.size() < 2 ? 0 : bin.counts[1];
     }
     CHECK(fx + rates == 30);
+    // Stepped, the loop took no reading, so each slot carries the pace the market ran at.
+    for (const auto& bin : by_second.bins)
+        CHECK(bin.pace == Catch::Approx(2.0));
     // Twice the rate, so about two thirds; each law starts at a random phase.
     CHECK(fx >= 19);
     CHECK(fx <= 21);

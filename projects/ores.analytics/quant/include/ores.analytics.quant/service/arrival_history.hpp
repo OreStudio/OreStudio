@@ -63,16 +63,20 @@ public:
         return slot_seconds_;
     }
 
-    /// A tick of group @p group at @p at seconds of the run.
+    /// A tick of group @p group at @p at seconds of the run. One older than the span is dropped.
     void tick(double at, std::size_t group) {
+        if (aged(at))
+            return;
         auto& counts = bin_at(at).counts;
         if (counts.size() <= group)
             counts.resize(group + 1, 0);
         ++counts[group];
     }
 
-    /// A reading of the market at @p at seconds of the run.
+    /// A reading of the market at @p at seconds of the run. One older than the span is dropped.
     void sample(double at, double pace, bool active) {
+        if (aged(at))
+            return;
         auto& bin = bin_at(at);
         bin.pace_sum += pace;
         bin.active_sum += active ? 1.0 : 0.0;
@@ -90,6 +94,11 @@ public:
     }
 
 private:
+    [[nodiscard]] bool aged(double at) const {
+        return !bins_.empty() &&
+               slot_of(at) <= bins_.back().slot - static_cast<std::int64_t>(capacity_);
+    }
+
     [[nodiscard]] std::int64_t slot_of(double at) const {
         return static_cast<std::int64_t>(std::floor(at / slot_seconds_));
     }

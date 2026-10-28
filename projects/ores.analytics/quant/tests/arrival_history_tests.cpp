@@ -64,6 +64,16 @@ TEST_CASE("an arrival history places a late reading in its own slot", "[arrival_
     CHECK(bins[1].slot == 5);
 }
 
+TEST_CASE("an arrival history drops a tick older than its span", "[arrival_history]") {
+    arrival_history history(1.0, 10);
+    history.tick(20.0, 0);
+    history.tick(5.0, 0);
+    history.sample(9.0, 1.0, false);
+    const auto bins = history.since(0.0);
+    REQUIRE(bins.size() == 1);
+    CHECK(bins.front().slot == 20);
+}
+
 TEST_CASE("an arrival history refuses a slot or capacity that is not positive",
           "[arrival_history]") {
     CHECK_THROWS_AS(arrival_history(0.0, 10), std::invalid_argument);

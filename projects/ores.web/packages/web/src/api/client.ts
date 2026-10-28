@@ -2457,9 +2457,10 @@ export const api = {
      * The ticks of the last hour by the second, or of the last ten minutes by the tenth, by
      * asset class: what the market's temporal raster folds.
      */
-    async marketHistory(resolution: HistoryResolution): Promise<MarketHistory> {
+    async marketHistory(resolution: HistoryResolution, seconds?: number): Promise<MarketHistory> {
+        const span = seconds === undefined ? '' : `&seconds=${String(seconds)}`;
         return marketHistorySchema.parse(
-            await request(`/api/synthetic/market-history?resolution=${resolution}`, {
+            await request(`/api/synthetic/market-history?resolution=${resolution}${span}`, {
                 method: 'GET',
             }),
         );

@@ -617,6 +617,29 @@ describe('the market history', () => {
         ]);
     });
 
+    it('reads a shorter stretch when asked, and never more than the resolution keeps', async () => {
+        const answer = { success: true, message: '', slot_seconds: 1, groups: [], bins: [] };
+        const { server, sessionId, calls } = buildTestServer({ [HISTORY_SUBJECT]: answer });
+
+        await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=second&seconds=150',
+        );
+        await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/market-history?resolution=tenth&seconds=3600',
+        );
+
+        expect(calls).toEqual([
+            { subject: HISTORY_SUBJECT, body: { resolution: 'second', seconds: 150 } },
+            { subject: HISTORY_SUBJECT, body: { resolution: 'tenth', seconds: 600 } },
+        ]);
+    });
+
     it('refuses a resolution it does not know before the service hears of it', async () => {
         const { server, sessionId, calls } = buildTestServer({});
 

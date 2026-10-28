@@ -327,13 +327,22 @@ market_history tick_scheduler::history(history_resolution resolution, double sec
     const auto guard = std::lock_guard(mutex_);
     const auto& source = resolution == history_resolution::second ? by_second_ : by_tenth_;
     market_history out{.slot_seconds = source.slot_seconds(), .groups = groups_, .bins = {}};
+    // A slot can hold ticks and no reading, since the loop reads the market on its own period;
+    // it ran at the pace of the last slot that was read.
+    double pace = market_.pace();
+    double active = market_.state() == domain::market_state::active ? 1.0 : 0.0;
+    bool read = false;
     for (const auto& bin : source.since(market_.now() - seconds)) {
         const double start = static_cast<double>(bin.slot) * source.slot_seconds();
-        out.bins.push_back(history_bin{
-            .at = clock_.wall(time_at(start)),
-            .counts = bin.counts,
-            .pace = bin.samples == 0 ? 0.0 : bin.pace_sum / bin.samples,
-            .active_share = bin.samples == 0 ? 0.0 : bin.active_sum / bin.samples});
+        if (bin.samples > 0) {
+            pace = bin.pace_sum / bin.samples;
+            active = bin.active_sum / bin.samples;
+            read = true;
+        }
+        out.bins.push_back(history_bin{.at = clock_.wall(time_at(start)),
+                                       .counts = bin.counts,
+                                       .pace = read || bin.samples > 0 ? pace : market_.pace(),
+                                       .active_share = active});
     }
     return out;
 }

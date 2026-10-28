@@ -56,6 +56,9 @@ const GLYPHS: Readonly<Record<MarketViewName, GlyphName>> = {
     trace: 'log',
 };
 
+/** How far back Now's seen ticks go, in seconds: its window, and a little more. */
+const RECENT_SECONDS = 150;
+
 /** How often the feed list and its ticks are read again, in milliseconds. */
 const RASTER_EVERY_MS = 4_000;
 
@@ -85,18 +88,6 @@ export function MarketTab(): ReactNode {
         refetchInterval: RASTER_EVERY_MS,
     });
     const [resolution, setResolution] = useState<HistoryResolution>('second');
-    // By the second always, for Now's seen ticks; by the tenth only while the fold shows it.
-    const bySecond = useQuery({
-        queryKey: ['market-history', 'second'],
-        queryFn: () => api.marketHistory('second'),
-        refetchInterval: RASTER_EVERY_MS,
-    });
-    const byTenth = useQuery({
-        queryKey: ['market-history', 'tenth'],
-        queryFn: () => api.marketHistory('tenth'),
-        refetchInterval: RASTER_EVERY_MS,
-        enabled: resolution === 'tenth',
-    });
     const pin = useMutation({
         mutationFn: (mode: RegimeMode) => api.pinMarketRegime(mode),
         onSuccess: (after: MarketRegime) => queries.setQueryData(REGIME_KEY, after),
@@ -128,6 +119,20 @@ export function MarketTab(): ReactNode {
         ),
     });
 
+    // The last couple of minutes for Now's seen ticks; the hour only while the fold shows it.
+    const recent = useQuery({
+        queryKey: ['market-history', 'recent'],
+        queryFn: () => api.marketHistory('second', RECENT_SECONDS),
+        refetchInterval: RASTER_EVERY_MS,
+        enabled: view === 'now',
+    });
+    const folded = useQuery({
+        queryKey: ['market-history', resolution],
+        queryFn: () => api.marketHistory(resolution),
+        refetchInterval: RASTER_EVERY_MS,
+        enabled: view === 'arrivals',
+    });
+
     if (regime.data === undefined) {
         return regime.error === null ? (
             <p className="text-sm text-ink-muted">{t('common.loading')}</p>
@@ -144,7 +149,7 @@ export function MarketTab(): ReactNode {
                 <NowView
                     regime={regime.data}
                     trace={trace.data}
-                    history={bySecond.data}
+                    history={recent.data}
                     now={now}
                     mayPin={mayChange}
                     pending={pin.isPending ? pin.variables : undefined}
@@ -166,7 +171,7 @@ export function MarketTab(): ReactNode {
             ) : null}
             {view === 'arrivals' ? (
                 <FoldCard
-                    history={resolution === 'second' ? bySecond.data : byTenth.data}
+                    history={folded.data}
                     resolution={resolution}
                     onResolution={setResolution}
                     now={now}

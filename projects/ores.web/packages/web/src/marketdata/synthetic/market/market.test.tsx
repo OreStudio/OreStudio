@@ -538,6 +538,16 @@ describe('the folded hour', () => {
         expect(foldHistory(tenths, 'tenth', 'all', NOW).cells[0]?.value).toBeCloseTo(30);
     });
 
+    it('reads the slot still filling over the part that passed, so it does not dip', () => {
+        const filling: MarketHistory = {
+            slotSeconds: 1,
+            groups: ['fx'],
+            bins: [{ at: new Date(NOW - 500).toISOString(), counts: [2], pace: 1, activeShare: 0 }],
+        };
+        expect(foldHistory(filling, 'second', 'all', NOW).cells[0]?.value).toBeCloseTo(4);
+        expect(ticksBySecond(filling, 120, NOW)).toHaveLength(0);
+    });
+
     it('draws a cell for each slot that had ticks or a reading', () => {
         const html = render(
             <FoldCard

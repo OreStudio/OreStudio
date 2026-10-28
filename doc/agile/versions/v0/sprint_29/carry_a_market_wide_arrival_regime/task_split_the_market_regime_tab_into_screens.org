@@ -107,6 +107,11 @@ via its "Verifies task" field.
 | 4 | The tilt expression is duplicated, with a magic 2 | SettingsView.tsx | Accept | Hoisted; a dash replaces the stand-in when no multiplier is reported. |
 | 5 | The speed note reads the old namespace | SettingsView.tsx | Accept | Moved to =marketdata.market.settings.time.note=. |
 | 6 | Housekeeping: compass check, the dropped keys | — | Note | compass check skipped at the user's request; the catalogue test passes. |
+| 7 | The slot still filling reads low | fold.ts | Accept | The fold reads it over the part that passed; Now leaves the second out. |
+| 8 | A slot with ticks and no reading reports pace zero | tick_scheduler.cpp | Accept | The read carries the last known pace and state into it. |
+| 9 | A late tick can revive an aged-out slot | arrival_history.hpp | Accept | A tick or reading older than the span is dropped. |
+| 10 | Now pulls a full hour every 4 s | MarketTab.tsx, market-regime.ts | Accept | An optional, capped =seconds=; Now asks for 150 s, the fold only while shown. |
+| 11 | Parse order, a memo, groups that outlive feeds | fold.ts | Accept / Decline / Note | Parse checked first; no memo, as sorting 3600 numbers every 4 s is cheap; a group stays while its counts do. |
 
 * Result
 

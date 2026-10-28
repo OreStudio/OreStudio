@@ -88,11 +88,16 @@ export function foldHistory(
     const seen = new Array<number>(fold.columns).fill(0);
     for (const bin of history.bins) {
         const at = Date.parse(bin.at);
-        const slot = Math.round(at / slotMs);
-        const column = columnOf(slot) - firstColumn;
-        if (!Number.isFinite(at) || column < 0 || column >= fold.columns) {
+        if (!Number.isFinite(at)) {
             continue;
         }
+        const slot = Math.round(at / slotMs);
+        const column = columnOf(slot) - firstColumn;
+        if (column < 0 || column >= fold.columns) {
+            continue;
+        }
+        // The slot that holds now is still filling, so its rate is over the part that passed.
+        const span = Math.min(fold.slotSeconds, Math.max(fold.slotSeconds / 10, (now - at) / 1000));
         const ticks =
             series === 'all'
                 ? bin.counts.reduce((sum, count) => sum + count, 0)
@@ -102,7 +107,7 @@ export function foldHistory(
         cells.push({
             column,
             row: ((slot % fold.rows) + fold.rows) % fold.rows,
-            value: series === 'pace' ? bin.pace : ticks / fold.slotSeconds,
+            value: series === 'pace' ? bin.pace : ticks / span,
             at,
             active: bin.activeShare >= 0.5,
         });
@@ -132,12 +137,18 @@ export function ticksBySecond(
     seconds: number,
     now: number,
 ): readonly { readonly at: number; readonly ticks: number }[] {
-    return history.bins
-        .map((bin) => ({
-            at: Date.parse(bin.at),
-            ticks: bin.counts.reduce((sum, count) => sum + count, 0),
-        }))
-        .filter(
-            (bin) => Number.isFinite(bin.at) && now - bin.at <= seconds * 1000 && bin.at <= now,
-        );
+    return (
+        history.bins
+            .map((bin) => ({
+                at: Date.parse(bin.at),
+                ticks: bin.counts.reduce((sum, count) => sum + count, 0),
+            }))
+            // The second that holds now is still filling, so it is left out rather than read as a drop.
+            .filter(
+                (bin) =>
+                    Number.isFinite(bin.at) &&
+                    now - bin.at <= seconds * 1000 &&
+                    now - bin.at >= 1000,
+            )
+    );
 }

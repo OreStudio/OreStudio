@@ -339,12 +339,23 @@ export function registerMarketRegimeRoutes(
     server.get('/api/synthetic/market-history', async (request) => {
         const session = requireSession(request);
         const query = input(
-            z.object({ resolution: z.enum(['second', 'tenth']).default('second') }).strict(),
+            z
+                .object({
+                    resolution: z.enum(['second', 'tenth']).default('second'),
+                    seconds: z.coerce.number().min(1).max(3600).optional(),
+                })
+                .strict(),
             request.query,
         );
         const reply = await session.client.callAuthenticated(
             historySubject,
-            { resolution: query.resolution, seconds: HISTORY_SPANS[query.resolution] },
+            {
+                resolution: query.resolution,
+                seconds: Math.min(
+                    query.seconds ?? HISTORY_SPANS[query.resolution],
+                    HISTORY_SPANS[query.resolution],
+                ),
+            },
             historyReply,
         );
         if (!reply.success) {

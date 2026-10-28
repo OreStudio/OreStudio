@@ -403,8 +403,9 @@ private:
     std::thread commit_thread_;
     std::thread announce_thread_;
     std::thread status_thread_;
-    /// The fixings' own path. It reads the consumers through this loop, so it is the last
-    /// member: it is made after them and stopped first.
+    /// The fixings' own path. Its thread reads the consumers through mu_ and
+    /// consumers_by_source_, so it is declared last: it is made after them and stopped first.
+    /// Moving it above them would let the thread read members not yet made.
     std::unique_ptr<fixing_ingest> fixings_;
 };
 

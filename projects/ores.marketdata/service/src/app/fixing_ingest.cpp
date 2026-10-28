@@ -43,6 +43,10 @@ constexpr std::string_view fixing_metric = "RATE";
 /// How many fixings the thread takes from the queue at once.
 constexpr std::size_t batch_limit = 2048;
 
+/// The first wait before a batch that failed is tried again, and the longest.
+constexpr auto retry_after = std::chrono::seconds(2);
+constexpr auto retry_at_most = std::chrono::seconds(60);
+
 }
 
 bool adds_to(const stored_fixings& stored, const fixing& f) {
@@ -101,11 +105,12 @@ std::size_t fixing_store::store(std::span<const consumer> consumers,
     std::size_t written = 0;
     for (const auto& owner : consumers) {
         const auto tenant_ctx = ctx_.with_tenant(owner.tenant_id, "ores.marketdata.service");
+        // A date sent twice in one batch is written once, with the value sent last.
+        std::map<std::pair<boost::uuids::uuid, std::chrono::year_month_day>, std::size_t> row_of;
         std::vector<domain::market_fixing> rows;
         for (const auto& f : fixings) {
             const auto series_id = series_for(tenant_ctx, owner, f.index_uri);
-            auto& stored = stored_in(tenant_ctx, series_id);
-            if (!adds_to(stored, f))
+            if (!adds_to(stored_in(tenant_ctx, series_id), f))
                 continue;
             domain::market_fixing row;
             row.id = uuid_gen_();
@@ -115,19 +120,17 @@ std::size_t fixing_store::store(std::span<const consumer> consumers,
             row.fixing_date = f.date;
             row.value = f.value;
             row.source = f.source;
-            rows.push_back(std::move(row));
-            stored.insert_or_assign(f.date, f.value);
+            const auto [at, fresh] = row_of.try_emplace({series_id, f.date}, rows.size());
+            if (fresh)
+                rows.push_back(std::move(row));
+            else
+                rows[at->second] = std::move(row);
         }
         if (rows.empty())
             continue;
-        try {
-            repository::market_fixing_repository{}.insert(tenant_ctx, rows);
-        } catch (...) {
-            // What the store refused is not held, so it is tried again when sent again.
-            for (const auto& row : rows)
-                stored_.erase(row.series_id);
-            throw;
-        }
+        repository::market_fixing_repository{}.insert(tenant_ctx, rows);
+        for (const auto& row : rows)
+            stored_[row.series_id].insert_or_assign(row.fixing_date, row.value);
         written += rows.size();
     }
     return written;
@@ -151,7 +154,7 @@ fixing_ingest::~fixing_ingest() {
 void fixing_ingest::push(fixing f) {
     {
         std::lock_guard lock(mu_);
-        pending_.push_back(std::move(f));
+        pending_.push_back({std::move(f), 0});
     }
     ready_.notify_one();
 }
@@ -170,8 +173,9 @@ std::size_t fixing_ingest::pending() const {
 }
 
 void fixing_ingest::run() {
+    auto backoff = retry_after;
     for (;;) {
-        std::vector<fixing> batch;
+        std::vector<queued> batch;
         {
             std::unique_lock lock(mu_);
             ready_.wait(lock, [this] { return stopping_ || !pending_.empty(); });
@@ -183,20 +187,48 @@ void fixing_ingest::run() {
             pending_.erase(pending_.begin(), pending_.begin() + static_cast<long>(n));
         }
 
-        std::map<std::string, std::vector<fixing>> by_source;
-        for (auto& f : batch)
-            by_source[f.source].push_back(std::move(f));
-        for (const auto& [source, fixings] : by_source) {
+        std::map<std::string, std::vector<queued>> by_source;
+        for (auto& q : batch)
+            by_source[q.value.source].push_back(std::move(q));
+        std::vector<queued> retry;
+        for (auto& [source, queue] : by_source) {
+            std::vector<fixing> fixings;
+            fixings.reserve(queue.size());
+            for (const auto& q : queue)
+                fixings.push_back(q.value);
             try {
                 stored_.fetch_add(store_.store(consumers_(source), fixings),
                                   std::memory_order_relaxed);
             } catch (const std::exception& e) {
-                failed_.fetch_add(fixings.size(), std::memory_order_relaxed);
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to store " << fixings.size() << " fixing(s) of source '" << source
                     << "': " << e.what();
+                for (auto& q : queue) {
+                    if (++q.attempts < max_attempts)
+                        retry.push_back(std::move(q));
+                    else
+                        failed_.fetch_add(1, std::memory_order_relaxed);
+                }
             }
         }
+        if (retry.empty()) {
+            backoff = retry_after;
+            continue;
+        }
+
+        // The fixings that failed go back to the front, and the thread waits before it tries
+        // again, so a store that is down is not hammered. A stop ends the wait.
+        std::unique_lock lock(mu_);
+        pending_.insert(pending_.begin(),
+                        std::make_move_iterator(retry.begin()),
+                        std::make_move_iterator(retry.end()));
+        if (ready_.wait_for(lock, backoff, [this] { return stopping_; })) {
+            failed_.fetch_add(pending_.size(), std::memory_order_relaxed);
+            BOOST_LOG_SEV(lg(), warn)
+                << "Stopping with " << pending_.size() << " fixing(s) that the store refused";
+            return;
+        }
+        backoff = std::min(backoff * 2, retry_at_most);
     }
 }
 

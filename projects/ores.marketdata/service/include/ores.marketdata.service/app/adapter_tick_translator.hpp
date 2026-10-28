@@ -67,10 +67,6 @@ enum class adapter_tick_drop {
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::string_view to_string(adapter_tick_drop reason);
 
 /**
- * @brief A tick that passed the checks: the tick the pipeline stores, and the provider and
- * the source it belongs to.
- */
-/**
  * @brief What a tick is, which decides the rules it meets and where it is stored.
  *
  * A quote is perishable: it ages out and is kept for days. A fixing is an official value of
@@ -79,6 +75,10 @@ enum class adapter_tick_drop {
  */
 enum class tick_class { quote, fixing };
 
+/**
+ * @brief A tick that passed the checks: the tick the pipeline stores, and the provider and
+ * the source it belongs to.
+ */
 struct translated_tick {
     messaging::market_tick tick;
     tick_class kind = tick_class::quote;
@@ -93,8 +93,9 @@ struct translated_tick {
  * provider and the mappings from them to oresmd items. An adapter id is the name of a source,
  * and the source says the provider. @c translate() finds the vendor instrument of the tick,
  * the mapping that holds at the time of the call, and then applies the checks in this order:
- * mapping, number, range, age and order. A fixing skips the age check. It counts each drop for each
- * adapter and reason.
+ * mapping, number, range, age and order. A fixing skips the age and order checks: it is a
+ * fact of a date, which a backfill may send in any order and a correction may send again. It counts
+ * each drop for each adapter and reason.
  *
  * The translator reads the kind of a source nowhere. A live source and a simulated source of
  * one provider take the same path and give the same tick apart from the source id.

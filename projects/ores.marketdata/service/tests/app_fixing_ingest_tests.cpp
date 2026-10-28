@@ -123,3 +123,28 @@ TEST_CASE("a_backfill_is_stored_once_and_a_correction_adds_one_row", "[app][fixi
     REQUIRE(corrected != after.end());
     CHECK(corrected->value == "1.0899");
 }
+
+TEST_CASE("a_batch_that_fails_part_way_leaves_its_fixings_to_be_stored_when_sent_again",
+          "[app][fixing_ingest]") {
+    ores::testing::scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    auto party = ores::refdata::generators::generate_synthetic_party(gen);
+    const auto existing = ores::refdata::repository::party_repository{}.read_latest(h.context());
+    if (!existing.empty())
+        party.parent_party_id = existing.front().id;
+    ores::refdata::repository::party_repository{}.write(h.context(), party);
+
+    consumer owner;
+    owner.tenant_id = h.tenant_id();
+    owner.party_id = party.id;
+    owner.provider_code = "ore";
+    owner.source_name = "public-test";
+
+    const auto uri = run_index_uri();
+    const auto good = fixing_on(uri, 0, "1.0842");
+    const std::vector<fixing> poisoned{good, fixing_on("oresmd://fx/EUR?type=quote", 1, "1.0843")};
+
+    fixing_store store(h.context());
+    CHECK_THROWS(store.store({&owner, 1}, poisoned));
+    CHECK(store.store({&owner, 1}, std::vector<fixing>{good}) == 1);
+}

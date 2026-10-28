@@ -50,6 +50,8 @@ namespace ores::marketdata::service::app {
 struct fixing final {
     /// The oresmd URI of the index, which is the identity of its series.
     std::string index_uri;
+    /// The date the value fixes: the UTC date of the tick's vendor time. An adapter stamps a
+    /// fixing at midday UTC of its date, so no zone moves it to the next or previous day.
     std::chrono::year_month_day date;
     /// The value as decimal text, as the publisher wrote it.
     std::string value;
@@ -65,6 +67,9 @@ using stored_fixings = std::map<std::chrono::year_month_day, std::string>;
 /**
  * @brief Whether @p f adds anything to @p stored: a date the series lacks, or a new value
  * for a date it has. A backfill sent again after a restart adds nothing.
+ *
+ * Values compare as the publisher wrote them: the published digits are the fact, so a
+ * publisher that writes "0.0350" one day and "0.035" the next has changed its record.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT bool adds_to(const stored_fixings& stored,
                                                           const fixing& f);
@@ -89,6 +94,9 @@ public:
 
     /**
      * @brief Stores each fixing for each consumer, and returns the rows written.
+     *
+     * What it holds in memory changes only after a write succeeds, so a failure leaves the
+     * fixings to be stored when they are sent again.
      */
     std::size_t store(std::span<const consumer> consumers, std::span<const fixing> fixings);
 
@@ -137,21 +145,29 @@ public:
 
     void push(fixing f);
 
+    /// How many times a batch that fails to store is tried before its fixings are dropped.
+    static constexpr int max_attempts = 5;
+
     /// The rows written since the start.
     [[nodiscard]] std::uint64_t stored() const;
-    /// The fixings that failed to store since the start.
+    /// The fixings dropped since the start, after every attempt to store them failed.
     [[nodiscard]] std::uint64_t failed() const;
     /// The fixings that wait to be stored.
     [[nodiscard]] std::size_t pending() const;
 
 private:
+    struct queued final {
+        fixing value;
+        int attempts = 0;
+    };
+
     void run();
 
     fixing_store store_;
     consumers_of consumers_;
     mutable std::mutex mu_;
     std::condition_variable ready_;
-    std::deque<fixing> pending_;
+    std::deque<queued> pending_;
     bool stopping_ = false;
     std::atomic<std::uint64_t> stored_{0};
     std::atomic<std::uint64_t> failed_{0};

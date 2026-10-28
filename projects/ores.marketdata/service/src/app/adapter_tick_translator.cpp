@@ -113,7 +113,7 @@ adapter_tick_translator::check(std::string_view adapter_id,
     if (kind == tick_class::quote && now - tick.vendor_time > max_tick_age)
         return std::unexpected(adapter_tick_drop::stale);
 
-    {
+    if (kind == tick_class::quote) {
         std::lock_guard lock(mu_);
         auto& newest = newest_[{source->second.name, held->oresmd_uri}];
         if (newest != std::chrono::system_clock::time_point{} && tick.vendor_time < newest)

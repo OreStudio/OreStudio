@@ -117,13 +117,26 @@ from 53 to 48.
 
 [[file:doc/agile/product_backlog/inbox/carry-a-documents-families-as-a-bundle.org][Carry a document's families as a bundle, not as one struct of typed arrays]]
 is in the inbox, with the anti-pattern, the package shape, the precedent not to
-copy and the nightly failure it removes.
+copy and the nightly failure it removes. The redesign is a story as well:
+[[id:62370F84-69A5-4980-9774-28F49EF0C61C][Refactor conventions onto families and bundles -- the remaining work]], whose
+task [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]] names the curve
+document as the first candidate.
 
-** The browser smoke, carried to the inbox
+** The browser smoke, run on a live fleet
 
-The fleet is stopped and the database was recreated, so no tenant is
-provisioned and there is no session to open the page with. That acceptance
-bullet is not met here; it is filed as
-[[file:doc/agile/product_backlog/inbox/smoke-the-convention-record-page.org][Smoke the convention record page on a live fleet]],
-with the three forms to look at. The BFF's own suite covers the zip the page
-reads, with the fixture in the shape the server sends.
+The fleet was stopped and the database recreated when this task closed, so the
+page could not be opened; the check was carried to the inbox as
+[[file:doc/agile/product_backlog/inbox/smoke-the-convention-record-page.org][Smoke the convention record page on a live fleet]].
+
+It has since been run on a provisioned tenant, and it failed. The page had not
+been seen since the parts were grouped, and three things were wrong: the list
+answered 500 because the central row is grouped too and the BFF read =id= off
+the top level, the record page matched a party the same way and reported the
+convention missing, and it drew both forms' terms on a one-form convention --
+with two of those terms named the same on both forms, so they drew twice.
+
+All three are fixed, and the check now runs as
+=projects/ores.web/packages/harness/tests/convention-record.spec.ts= against a
+live fleet: both forms, each term documented, the five curated terms carrying
+their new text, and a one-form convention told nothing about the other. See
+PR #3960.

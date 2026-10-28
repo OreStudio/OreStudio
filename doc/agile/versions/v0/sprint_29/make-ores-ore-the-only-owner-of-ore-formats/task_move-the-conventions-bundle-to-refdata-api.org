@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-the-conventions-bundle-to-refdata-api
-#+pr:
+#+pr: 3997
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3997][#3997]] | [refdata] Move the conventions bundle into the contract |
 
 * Review
 

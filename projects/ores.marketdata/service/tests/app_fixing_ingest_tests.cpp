@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.service/app/fixing_ingest.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.service/app/fixing_ingest.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -93,9 +93,9 @@ TEST_CASE("a_backfill_is_stored_once_and_a_correction_adds_one_row", "[app][fixi
         backfill.push_back(fixing_on(uri, d, "1.08" + std::to_string(40 + d)));
 
     const auto stored_rows = [&] {
-        const auto series = ores::marketdata::repository::market_series_repository{}
-                                .read_latest_by_key(h.context(), uri, "ore",
-                                                    boost::uuids::to_string(party.id));
+        const auto series =
+            ores::marketdata::repository::market_series_repository{}.read_latest_by_key(
+                h.context(), uri, "ore", boost::uuids::to_string(party.id));
         REQUIRE(series.size() == 1);
         return ores::marketdata::repository::market_fixing_repository{}.read_latest_for_series(
             h.context(), series.front().id);
@@ -118,8 +118,8 @@ TEST_CASE("a_backfill_is_stored_once_and_a_correction_adds_one_row", "[app][fixi
     CHECK(restarted.store({&owner, 1}, correction) == 1);
     const auto after = stored_rows();
     REQUIRE(after.size() == 10);
-    const auto corrected = std::ranges::find(after, correction.front().date,
-                                             &ores::marketdata::domain::market_fixing::fixing_date);
+    const auto corrected = std::ranges::find(
+        after, correction.front().date, &ores::marketdata::domain::market_fixing::fixing_date);
     REQUIRE(corrected != after.end());
     CHECK(corrected->value == "1.0899");
 }

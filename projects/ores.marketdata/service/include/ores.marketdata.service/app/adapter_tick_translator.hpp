@@ -93,7 +93,8 @@ struct translated_tick {
  * provider and the mappings from them to oresmd items. An adapter id is the name of a source,
  * and the source says the provider. @c translate() finds the vendor instrument of the tick,
  * the mapping that holds at the time of the call, and then applies the checks in this order:
- * mapping, number, range, age and order. A fixing skips the age check. It counts each drop for each adapter and reason.
+ * mapping, number, range, age and order. A fixing skips the age check. It counts each drop for each
+ * adapter and reason.
  *
  * The translator reads the kind of a source nowhere. A live source and a simulated source of
  * one provider take the same path and give the same tick apart from the source id.

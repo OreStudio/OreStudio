@@ -1298,15 +1298,13 @@ TEST_CASE("a_fixing_of_yesterday_and_a_backfill_reach_the_fixings_and_not_the_ti
     app_feed_ingest_loop_fixture f;
     const auto source = bound_prefix + run_tag();
     const auto external_id = "EUR" + run_tag();
-    const auto index_uri = "oresmd://fx/EUR?type=fixing&index=fx&source=T" +
-                           [] {
-                               auto tag = run_tag();
-                               std::ranges::transform(tag, tag.begin(), [](char c) {
-                                   return c >= 'a' ? static_cast<char>(c - 'a' + 'A') : c;
-                               });
-                               return tag;
-                           }() +
-                           "&ccy=USD";
+    const auto index_uri = "oresmd://fx/EUR?type=fixing&index=fx&source=T" + [] {
+        auto tag = run_tag();
+        std::ranges::transform(tag, tag.begin(), [](char c) {
+            return c >= 'a' ? static_cast<char>(c - 'a' + 'A') : c;
+        });
+        return tag;
+    }() + "&ccy=USD";
     f.route(source);
     f.map(external_id, index_uri);
     f.connect();
@@ -1332,8 +1330,9 @@ TEST_CASE("a_fixing_of_yesterday_and_a_backfill_reach_the_fixings_and_not_the_ti
         const auto series = market_series_repository{}.read_latest_by_key(
             f.h.context(), index_uri, "ore", boost::uuids::to_string(f.party_id));
         if (!series.empty()) {
-            fixings = ores::marketdata::repository::market_fixing_repository{}
-                          .read_latest_for_series(f.h.context(), series.front().id);
+            fixings =
+                ores::marketdata::repository::market_fixing_repository{}.read_latest_for_series(
+                    f.h.context(), series.front().id);
             if (fixings.size() == 10)
                 break;
         }
@@ -1344,7 +1343,6 @@ TEST_CASE("a_fixing_of_yesterday_and_a_backfill_reach_the_fixings_and_not_the_ti
     CHECK(fixings.back().value == "1.0851");
     CHECK(fixings.front().value == "1.0860");
     CHECK(fixings.back().source == source);
-    CHECK(loop.translator()->drops(source, ores::marketdata::service::app::adapter_tick_drop::stale) ==
-          0);
+    CHECK(loop.translator()->drops(source,
+                                   ores::marketdata::service::app::adapter_tick_drop::stale) == 0);
 }
-

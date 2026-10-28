@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: C10674F6-19EC-4810-95E2-B2DEDAA6B3AF
 :END:
-#+title: Task: Add an HTTPS GET for the adapters
+#+title: Task: Add the ores.http.client library
 #+description: An HTTPS GET client on Boost.Beast and OpenSSL, behind an interface an adapter's tests can replace with stored responses.
 #+type: task
 #+level: s1
@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-An adapter can read a public HTTPS API, and its tests run with no network.
+Any part of the system that reads an outside HTTP API, the public sources adapter
+first, uses one client library, =ores.http.client=, beside the server parts of
+=ores.http=, and its tests run with no network.
 
 * Status
 
@@ -35,9 +37,11 @@ An adapter can read a public HTTPS API, and its tests run with no network.
 
 * Acceptance
 
-- A client does a GET over TLS with certificate checks, a timeout and a size limit, and returns the status and body.
-- An interface lets a test hand back stored responses.
-- No secret is logged or kept in a stored URL.
+- A new library component, =ores.http.client=, scaffolded through codegen and registered in the build.
+- Its first function is a GET over TLS, on the Boost.Beast and OpenSSL the build already links, with certificate and host name checks, a timeout and a limit on the body size. It returns the status, the headers it needs and the body.
+- An interface lets a caller's test hand back stored responses, so no test needs a network.
+- No secret is logged or kept in a URL that is logged or stored.
+- Unit tests cover a refused certificate, a timeout and a body over the limit against a local server, with no outside network.
 
 * Plan
 

@@ -67,7 +67,7 @@ using stored_fixings = std::map<std::chrono::year_month_day, std::string>;
  * for a date it has. A backfill sent again after a restart adds nothing.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT bool adds_to(const stored_fixings& stored,
-                                                         const fixing& f);
+                                                          const fixing& f);
 
 /**
  * @brief Writes fixings into the series of each consumer of their source.

@@ -57,12 +57,14 @@ boost::uuids::uuid fixing_store::series_for(const ores::database::context& tenan
                                             const consumer& owner,
                                             const std::string& index_uri) {
     const auto party = boost::uuids::to_string(owner.party_id);
-    const series_key key{owner.tenant_id.to_string(), owner.party_id, owner.provider_code, index_uri};
+    const series_key key{
+        owner.tenant_id.to_string(), owner.party_id, owner.provider_code, index_uri};
     if (const auto found = series_.find(key); found != series_.end())
         return found->second;
 
     repository::market_series_repository series_repo;
-    auto existing = series_repo.read_latest_by_key(tenant_ctx, index_uri, owner.provider_code, party);
+    auto existing =
+        series_repo.read_latest_by_key(tenant_ctx, index_uri, owner.provider_code, party);
     if (existing.empty()) {
         const auto index = datum::oresmd_uri_codec::read_index(index_uri);
         if (!index)
@@ -88,8 +90,8 @@ stored_fixings& fixing_store::stored_in(const ores::database::context& tenant_ct
                                         const boost::uuids::uuid& series_id) {
     auto [it, fresh] = stored_.try_emplace(series_id);
     if (fresh)
-        for (auto& row : repository::market_fixing_repository{}.read_latest_for_series(tenant_ctx,
-                                                                                      series_id))
+        for (auto& row :
+             repository::market_fixing_repository{}.read_latest_for_series(tenant_ctx, series_id))
             it->second.insert_or_assign(row.fixing_date, std::move(row.value));
     return it->second;
 }
@@ -190,8 +192,9 @@ void fixing_ingest::run() {
                                   std::memory_order_relaxed);
             } catch (const std::exception& e) {
                 failed_.fetch_add(fixings.size(), std::memory_order_relaxed);
-                BOOST_LOG_SEV(lg(), error) << "Failed to store " << fixings.size()
-                                           << " fixing(s) of source '" << source << "': " << e.what();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to store " << fixings.size() << " fixing(s) of source '" << source
+                    << "': " << e.what();
             }
         }
     }

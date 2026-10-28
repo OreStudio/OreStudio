@@ -95,8 +95,8 @@ feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
     , fixings_(std::make_unique<fixing_ingest>(ctx_, [this](const std::string& source) {
         std::lock_guard lock(mu_);
         const auto found = consumers_by_source_->by_source.find(source);
-        return found == consumers_by_source_->by_source.end() ? std::vector<consumer>{}
-                                                               : found->second;
+        return found == consumers_by_source_->by_source.end() ? std::vector<consumer>{} :
+                                                                found->second;
     })) {}
 
 feed_ingest_loop::~feed_ingest_loop() {

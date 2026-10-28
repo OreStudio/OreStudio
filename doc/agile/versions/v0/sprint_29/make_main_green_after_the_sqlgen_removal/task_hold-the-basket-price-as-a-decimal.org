@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DA440A05-E0C4-4961-85E3-54DB9B478004][Make main green after the sqlgen removal]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Main compiles again. The writer converts the plan's drawn price at the boundary 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DA440A05-E0C4-4961-85E3-54DB9B478004][Make main green after the sqlgen removal]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -23,6 +23,7 @@
 #include "test_suite.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <algorithm>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -33,7 +34,7 @@
 
 namespace {
 
-std::string read(const std::filesystem::path& path) {
+std::string read_text(const std::filesystem::path& path) {
     std::ifstream in(path, std::ios::binary);
     std::ostringstream buffer;
     buffer << in.rdbuf();
@@ -48,12 +49,13 @@ bool has_text(std::string_view text) {
 }
 
 /**
- * @brief Whether a run document sets @p parameter to a file under its Setup.
+ * @brief The file a run document sets @p parameter to under its Setup, if any.
  */
-bool sets_parameter(const std::filesystem::path& path, std::string_view parameter) {
-    auto parsed = ores::ore::xml::document::read(read(path));
+std::optional<std::string> file_named_by(const std::filesystem::path& path,
+                                         std::string_view parameter) {
+    auto parsed = ores::ore::xml::document::read(read_text(path));
     if (!parsed)
-        return false;
+        return std::nullopt;
 
     const auto& tokens = parsed->tokens();
     for (std::size_t i = 0; i < tokens.size(); ++i) {
@@ -62,7 +64,7 @@ bool sets_parameter(const std::filesystem::path& path, std::string_view paramete
             continue;
 
         std::string_view name;
-        bool has_value = false;
+        std::string value;
         for (std::size_t j = i + 1; j < tokens.size(); ++j) {
             const auto& token = tokens[j];
             if (token.kind == ores::ore::xml::token_kind::end_element &&
@@ -73,12 +75,12 @@ bool sets_parameter(const std::filesystem::path& path, std::string_view paramete
                 name = parsed->value(token);
             if (token.kind == ores::ore::xml::token_kind::text &&
                 has_text(parsed->value(token)))
-                has_value = true;
+                value = std::string(parsed->value(token));
         }
-        if (name == parameter && has_value)
-            return true;
+        if (name == parameter && !value.empty())
+            return value;
     }
-    return false;
+    return std::nullopt;
 }
 
 /**
@@ -116,18 +118,51 @@ TEST_CASE("a configuration type a run does not name has no parameter", "[ore][ru
     CHECK_FALSE(ores::ore::xml::setup_parameter_of("engine_settings").has_value());
 }
 
-TEST_CASE("every declared parameter is exercised by a run document ORE ships",
+namespace {
+
+/// The root element each parameter's file must have.
+struct expected_document {
+    std::string_view parameter;
+    std::string_view root;
+};
+
+inline constexpr expected_document expected_roots[] = {
+    {"conventionsFile", "Conventions"},
+    {"curveConfigFile", "CurveConfiguration"},
+    {"marketConfigFile", "TodaysMarket"},
+    {"pricingEnginesFile", "PricingEngines"},
+};
+
+}
+
+TEST_CASE("every declared parameter names a document of the kind it states",
           "[ore][run-document]") {
     auto lg(ores::logging::make_logger(test_suite));
+
+    const auto root = ores::testing::project_root::resolve("external/ore/examples");
+    INFO("the ORE examples are at " << root);
+    REQUIRE(std::filesystem::exists(root));
 
     const auto documents = sample_run_documents();
     REQUIRE(!documents.empty());
 
-    for (const auto& declared : ores::ore::xml::configuration_documents) {
-        const auto found = std::ranges::any_of(documents, [&](const auto& path) {
-            return sets_parameter(path, declared.setup_parameter);
-        });
-        INFO("parameter: " << declared.setup_parameter);
-        CHECK(found);
+    for (const auto& expected : expected_roots) {
+        std::size_t checked = 0;
+        for (const auto& document : documents) {
+            const auto file = file_named_by(document, expected.parameter);
+            if (!file)
+                continue;
+            const auto target = document.parent_path() / *file;
+            if (!std::filesystem::is_regular_file(target))
+                continue;
+
+            auto parsed = ores::ore::xml::document::read(read_text(target));
+            INFO("parameter " << expected.parameter << " names " << target);
+            REQUIRE(parsed.has_value());
+            CHECK(parsed->root() == expected.root);
+            ++checked;
+        }
+        INFO("parameter " << expected.parameter);
+        CHECK(checked > 0);
     }
 }

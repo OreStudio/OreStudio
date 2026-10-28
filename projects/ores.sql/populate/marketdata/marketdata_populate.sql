@@ -54,4 +54,8 @@
 \ir ./marketdata_series_classification_rules_populate.sql
 
 \echo ''
+\echo '--- Notification Kinds: a curve published and withdrawn ---'
+\ir ./marketdata_notification_kinds_populate.sql
+
+\echo ''
 \echo '=== Market Data Component Population Complete ==='

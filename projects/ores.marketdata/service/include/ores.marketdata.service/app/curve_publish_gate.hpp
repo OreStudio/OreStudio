@@ -117,6 +117,17 @@ ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request raise_publi
     const ores::database::context& ctx, const publish_subject& subject, const std::string& reason);
 
 /**
+ * @brief The as-of of the set the series has in use, or nothing when it has none.
+ *
+ * Read before an apply, so the notice a publish raises names the version it
+ * replaced. The record's own read states the set in use; a series that carries
+ * two is ended by the next publish, and the newest is the one a reader priced
+ * from.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::optional<std::chrono::system_clock::time_point>
+live_as_of(const ores::database::context& ctx, const boost::uuids::uuid& output_series_id);
+
+/**
  * @brief Asks the approval record whether a publish may go ahead.
  *
  * The request must be a @c marketdata.curve_publish request of the caller's

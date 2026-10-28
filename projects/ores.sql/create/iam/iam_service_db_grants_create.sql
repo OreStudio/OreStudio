@@ -296,6 +296,14 @@ select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_requests_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_request_parts_', :'marketdata_service_user');
+-- The notices a published curve raises. A component that tells the readers of
+-- its own record writes the notice itself, as the reference data and reporting
+-- services already do for the kinds they raise; the inbox owns the rows and the
+-- raise function, and the reader resolves the audience the same way.
+select _ores_grant_dml_fn('ores_inbox_notifications_', :'marketdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_arguments_', :'marketdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_recipients_', :'marketdata_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_deliveries_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_refdata_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_inbox_approval_', :'marketdata_service_user');

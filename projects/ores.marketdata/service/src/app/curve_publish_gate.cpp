@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
@@ -202,6 +203,21 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     return raised;
 }
 
+std::optional<std::chrono::system_clock::time_point>
+live_as_of(const ores::database::context& ctx, const boost::uuids::uuid& output_series_id) {
+    if (output_series_id.is_nil())
+        return std::nullopt;
+    repository::curve_publish_repository repo;
+    std::optional<std::chrono::system_clock::time_point> newest;
+    for (const auto& live : repo.read_live_for_series(ctx, output_series_id)) {
+        if (!live.published_at)
+            continue;
+        if (!newest || live.as_of > *newest)
+            newest = live.as_of;
+    }
+    return newest;
+}
+
 publish_verdict verdict_on_publish(const ores::database::context& ctx,
                                    const std::string& request_id,
                                    const publish_subject& attempted) {
@@ -300,11 +316,19 @@ domain::curve_publish record_publication(const ores::database::context& ctx,
     // two.
     ores::database::repository::unit_of_work uow(ctx);
     const auto& tx = uow.ctx();
+    // The set in use is read before the apply ends it, so the notice names the
+    // version this one replaced and not the one it wrote.
+    const auto replaced = live_as_of(tx, record.output_series_id);
     end_previous_sets(tx, record);
 
     repository::curve_publish_repository repo;
     repo.write(tx, record);
     uow.commit();
+
+    // One notice, at the apply, once: the record is written once, so the notice
+    // is raised once. Telling never unmoves the set, so a failure is logged in
+    // the announcer and the record stands.
+    announce_publish(ctx, record, replaced);
     return record;
 }
 

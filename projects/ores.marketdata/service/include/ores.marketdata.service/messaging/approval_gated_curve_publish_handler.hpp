@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.nats/domain/message.hpp"

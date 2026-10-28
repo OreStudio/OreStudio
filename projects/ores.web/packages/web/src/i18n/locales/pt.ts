@@ -492,6 +492,11 @@ const pt: SourceCatalogue = {
     'notification.inbox.approval_expiring':
         'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
 
+    'notification.marketdata.curve_published':
+        'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
+    'notification.marketdata.curve_withdrawn':
+        'A curva {curve} de {party} foi retirada em {withdrawn_at} por {withdrawn_by}: {reason}. O seu ultimo conjunto publicado tinha a data de {as_of}.',
+
     signIns: {
         title: 'Inícios de sessão',
         kind: 'Tipo',

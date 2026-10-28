@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-public-sources-control-surface
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person can see which public providers are in the system, whether their data is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The Official rates screen is built and runs against live data. |
+| Waiting on   | The user's sign-off on the screen.     |
+| Next         | Raise the PR and hold it for the sign-off. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -43,9 +43,27 @@ A person can see which public providers are in the system, whether their data is
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The user asked to stop at a checkpoint: the provider data is in the system and
+a person can see it. So this task delivers the read side and the one write that
+the data needs, the acceptance of a provider's terms. The other actions wait
+for the review at the checkpoint (see Notes).
+
+1. Make =market_fixing.series_id= filterable, so that one read takes the
+   fixings of a few series and not the whole hypertable.
+2. Add three BFF routes in =official.ts=:
+   - =GET /api/marketdata/official= reads each provider that has a terms page,
+     with its sources and its fixing series. The series are parsed from their
+     item.
+   - =GET /api/marketdata/official/fixings?series== reads the fixings of at most
+     12 series, sorted by date.
+   - =POST /api/marketdata/official/:code/accept-terms= calls the server-side
+     acceptance.
+3. Add the Official rates screen under Market data. It has three panels:
+   - the providers, with their terms state and an Accept terms button for a
+     person who holds =marketdata::providers:accept_terms=;
+   - one provider's series, as a chart and a table of the latest fixings;
+   - one pair from every provider, as published, inverted or crossed through
+     the provider's base.
 
 * Measurements
 
@@ -59,9 +77,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Official providers and their series | 4 providers, 113 series (BOC 26, TCMB 21, ECB 30, IMF 36) | =curl -b jar localhost:20002/api/marketdata/official= | e167766031 |
+| Fixings of four series in one read | 280, 270, 272, 272 rows in 0.12 s | =curl -b jar 'localhost:20002/api/marketdata/official/fixings?series=…'= | e167766031 |
+| EUR/USD on 2026-10-27 | ECB 1.115, IMF 1/0.89686 = 1.11500, BOC 0.71235/0.63926 = 1.11434 | the same read | e167766031 |
+| Web tests in the touched areas | 365 passed in 30 files | =npx vitest run src/marketdata src/shell src/i18n= | e167766031 |
 
 * Notes
+
+Deferred until the checkpoint review:
+
+- Pause and resume a provider, and start a backfill of a date range. Each
+  action is audited.
+- Delete a provider's fixings. When a provider's new terms withdraw permission
+  to store, a system administrator deletes that provider's fixings from the
+  durable table, and the deletion records who did it. The design is in
+  [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+- The adapter's health and the time of the last fixing in the provider list.
+  The adapter reports them in its INGEST STATUS, but no read carries them to
+  the web yet.
+- A harness test that drives the screen live.
+
+A crossed pair is shown as derived. The ECB's terms count a computed rate as a
+change to its data, so the screen names the route of every value.
 
 * Test Scenarios
 
@@ -87,3 +124,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered up to the checkpoint. The Official rates screen is under Market data
+and runs against the live fixings. It lists the four providers with their terms
+state, draws one provider's fixings, and compares one pair across every
+provider. The PR waits for the user's sign-off on the screen. The deferred
+actions in Notes stay open on this task.

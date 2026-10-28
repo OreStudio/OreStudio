@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -80,11 +81,13 @@ const std::string copy_tags("[.write_ceiling_copy]");
 
 const std::string uri = "oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TRY";
 
-std::string setting(const char* name) {
-    const char* value = std::getenv(name);
-    if (value == nullptr)
-        throw std::runtime_error(std::string("The setting ") + name + " is not set.");
-    return value;
+/// A setting of the process environment, read through the platform provider.
+///
+/// Reaching the CRT's getenv directly is deprecated on Windows and the build
+/// treats that as an error, and the provider is the one place that knows how
+/// each platform is asked.
+std::string setting(const std::string& name) {
+    return ores::platform::environment::environment::get_value_or_throw(name);
 }
 
 struct connection_closer {
@@ -293,7 +296,7 @@ TEST_CASE("write_ceiling_of_the_repository_insert", repository_tags) {
 }
 
 TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
-    const bool keep = std::getenv("WRITE_CEILING_KEEP") != nullptr;
+    const bool keep = ores::platform::environment::environment::get_value("WRITE_CEILING_KEEP").has_value();
     auto conn = connect_as("ORES_TEST_DB_DDL_USER", "ORES_TEST_DB_DDL_PASSWORD");
     scratch_schema_guard guard(conn.get(), keep);
 
@@ -341,7 +344,7 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
     // connection can play the reader. The writer is a second role with BYPASSRLS that does not
     // own the table.
     const std::string writer_role =
-        std::getenv("ORES_DB_DDL_USER") != nullptr ? std::getenv("ORES_DB_DDL_USER") : "";
+        ores::platform::environment::environment::get_value_or_default("ORES_DB_DDL_USER", "");
     run(conn.get(),
         "create table if not exists write_ceiling.tick_owner (tenant_id uuid not null, party_id "
         "uuid not null, series_id uuid not null, ts timestamptz not null, coord smallint not null "
@@ -369,12 +372,13 @@ TEST_CASE("write_ceiling_of_copy_through_libpq", copy_tags) {
         run(conn.get(), "grant insert on write_ceiling.tick_owner to \"" + writer_role + "\"");
     }
 
-    if (std::getenv("WRITE_CEILING_ONLY_CREATE") != nullptr) {
+    if (ores::platform::environment::environment::get_value("WRITE_CEILING_ONLY_CREATE")
+            .has_value()) {
         SUCCEED();
         return;
     }
     const std::string only_shape =
-        std::getenv("WRITE_CEILING_SHAPES") != nullptr ? std::getenv("WRITE_CEILING_SHAPES") : "";
+        ores::platform::environment::environment::get_value_or_default("WRITE_CEILING_SHAPES", "");
 
     boost::uuids::random_generator gen;
     std::vector<std::string> series;

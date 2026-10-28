@@ -18,12 +18,13 @@
  *
  */
 #include "ores.ore.core/log/engine_run_verdict.hpp"
-#include "ores.ore.core/log/ore_log_parser.hpp"
+#include "ores.ore.core/log/engine_log.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <format>
-#include <optional>
+#include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::ore::log {
 
@@ -51,36 +52,37 @@ bool is_analytics(const std::string& file_name) {
  */
 constexpr std::string_view fatal_marker = "Error in ORE analytics";
 
-/** One parsed message per log line; returns how many lines the log held. */
-template <typename Fn>
-std::size_t for_each_message(std::string_view engine_log, Fn&& fn) {
-    std::size_t total_lines = 0;
+/**
+ * @brief The lines the engine wrote in its own shape, in the order it wrote them.
+ *
+ * A line that states less than the engine's own fields is not the engine
+ * speaking, and a verdict is about what the engine said.
+ */
+std::vector<engine_log_event> engine_events(std::string_view engine_log) {
+    std::vector<engine_log_event> events;
+    for (const auto& event : parse_engine_log_text(engine_log, engine_log_name))
+        if (event.engine_format)
+            events.push_back(event);
+    return events;
+}
 
-    std::size_t first = 0;
-    while (first < engine_log.size()) {
-        const auto end = engine_log.find('\n', first);
-        const auto line = engine_log.substr(
-            first, end == std::string_view::npos ? std::string_view::npos : end - first);
-        ++total_lines;
-
-        if (const auto parsed = parse_ore_log_line(line))
-            fn(*parsed);
-
-        if (end == std::string_view::npos)
-            break;
-        first = end + 1;
-    }
-
-    return total_lines;
+/** How many lines the log held, which is what the engine was asked to write. */
+std::size_t line_count(std::string_view text) {
+    if (text.empty())
+        return 0;
+    std::size_t breaks = 0;
+    for (const auto c : text)
+        if (c == '\n')
+            ++breaks;
+    return text.back() == '\n' ? breaks : breaks + 1;
 }
 
 /** The messages of the engine's ERROR lines, in the order it wrote them. */
-std::vector<std::string> error_messages(std::string_view engine_log, std::size_t& total_lines) {
+std::vector<std::string> error_messages(std::string_view engine_log) {
     std::vector<std::string> errors;
-    total_lines = for_each_message(engine_log, [&](const auto& parsed) {
-        if (parsed.level == "error")
-            errors.push_back(parsed.message);
-    });
+    for (const auto& event : engine_events(engine_log))
+        if (event.severity == "error")
+            errors.push_back(event.message);
     return errors;
 }
 
@@ -90,18 +92,6 @@ bool restates(const std::vector<std::string>& failures, const std::string& messa
         return failure.find(message) != std::string::npos ||
                message.find(failure) != std::string::npos;
     });
-}
-
-/** The value of a quoted field in a structured message, when it carries one. */
-std::optional<std::string> quoted_field(std::string_view line, std::string_view marker) {
-    const auto at = line.find(marker);
-    if (at == std::string_view::npos)
-        return std::nullopt;
-    const auto from = at + marker.size();
-    const auto to = line.find('"', from);
-    if (to == std::string_view::npos || to == from)
-        return std::nullopt;
-    return std::string(line.substr(from, to - from));
 }
 
 /**
@@ -115,33 +105,25 @@ std::optional<std::string> quoted_field(std::string_view line, std::string_view 
  */
 std::vector<std::string> explanations(std::string_view engine_log) {
     std::vector<std::string> reasons;
-    for_each_message(engine_log, [&](const auto& parsed) {
-        if (parsed.level != "alert" && parsed.level != "error")
-            return;
+    for (const auto& event : engine_events(engine_log)) {
+        if (event.severity != "error")
+            continue;
 
-        auto text = parsed.message;
-        std::string detail;
-        if (text.starts_with("StructuredMessage")) {
-            const auto message = quoted_field(text, "\"message\": \"");
-            if (!message)
-                return;
-            text = *message;
-            if (const auto trade =
-                    quoted_field(parsed.message, "\"name\": \"tradeId\", \"value\": \"")) {
-                detail = " (trade " + *trade;
-                if (const auto type =
-                        quoted_field(parsed.message, "\"name\": \"tradeType\", \"value\": \""))
-                    detail += ", " + *type;
-                detail += ")";
-            } else if (const auto curve =
-                           quoted_field(parsed.message, "\"name\": \"curveId\", \"value\": \"")) {
-                detail = " (curve " + *curve + ")";
-            }
+        auto text = event.message;
+        const auto trade = field_of(event, "tradeId");
+        const auto curve = field_of(event, "curveId");
+        if (!trade.empty()) {
+            text += " (trade " + trade;
+            const auto type = field_of(event, "tradeType");
+            if (!type.empty())
+                text += ", " + type;
+            text += ")";
+        } else if (!curve.empty()) {
+            text += " (curve " + curve + ")";
         }
-        text += detail;
         if (!restates(reasons, text))
             reasons.push_back(std::move(text));
-    });
+    }
     return reasons;
 }
 
@@ -155,11 +137,11 @@ std::vector<std::string> explanations(std::string_view engine_log) {
  */
 std::vector<std::string> fatal_messages(std::string_view engine_log) {
     std::vector<std::string> failures;
-    for_each_message(engine_log, [&](const auto& parsed) {
-        if (parsed.message.find(fatal_marker) != std::string::npos &&
-            !restates(failures, parsed.message))
-            failures.push_back(parsed.message);
-    });
+    for (const auto& event : engine_events(engine_log)) {
+        if (event.message.find(fatal_marker) != std::string::npos &&
+            !restates(failures, event.message))
+            failures.push_back(event.message);
+    }
     return failures;
 }
 
@@ -202,13 +184,13 @@ engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_
         return outcome;
     }
 
-    std::size_t total_lines = 0;
-    const auto errors = error_messages(engine_log, total_lines);
+    const auto errors = error_messages(engine_log);
 
     outcome.failure = "The engine produced no analytics.";
     if (errors.empty()) {
         if (!engine_log.empty())
-            outcome.failure += std::format(" It logged {} lines and no error.", total_lines);
+            outcome.failure +=
+                std::format(" It logged {} lines and no error.", line_count(engine_log));
         return outcome;
     }
 

@@ -19,10 +19,13 @@
  */
 #include "ores.ore.core/log/engine_log.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <string>
 
 namespace {
 
+using ores::ore::log::field_of;
+using ores::ore::log::is_memory_report;
 using ores::ore::log::parse_engine_log_json;
 using ores::ore::log::parse_engine_log_text;
 
@@ -238,4 +241,101 @@ TEST_CASE("a structured log object that states no message keeps its line", "[ore
     REQUIRE(events.size() == 1);
     CHECK(events[0].severity == "info");
     CHECK(events[0].message.find("Report") != std::string::npos);
+}
+
+TEST_CASE("a line the engine wrote states its level, its time and where it logged", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "WARNING    [2024-Dec-31 23:59:59.123456]    (risk/engine.cpp:99) : curve not found\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].engine_format);
+    CHECK(events[0].level_word == "WARNING");
+    CHECK(events[0].severity == "warning");
+    CHECK(events[0].location == "risk/engine.cpp:99");
+    CHECK(events[0].event_time == "2024-Dec-31 23:59:59.123456");
+    REQUIRE(events[0].occurred_at.has_value());
+    const auto since_epoch = std::chrono::duration_cast<std::chrono::microseconds>(
+        events[0].occurred_at->time_since_epoch());
+    CHECK(since_epoch.count() % 1000000 == 123456);
+}
+
+TEST_CASE("a line the engine did not write in its own shape says so", "[ore][log]") {
+    // A line with no time and no location is text, not a line of the engine's.
+    const auto events = parse_engine_log_text("WARNING something is off\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK_FALSE(events[0].engine_format);
+    CHECK(events[0].message == "WARNING something is off");
+}
+
+TEST_CASE("a fractional second is scaled to microseconds", "[ore][log]") {
+    // The engine does not always write six digits: 123 means 123000 microseconds.
+    const auto events = parse_engine_log_text(
+        "NOTICE    [2024-Jan-01 00:00:01.123]    (x.cpp:1) : msg\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    REQUIRE(events[0].occurred_at.has_value());
+    const auto since_epoch = std::chrono::duration_cast<std::chrono::microseconds>(
+        events[0].occurred_at->time_since_epoch());
+    CHECK(since_epoch.count() % 1000000 == 123000);
+}
+
+TEST_CASE("a time the engine did not write as one is not a value", "[ore][log]") {
+    const auto events =
+        parse_engine_log_text("NOTICE    [not-a-date]    (x.cpp:1) : msg\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK_FALSE(events[0].occurred_at.has_value());
+    CHECK_FALSE(events[0].engine_format);
+}
+
+TEST_CASE("the engine's memory report reads as a measurement, not a warning", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "WARNING  [2026-Oct-11 09:54:13.735791]    (OREAnalytics/orea/app/oreapp.cpp:257) : "
+        "Starting OREApp::analytics(): 52359168|52514816 (peakMemoryUsage (bytes) | memoryUsage "
+        "(bytes))\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(is_memory_report(events[0]));
+    CHECK(events[0].message ==
+          "Starting OREApp::analytics(): 52359168|52514816 (peakMemoryUsage (bytes) | memoryUsage "
+          "(bytes))");
+}
+
+TEST_CASE("a warning that mentions memory is still a warning", "[ore][log]") {
+    const auto events = parse_engine_log_text(
+        "WARNING  [2026-Oct-11 09:54:13.735791]    (ored/main.cpp:10) : low memory, "
+        "peakMemoryUsage is high\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK_FALSE(is_memory_report(events[0]));
+}
+
+TEST_CASE("every sub-field is read by the name the engine gave it", "[ore][log]") {
+    const auto events = parse_engine_log_text(trade_line + "\n", "log.txt");
+
+    REQUIRE(events.size() == 1);
+    CHECK(field_of(events[0], "tradeId") == "1d61bfaf-2015-5c23-ad85-85ebe6d9d4c0");
+    CHECK(field_of(events[0], "tradeType") == "Bond");
+    CHECK(field_of(events[0], "curveId").empty());
+}
+
+TEST_CASE("a structured message takes the severity it states, and keeps its line's when it "
+          "states none",
+          "[ore][log]") {
+    const auto with_category = parse_engine_log_json(
+        "{\"category\": \"Warning\", \"group\": \"Trade\", \"message\": \"careful\"}\n",
+        "log_structured.json");
+    const auto without_category = parse_engine_log_text(
+        "ALERT [2026-Oct-27 20:00:00.000000] (x.cpp:1) : StructuredMessage { \"message\": "
+        "\"broke\" }\n",
+        "log.txt");
+
+    REQUIRE(with_category.size() == 1);
+    REQUIRE(without_category.size() == 1);
+    CHECK(with_category[0].severity == "warning");
+    CHECK(without_category[0].severity == "error");
 }

@@ -33,7 +33,7 @@ A design note for whoever takes this. The lines belong to a job, not to a node. 
 
 * References
 
-- =projects/ores.ore/core/src/log/ore_log_parser.cpp=, the parser that now maps these lines to debug.
+- =projects/ores.ore/core/src/log/engine_log.cpp=, whose =is_memory_report= names these lines.
 - =projects/ores.compute/wrapper/src/app/log_publisher.cpp=, where the wrapper publishes the ORE log.
 - [[id:7B820710-161C-4926-B5AA-5EF2772A3652][User Journey: Watch the compute grid]]
 

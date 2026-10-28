@@ -21,12 +21,32 @@
 #define ORES_ORE_CORE_LOG_ENGINE_LOG_HPP
 
 #include "ores.ore.core/export.hpp"
+#include <chrono>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::ore::log {
+
+/**
+ * @brief The format the engine writes its own timestamps in.
+ *
+ * The engine writes them as =YYYY-Mon-DD HH:MM:SS= with an optional fractional
+ * second and no timezone designator, and it logs in UTC.
+ */
+inline constexpr std::string_view engine_timestamp_format = "%Y-%b-%d %H:%M:%S";
+
+/**
+ * @brief The suffix the engine puts on the memory reports it sends as warnings.
+ *
+ * The engine writes its memory use through the warning channel so that the line
+ * appears at any log mask. It is a measurement and not a warning, so a reader
+ * that ranks severities has to recognise it by this suffix.
+ */
+inline constexpr std::string_view engine_memory_report_suffix =
+    "(peakMemoryUsage (bytes) | memoryUsage (bytes))";
 
 /**
  * @brief One thing the engine said, as it said it.
@@ -46,6 +66,23 @@ struct engine_log_event {
      * =notice=, =warning=, =error=.
      */
     std::string severity;
+    /**
+     * @brief The severity as the engine wrote it, when the line stated one.
+     *
+     * The engine names its own levels -- =DATA=, =NOTICE=, =WARNING=, =ERROR=,
+     * =ALERT= -- and a reader that forwards its lines to a log store keeps that
+     * store's names, so the word is kept beside the severity it means.
+     */
+    std::string level_word;
+    /**
+     * @brief Whether the line stated the fields the engine writes on its lines.
+     *
+     * A line of the engine's own shape states a level, a time in brackets, the
+     * location that logged it in parentheses and then the separator. A line that
+     * states less is kept as text, so that a reader sees it, but this is false
+     * and a client that needs a time and a location skips it.
+     */
+    bool engine_format = false;
     /**
      * @brief The group the engine put the message in: =Curve=, =Trade=,
      * =Analytics=, and the report's own =Report= for a line the wrapper adds.
@@ -83,9 +120,22 @@ struct engine_log_event {
      */
     std::string detail;
     /**
+     * @brief The location that logged the line, as the engine wrote it in
+     * parentheses, such as =ore/oreapp.cpp:42=. Empty when the line stated none.
+     */
+    std::string location;
+    /**
      * @brief The time the engine stated, as it wrote it.
      */
     std::string event_time;
+    /**
+     * @brief The time the engine stated, as a value, in UTC.
+     *
+     * Empty when the line stated no time or one that cannot be read, which is
+     * why it is an optional rather than a default. @c event_time keeps what the
+     * engine wrote; this is what it means.
+     */
+    std::optional<std::chrono::system_clock::time_point> occurred_at;
     /**
      * @brief The file the event came from.
      */
@@ -112,6 +162,24 @@ parse_engine_log_text(std::string_view text, std::string_view source_file);
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::vector<engine_log_event>
 parse_engine_log_json(std::string_view text, std::string_view source_file);
+
+/**
+ * @brief The value of a sub-field the engine stated, by the name it gave it.
+ *
+ * The sub-fields are kept as the JSON object the engine wrote, so a client that
+ * needs one by name reads it here rather than parsing the engine's JSON itself.
+ *
+ * @return The value, or an empty string when the message stated no such field.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::string field_of(const engine_log_event& event,
+                                                        std::string_view name);
+
+/**
+ * @brief Whether the line is one of the engine's memory reports.
+ *
+ * @see engine_memory_report_suffix
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT bool is_memory_report(const engine_log_event& event);
 
 /**
  * @brief The events as the newline-delimited CSV the loader reads.

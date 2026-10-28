@@ -128,8 +128,8 @@ TEST_CASE("a failed analytic names the quote and the trade it could not build",
              "2026-05-05") +
         line("ALERT",
              "StructuredMessage { \"message\": \"Cannot build all required curves\", "
-             "\"name\": \"tradeId\", \"value\": \"28e6d1c3\", "
-             "\"name\": \"tradeType\", \"value\": \"Bond\" }") +
+             "\"sub_fields\": [ { \"name\": \"tradeId\", \"value\": \"28e6d1c3\" }, "
+             "{ \"name\": \"tradeType\", \"value\": \"Bond\" } ] }") +
         line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING,PARAMETRIC_VAR");
 
     const auto outcome = judge_engine_run({"log.txt", "runtimes.csv", "pricingstats.csv"}, log);

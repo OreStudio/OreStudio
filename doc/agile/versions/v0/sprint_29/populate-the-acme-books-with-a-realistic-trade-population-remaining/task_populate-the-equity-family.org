@@ -216,3 +216,33 @@ files, of which the hand-written ones are the shape to copy:
   source not yet identified. Inventing tickers is not an option, so a wider set
   needs a corpus or a published list to point at.
 
+** Progress after resuming, 2026-10-27
+
+Steps 2, 3 and 4 are done: the payload, the planner and the writer.
+
+- =equity_terms= states the union of the nine routed tables, with the basket
+  constituents and the periods as lists of their own row types.
+- =equity_underlying_reference= on the scope, loaded from the tenant's
+  catalogue in =trading_trade_population_writer=.
+- =equity_trade_planner= cycles the seventeen routed codes and refuses an empty
+  catalogue.
+- The writer fills one arm per table: the option table serves three codes, the
+  barrier table three, the digital table two, the accumulator two, the swap two
+  and the rest one each. The worst-of swap also states its constituents and its
+  periods.
+
+Four cases prove it: seventeen types appear in a population of seventeen, every
+slot names a catalogue underlying, a worst-of states two constituents and four
+periods, and an empty catalogue is refused. The synthetic suite passes 1,733
+assertions in 78 cases.
+
+**What step 5 needs and does not have**
+
+The profile config needs a book chartered to trade equities, and no ACME book
+is. The seeded books are intercompany loans, FX hedges, vanilla swaps, rates
+options, CDS and forwards; none is an equity book. Adding one means a new row in
+=acme_uk_books_artefact_populate.sql= with its catalogue and dataset, through
+the same pipeline the equity underlying catalogue took.
+
+Until then the family is proven in code and not in the books, and the export
+cases and the population run wait on it.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Commodities book. A run reaches all twenty-five routed commodity codes, so the c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,11 @@ Commodities book. A run reaches all twenty-five routed commodity codes, so the c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Mirror the equity charter: one book row in the ACME UK artefact seed with its
+own GL account and cost centre, and one =commodity= config in the demo
+profile's generate_trades block. Twenty-five trades per book, because the
+planner cycles the catalogue rather than drawing a type, so a population of
+twenty-five reaches every routed code exactly once.
 
 * Measurements
 
@@ -58,6 +60,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Commodity rows before | 0 | =compass db sql= on =ores_trading_commodity_instruments_tbl= | =101288ceef= |
+| Commodity rows after | 25, one per routed code | the same | =101288ceef= |
+| Forward-shaped rows carrying an option column | 0 of 4 | the same, grouped by shape | =101288ceef= |
 |      |       |         |        |
 
 * Notes
@@ -86,3 +91,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Commodities book. The UK entity has a =USD Commodity Derivatives= book
+(=d1a47792-a5ea-457f-809a-c48896242723=, GL-COMMODITY-001, CC-UK-COMMODITY),
+and the demo profile seeds =ACME ACCOUK commodity= with twenty-five trades per
+book.
+
+Measured by a provisioning run on a recreated database: =generate_trades=
+completed and the commodity instrument table holds 25 rows, one for each
+routed code, so every constructor the previous task added is now exercised by
+a run and not only by a unit test.
+
+The shape separation shows in the data: the four forward-shaped rows carry no
+option type, strike, average, barrier, variance or swaption expiry; the
+fourteen option-shaped rows carry an option type and a strike, of which three
+also carry an average and two a barrier; the accumulator rows carry an
+accumulation amount and no strike.
+
+No C++ changed, so the suites are unaffected by this task; the full build was
+re-run before it because the published tree was stale, which is a separate
+defect already captured.

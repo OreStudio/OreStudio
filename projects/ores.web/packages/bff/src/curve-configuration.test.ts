@@ -68,6 +68,7 @@ const PARTY_ID = '33333333-3333-4333-8333-333333333333';
 const DEFINITION_ID = '44444444-4444-4444-8444-444444444444';
 const EQUITY_DEFINITION_ID = '55555555-5555-4555-8555-555555555555';
 const YIELD_ROW_ID = '66666666-6666-4666-8666-666666666666';
+const CURVE_ID = '99999999-9999-4999-8999-999999999999';
 
 /** One curve configuration document: a yield curve entry and an equity curve entry. */
 function document(): Record<string, unknown> {
@@ -228,6 +229,31 @@ function repliesFor(overrides: Replies = {}): Replies {
             message: '',
             document: document(),
         },
+        'refdata.v1.curve_configurations.list': {
+            result: ok,
+            curve_configurations: [
+                {
+                    id: CURVE_ID,
+                    configuration_id: CONFIGURATION_ID,
+                    name: 'UK curve configuration',
+                    description: 'The UK curves',
+                    party_id: PARTY_ID,
+                    version: 1,
+                },
+            ],
+        },
+        'refdata.v1.curve_definitions.list': {
+            result: ok,
+            curve_definitions: [
+                { id: '1', curve_configuration_id: CURVE_ID, section_code: 'YieldCurves' },
+                { id: '2', curve_configuration_id: CURVE_ID, section_code: 'YieldCurves' },
+                { id: '3', curve_configuration_id: CURVE_ID, section_code: 'DefaultCurves' },
+            ],
+        },
+        'refdata.v1.parties.list': {
+            result: ok,
+            parties: [{ id: PARTY_ID, name: 'Acme Corporation Plc' }],
+        },
         'refdata.v1.curve_sections.list': {
             result: ok,
             sections: [
@@ -369,6 +395,28 @@ describe('the curve configuration a report binds', () => {
         expect(reply.statusCode).toBe(200);
         const body = reply.json() as CurveConfigurationView;
         expect(body.configurationId).toBe(IMPORTED_CONFIGURATION_ID);
+    });
+
+    it('lists a configuration without reading its document, counting its sections and curves', async () => {
+        const reply = await read(repliesFor(), '/api/refdata/curve-configurations');
+        expect(reply.statusCode).toBe(200);
+        const body = reply.json() as {
+            rows: readonly {
+                configurationId: string;
+                name: string;
+                partyName: string;
+                sections: number;
+                curves: number;
+            }[];
+        };
+        expect(body.rows).toHaveLength(1);
+        expect(body.rows[0]).toMatchObject({
+            configurationId: CONFIGURATION_ID,
+            name: 'UK curve configuration',
+            partyName: 'Acme Corporation Plc',
+            sections: 2,
+            curves: 3,
+        });
     });
 
     it('answers 404 when no document fills the configuration', async () => {

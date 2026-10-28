@@ -85,6 +85,17 @@ task and name that file in the Command column.
   configurations rather than as nothing. The sentence belongs on
   =configuration_type= once that row holds one; until then it is in one place,
   =blurbOf=, in the screen that draws the bindings.
+- *A configuration is reached from the area, not only from a report.* The
+  reporting area gains a *Curve configurations* card, and with it the list
+  screen the area needs: the header rows and their definitions, with the party,
+  the sections filled and the curve count of each. The card is gated on
+  =refdata::curve_configurations:read=, which is now one of the reads the area's
+  door asks for. The other kinds still reach the area through their own screens;
+  a kind with no list of its own has no card.
+- *Two dead translations were removed.* =fr.ts= and =pt.ts= carried
+  =reporting.results.oneRowPer.tradeId= and =.tradeType=, which the English
+  source catalogue does not have, so the i18n catalogue test failed for every
+  branch. Both were unused and are gone.
 - *The copies of a report are a party-scope defect, not a display one.* The
   owner's account works in four parties, so the list reads the definitions of
   all four (78 of them) with no party on the row and no party selector on the
@@ -117,3 +128,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The curve page's documentation is read once, in the panel it is collapsed into,
+and the panel states the values a closed list accepts. The report page draws
+Details, Configurations and Runs: its first tab is named as every other screen
+names it, the latest-run card is gone, and each configuration it binds is a card
+with the sentence that says what its kind is for.
+
+The reporting area gains the *Curve configurations* card and the list screen
+behind it, so a person reaches a curve configuration without a report that binds
+it. The list route reads the headers and the definitions and answers the party,
+the sections filled and the curve count of each.
+
+The BFF suite passes with 1,088 tests, seven of them for the curve configuration
+route and its list, and the browser suite with the ten tests of the curve page
+among them. The two dead French and Portuguese translations that failed the i18n
+catalogue for every branch are removed.
+
+Still open in this round: the party scope of the reports list, which is filed
+above and is the reports list's change rather than this page's.

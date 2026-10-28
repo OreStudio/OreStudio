@@ -43,7 +43,7 @@ domain::fpml_event_type fpml_event_type_mapper::map(const fpml_event_type_entity
     domain::fpml_event_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

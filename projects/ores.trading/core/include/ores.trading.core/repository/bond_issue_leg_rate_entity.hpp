@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_BOND_ISSUE_LEG_RATE_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_BOND_ISSUE_LEG_RATE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,8 +42,8 @@ struct bond_issue_leg_rate_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_issue_leg_rates_tbl";
 
-    sqlgen::PrimaryKey<std::string> issue_id;
-    sqlgen::PrimaryKey<std::string> leg_number;
+    std::string issue_id;
+    std::string leg_number;
     std::string tenant_id;
     int version = 0;
     std::string rate_kind;
@@ -77,6 +77,51 @@ struct bond_issue_leg_rate_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = bond_issue_leg_rate_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("issue_id", &e::issue_id) |
+               query_builder::key("leg_number", &e::leg_number) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("rate_kind", &e::rate_kind) |
+               query_builder::bind("index", &e::index) |
+               query_builder::bind("is_in_arrears", &e::is_in_arrears) |
+               query_builder::bind("fixing_days", &e::fixing_days) |
+               query_builder::bind("fixing_calendar", &e::fixing_calendar) |
+               query_builder::bind("last_recent_period", &e::last_recent_period) |
+               query_builder::bind("last_recent_period_calendar", &e::last_recent_period_calendar) |
+               query_builder::bind("lookback", &e::lookback) |
+               query_builder::bind("rate_cutoff", &e::rate_cutoff) |
+               query_builder::bind("is_averaged", &e::is_averaged) |
+               query_builder::bind("has_sub_periods", &e::has_sub_periods) |
+               query_builder::bind("include_spread", &e::include_spread) |
+               query_builder::bind("is_not_resetting_xccy", &e::is_not_resetting_xccy) |
+               query_builder::bind("naked_option", &e::naked_option) |
+               query_builder::bind("local_cap_floor", &e::local_cap_floor) |
+               query_builder::bind("stub_use_original_curve", &e::stub_use_original_curve) |
+               query_builder::bind("observation_shift", &e::observation_shift) |
+               query_builder::bind("front_stub_short_index", &e::front_stub_short_index) |
+               query_builder::bind("front_stub_long_index", &e::front_stub_long_index) |
+               query_builder::bind("front_stub_rounding_type", &e::front_stub_rounding_type) |
+               query_builder::bind("front_stub_rounding_precision",
+                                   &e::front_stub_rounding_precision) |
+               query_builder::bind("back_stub_short_index", &e::back_stub_short_index) |
+               query_builder::bind("back_stub_long_index", &e::back_stub_long_index) |
+               query_builder::bind("back_stub_rounding_type", &e::back_stub_rounding_type) |
+               query_builder::bind("back_stub_rounding_precision",
+                                   &e::back_stub_rounding_precision) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const bond_issue_leg_rate_entity& v);

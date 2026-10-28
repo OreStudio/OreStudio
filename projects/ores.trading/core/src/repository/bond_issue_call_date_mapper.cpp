@@ -49,8 +49,8 @@ bond_issue_call_date_mapper::map(const bond_issue_call_date_entity& v) {
     domain::bond_issue_call_date r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.call_date = ores::platform::time::datetime::from_iso8601_date(v.call_date);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

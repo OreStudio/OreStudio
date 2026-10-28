@@ -47,11 +47,11 @@ domain::bond_leg_amount bond_leg_amount_mapper::map(const bond_leg_amount_entity
     domain::bond_leg_amount r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.leg_role = v.leg_role.value();
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
-    r.amount_role = v.amount_role.value();
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.leg_role = v.leg_role;
+    r.leg_number = boost::lexical_cast<int>(v.leg_number);
+    r.amount_role = v.amount_role;
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.value = ores::utility::decimal::decimal::from_string(v.value).value();
     r.start_date = v.start_date;

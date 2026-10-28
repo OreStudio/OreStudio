@@ -19,16 +19,13 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/range_bound.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_summary.hpp"
 #include "ores.trading.api/domain/trade_summary_json_io.hpp" // IWYU pragma: keep.
@@ -43,19 +40,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -64,13 +48,13 @@
 
 namespace ores::trading::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string trade_summary_repository::sql() {
-    return generate_create_table_sql<trade_summary_entity>(lg());
+    return query_builder::insert_statement_sql<trade_summary_entity>(lg());
 }
 
 bool trade_summary_repository::is_sortable(std::string_view field) {
@@ -91,119 +75,130 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-trade_summary_list_order(const ores::utility::domain::order& order,
-                         std::initializer_list<std::string> default_columns,
-                         bool default_descending) {
+query_builder::order trade_summary_list_order(const ores::utility::domain::order& order,
+                                              std::initializer_list<std::string> default_columns,
+                                              bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!trade_summary_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of trade summaries cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 trade_summary_filter_condition(const std::optional<messaging::trade_summaries_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->row_kind)
-        r.push_back(equals("row_kind", filter_value(*filter->row_kind)));
+        r.push_back(
+            query_builder::equals("row_kind", query_builder::filter_value(*filter->row_kind)));
     if (filter->party_id)
-        r.push_back(equals("party_id", filter_value(*filter->party_id)));
+        r.push_back(
+            query_builder::equals("party_id", query_builder::filter_value(*filter->party_id)));
     if (filter->counterparty_id)
-        r.push_back(*filter->counterparty_id ?
-                        equals("counterparty_id", filter_value(**filter->counterparty_id)) :
-                        is_null("counterparty_id"));
+        r.push_back(
+            *filter->counterparty_id ?
+                query_builder::equals("counterparty_id",
+                                      query_builder::filter_value(**filter->counterparty_id)) :
+                query_builder::is_null("counterparty_id"));
     if (filter->book_id)
-        r.push_back(*filter->book_id ? equals("book_id", filter_value(**filter->book_id)) :
-                                       is_null("book_id"));
+        r.push_back(
+            *filter->book_id ?
+                query_builder::equals("book_id", query_builder::filter_value(**filter->book_id)) :
+                query_builder::is_null("book_id"));
     if (filter->instrument_type)
-        r.push_back(equals("instrument_type", filter_value(*filter->instrument_type)));
+        r.push_back(query_builder::equals("instrument_type",
+                                          query_builder::filter_value(*filter->instrument_type)));
     if (filter->status)
-        r.push_back(*filter->status ? equals("status", filter_value(**filter->status)) :
-                                      is_null("status"));
+        r.push_back(*filter->status ? query_builder::equals(
+                                          "status", query_builder::filter_value(**filter->status)) :
+                                      query_builder::is_null("status"));
     if (filter->authorisation_status)
-        r.push_back(equals("authorisation_status", filter_value(*filter->authorisation_status)));
+        r.push_back(query_builder::equals(
+            "authorisation_status", query_builder::filter_value(*filter->authorisation_status)));
     if (filter->trade_date)
-        r.push_back(*filter->trade_date ? equals("trade_date", filter_value(**filter->trade_date)) :
-                                          is_null("trade_date"));
+        r.push_back(*filter->trade_date ?
+                        query_builder::equals("trade_date",
+                                              query_builder::filter_value(**filter->trade_date)) :
+                        query_builder::is_null("trade_date"));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->row_kind_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->row_kind_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("row_kind", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("row_kind", std::move(values)));
     }
     if (filter->party_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->party_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("party_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("party_id", std::move(values)));
     }
     if (filter->counterparty_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->counterparty_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("counterparty_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("counterparty_id", std::move(values)));
     }
     if (filter->book_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->book_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("book_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("book_id", std::move(values)));
     }
     if (filter->instrument_type_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->instrument_type_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("instrument_type", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("instrument_type", std::move(values)));
     }
     if (filter->status_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->status_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("status", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("status", std::move(values)));
     }
     if (filter->authorisation_status_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->authorisation_status_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("authorisation_status", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("authorisation_status", std::move(values)));
     }
     if (filter->trade_date_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->trade_date_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("trade_date", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("trade_date", std::move(values)));
     }
     if (filter->trade_date_from) {
         const auto bound = range_bound(*filter->trade_date_from, range_end::from, false);
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->trade_date_from +
                                         " of trade_date_from is not a valid date or time.");
-        r.push_back(at_least("trade_date", filter_value(*bound)));
+        r.push_back(query_builder::at_least("trade_date", query_builder::filter_value(*bound)));
     }
     if (filter->trade_date_to) {
         const auto bound = range_bound(*filter->trade_date_to, range_end::to, false);
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->trade_date_to +
                                         " of trade_date_to is not a valid date or time.");
-        r.push_back(at_most("trade_date", filter_value(*bound)));
+        r.push_back(query_builder::at_most("trade_date", query_builder::filter_value(*bound)));
     }
     if (filter->search && !filter->search->empty())
-        r.push_back(contains_any({"search_text"}, *filter->search));
-    return all_of(std::move(r));
+        r.push_back(query_builder::contains_any({"search_text"}, *filter->search));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -251,10 +246,10 @@ void trade_summary_repository::write(context ctx,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade summary. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(trade_summary_mapper::map(t)),
-                     lg(),
-                     "Writing trade summary to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(trade_summary_mapper::map(t)),
+                                    lg(),
+                                    "Writing trade summary to database.");
 }
 
 void trade_summary_repository::write(
@@ -266,18 +261,19 @@ void trade_summary_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(trade_summary_mapper::map(batch)),
-                     lg(),
-                     "Writing trade summaries to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(trade_summary_mapper::map(batch)),
+        lg(),
+        "Writing trade summaries to database.");
 }
 
 std::vector<domain::trade_summary> trade_summary_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_summary_entity>> |
-                       where("tenant_id"_c == tid) | order_by("id"_c);
+    const auto query = query_builder::read<std::vector<trade_summary_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
 
-    return execute_read_query<trade_summary_entity, domain::trade_summary>(
+    return query_builder::execute_read_query<trade_summary_entity, domain::trade_summary>(
         ctx,
         query,
         [](const auto& entities) { return trade_summary_mapper::map(entities); },
@@ -289,10 +285,10 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(context
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade summary. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_summary_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id);
+    const auto query = query_builder::read<std::vector<trade_summary_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id);
 
-    return execute_read_query<trade_summary_entity, domain::trade_summary>(
+    return query_builder::execute_read_query<trade_summary_entity, domain::trade_summary>(
         ctx,
         query,
         [](const auto& entities) { return trade_summary_mapper::map(entities); },
@@ -305,10 +301,11 @@ std::vector<domain::trade_summary> trade_summary_repository::read_all(context ct
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade summary versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_summary_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("id"_c);
+    const auto query = query_builder::read<std::vector<trade_summary_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<trade_summary_entity, domain::trade_summary>(
+    return query_builder::execute_read_query<trade_summary_entity, domain::trade_summary>(
         ctx,
         query,
         [](const auto& entities) { return trade_summary_mapper::map(entities); },
@@ -328,10 +325,10 @@ trade_summary_repository::remove_status trade_summary_repository::remove(
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<trade_summary_entity> | where("tenant_id"_c == tid && "id"_c == id);
+    const auto query = query_builder::delete_from<trade_summary_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id);
 
-    execute_delete_query(ctx, query, lg(), "Removing trade summary from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing trade summary from database.");
     return remove_status::removed;
 }
 
@@ -348,10 +345,11 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade summaries with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_summary_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<trade_summary_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<trade_summary_entity, domain::trade_summary>(
+    return query_builder::execute_ordered_read_query<trade_summary_entity, domain::trade_summary>(
         ctx,
         query,
         trade_summary_list_order(order, {"id"}, false),
@@ -366,10 +364,10 @@ std::uint32_t trade_summary_repository::get_total_trade_summary_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade summary count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_summary_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<trade_summary_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<trade_summary_entity>(
+    return query_builder::execute_count_query<trade_summary_entity>(
         ctx, query, trade_summary_filter_condition(filter), lg(), "Counting trade summaries");
 }
 
@@ -378,9 +376,9 @@ trade_summary_repository::read_latest(context ctx, const std::vector<std::string
     if (ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_summary_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids));
-    auto result = execute_read_query<trade_summary_entity, domain::trade_summary>(
+    const auto query = query_builder::read<std::vector<trade_summary_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
+    auto result = query_builder::execute_read_query<trade_summary_entity, domain::trade_summary>(
         ctx,
         query,
         [](const auto& entities) { return trade_summary_mapper::map(entities); },
@@ -399,9 +397,9 @@ void trade_summary_repository::remove(context ctx, const std::vector<std::string
     if (ids.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<trade_summary_entity> | where("tenant_id"_c == tid && "id"_c.in(ids));
-    execute_delete_query(ctx, query, lg(), "Batch removing trade summaries.");
+    const auto query = query_builder::delete_from<trade_summary_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c.in(ids));
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing trade summaries.");
 }
 
 

@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_STRIKE_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_STRIKE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,9 +42,9 @@ struct instrument_strike_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_instrument_strikes_tbl";
 
-    sqlgen::PrimaryKey<std::string> trade_id;
-    sqlgen::PrimaryKey<std::string> strike_role;
-    sqlgen::PrimaryKey<std::string> sequence_number;
+    std::string trade_id;
+    std::string strike_role;
+    std::string sequence_number;
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
@@ -60,6 +60,32 @@ struct instrument_strike_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = instrument_strike_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("trade_id", &e::trade_id) |
+               query_builder::key("strike_role", &e::strike_role) |
+               query_builder::key("sequence_number", &e::sequence_number) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("trade_activity_id", &e::trade_activity_id) |
+               query_builder::bind("price_value", &e::price_value) |
+               query_builder::bind("price_currency", &e::price_currency) |
+               query_builder::bind("yield_value", &e::yield_value) |
+               query_builder::bind("yield_compounding", &e::yield_compounding) |
+               query_builder::bind("bare_value", &e::bare_value) |
+               query_builder::bind("bare_currency", &e::bare_currency) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const instrument_strike_entity& v);

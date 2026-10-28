@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_LINK_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_LINK_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,9 +42,9 @@ struct trade_link_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_trade_links_tbl";
 
-    sqlgen::PrimaryKey<std::string> from_trade_id;
-    sqlgen::PrimaryKey<std::string> to_trade_id;
-    sqlgen::PrimaryKey<std::string> link_type;
+    std::string from_trade_id;
+    std::string to_trade_id;
+    std::string link_type;
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
@@ -54,6 +54,27 @@ struct trade_link_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = trade_link_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() |
+               query_builder::key("from_trade_id", &e::from_trade_id) |
+               query_builder::key("to_trade_id", &e::to_trade_id) |
+               query_builder::key("link_type", &e::link_type) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("trade_activity_id", &e::trade_activity_id) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const trade_link_entity& v);

@@ -46,8 +46,8 @@ domain::bond_issue_leg_rate bond_issue_leg_rate_mapper::map(const bond_issue_leg
     domain::bond_issue_leg_rate r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
+    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.leg_number = boost::lexical_cast<int>(v.leg_number);
     r.rate_kind = v.rate_kind;
     r.index = v.index;
     r.is_in_arrears = v.is_in_arrears;

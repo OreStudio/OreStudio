@@ -50,8 +50,8 @@ instrument_option_exercise_price_mapper::map(const instrument_option_exercise_pr
     domain::instrument_option_exercise_price r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.exercise_date = ores::platform::time::datetime::from_iso8601_date(v.exercise_date);
     r.price = ores::utility::decimal::decimal::from_string(v.price).value();

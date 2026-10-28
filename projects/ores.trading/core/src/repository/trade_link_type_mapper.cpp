@@ -43,7 +43,7 @@ domain::trade_link_type trade_link_type_mapper::map(const trade_link_type_entity
     domain::trade_link_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.from_role = v.from_role;
     r.to_role = v.to_role;

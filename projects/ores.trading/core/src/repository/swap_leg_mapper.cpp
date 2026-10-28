@@ -47,8 +47,8 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     domain::swap_leg r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.identity.leg_number = boost::lexical_cast<int>(v.leg_number.value());
+    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.leg_number = boost::lexical_cast<int>(v.leg_number);
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.payer = v.payer;

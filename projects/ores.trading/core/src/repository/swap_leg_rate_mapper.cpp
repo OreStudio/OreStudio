@@ -50,10 +50,10 @@ domain::swap_leg_rate swap_leg_rate_mapper::map(const swap_leg_rate_entity& v) {
     domain::swap_leg_rate r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
-    r.rate_role = v.rate_role.value();
-    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.leg_number = boost::lexical_cast<int>(v.leg_number);
+    r.rate_role = v.rate_role;
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.start_date =
         v.start_date.has_value() ?

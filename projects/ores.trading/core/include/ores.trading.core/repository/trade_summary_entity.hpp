@@ -25,8 +25,8 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_SUMMARY_ENTITY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_SUMMARY_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct trade_summary_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_trade_summaries_vw";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string row_kind;
     std::string party_id;
@@ -54,6 +54,26 @@ struct trade_summary_entity {
     std::optional<std::string> trade_date;
     int trade_count = 0;
     std::string search_text;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = trade_summary_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("row_kind", &e::row_kind) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("counterparty_id", &e::counterparty_id) |
+               query_builder::bind("book_id", &e::book_id) |
+               query_builder::bind("instrument_type", &e::instrument_type) |
+               query_builder::bind("status", &e::status) |
+               query_builder::bind("authorisation_status", &e::authorisation_status) |
+               query_builder::bind("trade_date", &e::trade_date) |
+               query_builder::bind("trade_count", &e::trade_count) |
+               query_builder::bind("search_text", &e::search_text);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const trade_summary_entity& v);

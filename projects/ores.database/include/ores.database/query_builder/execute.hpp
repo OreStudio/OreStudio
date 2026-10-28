@@ -25,6 +25,7 @@
 #include "ores.database/query_builder/query.hpp"
 #include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.database/repository/repository_exception.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/exception/exception.hpp>
 #include <boost/throw_exception.hpp>
@@ -307,8 +308,6 @@ void execute_write_op(context ctx,
                       const write_query<Entity>& query,
                       logging::logger_t& lg,
                       const std::string& operation_desc) {
-    static_assert(!repository::entity_write_observer<Entity>::observes,
-                  "An entity with a write observer stays on sqlgen until its observer moves");
     using namespace ores::logging;
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
     if (query.rows.empty())
@@ -327,20 +326,44 @@ void execute_write_op(context ctx,
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
-template <typename Entity>
-void execute_write_query(context ctx,
-                         const Entity& entity,
-                         logging::logger_t& lg,
-                         const std::string& operation_desc) {
-    execute_write_op(ctx, insert(entity), lg, operation_desc);
-}
-
+/**
+ * @brief Inserts rows, and observes each one when its entity has a write
+ * observer, as sqlgen's execute_write_query did.
+ *
+ * The observation is one unit with the write. A context bound to a unit of
+ * work already is one; for any other the write opens a unit of work, so a
+ * failure in the write or the observation leaves neither.
+ */
 template <typename Entity>
 void execute_write_query(context ctx,
                          const std::vector<Entity>& entities,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
-    execute_write_op(ctx, insert(entities), lg, operation_desc);
+    using observer = repository::entity_write_observer<Entity>;
+    if constexpr (observer::observes) {
+        const auto write_and_observe = [&](const context& c) {
+            execute_write_op(c, insert(entities), lg, operation_desc);
+            for (const auto& entity : entities)
+                observer::observe(c, entity, lg);
+        };
+        if (ctx.active_transaction()) {
+            write_and_observe(ctx);
+        } else {
+            repository::unit_of_work uow(ctx);
+            write_and_observe(uow.ctx());
+            uow.commit();
+        }
+    } else {
+        execute_write_op(ctx, insert(entities), lg, operation_desc);
+    }
+}
+
+template <typename Entity>
+void execute_write_query(context ctx,
+                         const Entity& entity,
+                         logging::logger_t& lg,
+                         const std::string& operation_desc) {
+    execute_write_query(ctx, std::vector<Entity>{entity}, lg, operation_desc);
 }
 
 template <typename Entity>

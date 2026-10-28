@@ -45,7 +45,7 @@ domain::trade_type trade_type_mapper::map(const trade_type_entity& v) {
     domain::trade_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description.value_or("");
     r.product_type =
         rfl::string_to_enum<ores::trading::domain::product_type>(v.product_type).value();

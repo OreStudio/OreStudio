@@ -277,11 +277,11 @@ credit_basket_constituent_repository::read_by_instruments_batch(
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<credit_basket_constituent_entity>> |
-                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+    const auto query = query_builder::read<std::vector<credit_basket_constituent_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
                              "valid_to"_c == max.value()) |
-                       order_by("trade_id"_c, "sequence_number"_c);
-    return execute_read_query<credit_basket_constituent_entity,
+                       query_builder::order_by("trade_id"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<credit_basket_constituent_entity,
                               domain::credit_basket_constituent>(
         ctx,
         query,

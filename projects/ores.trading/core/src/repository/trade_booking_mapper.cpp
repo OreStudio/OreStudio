@@ -48,7 +48,7 @@ domain::trade_booking trade_booking_mapper::map(const trade_booking_entity& v) {
     domain::trade_booking r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.book_id = boost::lexical_cast<boost::uuids::uuid>(v.book_id);
     r.netting_set_id =

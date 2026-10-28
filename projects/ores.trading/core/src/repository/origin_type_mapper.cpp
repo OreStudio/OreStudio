@@ -41,7 +41,7 @@ domain::origin_type origin_type_mapper::map(const origin_type_entity& v) {
 
     domain::origin_type r;
     r.version = v.version;
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

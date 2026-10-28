@@ -50,7 +50,7 @@ credit_default_swap_instrument_mapper::map(const credit_default_swap_instrument_
     domain::credit_default_swap_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.credit_curve_id = v.credit_curve_id;
     r.issuer_id = v.issuer_id;

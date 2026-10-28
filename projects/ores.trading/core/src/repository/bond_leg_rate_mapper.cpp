@@ -46,9 +46,9 @@ domain::bond_leg_rate bond_leg_rate_mapper::map(const bond_leg_rate_entity& v) {
     domain::bond_leg_rate r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
-    r.leg_role = v.leg_role.value();
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.leg_role = v.leg_role;
+    r.leg_number = boost::lexical_cast<int>(v.leg_number);
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.rate_kind = v.rate_kind;
     r.index = v.index;

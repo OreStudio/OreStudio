@@ -46,8 +46,8 @@ domain::bond_issue_leg bond_issue_leg_mapper::map(const bond_issue_leg_entity& v
     domain::bond_issue_leg r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
+    r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.leg_number = boost::lexical_cast<int>(v.leg_number);
     r.payer = v.payer;
     r.leg_type = v.leg_type;
     r.currency = v.currency;

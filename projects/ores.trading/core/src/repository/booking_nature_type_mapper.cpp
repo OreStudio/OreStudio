@@ -41,7 +41,7 @@ domain::booking_nature_type booking_nature_type_mapper::map(const booking_nature
 
     domain::booking_nature_type r;
     r.version = v.version;
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

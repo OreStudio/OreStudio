@@ -41,7 +41,7 @@ domain::entry_channel_type entry_channel_type_mapper::map(const entry_channel_ty
 
     domain::entry_channel_type r;
     r.version = v.version;
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

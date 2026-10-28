@@ -45,13 +45,18 @@ export function traceRows(
         .sort((left, right) => right.tau - left.tau);
 }
 
-/** The Trace tab: every decision the loop took over the window, filtered, newest first. */
+/**
+ * The Trace tab: every decision the loop took over the window, filtered, newest first. A trace
+ * already read for one feed, as its own Arrivals tab reads it, has no feed to filter by.
+ */
 export function TraceView({
     trace,
     pages,
+    oneFeed = false,
 }: {
     readonly trace: MarketTrace | undefined;
     readonly pages: FeedPages;
+    readonly oneFeed?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const [kinds, setKinds] = useState<ReadonlySet<TraceEvent['kind']>>(new Set(KINDS));
@@ -82,13 +87,15 @@ export function TraceView({
                     }
                     titleOf={(kind) => t(`marketdata.market.kinds.${kind}`)}
                 />
-                <input
-                    aria-label={t('marketdata.market.trace.feed')}
-                    placeholder={t('marketdata.market.trace.feed')}
-                    value={feed}
-                    onChange={(event) => setFeed(event.target.value)}
-                    className="ml-auto w-60 rounded-md border border-line bg-surface-base px-2.5 py-1 font-mono text-xs"
-                />
+                {oneFeed ? null : (
+                    <input
+                        aria-label={t('marketdata.market.trace.feed')}
+                        placeholder={t('marketdata.market.trace.feed')}
+                        value={feed}
+                        onChange={(event) => setFeed(event.target.value)}
+                        className="ml-auto w-60 rounded-md border border-line bg-surface-base px-2.5 py-1 font-mono text-xs"
+                    />
+                )}
             </div>
             <div className="max-h-[32rem] overflow-auto rounded-lg border border-line-subtle">
                 <table className="w-full font-mono text-xs">

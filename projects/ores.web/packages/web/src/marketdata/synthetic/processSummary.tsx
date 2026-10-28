@@ -18,8 +18,7 @@
  *
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import type { ReactNode } from 'react';
 import type { RecordRow } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { show, useRecords } from '../../refdata/records.js';
@@ -29,6 +28,7 @@ import { engineName } from './IrProcessPanel.js';
 import { PARAMETER_VALUES } from './irFeeds.js';
 import { COMPONENTS } from './MixturePanel.js';
 import { clean } from './market/numbers.js';
+import { SummaryLines, SummaryTag, type SummaryLine } from './SummaryTag.js';
 
 /** What a list knows of a feed: enough to name its process and to open it. */
 export interface ProcessFeed {
@@ -47,15 +47,14 @@ export function processName(
         : t(`refdata.choices.process_type.${feed.engine}`);
 }
 
+/** What tells one process from another across feeds: the kind of feed and its engine. */
+export function processKey(feed: Pick<ProcessFeed, 'kind' | 'engine'>): string {
+    return `${feed.kind}:${feed.engine}`;
+}
+
 /** The tab of a feed's page that edits its process. */
 export function processTab(kind: string): string {
     return kind === 'ir_curve' ? 'process' : 'behaviour';
-}
-
-/** One line of a summary: what the number is, and its value. */
-export interface ProcessLine {
-    readonly name: string;
-    readonly value: string;
 }
 
 function numberOf(row: RecordRow, field: string): number {
@@ -63,7 +62,7 @@ function numberOf(row: RecordRow, field: string): number {
 }
 
 /** A mixture's components, in order: each one's weight, mean and deviation a tick. */
-export function mixtureLines(components: readonly RecordRow[]): readonly ProcessLine[] {
+export function mixtureLines(components: readonly RecordRow[]): readonly SummaryLine[] {
     return [...components]
         .sort(
             (left, right) => numberOf(left, 'component_index') - numberOf(right, 'component_index'),
@@ -78,7 +77,7 @@ export function mixtureLines(components: readonly RecordRow[]): readonly Process
 export function curveLines(
     values: readonly RecordRow[],
     definitions: readonly RecordRow[],
-): readonly ProcessLine[] {
+): readonly SummaryLine[] {
     const byDefinition = new Map(values.map((row) => [show(row['parameter_definition_id']), row]));
     return definitions
         .filter((definition) => byDefinition.has(show(definition['id'])))
@@ -106,22 +105,13 @@ function ProcessParameters({ feed }: { readonly feed: ProcessFeed }): ReactNode 
     if (lines.length === 0) {
         return <p className="text-xs text-ink-faint">{t('marketdata.processSummary.none')}</p>;
     }
-    return (
-        <dl className="grid gap-1 font-mono text-xs">
-            {lines.map((line, index) => (
-                <div key={`${String(index)}-${line.name}`} className="flex justify-between gap-4">
-                    <dt className="text-ink-faint">{line.name}</dt>
-                    <dd className="text-right tabular-nums">{line.value}</dd>
-                </div>
-            ))}
-        </dl>
-    );
+    return <SummaryLines lines={lines} />;
 }
 
 /**
- * A feed's process as a tag: its name always, and its parameters when opened. A list of a
- * hundred feeds draws a hundred names from the list itself and reads one feed's parameters
- * only when a person asks for them.
+ * A feed's process as a tag: its name always, and its parameters when the pointer rests on it
+ * or it is clicked. A list of a hundred feeds draws a hundred names from the list itself and
+ * reads one feed's parameters only when a person asks for them.
  */
 export function ProcessTag({
     feed,
@@ -131,94 +121,25 @@ export function ProcessTag({
     readonly className?: string;
 }): ReactNode {
     const { t } = useTranslation();
-    const [open, setOpen] = useState(false);
-    const holder = useRef<HTMLSpanElement>(null);
-    const trigger = useRef<HTMLButtonElement>(null);
-    const panel = useRef<HTMLSpanElement>(null);
-    // Closing hands focus back to the tag, so a keyboard user carries on where they were.
-    const close = (): void => {
-        setOpen(false);
-        trigger.current?.focus();
-    };
-    // One summary at a time: a click anywhere else, opening another tag included, or Escape
-    // closes this one.
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-        const away = (event: MouseEvent): void => {
-            if (!holder.current?.contains(event.target as Node)) {
-                setOpen(false);
-            }
-        };
-        const escape = (event: KeyboardEvent): void => {
-            if (event.key === 'Escape') {
-                setOpen(false);
-                trigger.current?.focus();
-            }
-        };
-        // Opening moves focus into the summary, so its link is the next stop.
-        panel.current?.focus();
-        document.addEventListener('mousedown', away);
-        document.addEventListener('keydown', escape);
-        return () => {
-            document.removeEventListener('mousedown', away);
-            document.removeEventListener('keydown', escape);
-        };
-    }, [open]);
     if (feed.engine === '') {
         return <span className={cx('text-ink-faint', className)}>—</span>;
     }
     const name = processName(t, feed);
     return (
-        <span ref={holder} className={cx('relative inline-block max-w-full', className)}>
-            <button
-                ref={trigger}
-                type="button"
-                aria-expanded={open}
-                aria-haspopup="dialog"
-                title={name}
-                onClick={(event) => {
-                    event.stopPropagation();
-                    setOpen((was) => !was);
-                }}
-                className="block max-w-full truncate rounded-chip border border-line px-1.5 font-mono text-[11px] text-ink-muted hover:border-line-strong hover:text-ink"
-            >
-                {name}
-            </button>
-            {open ? (
-                <span
-                    ref={panel}
-                    role="dialog"
-                    tabIndex={-1}
-                    aria-label={t('marketdata.processSummary.title', { process: name })}
-                    className="absolute top-full left-0 z-30 mt-1 grid w-72 outline-none gap-2 rounded-md border border-line-strong bg-surface-overlay p-3 text-left shadow-xl"
-                >
-                    <span className="flex items-baseline justify-between gap-2">
-                        <span className="font-mono text-xs font-bold tracking-wide uppercase">
-                            {name}
-                        </span>
-                        <button
-                            type="button"
-                            aria-label={t('marketdata.processSummary.close')}
-                            onClick={close}
-                            className="text-ink-faint hover:text-ink"
-                        >
-                            ×
-                        </button>
-                    </span>
-                    {feed.id === '' ? null : <ProcessParameters feed={feed} />}
-                    {feed.id === '' ? null : (
-                        <Link
-                            to={`${feedPageOf(feed)}?tab=${processTab(feed.kind)}`}
-                            onClick={() => setOpen(false)}
-                            className="text-xs text-accent hover:underline"
-                        >
-                            {t('marketdata.processSummary.open')}
-                        </Link>
-                    )}
-                </span>
-            ) : null}
-        </span>
+        <SummaryTag
+            name={name}
+            label={t('marketdata.processSummary.title', { process: name })}
+            className={className}
+            link={
+                feed.id === ''
+                    ? undefined
+                    : {
+                          to: `${feedPageOf(feed)}?tab=${processTab(feed.kind)}`,
+                          text: t('marketdata.processSummary.open'),
+                      }
+            }
+        >
+            {feed.id === '' ? null : <ProcessParameters feed={feed} />}
+        </SummaryTag>
     );
 }

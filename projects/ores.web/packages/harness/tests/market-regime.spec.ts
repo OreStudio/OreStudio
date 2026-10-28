@@ -40,7 +40,7 @@ test.describe('the market, read by a tenant', () => {
         await expect(strip.getByText(/^×\d/).first()).toBeVisible();
         await expect(strip.getByText('Market speed', { exact: true })).toBeVisible();
         const tabs = page.getByRole('tablist', { name: MARKET });
-        for (const name of ['Now', 'Settings', 'Arrivals', 'Laws', 'Fit', 'Trace']) {
+        for (const name of ['Now', 'Settings', 'Arrivals', 'Feeds', 'Fit', 'Trace']) {
             await expect(tabs.getByRole('tab', { name: new RegExp(`^${name}`) })).toBeVisible();
         }
     });
@@ -86,10 +86,35 @@ test.describe('the market, read by a tenant', () => {
         );
     });
 
-    test('draws every running feed on Arrivals', async ({ page }) => {
+    test('counts the feeds of each law and process on Arrivals, and opens Feeds narrowed to them', async ({
+        page,
+    }) => {
         await openMarket(page, 'arrivals');
+        await expect(page.getByRole('region', { name: 'Price processes' })).toBeVisible();
+        await page.getByRole('link', { name: 'Show these feeds →' }).first().click();
+        await expect(page).toHaveURL(/view=feeds&law=(periodic|poisson|hawkes)/);
+        await expect(page.getByRole('radio', { name: 'All' })).toHaveAttribute(
+            'aria-checked',
+            'false',
+        );
+
+        await openMarket(page, 'arrivals');
+        await page
+            .getByRole('region', { name: 'Price processes' })
+            .getByRole('link')
+            .first()
+            .click();
+        await expect(page).toHaveURL(/view=feeds&process=/);
+        const only = page.getByRole('button', { name: /^Only .+ ×$/ });
+        await expect(only).toBeVisible();
+        await only.click();
+        await expect(only).toHaveCount(0);
+    });
+
+    test('draws every running feed on Feeds', async ({ page }) => {
+        await openMarket(page, 'feeds');
         await expect(
-            page.getByRole('img', {
+            page.getByRole('group', {
                 name: 'Tick arrivals of every feed, the feeds that run first',
             }),
         ).toBeVisible();
@@ -102,21 +127,39 @@ test.describe('the market, read by a tenant', () => {
         );
     });
 
-    test('reads each feed’s law on Laws and links to the feed', async ({ page }) => {
-        await openMarket(page, 'laws');
-        const laws = page.getByRole('region', { name: 'Every feed’s law' });
-        const link = laws.getByRole('link', { name: 'Arrivals tab →' }).first();
-        await expect(link).toHaveAttribute(
+    test('names each law on Feeds, shows its numbers on hover, and opens the feed’s arrivals and trace', async ({
+        page,
+    }) => {
+        await openMarket(page, 'feeds');
+        const feeds = page.getByRole('region', { name: 'The last minutes, feed by feed' });
+        const law = feeds.getByRole('link', { name: /^(Periodic|Poisson|Hawkes)$/ }).first();
+        await expect(law).toHaveAttribute(
             'href',
             /\/market-data\/synthetic\/(fx|ir)\/.+\?tab=arrivals$/,
         );
-        await expect(laws.getByRole('textbox')).toHaveCount(0);
+        await expect(law).not.toHaveAttribute('title', /.*/);
+        await law.hover();
+        const summary = page.getByRole('dialog', { name: /its law/ });
+        await expect(summary).toBeVisible();
+        await expect(summary.getByText('Ticks an hour')).toBeVisible();
+        await expect(summary.getByText('Sensitivity')).toBeVisible();
+        await feeds.getByRole('heading').hover();
+        await expect(summary).toHaveCount(0);
+
+        await law.click();
+        await expect(page).toHaveURL(/\?tab=arrivals$/);
+        const trace = page.getByRole('region', { name: 'What the loop decided' });
+        await expect(trace.getByText(/decisions match/)).toBeVisible();
+        await expect(trace.getByRole('textbox')).toHaveCount(0);
     });
 
-    test('summarises a feed’s process from Laws, and opens its Process tab', async ({ page }) => {
-        await openMarket(page, 'laws');
-        const laws = page.getByRole('region', { name: 'Every feed’s law' });
-        await laws.locator('button[aria-expanded="false"]').first().click();
+    test('summarises a feed’s process on hover and on a click, and opens its Process tab', async ({
+        page,
+    }) => {
+        await openMarket(page, 'feeds');
+        const feeds = page.getByRole('region', { name: 'The last minutes, feed by feed' });
+        const tags = feeds.locator('button[aria-haspopup="dialog"]');
+        await tags.first().hover();
         const summary = page.getByRole('dialog', { name: /its parameters/ });
         await expect(summary).toBeVisible();
         await expect(summary.locator('dl div').first()).toBeVisible();
@@ -124,18 +167,27 @@ test.describe('the market, read by a tenant', () => {
             'href',
             /\/market-data\/synthetic\/(fx|ir)\/.+\?tab=(process|behaviour)$/,
         );
-        await laws.locator('button[aria-expanded="false"]').last().click();
+        await feeds.getByRole('heading').hover();
+        await expect(summary).toHaveCount(0);
+
+        await tags.first().click();
+        await feeds.getByRole('heading').hover();
+        await expect(summary).toHaveCount(1);
+        await tags.nth(15).click();
         await expect(page.getByRole('dialog', { name: /its parameters/ })).toHaveCount(1);
         await page.keyboard.press('Escape');
         await expect(page.getByRole('dialog', { name: /its parameters/ })).toHaveCount(0);
     });
 
-    test('checks each feed against its law on Fit, with the loop’s health', async ({ page }) => {
+    test('checks each feed against its law on Fit, under the loop’s health', async ({ page }) => {
         await openMarket(page, 'fit');
-        await expect(page.getByRole('region', { name: 'Each feed against its law' })).toBeVisible();
-        await expect(
-            page.getByRole('region', { name: 'The loop’s health' }).getByText('Run seed'),
-        ).toBeVisible();
+        const fit = page.getByRole('region', { name: 'Each feed against its law' });
+        const health = page.getByRole('region', { name: 'The loop’s health' });
+        await expect(fit).toBeVisible();
+        await expect(health.getByText('Run seed')).toBeVisible();
+        const top = async (region: typeof fit): Promise<number> =>
+            (await region.boundingBox())?.y ?? Number.NaN;
+        expect(await top(health)).toBeLessThan(await top(fit));
     });
 
     test('lists the loop’s decisions on Trace', async ({ page }) => {
@@ -155,8 +207,12 @@ test.describe('the market, as the system administrator', () => {
     test('changes a running feed’s arrivals, restarts it on them, and sets them back', async ({
         page,
     }) => {
-        await openMarket(page, 'laws');
-        await page.getByRole('link', { name: 'Arrivals tab →' }).first().click();
+        await openMarket(page, 'feeds');
+        await page
+            .getByRole('region', { name: 'The last minutes, feed by feed' })
+            .getByRole('link', { name: /^(Periodic|Poisson|Hawkes)$/ })
+            .first()
+            .click();
         const section = page.getByRole('region', { name: 'Tick arrivals' });
         const law = page.locator('[data-running-law]');
         await expect(law).toContainText('Running now');

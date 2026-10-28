@@ -19,16 +19,18 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import type { FeedRaster, MarketTrace, TraceEvent, TraceFeed } from '../../../api/client.js';
 import { useTranslation } from '../../../i18n/Provider.js';
 import { cx, Notice } from '../../../ui/Primitives.js';
 import { assetClassColour } from '../../assetClassColour.js';
-import { ProcessTag } from '../processSummary.js';
+import { processKey, processName, ProcessTag } from '../processSummary.js';
 import { markGroups, type StateBand } from '../marketRaster.js';
-import { lawText, tauPositions, tauSpan, traceBands } from '../marketTrace.js';
+import { tauPositions, tauSpan, traceBands } from '../marketTrace.js';
 import { MarketCard, MicroLabel, Segmented } from './MarketCard.js';
 import { FeedLink, type FeedPages } from './FeedLink.js';
-import { clean, compact } from './numbers.js';
+import { LAWS, LawTag, type Law } from './LawTag.js';
+import { compact } from './numbers.js';
 
 /** The windows a person can look back over, in seconds. */
 export const WINDOWS = [30, 60, 120] as const;
@@ -111,17 +113,6 @@ export function coveredSeconds(
     return Math.min(seconds, Math.max(0, (now - oldest) / 1000));
 }
 
-/** A feed's law in a few words: its name, and a Hawkes law's branching ratio and decay. */
-export function lawSummary(
-    law: TraceFeed,
-    t: (key: string, values?: Readonly<Record<string, string | number>>) => string,
-): string {
-    const name = t(`marketdata.marketRegime.modes.${law.mode}`);
-    return law.mode === 'hawkes'
-        ? `${name} · n ${clean(law.branchingRatio, 3)} · β ${clean(law.decay, 3)}`
-        : name;
-}
-
 /** The provider part of a source name, which tells two feeds of one pair apart. */
 export function providerOf(sourceName: string): string {
     const parts = sourceName.split('.');
@@ -181,7 +172,6 @@ function Lane({
     return (
         <div
             className={`grid ${LANE_COLUMNS} items-center border-b border-line-subtle odd:bg-white/[0.012] hover:bg-accent-dim`}
-            title={law === undefined ? feed.sourceName : lawText(law, t)}
         >
             <span
                 className={cx(
@@ -200,14 +190,8 @@ function Lane({
             <span className="min-w-0 px-2">
                 <ProcessTag feed={feed} />
             </span>
-            <span className="truncate px-2 font-mono text-[11px] text-ink-muted">
-                {law === undefined ? (
-                    '—'
-                ) : (
-                    <FeedLink sourceName={feed.sourceName} pages={pages} tab="arrivals">
-                        {lawSummary(law, t)}
-                    </FeedLink>
-                )}
+            <span className="min-w-0 px-2 font-mono text-[11px] text-ink-muted">
+                {law === undefined ? '—' : <LawTag law={law} pages={pages} />}
             </span>
             <svg
                 aria-hidden
@@ -274,12 +258,18 @@ function Lane({
     );
 }
 
+/** The feeds a law or a process card sends a person to, held in the address. */
+export const LAW_PARAM = 'law';
+export const PROCESS_PARAM = 'process';
+
 /**
- * The Arrivals tab: every feed's ticks over the last minutes, one row a feed on one time
- * axis, the active spells shaded behind them. A row draws every tick while they fit and a
- * count a slot once they would not, so the picture holds at any tick rate.
+ * The Feeds tab: every feed's ticks over the last minutes, one row a feed on one time axis,
+ * the active spells shaded behind them, with the feed's process and law named and their
+ * numbers a hover away. A row draws every tick while they fit and a count a slot once they
+ * would not, so the picture holds at any tick rate. The rows can be narrowed to one law or
+ * one process, which the address carries so a card on the Arrivals tab can link here.
  */
-export function ArrivalsView({
+export function FeedsView({
     raster,
     trace,
     now,
@@ -300,11 +290,34 @@ export function ArrivalsView({
     const classes = [...new Set((raster?.feeds ?? []).map((feed) => feed.assetClass))].sort();
     const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
     const shown = new Set(classes.filter((c) => !hidden.has(c)));
-    const feeds = (raster?.feeds ?? []).filter((feed) => shown.has(feed.assetClass));
+    const [search, setSearch] = useSearchParams();
+    const lawAsked = search.get(LAW_PARAM);
+    const lawShown: Law | 'all' = (LAWS as readonly string[]).includes(lawAsked ?? '')
+        ? (lawAsked as Law)
+        : 'all';
+    const processShown = search.get(PROCESS_PARAM) ?? '';
+    const narrow = (param: string, value: string): void =>
+        setSearch(
+            (was) => {
+                const next = new URLSearchParams(was);
+                if (value === '' || value === 'all') {
+                    next.delete(param);
+                } else {
+                    next.set(param, value);
+                }
+                return next;
+            },
+            { replace: true },
+        );
+    const laws = new Map((trace?.feeds ?? []).map((feed) => [feed.sourceName, feed]));
+    const feeds = (raster?.feeds ?? [])
+        .filter((feed) => shown.has(feed.assetClass))
+        .filter((feed) => lawShown === 'all' || laws.get(feed.sourceName)?.mode === lawShown)
+        .filter((feed) => processShown === '' || processKey(feed) === processShown);
+    const processFeed = (raster?.feeds ?? []).find((feed) => processKey(feed) === processShown);
     const span = trace === undefined ? undefined : tauSpan(trace.events);
     const byTau = axis === 'tau' && trace !== undefined && span !== undefined;
     const bands = byTau || trace === undefined ? [] : traceBands(trace.events, seconds, now);
-    const laws = new Map((trace?.feeds ?? []).map((feed) => [feed.sourceName, feed]));
     const meanPace = trace === undefined ? 1 : meanPaceOf(trace.events);
     const covered = coveredSeconds(raster?.feeds ?? [], seconds, now);
     const most = feeds.reduce(
@@ -335,29 +348,33 @@ export function ArrivalsView({
     );
     return (
         <MarketCard
-            glyph="arrivals"
+            glyph="laws"
             title={t('marketdata.market.arrivals.title')}
             lead={t('marketdata.market.arrivals.lead')}
         >
             <div className="flex flex-wrap items-center gap-2.5">
-                <MicroLabel>{t('marketdata.market.arrivals.window')}</MicroLabel>
-                <Segmented
-                    label={t('marketdata.market.arrivals.window')}
-                    options={WINDOWS.map(String) as readonly string[]}
-                    value={String(seconds)}
-                    onChange={(option) => onWindow(Number(option) as ArrivalWindow)}
-                    titleOf={(option) => `${option} s`}
-                />
-                <MicroLabel>{t('marketdata.marketRegime.raster.axis.label')}</MicroLabel>
-                <Segmented
-                    label={t('marketdata.marketRegime.raster.axis.label')}
-                    options={['clock', 'tau'] as const}
-                    value={axis}
-                    onChange={setAxis}
-                    titleOf={(option) => t(`marketdata.marketRegime.raster.axis.${option}`)}
-                />
+                <span className="flex items-center gap-2.5">
+                    <MicroLabel>{t('marketdata.market.arrivals.window')}</MicroLabel>
+                    <Segmented
+                        label={t('marketdata.market.arrivals.window')}
+                        options={WINDOWS.map(String) as readonly string[]}
+                        value={String(seconds)}
+                        onChange={(option) => onWindow(Number(option) as ArrivalWindow)}
+                        titleOf={(option) => `${option} s`}
+                    />
+                </span>
+                <span className="flex items-center gap-2.5">
+                    <MicroLabel>{t('marketdata.marketRegime.raster.axis.label')}</MicroLabel>
+                    <Segmented
+                        label={t('marketdata.marketRegime.raster.axis.label')}
+                        options={['clock', 'tau'] as const}
+                        value={axis}
+                        onChange={setAxis}
+                        titleOf={(option) => t(`marketdata.marketRegime.raster.axis.${option}`)}
+                    />
+                </span>
                 {classes.length < 2 ? null : (
-                    <>
+                    <span className="flex items-center gap-2.5">
                         <MicroLabel>{t('marketdata.market.arrivals.show')}</MicroLabel>
                         <Segmented
                             label={t('marketdata.market.arrivals.show')}
@@ -376,16 +393,46 @@ export function ArrivalsView({
                             }
                             titleOf={(option) => t(`marketdata.market.classes.${option}`)}
                         />
-                    </>
+                    </span>
                 )}
-                <MicroLabel>{t('marketdata.market.arrivals.draw')}</MicroLabel>
-                <Segmented
-                    label={t('marketdata.market.arrivals.draw')}
-                    options={['auto', 'marks', 'density'] as const}
-                    value={draw}
-                    onChange={setDraw}
-                    titleOf={(option) => t(`marketdata.market.arrivals.draws.${option}`)}
-                />
+                <span className="flex items-center gap-2.5">
+                    <MicroLabel>{t('marketdata.market.laws.law')}</MicroLabel>
+                    <Segmented
+                        label={t('marketdata.market.laws.law')}
+                        options={['all', ...LAWS] as const}
+                        value={lawShown}
+                        onChange={(option) => narrow(LAW_PARAM, option)}
+                        titleOf={(option) =>
+                            option === 'all'
+                                ? t('marketdata.market.arrivals.allLaws')
+                                : t(`marketdata.marketRegime.modes.${option}`)
+                        }
+                    />
+                </span>
+                {processShown === '' ? null : (
+                    <button
+                        type="button"
+                        onClick={() => narrow(PROCESS_PARAM, '')}
+                        className="rounded-chip border border-accent/40 bg-accent-dim px-2 py-0.5 font-mono text-[11px] text-accent hover:border-accent"
+                    >
+                        {t('marketdata.market.arrivals.onlyProcess', {
+                            process:
+                                processFeed === undefined
+                                    ? processShown
+                                    : processName(t, processFeed),
+                        })}
+                    </button>
+                )}
+                <span className="flex items-center gap-2.5">
+                    <MicroLabel>{t('marketdata.market.arrivals.draw')}</MicroLabel>
+                    <Segmented
+                        label={t('marketdata.market.arrivals.draw')}
+                        options={['auto', 'marks', 'density'] as const}
+                        value={draw}
+                        onChange={setDraw}
+                        titleOf={(option) => t(`marketdata.market.arrivals.draws.${option}`)}
+                    />
+                </span>
                 {draw === 'auto' ? (
                     <span className="ml-auto font-mono text-[11px] text-ink-faint">
                         {dense
@@ -394,13 +441,13 @@ export function ArrivalsView({
                     </span>
                 ) : null}
             </div>
-            {raster === undefined ? (
+            {raster === undefined || (lawShown !== 'all' && trace === undefined) ? (
                 <p className="text-[13px] text-ink-muted">{t('common.loading')}</p>
             ) : feeds.length === 0 ? (
                 <Notice tone="info">{t('marketdata.marketRegime.raster.none')}</Notice>
             ) : (
                 <div
-                    role="img"
+                    role="group"
                     aria-label={t('marketdata.marketRegime.raster.label')}
                     className="rounded-lg border border-line bg-bg-primary"
                 >

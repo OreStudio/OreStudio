@@ -27,7 +27,11 @@ import { api, type MarketRegime, type RecordRow, type TraceFeed } from '../../ap
 import { show } from '../../refdata/records.js';
 import { Button, Dialog, Fact, Field, Input, Notice, Select } from '../../ui/Primitives.js';
 import { lawText } from './marketTrace.js';
+import { TraceView } from './market/TraceView.js';
 import { regimeLabel, useMarketRegime, useMarketTrace } from './useMarketRegime.js';
+
+/** A feed's own trace names only that feed, so it links nowhere. */
+const NO_PAGES: ReadonlyMap<string, string> = new Map();
 
 /** The reason an arrivals change is recorded under: a code, the same in every language. */
 const REASON_CODE = 'system.update';
@@ -368,23 +372,26 @@ export function ArrivalsTab({
     const source = show(feed['source_name']);
     const trace = useMarketTrace(source);
     return (
-        <ArrivalsPanel
-            feed={feed}
-            market={useMarketRegime()}
-            law={trace.data?.feeds.find((running) => running.sourceName === source)}
-            mayWriteFeed={mayWriteFeed}
-            running={running}
-            save={save}
-            restart={async () => {
-                const id = show(feed['id']);
-                await api.stopFeed(id);
-                await api.startFeed(id);
-            }}
-            saved={async () => {
-                await queries.invalidateQueries({ queryKey: ['records'] });
-                await queries.invalidateQueries({ queryKey: ['history'] });
-            }}
-        />
+        <div className="grid gap-4">
+            <ArrivalsPanel
+                feed={feed}
+                market={useMarketRegime()}
+                law={trace.data?.feeds.find((running) => running.sourceName === source)}
+                mayWriteFeed={mayWriteFeed}
+                running={running}
+                save={save}
+                restart={async () => {
+                    const id = show(feed['id']);
+                    await api.stopFeed(id);
+                    await api.startFeed(id);
+                }}
+                saved={async () => {
+                    await queries.invalidateQueries({ queryKey: ['records'] });
+                    await queries.invalidateQueries({ queryKey: ['history'] });
+                }}
+            />
+            <TraceView trace={trace.data} pages={NO_PAGES} oneFeed />
+        </div>
     );
 }
 

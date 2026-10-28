@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 20E7BF4D-1AD6-4998-97A1-119EF39FAF42
+:END:
+#+title: Task: Fold a law's numbers into its tooltip
+#+description: The Laws table spends five columns on a law's numbers and one on a link to the Arrivals tab, which the law itself already opens. Keep the feed, its process, its law and its last minute of ticks, and show the numbers in the law's tooltip.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/fold-a-laws-numbers-into-its-tooltip
+#+pr: 3983
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads the market whole on Arrivals and each feed on Feeds, sees each feed's process and law by name, and hovers either for its numbers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The Laws table has the feed, process, law and last 60 s columns, and no column of numbers or of links.
+- The law's tooltip states its rate an hour, its sensitivity, and for a Hawkes law its branching, decay and whether it is stable.
+- Clicking the law opens the feed's Arrivals tab.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3983][#3983]] | [web] Fold a law's numbers into its tooltip on the Laws tab |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A law filter shows no feeds while the trace loads | FeedsView.tsx | Accept | The table shows Loading until the laws arrive; a test covers it. |
+| 2 | An unknown law in the address reads as all | FeedsView.tsx | Note | Kept forgiving: the control shows All, as the rows do. |
+| 3 | A pinned card stays open when focus leaves it | SummaryTag.tsx | Note | Deliberate: a click keeps it until Escape, a click outside or close. |
+| 4 | Touch untested | SummaryTag.tsx | Note | A tap pins and a tap outside closes; no touch device here. |
+| 5 | Dead locale keys | en/fr/pt.ts | Accept | laws.always removed; laws.open is used again by the law card. |
+| 6 | A fragment around one span | FeedsView.tsx | Accept | Removed. |
+| 7 | markGroups runs twice a row | FeedsView.tsx | Note | Fine at a hundred feeds. |
+| 8 | Title and summary describe the earlier scope | — | Accept | Retitled, and the scope noted in a comment. |
+| 9 | compass check skipped | — | Note | At the user's request, as in the earlier rounds. |
+
+* Result
+
+The UI review widened the task. The Market tab had two per-feed tables, Laws
+and Arrivals, with two rasters of the same ticks. They are now split by scope:
+
+- Arrivals reads the market whole: the folded heat map, a card a law with its
+  feed count, and a card a price process with its feed count. Each card opens
+  Feeds narrowed to its feeds.
+- Feeds is the one per-feed table: feed, process, law, the lanes and seen /
+  asked, with a law filter and a process filter carried in the address.
+- The Laws tab is gone.
+
+The process and the law share one summary card. Each shows its name only, and
+the card opens on hover or focus. A click keeps the process card open. The law
+stays a link to the feed's Arrivals tab, and its card holds its numbers. No
+value shows in a row by default. The Fit table uses the same law tag.
+
+The loop's health moved to the top of Fit. A feed's own Arrivals tab shows that
+feed's trace, without the feed filter. On Arrivals the heat map sits below the
+cards. Its hot end stays gold: red and green were tried and dropped.
+
+Evidence: web tests pass (2253), typecheck clean, and the harness passes 16 of
+16 live. It checks the tabs, the overview cards' links and filters, the law and
+process cards on hover and on click, the feed's trace, and that health sits
+above the fit table. Screenshots of every changed view were checked. Held for
+the user's review of the UI before merge.

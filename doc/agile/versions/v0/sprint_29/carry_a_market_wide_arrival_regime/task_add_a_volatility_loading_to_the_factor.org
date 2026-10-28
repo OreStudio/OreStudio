@@ -5,7 +5,7 @@
 #+description: Carry the shared factor into the price law: a setter on the stochastic process mirroring the arrival process's, a volatility sensitivity on the link and on both generation-config kinds, and one line in each feed — centred so the heat's long-run mean does not drift a run's calibration, with tests for long-run sigma and for a pinned market's response.
 #+type: task
 #+level: s1
-#+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,10 +16,17 @@
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
+
+Deferred on 2026-10-27. The market speed on tau (#3894) already moves a busy
+market's prices further per wall second, in proportion to its pace, because a
+tick steps its price by the simulated time it covers. What this task would add
+is a larger move per unit of market time, a rougher tick as well as a sooner
+one, and that needs a volatility sensitivity column on both generation-config
+kinds and a centring rule; it waits until that is wanted.
 The shared factor moves price variance, not only the tick clock: a feed's returns
 widen with the market and quieten with it, by a loading the feed carries, while a
 run's long-run sigma stays the one its configuration states.
@@ -29,7 +36,7 @@ run's long-run sigma stays the one its configuration states.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

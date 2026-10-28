@@ -501,13 +501,29 @@ const marketRegimeSchema = z.object({
     runSeed: z.number().default(0),
     /** The simulated seconds one unit of market time spans: how fast the simulated world runs. */
     speed: z.number().default(0),
+    /** How often a calm market turns active, a second. */
+    wakeRate: z.number().default(0),
+    /** How often an active market turns calm, a second. */
+    calmRate: z.number().default(0),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;
 
-/** One decision of the scheduler's loop: a tick, a regime turn, a pin or a change of feeds. */
+/** The five numbers a system session sets on the market. */
+export interface MarketSettings {
+    readonly wakeRate: number;
+    readonly calmRate: number;
+    readonly jump: number;
+    readonly decay: number;
+    readonly speed: number;
+}
+
+/**
+ * One decision of the scheduler's loop: a tick, a regime turn, a pin, a change of feeds or
+ * a change of the market's settings.
+ */
 const traceEventSchema = z.object({
-    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove']),
+    kind: z.enum(['tick', 'transition', 'pin', 'unpin', 'add', 'remove', 'configure']),
     sourceName: z.string(),
     at: z.string(),
     tau: z.number(),
@@ -2384,6 +2400,21 @@ export const api = {
                 method: 'POST',
                 headers: JSON_HEADERS,
                 body: JSON.stringify({ mode }),
+            }),
+        );
+    },
+
+    /**
+     * Sets how the market's pace moves from now on. The answer is the regime the
+     * service says is in force after the request; numbers it cannot run on are
+     * refused with a message that names the number.
+     */
+    async setMarketSettings(settings: MarketSettings): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime/settings', {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(settings),
             }),
         );
     },

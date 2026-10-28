@@ -89,6 +89,10 @@ struct market_snapshot final {
     double population_rate;
     /// The simulated seconds one unit of market time spans.
     double speed;
+    /// How often a calm market turns active, and an active one calm, per second.
+    double wake_rate;
+    double calm_rate;
+    double active_multiplier;
 };
 
 /**
@@ -198,6 +202,18 @@ public:
     /// return the pin is in force.
     void pin(std::optional<domain::market_state> state);
 
+    /**
+     * @brief Change how the market's pace moves, from the loop's now on. On return
+     * the change is in force and in the trace.
+     *
+     * A speed change reaches every simulated second from now. A feed that fixed
+     * its step from the speed when it started keeps that step until it starts again.
+     *
+     * @throws std::invalid_argument for numbers the clock refuses, in the caller's
+     *         thread, and then nothing changes.
+     */
+    void configure(const domain::market_config& market);
+
     /// The market as the loop last left it, which is at most one sample period old.
     [[nodiscard]] market_snapshot snapshot() const;
 
@@ -231,10 +247,8 @@ public:
         return run_seed_;
     }
 
-    /// The simulated seconds one unit of market time spans; fixed for the run.
-    [[nodiscard]] double market_speed() const {
-        return speed_;
-    }
+    /// The simulated seconds one unit of market time spans now.
+    [[nodiscard]] double market_speed() const;
 
     /**
      * @brief Take the next tick now, without waiting for its time.
@@ -266,6 +280,8 @@ private:
         double last_fired;
         /// The market's tau at the series' last event, or when it was added.
         double last_tau;
+        /// The market's simulated seconds at the same instant.
+        double last_simulated;
         /// The phase a periodic law drew when the series was added.
         double phase;
     };
@@ -305,7 +321,6 @@ private:
     i_run_clock& clock_;
     i_run_clock::time_point origin_;
     std::uint64_t run_seed_;
-    double speed_;
 
     mutable std::mutex mutex_;
     domain::operational_clock market_;

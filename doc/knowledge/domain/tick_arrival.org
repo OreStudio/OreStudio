@@ -60,6 +60,25 @@ removed one from another thread is a command the loop applies at its clock's
 now. =remove= and =pin= return once the loop has applied them, so a feed may
 destroy what its body points at, and a reply to a pin shows the pin in force.
 
+The system tenant can also change the market's numbers while it runs: the
+chain's two rates, the heat's jump and decay, and the market speed. =configure=
+is a command like a pin. It applies at the loop's now and goes in the trace as a
+=configure= event. What has passed stays as it was. The heat keeps its level and
+fades at the new decay. The dwell in progress keeps its unit draw, so it ends at
+the new rate's share of it. The calm multiplier is computed again, so the mean
+pace stays at one. The clock refuses a set whose loop gain is one or more, a rate
+or a speed that is not positive, or rates that leave no positive calm multiplier.
+The refusal names the number, and then nothing changes.
+
+The clock counts simulated seconds as it counts tau: each stretch of tau times
+the speed in force while it passed. A tick's simulated seconds are the change in
+that count, so a speed change reaches every spot feed at its next tick. A curve
+fixes its step from the speed when it starts, because a scheme that only
+approximates its law is checked against that step. It keeps that step until it
+starts again, and it counts a tick's simulated seconds in steps of that length.
+The settings are on the shell (=synthetic regime set=) and on the Market regime
+tab, read only for a tenant.
+
 The scheduler holds no database, messaging or logging code, so it keeps the
 rule of =ores.analytics.quant=. The synthetic side holds only the feeds. Any
 other consumer can pace itself the same way without linking the synthetic

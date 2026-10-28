@@ -4870,6 +4870,21 @@ const fr: SourceCatalogue = {
                 unpin: 'rendu',
                 add: 'ajouté',
                 remove: 'retiré',
+                configure: 'réglages modifiés',
+            },
+            settings: {
+                title: 'Ce qui fait bouger le marché',
+                wakeRate: 'De calme à actif, par seconde',
+                calmRate: 'D’actif à calme, par seconde',
+                jump: 'Chaleur ajoutée par tick',
+                decay: 'Déclin de la chaleur, par seconde',
+                speed: 'Vitesse du marché',
+                calmSpell: 'une période calme dure {seconds} s en moyenne',
+                activeSpell: 'une période active dure {seconds} s en moyenne',
+                apply: 'Appliquer',
+                discard: 'Annuler',
+                speedNote:
+                    'Un changement s’applique dès maintenant. Un flux spot prend la nouvelle vitesse à son prochain tick ; une courbe la prend à son prochain démarrage.',
             },
             raster: {
                 axis: {

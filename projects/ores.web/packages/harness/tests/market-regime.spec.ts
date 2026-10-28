@@ -44,6 +44,10 @@ test.describe('the market regime tab', () => {
         await expect(
             panel.getByText('The system administrator sets the market for the whole installation'),
         ).toBeVisible();
+        const settings = panel.getByRole('region', { name: 'What moves the market' });
+        await expect(settings.getByText('Market speed', { exact: true })).toBeVisible();
+        await expect(settings.getByRole('spinbutton')).toHaveCount(0);
+        await expect(settings.getByRole('button', { name: 'Apply' })).toHaveCount(0);
     });
 
     test('draws a row for the feeds that run', async ({ page }) => {
@@ -102,5 +106,39 @@ test.describe('the market regime tab, as the system administrator', () => {
         await auto.click();
         await expect(auto).toHaveAttribute('aria-pressed', 'true');
         await expect(panel.getByText('The chain, turning on its own')).toBeVisible();
+    });
+
+    test('refuses heat that would not settle, naming its gain', async ({ page }) => {
+        await openRegimeTab(page);
+        const settings = page
+            .getByRole('region', { name: PANEL })
+            .getByRole('region', { name: 'What moves the market' });
+        const decay = settings.getByRole('spinbutton', { name: /Heat decay/ });
+        const jump = settings.getByRole('spinbutton', { name: /Heat one tick adds/ });
+        await jump.fill(String(Number(await decay.inputValue()) * 2));
+        await settings.getByRole('button', { name: 'Apply' }).click();
+        await expect(settings.getByText(/is 2; it must be below one/)).toBeVisible();
+        await settings.getByRole('button', { name: 'Discard' }).click();
+    });
+
+    test('sets the market speed, and sets it back', async ({ page }) => {
+        await openRegimeTab(page);
+        const panel = page.getByRole('region', { name: PANEL });
+        const settings = panel.getByRole('region', { name: 'What moves the market' });
+        const speed = settings.getByRole('spinbutton', { name: 'Market speed' });
+        const before = await speed.inputValue();
+        const doubled = String(Number(before) * 2);
+
+        await speed.fill(doubled);
+        await settings.getByRole('button', { name: 'Apply' }).click();
+        await expect(
+            panel.getByText(`${doubled} simulated seconds a unit of market time`),
+        ).toBeVisible();
+
+        await speed.fill(before);
+        await settings.getByRole('button', { name: 'Apply' }).click();
+        await expect(
+            panel.getByText(`${before} simulated seconds a unit of market time`),
+        ).toBeVisible();
     });
 });

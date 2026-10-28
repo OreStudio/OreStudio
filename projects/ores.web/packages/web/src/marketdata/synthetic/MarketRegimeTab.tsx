@@ -26,6 +26,7 @@ import {
     REGIME_MODES,
     type FeedRaster,
     type MarketRegime,
+    type MarketSettings,
     type MarketState,
     type MarketTrace,
     type RegimeMode,
@@ -33,7 +34,7 @@ import {
 } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { useSession } from '../../session/SessionProvider.js';
-import { Button, Fact, Notice, Tag } from '../../ui/Primitives.js';
+import { Button, Fact, Field, Input, Notice, Tag } from '../../ui/Primitives.js';
 import { assetClassColour } from '../assetClassColour.js';
 import {
     arrivalPositions,
@@ -115,6 +116,10 @@ export function MarketRegimeTab(): ReactNode {
             setMarked({ at: Date.now(), state: after.state });
         },
     });
+    const configure = useMutation({
+        mutationFn: (settings: MarketSettings) => api.setMarketSettings(settings),
+        onSuccess: (after: MarketRegime) => queries.setQueryData(REGIME_KEY, after),
+    });
 
     if (regime.data === undefined) {
         return regime.error === null ? (
@@ -135,6 +140,9 @@ export function MarketRegimeTab(): ReactNode {
             trace={trace.data}
             mayPin={mayPin}
             onPin={(mode) => pin.mutate(mode)}
+            settingsPending={configure.isPending}
+            settingsError={configure.error === null ? null : configure.error.message}
+            onSettings={(settings) => configure.mutate(settings)}
         />
     );
 }
@@ -155,6 +163,9 @@ export function MarketRegimePanel({
     trace,
     mayPin,
     onPin,
+    settingsPending = false,
+    settingsError = null,
+    onSettings,
 }: {
     readonly regime: MarketRegime;
     readonly raster: FeedRaster | undefined;
@@ -170,6 +181,10 @@ export function MarketRegimePanel({
     /** Whether this session may set the market: the system tenant's, and no other. */
     readonly mayPin: boolean;
     readonly onPin: (mode: RegimeMode) => void;
+    readonly settingsPending?: boolean;
+    readonly settingsError?: string | null;
+    /** Sets the market's five numbers; without it, or without mayPin, they are read only. */
+    readonly onSettings?: (settings: MarketSettings) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const [axis, setAxis] = useState<'clock' | 'tau'>('clock');
@@ -237,6 +252,13 @@ export function MarketRegimePanel({
             ) : (
                 <p className="text-xs text-ink-faint">{t('marketdata.marketRegime.readOnly')}</p>
             )}
+
+            <MarketSettingsForm
+                regime={regime}
+                onSave={mayPin ? onSettings : undefined}
+                pending={settingsPending}
+                error={settingsError}
+            />
 
             <FactorCharts
                 feeds={raster?.feeds ?? []}
@@ -332,6 +354,139 @@ function SchedulerFacts({
                 })}
             />
         </dl>
+    );
+}
+
+/** The five numbers a system session sets, in the order the form shows them. */
+const SETTINGS = ['wakeRate', 'calmRate', 'jump', 'decay', 'speed'] as const;
+type Setting = (typeof SETTINGS)[number];
+
+/**
+ * The numbers that move the market: the chain's two rates, the heat's jump and decay, and
+ * the speed. A system session edits them; a tenant reads them. The service decides what it
+ * can run on, so the form shows its refusal rather than guessing; the loop gain it shows
+ * while a person types is a preview of the one rule a person most often breaks.
+ */
+function MarketSettingsForm({
+    regime,
+    onSave,
+    pending,
+    error,
+}: {
+    readonly regime: MarketRegime;
+    readonly onSave: ((settings: MarketSettings) => void) | undefined;
+    readonly pending: boolean;
+    readonly error: string | null;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [draft, setDraft] = useState<Partial<Record<Setting, string>>>({});
+    const value = (key: Setting): string => draft[key] ?? String(regime[key]);
+    const numbers = Object.fromEntries(SETTINGS.map((key) => [key, Number(value(key))])) as Record<
+        Setting,
+        number
+    >;
+    // An empty or unreadable field is not a zero, so it holds the form back until it reads.
+    const unreadable = SETTINGS.filter(
+        (key) => value(key).trim() === '' || !Number.isFinite(numbers[key]),
+    );
+    const gain = numbers.decay > 0 ? numbers.jump / numbers.decay : Number.POSITIVE_INFINITY;
+    // A draft stays after a save, so a refused one can be corrected; once the service holds
+    // the same numbers, there is nothing left to apply.
+    const edited = SETTINGS.some((key) => draft[key] !== undefined && numbers[key] !== regime[key]);
+    const hint = (key: Setting): string | undefined => {
+        if (key === 'wakeRate' && numbers.wakeRate > 0) {
+            return t('marketdata.marketRegime.settings.calmSpell', {
+                seconds: (1 / numbers.wakeRate).toFixed(0),
+            });
+        }
+        if (key === 'calmRate' && numbers.calmRate > 0) {
+            return t('marketdata.marketRegime.settings.activeSpell', {
+                seconds: (1 / numbers.calmRate).toFixed(0),
+            });
+        }
+        if (key === 'decay' && Number.isFinite(gain)) {
+            return t('marketdata.marketRegime.loopGainValue', { gain: gain.toFixed(3) });
+        }
+        return undefined;
+    };
+    return (
+        <section
+            aria-label={t('marketdata.marketRegime.settings.title')}
+            className="space-y-2 rounded-md border border-line bg-surface-base p-3"
+        >
+            <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                {t('marketdata.marketRegime.settings.title')}
+            </h3>
+            {onSave === undefined ? (
+                <dl className="grid gap-4 sm:grid-cols-5">
+                    {SETTINGS.map((key) => (
+                        <Fact
+                            key={key}
+                            label={t(`marketdata.marketRegime.settings.${key}`)}
+                            value={String(regime[key])}
+                        />
+                    ))}
+                </dl>
+            ) : (
+                <form
+                    className="space-y-2"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        onSave(numbers);
+                    }}
+                >
+                    <div className="grid gap-3 sm:grid-cols-5">
+                        {SETTINGS.map((key) => (
+                            <Field
+                                key={key}
+                                label={t(`marketdata.marketRegime.settings.${key}`)}
+                                hint={hint(key) ?? ''}
+                            >
+                                <Input
+                                    type="number"
+                                    step="any"
+                                    min={key === 'jump' ? 0 : undefined}
+                                    value={value(key)}
+                                    aria-invalid={
+                                        unreadable.includes(key) || (key === 'decay' && gain >= 1)
+                                            ? true
+                                            : undefined
+                                    }
+                                    onChange={(event) =>
+                                        setDraft((was) => ({ ...was, [key]: event.target.value }))
+                                    }
+                                />
+                            </Field>
+                        ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                            type="submit"
+                            size="sm"
+                            variant="primary"
+                            pending={pending}
+                            disabled={!edited || pending || unreadable.length > 0}
+                        >
+                            {t('marketdata.marketRegime.settings.apply')}
+                        </Button>
+                        {edited ? (
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => setDraft({})}
+                            >
+                                {t('marketdata.marketRegime.settings.discard')}
+                            </Button>
+                        ) : null}
+                    </div>
+                </form>
+            )}
+            {error === null ? null : <Notice tone="error">{error}</Notice>}
+            <p className="text-[11px] text-ink-faint">
+                {t('marketdata.marketRegime.settings.speedNote')}
+            </p>
+        </section>
     );
 }
 

@@ -18,6 +18,7 @@
  */
 #include "ores.analytics.quant/domain/operational_clock.hpp"
 #include <cmath>
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -34,30 +35,38 @@ market_state other(market_state s) {
     return s == market_state::calm ? market_state::active : market_state::calm;
 }
 
+void require(bool holds, const std::string& what) {
+    if (!holds)
+        throw std::invalid_argument("operational_clock: " + what);
+}
+
 double checked_calm_multiplier(const market_config& c) {
-    if (!positive(c.wake_rate) || !positive(c.calm_rate))
-        throw std::invalid_argument("operational_clock: wake_rate and calm_rate must be positive");
-    if (!positive(c.active_multiplier))
-        throw std::invalid_argument("operational_clock: active_multiplier must be positive");
-    if (!positive(c.speed))
-        throw std::invalid_argument("operational_clock: speed must be positive");
-    if (!std::isfinite(c.jump) || c.jump < 0.0 || !positive(c.decay))
-        throw std::invalid_argument(
-            "operational_clock: jump must be non-negative and decay positive");
+    require(positive(c.wake_rate), std::format("wake_rate is {}; it must be positive", c.wake_rate));
+    require(positive(c.calm_rate), std::format("calm_rate is {}; it must be positive", c.calm_rate));
+    require(positive(c.active_multiplier),
+            std::format("active_multiplier is {}; it must be positive", c.active_multiplier));
+    require(positive(c.speed), std::format("speed is {}; it must be positive", c.speed));
+    require(std::isfinite(c.jump) && c.jump >= 0.0,
+            std::format("jump is {}; it must be non-negative", c.jump));
+    require(positive(c.decay), std::format("decay is {}; it must be positive", c.decay));
     const double gain = c.jump / c.decay;
-    if (gain >= 1.0)
-        throw std::invalid_argument("operational_clock: the heat's loop gain, jump / decay, is " +
-                                    std::to_string(gain) + "; it must be below one");
+    require(gain < 1.0,
+            std::format("the heat's loop gain, jump / decay, is {}; it must be below one", gain));
 
     const double p = c.wake_rate / (c.wake_rate + c.calm_rate);
     const double calm = (1.0 - p * c.active_multiplier) / (1.0 - p);
-    if (!positive(calm))
-        throw std::invalid_argument("operational_clock: active_multiplier is too large for this "
-                                    "active share; no positive calm multiplier keeps the mean "
-                                    "pace at one");
+    require(positive(calm),
+            std::format("the market spends {} of its time active, so an active multiplier "
+                        "of {} leaves no positive calm multiplier that keeps the mean pace at one",
+                        p,
+                        c.active_multiplier));
     return calm;
 }
 
+}
+
+void validate(const market_config& config) {
+    checked_calm_multiplier(config);
 }
 
 operational_clock::operational_clock(const market_config& config, math::rng_stream stream)
@@ -127,7 +136,9 @@ void operational_clock::advance(double seconds) {
     while (seconds > 0.0) {
         const bool turns = !pin_ && remaining_ <= seconds;
         const double span = turns ? remaining_ : seconds;
-        tau_ += tau_over(span, multiplier(state()), heat_);
+        const double moved = tau_over(span, multiplier(state()), heat_);
+        tau_ += moved;
+        simulated_ += config_.speed * moved;
         heat_ *= std::exp(-config_.decay * span);
         now_ += span;
         seconds -= span;
@@ -175,6 +186,16 @@ void operational_clock::pin(market_state s) {
 
 void operational_clock::unpin() {
     pin_.reset();
+}
+
+void operational_clock::reconfigure(const market_config& config) {
+    const double calm = checked_calm_multiplier(config);
+    const auto rate_of = [](const market_config& c, market_state s) {
+        return s == market_state::calm ? c.wake_rate : c.calm_rate;
+    };
+    remaining_ = remaining_ * rate_of(config_, chain_state_) / rate_of(config, chain_state_);
+    config_ = config;
+    calm_multiplier_ = calm;
 }
 
 void operational_clock::record_event() {

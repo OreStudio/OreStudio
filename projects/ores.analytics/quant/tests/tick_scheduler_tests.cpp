@@ -400,3 +400,43 @@ TEST_CASE("a body is told the simulated time its tick covers, at the market's sp
     CHECK(scheduler.snapshot().speed == 10.0);
     CHECK(scheduler.market_speed() == 10.0);
 }
+
+TEST_CASE("a configure is in force on return, in the trace, and sets the simulated step",
+          "[tick_scheduler]") {
+    auto slow = no_heat;
+    slow.speed = 10.0;
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, slow, 1);
+    scheduler.pin(market_state::active);
+    std::vector<double> simulated;
+    scheduler.add({.series = 1, .arrival = per_second("periodic", 1.0)},
+                  [&](const tick_context& c) {
+                      simulated.push_back(c.simulated_seconds);
+                      return std::string{};
+                  });
+    scheduler.step();
+    scheduler.step();
+
+    auto fast = slow;
+    fast.speed = 20.0;
+    fast.wake_rate = 1.0;
+    scheduler.configure(fast);
+    CHECK(scheduler.market_speed() == 20.0);
+    CHECK(scheduler.snapshot().wake_rate == 1.0);
+
+    auto runaway = fast;
+    runaway.jump = 3.0;
+    CHECK_THROWS_AS(scheduler.configure(runaway), std::invalid_argument);
+    CHECK(scheduler.snapshot().jump == 0.0);
+
+    scheduler.step();
+    REQUIRE(simulated.size() == 3);
+    CHECK(simulated[1] == Catch::Approx(10.0));
+    CHECK(simulated[2] == Catch::Approx(20.0));
+
+    const auto page = scheduler.trace(std::nullopt, 1e9);
+    const auto configured = std::ranges::count_if(page.events, [](const auto& e) {
+        return e.kind == ores::analytics::quant::service::trace_kind::configure;
+    });
+    CHECK(configured == 1);
+}

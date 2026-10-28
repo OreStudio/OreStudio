@@ -160,6 +160,13 @@ capture in the product backlog inbox:
 The τ axis, the regime band behind the arrivals, seen against asked, the QQ
 plot and the loop's trace. All five stay.
 
+* Signed off
+
+Decided 2026-10-28, after four rounds: five tabs, then λ(t) and the Laws tab,
+then the temporal raster, then its finer fold and the density lanes. The build
+follows this page, in the task
+[[id:797C9E4E-8F40-49C2-ACC3-5BB8C4243A27][Split the market regime tab into screens of their own]].
+
 * See also
 
 - [[file:control-how-a-market-ticks.org][Control how a market ticks]] — the prototype this one follows, and the split it keeps.

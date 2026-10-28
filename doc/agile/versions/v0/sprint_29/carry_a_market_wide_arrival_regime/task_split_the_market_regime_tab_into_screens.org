@@ -42,9 +42,27 @@ A person who opens the market finds one question per tab: what is the market doi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The prototype [[id:51E4851F-5F8C-4143-A034-E3E1A2F9C7CE][Run the market]] was
+signed off on 2026-10-28, and the build follows it: a strip of seven figures
+over six tabs (Now, Settings, Arrivals, Laws, Fit, Trace), in the review's look on
+the product's tokens. Two pull requests, because two figures need history the
+service does not keep yet.
+
+1. *The screens, on the reads that exist.* The Market regime tab of the
+   Synthetic screen becomes the Market tab with its own six tabs, addressed by
+   =?tab=regime&view=<tab>=. The strip; Now with the pace, the switch, who holds
+   the state and the last changes; Settings as four cards, spells entered in
+   seconds, each field with the number it implies; Arrivals with the
+   feed-by-feed lanes, the 30, 60 and 120 second windows, and density once marks
+   would saturate; Laws, read only, each row linking to the feed's Arrivals tab;
+   Fit; and Trace with its filters. Every figure prints without float noise.
+2. *The history.* The scheduler's sampler keeps the summed intensity λ beside
+   the heat, and per-second tick counts by asset class for an hour, with tenths
+   for the last ten minutes. A series carries its asset class so the loop can
+   count by it. Now gains λ(t) against the ticks seen; Arrivals gains the folded
+   raster in its two folds.
+
+The prototype's load control is the prototype's own and is not built.
 
 * Measurements
 

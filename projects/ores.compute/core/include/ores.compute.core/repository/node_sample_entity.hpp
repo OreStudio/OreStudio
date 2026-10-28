@@ -25,8 +25,8 @@
 #ifndef ORES_COMPUTE_CORE_REPOSITORY_NODE_SAMPLE_ENTITY_HPP
 #define ORES_COMPUTE_CORE_REPOSITORY_NODE_SAMPLE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,8 +42,8 @@ struct node_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_compute_node_samples_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
-    sqlgen::PrimaryKey<std::string> sampled_at;
+    std::string id;
+    std::string sampled_at;
     std::string tenant_id;
     std::string host_id;
     std::string machine;
@@ -55,6 +55,27 @@ struct node_sample_entity {
     std::int64_t input_bytes_fetched;
     std::int64_t output_bytes_uploaded;
     int seconds_since_hb = 0;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = node_sample_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::key("sampled_at", &e::sampled_at) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("host_id", &e::host_id) |
+               query_builder::bind("machine", &e::machine) |
+               query_builder::bind("tasks_completed", &e::tasks_completed) |
+               query_builder::bind("tasks_failed", &e::tasks_failed) |
+               query_builder::bind("tasks_since_last", &e::tasks_since_last) |
+               query_builder::bind("avg_task_duration_ms", &e::avg_task_duration_ms) |
+               query_builder::bind("max_task_duration_ms", &e::max_task_duration_ms) |
+               query_builder::bind("input_bytes_fetched", &e::input_bytes_fetched) |
+               query_builder::bind("output_bytes_uploaded", &e::output_bytes_uploaded) |
+               query_builder::bind("seconds_since_hb", &e::seconds_since_hb);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const node_sample_entity& v);

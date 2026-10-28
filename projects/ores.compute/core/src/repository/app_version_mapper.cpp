@@ -45,7 +45,7 @@ domain::app_version app_version_mapper::map(const app_version_entity& v) {
     domain::app_version r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.app_id = boost::lexical_cast<boost::uuids::uuid>(v.app_id);
     r.wrapper_version = v.wrapper_version;
     r.engine_version = v.engine_version;

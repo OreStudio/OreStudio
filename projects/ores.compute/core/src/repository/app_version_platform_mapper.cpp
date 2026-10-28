@@ -46,7 +46,7 @@ app_version_platform_mapper::map(const app_version_platform_entity& v) {
     domain::app_version_platform r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.app_version_id = boost::lexical_cast<boost::uuids::uuid>(v.app_version_id.value());
+    r.app_version_id = boost::lexical_cast<boost::uuids::uuid>(v.app_version_id);
     r.platform_id = boost::lexical_cast<boost::uuids::uuid>(v.platform_id);
     r.package_uri = v.package_uri;
     r.sha256 = v.sha256;

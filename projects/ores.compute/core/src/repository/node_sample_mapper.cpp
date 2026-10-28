@@ -47,8 +47,8 @@ domain::node_sample node_sample_mapper::map(const node_sample_entity& v) {
 
     domain::node_sample r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at.value()});
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at});
     r.host_id = boost::lexical_cast<boost::uuids::uuid>(v.host_id);
     r.machine = v.machine;
     r.tasks_completed = v.tasks_completed;

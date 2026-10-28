@@ -48,8 +48,8 @@ domain::grid_sample grid_sample_mapper::map(const grid_sample_entity& v) {
 
     domain::grid_sample r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at.value()});
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
+    r.sampled_at = timestamp_to_timepoint(std::string_view{v.sampled_at});
     r.party_id = v.party_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
                      std::nullopt;

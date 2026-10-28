@@ -218,15 +218,7 @@ TEST_CASE("a_group_that_moved_since_the_proposal_is_refused_rather_than_overwrit
 
     // Somebody writes the group directly while the proposal waits, which is
     // what a stale claim is for.
-    ores::reporting::domain::engine_settings_fixings row;
-    row.id = boost::uuids::random_generator{}();
-    row.engine_settings_id = w.bound_id;
-    row.party_id = w.party_id;
-    row.imply_todays_fixings = false;
-    row.modified_by = w.maker;
-    row.performed_by = w.ctx.service_account();
-    row.change_reason_code = "system.test";
-    ores::reporting::repository::engine_settings_fixings_repository{}.write(w.ctx, row);
+    write_fixings(w.ctx, w, false);
 
     const auto refusals = svc.refusals(raised.request_id);
     REQUIRE(refusals.size() == 1);
@@ -249,4 +241,123 @@ TEST_CASE("a_group_that_moved_since_the_proposal_is_refused_rather_than_overwrit
     const auto in_force = fixings_of(w.ctx, w.bound_id);
     REQUIRE(in_force.has_value());
     CHECK(in_force->imply_todays_fixings == std::optional<bool>(false));
+}
+
+TEST_CASE("a_proposal_against_a_version_that_moved_is_refused_as_stale",
+          "[engine_settings_proposal][database]") {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    engine_settings_proposal_service svc(w.ctx);
+    // The group is at version 1 before anybody opens the screen.
+    write_fixings(w.ctx, w, false);
+
+    // A client that read version 0 is stale, whatever it sends.
+    const auto held_before = all_change_lines(w.ctx);
+    auto request = raise_request(w, true);
+    request.base_version = 0;
+    const auto refused = svc.raise(request);
+
+    CHECK(refused.result.outcome == outcome::conflict);
+    // The words the screen shows, so a person reads one refusal.
+    CHECK(refused.result.message ==
+          "These settings changed since you opened them. Read them again before you change them.");
+    // Nothing was held: no request, and no line added for one.
+    CHECK(refused.request_id.empty());
+    CHECK(all_change_lines(w.ctx) == held_before);
+
+    // A client that read the version in force is answered, and the proposal
+    // claims that version rather than the one it was told.
+    auto current = raise_request(w, true);
+    current.base_version = 1;
+    const auto raised = svc.raise(current);
+    REQUIRE(raised.result.outcome == outcome::ok);
+    REQUIRE_FALSE(raised.request_id.empty());
+    CHECK(change_lines(w.ctx, raised.request_id) == 6);
+
+    const auto lines = svc.lines(raised.request_id);
+    REQUIRE(lines.size() == 1);
+    CHECK(lines.front().base_version == 1);
+}
+
+TEST_CASE("a_proposal_holds_no_line_when_the_version_it_claims_is_stale",
+          "[engine_settings_proposal][database]") {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    engine_settings_proposal_service svc(w.ctx);
+    write_fixings(w.ctx, w, false);
+    write_fixings(w.ctx, w, true); // now at version 2
+
+    // The claim is ahead of the group, which is just as stale as one behind it.
+    const auto held_before = all_change_lines(w.ctx);
+    auto ahead = raise_request(w, false);
+    ahead.base_version = 5;
+    const auto refused = svc.raise(ahead);
+    CHECK(refused.result.outcome == outcome::conflict);
+    CHECK(refused.result.message ==
+          "These settings changed since you opened them. Read them again before you change them.");
+
+    // The group in force is untouched, and no line was written for the claim.
+    const auto in_force = fixings_of(w.ctx, w.bound_id);
+    REQUIRE(in_force.has_value());
+    CHECK(in_force->imply_todays_fixings == std::optional<bool>(true));
+    CHECK(in_force->version == 2);
+    // Nothing was held for the claim.
+    CHECK(all_change_lines(w.ctx) == held_before);
+}
+
+TEST_CASE("a_whole_too_large_to_hold_is_refused_rather_than_retried",
+          "[engine_settings_proposal][database]") {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    engine_settings_proposal_service svc(w.ctx);
+
+    // A number that overflows an integer is content the setting cannot hold, so
+    // the refusal is permanent. Thrown as out_of_range, the apply would read it
+    // as an infrastructure failure and retry it forever.
+    auto huge = raise_request(w, true);
+    huge.values.push_back(value("fixings:ignore_fixing_lag", "99999999999999999999"));
+    const auto refused = svc.raise(huge);
+    CHECK(refused.result.outcome == outcome::invalid);
+    CHECK(refused.result.message.find("number the setting can hold") != std::string::npos);
+    CHECK(refused.request_id.empty());
+
+    // Text that is not a whole is refused the same way.
+    auto letters = raise_request(w, true);
+    letters.values.push_back(value("fixings:ignore_fixing_lag", "12x"));
+    const auto wrong = svc.raise(letters);
+    CHECK(wrong.result.outcome == outcome::invalid);
+    CHECK(wrong.result.message.find("digits") != std::string::npos);
+    CHECK(wrong.request_id.empty());
+}
+
+TEST_CASE("a_held_value_too_large_to_hold_ends_the_apply_rather_than_retrying_it",
+          "[engine_settings_proposal][database]") {
+    ores::testing::scoped_database_helper h;
+    const auto w = seed_world(h);
+    engine_settings_proposal_service svc(w.ctx);
+    const auto raised = svc.raise(raise_request(w, true));
+    REQUIRE(raised.result.outcome == outcome::ok);
+
+    // A line nobody validated this time: a value that overflows a whole is
+    // content the setting cannot hold, so the apply must refuse it for good.
+    set_held_value(w.ctx, raised.request_id, "fixings:ignore_fixing_lag", "99999999999999999999");
+
+    ores::inbox::service::approval_lifecycle lifecycle(w.ctx);
+    const auto request = lifecycle.request(raised.request_id);
+    REQUIRE(request.has_value());
+    const auto decided = lifecycle.decide(
+        raised.request_id, request->version, "approve", w.decider_id, "", "fixings");
+    REQUIRE(decided.state_code == "approved");
+
+    const auto applied = svc.apply(raised.request_id);
+    CHECK_FALSE(applied.applied);
+    // A refusal, not a transient failure: a retry would meet the same value.
+    CHECK_FALSE(applied.transient);
+    CHECK(applied.refusal.find("number the setting can hold") != std::string::npos);
+
+    const auto after = lifecycle.request(raised.request_id);
+    REQUIRE(after.has_value());
+    CHECK(after->state_code == "apply_failed");
+    // The group in force did not move.
+    CHECK_FALSE(fixings_of(w.ctx, w.bound_id).has_value());
 }

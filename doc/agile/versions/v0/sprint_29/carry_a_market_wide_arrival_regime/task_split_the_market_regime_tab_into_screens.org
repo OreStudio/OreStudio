@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/split-the-market-regime-tab-into-screens
-#+pr:
+#+pr: 3963
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3963][#3963]] | [web] Split the market regime tab into six tabs under one strip |
 
 * Review
 

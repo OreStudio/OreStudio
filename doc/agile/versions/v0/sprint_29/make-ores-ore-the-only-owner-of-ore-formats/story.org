@@ -50,7 +50,27 @@ ores.ore converts between ORE formats and our domain types and does nothing else
 | [[id:AD82918C-283A-4C32-9324-BAC29219230A][Move the cross-component tests out of the ORE codec]] | BACKLOG | | | Nine test files in the codec's suite need a database, and three of them read reporting's tables rather than the codec: the configuration type seed, reporting's configuration repository, and the run store this story deletes. |
 | [[id:34D0D200-DC5D-46FF-8ABD-89D1EAB5B6D4][Fail a build that links another component's core]] | BACKLOG | | | Nothing stops a component's core from linking another component's core or service, which is how the ORE codec reached into reporting. Encode the rule in the component model and check it in CI. |
 | [[id:8ADBE19F-10E6-449B-BB82-4A1201488801][Classify every ORE document and record what we convert]] | BACKLOG | | | document_kind knows six of the thirteen generated families, so the directory scanner cannot name a run document, a curve configuration or a today's market. Five families have a binding and reach nothing. |
-| [[id:F342D0EF-6F47-4823-A3A9-254CD37E5A8B][Scaffold story: Make ores.ore the only owner of ORE formats]] | STARTED | 2026-10-27 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F342D0EF-6F47-4823-A3A9-254CD37E5A8B][Scaffold story: Make ores.ore the only owner of ORE formats]] | DONE | 2026-10-27 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+
+* Notes
+
+The audit that scoped the story measured six dependencies the codec does not
+justify. The Status table claims the run store drops four of them, which is
+the table below.
+
+| # | Dependency | Kind | Why it is there | Dropped by |
+|---+------------+------+-----------------+------------|
+| 1 | =ores.database= | public | the run store's session context | the run store |
+| 2 | =ores.analytics.core= | private | the run store's document services | the run store |
+| 3 | =ores.reporting.core= | private | the run store's repositories | the run store |
+| 4 | =ores.refdata.core= | public | the conventions bundle type, and the run store's curve service | the run store and the bundle move |
+| 5 | =ores.nats= | public | nothing the codec uses; the generated core profile adds it | the profile, or a per-component override |
+| 6 | =ores.dq.api= | private | four change-reason constants in the planner | the planner taking them as a parameter |
+
+The api contracts the codec keeps are justified by the mapping it performs:
+=ores.refdata.api=, =ores.trading.api= and =ores.analytics.api=. =ores.reporting.api=
+stays for the run document projection, which is the conversion the component
+exists to perform.
 
 * Decisions
 

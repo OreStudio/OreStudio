@@ -136,7 +136,7 @@ void subject_area_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing subject area. " << "name: " << v.name
                                << " domain_name: " << v.domain_name;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, subject_area_mapper::map(t), lg(), "Writing subject area to database.");
 }
 
@@ -149,7 +149,7 @@ void subject_area_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, subject_area_mapper::map(batch), lg(), "Writing subject areas to database.");
 }
 
@@ -158,7 +158,7 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(context c
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        where("valid_to"_c == max.value()) | order_by("name"_c, "domain_name"_c);
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
@@ -175,7 +175,7 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(
         query_builder::read<std::vector<subject_area_entity>> |
         where("name"_c == name && "domain_name"_c == domain_name && "valid_to"_c == max.value());
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
@@ -192,7 +192,7 @@ std::vector<domain::subject_area> subject_area_repository::read_all(
                        where("name"_c == name && "domain_name"_c == domain_name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
@@ -209,12 +209,13 @@ std::optional<domain::subject_area> subject_area_repository::read_at_version(
         where("name"_c == name && "domain_name"_c == domain_name && "version"_c == version) |
         query_builder::limit(1);
 
-    const auto entities = execute_read_query<subject_area_entity, domain::subject_area>(
-        ctx,
-        query,
-        [](const auto& entities) { return subject_area_mapper::map(entities); },
-        lg(),
-        "Reading subject area at version.");
+    const auto entities =
+        query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
+            ctx,
+            query,
+            [](const auto& entities) { return subject_area_mapper::map(entities); },
+            lg(),
+            "Reading subject area at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -246,7 +247,7 @@ subject_area_repository::remove(context ctx,
         where("tenant_id"_c == tid && "name"_c == name && "domain_name"_c == domain_name &&
               "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing subject area from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -272,7 +273,7 @@ subject_area_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<subject_area_entity, domain::subject_area>(
+    return query_builder::execute_ordered_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         subject_area_list_order(order, {"name", "domain_name"}, false),
@@ -289,7 +290,7 @@ subject_area_repository::get_total_area_count(context ctx,
 
     const auto query = query_builder::read<std::vector<subject_area_entity>>;
 
-    return execute_count_query<subject_area_entity>(
+    return query_builder::execute_count_query<subject_area_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
@@ -307,7 +308,7 @@ subject_area_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        where("name"_c.in(names) && "domain_name"_c.in(domain_names) &&
                              "valid_to"_c == max.value());
-    auto result = execute_read_query<subject_area_entity, domain::subject_area>(
+    auto result = query_builder::execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         [](const auto& entities) { return subject_area_mapper::map(entities); },

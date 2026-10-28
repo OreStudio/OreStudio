@@ -170,10 +170,10 @@ void notification_preference_repository::write(context ctx,
                                << "account_id: " << v.account_id << " kind_code: " << v.kind_code
                                << " channel_code: " << v.channel_code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        notification_preference_mapper::map(t),
-                        lg(),
-                        "Writing notification preference to database.");
+    query_builder::execute_write_query(ctx,
+                                       notification_preference_mapper::map(t),
+                                       lg(),
+                                       "Writing notification preference to database.");
 }
 
 void notification_preference_repository::write(
@@ -185,10 +185,10 @@ void notification_preference_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        notification_preference_mapper::map(batch),
-                        lg(),
-                        "Writing notification preferences to database.");
+    query_builder::execute_write_query(ctx,
+                                       notification_preference_mapper::map(batch),
+                                       lg(),
+                                       "Writing notification preferences to database.");
 }
 
 std::vector<domain::notification_preference>
@@ -199,7 +199,8 @@ notification_preference_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("account_id"_c, "kind_code"_c, "channel_code"_c);
 
-    return execute_read_query<notification_preference_entity, domain::notification_preference>(
+    return query_builder::execute_read_query<notification_preference_entity,
+                                             domain::notification_preference>(
         ctx,
         query,
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
@@ -222,7 +223,8 @@ notification_preference_repository::read_latest(context ctx,
         where("tenant_id"_c == tid && "account_id"_c == account_id && "kind_code"_c == kind_code &&
               "channel_code"_c == channel_code && "valid_to"_c == max.value());
 
-    return execute_read_query<notification_preference_entity, domain::notification_preference>(
+    return query_builder::execute_read_query<notification_preference_entity,
+                                             domain::notification_preference>(
         ctx,
         query,
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
@@ -245,7 +247,8 @@ notification_preference_repository::read_all(context ctx,
                              "kind_code"_c == kind_code && "channel_code"_c == channel_code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<notification_preference_entity, domain::notification_preference>(
+    return query_builder::execute_read_query<notification_preference_entity,
+                                             domain::notification_preference>(
         ctx,
         query,
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
@@ -269,13 +272,13 @@ notification_preference_repository::read_at_version(context ctx,
               "channel_code"_c == channel_code && "version"_c == version) |
         query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<notification_preference_entity, domain::notification_preference>(
-            ctx,
-            query,
-            [](const auto& entities) { return notification_preference_mapper::map(entities); },
-            lg(),
-            "Reading notification preference at version.");
+    const auto entities = query_builder::execute_read_query<notification_preference_entity,
+                                                            domain::notification_preference>(
+        ctx,
+        query,
+        [](const auto& entities) { return notification_preference_mapper::map(entities); },
+        lg(),
+        "Reading notification preference at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -299,8 +302,8 @@ notification_preference_repository::read_latest_by_account_id(
         where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value()) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<notification_preference_entity,
-                                      domain::notification_preference>(
+    return query_builder::execute_ordered_read_query<notification_preference_entity,
+                                                     domain::notification_preference>(
         ctx,
         query,
         notification_preference_list_order(
@@ -324,7 +327,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count_by_
         query_builder::read<std::vector<notification_preference_entity>> |
         where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value());
 
-    return execute_count_query<notification_preference_entity>(
+    return query_builder::execute_count_query<notification_preference_entity>(
         ctx,
         query,
         notification_preference_filter_condition(filter),
@@ -360,7 +363,8 @@ notification_preference_repository::remove(context ctx,
                              "kind_code"_c == kind_code && "channel_code"_c == channel_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing notification preference from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing notification preference from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -390,8 +394,8 @@ std::vector<domain::notification_preference> notification_preference_repository:
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<notification_preference_entity,
-                                      domain::notification_preference>(
+    return query_builder::execute_ordered_read_query<notification_preference_entity,
+                                                     domain::notification_preference>(
         ctx,
         query,
         notification_preference_list_order(
@@ -413,7 +417,7 @@ std::uint32_t notification_preference_repository::get_total_preference_count(
     const auto query = query_builder::read<std::vector<notification_preference_entity>> |
                        where("tenant_id"_c == tid);
 
-    return execute_count_query<notification_preference_entity>(
+    return query_builder::execute_count_query<notification_preference_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -435,13 +439,13 @@ notification_preference_repository::read_latest(context ctx,
                        where("tenant_id"_c == tid && "account_id"_c.in(account_ids) &&
                              "kind_code"_c.in(kind_codes) && "channel_code"_c.in(channel_codes) &&
                              "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<notification_preference_entity, domain::notification_preference>(
-            ctx,
-            query,
-            [](const auto& entities) { return notification_preference_mapper::map(entities); },
-            lg(),
-            "Reading latest notification preferences by ids.");
+    auto result = query_builder::execute_read_query<notification_preference_entity,
+                                                    domain::notification_preference>(
+        ctx,
+        query,
+        [](const auto& entities) { return notification_preference_mapper::map(entities); },
+        lg(),
+        "Reading latest notification preferences by ids.");
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.

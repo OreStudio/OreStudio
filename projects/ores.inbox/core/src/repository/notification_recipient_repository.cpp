@@ -112,10 +112,10 @@ void notification_recipient_repository::write(const domain::notification_recipie
     BOOST_LOG_SEV(lg(), debug) << "Writing notification recipient to database: "
                                << recipient.notification_id << "/" << recipient.account_id;
     const auto t = apply_claim(recipient, claim);
-    execute_write_query(ctx_,
-                        notification_recipient_mapper::map(t),
-                        lg(),
-                        "writing notification recipient to database");
+    query_builder::execute_write_query(ctx_,
+                                       notification_recipient_mapper::map(t),
+                                       lg(),
+                                       "writing notification recipient to database");
 }
 
 void notification_recipient_repository::write(
@@ -127,10 +127,10 @@ void notification_recipient_repository::write(
     batch.reserve(recipients.size());
     for (std::size_t i = 0; i < recipients.size(); ++i)
         batch.push_back(apply_claim(recipients[i], claims[i]));
-    execute_write_query(ctx_,
-                        notification_recipient_mapper::map(batch),
-                        lg(),
-                        "writing notification recipients to database");
+    query_builder::execute_write_query(ctx_,
+                                       notification_recipient_mapper::map(batch),
+                                       lg(),
+                                       "writing notification recipients to database");
 }
 
 std::vector<domain::notification_recipient> notification_recipient_repository::read_latest() {
@@ -140,7 +140,8 @@ std::vector<domain::notification_recipient> notification_recipient_repository::r
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("notification_id"_c, "notification_id"_c);
 
-    return execute_read_query<notification_recipient_entity, domain::notification_recipient>(
+    return query_builder::execute_read_query<notification_recipient_entity,
+                                             domain::notification_recipient>(
         ctx_,
         query,
         [](const auto& entities) { return notification_recipient_mapper::map(entities); },
@@ -159,7 +160,8 @@ notification_recipient_repository::read_latest(std::uint32_t offset, std::uint32
                        order_by("notification_id"_c, "notification_id"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<notification_recipient_entity, domain::notification_recipient>(
+    return query_builder::execute_read_query<notification_recipient_entity,
+                                             domain::notification_recipient>(
         ctx_,
         query,
         [](const auto& entities) { return notification_recipient_mapper::map(entities); },
@@ -181,7 +183,8 @@ notification_recipient_repository::read_latest(const boost::uuids::uuid& notific
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "account_id"_c == account_id_str && "valid_to"_c == max.value());
 
-    return execute_read_query<notification_recipient_entity, domain::notification_recipient>(
+    return query_builder::execute_read_query<notification_recipient_entity,
+                                             domain::notification_recipient>(
         ctx_,
         query,
         [](const auto& entities) { return notification_recipient_mapper::map(entities); },
@@ -197,7 +200,7 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count() {
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto count = execute_count_query<notification_recipient_entity>(
+    const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count: " << count;
     return count;
@@ -217,7 +220,8 @@ notification_recipient_repository::read_latest_by_notification(
                              "valid_to"_c == max.value()) |
                        order_by("notification_id"_c);
 
-    auto rows = execute_read_query<notification_recipient_entity, domain::notification_recipient>(
+    auto rows = query_builder::execute_read_query<notification_recipient_entity,
+                                                  domain::notification_recipient>(
         ctx_,
         query,
         [](const auto& entities) { return notification_recipient_mapper::map(entities); },
@@ -239,7 +243,8 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
                              "valid_to"_c == max.value()) |
                        order_by("notification_id"_c);
 
-    auto rows = execute_read_query<notification_recipient_entity, domain::notification_recipient>(
+    auto rows = query_builder::execute_read_query<notification_recipient_entity,
+                                                  domain::notification_recipient>(
         ctx_,
         query,
         [](const auto& entities) { return notification_recipient_mapper::map(entities); },
@@ -262,7 +267,7 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_no
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value());
 
-    const auto count = execute_count_query<notification_recipient_entity>(
+    const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by notification: "
                                << count;
@@ -285,7 +290,8 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
                        order_by("notification_id"_c) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    auto rows = execute_read_query<notification_recipient_entity, domain::notification_recipient>(
+    auto rows = query_builder::execute_read_query<notification_recipient_entity,
+                                                  domain::notification_recipient>(
         ctx_,
         query,
         [](const auto& entities) { return notification_recipient_mapper::map(entities); },
@@ -307,7 +313,7 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_ac
                        where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value());
 
-    const auto count = execute_count_query<notification_recipient_entity>(
+    const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by account: "
                                << count;
@@ -325,7 +331,8 @@ notification_recipient_repository::read_all_by_account(const boost::uuids::uuid&
                        where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
                        order_by("notification_id"_c, "valid_from"_c.desc());
 
-    return execute_read_query<notification_recipient_entity, notification_recipient_history_row>(
+    return query_builder::execute_read_query<notification_recipient_entity,
+                                             notification_recipient_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -391,7 +398,8 @@ notification_recipient_repository::remove(const boost::uuids::uuid& notification
                              "account_id"_c == account_id_str && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing notification recipient from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing notification recipient from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -423,7 +431,8 @@ void notification_recipient_repository::remove_by_notification(
     const auto query = query_builder::delete_from<notification_recipient_entity> |
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str);
 
-    execute_delete_query(ctx_, query, lg(), "removing all notification recipients from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all notification recipients from database");
 }
 
 

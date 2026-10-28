@@ -169,10 +169,10 @@ void ir_curve_template_entry_repository::write(context ctx,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing IR curve template entry. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        ir_curve_template_entry_mapper::map(t),
-                        lg(),
-                        "Writing IR curve template entry to database.");
+    query_builder::execute_write_query(ctx,
+                                       ir_curve_template_entry_mapper::map(t),
+                                       lg(),
+                                       "Writing IR curve template entry to database.");
 }
 
 void ir_curve_template_entry_repository::write(
@@ -184,10 +184,10 @@ void ir_curve_template_entry_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        ir_curve_template_entry_mapper::map(batch),
-                        lg(),
-                        "Writing IR curve template entries to database.");
+    query_builder::execute_write_query(ctx,
+                                       ir_curve_template_entry_mapper::map(batch),
+                                       lg(),
+                                       "Writing IR curve template entries to database.");
 }
 
 std::vector<domain::ir_curve_template_entry>
@@ -200,7 +200,8 @@ ir_curve_template_entry_repository::read_latest(context ctx) {
         where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
-    return execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
+    return query_builder::execute_read_query<ir_curve_template_entry_entity,
+                                             domain::ir_curve_template_entry>(
         ctx,
         query,
         [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
@@ -218,7 +219,8 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::string& 
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
+    return query_builder::execute_read_query<ir_curve_template_entry_entity,
+                                             domain::ir_curve_template_entry>(
         ctx,
         query,
         [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
@@ -236,7 +238,8 @@ ir_curve_template_entry_repository::read_all(context ctx, const std::string& id)
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
+    return query_builder::execute_read_query<ir_curve_template_entry_entity,
+                                             domain::ir_curve_template_entry>(
         ctx,
         query,
         [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
@@ -255,13 +258,13 @@ std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repositor
                              "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
-            ctx,
-            query,
-            [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
-            lg(),
-            "Reading IR curve template entry at version.");
+    const auto entities = query_builder::execute_read_query<ir_curve_template_entry_entity,
+                                                            domain::ir_curve_template_entry>(
+        ctx,
+        query,
+        [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
+        lg(),
+        "Reading IR curve template entry at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -289,7 +292,8 @@ ir_curve_template_entry_repository::remove_status ir_curve_template_entry_reposi
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing IR curve template entry from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing IR curve template entry from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -317,8 +321,8 @@ std::vector<domain::ir_curve_template_entry> ir_curve_template_entry_repository:
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<ir_curve_template_entry_entity,
-                                      domain::ir_curve_template_entry>(
+    return query_builder::execute_ordered_read_query<ir_curve_template_entry_entity,
+                                                     domain::ir_curve_template_entry>(
         ctx,
         query,
         ir_curve_template_entry_list_order(order, {"id"}, false),
@@ -340,7 +344,7 @@ std::uint32_t ir_curve_template_entry_repository::get_total_ir_curve_template_en
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<ir_curve_template_entry_entity>(
+    return query_builder::execute_count_query<ir_curve_template_entry_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -359,13 +363,13 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::vector<s
     const auto query = query_builder::read<std::vector<ir_curve_template_entry_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
                              "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<ir_curve_template_entry_entity, domain::ir_curve_template_entry>(
-            ctx,
-            query,
-            [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
-            lg(),
-            "Reading latest IR curve template entries by ids.");
+    auto result = query_builder::execute_read_query<ir_curve_template_entry_entity,
+                                                    domain::ir_curve_template_entry>(
+        ctx,
+        query,
+        [](const auto& entities) { return ir_curve_template_entry_mapper::map(entities); },
+        lg(),
+        "Reading latest IR curve template entries by ids.");
     return result;
 }
 
@@ -382,7 +386,8 @@ void ir_curve_template_entry_repository::remove(context ctx, const std::vector<s
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<ir_curve_template_entry_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing IR curve template entries.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing IR curve template entries.");
 }
 
 

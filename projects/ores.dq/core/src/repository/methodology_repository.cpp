@@ -153,7 +153,8 @@ void methodology_repository::write(context ctx,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing methodology. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, methodology_mapper::map(t), lg(), "Writing methodology to database.");
+    query_builder::execute_write_query(
+        ctx, methodology_mapper::map(t), lg(), "Writing methodology to database.");
 }
 
 void methodology_repository::write(context ctx,
@@ -164,7 +165,7 @@ void methodology_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, methodology_mapper::map(batch), lg(), "Writing methodologies to database.");
 }
 
@@ -173,7 +174,7 @@ std::vector<domain::methodology> methodology_repository::read_latest(context ctx
     const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("valid_to"_c == max.value()) | order_by("id"_c);
 
-    return execute_read_query<methodology_entity, domain::methodology>(
+    return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         [](const auto& entities) { return methodology_mapper::map(entities); },
@@ -188,7 +189,7 @@ std::vector<domain::methodology> methodology_repository::read_latest(context ctx
     const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<methodology_entity, domain::methodology>(
+    return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         [](const auto& entities) { return methodology_mapper::map(entities); },
@@ -203,7 +204,7 @@ methodology_repository::read_latest_by_name(context ctx, const std::string& name
     const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
 
-    return execute_read_query<methodology_entity, domain::methodology>(
+    return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         [](const auto& entities) { return methodology_mapper::map(entities); },
@@ -218,7 +219,7 @@ std::vector<domain::methodology> methodology_repository::read_any_by_name(contex
                        where("name"_c == name) | order_by("valid_from"_c.desc()) |
                        query_builder::limit(1);
 
-    return execute_read_query<methodology_entity, domain::methodology>(
+    return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         [](const auto& entities) { return methodology_mapper::map(entities); },
@@ -233,7 +234,7 @@ std::vector<domain::methodology> methodology_repository::read_all(context ctx,
     const auto query = query_builder::read<std::vector<methodology_entity>> | where("id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<methodology_entity, domain::methodology>(
+    return query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         [](const auto& entities) { return methodology_mapper::map(entities); },
@@ -248,12 +249,13 @@ methodology_repository::read_at_version(context ctx, const std::string& id, std:
     const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("id"_c == id && "version"_c == version) | query_builder::limit(1);
 
-    const auto entities = execute_read_query<methodology_entity, domain::methodology>(
-        ctx,
-        query,
-        [](const auto& entities) { return methodology_mapper::map(entities); },
-        lg(),
-        "Reading methodology at version.");
+    const auto entities =
+        query_builder::execute_read_query<methodology_entity, domain::methodology>(
+            ctx,
+            query,
+            [](const auto& entities) { return methodology_mapper::map(entities); },
+            lg(),
+            "Reading methodology at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -280,7 +282,7 @@ methodology_repository::remove_status methodology_repository::remove(
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing methodology from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing methodology from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -305,7 +307,7 @@ methodology_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<methodology_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<methodology_entity, domain::methodology>(
+    return query_builder::execute_ordered_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         methodology_list_order(order, {"id"}, false),
@@ -324,7 +326,7 @@ std::uint32_t methodology_repository::get_total_methodology_count(
 
     const auto query = query_builder::read<std::vector<methodology_entity>>;
 
-    return execute_count_query<methodology_entity>(
+    return query_builder::execute_count_query<methodology_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -340,7 +342,7 @@ methodology_repository::read_latest(context ctx, const std::vector<std::string>&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<methodology_entity, domain::methodology>(
+    auto result = query_builder::execute_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         [](const auto& entities) { return methodology_mapper::map(entities); },
@@ -362,7 +364,7 @@ void methodology_repository::remove(context ctx, const std::vector<std::string>&
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<methodology_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing methodologies.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing methodologies.");
 }
 
 

@@ -109,7 +109,7 @@ void badge_mapping_repository::write(const domain::badge_mapping& mapping,
     BOOST_LOG_SEV(lg(), debug) << "Writing badge mapping to database: " << mapping.code_domain_code
                                << "/" << mapping.entity_code;
     const auto t = apply_claim(mapping, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, badge_mapping_mapper::map(t), lg(), "writing badge mapping to database");
 }
 
@@ -121,7 +121,7 @@ void badge_mapping_repository::write(
     batch.reserve(mappings.size());
     for (std::size_t i = 0; i < mappings.size(); ++i)
         batch.push_back(apply_claim(mappings[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx_, badge_mapping_mapper::map(batch), lg(), "writing badge mappings to database");
 }
 
@@ -132,7 +132,7 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest() {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code_domain_code"_c, "entity_code"_c);
 
-    return execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+    return query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
         query,
         [](const auto& entities) { return badge_mapping_mapper::map(entities); },
@@ -151,7 +151,7 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest(std::ui
                        order_by("code_domain_code"_c, "entity_code"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+    return query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
         query,
         [](const auto& entities) { return badge_mapping_mapper::map(entities); },
@@ -173,7 +173,7 @@ badge_mapping_repository::read_latest(const std::string& code_domain_code,
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "entity_code"_c == entity_code && "valid_to"_c == max.value());
 
-    return execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+    return query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
         query,
         [](const auto& entities) { return badge_mapping_mapper::map(entities); },
@@ -189,7 +189,7 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count() {
     const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto count = execute_count_query<badge_mapping_entity>(
+    const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
     BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count: " << count;
     return count;
@@ -207,7 +207,7 @@ badge_mapping_repository::read_latest_by_code_domain(const std::string& code_dom
                              "valid_to"_c == max.value()) |
                        order_by("entity_code"_c);
 
-    auto rows = execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+    auto rows = query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
         query,
         [](const auto& entities) { return badge_mapping_mapper::map(entities); },
@@ -228,7 +228,7 @@ badge_mapping_repository::read_latest_by_entity(const std::string& entity_code) 
                              "valid_to"_c == max.value()) |
                        order_by("code_domain_code"_c);
 
-    auto rows = execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+    auto rows = query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
         query,
         [](const auto& entities) { return badge_mapping_mapper::map(entities); },
@@ -251,7 +251,7 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest_by_code
                        order_by("entity_code"_c) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    auto rows = execute_read_query<badge_mapping_entity, domain::badge_mapping>(
+    auto rows = query_builder::execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
         query,
         [](const auto& entities) { return badge_mapping_mapper::map(entities); },
@@ -272,7 +272,7 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count_by_code_domain(
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "valid_to"_c == max.value());
 
-    const auto count = execute_count_query<badge_mapping_entity>(
+    const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
     BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count by code_domain: " << count;
     return count;
@@ -289,7 +289,7 @@ badge_mapping_repository::get_total_mapping_count_by_entity(const std::string& e
                        where("tenant_id"_c == tid && "entity_code"_c == entity_code &&
                              "valid_to"_c == max.value());
 
-    const auto count = execute_count_query<badge_mapping_entity>(
+    const auto count = query_builder::execute_count_query<badge_mapping_entity>(
         ctx_, query, std::nullopt, lg(), "Counting badge mappings");
     BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count by entity: " << count;
     return count;
@@ -305,7 +305,7 @@ badge_mapping_repository::read_all_by_code_domain(const std::string& code_domain
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code) |
                        order_by("entity_code"_c, "valid_from"_c.desc());
 
-    return execute_read_query<badge_mapping_entity, badge_mapping_history_row>(
+    return query_builder::execute_read_query<badge_mapping_entity, badge_mapping_history_row>(
         ctx_,
         query,
         [](const auto& entities) {
@@ -371,7 +371,7 @@ badge_mapping_repository::remove(const std::string& code_domain_code,
                              "entity_code"_c == entity_code && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx_, query, lg(), "removing badge mapping from database");
+    query_builder::execute_delete_query(ctx_, query, lg(), "removing badge mapping from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -399,7 +399,8 @@ void badge_mapping_repository::remove_by_code_domain(const std::string& code_dom
     const auto query = query_builder::delete_from<badge_mapping_entity> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code);
 
-    execute_delete_query(ctx_, query, lg(), "removing all badge mappings from database");
+    query_builder::execute_delete_query(
+        ctx_, query, lg(), "removing all badge mappings from database");
 }
 
 

@@ -158,10 +158,10 @@ void todays_market_collection_kind_repository::write(
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection kind. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        todays_market_collection_kind_mapper::map(t),
-                        lg(),
-                        "Writing today's market collection kind to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_collection_kind_mapper::map(t),
+                                       lg(),
+                                       "Writing today's market collection kind to database.");
 }
 
 void todays_market_collection_kind_repository::write(
@@ -173,10 +173,10 @@ void todays_market_collection_kind_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        todays_market_collection_kind_mapper::map(batch),
-                        lg(),
-                        "Writing today's market collection kinds to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_collection_kind_mapper::map(batch),
+                                       lg(),
+                                       "Writing today's market collection kinds to database.");
 }
 
 std::vector<domain::todays_market_collection_kind>
@@ -187,8 +187,8 @@ todays_market_collection_kind_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
-    return execute_read_query<todays_market_collection_kind_entity,
-                              domain::todays_market_collection_kind>(
+    return query_builder::execute_read_query<todays_market_collection_kind_entity,
+                                             domain::todays_market_collection_kind>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_kind_mapper::map(entities); },
@@ -206,8 +206,8 @@ todays_market_collection_kind_repository::read_latest(context ctx, const std::st
         query_builder::read<std::vector<todays_market_collection_kind_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<todays_market_collection_kind_entity,
-                              domain::todays_market_collection_kind>(
+    return query_builder::execute_read_query<todays_market_collection_kind_entity,
+                                             domain::todays_market_collection_kind>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_kind_mapper::map(entities); },
@@ -225,8 +225,8 @@ todays_market_collection_kind_repository::read_all(context ctx, const std::strin
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<todays_market_collection_kind_entity,
-                              domain::todays_market_collection_kind>(
+    return query_builder::execute_read_query<todays_market_collection_kind_entity,
+                                             domain::todays_market_collection_kind>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_kind_mapper::map(entities); },
@@ -245,8 +245,8 @@ todays_market_collection_kind_repository::read_at_version(context ctx,
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities = execute_read_query<todays_market_collection_kind_entity,
-                                             domain::todays_market_collection_kind>(
+    const auto entities = query_builder::execute_read_query<todays_market_collection_kind_entity,
+                                                            domain::todays_market_collection_kind>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_kind_mapper::map(entities); },
@@ -280,7 +280,7 @@ todays_market_collection_kind_repository::remove(context ctx,
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Removing today's market collection kind from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -309,8 +309,8 @@ todays_market_collection_kind_repository::read_latest(
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_collection_kind_entity,
-                                      domain::todays_market_collection_kind>(
+    return query_builder::execute_ordered_read_query<todays_market_collection_kind_entity,
+                                                     domain::todays_market_collection_kind>(
         ctx,
         query,
         todays_market_collection_kind_list_order(order, {"code"}, false),
@@ -331,7 +331,7 @@ std::uint32_t todays_market_collection_kind_repository::get_total_kind_count(
     const auto query = query_builder::read<std::vector<todays_market_collection_kind_entity>> |
                        where("tenant_id"_c == tid);
 
-    return execute_count_query<todays_market_collection_kind_entity>(
+    return query_builder::execute_count_query<todays_market_collection_kind_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -350,8 +350,8 @@ todays_market_collection_kind_repository::read_latest(context ctx,
     const auto query =
         query_builder::read<std::vector<todays_market_collection_kind_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result = execute_read_query<todays_market_collection_kind_entity,
-                                     domain::todays_market_collection_kind>(
+    auto result = query_builder::execute_read_query<todays_market_collection_kind_entity,
+                                                    domain::todays_market_collection_kind>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_kind_mapper::map(entities); },
@@ -375,7 +375,8 @@ void todays_market_collection_kind_repository::remove(context ctx,
     const auto query =
         query_builder::delete_from<todays_market_collection_kind_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing today's market collection kinds.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing today's market collection kinds.");
 }
 
 

@@ -152,7 +152,8 @@ void shift_type_repository::write(context ctx,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing shift type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, shift_type_mapper::map(t), lg(), "Writing shift type to database.");
+    query_builder::execute_write_query(
+        ctx, shift_type_mapper::map(t), lg(), "Writing shift type to database.");
 }
 
 void shift_type_repository::write(context ctx,
@@ -163,7 +164,7 @@ void shift_type_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, shift_type_mapper::map(batch), lg(), "Writing shift types to database.");
 }
 
@@ -174,7 +175,7 @@ std::vector<domain::shift_type> shift_type_repository::read_latest(context ctx) 
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
-    return execute_read_query<shift_type_entity, domain::shift_type>(
+    return query_builder::execute_read_query<shift_type_entity, domain::shift_type>(
         ctx,
         query,
         [](const auto& entities) { return shift_type_mapper::map(entities); },
@@ -191,7 +192,7 @@ std::vector<domain::shift_type> shift_type_repository::read_latest(context ctx,
         query_builder::read<std::vector<shift_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<shift_type_entity, domain::shift_type>(
+    return query_builder::execute_read_query<shift_type_entity, domain::shift_type>(
         ctx,
         query,
         [](const auto& entities) { return shift_type_mapper::map(entities); },
@@ -208,7 +209,7 @@ std::vector<domain::shift_type> shift_type_repository::read_all(context ctx,
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<shift_type_entity, domain::shift_type>(
+    return query_builder::execute_read_query<shift_type_entity, domain::shift_type>(
         ctx,
         query,
         [](const auto& entities) { return shift_type_mapper::map(entities); },
@@ -226,7 +227,7 @@ std::optional<domain::shift_type> shift_type_repository::read_at_version(context
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities = execute_read_query<shift_type_entity, domain::shift_type>(
+    const auto entities = query_builder::execute_read_query<shift_type_entity, domain::shift_type>(
         ctx,
         query,
         [](const auto& entities) { return shift_type_mapper::map(entities); },
@@ -258,7 +259,7 @@ shift_type_repository::remove_status shift_type_repository::remove(
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing shift type from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing shift type from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -285,7 +286,7 @@ shift_type_repository::read_latest(context ctx,
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<shift_type_entity, domain::shift_type>(
+    return query_builder::execute_ordered_read_query<shift_type_entity, domain::shift_type>(
         ctx,
         query,
         shift_type_list_order(order, {"code"}, false),
@@ -306,7 +307,7 @@ std::uint32_t shift_type_repository::get_total_shift_type_count(
     const auto query =
         query_builder::read<std::vector<shift_type_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<shift_type_entity>(
+    return query_builder::execute_count_query<shift_type_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -324,7 +325,7 @@ shift_type_repository::read_latest(context ctx, const std::vector<std::string>& 
     const auto query =
         query_builder::read<std::vector<shift_type_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result = execute_read_query<shift_type_entity, domain::shift_type>(
+    auto result = query_builder::execute_read_query<shift_type_entity, domain::shift_type>(
         ctx,
         query,
         [](const auto& entities) { return shift_type_mapper::map(entities); },
@@ -347,7 +348,7 @@ void shift_type_repository::remove(context ctx, const std::vector<std::string>& 
     const auto query =
         query_builder::delete_from<shift_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing shift types.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing shift types.");
 }
 
 

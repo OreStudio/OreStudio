@@ -166,10 +166,10 @@ void pricing_model_config_repository::write(context ctx,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing model configuration. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        pricing_model_config_mapper::map(t),
-                        lg(),
-                        "Writing pricing model configuration to database.");
+    query_builder::execute_write_query(ctx,
+                                       pricing_model_config_mapper::map(t),
+                                       lg(),
+                                       "Writing pricing model configuration to database.");
 }
 
 void pricing_model_config_repository::write(
@@ -181,10 +181,10 @@ void pricing_model_config_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        pricing_model_config_mapper::map(batch),
-                        lg(),
-                        "Writing pricing model configurations to database.");
+    query_builder::execute_write_query(ctx,
+                                       pricing_model_config_mapper::map(batch),
+                                       lg(),
+                                       "Writing pricing model configurations to database.");
 }
 
 std::vector<domain::pricing_model_config>
@@ -195,7 +195,8 @@ pricing_model_config_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c);
 
-    return execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    return query_builder::execute_read_query<pricing_model_config_entity,
+                                             domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -211,7 +212,8 @@ pricing_model_config_repository::read_latest(context ctx, const std::string& id)
     const auto query = query_builder::read<std::vector<pricing_model_config_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    return query_builder::execute_read_query<pricing_model_config_entity,
+                                             domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -231,7 +233,8 @@ pricing_model_config_repository::read_latest_by_code(context ctx, const std::str
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    auto found = query_builder::execute_read_query<pricing_model_config_entity,
+                                                   domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -253,7 +256,8 @@ pricing_model_config_repository::read_latest_by_name(context ctx, const std::str
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    auto found = query_builder::execute_read_query<pricing_model_config_entity,
+                                                   domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -272,7 +276,8 @@ pricing_model_config_repository::read_any_by_name(context ctx, const std::string
                        where("tenant_id"_c == tid && "name"_c == name) |
                        order_by("valid_from"_c.desc());
 
-    auto found = execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    auto found = query_builder::execute_read_query<pricing_model_config_entity,
+                                                   domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -300,7 +305,8 @@ pricing_model_config_repository::read_all(context ctx, const std::string& id) {
                        where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    return query_builder::execute_read_query<pricing_model_config_entity,
+                                             domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -317,13 +323,13 @@ std::optional<domain::pricing_model_config> pricing_model_config_repository::rea
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
-            ctx,
-            query,
-            [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
-            lg(),
-            "Reading pricing model configuration at version.");
+    const auto entities = query_builder::execute_read_query<pricing_model_config_entity,
+                                                            domain::pricing_model_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
+        lg(),
+        "Reading pricing model configuration at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -347,7 +353,8 @@ pricing_model_config_repository::read_latest_by_configuration_id(
                              "valid_to"_c == max.value()) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    return query_builder::execute_ordered_read_query<pricing_model_config_entity,
+                                                     domain::pricing_model_config>(
         ctx,
         query,
         pricing_model_config_list_order(order, {"id"}, false),
@@ -371,7 +378,7 @@ std::uint32_t pricing_model_config_repository::get_total_config_count_by_configu
                        where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<pricing_model_config_entity>(
+    return query_builder::execute_count_query<pricing_model_config_entity>(
         ctx,
         query,
         pricing_model_config_filter_condition(filter),
@@ -400,7 +407,8 @@ pricing_model_config_repository::remove_status pricing_model_config_repository::
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing pricing model configuration from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing pricing model configuration from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -427,7 +435,8 @@ std::vector<domain::pricing_model_config> pricing_model_config_repository::read_
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    return query_builder::execute_ordered_read_query<pricing_model_config_entity,
+                                                     domain::pricing_model_config>(
         ctx,
         query,
         pricing_model_config_list_order(order, {"id"}, false),
@@ -448,7 +457,7 @@ std::uint32_t pricing_model_config_repository::get_total_config_count(
     const auto query =
         query_builder::read<std::vector<pricing_model_config_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<pricing_model_config_entity>(
+    return query_builder::execute_count_query<pricing_model_config_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -465,7 +474,8 @@ pricing_model_config_repository::read_latest(context ctx, const std::vector<std:
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_config_entity>> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<pricing_model_config_entity, domain::pricing_model_config>(
+    auto result = query_builder::execute_read_query<pricing_model_config_entity,
+                                                    domain::pricing_model_config>(
         ctx,
         query,
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
@@ -487,7 +497,8 @@ void pricing_model_config_repository::remove(context ctx, const std::vector<std:
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<pricing_model_config_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing pricing model configurations.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing pricing model configurations.");
 }
 
 

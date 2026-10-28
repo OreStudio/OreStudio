@@ -166,7 +166,7 @@ void approval_decision_repository::write(context ctx,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval decision. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, approval_decision_mapper::map(t), lg(), "Writing approval decision to database.");
 }
 
@@ -179,7 +179,7 @@ void approval_decision_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, approval_decision_mapper::map(batch), lg(), "Writing approval decisions to database.");
 }
 
@@ -190,7 +190,7 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c);
 
-    return execute_read_query<approval_decision_entity, domain::approval_decision>(
+    return query_builder::execute_read_query<approval_decision_entity, domain::approval_decision>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
@@ -206,7 +206,7 @@ approval_decision_repository::read_latest(context ctx, const std::string& id) {
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<approval_decision_entity, domain::approval_decision>(
+    return query_builder::execute_read_query<approval_decision_entity, domain::approval_decision>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
@@ -223,7 +223,7 @@ approval_decision_repository::read_all(context ctx, const std::string& id) {
                        where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<approval_decision_entity, domain::approval_decision>(
+    return query_builder::execute_read_query<approval_decision_entity, domain::approval_decision>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
@@ -240,12 +240,13 @@ std::optional<domain::approval_decision> approval_decision_repository::read_at_v
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities = execute_read_query<approval_decision_entity, domain::approval_decision>(
-        ctx,
-        query,
-        [](const auto& entities) { return approval_decision_mapper::map(entities); },
-        lg(),
-        "Reading approval decision at version.");
+    const auto entities =
+        query_builder::execute_read_query<approval_decision_entity, domain::approval_decision>(
+            ctx,
+            query,
+            [](const auto& entities) { return approval_decision_mapper::map(entities); },
+            lg(),
+            "Reading approval decision at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -268,7 +269,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
         where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value()) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<approval_decision_entity, domain::approval_decision>(
+    return query_builder::execute_ordered_read_query<approval_decision_entity,
+                                                     domain::approval_decision>(
         ctx,
         query,
         approval_decision_list_order(order, {"id"}, false),
@@ -291,7 +293,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count_by_request_
         query_builder::read<std::vector<approval_decision_entity>> |
         where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value());
 
-    return execute_count_query<approval_decision_entity>(
+    return query_builder::execute_count_query<approval_decision_entity>(
         ctx,
         query,
         approval_decision_filter_condition(filter),
@@ -320,7 +322,8 @@ approval_decision_repository::remove_status approval_decision_repository::remove
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing approval decision from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing approval decision from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -347,7 +350,8 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<approval_decision_entity, domain::approval_decision>(
+    return query_builder::execute_ordered_read_query<approval_decision_entity,
+                                                     domain::approval_decision>(
         ctx,
         query,
         approval_decision_list_order(order, {"id"}, false),
@@ -368,7 +372,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count(
     const auto query =
         query_builder::read<std::vector<approval_decision_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<approval_decision_entity>(
+    return query_builder::execute_count_query<approval_decision_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -385,12 +389,13 @@ approval_decision_repository::read_latest(context ctx, const std::vector<std::st
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<approval_decision_entity, domain::approval_decision>(
-        ctx,
-        query,
-        [](const auto& entities) { return approval_decision_mapper::map(entities); },
-        lg(),
-        "Reading latest approval decisions by ids.");
+    auto result =
+        query_builder::execute_read_query<approval_decision_entity, domain::approval_decision>(
+            ctx,
+            query,
+            [](const auto& entities) { return approval_decision_mapper::map(entities); },
+            lg(),
+            "Reading latest approval decisions by ids.");
     return result;
 }
 
@@ -407,7 +412,7 @@ void approval_decision_repository::remove(context ctx, const std::vector<std::st
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<approval_decision_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing approval decisions.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing approval decisions.");
 }
 
 

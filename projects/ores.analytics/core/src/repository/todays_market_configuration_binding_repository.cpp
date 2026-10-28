@@ -173,10 +173,10 @@ void todays_market_configuration_binding_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market configuration binding. "
                                << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        todays_market_configuration_binding_mapper::map(t),
-                        lg(),
-                        "Writing today's market configuration binding to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_configuration_binding_mapper::map(t),
+                                       lg(),
+                                       "Writing today's market configuration binding to database.");
 }
 
 void todays_market_configuration_binding_repository::write(
@@ -189,10 +189,11 @@ void todays_market_configuration_binding_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        todays_market_configuration_binding_mapper::map(batch),
-                        lg(),
-                        "Writing today's market configuration bindings to database.");
+    query_builder::execute_write_query(
+        ctx,
+        todays_market_configuration_binding_mapper::map(batch),
+        lg(),
+        "Writing today's market configuration bindings to database.");
 }
 
 std::vector<domain::todays_market_configuration_binding>
@@ -203,8 +204,8 @@ todays_market_configuration_binding_repository::read_latest(context ctx) {
         query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) | order_by("id"_c);
 
-    return execute_read_query<todays_market_configuration_binding_entity,
-                              domain::todays_market_configuration_binding>(
+    return query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                             domain::todays_market_configuration_binding>(
         ctx,
         query,
         [](const auto& entities) {
@@ -224,8 +225,8 @@ todays_market_configuration_binding_repository::read_latest(context ctx, const s
         query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<todays_market_configuration_binding_entity,
-                              domain::todays_market_configuration_binding>(
+    return query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                             domain::todays_market_configuration_binding>(
         ctx,
         query,
         [](const auto& entities) {
@@ -249,8 +250,8 @@ todays_market_configuration_binding_repository::read_latest_by_reference(
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<todays_market_configuration_binding_entity,
-                                    domain::todays_market_configuration_binding>(
+    auto found = query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                                   domain::todays_market_configuration_binding>(
         ctx,
         query,
         [](const auto& entities) {
@@ -273,8 +274,8 @@ todays_market_configuration_binding_repository::read_any_by_reference(
         query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
         where("tenant_id"_c == tid && "reference"_c == reference) | order_by("valid_from"_c.desc());
 
-    auto found = execute_read_query<todays_market_configuration_binding_entity,
-                                    domain::todays_market_configuration_binding>(
+    auto found = query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                                   domain::todays_market_configuration_binding>(
         ctx,
         query,
         [](const auto& entities) {
@@ -305,8 +306,8 @@ todays_market_configuration_binding_repository::read_all(context ctx, const std:
         where("tenant_id"_c == tid && "id"_c == id) |
         order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<todays_market_configuration_binding_entity,
-                              domain::todays_market_configuration_binding>(
+    return query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                             domain::todays_market_configuration_binding>(
         ctx,
         query,
         [](const auto& entities) {
@@ -328,15 +329,16 @@ todays_market_configuration_binding_repository::read_at_version(context ctx,
         where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
         query_builder::limit(1);
 
-    const auto entities = execute_read_query<todays_market_configuration_binding_entity,
-                                             domain::todays_market_configuration_binding>(
-        ctx,
-        query,
-        [](const auto& entities) {
-            return todays_market_configuration_binding_mapper::map(entities);
-        },
-        lg(),
-        "Reading today's market configuration binding at version.");
+    const auto entities =
+        query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                          domain::todays_market_configuration_binding>(
+            ctx,
+            query,
+            [](const auto& entities) {
+                return todays_market_configuration_binding_mapper::map(entities);
+            },
+            lg(),
+            "Reading today's market configuration binding at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -364,8 +366,8 @@ todays_market_configuration_binding_repository::read_latest_by_todays_market_con
               "valid_to"_c == max.value()) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_configuration_binding_entity,
-                                      domain::todays_market_configuration_binding>(
+    return query_builder::execute_ordered_read_query<todays_market_configuration_binding_entity,
+                                                     domain::todays_market_configuration_binding>(
         ctx,
         query,
         todays_market_configuration_binding_list_order(order, {"id"}, false),
@@ -394,7 +396,7 @@ std::uint32_t todays_market_configuration_binding_repository::
               "todays_market_configuration_id"_c == todays_market_configuration_id &&
               "valid_to"_c == max.value());
 
-    return execute_count_query<todays_market_configuration_binding_entity>(
+    return query_builder::execute_count_query<todays_market_configuration_binding_entity>(
         ctx,
         query,
         todays_market_configuration_binding_filter_condition(filter),
@@ -425,7 +427,7 @@ todays_market_configuration_binding_repository::remove(context ctx,
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Removing today's market configuration binding from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -455,8 +457,8 @@ todays_market_configuration_binding_repository::read_latest(
         query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
         where("tenant_id"_c == tid) | query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_configuration_binding_entity,
-                                      domain::todays_market_configuration_binding>(
+    return query_builder::execute_ordered_read_query<todays_market_configuration_binding_entity,
+                                                     domain::todays_market_configuration_binding>(
         ctx,
         query,
         todays_market_configuration_binding_list_order(order, {"id"}, false),
@@ -481,7 +483,7 @@ std::uint32_t todays_market_configuration_binding_repository::get_total_binding_
         query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
         where("tenant_id"_c == tid);
 
-    return execute_count_query<todays_market_configuration_binding_entity>(
+    return query_builder::execute_count_query<todays_market_configuration_binding_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -500,8 +502,8 @@ todays_market_configuration_binding_repository::read_latest(context ctx,
     const auto query =
         query_builder::read<std::vector<todays_market_configuration_binding_entity>> |
         where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<todays_market_configuration_binding_entity,
-                                     domain::todays_market_configuration_binding>(
+    auto result = query_builder::execute_read_query<todays_market_configuration_binding_entity,
+                                                    domain::todays_market_configuration_binding>(
         ctx,
         query,
         [](const auto& entities) {
@@ -526,7 +528,8 @@ void todays_market_configuration_binding_repository::remove(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<todays_market_configuration_binding_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing today's market configuration bindings.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing today's market configuration bindings.");
 }
 
 

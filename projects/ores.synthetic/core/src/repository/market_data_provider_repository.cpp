@@ -157,10 +157,10 @@ void market_data_provider_repository::write(context ctx,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data provider. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        market_data_provider_mapper::map(t),
-                        lg(),
-                        "Writing market data provider to database.");
+    query_builder::execute_write_query(ctx,
+                                       market_data_provider_mapper::map(t),
+                                       lg(),
+                                       "Writing market data provider to database.");
 }
 
 void market_data_provider_repository::write(
@@ -172,10 +172,10 @@ void market_data_provider_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        market_data_provider_mapper::map(batch),
-                        lg(),
-                        "Writing market data providers to database.");
+    query_builder::execute_write_query(ctx,
+                                       market_data_provider_mapper::map(batch),
+                                       lg(),
+                                       "Writing market data providers to database.");
 }
 
 std::vector<domain::market_data_provider>
@@ -188,7 +188,8 @@ market_data_provider_repository::read_latest(context ctx) {
         where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
         order_by("code"_c);
 
-    return execute_read_query<market_data_provider_entity, domain::market_data_provider>(
+    return query_builder::execute_read_query<market_data_provider_entity,
+                                             domain::market_data_provider>(
         ctx,
         query,
         [](const auto& entities) { return market_data_provider_mapper::map(entities); },
@@ -206,7 +207,8 @@ market_data_provider_repository::read_latest(context ctx, const std::string& cod
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<market_data_provider_entity, domain::market_data_provider>(
+    return query_builder::execute_read_query<market_data_provider_entity,
+                                             domain::market_data_provider>(
         ctx,
         query,
         [](const auto& entities) { return market_data_provider_mapper::map(entities); },
@@ -224,7 +226,8 @@ market_data_provider_repository::read_all(context ctx, const std::string& code) 
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<market_data_provider_entity, domain::market_data_provider>(
+    return query_builder::execute_read_query<market_data_provider_entity,
+                                             domain::market_data_provider>(
         ctx,
         query,
         [](const auto& entities) { return market_data_provider_mapper::map(entities); },
@@ -243,13 +246,13 @@ std::optional<domain::market_data_provider> market_data_provider_repository::rea
                              "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<market_data_provider_entity, domain::market_data_provider>(
-            ctx,
-            query,
-            [](const auto& entities) { return market_data_provider_mapper::map(entities); },
-            lg(),
-            "Reading market data provider at version.");
+    const auto entities = query_builder::execute_read_query<market_data_provider_entity,
+                                                            domain::market_data_provider>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_data_provider_mapper::map(entities); },
+        lg(),
+        "Reading market data provider at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -276,7 +279,8 @@ market_data_provider_repository::remove_status market_data_provider_repository::
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing market data provider from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing market data provider from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -304,7 +308,8 @@ std::vector<domain::market_data_provider> market_data_provider_repository::read_
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<market_data_provider_entity, domain::market_data_provider>(
+    return query_builder::execute_ordered_read_query<market_data_provider_entity,
+                                                     domain::market_data_provider>(
         ctx,
         query,
         market_data_provider_list_order(order, {"code"}, false),
@@ -326,7 +331,7 @@ std::uint32_t market_data_provider_repository::get_total_provider_count(
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<market_data_provider_entity>(
+    return query_builder::execute_count_query<market_data_provider_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -345,7 +350,8 @@ market_data_provider_repository::read_latest(context ctx, const std::vector<std:
     const auto query = query_builder::read<std::vector<market_data_provider_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c.in(codes) &&
                              "valid_to"_c == max.value());
-    auto result = execute_read_query<market_data_provider_entity, domain::market_data_provider>(
+    auto result = query_builder::execute_read_query<market_data_provider_entity,
+                                                    domain::market_data_provider>(
         ctx,
         query,
         [](const auto& entities) { return market_data_provider_mapper::map(entities); },
@@ -368,7 +374,7 @@ void market_data_provider_repository::remove(context ctx, const std::vector<std:
     const auto query =
         query_builder::delete_from<market_data_provider_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing market data providers.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing market data providers.");
 }
 
 

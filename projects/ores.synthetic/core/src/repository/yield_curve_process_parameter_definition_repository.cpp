@@ -164,10 +164,11 @@ void yield_curve_process_parameter_definition_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve process parameter definition. "
                                << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        yield_curve_process_parameter_definition_mapper::map(t),
-                        lg(),
-                        "Writing yield curve process parameter definition to database.");
+    query_builder::execute_write_query(
+        ctx,
+        yield_curve_process_parameter_definition_mapper::map(t),
+        lg(),
+        "Writing yield curve process parameter definition to database.");
 }
 
 void yield_curve_process_parameter_definition_repository::write(
@@ -180,10 +181,11 @@ void yield_curve_process_parameter_definition_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        yield_curve_process_parameter_definition_mapper::map(batch),
-                        lg(),
-                        "Writing yield curve process parameter definitions to database.");
+    query_builder::execute_write_query(
+        ctx,
+        yield_curve_process_parameter_definition_mapper::map(batch),
+        lg(),
+        "Writing yield curve process parameter definitions to database.");
 }
 
 std::vector<domain::yield_curve_process_parameter_definition>
@@ -194,8 +196,8 @@ yield_curve_process_parameter_definition_repository::read_latest(context ctx) {
         query_builder::read<std::vector<yield_curve_process_parameter_definition_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) | order_by("id"_c);
 
-    return execute_read_query<yield_curve_process_parameter_definition_entity,
-                              domain::yield_curve_process_parameter_definition>(
+    return query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                             domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
         [](const auto& entities) {
@@ -216,8 +218,8 @@ yield_curve_process_parameter_definition_repository::read_latest(context ctx,
         query_builder::read<std::vector<yield_curve_process_parameter_definition_entity>> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<yield_curve_process_parameter_definition_entity,
-                              domain::yield_curve_process_parameter_definition>(
+    return query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                             domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
         [](const auto& entities) {
@@ -240,8 +242,8 @@ yield_curve_process_parameter_definition_repository::read_latest_by_parameter_na
         where("tenant_id"_c == tid && "parameter_name"_c == parameter_name &&
               "valid_to"_c == max.value());
 
-    return execute_read_query<yield_curve_process_parameter_definition_entity,
-                              domain::yield_curve_process_parameter_definition>(
+    return query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                             domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
         [](const auto& entities) {
@@ -263,8 +265,8 @@ yield_curve_process_parameter_definition_repository::read_any_by_parameter_name(
         where("tenant_id"_c == tid && "parameter_name"_c == parameter_name) |
         order_by("valid_from"_c.desc()) | query_builder::limit(1);
 
-    return execute_read_query<yield_curve_process_parameter_definition_entity,
-                              domain::yield_curve_process_parameter_definition>(
+    return query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                             domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
         [](const auto& entities) {
@@ -285,8 +287,8 @@ yield_curve_process_parameter_definition_repository::read_all(context ctx, const
         where("tenant_id"_c == tid && "id"_c == id) |
         order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<yield_curve_process_parameter_definition_entity,
-                              domain::yield_curve_process_parameter_definition>(
+    return query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                             domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
         [](const auto& entities) {
@@ -308,15 +310,16 @@ yield_curve_process_parameter_definition_repository::read_at_version(context ctx
         where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
         query_builder::limit(1);
 
-    const auto entities = execute_read_query<yield_curve_process_parameter_definition_entity,
-                                             domain::yield_curve_process_parameter_definition>(
-        ctx,
-        query,
-        [](const auto& entities) {
-            return yield_curve_process_parameter_definition_mapper::map(entities);
-        },
-        lg(),
-        "Reading yield curve process parameter definition at version.");
+    const auto entities =
+        query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                          domain::yield_curve_process_parameter_definition>(
+            ctx,
+            query,
+            [](const auto& entities) {
+                return yield_curve_process_parameter_definition_mapper::map(entities);
+            },
+            lg(),
+            "Reading yield curve process parameter definition at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -346,7 +349,7 @@ yield_curve_process_parameter_definition_repository::remove(context ctx,
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Removing yield curve process parameter definition from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -377,8 +380,9 @@ yield_curve_process_parameter_definition_repository::read_latest(
         query_builder::read<std::vector<yield_curve_process_parameter_definition_entity>> |
         where("tenant_id"_c == tid) | query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<yield_curve_process_parameter_definition_entity,
-                                      domain::yield_curve_process_parameter_definition>(
+    return query_builder::execute_ordered_read_query<
+        yield_curve_process_parameter_definition_entity,
+        domain::yield_curve_process_parameter_definition>(
         ctx,
         query,
         yield_curve_process_parameter_definition_list_order(order, {"id"}, false),
@@ -404,7 +408,7 @@ yield_curve_process_parameter_definition_repository::get_total_parameter_definit
         query_builder::read<std::vector<yield_curve_process_parameter_definition_entity>> |
         where("tenant_id"_c == tid);
 
-    return execute_count_query<yield_curve_process_parameter_definition_entity>(
+    return query_builder::execute_count_query<yield_curve_process_parameter_definition_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -423,15 +427,16 @@ yield_curve_process_parameter_definition_repository::read_latest(
     const auto query =
         query_builder::read<std::vector<yield_curve_process_parameter_definition_entity>> |
         where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<yield_curve_process_parameter_definition_entity,
-                                     domain::yield_curve_process_parameter_definition>(
-        ctx,
-        query,
-        [](const auto& entities) {
-            return yield_curve_process_parameter_definition_mapper::map(entities);
-        },
-        lg(),
-        "Reading latest yield curve process parameter definitions by ids.");
+    auto result =
+        query_builder::execute_read_query<yield_curve_process_parameter_definition_entity,
+                                          domain::yield_curve_process_parameter_definition>(
+            ctx,
+            query,
+            [](const auto& entities) {
+                return yield_curve_process_parameter_definition_mapper::map(entities);
+            },
+            lg(),
+            "Reading latest yield curve process parameter definitions by ids.");
     return result;
 }
 
@@ -449,7 +454,7 @@ void yield_curve_process_parameter_definition_repository::remove(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<yield_curve_process_parameter_definition_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing yield curve process parameter definitions.");
 }
 

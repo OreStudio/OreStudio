@@ -141,10 +141,10 @@ void lei_entity_repository::write(context ctx,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI entity. " << "lei: " << v.lei;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     query_builder::insert_or_replace(lei_entity_mapper::map(t)),
-                     lg(),
-                     "Writing LEI entity to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(lei_entity_mapper::map(t)),
+                                    lg(),
+                                    "Writing LEI entity to database.");
 }
 
 void lei_entity_repository::write(context ctx,
@@ -155,16 +155,16 @@ void lei_entity_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     query_builder::insert_or_replace(lei_entity_mapper::map(batch)),
-                     lg(),
-                     "Writing LEI entities to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(lei_entity_mapper::map(batch)),
+                                    lg(),
+                                    "Writing LEI entities to database.");
 }
 
 std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx) {
     const auto query = query_builder::read<std::vector<lei_entity_entity>> | order_by("lei"_c);
 
-    return execute_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -177,7 +177,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI entity. " << "lei: " << lei;
     const auto query = query_builder::read<std::vector<lei_entity_entity>> | where("lei"_c == lei);
 
-    return execute_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -192,7 +192,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_all(context ctx,
     const auto query = query_builder::read<std::vector<lei_entity_entity>> | where("lei"_c == lei) |
                        order_by("lei"_c);
 
-    return execute_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -215,7 +215,7 @@ lei_entity_repository::remove_status lei_entity_repository::remove(
     const auto query = query_builder::delete_from<lei_entity_entity> |
                        where("tenant_id"_c == tid && "lei"_c == lei);
 
-    execute_delete_query(ctx, query, lg(), "Removing LEI entity from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing LEI entity from database.");
     return remove_status::removed;
 }
 
@@ -234,7 +234,7 @@ lei_entity_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<lei_entity_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<lei_entity_entity, domain::lei_entity>(
+    return query_builder::execute_ordered_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         lei_entity_list_order(order, {"lei"}, false),
@@ -250,7 +250,7 @@ std::uint32_t lei_entity_repository::get_total_entity_count(
 
     const auto query = query_builder::read<std::vector<lei_entity_entity>>;
 
-    return execute_count_query<lei_entity_entity>(
+    return query_builder::execute_count_query<lei_entity_entity>(
         ctx, query, lei_entity_filter_condition(filter), lg(), "Counting LEI entities");
 }
 
@@ -260,7 +260,7 @@ lei_entity_repository::read_latest(context ctx, const std::vector<std::string>& 
         return {};
     const auto query =
         query_builder::read<std::vector<lei_entity_entity>> | where("lei"_c.in(leis));
-    auto result = execute_read_query<lei_entity_entity, domain::lei_entity>(
+    auto result = query_builder::execute_read_query<lei_entity_entity, domain::lei_entity>(
         ctx,
         query,
         [](const auto& entities) { return lei_entity_mapper::map(entities); },
@@ -281,7 +281,7 @@ void lei_entity_repository::remove(context ctx, const std::vector<std::string>& 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<lei_entity_entity> |
                        where("tenant_id"_c == tid && "lei"_c.in(leis));
-    execute_delete_query(ctx, query, lg(), "Batch removing LEI entities.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing LEI entities.");
 }
 
 

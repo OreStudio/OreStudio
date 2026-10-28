@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3995][#3995]] | [marketdata] Add ores.marketdata.official, the official rates adapter (with its catalogue) |
 |    |       |
 
 * Review

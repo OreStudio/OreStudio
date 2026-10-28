@@ -307,6 +307,8 @@ the only fixed part of the control.
 
 * See also
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group hub
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
 - [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the request under decision

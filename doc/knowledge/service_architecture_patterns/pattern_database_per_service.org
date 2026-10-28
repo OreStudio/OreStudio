@@ -80,6 +80,8 @@ tenant and party. A direct read would bypass both.
 
 * In ORE Studio
 
+The market data path, [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][a public fixing, a curve and a report]], crosses four stores: market data, refdata, inbox and reporting, and each component owns its own.
+
 - [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]] — the rule as a memory.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] — the reasons a service must not reach into another's repository.
 - [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]]

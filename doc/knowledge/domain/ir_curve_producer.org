@@ -110,6 +110,8 @@ points alongside it.
 * See also
 
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], which this feed reads.
 - [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], the ladder this feed resolves.

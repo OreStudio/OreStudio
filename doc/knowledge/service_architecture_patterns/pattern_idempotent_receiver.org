@@ -80,6 +80,8 @@ No security consequence: the identity decides repetition, not access.
 
 * In ORE Studio
 
+The market data path, [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][a public fixing, a curve and a report]], relies on it at the publish gate, which applies one approved request once, and at the ingest, which tolerates a repeated tick.
+
 - [[id:183361A9-31B8-4066-A13D-94CA35270F42][Idempotency in a workflow step]] — the replay guard and the converging write.
 - [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] — the convergence each report phase owes the engine.
 - [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — every step is idempotent, so a retry is safe.

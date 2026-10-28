@@ -231,6 +231,8 @@ short end is data plus one configuration.
 
 * See also
 
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the knowledge index.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the tenor-cluster hub (concepts).
 - [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the calendar-cluster hub (concepts).

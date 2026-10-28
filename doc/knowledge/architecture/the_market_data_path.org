@@ -5,7 +5,7 @@
 #+description: The six hops from a public source's fixing to a report that consumes a curve, the oresmd identity at every runtime hop, the ORE key boundary, and the one link not built.
 #+type: knowledge
 #+level: cross
-#+filetags: :marketdata:path:oresmd:publish:report:
+#+filetags: :marketdata:path:oresmd:publish:report:structure_note:
 #+created: 2026-10-28
 #+updated: 2026-10-28
 
@@ -26,7 +26,9 @@ smoothed over.
 
 [[file:the_market_data_path.png]]
 
-* The path at a glance
+* Detail
+
+** The path at a glance
 
 | Hop | The record | The oresmd identity | Who may | Screen or command |
 |-----+------------+---------------------+---------+-------------------|
@@ -37,7 +39,7 @@ smoothed over.
 | 5. The publication | the approval request, the publish record, the published set | the output series and its datum points | the maker and the decider | the request page, the published list, the shell |
 | 6. The report | the report definition, its run, the curve configuration it names | the curve the ORE XML names at the boundary | the report's owner | the report screens and the run |
 
-* The rule: oresmd inside, ORE keys at the edge
+** The rule: oresmd inside, ORE keys at the edge
 
 An internal identity is an oresmd URI and nothing else. An ORE key is a boundary
 format: it converts to and from an oresmd identity in [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]],
@@ -48,7 +50,7 @@ series classifier keys its rules on an ORE series key, and the oresmd codec
 refuses a datum without an ORE spelling. Those are the open items of the
 [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][pillar-naming task]].
 
-* Hop by hop
+** Hop by hop
 
 ** The public source
 
@@ -148,7 +150,7 @@ read the published set, with the ORE XML built from it, or whether the curve
 configuration document remains the only input and the published set serves the
 screens and the consumers that read market data directly.
 
-* What is under construction
+** What is under construction
 
 - The Frankfurter route and the load of the published quotes are prime origin's
   work; the path above names them and does not restate their design.
@@ -158,7 +160,7 @@ screens and the consumers that read market data directly.
 - The join from the published set to the report, above, is not built and has no
   task yet.
 
-* The gaps
+** The gaps
 
 1. The published curve does not reach a report; the report reads the curve
    configuration document instead.
@@ -169,6 +171,13 @@ screens and the consumers that read market data directly.
    a series that must already exist, and the catalogue offers the feeds' own
    series rather than a curve's output.
 
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- each hop is a call that waits for its answer: the screen reads, the compute, the publish, the report run.
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] -- the adapter and every service handler take their messages through a queue group, so one instance of the service handles each.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- the publish gate applies one request once, and the ingest tolerates a repeated tick, so a retry or a replay cannot move a set twice.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the path crosses the market data, refdata, inbox and reporting stores, and each component owns its own.
+
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the service, its records and its screens.
@@ -176,3 +185,6 @@ screens and the consumers that read market data directly.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] -- where the identity starts.
 - [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]] -- the boundary, and the only home of an ORE key.
 - [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] -- the rule this page states.
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]] and [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][IR Curve Bootstrap Pillar]] -- the records the path builds from.
+- [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]] -- the migration this page records as an open item.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] -- the index this page is registered in.

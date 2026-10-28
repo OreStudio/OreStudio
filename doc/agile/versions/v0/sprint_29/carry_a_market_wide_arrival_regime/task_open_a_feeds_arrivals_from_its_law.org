@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/open-a-feeds-arrivals-from-its-law
-#+pr:
+#+pr: 3982
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3982][#3982]] | [web] Open a feed's arrivals from its law, and edit them in a dialog |
 
 * Review
 

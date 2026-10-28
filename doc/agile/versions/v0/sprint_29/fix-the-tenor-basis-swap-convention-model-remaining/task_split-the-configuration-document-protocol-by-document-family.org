@@ -8,7 +8,7 @@
 #+filetags: :refdata:codegen:msvc:c1202:fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/split-the-configuration-document-protocol-by-document-family
-#+pr: 4002
+#+pr: 4016
 #+blocked_on: Investigate the configuration document protocol's translation unit
 #+blocked_since: 2026-10-14
 #+created: 2026-10-14
@@ -103,6 +103,30 @@ configuration document is involved. It is recorded here so the split is not
 blamed for it, and it wants its own task before the clang-cl job can prove
 anything about this one.
 
+* What the split actually is
+
+The measurement first: =curve_configuration_document= holds **33 typed vectors**
+plus its configuration object, in one reflected struct. The C1202 limit is a
+per-struct count, so a file split -- moving the same struct into more headers --
+cannot lower it. The task's original instruction ("split the header and the
+handler") was written before that was measured, and on its own it would not have
+worked.
+
+The mechanism that does work is already in this tree: field groups.
+=projects/ores.codegen/library/templates/ores.cpp.field-group.field_group_header.org=
+states it in its own words --
+
+#+begin_quote
+By composing the parent struct via =rfl::Flatten<SubStruct>= each sub-struct is
+reflected independently, keeping the per-struct field count low while preserving
+the original flat JSON wire format.
+#+end_quote
+
+So the split is: the document's families become field groups, the document
+composes them with =rfl::Flatten=, and each family is reflected on its own. The
+wire stays flat, which is what the acceptance asks for, and no subject or
+handler changes.
+
 * Plan
 
 ** The order of work
@@ -153,6 +177,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4016][#4016]] | [database] Stop the decimal codec hiding a global last |
+| [[https://github.com/OreStudio/OreStudio/pull/4014][#4014]] | [agile] Say what the configuration document split actually is |
 | [[https://github.com/OreStudio/OreStudio/pull/4002][#4002]] | [platform] Read the environment without the deprecated CRT call |
 
 * Review

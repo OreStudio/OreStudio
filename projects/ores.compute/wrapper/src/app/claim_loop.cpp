@@ -124,6 +124,7 @@ void claim_loop::run() {
                     .config_uri = response->config_uri,
                     .output_uri = response->output_uri,
                     .results_uri = response->results_uri,
+                    .logs_uri = response->logs_uri,
                     .storage_token = response->storage_token};
                 BOOST_LOG_SEV(lg(), info) << "Claimed result " << job.result_id << " (attempt "
                                           << response->attempt << ")";

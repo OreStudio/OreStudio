@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 5CA7780D-0085-4D51-9D76-4F2AD86CAF26
+:END:
+#+title: Task: Restore the engine log work
+#+description: Four commits that read the engine's log in one place, wrote it beside a run's rows and loaded it in reporting were merged as part of #3929 and are not on main: the branch that PR merged was rebuilt and left them behind. They are restored here, adapted to today's tree, before the duplicate parser is deleted.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/restore-the-engine-log-work
+#+pr: 4017
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The engine's log is read by one parser in ores.ore, a node writes the canonical rows beside its results, and the service loads them, exactly as the stranded commits state, on today's tree.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- engine_log and its suite are in ores.ore.core, and the tree builds.
+- A node writes the canonical log rows beside the result rows.
+- The service loads a run's log rows through the canonical reader.
+- Nothing is left only on feature/run-a-report-and-read-its-rows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files the branch changes against main | 33 | =git diff --stat origin/main= | 63b5356a76 |
+| =ores.ore.core.tests= | passed, 27.72s | =compass test run -- -R ores.ore.core.tests= | 63b5356a76 |
+| =ores.reporting.core.tests= | passed, 54.00s | =compass test run -- -R ores.reporting.core.tests= | 63b5356a76 |
+| =ores.compute.core.tests= | passed, 28.05s | =compass test run -- -R ores.compute.core.tests= | 63b5356a76 |
+| Test cases of the log reader | 6 | =projects/ores.reporting/core/tests/results_canonical_log_reader_tests.cpp= | 1458b3b1b5 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4017][#4017]] | [ore] Read the engine's log in one place and load it in reporting |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The writer quotes a newline but the reader splits records at every newline, so a multi-line message is lost; a carriage return is not a quote trigger | canonical_log_reader.cpp, engine_log.cpp | Accepted | The reader now splits records by the writer's rules and refuses a quote that never closes; the writer also quotes a carriage return. Six reader cases and two writer cases state it. |
+| 2 | The JSON path can emit an empty message where the text path falls back to the line | engine_log.cpp | Accepted | The JSON path keeps its own line when the object states no message, and a case states it. |
+| 3 | Dead assignments set the cause and the subject before the rules that overwrite them | engine_log.cpp | Accepted | Removed, along with the helper only they used. |
+| 4 | The two parsers repeat the byte order mark, the line split, the blank skip and the carriage return trim | engine_log.cpp | Accepted | One =for_each_line= states those rules once. |
+| 5 | Minor: the parenthesis reading is not documented, spare blank lines, and the doc comment names a parameter that does not exist | engine_log.cpp | Accepted | The limit is stated on the function, the spare lines are gone, and the parameter is named. |
+
+* Result
+
+The three commits are restored on today's tree, one for each thing the stranded
+work did, and each one builds and passes its suite:
+
+- =[ore] Read the engine's log in one place= brings =engine_log= and its suite
+  into =ores.ore.core=.
+- =[compute] Write the engine's log beside a run's rows= gives the claim a
+  =logs_uri= and the node its fifth grant, and the wrapper uploads the canonical
+  rows the parser produces.
+- =[reporting] Load a run's log rows from the node= reads those rows through one
+  reader, so the service never learns the engine's format.
+
+Two faults were found while restoring and are fixed here. The claim's wording
+still said four objects, and the log reader read a doubled quote as two field
+boundaries, so a message that stated a quote lost it. The reader also had no
+suite; it has six cases now.
+
+Nothing remains on =feature/run-a-report-and-read-its-rows=.

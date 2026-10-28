@@ -39,7 +39,7 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 | Target screen | Reporting > Reports, the run page, and Operations > Grid            |
 | Clients       |                                                                    |
 | Environment   | =swift_curie=, at =http://127.0.0.1:20202=                          |
-| State         | PENDING                                                            |
+| State         | PASSED |
 
 * Steps
 
@@ -52,6 +52,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Read the report list and open NPV
 
 - Go to =Reporting= then =Reports=.
@@ -63,6 +68,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Start a run from the definition
 
 - Press =Run=.
@@ -71,6 +81,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
   reaches =completed=.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Follow the run onto the grid
 
@@ -89,6 +104,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Read the results at trade level
 
 - Open the run's =Results= tab.
@@ -102,6 +122,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Follow a trade, a book and a counterparty
 
 - From the open row, follow the trade link and confirm it opens that trade's
@@ -112,6 +137,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
   pages state.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Roll the run up by book and by counterparty
 
@@ -124,6 +154,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
   has more than one book, and that every figure beside it matches the table.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Compare the run with an earlier one
 
@@ -138,6 +173,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Read a run that failed
 
 - Go back to the report, open its =Runs= tab, and open a run in state =failed=.
@@ -147,6 +187,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
   an empty table.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Check the rows in the store
 
@@ -161,12 +206,17 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-27T20:18:52Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

@@ -43,7 +43,7 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 | Target screen | Reporting > Reports > a report, and that run's +Results+ tab |
 | Environment   | =swift_curie=, at =http://127.0.0.1:20202= |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED |
 
 * Steps
 
@@ -56,6 +56,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Open the NPV report definition
 
 - Go to =Reporting= then =Reports=.
@@ -64,6 +69,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
   =Runs=, and that =Run= and =Refresh= sit at the top right.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Start the run from the definition
 
@@ -75,6 +85,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Follow the run to the grid
 
 - On the run's =Run= tab, confirm the run names its compute batch and that the
@@ -84,6 +99,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 - Return to the run's page and confirm its state is =completed=.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 ** Read the run's results
 
@@ -98,6 +118,11 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Check the rows in the store
 
 - In a shell, run
@@ -109,12 +134,17 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-27T20:17:57Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

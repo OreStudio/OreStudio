@@ -1,0 +1,358 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: nil
+:ID: 22AEEEA2-2CDE-4ECB-9415-C20F623D4105
+:END:
+#+title: ores.marketdata.fixing_read_operations
+#+description: Codegen operation model for reading the durable fixings: the latest on or before a date, and a window of days.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: fixing_read_operations
+#+namespace: ores::marketdata::messaging
+#+brief: Reading the durable fixings.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A consumer, the calibration of the synthetic feeds first, asks for a fixing by its
+item and a date, and gets the value with where and when it came from. The item is
+the fixing's oresmd URI, which names the publisher, so two providers of one pair are
+two items. The values stay decimal text, as they are stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** get_fixing_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_fixing
+:response: get_fixing_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the latest fixing of an item on or before a date.
+ */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The fixing's oresmd URI, which names the ORE index.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider to read, or empty for the one provider that carries the item.
+ *
+ * Two providers can deliver one ORE index, the ECB rate from the ECB itself and from
+ * a vendor. An item that more than one provider carries is refused as ambiguous
+ * unless the request names one.
+ */
+#+end_src
+
+*** on_or_before
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The last date the fixing may fall on.
+ */
+#+end_src
+
+** get_fixing_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the call ended: a session with no party and an item that names the
+ * series of more than one party are refused here.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider that published the item.
+ */
+#+end_src
+
+*** vendor_scheme
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The scheme of the vendor id, or empty when no mapping names the item.
+ */
+#+end_src
+
+*** vendor_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider's own id of the item, or empty when no mapping names it.
+ */
+#+end_src
+
+*** fixing_date
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::year_month_day>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The date of the fixing, which is the publisher's own time for a daily
+ * fixing; absent when the item has no fixing on or before the date.
+ */
+#+end_src
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value as stored, in decimal text.
+ */
+#+end_src
+
+*** source
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The source the fixing came through.
+ */
+#+end_src
+
+*** received_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the service stored the fixing.
+ */
+#+end_src
+
+** get_fixing_window_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_fixing_window
+:response: get_fixing_window_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for every fixing of an item in the days up to a date.
+ */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The fixing's oresmd URI, which names the ORE index.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider to read, or empty for the one provider that carries the item.
+ *
+ * Two providers can deliver one ORE index, the ECB rate from the ECB itself and from
+ * a vendor. An item that more than one provider carries is refused as ambiguous
+ * unless the request names one.
+ */
+#+end_src
+
+*** to
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The last date of the window, included.
+ */
+#+end_src
+
+*** days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many calendar days the window spans, ending on the last date.
+ */
+#+end_src
+
+** get_fixing_window_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the call ended: a session with no party, an ambiguous item, and a
+ * window that is empty or over the ceiling are refused here.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider that published the item.
+ */
+#+end_src
+
+*** vendor_scheme
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The scheme of the vendor id, or empty when no mapping names the item.
+ */
+#+end_src
+
+*** vendor_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider's own id of the item, or empty when no mapping names it.
+ */
+#+end_src
+
+*** days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many calendar days the window spans.
+ */
+#+end_src
+
+*** used
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many of those days hold a fixing; the days without one are skipped.
+ */
+#+end_src
+
+*** dates
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::year_month_day>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The date of each fixing, oldest first.
+ */
+#+end_src
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value of each fixing, in decimal text.
+ */
+#+end_src
+
+*** sources
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The source of each fixing.
+ */
+#+end_src
+
+*** received_at
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::system_clock::time_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the service stored each fixing.
+ */
+#+end_src
+
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.
+- [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] — why fixings are durable.

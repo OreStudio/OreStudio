@@ -56,10 +56,11 @@ std::vector<std::byte> read_whole(const std::filesystem::path& file) {
  * that is the shape the reader sees in production, and the archive is the
  * engine's own container rather than a format invented for the test.
  */
-std::vector<std::byte> make_archive(const std::string& log) {
+std::vector<std::byte> make_archive(const std::string& log,
+                                    const std::string& name =
+                                        std::string(ores::reporting::tests::structured_log_name)) {
     const ores::platform::filesystem::scoped_temp_directory staged;
-    std::ofstream stream(staged.path() / ores::reporting::tests::structured_log_name,
-                         std::ios::binary);
+    std::ofstream stream(staged.path() / name, std::ios::binary);
     stream << log;
     stream.close();
 
@@ -175,6 +176,35 @@ TEST_CASE("a failed trade is placed on the curve its message names", "[service]"
     CHECK(trade->scope == "Trade");
     CHECK(trade->subject == "trade");
     CHECK(trade->cause == "Yield/GBP/GBP1D");
+}
+
+
+TEST_CASE("a run whose engine wrote only its text log still states its errors", "[service]") {
+    using ores::reporting::service::read_engine_errors_from_archive;
+
+    // An engine built without the structured file writes the same JSON into its
+    // own log, after a marker and a timestamp, on one line.
+    const std::string text_log =
+        "ALERT    [2026-Oct-27 19:42:07.139446]  (OREData/ored/utilities/log.cpp:214) : "
+        "StructuredMessage { \"category\": \"Error\", \"group\": \"Curve\", \"message\": "
+        "\"yield curve building failed for curve(s) Yield/HKD/HKD1D\", \"sub_fields\": [ "
+        "{ \"name\": \"curveId\", \"value\": \"[IndexCurve(HKD-HONIA,Yield/HKD/HKD1D)]\" } ] }\n"
+        "ALERT    [2026-Oct-27 19:42:07.139606]  (OREData/ored/utilities/log.cpp:214) : "
+        "StructuredMessage { \"category\": \"Error\", \"group\": \"Trade\", \"message\": "
+        "\"Cannot build all required curves!\", \"sub_fields\": [ "
+        "{ \"name\": \"tradeId\", \"value\": \"1d61bfaf-2015-5c23-ad85-85ebe6d9d4c0\" }, "
+        "{ \"name\": \"tradeType\", \"value\": \"Bond\" } ] }\n"
+        "NOTICE   [2026-Oct-27 19:42:07.140000]  (OREAnalytics/orea/app/parameters.cpp:139) : "
+        "Parameters:something\n";
+
+    const auto archive = make_archive(text_log, "log.txt");
+    const auto read = read_engine_errors_from_archive(archive);
+
+    REQUIRE(read.ok());
+    REQUIRE(read.errors.size() == 2);
+    CHECK(read.errors[0].scope == "Curve");
+    CHECK(read.errors[1].scope == "Trade");
+    CHECK(read.errors[1].subject_id == "1d61bfaf-2015-5c23-ad85-85ebe6d9d4c0");
 }
 
 TEST_CASE("a run whose analytics all ran records no error", "[service]") {

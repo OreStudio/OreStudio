@@ -64,8 +64,8 @@ def test_no_stale_controller_entry(services):
 
 
 def test_twenty_one_fleet_processes(services):
-    # ores.workspace.service went with the ores.workspace component, and
-    # ores.marketdata.official joined to fetch the official rates, so the
+    # ores.workspace.service went with the ores.workspace component, and the
+    # official rates adapter, ores.marketdata.official, joined the fleet, so the
     # registry names twenty-one fleet processes.
     assert len(services) == 21
 

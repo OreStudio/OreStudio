@@ -625,6 +625,27 @@ describe('the market’s links to its feeds', () => {
         );
     });
 
+    it('opens the page of a feed that joined, from what changed the market on Now', () => {
+        const joined = trace({
+            events: [event({ kind: 'add', sourceName: 'live.eurusd', tau: 3 })],
+        });
+        const html = render(
+            <NowView
+                regime={regime()}
+                trace={joined}
+                history={history()}
+                now={NOW}
+                mayPin={false}
+                pending={undefined}
+                error={null}
+                onPin={() => undefined}
+                onOpenTrace={() => undefined}
+                pages={feedPages(raster())}
+            />,
+        );
+        expect(html).toContain('href="/market-data/synthetic/fx/feed-1"');
+    });
+
     it('names a feed the list does not know yet without a link', () => {
         const html = render(<TraceView trace={trace()} pages={new Map()} />);
         expect(html).toContain('live.eurusd');

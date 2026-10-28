@@ -62,7 +62,10 @@ export function FeedLink({
         <Link
             to={tab === undefined ? page : `${page}?tab=${tab}`}
             onClick={(event) => event.stopPropagation()}
-            className={cx('hover:text-accent hover:underline', className)}
+            className={cx(
+                'underline decoration-ink-faint decoration-dotted underline-offset-2 hover:text-accent hover:decoration-solid',
+                className,
+            )}
         >
             {name}
         </Link>

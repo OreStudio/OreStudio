@@ -89,6 +89,11 @@ via its "Verifies task" field.
 | 4 | Broad query invalidation | ArrivalsPanel.tsx | Decline | It matches the Process tab's save. |
 | 5 | Tests: the error paths, and a harness test that can leave the feed changed | ArrivalsPanel.test.tsx, market-regime.spec.ts | Accept | Tests for the save sequence; the harness restores in a finally. |
 | 6 | Does Button disable itself while pending | Primitives.tsx | Note | It does: disabled when pending. |
+| 7 | No test for the Now tab's feed link | market.test.tsx | Accept | A feed that joined opens its page from Now. |
+| 8 | No test for the link back to the market | ArrivalsPanel.test.tsx | Already done | The panel test checks the link to =?tab=regime=. |
+| 9 | Two feeds sharing a source name | FeedLink.tsx | Decline | The stack keys feeds by source name throughout, the tick buffers among them. |
+| 10 | The page map is rebuilt each render | MarketTab.tsx | Decline | It is cheap. |
+| 11 | A link shows no cue until hover | FeedLink.tsx | Accept | A faint dotted underline, solid on hover. |
 
 * Result
 
@@ -111,6 +116,9 @@ the system administrator, opens a running feed's Arrivals tab, changes its
 sensitivity, sees the running note with the restart ticked, saves, sees the
 restarted feed run on the new value, and saves the old value back: 14 of 14
 pass live. The feed the first failing run left at 1.5 was put back to 1.
+
+At the user's request the Market tab's feed names (Arrivals, Laws, Fit, Trace,
+Now) open the feed's page, and a feed's Arrivals tab links back to the market.
 
 Found and captured, not fixed here: a tenant administrator is offered edits
 to system feeds that the server refuses with a database error

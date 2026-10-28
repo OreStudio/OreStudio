@@ -180,6 +180,24 @@ public:
 };
 
 /**
+ * @brief The planner for a credit population.
+ *
+ * The routing table sends every credit code to one table: a reference entity
+ * and a term. A multi-name product states a basket beside that, so the planner
+ * draws names from the tenant's counterparties and states them as constituents.
+ *
+ * It refuses when the tenant records no counterparty, because a credit trade
+ * that referenced nobody would book and then fail to price.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT credit_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner registered for an asset class.
  *
  * A class with no planner is refused by name rather than falling back to one,

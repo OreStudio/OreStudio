@@ -966,6 +966,32 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             throw trade_population_write_error("The equity trade type " + type +
                                                " states no table this writer knows.");
         }
+    } else if (const auto* credit = std::get_if<domain::credit_terms>(&slot.terms)) {
+        /*
+         * Every credit code routes to one table: a reference entity and a term.
+         * The multi-name products state a basket beside it, and the basket is a
+         * child of the trade rather than a column.
+         */
+        ores::trading::domain::credit_instrument row;
+        row.reference_entity = credit->reference_entity;
+        row.start_date = credit->start_date;
+        row.maturity_date = credit->maturity_date;
+        row.description = "Generated credit trade.";
+        row.audit.change_reason_code = std::string(population_reason);
+        row.audit.change_commentary = "Generated trade population.";
+        book_req.instruments.credit_instruments.push_back(row);
+
+        std::uint32_t ordinal = 1;
+        for (const auto& member : credit->basket) {
+            ores::trading::domain::credit_basket_constituent constituent;
+            constituent.sequence_number = static_cast<int>(ordinal++);
+            constituent.issuer_id = member.issuer_id;
+            constituent.qualifier = member.qualifier;
+            constituent.weight = member.weight;
+            constituent.change_reason_code = std::string(population_reason);
+            constituent.change_commentary = "Generated trade population.";
+            book_req.instruments.credit_basket_constituents.push_back(constituent);
+        }
     } else if (const auto* fx = std::get_if<domain::fx_terms>(&slot.terms)) {
         const auto money = [](double value) {
             return ores::utility::decimal::decimal::from_double(value).value();

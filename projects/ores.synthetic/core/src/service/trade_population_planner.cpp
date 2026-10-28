@@ -186,8 +186,8 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 }
 
 std::vector<std::string_view> planned_asset_classes() {
-    static const std::vector<std::string_view> codes{"bond", "commodity", "equity", "fx",
-                                                          "interest_rates"};
+    static const std::vector<std::string_view> codes{"bond", "commodity", "credit", "equity",
+                                                          "fx", "interest_rates"};
     return codes;
 }
 
@@ -197,8 +197,10 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const rate_trade_planner rates;
     static const fx_trade_planner fx;
     static const equity_trade_planner equity;
+    static const credit_trade_planner credit;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
                                                                      {"commodity", &commodity},
+                                                                     {"credit", &credit},
                                                                      {"equity", &equity},
                                                                      {"fx", &fx},
                                                                      {"interest_rates", &rates}};
@@ -899,6 +901,83 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     return plan;
 }
 
+
+std::string_view credit_trade_planner::asset_class_code() const {
+    return "credit";
+}
+
+namespace {
+
+constexpr std::string_view credit_types[] = {"CreditDefaultSwap", "IndexCreditDefaultSwap",
+                                             "IndexCreditDefaultSwapOption", "SyntheticCDO",
+                                             "CreditLinkedSwap"};
+
+constexpr std::size_t credit_type_count = std::size(credit_types);
+
+} // namespace
+
+domain::trade_population_plan
+credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.issuer_ids.empty())
+        throw trade_population_error(
+            "The tenant records no counterparty, so no credit trade can reference one. Provision "
+            "the tenant's counterparties first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
+        const auto name = slot_name(scope, slot);
+        const auto& type = credit_types[slot % credit_type_count];
+        const auto& issuer = scope.issuer_ids[slot % scope.issuer_ids.size()];
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+        const auto tenor_years = std::clamp(drawn, min_years, max_years);
+        const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        const auto end = add_years(start, static_cast<int>(tenor_years));
+
+        domain::credit_terms terms;
+        terms.start_date = start;
+        terms.maturity_date = end;
+        terms.reference_entity = boost::uuids::to_string(issuer);
+
+        /*
+         * The multi-name products state a basket: an index swap and its option
+         * reference a whole index, and a synthetic CDO a tranche of names. A
+         * single-name swap leaves the basket empty and states its entity.
+         */
+        if (type == "IndexCreditDefaultSwap" || type == "IndexCreditDefaultSwapOption" ||
+            type == "SyntheticCDO") {
+            for (std::uint32_t member = 0; member < 3; ++member) {
+                domain::credit_basket_member constituent;
+                constituent.issuer_id =
+                    boost::uuids::to_string(scope.issuer_ids[(slot + member) %
+                                                             scope.issuer_ids.size()]);
+                constituent.qualifier = "Senior";
+                constituent.weight = 1.0 / 3.0;
+                terms.basket.push_back(std::move(constituent));
+            }
+        }
+
+        auto entry = common_slot(scope, slot);
+        entry.trade_type_code = std::string(type);
+        entry.notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        entry.terms = std::move(terms);
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
+}
 
 std::string_view equity_trade_planner::asset_class_code() const {
     return "equity";

@@ -509,8 +509,35 @@ struct equity_terms final {
     std::vector<equity_range_bound> range_bounds;
 };
 
-using trade_terms =
-    std::variant<bond_terms, commodity_terms, rate_terms, fx_terms, equity_terms>;
+/**
+ * @brief One member of a credit basket.
+ *
+ * A synthetic CDO and an index swap state their names as a basket, and a name
+ * is a reference entity with the notional written against it.
+ */
+struct credit_basket_member final {
+    std::string issuer_id;
+    std::string qualifier;
+    std::optional<double> weight;
+};
+
+/**
+ * @brief What the credit family states.
+ *
+ * The routing table sends every credit code to one table, so the payload is
+ * that table's facts plus the basket a multi-name product states.
+ */
+struct credit_terms final {
+    /// The entity a single-name swap references, as the tenant records it.
+    std::string reference_entity;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
+    /// The basket an index swap, an index option or a synthetic CDO states.
+    std::vector<credit_basket_member> basket;
+};
+
+using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms, fx_terms, equity_terms,
+                                 credit_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

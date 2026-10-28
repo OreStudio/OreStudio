@@ -117,7 +117,7 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
     const auto clean = service_report_error_counts_write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    std::vector<ores::reporting::service::engine_log_error> problems;
+    std::vector<ores::reporting::service::engine_log_row> problems;
     for (int i = 0; i < 3; ++i) {
         problems.push_back({.severity = "error",
                             .scope = "Trade",
@@ -152,8 +152,6 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
 
 TEST_CASE("a log line that is neither an error nor a warning is not a problem",
           "[service][database]") {
-    auto lg(ores::logging::make_logger(test_suite));
-
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = service_report_error_counts_write_test_party_and_scope_context(h, gen);
@@ -162,7 +160,7 @@ TEST_CASE("a log line that is neither an error nor a warning is not a problem",
     // The canonical rows hold every line the engine wrote. Only the two that say
     // something went wrong belong to the run's problems.
     ores::reporting::service::report_error_recorder recorder(ctx);
-    std::vector<ores::reporting::service::engine_log_error> lines{
+    std::vector<ores::reporting::service::engine_log_row> lines{
         {.severity = "notice", .scope = "Report", .message = "building the portfolio"},
         {.severity = "info", .scope = "Report", .message = "done"},
         {.severity = "error", .scope = "Trade", .message = "did not price"}};

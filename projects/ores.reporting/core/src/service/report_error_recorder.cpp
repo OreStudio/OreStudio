@@ -150,7 +150,7 @@ report_error_recorder::report_error_recorder(ores::database::context ctx)
 
 std::string
 report_error_recorder::record_engine_errors(const std::string& report_instance_id,
-                                            const std::vector<engine_log_error>& errors) {
+                                            const std::vector<engine_log_row>& errors) {
     if (errors.empty())
         return {};
 

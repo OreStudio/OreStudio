@@ -34,7 +34,7 @@
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/results/canonical_log_reader.hpp"
 #include "ores.reporting.core/results/canonical_reader.hpp"
-#include "ores.reporting.core/service/engine_log_error.hpp"
+#include "ores.reporting.core/service/engine_log_row.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
@@ -50,7 +50,6 @@
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
-#include <span>
 #include <string_view>
 
 namespace ores::reporting::messaging {
@@ -549,16 +548,17 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     }
 }
 
-void report_execution_handler::record_run_log(const std::string& tenant_id,
-                                              const std::string& report_instance_id,
-                                              const std::string& result_id) {
+std::vector<service::engine_log_row>
+report_execution_handler::read_run_log_rows(const std::string& tenant_id,
+                                            const std::string& report_instance_id,
+                                            const std::string& result_id) {
     try {
         std::string err;
         const auto token = run_token(tenant_id, report_instance_id, err);
         if (token.empty()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "The log rows of result " << result_id << " were not read: " << err;
-            return;
+            return {};
         }
         const auto uri = ores::compute::net::compute_storage::logs_path(result_id);
         std::string bucket;
@@ -566,7 +566,7 @@ void report_execution_handler::record_run_log(const std::string& tenant_id,
         if (!ores::storage::net::storage_paths::split_object_path(uri, bucket, key)) {
             BOOST_LOG_SEV(lg(), warn)
                 << "The log rows of result " << result_id << " name no readable location: " << uri;
-            return;
+            return {};
         }
         ores::storage::net::storage_transfer transfer(http_base_url_, token);
         const auto body = transfer.download_blob(bucket, key);
@@ -581,23 +581,44 @@ void report_execution_handler::record_run_log(const std::string& tenant_id,
             }
             BOOST_LOG_SEV(lg(), warn)
                 << "The log rows of result " << result_id << " were refused: " << reasons;
-            return;
+            return {};
         }
-        if (read.rows.empty()) {
-            return;
-        }
+        return read.rows;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
+                                  << " were not read: " << e.what();
+        return {};
+    }
+}
+
+void report_execution_handler::record_run_logs(const std::string& tenant_id,
+                                               const std::string& report_instance_id,
+                                               const std::vector<std::string>& result_ids) {
+    std::vector<service::engine_log_row> rows;
+    for (const auto& result_id : result_ids) {
+        auto read = read_run_log_rows(tenant_id, report_instance_id, result_id);
+        rows.insert(rows.end(),
+                    std::make_move_iterator(read.begin()),
+                    std::make_move_iterator(read.end()));
+    }
+    if (rows.empty())
+        return;
+
+    try {
+        // One write for the run, whatever it took to read it: the recorder keeps
+        // a run's account once, and a call per result would keep only the first.
         service::report_error_recorder recorder(
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
-        const auto failure = recorder.record_engine_errors(report_instance_id, read.rows);
+        const auto failure = recorder.record_engine_errors(report_instance_id, rows);
         if (!failure.empty()) {
             BOOST_LOG_SEV(lg(), error) << failure;
             return;
         }
-        BOOST_LOG_SEV(lg(), info) << "Recorded " << read.rows.size() << " log row(s) for result "
-                                  << result_id;
+        BOOST_LOG_SEV(lg(), info) << "Recorded the log of " << result_ids.size()
+                                  << " result(s) for report instance " << report_instance_id;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "The log rows of result " << result_id
-                                  << " were not read: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "The log rows of report instance " << report_instance_id
+                                  << " were not recorded: " << e.what();
     }
 }
 
@@ -679,8 +700,8 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                     // The node uploads the log it wrote even when the engine
                     // failed, so the run's account of the failure is its own rows
                     // rather than one sentence.
-                    record_run_log(
-                        req.tenant_id, req.report_instance_id, boost::uuids::to_string(one.id));
+                    record_run_logs(
+                        req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
                     refuse(std::format("The run's compute job failed with outcome {}: {}",
                                        one.outcome,
                                        one.error_message.empty() ? "(no message)" :
@@ -886,6 +907,10 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
             }
         }
 
+        // The run's account is written before its rows are loaded, so a run whose
+        // rows are refused still states what the engine said.
+        record_run_logs(req.tenant_id, req.report_instance_id, result_ids);
+
         if (result_ids.empty()) {
             refuse("The run's compute batch names no result, so there are no rows to load.");
             return;
@@ -971,9 +996,6 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
 
         repository::report_result_row_repository repo;
         repo.insert(tenant_ctx, rows);
-
-        for (const auto& result_id : result_ids)
-            record_run_log(req.tenant_id, req.report_instance_id, result_id);
 
         post_process_results_result result;
         result.success = true;

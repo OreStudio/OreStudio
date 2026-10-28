@@ -46,6 +46,17 @@ A person reads, for each public provider, whether the data is arriving. The mark
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+* Notes
+
+Late is a fact about a schedule, and the provider model carries none today. The
+row can say the last fixing's date and when it was received, and it can say the
+adapter is not serving. It cannot say "today's fixing is late" until the
+catalogue states each publisher's expected rhythm: daily, weekly, monthly, and
+the time of day it publishes. That fact belongs on the provider record, beside
+its terms, and the run's schedule follows it. Until it exists the screen says
+"no fixing today" and names the adapter's heartbeat, rather than claiming a
+lateness it cannot compute.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

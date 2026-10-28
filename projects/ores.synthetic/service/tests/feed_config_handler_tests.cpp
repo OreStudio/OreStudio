@@ -233,8 +233,6 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         fx.process_type = "geometric";
         fx.enabled = enabled;
         fx.auto_start = false;
-        fx.vintage_source = "";
-        fx.vintage_date = "";
         fx.modified_by = db_user;
         fx.performed_by = db_user;
         fx.change_reason_code = "system.test";
@@ -289,8 +287,6 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         ir.enabled = enabled;
         ir.auto_start = false;
         ir.price_source = "fixed";
-        ir.vintage_source = "";
-        ir.vintage_date = "";
         ir.description = "feed config test IR config";
         ir.fixed_leg_payment_frequency_code = "Annual";
         ir.source_name = source_name;
@@ -447,17 +443,26 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     REQUIRE(ir_start.success);
     CHECK(ir_start.message == "Feed started: " + seeds.ir_enabled_source);
 
-    // List: one request returns every kind's running source_names.
+    // List: one request returns every kind's running feed, with where each run started.
     const auto list = send_request<list_feeds_request, list_feeds_response>(
         f.nats, test_list_subject, token, list_feeds_request{});
     REQUIRE(list.success);
-    REQUIRE(list.running_source_names.size() == 2);
-    CHECK(std::find(list.running_source_names.begin(),
-                    list.running_source_names.end(),
-                    seeds.fx_enabled_source) != list.running_source_names.end());
-    CHECK(std::find(list.running_source_names.begin(),
-                    list.running_source_names.end(),
-                    seeds.ir_enabled_source) != list.running_source_names.end());
+    REQUIRE(list.running_feeds.size() == 2);
+    const auto fx_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
+        return one.source_name == seeds.fx_enabled_source;
+    });
+    REQUIRE(fx_run != list.running_feeds.end());
+    // The FX config states a fixed price, so its run kept its level and names no fixing.
+    REQUIRE(fx_run->start.has_value());
+    CHECK_FALSE(fx_run->start->from_fixing);
+    CHECK(fx_run->start->item.empty());
+    CHECK(fx_run->start->value.empty());
+    // A curve starts from no published value, so its run carries no start.
+    const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
+        return one.source_name == seeds.ir_enabled_source;
+    });
+    REQUIRE(ir_run != list.running_feeds.end());
+    CHECK_FALSE(ir_run->start.has_value());
 
     // Stop the IR feed by config_id: the server resolves it to the
     // config's source_name.

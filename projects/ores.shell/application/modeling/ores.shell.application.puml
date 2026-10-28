@@ -205,12 +205,10 @@ namespace ores #F2F2F2 {
                     +list_feeds(ostream& out, ores::nats::service::nats_client& session) : bool
                     +process_start(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_stop(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
-                    +process_validate_vintage(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +start_folder(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
                     +start_feed(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
                     +stop_folder(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
                     +stop_feed(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
-                    +validate_vintage(ostream& out, ores::nats::service::nats_client& session, const string& token) : bool
                 }
                 class tenants_commands {
                     -lg() : auto&

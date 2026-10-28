@@ -111,8 +111,8 @@ public:
      * dataset_dependency_repository) actually take effect for a bundle publish: previously this
      * method only read direct bundle members (ores_dq_dataset_bundle_members_tbl) and never
      * consulted the dependency graph at all, so bundles whose members depended on
-     * un-declared-as-members datasets (e.g. a vintage-mode synthetic config depending on the real
-     * market data it resolves against) silently omitted them unless a bundle's own membership
+     * un-declared-as-members datasets (e.g. a dataset depending on the real market data it
+     * resolves against) silently omitted them unless a bundle's own membership
      * happened to be hand-ordered to include them too.
      *
      * @param bundle_code The bundle to query (e.g., 'base', 'crypto').

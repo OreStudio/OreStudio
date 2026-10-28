@@ -30,7 +30,6 @@
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
-#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -216,84 +215,8 @@ void ir_curve_feed::stop() {
     }
 }
 
-ORES_SYNTHETIC_API_EXPORT const ir_curve_resolved_entry*
-select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved) {
-    const ir_curve_resolved_entry* anchor = nullptr;
-    for (const auto& e : resolved) {
-        if (e.curve_role != "DEPOSIT")
-            continue;
-        if (!anchor || e.ticks_ahead_end < anchor->ticks_ahead_end)
-            anchor = &e;
-    }
-    return anchor;
-}
-
-namespace {
-std::string lowercase(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return s;
-}
-
-// Resolves initial_rate from a real market_observation when cfg.price_source is "vintage",
-// keyed on the resolved entries' shortest-tenor DEPOSIT entry rather than any one coordinate,
-// since an IR curve feed has no single scalar equivalent to FX spot (see make_ir_curve_feed's
-// own doc comment for why DEPOSIT is the anchor).
-//
-// @throws vintage_data_missing_error if there is no DEPOSIT entry to anchor on, or no matching
-// observation is found.
-double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
-                                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
-                                    const std::vector<ir_curve_resolved_entry>& resolved,
-                                    const std::string& start_date) {
-    const auto* anchor = select_vintage_anchor_entry(resolved);
-    if (!anchor) {
-        throw vintage_data_missing_error(
-            "Cannot resolve vintage initial_rate: config has no DEPOSIT entry to anchor on.");
-    }
-
-    const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
-                                 ", date=" + start_date + ", point=" + anchor->point_id + ".";
-
-    // The row the vintage is read from is the anchor pillar's own datum: the series
-    // the config names at the pillar's point. The codecs compose both, so the read
-    // and the write agree without either side decomposing the key by hand.
-    namespace datum = ores::marketdata::datum;
-    const auto series_datum = datum::oresmd_uri_codec::read(cfg.vintage_series_uri);
-    if (!series_datum || !series_datum->is_series())
-        throw vintage_data_missing_error("'" + cfg.vintage_series_uri + "' is not a series URI" +
-                                         (series_datum ? "" : ": " + series_datum.error()));
-    const auto anchor_datum = datum::datum_at_point(*series_datum, anchor->point_id);
-    if (!anchor_datum)
-        throw vintage_data_missing_error("no datum for series '" + cfg.vintage_series_uri +
-                                         "' at point '" + anchor->point_id +
-                                         "': " + anchor_datum.error());
-    const auto anchor_uri = datum::oresmd_uri_codec::write(*anchor_datum);
-    if (!anchor_uri)
-        throw vintage_data_missing_error("no URI for series '" + cfg.vintage_series_uri +
-                                         "' at point '" + anchor->point_id +
-                                         "': " + anchor_uri.error());
-
-    const auto found = find_vintage_observation(auth_nats,
-                                                {},
-                                                cfg.vintage_series_uri,
-                                                *anchor_uri,
-                                                cfg.vintage_source,
-                                                start_date,
-                                                missing_message,
-                                                cfg.vintage_series_uri,
-                                                boost::uuids::to_string(cfg.party_id));
-    if (!found)
-        throw vintage_data_missing_error(found.error());
-    return *found;
-}
-
-}
-
 std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     ores::nats::service::client& nats,
-    ores::nats::service::nats_client& auth_nats,
     const ores::synthetic::domain::ir_curve_generation_config& cfg,
     const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
     const std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
@@ -302,35 +225,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         definitions,
     const ir_curve_refdata_context& refctx,
     ores::analytics::quant::service::tick_scheduler& scheduler,
-    const ores::marketdata::domain::market_clock* clock,
     std::vector<ir_pillar_quote_target> adapter_targets) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
-
-    // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
-    // the stored value row before mapping; "fixed" (the default) uses the stored value as-is.
-    // See the field's own doc comment for the vintage semantics.
-    auto cfg_values = values;
-    if (cfg.price_source == "vintage") {
-        const auto initial_rate = resolve_vintage_initial_rate(
-            auth_nats,
-            cfg,
-            resolved,
-            ores::marketdata::domain::start_date(cfg.vintage_date, clock));
-        const auto def_it =
-            std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
-                return lowercase(d.process_type_code) == lowercase(cfg.process_type) &&
-                       d.parameter_name == "initial_rate";
-            });
-        if (def_it == definitions.end())
-            throw std::invalid_argument("make_ir_curve_feed: process type '" + cfg.process_type +
-                                        "' has no parameter definition for 'initial_rate'");
-        for (auto& v : cfg_values) {
-            if (v.parameter_definition_id == def_it->id) {
-                v.parameter_value = initial_rate;
-                break;
-            }
-        }
-    }
 
     // Read once, so the step the process is built with and the step the feed counts in agree
     // even when the speed changes while the feed is built.
@@ -340,7 +236,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
         cfg.process_type,
         definitions,
-        cfg_values,
+        values,
         price_stream_for(scheduler.run_seed(), cfg.source_name),
         step_years);
 

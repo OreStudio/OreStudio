@@ -49,6 +49,7 @@
 \ir ./dq_ir_curve_template_entries_artefact_drop.sql
 \ir ./dq_ir_curve_generation_configs_artefact_drop.sql
 \ir ./dq_gmm_components_artefact_drop.sql
+\ir ./dq_fx_spot_fixing_items_artefact_drop.sql
 \ir ./dq_fx_spot_generation_configs_artefact_drop.sql
 \ir ./dq_market_data_providers_artefact_drop.sql
 \ir ./dq_market_observations_artefact_drop.sql

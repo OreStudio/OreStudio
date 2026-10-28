@@ -53,7 +53,7 @@ const ROLES = ['self_discounting', 'discount', 'projection'];
  */
 const ARRIVAL_MODES = ['periodic'] as const;
 
-const PRICE_SOURCES = ['fixed', 'vintage'];
+const PRICE_SOURCES = ['fixed'];
 
 /** Whether the family chosen in the form is an index with a term. */
 const isTerm = (values: FieldValues): boolean =>
@@ -179,25 +179,6 @@ const IR_FIELDS: readonly FieldSpec[] = [
         help: 'marketdata.irFeeds.help.price_source',
     },
     {
-        field: 'vintage_source',
-        history: 'Vintage Source',
-        kind: { kind: 'text', max: 200 },
-        when: (values) => values['price_source'] === 'vintage',
-    },
-    {
-        field: 'vintage_date',
-        history: 'Vintage Date',
-        kind: { kind: 'date' },
-        when: (values) => values['price_source'] === 'vintage',
-    },
-    {
-        field: 'vintage_series_uri',
-        history: 'Vintage Series Uri',
-        kind: { kind: 'text', max: 2000 },
-        blank: true,
-        when: (values) => values['price_source'] === 'vintage',
-    },
-    {
         field: 'enabled',
         history: 'Enabled',
         kind: { kind: 'bool' },
@@ -230,9 +211,6 @@ const IR_WRITE_FIELDS = [
     'enabled',
     'auto_start',
     'price_source',
-    'vintage_source',
-    'vintage_date',
-    'vintage_series_uri',
     'description',
     'fixed_leg_payment_frequency_code',
     'source_name',
@@ -257,7 +235,6 @@ const NEW_IR_FEED: FieldValues = {
     process_type: 'VASICEK',
     ticks_per_hour: '3600',
     price_source: 'fixed',
-    vintage_series_uri: '',
     description: '',
     enabled: 'false',
     auto_start: 'false',

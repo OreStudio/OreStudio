@@ -354,8 +354,6 @@ begin
                 a.enabled,
                 a.auto_start,
                 a.price_source,
-                a.vintage_source,
-                a.vintage_date,
                 a.provider_code
             from ores_dq_fx_spot_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
@@ -380,7 +378,7 @@ begin
                 tenant_id, id, version, party_id, config_id, folder_id,
                 base_currency_code, quote_currency_code,
                 source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
-                enabled, auto_start, vintage_source, vintage_date,
+                enabled, auto_start,
                 asset_class_code,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
@@ -403,16 +401,13 @@ begin
                 -- the same way.
                 'oresmd://fx/' || r.base_currency_code ||
                     '?type=quote&instrument=fx_spot&quote=rate&ccy=' || r.quote_currency_code,
-                -- price_source/vintage_source/vintage_date are per-row artefact
-                -- columns now — each dataset carries its own vintage tag; 'fixed'
-                -- rows fall back to the artefact's own gmm_initial_price instead
-                -- of a vintage lookup.
+                -- A fixed feed starts from gmm_initial_price; a fixing feed keeps it
+                -- as the level it falls back to when no item has a fixing.
                 r.price_source,
-                case when r.price_source = 'fixed' then r.gmm_initial_price else 0 end,
+                r.gmm_initial_price,
                 r.ticks_per_hour, r.process_type,
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),
-                coalesce(r.vintage_source, ''), coalesce(r.vintage_date, ''),
                 'fx',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
@@ -543,6 +538,61 @@ begin
                        and existing_gmm.valid_to = ores_utility_infinity_timestamp_fn();
                 end if;
             end if;
+
+            -- The fixings a config may start from are a complete set per (pair, dataset),
+            -- as its components are: an item this dataset no longer ranks is voided.
+            update ores_synthetic_fx_spot_fixing_items_tbl existing
+            set valid_to = clock_timestamp()
+            where existing.tenant_id = p_target_tenant_id
+              and existing.fx_spot_config_id = v_fx_config_id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and existing.rank not in (
+                  select f.rank
+                  from ores_dq_fx_spot_fixing_items_artefact_tbl f
+                  where f.dataset_id = p_dataset_id
+                    and f.base_currency_code = r.base_currency_code
+                    and f.quote_currency_code = r.quote_currency_code
+              );
+
+            for gr in
+                select f.rank, f.item, coalesce(f.provider_code, '') as provider_code,
+                       f.policy, f.window_days
+                from ores_dq_fx_spot_fixing_items_artefact_tbl f
+                where f.dataset_id = p_dataset_id
+                  and f.base_currency_code = r.base_currency_code
+                  and f.quote_currency_code = r.quote_currency_code
+                order by f.rank
+            loop
+                select exists (
+                    select 1 from ores_synthetic_fx_spot_fixing_items_tbl existing
+                    where existing.tenant_id = p_target_tenant_id
+                      and existing.fx_spot_config_id = v_fx_config_id
+                      and existing.rank = gr.rank
+                      and existing.valid_to = ores_utility_infinity_timestamp_fn()
+                ) into v_exists;
+
+                if not (p_mode = 'insert_only' and v_exists) then
+                    insert into ores_synthetic_fx_spot_fixing_items_tbl (
+                        tenant_id, id, version, party_id, fx_spot_config_id, rank,
+                        item, provider_code, policy, window_days,
+                        modified_by, performed_by, change_reason_code, change_commentary
+                    )
+                    select
+                        p_target_tenant_id,
+                        coalesce(existing_item.id, gen_random_uuid()),
+                        coalesce(existing_item.version, 0),
+                        v_party_id, v_fx_config_id, gr.rank,
+                        gr.item, gr.provider_code, gr.policy, gr.window_days,
+                        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                        'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+                    from (select 1) as _dummy3
+                    left join ores_synthetic_fx_spot_fixing_items_tbl existing_item
+                        on existing_item.tenant_id = p_target_tenant_id
+                       and existing_item.fx_spot_config_id = v_fx_config_id
+                       and existing_item.rank = gr.rank
+                       and existing_item.valid_to = ores_utility_infinity_timestamp_fn();
+                end if;
+            end loop;
         end loop;
     end if;
 
@@ -608,9 +658,6 @@ begin
                 a.auto_start,
                 a.description,
                 a.price_source,
-                coalesce(a.vintage_source, '') as vintage_source,
-                coalesce(a.vintage_date, '') as vintage_date,
-                coalesce(a.vintage_series_uri, '') as vintage_series_uri,
                 a.provider_code
             from ores_dq_ir_curve_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
@@ -638,7 +685,7 @@ begin
                 ticks_per_hour, enabled,
                 auto_start, description,
                 fixed_leg_payment_frequency_code, source_name,
-                price_source, vintage_source, vintage_date, vintage_series_uri,
+                price_source,
                 asset_class_code,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
@@ -660,7 +707,7 @@ begin
                     coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) || '.' ||
                     lower(r.currency_code) || lower(r.index_family) ||
                     lower(replace(r.tenor, ' ', '')),
-                r.price_source, r.vintage_source, r.vintage_date, r.vintage_series_uri,
+                r.price_source,
                 'interest_rates',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name

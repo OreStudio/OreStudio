@@ -160,6 +160,7 @@ package "inbox" #FCE4EC {
         * name : text
         * description : text
         * decide_permission_code : text <<FK>>
+          raise_permission_code : text <<FK>>
         * allows_hold : boolean
         * comment_on_approve : boolean
           expires_after_days : integer

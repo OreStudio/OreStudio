@@ -639,14 +639,37 @@ const folderFeedSchema = z.object({
 export type FolderFeed = z.infer<typeof folderFeedSchema>;
 
 /**
+ * Where a feed's starting value came from: the fixing the run took, or the level
+ * it kept. The service reads it when it builds the generator, so it names this
+ * run's value and not the one a later run would take.
+ */
+export const feedStartSchema = z.object({
+    from_fixing: z.boolean(),
+    item: z.string(),
+    provider_code: z.string(),
+    vendor_id: z.string(),
+    value: z.string(),
+    inverted: z.boolean(),
+    fixing_date: z.string().nullish(),
+    received_at: z.string().nullish(),
+    window_days: z.int(),
+    used: z.int(),
+    hourly_spread: z.number().nullish(),
+    note: z.string(),
+});
+
+export type FeedStart = z.infer<typeof feedStartSchema>;
+
+/**
  * One feed as its page reads it: the record, with the provider of the collection
- * it sits under and whether its generator runs. The feed's own record names no
- * provider and no run.
+ * it sits under, whether its generator runs and where the run started. The feed's
+ * own record names no provider, no run and no start.
  */
 export const feedRecordSchema = z.looseObject({
     version: z.int().nonnegative(),
     provider_code: z.string(),
     running: z.boolean(),
+    start: feedStartSchema.nullish(),
 });
 
 export type FeedRecord = z.infer<typeof feedRecordSchema>;

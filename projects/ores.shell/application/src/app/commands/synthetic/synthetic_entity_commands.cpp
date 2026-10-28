@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/synthetic/synthetic_entity_commands.hpp"
 #include "ores.shell/app/commands/synthetic/folder_commands.hpp"
+#include "ores.shell/app/commands/synthetic/fx_spot_fixing_item_commands.hpp"
 #include "ores.shell/app/commands/synthetic/fx_spot_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/gmm_component_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_commands.hpp"
@@ -45,6 +46,7 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     folder_commands::register_commands(root_menu, session);
     fx_spot_generation_config_commands::register_commands(root_menu, session);
     gmm_component_commands::register_commands(root_menu, session);
+    fx_spot_fixing_item_commands::register_commands(root_menu, session);
     ir_curve_generation_config_commands::register_commands(root_menu, session);
     ir_curve_template_entry_commands::register_commands(root_menu, session);
     ir_curve_generation_config_process_parameter_value_commands::register_commands(root_menu,

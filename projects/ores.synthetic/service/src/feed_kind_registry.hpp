@@ -45,26 +45,6 @@
 namespace ores::synthetic::service {
 
 /**
- * @brief The one market_observation row a kind's vintage check turns on.
- *
- * A kind resolves the coordinate while it still holds its own typed rows; the
- * shared check is the only reader, so no per-kind function survives into the
- * check itself.
- */
-struct feed_vintage_anchor final {
-    /** The row's price_source is "vintage"; false makes the check inapplicable. */
-    bool applicable = false;
-    std::string source;
-    std::string date;
-    std::string series_uri;
-    std::string datum_uri;
-    /** Party scope for the series lookup; empty means unscoped (FX). */
-    std::string party_id;
-    /** Non-empty: the anchor could not be derived. Applicable, and invalid. */
-    std::string error;
-};
-
-/**
  * @brief One kind's answer to "build this row's factory input", or why not.
  */
 struct feed_build_outcome final {
@@ -86,8 +66,6 @@ struct feed_kind_candidate final {
     std::string display_name;
     bool enabled = false;
     bool auto_start = false;
-    /** The feed starts from a vintage price, so its start reads marketdata. */
-    bool vintage_priced = false;
     std::optional<boost::uuids::uuid> folder_id;
     /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
     std::optional<std::pair<std::string, std::string>> fx_pair;
@@ -99,8 +77,6 @@ struct feed_kind_candidate final {
      */
     std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars;
 
-    /** Built lazily: only the vintage verb reads it. */
-    std::function<feed_vintage_anchor()> vintage_anchor;
     /** Built lazily: only the start, folder-start and auto-start verbs read it. */
     std::function<feed_build_outcome()> build_input;
 };
@@ -312,11 +288,6 @@ public:
                             const ores::nats::message& msg,
                             const std::string& kind) const;
 
-    /** One validity entry per config row of every kind. */
-    [[nodiscard]] std::vector<ores::marketdata::messaging::vintage_validity_entry>
-    vintage_validity(const ores::database::context& ctx,
-                     ores::nats::service::nats_client& auth_nats,
-                     const std::string& caller_bearer_token) const;
 
 private:
     [[nodiscard]] std::optional<feed_start_target>
@@ -324,10 +295,6 @@ private:
                 feed_kind_candidate c,
                 const std::map<boost::uuids::uuid, domain::market_data_generation_config>*
                     containers_by_id) const;
-    [[nodiscard]] ores::marketdata::messaging::vintage_validity_entry
-    check_vintage(const feed_kind_row& row,
-                  ores::nats::service::nats_client& auth_nats,
-                  const std::string& caller_bearer_token) const;
 
     deps deps_;
     std::map<std::string, feed_kind> kinds_;

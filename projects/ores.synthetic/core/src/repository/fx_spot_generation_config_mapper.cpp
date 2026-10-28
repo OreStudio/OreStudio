@@ -66,8 +66,6 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.process_type = v.process_type;
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
-    r.vintage_source = v.vintage_source;
-    r.vintage_date = v.vintage_date;
     r.folder_id = v.folder_id.has_value() ?
                       std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.folder_id)) :
                       std::nullopt;
@@ -112,8 +110,6 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.process_type = v.process_type;
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
-    r.vintage_source = v.vintage_source;
-    r.vintage_date = v.vintage_date;
     r.folder_id = v.folder_id.has_value() ? std::optional(boost::uuids::to_string(*v.folder_id)) :
                                             std::nullopt;
     r.asset_class_code = v.asset_class_code;

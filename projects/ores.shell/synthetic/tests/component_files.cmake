@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "folder_commands_tests.cpp"
+    "fx_spot_fixing_item_commands_tests.cpp"
     "fx_spot_generation_config_commands_tests.cpp"
     "gmm_component_commands_tests.cpp"
     "ir_curve_generation_config_commands_tests.cpp"

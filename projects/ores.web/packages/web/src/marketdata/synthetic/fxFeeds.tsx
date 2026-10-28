@@ -37,12 +37,12 @@ const FEEDS = 'fx-feeds';
 const PROCESS_TYPES = ['geometric', 'arithmetic', 'ornstein_uhlenbeck'];
 const ARRIVAL_MODES = ['periodic', 'poisson', 'hawkes'] as const;
 
-const PRICE_SOURCES = ['fixed', 'vintage'];
+const PRICE_SOURCES = ['fixed', 'fixing'];
 
 /**
  * The feed's own fields. The ORE key is derived from the pair and is not asked
- * for; the initial price is asked for only when the price is fixed, and the
- * vintage only when the price comes from one.
+ * for. The initial price is the price a fixed feed starts from, and the level a
+ * fixing feed keeps when no public source fixes its pair.
  */
 const FEED_FIELDS: readonly FieldSpec[] = [
     {
@@ -123,19 +123,6 @@ const FEED_FIELDS: readonly FieldSpec[] = [
         field: 'gmm_initial_price',
         history: 'Gmm Initial Price',
         kind: { kind: 'decimal', positive: true },
-        when: (values) => values['price_source'] === 'fixed',
-    },
-    {
-        field: 'vintage_source',
-        history: 'Vintage Source',
-        kind: { kind: 'text', max: 200 },
-        when: (values) => values['price_source'] === 'vintage',
-    },
-    {
-        field: 'vintage_date',
-        history: 'Vintage Date',
-        kind: { kind: 'date' },
-        when: (values) => values['price_source'] === 'vintage',
     },
     {
         field: 'enabled',
@@ -174,8 +161,6 @@ const FEED_WRITE_FIELDS = [
     'process_type',
     'enabled',
     'auto_start',
-    'vintage_source',
-    'vintage_date',
     'folder_id',
 ] as const;
 
@@ -231,21 +216,16 @@ export function syntheticSource(given: string, base: string, quote: string): str
 }
 
 /**
- * The fields that follow from the others: the oresmd URI from the pair, a source
- * name under the synthetic mark, from the pair when none is given, and the price
- * fields the source does not use emptied, as the table requires.
+ * The fields that follow from the others: the oresmd URI from the pair, and a
+ * source name under the synthetic mark, from the pair when none is given.
  */
 export function completeFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
     const base = show(write['base_currency_code']);
     const quote = show(write['quote_currency_code']);
-    const fixed = write['price_source'] === 'fixed';
     return {
         ...write,
         oresmd_uri: `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`,
         source_name: syntheticSource(show(write['source_name']), base, quote),
-        gmm_initial_price: fixed ? write['gmm_initial_price'] : 0,
-        vintage_source: fixed ? '' : write['vintage_source'],
-        vintage_date: fixed ? '' : write['vintage_date'],
     };
 }
 

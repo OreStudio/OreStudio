@@ -4354,8 +4354,6 @@ export const en: SourceCatalogue = {
             ticks_per_hour: 'Ticks per hour',
             price_source: 'Initial price from',
             gmm_initial_price: 'Initial price',
-            vintage_source: 'Vintage source',
-            vintage_date: 'Vintage date',
             enabled: 'Enabled',
             auto_start: 'Starts with the service',
             mean: 'Mean (μ)',
@@ -4365,7 +4363,6 @@ export const en: SourceCatalogue = {
             index_family: 'Index name',
             tenor: 'Tenor',
             role: 'Role',
-            vintage_series_uri: 'Vintage series',
             sequence_index: 'Sequence',
             fixed_leg_payment_frequency_code: 'Fixed leg frequency',
             start_tenor_code: 'Start tenor',
@@ -4435,7 +4432,7 @@ export const en: SourceCatalogue = {
             },
             price_source: {
                 fixed: 'A fixed price',
-                vintage: 'A market data vintage',
+                fixing: 'The newest public fixing',
             },
             kind: {
                 fixed_date: 'Fixed date',
@@ -5519,11 +5516,22 @@ export const en: SourceCatalogue = {
                     'How strongly a market-wide regime moves this pair, where one is the average. It does nothing until the market regime lands.',
                 price_source: {
                     fixed: 'The feed starts from the initial price you give.',
-                    vintage:
-                        'The feed starts from the price an imported market data vintage holds for the pair.',
+                    fixing: 'The feed starts from the newest public fixing of the pair and takes its volatility from the fixings; without one it keeps the initial price.',
                 },
                 enabled: 'A feed that is not enabled cannot start.',
                 auto_start: 'The feed starts when the synthetic service starts.',
+            },
+            start: {
+                title: 'Where this run started',
+                fromFixing:
+                    'Started from the {provider} fixing of {value} on {date}, received {received}.',
+                dateUnknown: 'an unknown date',
+                receivedUnknown: 'at an unknown time',
+                fixedLevel:
+                    'No published fixing set the level, so the run kept its configured level.',
+                inverted:
+                    'The item quotes the pair the other way round, so its value was read as one over it.',
+                window: '{used} fixings over {days} days measured its spread.',
             },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
@@ -5630,8 +5638,6 @@ export const en: SourceCatalogue = {
                     'How strongly a market-wide regime moves this curve, where one is the average. It does nothing until the market regime lands.',
                 price_source: {
                     fixed: 'The curve starts from the rate you give on the Process tab.',
-                    vintage:
-                        'The curve starts from the rate an imported market data vintage holds for the currency and index.',
                 },
                 enabled: 'A feed that is not enabled cannot start.',
                 auto_start: 'The feed starts when the synthetic service starts.',

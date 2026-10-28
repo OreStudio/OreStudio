@@ -25,4 +25,8 @@ i_feed::i_feed() = default;
 
 i_feed::~i_feed() = default;
 
+std::optional<feed_start> i_feed::start_source() const {
+    return std::nullopt;
+}
+
 }

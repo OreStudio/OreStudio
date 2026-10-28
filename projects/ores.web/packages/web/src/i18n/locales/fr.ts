@@ -4417,8 +4417,6 @@ const fr: SourceCatalogue = {
             ticks_per_hour: 'Ticks par heure',
             price_source: 'Prix initial depuis',
             gmm_initial_price: 'Prix initial',
-            vintage_source: 'Source du millésime',
-            vintage_date: 'Date du millésime',
             enabled: 'Activé',
             auto_start: 'Démarre avec le service',
             mean: 'Moyenne (μ)',
@@ -4428,7 +4426,6 @@ const fr: SourceCatalogue = {
             index_family: "Nom de l'indice",
             tenor: 'Durée',
             role: 'Rôle',
-            vintage_series_uri: 'Série du millésime',
             sequence_index: 'Ordre',
             fixed_leg_payment_frequency_code: 'Fréquence de la jambe fixe',
             start_tenor_code: 'Durée de départ',
@@ -4501,7 +4498,7 @@ const fr: SourceCatalogue = {
             },
             price_source: {
                 fixed: 'Un prix fixe',
-                vintage: 'Un millésime de données de marché',
+                fixing: 'Le fixing public le plus récent',
             },
             kind: {
                 fixed_date: 'Date fixe',
@@ -5597,11 +5594,21 @@ const fr: SourceCatalogue = {
                     'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
                     fixed: 'Le flux part du prix initial que vous donnez.',
-                    vintage:
-                        "Le flux part du prix qu'un millésime de données de marché importé contient pour la paire.",
+                    fixing: 'Le flux part du fixing public le plus récent de la paire et en tire sa volatilité ; sans fixing, il garde le prix initial.',
                 },
                 enabled: 'Un flux non activé ne peut pas démarrer.',
                 auto_start: 'Le flux démarre quand le service synthétique démarre.',
+            },
+            start: {
+                title: "D'où part cette exécution",
+                fromFixing: 'Parti du fixing {provider} de {value} du {date}, reçu le {received}.',
+                dateUnknown: 'une date inconnue',
+                receivedUnknown: 'à une heure inconnue',
+                fixedLevel:
+                    "Aucun fixing publié n'a fixé le niveau, donc l'exécution a gardé son niveau configuré.",
+                inverted:
+                    "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
+                window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
             },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
@@ -5715,8 +5722,6 @@ const fr: SourceCatalogue = {
                     'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
                     fixed: "La courbe part du taux donné dans l'onglet Processus.",
-                    vintage:
-                        "La courbe part du taux qu'un millésime de données de marché importé donne pour la devise et l'indice.",
                 },
                 enabled: "Un flux qui n'est pas activé ne peut pas démarrer.",
                 auto_start: 'Le flux démarre avec le service synthétique.',

@@ -23,7 +23,9 @@
 #include "generator_runner.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "running_set.hpp"
+#include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -55,6 +57,24 @@ public:
     /** The source names of the feeds the service runs now. */
     [[nodiscard]] std::vector<std::string> running_source_names() const {
         return names_.names();
+    }
+
+    /**
+     * @brief The feeds the service runs now, each with where its run started.
+     *
+     * The runs of every runner are read once each, and no source name runs in two
+     * runners, so a feed appears once. The answer is in source name order.
+     */
+    [[nodiscard]] std::vector<running_feed_start> running_feeds() const {
+        auto out = manual_.running_feeds();
+        for (const auto* runner : attached()) {
+            auto more = runner->running_feeds();
+            out.insert(out.end(),
+                       std::make_move_iterator(more.begin()),
+                       std::make_move_iterator(more.end()));
+        }
+        std::ranges::sort(out, {}, &running_feed_start::source_name);
+        return out;
     }
 
     /** How many feeds the service runs now. */

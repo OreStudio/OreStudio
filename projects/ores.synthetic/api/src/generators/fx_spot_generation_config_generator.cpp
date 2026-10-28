@@ -53,14 +53,12 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.quote_currency_code = std::string("USD") + "-" + std::to_string(idx);
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.oresmd_uri = std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
-    r.price_source = std::string("vintage");
-    r.gmm_initial_price = 0.0;
+    r.price_source = std::string("fixed");
+    r.gmm_initial_price = faker::number::decimal(0.5, 2.0);
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.process_type = std::string("geometric");
     r.enabled = faker::datatype::boolean();
     r.auto_start = faker::datatype::boolean();
-    r.vintage_source = std::string("ore.reference");
-    r.vintage_date = std::string("2016-02-05");
     r.folder_id = std::nullopt;
     r.asset_class_code = std::string("fx");
     r.arrival_mode = std::string("periodic");

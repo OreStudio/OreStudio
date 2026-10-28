@@ -66,9 +66,6 @@ struct ir_curve_generation_config_entity {
     bool enabled = false;
     bool auto_start = false;
     std::string price_source = "fixed";
-    std::string vintage_source;
-    std::string vintage_date;
-    std::string vintage_series_uri;
     std::optional<std::string> description;
     std::string fixed_leg_payment_frequency_code = "Annual";
     std::string source_name;
@@ -104,9 +101,6 @@ struct ir_curve_generation_config_entity {
                query_builder::bind("enabled", &e::enabled) |
                query_builder::bind("auto_start", &e::auto_start) |
                query_builder::bind("price_source", &e::price_source) |
-               query_builder::bind("vintage_source", &e::vintage_source) |
-               query_builder::bind("vintage_date", &e::vintage_date) |
-               query_builder::bind("vintage_series_uri", &e::vintage_series_uri) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("fixed_leg_payment_frequency_code",
                                    &e::fixed_leg_payment_frequency_code) |

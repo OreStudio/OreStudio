@@ -77,22 +77,6 @@ private:
     std::chrono::sys_days day_;
 };
 
-/**
- * @brief The date a feed starts from.
- *
- * A config that names a date keeps it. A config that names none starts from the date of the
- * clock, which every feed shares.
- */
-[[nodiscard]] inline std::string start_date(const std::string& configured,
-                                            const market_clock& clock) {
-    return configured.empty() ? clock.today_text() : configured;
-}
-
-/// The same, for a clock that may be absent: no clock (a null pointer) means the system clock.
-[[nodiscard]] inline std::string start_date(const std::string& configured,
-                                            const market_clock* clock) {
-    return clock ? start_date(configured, *clock) : start_date(configured, system_market_clock{});
-}
 
 }
 

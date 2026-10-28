@@ -65,7 +65,7 @@ inline ores::analytics::quant::math::rng_stream price_stream_for(std::uint64_t r
  */
 struct feed_build_context final {
     ores::nats::service::client& nats;
-    /// The service's own identity. A vintage lookup runs as the system tenant through it.
+    /// The service's own identity. A feed reads its fixings as the system tenant through it.
     ores::nats::service::nats_client& auth_nats;
     /// The clock every feed asks for the date it starts from, so no two feeds start from two days.
     std::shared_ptr<const ores::marketdata::domain::market_clock> clock =
@@ -96,6 +96,8 @@ struct fx_spot_feed_build_input final {
     std::vector<ores::synthetic::domain::gmm_component> components;
     /// Set when the generator serves an adapter: the vendor id it quotes and the subject it uses.
     std::optional<adapter_target> adapter;
+    /// The fixings a config whose price source is "fixing" may start from, in any order.
+    std::vector<ores::synthetic::domain::fx_spot_fixing_item> fixing_items;
 };
 
 /**

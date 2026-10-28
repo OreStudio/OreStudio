@@ -64,27 +64,14 @@ describe('the fields a curve derives', () => {
         ...SOFR,
         source_name: '',
         price_source: 'fixed',
-        vintage_source: 'x',
-        vintage_date: 'y',
-        vintage_series_uri: 'z',
     };
 
-    it('derives a source name and empties the vintage of a fixed price', () => {
-        const done = completeIrFeed(base);
-        expect(done['source_name']).toBe('synthetic.usdsofr');
-        expect(done['vintage_source']).toBe('');
-        expect(done['vintage_date']).toBe('');
-        expect(done['vintage_series_uri']).toBe('');
+    it('derives a source name', () => {
+        expect(completeIrFeed(base)['source_name']).toBe('synthetic.usdsofr');
     });
 
-    it('keeps a source name that is given and the vintage of a vintage price', () => {
-        const done = completeIrFeed({
-            ...base,
-            source_name: 'mine',
-            price_source: 'vintage',
-        });
-        expect(done['source_name']).toBe('mine');
-        expect(done['vintage_source']).toBe('x');
+    it('keeps a source name that is given', () => {
+        expect(completeIrFeed({ ...base, source_name: 'mine' })['source_name']).toBe('mine');
     });
 
     it('keeps the tenor of a term index and of the FOMC variant, and drops any other', () => {

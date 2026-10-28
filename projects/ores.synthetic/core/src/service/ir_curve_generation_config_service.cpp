@@ -114,9 +114,6 @@ ir_curve_generation_config_to_domain(const messaging::ir_curve_generation_config
     v.enabled = write.enabled;
     v.auto_start = write.auto_start;
     v.price_source = write.price_source;
-    v.vintage_source = write.vintage_source;
-    v.vintage_date = write.vintage_date;
-    v.vintage_series_uri = write.vintage_series_uri;
     v.description = write.description;
     v.fixed_leg_payment_frequency_code = write.fixed_leg_payment_frequency_code;
     v.source_name = write.source_name;

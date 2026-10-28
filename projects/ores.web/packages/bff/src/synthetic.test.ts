@@ -344,7 +344,7 @@ describe('synthetic resource routes', () => {
                 result: ok,
                 market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'bloomberg' }],
             },
-            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/key/${ID}`);
         expect(response.statusCode).toBe(200);
@@ -368,7 +368,7 @@ describe('synthetic resource routes', () => {
             },
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.usdsofr'],
+                running_feeds: [{ source_name: 'live.usdsofr' }],
             },
         });
         const response = await send(
@@ -383,8 +383,45 @@ describe('synthetic resource routes', () => {
             source_name: 'live.usdsofr',
             provider_code: 'lseg',
             running: true,
+            start: null,
         });
         expect(calls[1]?.body).toMatchObject({ filter: { id_one_of: [COLLECTION_ID] } });
+    });
+
+    it('names the fixing a feed run started from, with the provider and the times', async () => {
+        const start = {
+            from_fixing: true,
+            item: 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD',
+            provider_code: 'ecb',
+            vendor_id: 'EUR',
+            value: '1.15',
+            inverted: false,
+            fixing_date: '2026-10-27',
+            received_at: '2026-10-27 16:05:00.000000Z',
+            window_days: 400,
+            used: 261,
+            hourly_spread: 0.0004,
+            note: '',
+        };
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_spot_generation_configs.list': {
+                result: ok,
+                fx_spot_generation_configs: [
+                    { id: ID, config_id: COLLECTION_ID, source_name: 'synthetic.bloomberg.eurusd' },
+                ],
+            },
+            'synthetic.v1.market_data_generation_configs.list': {
+                result: ok,
+                market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'bloomberg' }],
+            },
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_feeds: [{ source_name: 'synthetic.bloomberg.eurusd', start }],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/key/${ID}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.json().row).toMatchObject({ running: true, start });
     });
 
     it('reads a row that is not a feed without a provider, since only a feed sits under a collection', async () => {
@@ -649,7 +686,7 @@ describe('synthetic operations', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.eurusd'],
+                running_feeds: [{ source_name: 'live.eurusd' }],
             },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
@@ -684,7 +721,7 @@ describe('synthetic operations', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.eurusd'],
+                running_feeds: [{ source_name: 'live.eurusd' }],
             },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
@@ -696,14 +733,14 @@ describe('synthetic operations', () => {
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
 
-        replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
+        replies['synthetic.v1.feed_configs.list'] = { success: true, running_feeds: [] };
         const read = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         expect(read.json().ticks).toEqual([{ at: '2026-10-11 09:00:00Z', value: 1.1, uri: '' }]);
     });
 
     it('watches the source as soon as a read asks for it', async () => {
         const { server, sessionId, publish } = buildTestServer({
-            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
                 fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
@@ -735,7 +772,7 @@ describe('synthetic operations', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.usdsofr'],
+                running_feeds: [{ source_name: 'live.usdsofr' }],
             },
             'synthetic.v1.ir_curve_generation_configs.list': {
                 result: ok,
@@ -783,7 +820,7 @@ describe('synthetic operations', () => {
 
     it('reads a curve feed for a person who may read curve feeds and not FX feeds', async () => {
         const { server, sessionId } = buildTestServer({
-            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: { outcome: 'permission_denied', message: 'No FX feeds for you.' },
             },
@@ -877,18 +914,6 @@ describe('synthetic operations', () => {
             `/api/synthetic/folders/${COLLECTION}/stop`,
         );
         expect(response.json()).toMatchObject({ stopped: 4, byKind: { fx: 4 } });
-    });
-
-    it('reads the vintage validity', async () => {
-        const { server, sessionId } = buildTestServer({
-            'marketdata.v1.ops.get_vintage_validity': {
-                success: true,
-                message: '',
-                entries: [{ vintage_source: 'ecb' }],
-            },
-        });
-        const response = await send(server, sessionId, 'GET', '/api/synthetic/vintages');
-        expect(response.json().entries).toHaveLength(1);
     });
 
     it('simulates FX paths from the mixture on the screen', async () => {
@@ -1053,7 +1078,7 @@ describe('synthetic operations', () => {
             },
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['synthetic.bloomberg.eurusd'],
+                running_feeds: [{ source_name: 'synthetic.bloomberg.eurusd' }],
             },
         });
         const response = await send(
@@ -1090,7 +1115,7 @@ describe('synthetic operations', () => {
                 total: 0,
                 feeds: [],
             },
-            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
         });
         const response = await send(
             server,
@@ -1110,7 +1135,7 @@ describe('synthetic operations', () => {
                 total: 0,
                 feeds: [],
             },
-            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/folder-feeds');
         expect(response.statusCode).toBe(200);

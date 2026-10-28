@@ -29,6 +29,8 @@
 \ir ./synthetic_fx_spot_generation_configs_notify_trigger_create.sql
 \ir ./synthetic_gmm_components_create.sql
 \ir ./synthetic_gmm_components_notify_trigger_create.sql
+\ir ./synthetic_fx_spot_fixing_items_create.sql
+\ir ./synthetic_fx_spot_fixing_items_notify_trigger_create.sql
 
 -- IR curve generation: yield_curve_process_types before the config that
 -- FK-validates against it; parameter definitions after the process types

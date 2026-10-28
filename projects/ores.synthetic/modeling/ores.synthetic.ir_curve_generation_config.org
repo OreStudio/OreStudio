@@ -137,8 +137,7 @@ has its own natural key and does not collide with the standard curve's
 empty-tenor row. Other overnight families must
 leave =tenor= empty: no =tenor_resolution= meeting-dated pillar
 machinery exists for them. Empty string, not SQL NULL: the
-codegen used here has no true-nullable text support, same pattern as
-=vintage_source=/=vintage_date=. Not DB-FK-validated against =tenor=,
+codegen used here has no true-nullable text support. Not DB-FK-validated against =tenor=,
 matching the precedent set by =ir_curve_template_entry='s own
 =start_tenor_code=/=end_tenor_code= (also soft FKs to =tenor.code=,
 resolved only at the application layer via
@@ -265,84 +264,13 @@ faker::datatype::boolean()
 :default_value: "fixed"
 :END:
 
-Where this curve's starting short rate comes from: "fixed" (use the
-=initial_rate= parameter value as entered in the parameter rows) or
-"vintage" (derive it from the =vintage_source=/=vintage_date=
-market-data observation on this config's shortest-tenor DEPO entry,
-guarded by availability). The =vintage_source=/=vintage_date= pair is
-populated only when this is "vintage" -- see the SQL check. Unlike
-=fx_spot_generation_config.price_source=, this check does not sentinel
-=initial_rate= to a fixed value when "vintage": real short rates can
-legitimately be zero or negative (unlike an FX spot price), so
-=initial_rate= is simply left at whatever was last stored/computed and
-overwritten by the resolved vintage value at feed-start time. Defaults
-to "fixed" (unlike =fx_spot_generation_config.price_source=, which
-defaults to "vintage"): existing IR curve configs migrated from the
-flat-column era all predate vintage-awareness, so "fixed" is the
-non-breaking default for this column's introduction.
+Where this curve's starting short rate comes from. The one source is
+"fixed": the =initial_rate= parameter value as entered in the parameter
+rows. No public source fixes rates curves yet; when one does, the curve
+reads it as an FX feed reads its fixings, and this column names it.
 
 #+begin_src cpp :name generator
 std::string("fixed")
-#+end_src
-
-** vintage_source
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Source tag of the market-data vintage this curve's starting short rate
-and availability guard are validated against (e.g. "ore.reference"),
-matching =market_observation.source=. Only populated (and required)
-when =price_source= is "vintage"; empty when "fixed" -- see
-=price_source=. (Empty string, not SQL NULL: the codegen used here
-has no true-nullable text support.)
-
-#+begin_src cpp :name generator
-std::string("")
-#+end_src
-
-** vintage_date
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Observation date of the market-data vintage this curve's starting
-short rate and availability guard are validated against, ISO format
-(e.g. "2016-02-05"), matching
-=market_observation.observation_datetime=. Only populated (and
-required) when =price_source= is "vintage"; empty when "fixed" -- see
-=price_source=.
-
-#+begin_src cpp :name generator
-std::string("")
-#+end_src
-
-** vintage_series_uri
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Identity of the market-data series this curve's vintage observation is
-read from, as an oresmd URI (e.g.
-"oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D"). Only
-populated (and required) when =price_source= is "vintage"; empty when
-"fixed" -- see =price_source=.
-
-The series is named by the config rather than looked up by the
-registry's decomposition of its key: the dataset that publishes the
-vintage -- the IR deposit grid or the FX driver rates -- names its rows'
-own ORE keys, and a series' identity is what the catalog is keyed by, so
-the config is where the coupling belongs. =vintage_source= and
-=vintage_date= say which observation, this says which series.
-
-#+begin_src cpp :name generator
-std::string("")
 #+end_src
 
 ** description
@@ -353,7 +281,7 @@ std::string("")
 :END:
 
 Free-text description of what this configuration represents -- what
-regime/vintage/index it targets, and, for a legacy index (e.g. USD
+regime/index it targets, and, for a legacy index (e.g. USD
 LIBOR-3M, EONIA), that it is historical/discontinued and why it is
 still offered (testing pre-cessation scenarios). Shown in the Detail
 dialog and list views rather than left to a bare currency/index code
@@ -604,24 +532,6 @@ One import row stands for a whole IR curve feed: the curve, its process paramete
 :default: 'fixed'
 :END:
 
-** vintage_source
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** vintage_date
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
-** vintage_series_uri
-:PROPERTIES:
-:type: text
-:nullable: true
-:END:
-
 ** provider_code
 :PROPERTIES:
 :type: text
@@ -685,8 +595,7 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "source_name" <> ''                                       |
 | "source_name" like 'synthetic.%'                          |
 | "ticks_per_hour" > 0                                       |
-| "price_source" in ('fixed', 'vintage')                    |
-| ("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '' and "vintage_series_uri" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '' and "vintage_series_uri" <> '') |
+| "price_source" in ('fixed')                               |
 
 * Foreign keys
 
@@ -804,10 +713,7 @@ policy still decides which system rows a tenant sees and who may write them.
 | fixed_leg_payment_frequency_code   | Fixed Leg Payment Frequency    | fixedLegPaymentFrequencyEdit   | line_edit     |        | true        | Enter payment frequency code (e.g. Annual)|                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | enabled                            | Enabled                        | enabledCheck                   | check_box     |        |             |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | auto_start                         | Auto-Start                     | autoStartCheck                 | check_box     |        |             |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| price_source                       | Price Source                   | priceSourceEdit                | line_edit     |        | true        | fixed, or vintage                         |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| vintage_source                     | Vintage Source                 | vintageSourceEdit              | line_edit     |        |             | Required if Price Source is vintage, e.g. ore.reference |            |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| vintage_date                       | Vintage Date                   | vintageDateEdit                | line_edit     |        |             | Required if Price Source is vintage, YYYY-MM-DD |          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| vintage_series_uri                 | Vintage Series URI             | vintageSeriesUriEdit           | line_edit     |        |             | Required if Price Source is vintage, e.g. oresmd://ir/usd?tenor=2d&quote=mm |                |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| price_source                       | Price Source                   | priceSourceEdit                | line_edit     |        | true        | fixed                                     |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | description                        | Description                    | descriptionEdit                | plain_text_edit |      |             | What this configuration represents        |                        |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 
 *** Columns
@@ -824,9 +730,6 @@ policy still decides which system rows a tenant sees and who may write them.
 | Enabled                      | enabled                             | Enabled                      | bool      | 70    |
 | AutoStart                    | auto_start                          | Auto-Start                   | bool      | 80    |
 | PriceSource                  | price_source                        | Price Source                 | string    | 100   |
-| VintageSource                | vintage_source                      | Vintage Source                | string    | 140   |
-| VintageDate                  | vintage_date                        | Vintage Date                  | string    | 110   |
-| VintageSeriesUri             | vintage_series_uri                  | Vintage Series URI            | string    | 320   |
 | Version      | version        | Version        | int       | 70    |
 | ModifiedBy   | modified_by    | Modified By    | string    | 120   |
 | RecordedAt   | recorded_at    | Recorded At    | timestamp | 150   |

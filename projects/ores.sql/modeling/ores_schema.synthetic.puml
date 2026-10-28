@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 13
+Tables: 14
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -124,6 +124,39 @@ package "synthetic" #F9FBE7 {
     of each reimplementing the tree-walk itself.
     end note
 
+    entity ores_synthetic_fx_spot_fixing_items_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * fx_spot_config_id : uuid <<FK>>
+        * rank : integer
+        * item : text
+        * provider_code : text
+        * policy : text
+        * window_days : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_spot_fixing_items_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Spot Fixing Item Table
+    One FX fixing that an fx_spot_generation_config whose price_source is
+    fixing may start from. A feed reads its items in rank order and starts from the
+    first that has a fixing: the latest on or before the date of the market clock, or
+    on a stated date. The window sets how many days of fixings measure the
+    volatility. An item may quote the pair the other way round, and the feed then reads
+    it as one over the value. Party- and tenant-scoped.
+    end note
+
     entity ores_synthetic_fx_spot_generation_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -141,8 +174,6 @@ package "synthetic" #F9FBE7 {
         * process_type : text
         * enabled : boolean
         * auto_start : boolean
-        * vintage_source : text
-        * vintage_date : text
           folder_id : uuid <<FK>>
         * asset_class_code : text
         * arrival_mode : text
@@ -216,9 +247,6 @@ package "synthetic" #F9FBE7 {
         * enabled : boolean
         * auto_start : boolean
         * price_source : text
-        * vintage_source : text
-        * vintage_date : text
-        * vintage_series_uri : text
           description : text
         * fixed_leg_payment_frequency_code : text
         * source_name : text
@@ -596,6 +624,7 @@ package "synthetic" #F9FBE7 {
 ' ==================== Relationships ====================
 '
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_folders_tbl : "has"
+ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_fixing_items_tbl : "has"
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
 ores_synthetic_folders_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
 ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_gmm_components_tbl : "has"

@@ -991,50 +991,6 @@ struct stop_feeds_under_folder_response {
 };
 
 /**
- * @brief Vintage-availability status for one feed config of any asset class,
- * computed live (not stored) against market_observation.
- */
-struct vintage_validity_entry {
-    /** The feed config row's own id: fx_spot_generation_config::id for an FX
-     * feed, ir_curve_generation_config::id for an IR curve feed.
-     */
-    std::string config_id;
-    /** The registered feed kind the row belongs to, so a caller can tell the
-     * asset classes apart without probing.
-     */
-    std::string kind;
-    /** False for price_source = "fixed" feeds -- the vintage check does not
-     * apply to them, so `valid` is meaningless and should not be shown.
-     */
-    bool applicable = false;
-    bool valid = false;
-};
-
-/**
- * @brief Request the vintage-availability status of every feed visible to
- * the caller, computed at read time (no persisted/cached column) so it is
- * always accurate -- including immediately after a data import that added
- * no new feed rows, only new market_observation ones.
- */
-struct get_vintage_validity_request {
-    using response_type = struct get_vintage_validity_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_vintage_validity";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-};
-
-struct get_vintage_validity_response {
-    bool success = false;
-    std::string message;
-    std::vector<vintage_validity_entry> entries;
-};
-
-/**
  * @brief Exports the tenant's market data to object storage as ORE text.
  *
  * The engine reads a market data file its run document names, and nothing else

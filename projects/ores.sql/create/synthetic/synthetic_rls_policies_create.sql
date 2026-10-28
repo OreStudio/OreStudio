@@ -86,6 +86,24 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- fx_spot_fixing_items
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_fx_spot_fixing_items_tbl enable row level security;
+
+drop policy if exists fx_spot_fixing_items_tenant_isolation_policy
+    on ores_synthetic_fx_spot_fixing_items_tbl;
+
+create policy fx_spot_fixing_items_tenant_isolation_policy
+on ores_synthetic_fx_spot_fixing_items_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- ir_curve_generation_configs
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_ir_curve_generation_configs_tbl enable row level security;

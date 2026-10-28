@@ -51,8 +51,6 @@ render_fx_spot_generation_config_fields(const domain::fx_spot_generation_config&
     fields.push_back({.name = "Process Type", .value = v.process_type});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Auto Start", .value = v.auto_start ? "true" : "false"});
-    fields.push_back({.name = "Vintage Source", .value = v.vintage_source});
-    fields.push_back({.name = "Vintage Date", .value = v.vintage_date});
     fields.push_back(
         {.name = "Folder ID",
          .value = v.folder_id ? boost::uuids::to_string(*v.folder_id) : std::string{}});

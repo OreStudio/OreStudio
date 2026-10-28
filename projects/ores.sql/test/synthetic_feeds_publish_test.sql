@@ -23,15 +23,15 @@
  * synthetic.feeds.bloomberg publishes through the one publish path for
  * synthetic feeds, into the system tenant under its system party. Every feed row names the
  * bloomberg provider, so the collection stands for Bloomberg and every feed's
- * source name starts synthetic.bloomberg. The pairs the Federal Reserve H.10
- * release quotes start from its vintage; the others start at a fixed level.
+ * source name starts synthetic.bloomberg. Every pair starts from the newest
+ * public fixing of the pair, and keeps a level to fall back to.
  *
  * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/synthetic_feeds_publish_test.sql
  */
 
 begin;
 
-select plan(10);
+select plan(9);
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
@@ -83,21 +83,11 @@ select is(
 select is(
     (select count(*)::int from ores_synthetic_fx_spot_generation_configs_tbl
      where config_id = (select id from t_collection)
-       and price_source = 'vintage'
-       and vintage_source = 'fed.h10.2026-05-05'
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    13,
-    'the 13 pairs the H.10 release quotes start from its 2026-05-05 vintage'
-);
-
-select is(
-    (select count(*)::int from ores_synthetic_fx_spot_generation_configs_tbl
-     where config_id = (select id from t_collection)
-       and price_source = 'fixed'
+       and price_source = 'fixing'
        and gmm_initial_price > 0
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    13,
-    'the other 13 pairs start at a fixed level'
+    26,
+    'every pair starts from a public fixing and keeps a level to fall back to'
 );
 
 select is(
@@ -131,12 +121,12 @@ select is(
 insert into ores_synthetic_fx_spot_generation_configs_tbl (
     id, tenant_id, version, party_id, config_id, base_currency_code, quote_currency_code,
     source_name, oresmd_uri, price_source, gmm_initial_price, ticks_per_hour, process_type,
-    enabled, auto_start, vintage_source, vintage_date, asset_class_code,
+    enabled, auto_start, asset_class_code,
     modified_by, performed_by, change_reason_code, change_commentary
 ) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
     (select id from t_collection), 'EUR', 'JPY', 'synthetic.bloomberg.placement.eurjpy',
     'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=JPY', 'fixed', 160, 60,
-    'geometric', false, false, '', '', 'fx',
+    'geometric', false, false, 'fx',
     current_user, current_user, 'system.test', 'placement test';
 
 select is(
@@ -161,13 +151,13 @@ insert into ores_synthetic_market_data_generation_configs_tbl (
 
 insert into ores_synthetic_ir_curve_generation_configs_tbl (
     id, tenant_id, version, party_id, config_id, currency_code, index_family, tenor, role,
-    process_type, ticks_per_hour, enabled, auto_start, price_source, vintage_source, vintage_date,
-    vintage_series_uri, description, fixed_leg_payment_frequency_code, source_name, asset_class_code,
+    process_type, ticks_per_hour, enabled, auto_start, price_source,
+    description, fixed_leg_payment_frequency_code, source_name, asset_class_code,
     modified_by, performed_by, change_reason_code, change_commentary
 ) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
     (select id from ores_synthetic_market_data_generation_configs_tbl
      where name = 'Placement Test' and valid_to = ores_utility_infinity_timestamp_fn()),
-    'USD', 'sofr', '', 'self_discounting', 'VASICEK', 60, true, false, 'fixed', '', '', '',
+    'USD', 'sofr', '', 'self_discounting', 'VASICEK', 60, true, false, 'fixed',
     'placement test', 'Annual', 'synthetic.placementtest.usdsofr', 'interest_rates',
     current_user, current_user, 'system.test', 'placement test';
 

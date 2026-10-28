@@ -81,13 +81,13 @@ from t_ids i, t_system_party p;
 insert into ores_synthetic_fx_spot_generation_configs_tbl (
     id, tenant_id, version, party_id, config_id, base_currency_code,
     quote_currency_code, source_name, oresmd_uri, price_source, gmm_initial_price,
-    ticks_per_hour, process_type, enabled, auto_start, vintage_source,
-    vintage_date, folder_id, asset_class_code, modified_by, performed_by, change_reason_code,
+    ticks_per_hour, process_type, enabled, auto_start,
+    folder_id, asset_class_code, modified_by, performed_by, change_reason_code,
     change_commentary
 )
 select i.system_feed, ores_utility_system_tenant_id_fn(), 0, p.id, i.system_collection,
        'EUR', 'USD', 'synthetic.generic.visibility.eurusd', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', 'fixed', 1.1,
-       60, 'geometric', false, false, '', '', null::uuid, 'fx',
+       60, 'geometric', false, false, null::uuid, 'fx',
        current_user, current_user, 'system.test', 'visibility test'
 from t_ids i, t_system_party p;
 
@@ -142,13 +142,13 @@ select case when not exists(select 1 from t_other)
             format($$insert into ores_synthetic_fx_spot_generation_configs_tbl (
                 id, tenant_id, version, party_id, config_id, base_currency_code,
                 quote_currency_code, source_name, oresmd_uri, price_source, gmm_initial_price,
-                ticks_per_hour, process_type, enabled, auto_start, vintage_source,
-                vintage_date, folder_id, asset_class_code, modified_by, performed_by, change_reason_code,
+                ticks_per_hour, process_type, enabled, auto_start,
+                folder_id, asset_class_code, modified_by, performed_by, change_reason_code,
                 change_commentary
             ) values (
                 gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, %L::uuid, %L::uuid,
                 'USD', 'JPY', 'synthetic.generic.visibility.usdjpy', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY', 'fixed', 150,
-                60, 'geometric', false, false, '', '', null::uuid, 'fx',
+                60, 'geometric', false, false, null::uuid, 'fx',
                 current_user, current_user, 'system.test', 'visibility test')$$,
                 (select id from t_system_party), (select system_collection from t_ids)),
             -- Refused whichever check fires first: row-level security

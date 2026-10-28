@@ -37,11 +37,12 @@
  * primary component has weight 0.95 and a per-tick stdev of the pair's
  * annualised vol / 3970.9, at 1800 ticks an hour (sqrt(1800 * 24 * 365) ~=
  * 3970.9). The tail component has weight 0.05 and four times that stdev.
- *   - The 13 pairs the Federal Reserve H.10 release quotes start from the
- *     2026-05-05 H.10 vintage (marketdata_fx_driver_rates_2026_populate.sql),
- *     read at feed start.
- *   - The other 13 start at a fixed, illustrative level near the 2026
- *     market. They are not sourced quotes.
+ *   - Every pair starts from the newest public fixing of its pair, read at
+ *     feed start from the items synthetic_fx_spot_fixing_items_populate.sql
+ *     ranks for it, and its mixture is sized to the spread of those fixings.
+ *   - A pair no public source fixes keeps the level below: the Federal
+ *     Reserve H.10 of 2026-05-05 for the 13 pairs that release quotes, and an
+ *     illustrative level near the 2026 market for the others.
  * The vols are approximate 2026 realised vols, not fitted to a source. The
  * HKD and CNH vols are low because the HKMA pegs HKD to USD inside a band
  * and the PBoC manages CNY, which CNH tracks.
@@ -116,8 +117,8 @@ begin
     -- Market quoting order: EUR, GBP, AUD and NZD quote against USD; USD
     -- quotes against every other currency.
     insert into t_bloomberg_fx values
-        -- Federal Reserve H.10, 2026-05-05: the level is the vintage's, read
-        -- at feed start; it is kept here only as the record of the value.
+        -- Federal Reserve H.10, 2026-05-05: the level a pair keeps when no
+        -- public source fixes it.
         ('EUR', 'USD', 1.1707,   8.5,  true),
         ('GBP', 'USD', 1.3576,   9.5,  true),
         ('AUD', 'USD', 0.7196,   11.0, true),
@@ -151,20 +152,19 @@ begin
         name, description, enabled, auto_start,
         base_currency_code, quote_currency_code,
         gmm_initial_price, ticks_per_hour, process_type,
-        price_source, vintage_source, vintage_date, provider_code
+        price_source, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Bloomberg FX Spot: ' || p.base || '/' || p.quote,
         'Simulated Bloomberg FX spot: a two-component geometric Gaussian mixture at about '
         || p.vol_pct || '% annualised vol, starting at '
-        || case when p.sourced then 'the 2026-05-05 Federal Reserve H.10 vintage.'
+        || 'the newest public fixing of the pair, or, when no source fixes it, '
+        || case when p.sourced then 'the 2026-05-05 Federal Reserve H.10 level.'
                 else 'an illustrative 2026 level, not a sourced quote.' end,
         true, true, p.base, p.quote,
-        case when p.sourced then 0 else p.start_level end, 1800, 'geometric',
-        case when p.sourced then 'vintage' else 'fixed' end,
-        case when p.sourced then 'fed.h10.2026-05-05' else '' end,
-        case when p.sourced then '2026-05-05' else '' end,
+        p.start_level, 1800, 'geometric',
+        'fixing',
         'bloomberg'
     from t_bloomberg_fx p;
 
@@ -226,7 +226,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
+        price_source, provider_code
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -236,7 +236,7 @@ begin
         true, true, c.currency_code, c.index_family, '', 'COX_INGERSOLL_ROSS',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly',
-        'fixed', '', '', '', 'bloomberg'
+        'fixed', 'bloomberg'
     from t_bloomberg_ir c;
 
     insert into ores_dq_ir_curve_template_entries_artefact_tbl (
@@ -276,7 +276,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date, vintage_series_uri, provider_code
+        price_source, provider_code
     )
     values (
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -287,7 +287,7 @@ begin
         true, false, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
         0.55, 0.04, 0.008, 0.04,
         60, 'Quarterly',
-        'fixed', '', '', '', 'bloomberg'
+        'fixed', 'bloomberg'
     );
 
     insert into ores_dq_ir_curve_template_entries_artefact_tbl (

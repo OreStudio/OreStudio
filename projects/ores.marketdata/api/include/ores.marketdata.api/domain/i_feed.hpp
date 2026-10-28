@@ -20,8 +20,10 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_I_FEED_HPP
 #define ORES_MARKETDATA_API_DOMAIN_I_FEED_HPP
 
+#include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -94,6 +96,16 @@ public:
      * its source_name: "synthetic.v1.ops.tick.<source>".
      */
     virtual const std::string& nats_subject() const = 0;
+
+    /**
+     * @brief Where this run's starting value came from, or why it kept its fixed level.
+     *
+     * A kind that starts from a published value records it when the feed is built, so a
+     * reader sees the observation the run took rather than the one a later run would
+     * take. A kind that starts from no such value answers nothing, and a reader shows
+     * only that the feed runs.
+     */
+    virtual std::optional<feed_start> start_source() const;
 
     /**
      * @brief The factory kind string this producer registers under (the

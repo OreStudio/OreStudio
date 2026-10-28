@@ -25,7 +25,9 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_FEED_CONFIG_PROTOCOL_HPP
 
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -98,7 +100,53 @@ struct stop_feed_response {
 };
 
 /**
- * @brief Request the set of currently running feed source_names, every kind.
+ * @brief Where a feed's starting value came from, or that it kept its fixed level.
+ *
+ * The record belongs to the run, not to the config: a feed that stops and
+ * starts again records where the new run started.
+ */
+struct feed_start {
+    /** @brief True when a fixing set the level; false when the feed kept its fixed level. */
+    bool from_fixing = false;
+    /** @brief The fixing's item, as the oresmd URI that names it. */
+    std::string item;
+    /** @brief The provider that published the fixing. */
+    std::string provider_code;
+    /** @brief The provider's own id of the item, or empty when no mapping names it. */
+    std::string vendor_id;
+    /** @brief The fixing's value as the publisher wrote it, in decimal text. */
+    std::string value;
+    /** @brief True when the item quotes the feed's pair the other way round. */
+    bool inverted = false;
+    /** @brief The date of the fixing, which is the publisher's own time for a daily fixing. */
+    std::optional<std::chrono::year_month_day> fixing_date;
+    /** @brief When the service stored the fixing. */
+    std::optional<std::chrono::system_clock::time_point> received_at;
+    /** @brief How many calendar days of fixings the window covered. */
+    int window_days = 0;
+    /** @brief How many fixings of the window measured the spread. */
+    int used = 0;
+    /** @brief The measured hourly spread, when the window had one. */
+    std::optional<double> hourly_spread;
+    /** @brief Why the feed kept its fixed level, or why its spread was not measured. */
+    std::string note;
+};
+
+/**
+ * @brief One feed the service runs now, and where its starting value came from.
+ *
+ * A feed kind that starts from no published value carries no start, so it reads
+ * as running and says nothing of where it started.
+ */
+struct running_feed {
+    /** @brief The source name the run publishes under. */
+    std::string source_name;
+    /** @brief Where the run's starting value came from; absent when the kind has no such start. */
+    std::optional<feed_start> start;
+};
+
+/**
+ * @brief Request the feeds that run now, every kind, with where each started.
  */
 struct list_feeds_request {
     using response_type = struct list_feeds_response;
@@ -113,11 +161,13 @@ struct list_feeds_request {
 };
 
 /**
- * @brief The running feeds' source_names, and whether the read succeeded.
+ * @brief The feeds the service runs now, each with where it started, and whether
+ * the read succeeded.
  */
 struct list_feeds_response {
     bool success = false;
-    std::vector<std::string> running_source_names;
+    /** @brief The feeds that run, in source name order. */
+    std::vector<running_feed> running_feeds;
 };
 
 }

@@ -29,11 +29,11 @@
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
-#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
+#include "ores.synthetic.core/repository/fx_spot_fixing_item_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
@@ -96,25 +96,8 @@ feed_kind make_fx_spot_kind() {
             c.display_name = fx.oresmd_uri;
             c.enabled = fx.enabled;
             c.auto_start = fx.auto_start;
-            c.vintage_priced = fx.price_source == "vintage";
             c.folder_id = fx.folder_id;
             c.fx_pair = std::make_pair(fx.base_currency_code, fx.quote_currency_code);
-            c.vintage_anchor = [fx] {
-                feed_vintage_anchor a;
-                a.applicable = fx.price_source == "vintage";
-                if (!a.applicable)
-                    return a;
-                a.source = fx.vintage_source;
-                a.date = fx.vintage_date;
-                const auto d = datum::oresmd_uri_codec::read(fx.oresmd_uri);
-                if (!d) {
-                    a.error = "oresmd URI '" + fx.oresmd_uri + "': " + d.error();
-                    return a;
-                }
-                a.series_uri = datum::oresmd_uri_codec::write(datum::series_of(*d)).value();
-                a.datum_uri = datum::oresmd_uri_codec::write(*d).value();
-                return a;
-            };
             c.build_input = [ctx, fx]() -> feed_build_outcome {
                 repo::gmm_component_repository comp_repo;
                 std::vector<ores::synthetic::domain::gmm_component> components;
@@ -125,8 +108,13 @@ feed_kind make_fx_spot_kind() {
                     return {.input = std::nullopt,
                             .skip_reason = "Feed config has no GMM components: " +
                                            boost::uuids::to_string(fx.id)};
+                std::vector<ores::synthetic::domain::fx_spot_fixing_item> fixing_items;
+                if (fx.price_source == "fixing")
+                    for (auto& i : repo::fx_spot_fixing_item_repository{}.read_latest(ctx))
+                        if (i.fx_spot_config_id == fx.id)
+                            fixing_items.push_back(std::move(i));
                 return {.input = feed::feed_build_input{fx_spot_feed_build_input{
-                            fx, std::move(components), {}}},
+                            fx, std::move(components), {}, std::move(fixing_items)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -204,7 +192,6 @@ feed_kind make_ir_curve_kind() {
             c.display_name = cfg.currency_code + "/" + cfg.index_family;
             c.enabled = cfg.enabled;
             c.auto_start = cfg.auto_start;
-            c.vintage_priced = cfg.price_source == "vintage";
             c.folder_id = cfg.folder_id;
             for (const auto& e : all_entries)
                 if (e.ir_curve_config_id == cfg.id)
@@ -213,64 +200,6 @@ feed_kind make_ir_curve_kind() {
                                                                 e.instrument_code,
                                                                 e.start_tenor_code,
                                                                 e.end_tenor_code});
-            c.vintage_anchor = [ctx, cfg] {
-                feed_vintage_anchor a;
-                a.applicable = cfg.price_source == "vintage";
-                if (!a.applicable)
-                    return a;
-                a.source = cfg.vintage_source;
-                a.date = cfg.vintage_date;
-                a.series_uri = cfg.vintage_series_uri;
-                a.party_id = boost::uuids::to_string(cfg.party_id);
-
-                repo::ir_curve_template_entry_repository entry_repo;
-                std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
-                for (auto& e : entry_repo.read_latest(ctx))
-                    if (e.ir_curve_config_id == cfg.id)
-                        entries.push_back(std::move(e));
-                if (entries.empty()) {
-                    a.error = "Feed config has no Curve Template entries: " +
-                              boost::uuids::to_string(cfg.id);
-                    return a;
-                }
-                const auto refctx = ir_refdata_context(ctx, cfg);
-                if (!refctx) {
-                    a.error =
-                        "Tenor convention not found: " + feed::ir_curve_tenor_convention_code(cfg);
-                    return a;
-                }
-                const auto resolved =
-                    feed::resolve(entries, *refctx, cfg.fixed_leg_payment_frequency_code);
-                const auto* anchor = feed::select_vintage_anchor_entry(resolved);
-                if (!anchor) {
-                    a.error = "Cannot resolve vintage initial_rate: config has no DEPOSIT "
-                              "entry to anchor on.";
-                    return a;
-                }
-
-                // The row the vintage is read from is the anchor pillar's own datum: the series
-                // the config names at the pillar's point.
-                const auto series_datum = datum::oresmd_uri_codec::read(cfg.vintage_series_uri);
-                if (!series_datum || !series_datum->is_series()) {
-                    a.error = "'" + cfg.vintage_series_uri + "' is not a series URI" +
-                              (series_datum ? "" : ": " + series_datum.error());
-                    return a;
-                }
-                const auto anchor_datum = datum::datum_at_point(*series_datum, anchor->point_id);
-                if (!anchor_datum) {
-                    a.error = "no datum for series '" + cfg.vintage_series_uri + "' at point '" +
-                              anchor->point_id + "': " + anchor_datum.error();
-                    return a;
-                }
-                const auto anchor_uri = datum::oresmd_uri_codec::write(*anchor_datum);
-                if (!anchor_uri) {
-                    a.error = "no URI for series '" + cfg.vintage_series_uri + "' at point '" +
-                              anchor->point_id + "': " + anchor_uri.error();
-                    return a;
-                }
-                a.datum_uri = *anchor_uri;
-                return a;
-            };
             c.build_input = [ctx, cfg]() -> feed_build_outcome {
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
@@ -514,44 +443,6 @@ void feed_kind_registry::reply_unknown_kind(ores::nats::service::client& nats,
         nats,
         msg,
         feed_simulation_result{.success = false, .message = "Unknown feed kind: " + kind});
-}
-
-ores::marketdata::messaging::vintage_validity_entry
-feed_kind_registry::check_vintage(const feed_kind_row& row,
-                                  ores::nats::service::nats_client& auth_nats,
-                                  const std::string& caller_bearer_token) const {
-    ores::marketdata::messaging::vintage_validity_entry e;
-    e.config_id = row.candidate.feed_config_id;
-    e.kind = row.kind->kind;
-    const auto a = row.candidate.vintage_anchor();
-    e.applicable = a.applicable;
-    if (!a.applicable)
-        return e;
-    // A non-empty error means the anchor could not be derived: applicable, and invalid.
-    if (!a.error.empty())
-        return e;
-    const auto found = ores::synthetic::feed::find_vintage_observation(
-        auth_nats,
-        caller_bearer_token,
-        a.series_uri,
-        a.datum_uri,
-        a.source,
-        a.date,
-        "No vintage data found for source=" + a.source + ", date=" + a.date + ".",
-        a.series_uri,
-        a.party_id);
-    e.valid = found.has_value();
-    return e;
-}
-
-std::vector<ores::marketdata::messaging::vintage_validity_entry>
-feed_kind_registry::vintage_validity(const ores::database::context& ctx,
-                                     ores::nats::service::nats_client& auth_nats,
-                                     const std::string& caller_bearer_token) const {
-    std::vector<ores::marketdata::messaging::vintage_validity_entry> out;
-    for (const auto& row : rows(ctx))
-        out.push_back(check_vintage(row, auth_nats, caller_bearer_token));
-    return out;
 }
 
 feed_kind_registry make_default_feed_kind_registry() {

@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 39EBABD1-CE5F-4D9C-A47C-CD0FCD492B46
+:END:
+#+title: Investigate backdated market data for specific use cases
+#+description: With vintage removed from the generators, find which use cases need market data as of a past date, and how to serve them.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The synthetic generators used to start from a vintage: a real observation from a
+canned dataset at a fixed past date, such as FRED H10 as of 2026-05-05. The task
+[[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] removes vintage altogether: an FX feed
+starts from the newest public fixing, and every other feed from its fixed level.
+Find the use cases that still need market data as of a past date, such as a
+reproducible demo, a regression run against a known day, or a historical scenario,
+and design how to serve them. The stored fixings already keep every date, so one
+answer may be to read them as of a date rather than to keep canned vintages.
+
+* Why
+
+The user asked to remove vintage and to have "backdated" data only for specific use
+cases, and noted that this needs investigation. Without it, no generator can be
+pinned to a known past day.
+
+* References
+
+- [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]
+
+* See also
+
+- [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]]: it already reads a fixing on or before any date.

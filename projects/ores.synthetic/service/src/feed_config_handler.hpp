@@ -26,6 +26,7 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -45,6 +46,23 @@ inline auto& feed_config_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.service.feed_config_handler");
     return instance;
 }
+
+/// A run's start in the words of the wire, field for field.
+inline ores::synthetic::messaging::feed_start
+to_wire(const ores::marketdata::domain::feed_start& start) {
+    return {.from_fixing = start.from_fixing,
+            .item = start.item,
+            .provider_code = start.provider_code,
+            .vendor_id = start.vendor_id,
+            .value = start.from_fixing ? start.value.to_string() : std::string{},
+            .inverted = start.inverted,
+            .fixing_date = start.fixing_date,
+            .received_at = start.received_at,
+            .window_days = start.window_days,
+            .used = start.used,
+            .hourly_spread = start.hourly_spread,
+            .note = start.note};
+}
 } // namespace
 
 using ores::service::messaging::decode;
@@ -62,7 +80,7 @@ using namespace ores::logging;
  * the client sends only a config_id and the feed kind registry resolves the config — whichever
  * kind it is, its children, and the refdata context — checks the resolved kind's permission, and
  * builds the producer. The runner then runs it as a manual run, which no demand set reconciles
- * away. Missing, disabled, and vintage-data-missing outcomes use one message shape regardless of
+ * away. Missing and disabled outcomes use one message shape regardless of
  * kind, and a start of a feed that already runs answers the same success its kind does.
  */
 class feed_config_handler {
@@ -140,12 +158,6 @@ public:
                 return;
             }
             reply_start_outcome(msg, resp, req->config_id, std::move(attempt.feed));
-        } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
-            resp.success = false;
-            resp.message = e.what();
-            BOOST_LOG_SEV(feed_config_handler_lg(), warn)
-                << msg.subject << " — feed rejected: " << resp.message;
-            reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = client_message(e);
@@ -265,10 +277,16 @@ public:
 
         try {
             list_feeds_response resp;
-            resp.running_source_names = generators_.running_source_names();
+            for (const auto& feed : generators_.running_feeds()) {
+                running_feed one;
+                one.source_name = feed.source_name;
+                if (feed.start)
+                    one.start = to_wire(*feed.start);
+                resp.running_feeds.push_back(std::move(one));
+            }
             resp.success = true;
             BOOST_LOG_SEV(feed_config_handler_lg(), info)
-                << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";
+                << msg.subject << " — " << resp.running_feeds.size() << " feed(s) running";
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(feed_config_handler_lg(), error)

@@ -313,7 +313,7 @@ resolve_folder_id(std::ostream& out, nats_client& session, const std::string& to
 struct resolved_feed {
     std::string config_id;
     std::string source_name;
-    // The config's oresmd URI. validate_vintage prints it.
+    // The config's oresmd URI.
     std::optional<std::string> oresmd_uri;
 };
 
@@ -1124,13 +1124,6 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            "party it books for",
                            {"--config <trade-generation-config-id> [--config <id>...]"});
 
-    synthetic_menu->Insert("validate-vintage",
-                           [&session](std::ostream& out, std::vector<std::string> args) {
-                               process_validate_vintage(std::ref(out), std::ref(session), args);
-                           },
-                           "Validate vintage data availability for a feed",
-                           {"feed <feed-id|ore-key|source-name>"});
-
     ores::shell::app::insert_menu(root_menu, std::move(synthetic_menu));
 }
 
@@ -1371,7 +1364,12 @@ std::optional<feed_listing> synthetic_commands::read_feed_listing(std::ostream& 
         fail(out) << "Failed to list running feeds." << std::endl;
         return std::nullopt;
     }
-    listing.running = std::move(running->running_source_names);
+    // The list names the runs and where each started; the listing needs only the
+    // names, which answer whether a config runs now.
+    listing.running.clear();
+    listing.running.reserve(running->running_feeds.size());
+    for (const auto& feed : running->running_feeds)
+        listing.running.push_back(feed.source_name);
 
     return listing;
 }
@@ -1559,70 +1557,6 @@ bool synthetic_commands::stop_feed(std::ostream& out,
     return true;
 }
 
-void synthetic_commands::process_validate_vintage(std::ostream& out,
-                                                  nats_client& session,
-                                                  const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {});
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: synthetic validate-vintage <feed-id|ore-key|source-name>" << std::endl;
-        return;
-    }
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    validate_vintage(out, session, parsed->positionals[0]);
-}
-
-bool synthetic_commands::validate_vintage(std::ostream& out,
-                                          nats_client& session,
-                                          const std::string& token) {
-    // Resolve the feed (id, ore key or source name), then look up its
-    // live server-side vintage validity entry. Entries are keyed by
-    // feed config id, of every asset class. The ore key renders only for
-    // FX feeds.
-    const auto feed = resolve_feed(out, session, token);
-    if (!feed)
-        return false;
-    const auto& feed_id = feed->config_id;
-    const std::string oresmd_uri = feed->oresmd_uri ? " (" + *feed->oresmd_uri + ")" : "";
-
-    marketdata::messaging::get_vintage_validity_request req;
-    auto result = do_auth_request<marketdata::messaging::get_vintage_validity_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return false;
-    if (!result->success) {
-        fail(out) << "Vintage validity check failed: " << result->message << std::endl;
-        return false;
-    }
-
-    for (const auto& e : result->entries) {
-        if (e.config_id != feed_id)
-            continue;
-        if (!e.applicable) {
-            out << "⚠ Vintage check not applicable to feed " << feed->source_name << oresmd_uri
-                << " (fixed price source)." << std::endl;
-            return true;
-        }
-        if (e.valid) {
-            out << "✓ Vintage data available for feed " << feed->source_name << oresmd_uri << "."
-                << std::endl;
-            return true;
-        }
-        fail(out) << "Vintage data missing for feed " << feed->source_name << oresmd_uri << "."
-                  << std::endl;
-        return false;
-    }
-    fail(out) << "No vintage validity entry for feed " << feed->source_name << "." << std::endl;
-    return false;
-}
-
 void synthetic_commands::process_preview_fx_spot(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
@@ -1667,16 +1601,6 @@ void synthetic_commands::process_preview_fx_spot(std::ostream& out,
                   << std::endl;
         return;
     }
-    // A vintage-started feed takes its opening price from a stored
-    // observation; the dry run has no vintage to read, so it says which
-    // price source it needs rather than inventing one.
-    if (config->price_source != "fixed") {
-        fail(out) << "Feed " << feed->source_name << " takes its initial price from a vintage ('"
-                  << config->price_source << "'); the preview needs a fixed price source."
-                  << std::endl;
-        return;
-    }
-
     std::vector<const synthetic::domain::gmm_component*> components;
     for (const auto& c : listing->gmm_components)
         if (boost::uuids::to_string(c.fx_spot_config_id) == feed->config_id)
@@ -1860,7 +1784,7 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
     write.oresmd_uri =
         "oresmd://fx/" + base + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + quote;
     // The preview reads the opening price from the config, so the authored feed
-    // states it rather than depending on a vintage the setup cannot read.
+    // states it.
     write.price_source = "fixed";
     write.gmm_initial_price = initial_price;
     write.ticks_per_hour = static_cast<int>(ticks_per_hour);
@@ -1934,9 +1858,8 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     write.auto_start = false;
     write.folder_id = boost::lexical_cast<boost::uuids::uuid>(folder_id);
     write.source_name = source_name;
-    // The SQL check admits only 'fixed' or 'vintage', and the store copies the
-    // request verbatim rather than applying the domain default. The setup flow
-    // authors a fixed feed, so it states that and leaves the vintage fields empty.
+    // The store copies the request verbatim rather than applying the domain
+    // default, so the setup flow states the fixed price source it authors.
     write.price_source = "fixed";
     // Not consulted for Deposit entries, but required and validated, and the
     // Swap entries the resolver builds need it.

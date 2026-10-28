@@ -23,6 +23,7 @@ set(files
     "catalog_generator_service_tests.cpp"
     "feeds_fomc_curve_resolution_tests.cpp"
     "folder_eventing_integration_tests.cpp"
+    "fx_spot_fixing_item_eventing_integration_tests.cpp"
     "fx_spot_generation_config_eventing_integration_tests.cpp"
     "generation_context_tests.cpp"
     "generators_tests.cpp"

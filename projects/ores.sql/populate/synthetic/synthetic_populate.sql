@@ -47,8 +47,5 @@
 \echo '--- Synthetic Feeds: Refinitiv, ICE, CME and Tradeweb ---'
 \ir ./synthetic_feeds_providers_populate.sql
 
-\echo '--- Dataset Dependencies (vintage-mode configs -> their real market data) ---'
-\ir ./synthetic_dataset_dependency_populate.sql
-
 \echo ''
 \echo '=== Synthetic Component Population Complete ==='

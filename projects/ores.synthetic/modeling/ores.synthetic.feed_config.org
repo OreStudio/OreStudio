@@ -27,7 +27,9 @@ feeds it answers with, because a caller reads it beside the config list.
 * Includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -128,6 +130,142 @@ feeds it answers with, because a caller reads it beside the config list.
 :cpp_type: std::string
 :END:
 
+** feed_start
+#+begin_src cpp :name comment
+/**
+ * @brief Where a feed's starting value came from, or that it kept its fixed level.
+ *
+ * The record belongs to the run, not to the config: a feed that stops and
+ * starts again records where the new run started.
+ */
+#+end_src
+
+*** from_fixing
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when a fixing set the level; false when the feed kept its fixed level. */
+#+end_src
+
+*** item
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The fixing's item, as the oresmd URI that names it. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider that published the fixing. */
+#+end_src
+
+*** vendor_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider's own id of the item, or empty when no mapping names it. */
+#+end_src
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The fixing's value as the publisher wrote it, in decimal text. */
+#+end_src
+
+*** inverted
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief True when the item quotes the feed's pair the other way round. */
+#+end_src
+
+*** fixing_date
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::year_month_day>
+:END:
+#+begin_src cpp :name comment
+/** @brief The date of the fixing, which is the publisher's own time for a daily fixing. */
+#+end_src
+
+*** received_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+#+begin_src cpp :name comment
+/** @brief When the service stored the fixing. */
+#+end_src
+
+*** window_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many calendar days of fixings the window covered. */
+#+end_src
+
+*** used
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many fixings of the window measured the spread. */
+#+end_src
+
+*** hourly_spread
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+#+begin_src cpp :name comment
+/** @brief The measured hourly spread, when the window had one. */
+#+end_src
+
+*** note
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why the feed kept its fixed level, or why its spread was not measured. */
+#+end_src
+
+** running_feed
+#+begin_src cpp :name comment
+/**
+ * @brief One feed the service runs now, and where its starting value came from.
+ *
+ * A feed kind that starts from no published value carries no start, so it reads
+ * as running and says nothing of where it started.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The source name the run publishes under. */
+#+end_src
+
+*** start
+:PROPERTIES:
+:cpp_type: std::optional<feed_start>
+:END:
+#+begin_src cpp :name comment
+/** @brief Where the run's starting value came from; absent when the kind has no such start. */
+#+end_src
+
 ** list_feeds_request
 :PROPERTIES:
 :subject: synthetic.v1.feed_configs.list
@@ -135,14 +273,15 @@ feeds it answers with, because a caller reads it beside the config list.
 :END:
 #+begin_src cpp :name comment
 /**
- * @brief Request the set of currently running feed source_names, every kind.
+ * @brief Request the feeds that run now, every kind, with where each started.
  */
 #+end_src
 
 ** list_feeds_response
 #+begin_src cpp :name comment
 /**
- * @brief The running feeds' source_names, and whether the read succeeded.
+ * @brief The feeds the service runs now, each with where it started, and whether
+ * the read succeeded.
  */
 #+end_src
 
@@ -152,7 +291,11 @@ feeds it answers with, because a caller reads it beside the config list.
 :default: false
 :END:
 
-*** running_source_names
+*** running_feeds
 :PROPERTIES:
-:cpp_type: std::vector<std::string>
+:cpp_type: std::vector<running_feed>
 :END:
+#+begin_src cpp :name comment
+/** @brief The feeds that run, in source name order. */
+#+end_src
+

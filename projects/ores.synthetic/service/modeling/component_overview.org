@@ -29,11 +29,10 @@ entity handlers and history providers from =ores.synthetic.core=, and the
 per-entity event registrars in =messaging/= wire the DB-notify to NATS
 publish chain for each changed event. The feed control plane (feed
 configuration, feed start and stop, folder feed control, IR curve preview,
-simulation, and vintage validity handlers) also lives here. One per-kind
+and simulation handlers) also lives here. One per-kind
 registry, =feed_kind_registry=, carries what the control plane needs to know
 about an asset class — its factory kind, its config read permission, its
-config-row loader, its build-input resolver, its vintage anchor and its
-simulate payload — so no handler branches on a kind.
+config-row loader, its build-input resolver and its simulate payload — so no handler branches on a kind.
 
 * Inputs
 

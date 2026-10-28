@@ -44,9 +44,6 @@ export interface IrCurveGenerationConfigWrite {
     enabled: boolean;
     auto_start: boolean;
     price_source: string;
-    vintage_source: string;
-    vintage_date: string;
-    vintage_series_uri: string;
     description: string;
     fixed_leg_payment_frequency_code: string;
     source_name: string;

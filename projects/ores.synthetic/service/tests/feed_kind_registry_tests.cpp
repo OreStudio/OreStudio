@@ -23,7 +23,6 @@
 #include "../src/folder_feed_control_handler.hpp"
 #include "../src/generator_fleet.hpp"
 #include "../src/simulate_handler.hpp"
-#include "../src/vintage_validity_handler.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/service/running_scheduler.hpp"
 #include "ores.database/service/context_factory.hpp"
@@ -60,8 +59,8 @@
 
 // Proves the per-kind registry is the one dispatch point: a stub kind over a
 // stub factory, with the registry's container and folder reads injected as
-// plain lambdas, is reached by start, stop, list, folder start, folder stop,
-// vintage validity and simulate -- with no edit to any handler and no
+// plain lambdas, is reached by start, stop, list, folder start, folder stop
+// and simulate -- with no edit to any handler and no
 // database. The stub's own closures read no repository, so nothing here needs
 // a connection of any kind.
 
@@ -158,15 +157,6 @@ stub_candidate(const std::string& id, const std::string& source, const std::stri
     c.enabled = true;
     c.auto_start = true;
     c.folder_id = uuid_of(folder);
-    c.vintage_anchor = [] {
-        ores::synthetic::service::feed_vintage_anchor a;
-        a.applicable = true;
-        a.source = "vintage";
-        a.date = "2016-02-05";
-        a.series_uri = "oresmd://fx/EURUSD?type=quote&instrument=spot";
-        a.datum_uri = "oresmd://fx/EURUSD?type=quote&instrument=spot";
-        return a;
-    };
     c.build_input = []() {
         return ores::synthetic::service::feed_build_outcome{
             .input =
@@ -550,15 +540,6 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
         h.stop(request_message(stop_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
     CHECK(f.fleet.running_count() == 0);
-
-    // vintage validity: the verb iterates the registered kinds and reads the
-    // kind's own anchor coordinate. The anchor is applicable, and the lookup
-    // itself fails (there is no marketdata here), so this asserts the verb
-    // reaches the stub rather than the outcome of a live read.
-    {
-        vintage_validity_handler h(f.nats, f.auth_nats, f.ctx, f.verifier, *f.registry);
-        h.list(request_message(get_vintage_validity_request{}, f.token));
-    }
 
     // simulate: the verb decodes through the registered kind's closure and
     // replies with the shared envelope. The registry's own kind lookup is the

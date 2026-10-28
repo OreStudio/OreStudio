@@ -24,11 +24,13 @@ import { useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import {
     structures,
+    type StructureLeg,
     type StructurePageRecord,
     type StructureTreeNode,
 } from '../api/structures.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { RecordTable, type ListSource } from '../refdata/RecordList.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
@@ -280,6 +282,15 @@ function VerdictCard({ record }: { readonly record: StructurePageRecord }): Reac
     );
 }
 
+/**
+ * The legs of the deal.
+ *
+ * The table is the application's own `RecordTable`, which every embedded list of
+ * records uses: its columns, its empty state and its keyboard handling are the
+ * ones a person already knows. Its source reads the legs the page already holds,
+ * because a deal's legs arrive with the deal: there is no page to ask a server
+ * for.
+ */
 function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
@@ -292,65 +303,96 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
         },
     });
 
-    if (record.legs.length === 0) {
-        return <p className="py-2 text-sm text-ink-muted">{t('trading.structure.noLegs')}</p>;
-    }
+    const source: ListSource<StructureLeg> = {
+        key: `structure-legs-${record.id}`,
+        read: async (page) => {
+            const needle = page.search.toLowerCase();
+            const matched = record.legs.filter(
+                (leg) =>
+                    needle === '' ||
+                    [leg.reference, leg.product, leg.kind, leg.state, leg.role]
+                        .join(' ')
+                        .toLowerCase()
+                        .includes(needle),
+            );
+            const ordered = [...matched].sort((left, right) =>
+                page.descending
+                    ? right.sequence_number - left.sequence_number
+                    : left.sequence_number - right.sequence_number,
+            );
+            return {
+                rows: ordered.slice(page.offset, page.offset + page.limit),
+                total: ordered.length,
+            };
+        },
+        search: true,
+        sortable: ['sequence_number'],
+        mayAdd: false,
+    };
+
     return (
         <div className="space-y-2">
             {unlink.isError && <Notice tone="error">{unlink.error.message}</Notice>}
-            <table className="w-full text-left text-sm">
-                <thead>
-                    <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-                        <th className="px-2 py-2 font-medium">{t('trading.structure.leg')}</th>
-                        <th className="px-2 py-2 font-medium">{t('trading.structure.trade')}</th>
-                        <th className="px-2 py-2 font-medium">{t('trading.structure.type')}</th>
-                        <th className="px-2 py-2 font-medium">{t('trading.structure.state')}</th>
-                        <th className="px-2 py-2 font-medium">
-                            {t('trading.structure.externalVersion')}
-                        </th>
-                        <th className="px-2 py-2" />
-                    </tr>
-                </thead>
-                <tbody>
-                    {record.legs.map((leg, index) => (
-                        <tr key={leg.trade_id} className="border-b border-line last:border-0">
-                            <td className="px-2 py-2 text-ink-muted">{index + 1}</td>
-                            <td className="px-2 py-2 font-mono">
-                                <Link
-                                    className="text-accent hover:text-accent-bright"
-                                    to={`${PATHS.trades}/${leg.trade_id}`}
-                                >
-                                    {leg.reference === '' ? leg.trade_id : leg.reference}
-                                </Link>
-                            </td>
-                            <td className="px-2 py-2 text-ink">
-                                {leg.product === '' ? leg.kind : leg.product}
-                            </td>
-                            <td className="px-2 py-2">
-                                {leg.state === '' ? '—' : <Tag tone="up">{leg.state}</Tag>}
-                            </td>
-                            <td className="px-2 py-2 text-ink-muted">
-                                {leg.external_version === null
-                                    ? '—'
-                                    : `ext ${leg.external_version}`}
-                            </td>
-                            <td className="px-2 py-2 text-right">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    pending={unlink.isPending}
-                                    onClick={() => unlink.mutate(leg.trade_id)}
-                                >
-                                    {t('trading.structure.unlink')}
-                                </Button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <RecordTable
+                source={source}
+                plural={t('trading.structure.legs')}
+                keyOf={(leg) => leg.trade_id}
+                columns={[
+                    {
+                        id: 'leg',
+                        header: t('trading.structure.leg'),
+                        cell: (leg) => String(leg.sequence_number),
+                    },
+                    {
+                        id: 'trade',
+                        header: t('trading.structure.trade'),
+                        mono: true,
+                        cell: (leg) => (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.trades}/${leg.trade_id}`}
+                            >
+                                {leg.reference === '' ? leg.trade_id : leg.reference}
+                            </Link>
+                        ),
+                    },
+                    {
+                        id: 'type',
+                        header: t('trading.structure.type'),
+                        cell: (leg) => (leg.product === '' ? leg.kind : leg.product),
+                    },
+                    {
+                        id: 'state',
+                        header: t('trading.structure.state'),
+                        cell: (leg) =>
+                            leg.state === '' ? '—' : <Tag tone="up">{leg.state}</Tag>,
+                    },
+                    {
+                        id: 'external_version',
+                        header: t('trading.structure.externalVersion'),
+                        cell: (leg) =>
+                            leg.external_version === null ? '—' : `ext ${leg.external_version}`,
+                    },
+                    {
+                        id: 'unlink',
+                        header: '',
+                        cell: (leg) => (
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                pending={unlink.isPending}
+                                onClick={() => unlink.mutate(leg.trade_id)}
+                            >
+                                {t('trading.structure.unlink')}
+                            </Button>
+                        ),
+                    },
+                ]}
+            />
         </div>
     );
 }
+
 
 function DetailsTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();

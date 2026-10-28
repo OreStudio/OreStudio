@@ -54,20 +54,21 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     await expect(tradesCard).toBeVisible({ timeout: 20_000 });
 
     await page.getByRole('tab', { name: /^members$/i }).click();
-    // An earlier run may have taken every leg out of a deal, and adding one to an
-    // empty deal and to a full one are the same act.
-    const before = await page.locator('tbody tr').count();
 
-    const trade = page.getByLabel(/^trade/i);
+    const form = page.locator('section', {
+        has: page.getByRole('heading', { name: /add a leg/i }),
+    });
+    const trade = form.getByLabel(/^trade/i);
     await trade.waitFor({ state: 'visible' });
     const chosen = (await trade.locator('option').nth(1).innerText()).trim();
     await trade.selectOption({ index: 1 });
     await page.getByRole('button', { name: /^add the leg$/i }).click();
 
-    await expect(page.locator('tbody tr')).toHaveCount(before + 1, { timeout: 20_000 });
-    await expect(
-        page.locator('tbody tr').getByRole('link', { name: chosen }).first(),
-    ).toBeVisible({ timeout: 20_000 });
+    // The act is that the trade becomes a leg, not that a row count moved: the
+    // count says nothing when a deal already holds that trade or held none.
+    await expect(page.getByRole('link', { name: chosen }).first()).toBeVisible({
+        timeout: 20_000,
+    });
     await page.screenshot({ path: 'shots/structure-page.png', fullPage: true });
 
     // The record of the structure is its own tab, and adding a leg is a change
@@ -100,12 +101,14 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
 
     // The leg's own link leads to the trade, and the trade names the structure it
     // belongs to by the same reference the structure shows.
-    const legRows = page.locator('tbody tr:visible');
+    const tree = page.locator('aside', { has: page.getByRole('heading', { name: /the tree/i }) });
+    const treeLinks = tree.getByRole('link');
     test.skip(
-        (await legRows.count()) === 0,
-        'Every leg of this deal was taken out by an earlier run.',
+        (await treeLinks.count()) <= 1,
+        'The deal holds no leg: an earlier run took them out.',
     );
-    await legRows.first().getByRole('link').first().click();
+    // The root's own link is first; the first leg is the one after it.
+    await treeLinks.nth(1).click();
     await expect(page.getByRole('heading', { name: reference })).toBeHidden({ timeout: 20_000 });
     await expect(page.getByRole('tab', { name: /details/i })).toHaveAttribute(
         'aria-selected',
@@ -150,11 +153,10 @@ test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
 
     const legs = page.locator('tbody tr:visible');
     await legs.first().waitFor({ state: 'visible', timeout: 20_000 });
-    const before = await legs.count();
     const freed = ((await legs.first().getByRole('link').first().innerText()) ?? '').trim();
 
     await legs.first().getByRole('button', { name: /^unlink$/i }).click();
-    await expect(legs).toHaveCount(before - 1, { timeout: 20_000 });
+    await expect(page.getByRole('link', { name: freed })).toHaveCount(0, { timeout: 20_000 });
 
     // The trade is still a trade: its own page reads it, and it names no deal.
     await page.goto(`/trading/structures`);

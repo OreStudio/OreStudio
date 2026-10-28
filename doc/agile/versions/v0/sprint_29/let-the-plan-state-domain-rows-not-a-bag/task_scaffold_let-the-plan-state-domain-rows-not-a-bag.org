@@ -20,28 +20,37 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the story through =compass story new= so it carries an identity the
+document index can resolve, wire it into sprint 29, and put its reasoning back
+into the file the tool owns.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
 
--
+- The story carries a properties drawer with its ID and every header field, so
+  =compass task new --story= resolves it.
+- Sprint 29's stories table names the story by its real ID, with no dangling
+  link.
+- The story states the model, the defect and the decisions, and points at the
+  design note.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Write the story body as prose first, then create the story with =compass story
+new=, passing the goal and the acceptance bullets so the generated file starts
+from the real text rather than a placeholder. Splice the remaining sections —
+decisions, why, what the bag is, the defect underneath, the model, the design
+record — into the generated file, and never touch the header.
 
 * Measurements
 
@@ -83,3 +92,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story exists at =9BB217A3-C60C-482C-9384-DC2E7DF8E322= and
+=compass task new --story 9BB217A3-C60C-482C-9384-DC2E7DF8E322= resolves it,
+which it could not do before.
+
+The first attempt was hand-written and had no header at all: no properties
+drawer, no =#+title=, no =#+type=, no ID. The index therefore never saw it, and
+the sprint row added by hand named =6D920523=, an ID that existed nowhere on
+disk, so sprint 29 carried a dangling reference. Both are gone. The branch was
+reset onto =origin/main= (it was fifteen commits behind) and the story was
+created through the tool.

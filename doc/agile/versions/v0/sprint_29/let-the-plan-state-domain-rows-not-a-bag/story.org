@@ -39,7 +39,7 @@ A trade has one description, in the domain. The planner draws a product and cons
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0FF2943A-687E-434A-A673-ACD9C10CEF06][Scaffold story: Let the plan state domain rows, not a bag]] | STARTED | 2026-10-28 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0FF2943A-687E-434A-A673-ACD9C10CEF06][Scaffold story: Let the plan state domain rows, not a bag]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:E68EF41E-CF67-4B93-9787-E24D278FAFBB][Implement Let the plan state domain rows, not a bag]] | BACKLOG | | | Initial task for: Let the plan state domain rows, not a bag |
 
 * Decisions
@@ -124,6 +124,6 @@ check stays as the backstop it should always have been.
 * Design record
 
 The reasoning is written up in
-[[file:../../../../knowledge/domain/what-a-trade-population-is-made-of.org][What a trade population is made of]],
+[[file:../../../../../knowledge/domain/what-a-trade-population-is-made-of.org][What a trade population is made of]],
 which states the three kinds of thing, the defect underneath and the order of
 work.

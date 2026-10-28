@@ -223,6 +223,8 @@ interface TreeNode {
     sequence_number: number;
     /** The product's name on a leaf, which is the type's description. */
     product: string;
+    /** The asset class the product belongs to, which is what a desk sorts by. */
+    asset_class: string;
     external_version: number | null;
     children: TreeNode[];
 }
@@ -247,10 +249,10 @@ function assembleTree(
     structureReferences: ReadonlyMap<string, string>,
     tradeReferences: ReadonlyMap<string, string>,
     trades: ReadonlyMap<string, Record<string, unknown>>,
-    products: ReadonlyMap<string, string>,
+    catalogue: { names: ReadonlyMap<string, string>; classes: ReadonlyMap<string, string> },
 ): TreeNode | null {
     const nameOf = (type: string): string => {
-        const named = products.get(type) ?? '';
+        const named = catalogue.names.get(type) ?? '';
         return named !== '' && named !== type ? named : humanise(type);
     };
     const byId = new Map(structures.map((entry) => [text(entry['id']), entry]));
@@ -285,6 +287,7 @@ function assembleTree(
             role,
             sequence_number: sequence,
             product: '',
+            asset_class: '',
             external_version: null,
             children: [
                 ...childrenOf(id).map((childId) => assemble(childId, 'structure', 0)),
@@ -300,6 +303,7 @@ function assembleTree(
                         role: text(member['role']),
                         sequence_number: Number(member['sequence_number'] ?? 0),
                         product: nameOf(type),
+                        asset_class: assetClassOf(catalogue.classes.get(type) ?? ''),
                         external_version:
                             trade === undefined ? null : Number(trade['external_version'] ?? 0),
                         children: [],
@@ -394,14 +398,35 @@ function verdictsOf(kind: string): { confirms: string; prices: string } {
     };
 }
 
-/** The name each trade type is known by, keyed by its code. */
-async function productNames(session: LiveSession): Promise<ReadonlyMap<string, string>> {
+/** The name each trade type is known by, and the asset class it belongs to. */
+async function catalogueOf(
+    session: LiveSession,
+): Promise<{ names: ReadonlyMap<string, string>; classes: ReadonlyMap<string, string> }> {
     const types = await readAll(session, tradeTypeSubjects.list_trade_types_request, 'trade_types', {
         filter: { code: null, code_one_of: null },
     });
-    return new Map(
-        types.map((entry) => [text(entry['code']), text(entry['description'])] as const),
-    );
+    return {
+        names: new Map(
+            types.map((entry) => [text(entry['code']), text(entry['description'])] as const),
+        ),
+        classes: new Map(
+            types.map((entry) => [text(entry['code']), text(entry['product_type'])] as const),
+        ),
+    };
+}
+
+/** The asset class's own name, as the desk says it. */
+function assetClassOf(code: string): string {
+    switch (code) {
+        case 'swap':
+            return 'Rates';
+        case 'fx':
+            return 'FX';
+        case 'bond':
+            return 'Bond';
+        default:
+            return code === '' ? '' : humanise(code);
+    }
 }
 
 /** The state each trade is in, keyed by the trade's id. */
@@ -799,7 +824,7 @@ export function registerStructureRoutes(
             ),
         ];
 
-        const [structureReferences, tradeReferences, trades, history, products, states] =
+        const [structureReferences, tradeReferences, trades, history, catalogue, states] =
             await Promise.all([
             referencesOf(
                 session,
@@ -812,14 +837,19 @@ export function registerStructureRoutes(
                 key: { id: structureId },
                 order: { field: 'version', descending: true },
             }),
-            optional(() => productNames(session), new Map<string, string>()),
+            optional(
+                () => catalogueOf(session),
+                { names: new Map<string, string>(), classes: new Map<string, string>() },
+            ),
             optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
         ]);
 
         const nameOf = (type: string): string => {
-            const named = products.get(type) ?? '';
+            const named = catalogue.names.get(type) ?? '';
             return named !== '' && named !== type ? named : humanise(type);
         };
+        const classOf = (type: string): string =>
+            assetClassOf(catalogue.classes.get(type) ?? '');
         const legs = mine
             .map((member) => {
                 const tradeId = text(member['trade_id']);
@@ -832,6 +862,7 @@ export function registerStructureRoutes(
                     sequence_number: Number(member['sequence_number'] ?? 0),
                     kind: type,
                     product: nameOf(type),
+                    asset_class: classOf(type),
                     state: states.get(tradeId) ?? '',
                     external_version:
                         trade === undefined ? null : Number(trade['external_version'] ?? 0),
@@ -895,7 +926,7 @@ export function registerStructureRoutes(
                 structureReferences,
                 tradeReferences,
                 trades,
-                products,
+                catalogue,
             ),
             legs,
             roles: [...FREE_ROLES],

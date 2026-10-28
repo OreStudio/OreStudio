@@ -102,7 +102,11 @@ function TreeNodeRow({
                 className={`flex items-start gap-2 py-1 ${isHere ? 'text-ink' : 'text-ink-muted'}`}
                 style={{ paddingLeft: `${depth * 14}px` }}
             >
-                <Tag tone={kindTone(node.kind)}>{node.kind === '' ? 'trade' : node.kind}</Tag>
+                {/* The chip is the asset class, as the prototype draws it: the
+                    product's own name is the line beside it. */}
+                <Tag tone={kindTone(node.asset_class)}>
+                    {node.asset_class === '' ? 'trade' : node.asset_class}
+                </Tag>
                 <div className="min-w-0 flex-1">
                     {node.product === '' ? null : (
                         <div className="truncate text-sm text-ink" title={node.product}>

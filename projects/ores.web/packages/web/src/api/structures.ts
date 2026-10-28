@@ -32,6 +32,7 @@ export interface StructureLeg {
     /** The trade's type code, and the name that type is known by. */
     readonly kind: string;
     readonly product: string;
+    readonly asset_class: string;
     /** The state the trade is in, empty when the read could not name it. */
     readonly state: string;
     readonly external_version: number | null;
@@ -77,8 +78,9 @@ export interface StructureTreeNode {
     /** The role this node takes under its parent. */
     readonly role: string;
     readonly sequence_number: number;
-    /** The product's name on a leaf. */
+    /** The product's name on a leaf, and the asset class it belongs to. */
     readonly product: string;
+    readonly asset_class: string;
     readonly external_version: number | null;
     readonly children: readonly StructureTreeNode[];
 }
@@ -131,6 +133,7 @@ const treeNodeSchema: z.ZodType<StructureTreeNode> = z.lazy(() =>
         role: z.string().default(''),
         sequence_number: z.coerce.number().int().default(0),
         product: z.string().default(''),
+        asset_class: z.string().default(''),
         external_version: z.coerce.number().int().nullable().default(null),
         children: z.array(treeNodeSchema).default([]),
     }),
@@ -165,6 +168,7 @@ const structurePageRecordSchema = z.object({
                 sequence_number: z.coerce.number().int().default(0),
                 kind: z.string().default(''),
                 product: z.string().default(''),
+                asset_class: z.string().default(''),
                 state: z.string().default(''),
                 external_version: z.coerce.number().int().nullable().default(null),
             }),

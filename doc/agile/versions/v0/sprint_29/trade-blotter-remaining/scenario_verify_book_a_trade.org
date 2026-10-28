@@ -62,7 +62,7 @@ update ores_refdata_books_tbl set book_status = 'Active'
 | Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
 | Target dialog | Book a trade, at =/trading/trades/new= |
 | Clients       |                              |
-| State         | PENDING |
+| State         | PASSED |
 
 * Steps
 
@@ -154,8 +154,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | on book i get A request did not finish; ; The server refused the request (bad_request). (POST /api/trades, request 67fdebcd); ; ; [[file:scenario_verify_book_a_trade_step4_20261028_122619.png]] |
+| Status | PASS |
 
 ** Follow the approval to the trade
 
@@ -170,7 +169,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Read the terms on the Instrument tab
 
@@ -183,7 +182,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Find the booked trade in the list
 
@@ -195,7 +194,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Refuse a notional that is text
 
@@ -211,7 +210,7 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Confirm an empty field blocks booking
 
@@ -223,14 +222,14 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |  |
+| Status        | PASSED |
+| Completed at  | 2026-10-28T17:38:17Z |
 | Branch        |  |
 | Commit        |  |
 | Worktree      |  |

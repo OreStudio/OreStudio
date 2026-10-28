@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C80FF1CD-AA28-4E52-9413-7982F73E3AA7
+:END:
+#+title: Cap the rows a generated list may return
+#+description: The generated list applies the caller's limit and no ceiling of its own, so a client that states none, or a large one, pulls every row the filter matches. The result rows are one such list: the BFF asks for 20,000 rows of one run, and any other client with the read permission could ask for every row of the tenant. A page cap in codegen, or a required filter for a table whose key is a run rather than a row, is the decision this captures.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:codegen:review:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

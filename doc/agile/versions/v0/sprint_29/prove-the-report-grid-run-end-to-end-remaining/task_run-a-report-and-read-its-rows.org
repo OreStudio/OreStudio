@@ -88,12 +88,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | The row limit and offset are ignored, so the read is unbounded, and =total= is the returned count rather than the true one | =run_result_rows_handler.cpp=, =grid-report-results.ts= | Open | The BFF sends =limit: 20000= and the service reads every row of the run. The number is about three per trade, so a large run is an unbounded reply on one NATS subject. |
-| 2 | The handler drops the filter members it accepts | =run_result_rows_handler.cpp= | Open | It reads only =filter->report_instance_id=; =measure= and =measure_one_of= are ignored, and =report_instance_id_one_of= with them. |
-| 3 | Neither the handler nor the BFF checks a read permission | =run_result_rows_handler.cpp= | Open | =make_request_context= authenticates the caller and nothing checks a permission. The generated CRUD handler is the reference. |
-| 4 | Dead constants and a dead route remain in the BFF | =grid-report-results.ts= | Open | The =TAR_*= constants are still defined and nothing uses them. |
+| 1 | The row limit and offset are ignored, so the read is unbounded, and =total= is the returned count rather than the true one | =run_result_rows_handler.cpp=, =grid-report-results.ts= | Fixed | The BFF sends =limit: 20000= and the service reads every row of the run. The number is about three per trade, so a large run is an unbounded reply on one NATS subject. | Fixed in #3986: The generated service applies =offset= and =limit= and answers =total= from =get_total_row_count=.
+| 2 | The handler drops the filter members it accepts | =run_result_rows_handler.cpp= | Fixed | It reads only =filter->report_instance_id=; =measure= and =measure_one_of= are ignored, and =report_instance_id_one_of= with them. | Fixed in #3986: The generated service applies every filter member, =measure= and the =*_one_of= lists included.
+| 3 | Neither the handler nor the BFF checks a read permission | =run_result_rows_handler.cpp= | Fixed | =make_request_context= authenticates the caller and nothing checks a permission. The generated CRUD handler is the reference. | Fixed in #3986: The generated handler checks =reporting::report_result_rows:read=, and the permission is seeded and granted to Member.
+| 4 | Dead constants and a dead route remain in the BFF | =grid-report-results.ts= | Fixed | The =TAR_*= constants are still defined and nothing uses them. | Fixed in #3986: The =TAR_*= constants are removed.
 | 5 | Shared repository helpers were renamed in a generated file | =report_result_row_repository.cpp= | Resolved | The file carries the generated marker, and the prefixed names are what the generator emits for this entity. The drift check runs clean on the files that are committed; what it does report is the twelve missing layers, recorded under Notes. |
-| 6 | Minor points: include order, the counterparty refusal, the silent trigger failure, =job_instance_id: 0=, and the missing BFF test | several | Open | Recorded as written; none blocks the feature. |
+| 6 | Minor points: include order, the counterparty refusal, the silent trigger failure, =job_instance_id: 0=, and the missing BFF test | several | Partially | Recorded as written; none blocks the feature. | Fixed in #3986: the include order.
 
 
 * Result

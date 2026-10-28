@@ -4010,6 +4010,19 @@ const pt: SourceCatalogue = {
                 review: 'A diferença, e a revisão',
                 reviewLead:
                     'O que a importação escreve, as linhas removidas primeiro. Um ficheiro que omite um registo esquece-o quase sempre por acidente, por isso Manter é a escolha por omissão.',
+                target: 'Para onde vai',
+                targetLead:
+                    'Um ficheiro para uma configuração nova não altera nada do que existe. Um ficheiro para uma configuração que detém altera-a no lugar, e o histórico regista-o.',
+                targetNew: 'Uma configuração nova',
+                targetExisting: 'Uma configuração que detenho',
+                targetChoose: 'Escolher uma configuração',
+                targetName: 'Nome',
+                targetVariant: 'Variante',
+                targetNote:
+                    'Nada é escrito antes do último passo. Uma configuração oficial é uma proposta na norma; esta importação escreve a alteração diretamente, com o seu motivo e comentário.',
+                targetExistingNote:
+                    'Escreve sobre {name}, no lugar. Cada linha que o ficheiro omite é mantida salvo indicação em contrário, e o histórico registra a alteração.',
+                targetNewNote: 'Cria a configuração {name}. Nada do que existe muda.',
             },
             counts: {
                 inFile: 'No ficheiro',
@@ -4031,9 +4044,16 @@ const pt: SourceCatalogue = {
                     'Descartados, e nomeados aqui para que nada seja descartado em silêncio.',
                 duplicate: 'Duplicados',
                 duplicateLead: 'Um registo nomeado duas vezes no ficheiro; o primeiro é mantido.',
+                missing: 'Linhas que o ficheiro omite',
+                missingLead:
+                    'Uma linha sem a qual uma configuração não pode ser guardada; a importação nomeia-a aqui em vez de recusar todo o ficheiro.',
+                unknown_type: 'Tipos de produto que o vocabulário não contém',
+                unknown_typeLead:
+                    'Os ecrãs não podem propor estes tipos. As linhas são escritas como o ficheiro as declara.',
             },
             noDifference: 'O ficheiro contém o que o tenant detém. Não há nada a escrever.',
             change: 'Alteração',
+            record: 'Registo',
             what: 'O quê',
             choice: 'Escolha',
             changes: { added: 'Adicionado', changed: 'Alterado', removed: 'Removido' },
@@ -5814,6 +5834,19 @@ const pt: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        importTargetDetail: '{variant} · {products} produtos · {settings} parâmetros',
+        importCounts: {
+            products: 'Produtos no ficheiro',
+            settings: 'Parâmetros no ficheiro',
+        },
+        importCountsNote:
+            'Um produto é escrito com o seu modelo, o seu motor e os parâmetros que cada um aceita. Os parâmetros da própria configuração são escritos com ela.',
+        importProduct: '{type}: modelo {model}, motor {engine}, {settings} parâmetro(s)',
+        importGlobal: 'Parâmetro de configuração: {name}',
+        importSummary:
+            '{added} adicionado(s), {changed} alterado(s), {removed} removido(s), {held} já detido(s).',
+        imported:
+            'Importado para {name}: {added} adicionado(s), {changed} alterado(s), {deleted} removido(s), {kept} mantido(s).',
         productCount: '{count} produtos',
         author: {
             next: 'Seguinte',

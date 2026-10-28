@@ -1451,6 +1451,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['adapters'],
     },
+    'marketdata.v1.ops.list_published_curves': {
+        asOf: false,
+        filter: [],
+        rows: ['sets'],
+    },
     'marketdata.v1.ops.list_series_identities': {
         asOf: false,
         filter: [],
@@ -2567,6 +2572,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_curve_configs'],
     },
     'refdata.v1.equity_curve_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.equity_underlyings.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['equity_underlyings'],
+    },
+    'refdata.v1.equity_underlyings_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -4741,6 +4756,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_swap_instruments'],
     },
     'trading.v1.equity_swap_instruments_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.equity_swap_periods.list': {
+        asOf: true,
+        filter: [],
+        rows: ['equity_swap_periods'],
+    },
+    'trading.v1.equity_swap_periods_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

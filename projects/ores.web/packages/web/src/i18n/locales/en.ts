@@ -3982,6 +3982,19 @@ export const en: SourceCatalogue = {
                 review: 'The difference, and the review',
                 reviewLead:
                     'What the import writes, removed rows first. A file that omits a record usually leaves it out by accident, so Keep it is the default.',
+                target: 'Where it goes',
+                targetLead:
+                    'A file into a new configuration changes nothing that exists. A file into a configuration you hold changes it in place, and its history says so.',
+                targetNew: 'A new configuration',
+                targetExisting: 'A configuration I hold',
+                targetChoose: 'Choose a configuration',
+                targetName: 'Name',
+                targetVariant: 'Variant',
+                targetNote:
+                    'Nothing is written before the last step. An official configuration is a proposal in the standard; this import writes the change directly, with your reason and commentary.',
+                targetExistingNote:
+                    'Writes over {name}, in place. Every row the file omits is kept unless you say otherwise, and the history records the change.',
+                targetNewNote: 'Creates the configuration {name}. Nothing that exists changes.',
             },
             counts: {
                 inFile: 'In the file',
@@ -4002,9 +4015,16 @@ export const en: SourceCatalogue = {
                 droppedLead: 'Dropped, and named here so nothing is dropped in silence.',
                 duplicate: 'Duplicates',
                 duplicateLead: 'A record the file names twice; the first is kept.',
+                missing: 'Rows the file leaves out',
+                missingLead:
+                    'A row a configuration cannot be saved without; the import names it here rather than refusing the whole file.',
+                unknown_type: 'Product types the vocabulary does not hold',
+                unknown_typeLead:
+                    'The screens cannot offer these types back. The rows are written as the file states them.',
             },
             noDifference: 'The file holds what the tenant holds. There is nothing to write.',
             change: 'Change',
+            record: 'Record',
             what: 'What',
             choice: 'Choice',
             changes: { added: 'Added', changed: 'Changed', removed: 'Removed' },
@@ -5772,6 +5792,15 @@ export const en: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        importTargetDetail: '{variant} · {products} products · {settings} settings',
+        importCounts: { products: 'Products in the file', settings: 'Settings in the file' },
+        importCountsNote:
+            'A product is written with its model, its engine and the settings each of them takes. The settings of the configuration itself are written with it.',
+        importProduct: '{type}: model {model}, engine {engine}, {settings} setting(s)',
+        importGlobal: 'Configuration setting: {name}',
+        importSummary: '{added} added, {changed} changed, {removed} removed, {held} already held.',
+        imported:
+            'Imported into {name}: {added} added, {changed} changed, {deleted} deleted, {kept} kept.',
         productCount: '{count} products',
         author: {
             next: 'Next',

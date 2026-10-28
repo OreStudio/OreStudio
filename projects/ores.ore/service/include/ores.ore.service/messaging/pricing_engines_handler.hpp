@@ -31,14 +31,22 @@
 namespace ores::ore::service::messaging {
 
 /**
- * @brief Serves the ORE pricing engine configuration's export: the operation
- * that writes pricingengine.xml from one configuration.
+ * @brief Serves the ORE pricing engine configuration's document pair: the
+ * export that writes pricingengine.xml from one configuration, the preview that
+ * says what importing a file would do, and the import that writes it with the
+ * person's choices.
  *
- * The configuration is read through analytics' own messages under the caller's
- * delegated session, so the party and the permissions are the caller's, and the
- * name of the file is read from the reporting file types table rather than
- * written here. The document itself is written by the one ORE exporter in
- * ores.ore.core.
+ * The configuration is read and written through analytics' own messages under
+ * the caller's delegated session, so the party and the permissions are the
+ * caller's, and the name of the file is read from the reporting file types table
+ * rather than written here. The document itself is read and written by the one
+ * importer and the one exporter in ores.ore.core.
+ *
+ * The import writes through the save the configuration's own screen uses, so
+ * the validation, the history and the party rules are the screen's. A
+ * configuration the file does not have yet is registered in reporting first and
+ * removed again when the save is refused, which is the order the screen's create
+ * takes.
  */
 class pricing_engines_handler {
 private:
@@ -58,6 +66,17 @@ public:
                             ores::nats::service::nats_client outbound_nats);
 
     void export_pricing_engines(ores::nats::message msg);
+
+    /**
+     * @brief Parses a pricing engines document and says what importing it would
+     * do. Writes nothing.
+     */
+    void preview_pricing_engines_import(ores::nats::message msg);
+
+    /**
+     * @brief Writes a pricing engines document with the person's choices.
+     */
+    void import_pricing_engines(ores::nats::message msg);
 
 private:
     ores::nats::service::client& nats_;

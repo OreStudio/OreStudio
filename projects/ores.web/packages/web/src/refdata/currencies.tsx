@@ -23,12 +23,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
-import type { RecordRow } from '../api/client.js';
+import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
-import { OreExchangeActions, OreImportPage, type OreDocumentKind } from '../ore/OreExchange.js';
+import {
+    OreExchangeActions,
+    OreImportPage,
+    type OreDocumentKind,
+    type OreImportChoice,
+    type OreImportKind,
+} from '../ore/OreExchange.js';
 import { RecordList, useRecordSource } from './RecordList.js';
 import { RecordTimeline } from './RecordTimeline.js';
 import {
@@ -252,9 +258,97 @@ export function CurrenciesPage(): ReactNode {
     );
 }
 
-/** The Import steps of the currencies, at their own address (RS-ORE-05). */
+/** What the review offers for a currency, the first being the default (RS-ORE-05). */
+const CURRENCY_CHOICES: Record<string, readonly string[]> = {
+    removed: ['keep', 'delete'],
+    changed: ['take', 'keep'],
+    added: ['take', 'skip'],
+};
+
+/**
+ * The Import steps of the currencies, at their own address (RS-ORE-05).
+ *
+ * The currency document is the whole table, so the target is the tenant's
+ * currencies and the steps are four: there is no configuration to choose.
+ */
 export function CurrencyImportPage(): ReactNode {
-    return <OreImportPage kind={ORE_DOCUMENT} />;
+    const { t } = useTranslation();
+    const choicesOf = (change: string): readonly OreImportChoice[] =>
+        (CURRENCY_CHOICES[change] ?? []).map((id) => ({
+            id,
+            label: t(`refdata.ore.choices.${id}`),
+        }));
+    const kind: OreImportKind = {
+        words: 'refdata.currencies',
+        area: 'refdata',
+        targetKind: 'table',
+        rootElement: ORE_DOCUMENT.rootElement,
+        listPath: ORE_DOCUMENT.listPath,
+        choicesFor: (row) => choicesOf(row.change),
+        preview: async (content) => {
+            const result = await api.previewOreImport(ORE_DOCUMENT.resource, content);
+            return {
+                success: result.success,
+                message: result.message,
+                targetName: '',
+                holds: {
+                    counts: [
+                        {
+                            id: 'inFile',
+                            label: t('refdata.ore.counts.inFile'),
+                            value: result.in_file,
+                        },
+                        { id: 'held', label: t('refdata.ore.counts.held'), value: result.held },
+                        {
+                            id: 'changed',
+                            label: t('refdata.ore.counts.changed'),
+                            value: result.changed,
+                        },
+                        { id: 'added', label: t('refdata.ore.counts.added'), value: result.added },
+                        {
+                            id: 'removed',
+                            label: t('refdata.ore.counts.removed'),
+                            value: result.removed,
+                        },
+                    ],
+                    lines: [],
+                    note: t('refdata.ore.countsNote'),
+                },
+                rows: result.rows.map((row) => ({
+                    key: row.iso_code,
+                    change: row.change,
+                    name: row.iso_code,
+                    detail: row.name,
+                    what: row.what,
+                })),
+                issues: result.issues,
+                summary: '',
+            };
+        },
+        write: async ({ content, choices, intent }) => {
+            const result = await api.importOre(ORE_DOCUMENT.resource, {
+                content,
+                choices: Object.entries(choices).map(([iso_code, action]) => ({
+                    iso_code,
+                    action,
+                })),
+                reasonCode: intent.reason_code,
+                commentary: intent.commentary,
+            });
+            return {
+                success: result.success,
+                message: result.message,
+                errors: result.errors.map((error) => `${error.iso_code}: ${error.message}`),
+                summary: t('refdata.ore.imported', {
+                    added: String(result.added),
+                    changed: String(result.changed),
+                    deleted: String(result.deleted),
+                    kept: String(result.kept),
+                }),
+            };
+        },
+    };
+    return <OreImportPage kind={kind} />;
 }
 
 /**

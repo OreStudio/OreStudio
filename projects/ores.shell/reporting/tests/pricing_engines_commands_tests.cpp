@@ -168,3 +168,108 @@ TEST_CASE("pricing_engines_commands_states_a_path_it_cannot_write", "[commands]"
     CHECK(out.str().find("Cannot write") != std::string::npos);
     CHECK(command_feedback::failed());
 }
+
+TEST_CASE("pricing_engines_commands_registers_the_import", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    cli::Menu root_menu("root");
+    nats_client session;
+
+    pricing_engines_commands::register_commands(root_menu, session);
+
+    const auto completions = root_menu.GetCompletions("pricing_engines ");
+    BOOST_LOG_SEV(lg, debug) << "Completions: " << completions.size();
+    CHECK(std::find(completions.begin(),
+                    completions.end(),
+                    std::string{"pricing_engines import"}) != completions.end());
+}
+
+TEST_CASE("pricing_engines_commands_process_import_requires_a_session", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    pricing_engines_commands::process_import(out, session, {configuration_id});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("Name the file with --file") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("pricing_engines_commands_process_import_needs_a_file", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    pricing_engines_commands::process_import(out, session, {"--new-name", "From ORE"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output with no file: " << out.str();
+    CHECK(out.str().find("--file <path>") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("pricing_engines_commands_process_import_names_one_configuration", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    const auto path = std::filesystem::temp_directory_path() / "pricing_engines_no_target.xml";
+    {
+        std::ofstream write(path);
+        write << "<?xml version=\"1.0\"?>\n<PricingEngines>\n</PricingEngines>\n";
+    }
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    pricing_engines_commands::process_import(out, session, {"--file", path.string()});
+
+    BOOST_LOG_SEV(lg, debug) << "Output with no target: " << out.str();
+    CHECK(out.str().find("Name one configuration") != std::string::npos);
+    CHECK(command_feedback::failed());
+    std::filesystem::remove(path);
+}
+
+TEST_CASE("pricing_engines_commands_process_import_refuses_a_file_it_cannot_read", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    pricing_engines_commands::process_import(
+        out, session, {configuration_id, "--file", "/nonexistent-directory/pricingengine.xml"});
+
+    BOOST_LOG_SEV(lg, debug) << "Output: " << out.str();
+    CHECK(out.str().find("Cannot read") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("pricing_engines_commands_process_import_refuses_two_configurations", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    const auto path = std::filesystem::temp_directory_path() / "pricing_engines_import.xml";
+    {
+        std::ofstream write(path);
+        write << "<?xml version=\"1.0\"?>\n<PricingEngines>\n</PricingEngines>\n";
+    }
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    pricing_engines_commands::process_import(
+        out, session, {configuration_id, "--new-name", "From ORE", "--file", path.string()});
+
+    BOOST_LOG_SEV(lg, debug) << "Output: " << out.str();
+    CHECK(out.str().find("Name one configuration") != std::string::npos);
+    CHECK(command_feedback::failed());
+    std::filesystem::remove(path);
+}

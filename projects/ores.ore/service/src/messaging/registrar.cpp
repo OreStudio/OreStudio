@@ -86,6 +86,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
         ores::ore::messaging::export_pricing_engines_request::nats_subject,
         qg,
         [peh](ores::nats::message msg) { peh->export_pricing_engines(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        ores::ore::messaging::preview_pricing_engines_import_request::nats_subject,
+        qg,
+        [peh](ores::nats::message msg) { peh->preview_pricing_engines_import(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        ores::ore::messaging::import_pricing_engines_request::nats_subject,
+        qg,
+        [peh](ores::nats::message msg) { peh->import_pricing_engines(std::move(msg)); }));
 
     auto rch =
         std::make_shared<run_configuration_handler>(nats, ctx, std::move(signer), outbound_nats);

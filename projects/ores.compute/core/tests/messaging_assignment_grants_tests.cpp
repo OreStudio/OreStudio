@@ -30,6 +30,7 @@ const std::string package = "/api/v1/storage/ores/compute/packages/ORE-1/ore.tar
 const std::string input = "/api/v1/storage/ores/compute/input/job.tar.gz";
 const std::string output = "/api/v1/storage/ores/compute/output/result.tar.gz";
 const std::string results = "/api/v1/storage/ores/compute/results/result.csv";
+const std::string logs = "/api/v1/storage/ores/compute/logs/result.csv";
 
 }
 
@@ -51,10 +52,10 @@ TEST_CASE("grant_for_path_refuses_a_path_that_names_no_object", "[messaging]") {
 
 TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_both_outputs",
           "[messaging]") {
-    const auto grants = storage_grants_for(package, input, output, results);
+    const auto grants = storage_grants_for(package, input, output, results, logs);
 
     REQUIRE(grants.has_value());
-    REQUIRE(grants->size() == 4);
+    REQUIRE(grants->size() == 5);
     CHECK((*grants)[0].op == "get");
     CHECK((*grants)[0].key_prefix == "compute/packages/ORE-1/ore.tar.gz");
     CHECK((*grants)[1].op == "get");
@@ -63,12 +64,15 @@ TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_both_ou
     CHECK((*grants)[2].key_prefix == "compute/output/result.tar.gz");
     CHECK((*grants)[3].op == "put");
     CHECK((*grants)[3].key_prefix == "compute/results/result.csv");
+    CHECK((*grants)[4].op == "put");
+    CHECK((*grants)[4].key_prefix == "compute/logs/result.csv");
 }
 
 TEST_CASE("storage_grants_for_is_refused_when_any_path_names_no_object", "[messaging]") {
     // A job with a missing grant cannot run, so the whole set is refused.
-    CHECK(!storage_grants_for("", input, output, results).has_value());
-    CHECK(!storage_grants_for(package, "nope", output, results).has_value());
-    CHECK(!storage_grants_for(package, input, "", results).has_value());
-    CHECK(!storage_grants_for(package, input, output, "").has_value());
+    CHECK(!storage_grants_for("", input, output, results, logs).has_value());
+    CHECK(!storage_grants_for(package, "nope", output, results, logs).has_value());
+    CHECK(!storage_grants_for(package, input, "", results, logs).has_value());
+    CHECK(!storage_grants_for(package, input, output, "", logs).has_value());
+    CHECK(!storage_grants_for(package, input, output, results, "").has_value());
 }

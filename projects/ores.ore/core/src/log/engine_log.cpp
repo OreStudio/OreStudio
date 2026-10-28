@@ -121,6 +121,15 @@ std::string message_after_separator(std::string_view line) {
     return std::string(line.substr(separator + 3));
 }
 
+std::string curve_name_of(std::string_view reference);
+std::string value_of(const json::object& fields, std::string_view name);
+json::object subject_of(const json::object& fields, std::string_view scope);
+std::string cause_of(std::string_view scope,
+                     std::string_view message,
+                     const json::object& fields,
+                     std::string_view subject_id);
+std::string detail_of(const json::object& fields);
+
 /** Applies one structured message, whose JSON starts at @p from, onto @p event. */
 bool apply_structured(std::string_view payload, engine_log_event& event) {
     const auto open = payload.find('{');
@@ -140,27 +149,128 @@ bool apply_structured(std::string_view payload, engine_log_event& event) {
     if (!event.subject_id.empty())
         event.subject = "trade";
 
-    // The fields that are not the subject are the account of why: the exception
-    // the engine raised and the analytic it was in. They are kept by name.
-    json::object detail;
-    if (const auto* fields = obj.if_contains("sub_fields"); fields != nullptr &&
-                                                          fields->is_array()) {
-        for (const auto& one : fields->as_array()) {
+    json::object fields;
+    if (const auto* stated = obj.if_contains("sub_fields"); stated != nullptr &&
+                                                            stated->is_array()) {
+        for (const auto& one : stated->as_array()) {
             if (!one.is_object())
                 continue;
             const auto& field = one.as_object();
             const auto name = string_field(field, "name");
-            if (name.empty() || name == "curveId" || name == "tradeId")
+            if (name.empty())
                 continue;
-            detail[name] = string_field(field, "value");
+            fields[name] = string_field(field, "value");
         }
     }
-    if (!detail.empty())
-        event.detail = json::serialize(detail);
+    event.fields = fields.empty() ? std::string() : json::serialize(fields);
+
+    const auto subject = subject_of(fields, event.scope);
+    event.subject = value_of(subject, "subject");
+    event.subject_id = value_of(subject, "id");
+    event.cause = cause_of(event.scope, event.message, fields, event.subject_id);
+    event.detail = detail_of(fields);
     return true;
 }
 
+
+/**
+ * @brief The curve name inside an engine reference such as
+ * =[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]=.
+ *
+ * The engine states a curve as the index it is built from and the curve it
+ * names, and a person reads the second. A reference of another shape is returned
+ * as it stands, because a name the engine chose is better than no name at all.
+ */
+std::string curve_name_of(std::string_view reference) {
+    const auto marker = reference.find("IndexCurve(");
+    if (marker == std::string_view::npos)
+        return std::string(reference);
+    const auto open = marker + std::string_view("IndexCurve(").size();
+    const auto close = reference.find(')', open);
+    if (close == std::string_view::npos)
+        return std::string(reference);
+    const auto inner = reference.substr(open, close - open);
+    const auto comma = inner.find(',');
+    if (comma == std::string_view::npos)
+        return std::string(inner);
+    return std::string(inner.substr(comma + 1));
+}
+
+/** The value of a named field in the flat object of sub-fields. */
+std::string value_of(const json::object& fields, std::string_view name) {
+    const auto* value = fields.if_contains(name);
+    if (value == nullptr || !value->is_string())
+        return {};
+    return std::string(value->as_string());
+}
+
+/**
+ * @brief Where a structured message places the record it is about.
+ *
+ * The sub-field decides, and not the group, because the engine states the subject
+ * once per group today except for Analytics, which names a trade when the failure
+ * was that trade's. A field that identifies a narrower subject is therefore read
+ * first, so an Analytics message that names a trade is placed on the trade.
+ *
+ * @return The object said to be the subject, empty when the message names none.
+ */
+json::object subject_of(const json::object& fields, std::string_view scope) {
+    json::object subject;
+    const auto put = [&subject](std::string_view kind, std::string value) {
+        subject["subject"] = std::string(kind);
+        subject["id"] = std::move(value);
+    };
+    if (const auto trade = value_of(fields, "tradeId"); !trade.empty())
+        put("trade", trade);
+    else if (scope == "Analytics")
+        put("analytic", value_of(fields, "analyticType"));
+    else if (scope == "Curve")
+        put("curve", value_of(fields, "curveId"));
+    else if (scope == "Configuration")
+        put("configuration", value_of(fields, "configurationType"));
+    return subject;
+}
+
+/**
+ * @brief What caused the message, from the group and the fields it carries.
+ *
+ * Only a trade's curve has to be read from the message: the engine names the
+ * trade's curve nowhere else. Reading it here is the one place that knows the
+ * engine's words, which is what spares every client the lesson.
+ */
+std::string cause_of(std::string_view scope, std::string_view message,
+                     const json::object& fields, std::string_view subject_id) {
+    if (scope == "Curve")
+        return curve_name_of(value_of(fields, "curveId"));
+    if (scope == "Trade") {
+        const auto marker = message.find("IndexCurve(");
+        if (marker != std::string::npos) {
+            const auto close = message.find(')', marker);
+            if (close != std::string::npos)
+                return curve_name_of(message.substr(marker, close - marker + 1));
+        }
+        return {};
+    }
+    if (scope == "Analytics")
+        return value_of(fields, "analyticType");
+    if (scope == "Configuration")
+        return std::string(subject_id);
+    return {};
+}
+
+/** The fields that describe the failure itself, never the subject. */
+std::string detail_of(const json::object& fields) {
+    json::object detail;
+    for (const auto& name : {"exceptionType", "warningType"}) {
+        const auto value = value_of(fields, name);
+        if (!value.empty())
+            detail[name] = value;
+    }
+    return detail.empty() ? std::string() : json::serialize(detail);
+}
+
 constexpr std::string_view structured_marker = "StructuredMessage";
+
 
 }
 

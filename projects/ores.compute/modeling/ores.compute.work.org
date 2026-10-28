@@ -180,6 +180,21 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+*** logs_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Pre-assigned upload location for the canonical log rows.
+ *
+ * Beside the archive and granted to the same claim: the node writes what the
+ * engine's log says here, and the reporting service reads it to fill the run's
+ * log. An empty value means the job produces no log.
+ */
+#+end_src
+
 *** storage_token
 :PROPERTIES:
 :cpp_type: std::string
@@ -481,6 +496,21 @@ result. No person types them, and nothing in the shell sends them.
  * Beside the archive and granted to the same claim: the node writes the rows it
  * marshalled from the engine's output here, and the reporting service reads them
  * to load its result table. An empty value means the job produces no rows.
+ */
+#+end_src
+
+*** logs_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Pre-assigned upload location for the canonical log rows.
+ *
+ * Beside the archive and granted to the same claim: the node writes what the
+ * engine's log says here, and the reporting service reads it to fill the run's
+ * log. An empty value means the job produces no log.
  */
 #+end_src
 

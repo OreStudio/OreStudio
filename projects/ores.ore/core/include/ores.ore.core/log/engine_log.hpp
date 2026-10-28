@@ -68,6 +68,13 @@ struct engine_log_event {
      */
     std::string cause;
     /**
+     * @brief Every sub-field the engine stated, as the JSON object it wrote.
+     *
+     * A consumer reads the field it needs by name from here, so what an error is
+     * about is decided where the meaning is known rather than by the parser.
+     */
+    std::string fields;
+    /**
      * @brief The sub-fields that are not the subject, as the engine wrote them.
      *
      * The engine states the exception it raised and the analytic it was in, and a

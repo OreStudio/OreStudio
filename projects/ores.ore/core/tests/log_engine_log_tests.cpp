@@ -69,7 +69,7 @@ TEST_CASE("a structured line takes its group, subject and cause", "[ore][log]") 
 
     REQUIRE(events.size() == 2);
     CHECK(events[0].message == "yield curve building failed for curve(s) Yield/HKD/HKD1D");
-    CHECK(events[0].cause == "[IndexCurve(HKD-HONIA)]");
+    CHECK(events[0].cause == "HKD-HONIA");
     CHECK(events[1].severity == "warning");
     CHECK(events[1].scope == "Trade");
     CHECK(events[1].subject == "trade");
@@ -184,10 +184,22 @@ TEST_CASE("a message with a comma is quoted so the row keeps its fields", "[ore]
     CHECK(text.find("\"one, two, three\"") != std::string::npos);
 }
 
-TEST_CASE("the fields that are not the subject are kept as the engine wrote them", "[ore][log]") {
+TEST_CASE("the detail states the failure and never the subject", "[ore][log]") {
+    // The fixture states only a trade type, which describes the trade and is not
+    // what failed, so the failure's own detail is empty and the field stays in
+    // the raw fields.
     const auto events = parse_engine_log_text(trade_line + "\n", "log.txt");
 
     REQUIRE(events.size() == 1);
-    CHECK(events[0].detail.find("tradeType") != std::string::npos);
-    CHECK(events[0].detail.find("curveId") == std::string::npos);
+    CHECK(events[0].detail.empty());
+    CHECK(events[0].fields.find("tradeType") != std::string::npos);
+}
+
+TEST_CASE("every sub-field the engine stated is available by name", "[ore][log]") {
+    const auto events = parse_engine_log_text(curve_line + "\n" + trade_line + "\n", "log.txt");
+
+    REQUIRE(events.size() == 2);
+    CHECK(events[0].fields.find("IndexCurve(HKD-HONIA)") != std::string::npos);
+    CHECK(events[1].fields.find("tradeType") != std::string::npos);
+    CHECK(events[1].fields.find("Bond") != std::string::npos);
 }

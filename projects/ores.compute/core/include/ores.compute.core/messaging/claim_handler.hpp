@@ -201,10 +201,15 @@ private:
         const auto result_id = boost::uuids::to_string(entry.result_id);
         const auto output_path = ores::compute::net::compute_storage::output_path(result_id);
         const auto results_path = ores::compute::net::compute_storage::results_path(result_id);
+        const auto logs_path = ores::compute::net::compute_storage::logs_path(result_id);
         const auto grants =
-            package ? storage_grants_for(
-                          package->package_uri, workunit->input_uri, output_path, results_path) :
-                      std::nullopt;
+            package ?
+                storage_grants_for(package->package_uri,
+                                   workunit->input_uri,
+                                   output_path,
+                                   results_path,
+                                   logs_path) :
+                std::nullopt;
         if (!grants) {
             // No node of this platform can ever run it. End it as a failure that a person
             // sees, and take it out of the queue, so it cannot hold the head of the line.
@@ -271,6 +276,7 @@ private:
         assignment.config_uri = workunit->config_uri;
         assignment.output_uri = output_path;
         assignment.results_uri = results_path;
+        assignment.logs_uri = logs_path;
         assignment.storage_token = *token;
         assignment.attempt = entry.attempts;
         BOOST_LOG_SEV(claim_handler_lg(), ores::logging::info)

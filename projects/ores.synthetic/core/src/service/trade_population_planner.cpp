@@ -910,9 +910,15 @@ constexpr std::string_view equity_types[] = {
     "EquityAccumulator",       "EquityAsianOption",         "EquityBarrierOption",
     "EquityCliquetOption",     "EquityDigitalOption",       "EquityDoubleBarrierOption",
     "EquityEuropeanBarrierOption", "EquityForward",         "EquityOption",
-    "EquityOptionPosition",    "EquityOutperformanceOption", "EquityPosition",
+    "EquityOptionPosition",    "EquityPosition",
     "EquitySwap",              "EquityTaRF",                "EquityTouchOption",
     "EquityVarianceSwap",      "EquityWorstOfBasketSwap"};
+/*
+ * EquityOutperformanceOption is routed to the option table and that table's
+ * check admits EquityOption and EquityCliquetOption only, so no outperformance
+ * row can satisfy it. The type stays out until the check admits it, and the
+ * gap is recorded rather than worked around by booking it as an option.
+ */
 
 constexpr std::size_t equity_type_count = std::size(equity_types);
 
@@ -966,13 +972,26 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         terms.maturity_date = end;
         terms.expiry_date = end;
         terms.long_short = (draw(name, 3) < 0.5) ? "Long" : "Short";
-        terms.option_type = (draw(name, 4) < 0.5) ? "Call" : "Put";
         terms.exercise_type = "European";
         terms.settlement_type = "Cash";
 
+        /*
+         * The option type and the strike are the option family's own terms. A
+         * touch states neither: the schema refuses an option type on a touch
+         * and requires one on a digital, so the two are split below.
+         */
         if (type == "EquityOption" || type == "EquityAsianOption" ||
-            type == "EquityOutperformanceOption" || type == "EquityCliquetOption" ||
-            type == "EquityPosition" || type == "EquityOptionPosition")
+            type == "EquityOutperformanceOption" || type == "EquityCliquetOption") {
+            terms.strike = level;
+            terms.option_type = (draw(name, 4) < 0.5) ? "Call" : "Put";
+        }
+
+        if (type.ends_with("BarrierOption")) {
+            terms.strike = level;
+            terms.option_type = (draw(name, 4) < 0.5) ? "Call" : "Put";
+        }
+
+        if (type == "EquityPosition" || type == "EquityOptionPosition")
             terms.strike = level;
 
         if (type == "EquityForward") {
@@ -993,7 +1012,13 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             terms.rebate = 0.0;
         }
 
-        if (type == "EquityDigitalOption" || type == "EquityTouchOption") {
+        if (type == "EquityDigitalOption") {
+            terms.option_type = (draw(name, 4) < 0.5) ? "Call" : "Put";
+            terms.strike = level;
+            terms.payout_amount = notional;
+        }
+
+        if (type == "EquityTouchOption") {
             terms.barrier_level = std::round(level * 0.9 * 100.0) / 100.0;
             terms.barrier_type = "DownAndOut";
             terms.payout_amount = notional;
@@ -1006,7 +1031,7 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         }
 
         if (type == "EquitySwap") {
-            terms.return_type = "PriceReturn";
+            terms.return_type = "Price";
             terms.payment_frequency_code = "Quarterly";
         }
 
@@ -1018,14 +1043,16 @@ equity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         if (type == "EquityAccumulator") {
             terms.fixing_frequency = "Daily";
             terms.knock_out_level = std::round(level * 1.1 * 100.0) / 100.0;
-            terms.target_amount = notional * 2.0;
-            terms.target_type = "Amount";
-            terms.payoff_type = "Accumulation";
+            // An accumulator states no target: the schema refuses one, and
+            // the target is the TaRF's own term.
+            terms.payoff_type = "Accumulator";
             terms.range_bounds.push_back(domain::equity_range_bound{std::nullopt, level, 1.0});
             terms.range_bounds.push_back(domain::equity_range_bound{level, std::nullopt, 2.0});
         }
 
         if (type == "EquityTaRF") {
+            terms.target_amount = notional * 2.0;
+            terms.target_type = "TargetFull";
             terms.target_points = 2.0;
             terms.knock_out_level = std::round(level * 1.1 * 100.0) / 100.0;
         }

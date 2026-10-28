@@ -262,7 +262,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length",
           "[trade_population]") {
     auto wide = equity_scope();
-    wide.trades_per_book = 17;
+    wide.trades_per_book = 16;
 
     const auto plan = plan_of(wide);
 
@@ -271,10 +271,11 @@ TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length",
         types.insert(slot.trade_type_code);
 
     /*
-     * Seventeen codes share nine tables, and the planner cycles through them,
-     * so one book of seventeen reaches every one.
+     * Sixteen codes share nine tables -- the outperformance option is routed
+     * to a table whose check cannot admit it -- and the planner cycles through
+     * them, so one book of sixteen reaches every one.
      */
-    REQUIRE(types.size() == 17u);
+    REQUIRE(types.size() == 16u);
 }
 
 TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_population]") {
@@ -297,7 +298,7 @@ TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_popu
 TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods",
           "[trade_population]") {
     auto scope = equity_scope();
-    scope.trades_per_book = 17;
+    scope.trades_per_book = 16;
 
     const auto plan = plan_of(scope);
 

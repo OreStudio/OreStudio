@@ -267,7 +267,13 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     for (const auto& underlying : read(underlying_req).equity_underlyings)
         scope.equity_underlyings.push_back(domain::equity_underlying_reference{
             .code = underlying.code,
-            .kind = underlying.instrument_type,
+            /*
+             * The vocabulary the code belongs to is the equity catalogue
+             * itself. Whether the row is an index or a share is that
+             * catalogue's own classification and not the kind the store
+             * validates a basket constituent against.
+             */
+            .kind = "equity",
             .currency = underlying.currency_code});
 
     ores::refdata::messaging::list_counterparties_request cp_req;
@@ -836,10 +842,15 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.underlying_name = equity->underlying_name;
             row.currency = equity->currency;
             row.notional = money(equity->notional);
-            row.option_type = equity->option_type;
-            row.strike = maybe_money(equity->strike);
-            row.barrier_level = maybe_money(equity->barrier_level);
-            row.barrier_type = equity->barrier_type;
+            // A digital states an option type and a strike; a touch states a
+            // barrier and neither of those. The schema refuses the mixture.
+            if (type == "EquityDigitalOption") {
+                row.option_type = equity->option_type;
+                row.strike = maybe_money(equity->strike);
+            } else {
+                row.barrier_level = maybe_money(equity->barrier_level);
+                row.barrier_type = equity->barrier_type;
+            }
             row.expiry_date = equity->expiry_date;
             row.long_short = equity->long_short;
             row.payout_amount = maybe_money(equity->payout_amount);
@@ -851,6 +862,9 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.underlying_name = equity->underlying_name;
             row.currency = equity->currency;
             row.forward_price = maybe_money(equity->fixed_price);
+            // The schema refuses a forward with no quantity, and a quantity of
+            // nothing is not a trade.
+            row.quantity = equity->quantity;
             row.expiry_date = equity->expiry_date;
             row.long_short = equity->long_short;
             row.settlement_type = equity->settlement_type;
@@ -867,7 +881,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                 row.underlying_name = equity->underlying_name;
             row.currency = equity->currency;
             row.notional = money(equity->notional);
-            row.return_type = equity->return_type.empty() ? "PriceReturn" : equity->return_type;
+            row.return_type = equity->return_type.empty() ? "Price" : equity->return_type;
             row.start_date = equity->start_date;
             row.maturity_date = equity->maturity_date;
             row.long_short = equity->long_short;
@@ -922,8 +936,10 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.long_short = equity->long_short;
             row.knock_out_level = maybe_money(equity->knock_out_level);
             row.target_amount = maybe_money(equity->target_amount);
-            row.target_type = equity->target_type.empty() ? "Amount" : equity->target_type;
-            row.payoff_type = equity->payoff_type.empty() ? "Accumulation" : equity->payoff_type;
+            // Empty states no target, which the schema requires of an
+            // accumulator; a TaRF carries the type its target needs.
+            row.target_type = equity->target_type;
+            row.payoff_type = equity->payoff_type.empty() ? "Accumulator" : equity->payoff_type;
             row.description = "Generated equity trade.";
             stamp(row);
             book_req.instruments.equity_accumulator_instruments.push_back(row);

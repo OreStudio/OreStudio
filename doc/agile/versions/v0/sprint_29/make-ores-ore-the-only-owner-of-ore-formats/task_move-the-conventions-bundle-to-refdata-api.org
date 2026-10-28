@@ -26,11 +26,11 @@ ores.ore.core depends on refdata's contract alone, and the bundle types sit besi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:84E84D0E-4EBA-46DD-85C0-40463293D22B][Make ores.ore the only owner of ORE formats]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -98,3 +98,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as #3997. The three payload structs are in
+=ores.refdata.api/messaging/conventions_bundle.hpp=, the service stays with the
+database and re-exports the names, and the codec names the bundle through the
+messaging namespace.
+
+The codec now declares eighteen ORES libraries where it declared nineteen, and
+=refdata.core= is gone: refdata appears only as its api. The four affected
+suites pass, and both touched components regenerate to exactly what is
+committed.
+
+The removal also exposed a test helper that read through a transitive include,
+which is now stated, and an environment whose database lacked the equity
+underlying table and its grants; both were repaired, the second by applying the
+create script and the grants the schema's setup would have given it.

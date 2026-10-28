@@ -8,7 +8,7 @@
 #+filetags: :make_main_green_after_the_sqlgen_removal:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/hold-the-basket-price-as-a-decimal
-#+pr:
+#+pr: 4021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4021][#4021]] | [synthetic] Hold the basket's initial price as the decimal the domain states |
 
 * Review
 

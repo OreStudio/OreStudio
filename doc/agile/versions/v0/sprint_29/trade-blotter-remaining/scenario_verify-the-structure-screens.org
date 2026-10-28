@@ -50,7 +50,7 @@ that note, and see the capture filed for it.
 | Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]   |
 | Target screen | Structures and packages, at =/trading/structures=, and a deal's page under it |
 | Clients       |                                          |
-| State         | FAILED |
+| State         | PENDING |
 
 * Steps
 
@@ -154,9 +154,13 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 - Passes when the root row is drawn with its kind chip and reference, each leg
   beneath it with its product name, its reference and its role (*leg*), and the
   note *The model nests one level at most, and a deeper tree is refused.*
-- Click a leg's reference in the tree.
-- Passes when the trade's own page opens, and its Details tab names the deal in
-  a *Structure* field whose link comes back to this deal.
+- Fold the tree with the chevron beside the root, then unfold it: a structure
+  opens and closes, and the trades beneath it go and come back with it.
+- Click a leg in the tree.
+- Passes when that row is marked as the one being read, the panel states
+  *Reading <the reference> · leg*, and *Open the trade* leads to the trade's own
+  page, whose Details tab names the deal in a *Structure* field whose link comes
+  back to this deal.
 
 *** Result
 
@@ -170,7 +174,14 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 - Choose a trade in the picker, keep the role =leg=, press *Add the leg*.
 - Passes when the table gains the row, the count rises, and the new leg states
   its state and external version.
-- Press *Unlink* on that row.
+- Then book a leg from the deal: on *Details* choose a role beside *Book a leg*
+  and press it. The form states *This trade becomes a leg of <the reference>*,
+  and the counterparty is the deal's, offered rather than chosen.
+- Fill the form and press *Book trade*.
+- Passes when the deal's page answers rather than the trade's, the count has
+  risen by one, and the new trade is a leg of the deal without being added by
+  hand. It is a live trade with its own external version.
+- Back on *Members*, press *Unlink* on the leg just booked.
 - Passes when the row goes, the count falls, and no error banner appears. The
   trade itself is untouched: it becomes groupable again and appears in the
   grouping picker in Step 8.
@@ -185,9 +196,13 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 ** Read the history and the price notice
 
 - Open the *History* tab.
-- Passes when it lists the deal's versions with the person who wrote each, when,
-  and why — the reason you typed when grouping it, or =system.new_record= for a
-  population's deal.
+- Passes when it shows the application's own history panel: a timeline of
+  versions with the person who wrote each, when, and why — the reason you
+  typed when grouping it, or =system.new_record= for a population's deal.
+- Read the *Record* picker: it names the deal and each of its legs.
+- Choose a leg.
+- Passes when the timeline changes to that leg's membership versions, and a
+  version that linked or unlinked it is among them.
 - Open the *Price* tab.
 - Passes when it states that pricing is not read yet, rather than a number.
 
@@ -222,8 +237,8 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-10-28T17:50:39Z |
+| Status        | PENDING |
+| Completed at  |       |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 7E3659C3-356E-4F0F-B4BA-C54050F39A98
+:END:
+#+title: Send only the members a filter declares
+#+description: A trading filter refuses a request that names a member its struct does not declare, and the BFF swallows the refusal.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:bff:wire:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A list request's filter must name exactly the members its protocol struct declares: an extra member such as code beside code_one_of is refused by the decoder, and the read fails whole.
+
+*Why:* The structures screen's catalogue read sent code beside code_one_of, which trade_types_filter does not declare, so the decoder refused the request. The read was wrapped in a fallback, so the screen drew humanised names and an empty asset class instead of failing: the chip read Trade, and nothing said why.
+
+*How to apply:* Read the filter struct in the service protocol before writing a filter, and send every declared member with null where nothing is asked, no more. A read wrapped in a fallback hides this: when a fallback value shows on screen, call the service once without it before believing the data is empty.

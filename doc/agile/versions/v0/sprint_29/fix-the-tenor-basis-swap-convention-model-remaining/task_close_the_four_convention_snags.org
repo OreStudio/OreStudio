@@ -8,7 +8,7 @@
 #+filetags: :fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/close-the-four-convention-snags
-#+pr: 3925
+#+pr: 4001
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -77,6 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4001][#4001]] | [agile] Sync the convention story's board |
 | [[https://github.com/OreStudio/OreStudio/pull/3925][#3925]] | [refdata] Enforce one live part per convention and document both leg forms |
 
 * Review

@@ -8,7 +8,7 @@
 #+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-the-plan-state-domain-rows-not-a-bag
-#+pr:
+#+pr: 4018
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4018][#4018]] | [agile] Let the plan state domain rows, not a bag |
 
 * Review
 

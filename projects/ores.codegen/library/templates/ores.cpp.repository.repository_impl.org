@@ -2,7 +2,7 @@
 :ID: CA9F9135-3EB4-4578-9A97-760F4CA28480
 :END:
 #+title: ores.cpp.repository.repository_impl
-#+description: CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile.
+#+description: CRUD + temporal queries through the ores.database query builder on the libpq layer; custom-method paste points. =repository= profile.
 #+type: archetype
 #+output: projects/{component_core_dir}/src/repository/{entity}_repository.cpp
 #+facet: ores.cpp.repository
@@ -11,7 +11,10 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile.  Database access layer using sqlgen parameterised queries, tracking `valid_from`/`valid_to`.
+CRUD + temporal queries through =ores::database::query_builder= on the libpq layer, with
+custom-method paste points. =repository= profile. The query builder keeps the names the
+template first used with sqlgen and writes the SQL sqlgen wrote, with every value a text
+parameter, tracking =valid_from= and =valid_to=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -23,7 +26,7 @@ The full template source. Edit here and re-tangle with
 =library/templates/cpp_domain_type_repository.cpp.mustache=.
 
 #+begin_src mustache :tangle cpp_domain_type_repository.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.repository.repository_impl.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
@@ -34,13 +37,10 @@ The full template source. Edit here and re-tangle with
 {{/domain_entity.has_filter_record}}
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/repository/stated_order.hpp"
+#include "ores.database/query_builder/execute.hpp"
 {{#domain_entity.has_as_of_lookup}}
-#include "ores.database/repository/valid_at.hpp"
 {{/domain_entity.has_as_of_lookup}}
 {{#domain_entity.has_filter_record}}
-#include "ores.database/repository/list_filter.hpp"
 {{/domain_entity.has_filter_record}}
 {{#domain_entity.has_range_filter}}
 #include "ores.database/repository/range_bound.hpp"
@@ -70,24 +70,10 @@ The full template source. Edit here and re-tangle with
 #include <utility>
 {{/domain_entity.sortable_recorded_at}}
 #include <boost/log/sources/severity_feature.hpp>
-#include <sqlgen/delete_from.hpp>
 {{#domain_entity.has_filter_record}}
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/Value.hpp>
 {{/domain_entity.has_filter_record}}
-#include <sqlgen/dynamic/OrderBy.hpp>
 {{#current_state}}
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/insert.hpp>
 {{/current_state}}
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -111,15 +97,15 @@ The full template source. Edit here and re-tangle with
 
 namespace ores::{{component}}::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 {{^component_is_database}}
 using namespace ores::database::repository;
 {{/component_is_database}}
 
 std::string {{entity_singular}}_repository::sql() {
-    return generate_create_table_sql<{{entity_singular}}_entity>(lg());
+    return query_builder::insert_statement_sql<{{entity_singular}}_entity>(lg());
 }
 
 bool {{entity_singular}}_repository::is_sortable(std::string_view field) {
@@ -157,21 +143,21 @@ std::string {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_si
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(const ores::utility::domain::order& order,
+query_builder::order {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending,
+        return query_builder::make_order(default_columns, default_descending != order.descending,
                           {{{domain_entity.order_key_columns}}});
     if (!{{entity_singular}}_repository::is_sortable(order.field))
         throw std::invalid_argument(
             "A list of {{entity_plural_words}} cannot be ordered by " + order.field + ".");
 {{#domain_entity.sortable_recorded_at}}
-    return make_order({ {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_sort_column(order.field)}, order.descending,
+    return query_builder::make_order({ {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_sort_column(order.field)}, order.descending,
                       {{{domain_entity.order_key_columns}}});
 {{/domain_entity.sortable_recorded_at}}
 {{^domain_entity.sortable_recorded_at}}
-    return make_order({order.field}, order.descending, {{{domain_entity.order_key_columns}}});
+    return query_builder::make_order({order.field}, order.descending, {{{domain_entity.order_key_columns}}});
 {{/domain_entity.sortable_recorded_at}}
 }
 {{#domain_entity.has_filter_record}}
@@ -180,29 +166,29 @@ sqlgen::dynamic::OrderBy {{entity_singular}}{{^entity_singular}}{{name_singular}
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(const std::optional<{{domain_entity.filter_type}}>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
 {{#domain_entity.filter_members}}
 {{#is_equals}}
 {{#is_nullable}}
     if (filter->{{member}})
-        r.push_back(*filter->{{member}} ? equals("{{column}}", filter_value(**filter->{{member}}))
-                                        : is_null("{{column}}"));
+        r.push_back(*filter->{{member}} ? query_builder::equals("{{column}}", query_builder::filter_value(**filter->{{member}}))
+                                        : query_builder::is_null("{{column}}"));
 {{/is_nullable}}
 {{^is_nullable}}
     if (filter->{{member}})
-        r.push_back(equals("{{column}}", filter_value(*filter->{{member}})));
+        r.push_back(query_builder::equals("{{column}}", query_builder::filter_value(*filter->{{member}})));
 {{/is_nullable}}
 {{/is_equals}}
 {{#is_one_of}}
     if (filter->{{member}}) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->{{member}})
-            values.push_back(filter_value(v));
-        r.push_back(one_of("{{column}}", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("{{column}}", std::move(values)));
     }
 {{/is_one_of}}
 {{#is_range}}
@@ -210,15 +196,15 @@ std::optional<sqlgen::dynamic::Condition>
         const auto bound = range_bound(*filter->{{member}}, range_end::{{#is_from}}from{{/is_from}}{{#is_to}}to{{/is_to}}, {{#is_timestamp}}true{{/is_timestamp}}{{^is_timestamp}}false{{/is_timestamp}});
         if (!bound)
             throw std::invalid_argument("The bound " + *filter->{{member}} + " of {{member}} is not a valid date or time.");
-        r.push_back({{#is_from}}at_least{{/is_from}}{{#is_to}}at_most{{/is_to}}("{{column}}", filter_value(*bound)));
+        r.push_back(query_builder::{{#is_from}}at_least{{/is_from}}{{#is_to}}at_most{{/is_to}}("{{column}}", query_builder::filter_value(*bound)));
     }
 {{/is_range}}
 {{/domain_entity.filter_members}}
 {{#domain_entity.has_search}}
     if (filter->search && !filter->search->empty())
-        r.push_back(contains_any({{{domain_entity.search_columns}}}, *filter->search));
+        r.push_back(query_builder::contains_any({{{domain_entity.search_columns}}}, *filter->search));
 {{/domain_entity.has_search}}
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 {{/domain_entity.has_filter_record}}
 
@@ -290,7 +276,7 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
 void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_singular}}& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 <<paste:A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04>>
-    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+    query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
         lg(), "Inserting {{entity_singular_words}} into database.");
 }
 
@@ -298,7 +284,7 @@ void {{entity_singular}}_repository::insert(
     context ctx, const std::vector<domain::{{entity_singular}}>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_plural_words}}. Count: " << v.size();
 <<paste:B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15>>
-    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+    query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
         lg(), "Inserting {{entity_plural_words}} into database.");
 }
 {{/append_insert}}
@@ -318,17 +304,17 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
 {{#current_state}}
     const auto t = apply_claim(ctx, v, claim);
 {{#immutable}}
-    execute_write_op(ctx, sqlgen::insert({{entity_singular}}_mapper::map(t)),
+    query_builder::execute_write_op(ctx, query_builder::insert({{entity_singular}}_mapper::map(t)),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/immutable}}
 {{^immutable}}
-    execute_write_op(ctx, sqlgen::insert_or_replace({{entity_singular}}_mapper::map(t)),
+    query_builder::execute_write_op(ctx, query_builder::insert_or_replace({{entity_singular}}_mapper::map(t)),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/immutable}}
 {{/current_state}}
 {{^current_state}}
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
+    query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/current_state}}
 <<paste:2C8F029A-9D8A-44E0-A06E-F9EA637ED581>>
@@ -344,16 +330,16 @@ void {{entity_singular}}_repository::write(
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
 {{#current_state}}
 {{#immutable}}
-    execute_write_op(ctx, sqlgen::insert({{entity_singular}}_mapper::map(batch)),
+    query_builder::execute_write_op(ctx, query_builder::insert({{entity_singular}}_mapper::map(batch)),
         lg(), "Writing {{entity_plural_words}} to database.");
 {{/immutable}}
 {{^immutable}}
-    execute_write_op(ctx, sqlgen::insert_or_replace({{entity_singular}}_mapper::map(batch)),
+    query_builder::execute_write_op(ctx, query_builder::insert_or_replace({{entity_singular}}_mapper::map(batch)),
         lg(), "Writing {{entity_plural_words}} to database.");
 {{/immutable}}
 {{/current_state}}
 {{^current_state}}
-    execute_write_query(ctx, {{entity_singular}}_mapper::map(batch),
+    query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(batch),
         lg(), "Writing {{entity_plural_words}} to database.");
 {{/current_state}}
 <<paste:40393605-A998-4295-B69F-9FB035FFBC92>>
@@ -366,19 +352,19 @@ std::vector<domain::{{entity_singular}}>
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
-        order_by({{{primary_key.order_by_cols}}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
+        query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-        where("valid_to"_c == max.value()) |
+        query_builder::where("valid_to"_c == max.value()) |
 {{/current_state}}
-        order_by({{{primary_key.order_by_cols}}});
+        query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
 
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}}");
@@ -392,16 +378,16 @@ std::vector<domain::{{entity_singular}}>
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && {{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{primary_key.where_and}}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 
 {{#primary_key.party_sql_key}}
-    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    auto found = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
@@ -421,7 +407,7 @@ std::vector<domain::{{entity_singular}}>
     return found;
 {{/primary_key.party_sql_key}}
 {{^primary_key.party_sql_key}}
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
@@ -438,17 +424,17 @@ std::vector<domain::{{entity_singular}}>
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{{where_and}}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && {{{where_and}}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{where_and}}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{where_and}}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 
 {{#domain_entity.has_party_column}}
 {{#parent_column}}
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
@@ -457,7 +443,7 @@ std::vector<domain::{{entity_singular}}>
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    auto found = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
@@ -474,7 +460,7 @@ std::vector<domain::{{entity_singular}}>
 {{/parent_column}}
 {{/domain_entity.has_party_column}}
 {{^domain_entity.has_party_column}}
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_singular_words}} by {{columns_label}}.");
@@ -490,26 +476,26 @@ std::vector<domain::{{entity_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading any {{entity_singular_words}} by {{column}}: " << {{column}};
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{column}}"_c == {{column}}) |
-        order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
-        sqlgen::limit(1){{/domain_entity.has_party_column}};
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{column}}"_c == {{column}}) |
+        query_builder::order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
+        query_builder::limit(1){{/domain_entity.has_party_column}};
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("{{column}}"_c == {{column}}) |
-        order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
-        sqlgen::limit(1){{/domain_entity.has_party_column}};
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where("{{column}}"_c == {{column}}) |
+        query_builder::order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
+        query_builder::limit(1){{/domain_entity.has_party_column}};
 {{/read_tenant_filtered}}
 
 {{^domain_entity.has_party_column}}
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading any {{entity_singular_words}} by {{column}}.");
 {{/domain_entity.has_party_column}}
 {{#domain_entity.has_party_column}}
-    auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    auto found = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading any {{entity_singular_words}} by {{column}}.");
@@ -541,37 +527,37 @@ std::vector<domain::{{entity_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. " << {{{primary_key.log_fields}}};
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{{primary_key.where_and}}}) |
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && {{{primary_key.where_and}}}) |
 {{^current_state}}
 {{#has_audit_columns}}
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 {{/has_audit_columns}}
 {{^has_audit_columns}}
-        order_by("valid_from"_c.desc());
+        query_builder::order_by("valid_from"_c.desc());
 {{/has_audit_columns}}
 {{/current_state}}
 {{#current_state}}
-        order_by({{{primary_key.order_by_cols}}});
+        query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/current_state}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{primary_key.where_and}}}) |
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{primary_key.where_and}}}) |
 {{^current_state}}
 {{#has_audit_columns}}
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 {{/has_audit_columns}}
 {{^has_audit_columns}}
-        order_by("valid_from"_c.desc());
+        query_builder::order_by("valid_from"_c.desc());
 {{/has_audit_columns}}
 {{/current_state}}
 {{#current_state}}
-        order_by({{{primary_key.order_by_cols}}});
+        query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/current_state}}
 {{/read_tenant_filtered}}
 
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading all {{entity_singular_words}} versions by {{primary_key.column}}.");
@@ -585,17 +571,17 @@ std::optional<domain::{{entity_singular}}>
                                << " version: " << version;
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{{primary_key.where_and}}} && "version"_c == version) |
-        sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && {{{primary_key.where_and}}} && "version"_c == version) |
+        query_builder::limit(1);
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{primary_key.where_and}}} && "version"_c == version) |
-        sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{primary_key.where_and}}} && "version"_c == version) |
+        query_builder::limit(1);
 {{/read_tenant_filtered}}
 
-    const auto entities = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    const auto entities = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading {{entity_singular_words}} at version.");
@@ -620,22 +606,22 @@ std::vector<domain::{{entity_singular}}>
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
+        query_builder::offset(offset) | query_builder::limit(limit);
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-        where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
 {{/current_state}}
 {{#current_state}}
-        where("{{column}}"_c == {{column}}) |
+        query_builder::where("{{column}}"_c == {{column}}) |
 {{/current_state}}
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::offset(offset) | query_builder::limit(limit);
 {{/read_tenant_filtered}}
 
-    return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(order, {{{list_by_default_columns}}}, {{list_by_default_desc}}),
         {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
@@ -653,20 +639,20 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+                       query_builder::where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-                       where("{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+                       query_builder::where("{{column}}"_c == {{column}} && "valid_to"_c == max.value());
 {{/current_state}}
 {{#current_state}}
-                       where("{{column}}"_c == {{column}});
+                       query_builder::where("{{column}}"_c == {{column}});
 {{/current_state}}
 {{/read_tenant_filtered}}
 
-    return execute_count_query<{{entity_singular}}_entity>(
+    return query_builder::execute_count_query<{{entity_singular}}_entity>(
         ctx, query, {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}} by {{column}}");
 }
 {{/list_by}}
@@ -684,19 +670,19 @@ std::vector<domain::{{entity_singular}}>
     const auto vt(make_timestamp(ores::platform::time::datetime::to_db_string(valid_to_bound), lg()));
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{column}}"_c == {{column}} &&
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{column}}"_c == {{column}} &&
               "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
-        order_by({{{primary_key.order_by_cols}}});
+        query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where("{{column}}"_c == {{column}} &&
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where("{{column}}"_c == {{column}} &&
               "valid_from"_c < vt.value() && "valid_to"_c > vf.value()) |
-        order_by({{{primary_key.order_by_cols}}});
+        query_builder::order_by({{{primary_key.order_by_cols}}});
 {{/read_tenant_filtered}}
 
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading {{entity_plural_words}} as of window by {{column}}.");
@@ -740,15 +726,15 @@ std::vector<domain::{{entity_singular}}>
 {{/primary_key.party_sql_key}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
+    const auto query = query_builder::delete_from<{{entity_singular}}_entity> |
+        query_builder::where("tenant_id"_c == tid && {{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where({{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
+    const auto query = query_builder::delete_from<{{entity_singular}}_entity> |
+        query_builder::where({{{primary_key.where_and}}}{{#primary_key.party_sql_key}} && "party_id"_c == party{{/primary_key.party_sql_key}}{{domain_entity.temporal_filter}}{{domain_entity.version_filter}});
 {{/has_tenant_id}}
 
-    execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
 {{#has_audit_columns}}
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -787,24 +773,24 @@ std::vector<domain::{{entity_singular}}>
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}}{{domain_entity.list_temporal_filter}}) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+                       query_builder::where({{{tenant_where}}}{{domain_entity.list_temporal_filter}}) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
 {{^domain_entity.current_state}}
 {{^domain_entity.has_as_of_lookup}}
-                       where("valid_to"_c == max.value()) |
+                       query_builder::where("valid_to"_c == max.value()) |
 {{/domain_entity.has_as_of_lookup}}
 {{/domain_entity.current_state}}
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       query_builder::offset(offset) | query_builder::limit(limit);
 {{/read_tenant_filtered}}
 
-    return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return query_builder::execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
-        {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}},
+        {{#domain_entity.has_as_of_lookup}}query_builder::narrowed(query_builder::valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}},
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} with pagination.");
 }
@@ -815,15 +801,15 @@ std::optional<domain::{{entity_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading newest {{entity_singular_words}}";
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}}) |
-                       order_by("{{domain_entity.sql.newest_by}}"_c.desc()) | sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+                       query_builder::where({{{tenant_where}}}) |
+                       query_builder::order_by("{{domain_entity.sql.newest_by}}"_c.desc()) | query_builder::limit(1);
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       order_by("{{domain_entity.sql.newest_by}}"_c.desc()) | sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+                       query_builder::order_by("{{domain_entity.sql.newest_by}}"_c.desc()) | query_builder::limit(1);
 {{/read_tenant_filtered}}
-    const auto rows = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    const auto rows = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading newest {{entity_singular_words}}.");
@@ -845,26 +831,26 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}}{{domain_entity.list_temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+                       query_builder::where({{{tenant_where}}}{{domain_entity.list_temporal_filter}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{^domain_entity.current_state}}
 {{^domain_entity.has_as_of_lookup}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where("valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+                       query_builder::where("valid_to"_c == max.value());
 {{/domain_entity.has_as_of_lookup}}
 {{#domain_entity.has_as_of_lookup}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>>;
 {{/domain_entity.has_as_of_lookup}}
 {{/domain_entity.current_state}}
 {{#domain_entity.current_state}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>>;
 {{/domain_entity.current_state}}
 {{/read_tenant_filtered}}
 
-    return execute_count_query<{{entity_singular}}_entity>(
-        ctx, query, {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}}, lg(), "Counting {{entity_plural_words}}");
+    return query_builder::execute_count_query<{{entity_singular}}_entity>(
+        ctx, query, {{#domain_entity.has_as_of_lookup}}query_builder::narrowed(query_builder::valid_at(as_of), {{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}}, lg(), "Counting {{entity_plural_words}}");
 }
 
 std::vector<domain::{{entity_singular}}>
@@ -876,21 +862,21 @@ std::vector<domain::{{entity_singular}}>
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{tenant_where}}} && {{{primary_key.batch_in_and}}}
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && {{{primary_key.batch_in_and}}}
              {{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
-    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-        where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::read<std::vector<{{entity_singular}}_entity>> |
+        query_builder::where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
 {{/read_tenant_filtered}}
-    auto result = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    auto result = query_builder::execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} by ids.");
 {{#primary_key.is_compound}}
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if ({{{primary_key.batch_size_mismatch_check}}})
         throw std::invalid_argument(
@@ -936,15 +922,15 @@ void {{entity_singular}}_repository::remove(
 {{/current_state}}
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where("tenant_id"_c == tid && {{{primary_key.batch_in_and}}}
+    const auto query = query_builder::delete_from<{{entity_singular}}_entity> |
+        query_builder::where("tenant_id"_c == tid && {{{primary_key.batch_in_and}}}
              {{domain_entity.temporal_filter}});
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
-        where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
+    const auto query = query_builder::delete_from<{{entity_singular}}_entity> |
+        query_builder::where({{{primary_key.batch_in_and}}}{{domain_entity.temporal_filter}});
 {{/has_tenant_id}}
-    execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
 {{/primary_key.is_compound}}
 }
 
@@ -963,7 +949,7 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
                             (from_root ? "true" : "false") + ")";
 
     const auto rows =
-        execute_raw_multi_column_query(ctx, sql, lg(), "Reading {{entity_singular}} hierarchy");
+        query_builder::execute_raw_multi_column_query(ctx, sql, lg(), "Reading {{entity_singular}} hierarchy");
 
     std::vector<ores::utility::domain::hierarchy_flat_row> result;
     result.reserve(rows.size());
@@ -1006,7 +992,6 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
-#include <sqlgen/delete_from.hpp>
 #include "ores.utility/domain/protocol.hpp"
 {{/read_only}}
 #include <cstdint>
@@ -1014,22 +999,12 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 #include <utility>
 #include <vector>
 #include <boost/log/sources/severity_feature.hpp>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_left_or_right}}
-#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 {{#history}}
 #include "ores.database/repository/mapper_helpers.hpp"
 {{/history}}
@@ -1046,15 +1021,15 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 
 namespace ores::{{component}}::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 {{^component_is_database}}
 using namespace ores::database::repository;
 {{/component_is_database}}
 
 std::string {{name_singular}}_repository::sql() {
-    return generate_create_table_sql<{{name_singular}}_entity>(lg());
+    return query_builder::insert_statement_sql<{{name_singular}}_entity>(lg());
 }
 
 {{name_singular}}_repository::{{name_singular}}_repository(context ctx)
@@ -1117,7 +1092,7 @@ void {{name_singular}}_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing {{name_singular_words}} to database: "
                                << {{name_singular_short}}.{{left.column}} << "/" << {{name_singular_short}}.{{right.column}};
     const auto t = apply_claim({{name_singular_short}}, claim);
-    execute_write_query(ctx_, {{name_singular}}_mapper::map(t),
+    query_builder::execute_write_query(ctx_, {{name_singular}}_mapper::map(t),
         lg(), "writing {{name_singular_words}} to database");
 }
 
@@ -1130,7 +1105,7 @@ void {{name_singular}}_repository::write(
     batch.reserve({{name_short}}.size());
     for (std::size_t i = 0; i < {{name_short}}.size(); ++i)
         batch.push_back(apply_claim({{name_short}}[i], claims[i]));
-    execute_write_query(ctx_, {{name_singular}}_mapper::map(batch),
+    query_builder::execute_write_query(ctx_, {{name_singular}}_mapper::map(batch),
         lg(), "writing {{name_words}} to database");
 }
 
@@ -1140,17 +1115,17 @@ std::vector<domain::{{name_singular}}>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
-        order_by("{{left.column}}"_c, "{{order_column}}"_c);
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("{{left.column}}"_c, "{{order_column}}"_c);
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("valid_to"_c == max.value()) |
+        query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c);
 {{/has_tenant_id}}
 
-    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    return query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_words}}");
@@ -1163,19 +1138,19 @@ std::vector<domain::{{name_singular}}>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
-        order_by("{{left.column}}"_c, "{{order_column}}"_c) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "valid_to"_c == max.value()) |
+        query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c) |
+        query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("{{left.column}}"_c, "{{order_column}}"_c) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("valid_to"_c == max.value()) |
+        query_builder::order_by("{{left.column}}"_c, "{{order_column}}"_c) |
+        query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 
-    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    return query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_words}} (paginated).");
@@ -1193,8 +1168,8 @@ std::vector<domain::{{name_singular}}>
     const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} &&
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} &&
 {{#left.query_needs_str}}
               "{{left.column}}"_c == {{left.column}}_str &&
 {{/left.query_needs_str}}
@@ -1210,8 +1185,8 @@ std::vector<domain::{{name_singular}}>
               "valid_to"_c == max.value());
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where(
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where(
 {{#left.query_needs_str}}
               "{{left.column}}"_c == {{left.column}}_str &&
 {{/left.query_needs_str}}
@@ -1227,7 +1202,7 @@ std::vector<domain::{{name_singular}}>
               "valid_to"_c == max.value());
 {{/has_tenant_id}}
 
-    return execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    return query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_singular_words}} by key.");
@@ -1237,24 +1212,18 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result { long long count; };
-
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+                       query_builder::where({{{tenant_where}}} && "valid_to"_c == max.value());
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+                       query_builder::where("valid_to"_c == max.value());
 {{/has_tenant_id}}
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<{{name_singular}}_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting {{name_words}}");
     BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count: " << count;
     return count;
 }
@@ -1270,28 +1239,28 @@ std::vector<domain::{{name_singular}}>
     const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{/left.query_needs_str}}
-        order_by("{{order_column}}"_c);
+        query_builder::order_by("{{order_column}}"_c);
 
-    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    auto rows = query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_words}} by {{left.column_short}}.");
@@ -1306,7 +1275,7 @@ std::vector<domain::{{name_singular}}>
             ids += boost::uuids::to_string(rows[i].{{right.column}});
         }
         ids += "}";
-        const auto codes = execute_parameterized_multi_column_query(
+        const auto codes = query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT \"id\"::text, \"{{right.code_column}}\"::text"
             "  FROM {{right.references}}"
@@ -1340,28 +1309,28 @@ std::vector<domain::{{name_singular}}>
     const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{/right.query_needs_str}}
-        order_by("{{left.column}}"_c);
+        query_builder::order_by("{{left.column}}"_c);
 
-    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    auto rows = query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_words}} by {{right.column_short}}.");
@@ -1376,7 +1345,7 @@ std::vector<domain::{{name_singular}}>
             ids += boost::uuids::to_string(rows[i].{{left.column}});
         }
         ids += "}";
-        const auto codes = execute_parameterized_multi_column_query(
+        const auto codes = query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT \"id\"::text, \"{{left.code_column}}\"::text"
             "  FROM {{left.references}}"
@@ -1415,27 +1384,27 @@ std::vector<domain::{{name_singular}}>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
-        order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("{{order_column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-        where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-        where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
-        order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("{{order_column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 
-    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    auto rows = query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_words}} by {{left.column_short}} (paginated).");
@@ -1450,7 +1419,7 @@ std::vector<domain::{{name_singular}}>
             ids += boost::uuids::to_string(rows[i].{{right.column}});
         }
         ids += "}";
-        const auto codes = execute_parameterized_multi_column_query(
+        const auto codes = query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT \"id\"::text, \"{{right.code_column}}\"::text"
             "  FROM {{right.references}}"
@@ -1485,34 +1454,28 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{left.column_title}}: " << {{left.column}};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result { long long count; };
-
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-                       where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+                       query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value());
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-                       where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+                       query_builder::where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value());
 {{/left.query_needs_str}}
-                       sqlgen::to<count_result>;
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-                       where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+                       query_builder::where("{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value());
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-                       where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+                       query_builder::where("{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value());
 {{/left.query_needs_str}}
-                       sqlgen::to<count_result>;
 {{/has_tenant_id}}
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<{{name_singular}}_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting {{name_words}}");
     BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{left.column_short}}: " << count;
     return count;
 }
@@ -1533,27 +1496,27 @@ std::vector<domain::{{name_singular}}>
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
-        order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("{{left.column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-        where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
-        order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        query_builder::order_by("{{left.column}}"_c) | query_builder::offset(offset) | query_builder::limit(limit);
 {{/has_tenant_id}}
 
-    auto rows = execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
+    auto rows = query_builder::execute_read_query<{{name_singular}}_entity, domain::{{name_singular}}>(
         ctx_, query,
         [](const auto& entities) { return {{name_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{name_words}} by {{right.column_short}} (paginated).");
@@ -1568,7 +1531,7 @@ std::vector<domain::{{name_singular}}>
             ids += boost::uuids::to_string(rows[i].{{left.column}});
         }
         ids += "}";
-        const auto codes = execute_parameterized_multi_column_query(
+        const auto codes = query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT \"id\"::text, \"{{left.code_column}}\"::text"
             "  FROM {{left.references}}"
@@ -1603,34 +1566,28 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{name_words}} count. {{right.column_title}}: " << {{right.column}};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result { long long count; };
-
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-                       where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+                       query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value());
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-                       where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+                       query_builder::where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value());
 {{/right.query_needs_str}}
-                       sqlgen::to<count_result>;
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-                       where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+                       query_builder::where("{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value());
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-                       where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+                       query_builder::where("{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value());
 {{/right.query_needs_str}}
-                       sqlgen::to<count_result>;
 {{/has_tenant_id}}
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = query_builder::execute_count_query<{{name_singular}}_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting {{name_words}}");
     BOOST_LOG_SEV(lg(), debug) << "Total active {{name_words}} count by {{right.column_short}}: " << count;
     return count;
 }
@@ -1647,16 +1604,16 @@ std::vector<{{name_singular}}_history_row>
 {{/history_parent.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where({{{tenant_where}}} && "{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where({{{tenant_where}}} && "{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
+    const auto query = query_builder::read<std::vector<{{name_singular}}_entity>> |
+        query_builder::where("{{history_parent.column}}"_c == {{history_parent.column}}{{#history_parent.query_needs_str}}_str{{/history_parent.query_needs_str}}) |
 {{/has_tenant_id}}
-        order_by("{{history_child.column}}"_c, "valid_from"_c.desc());
+        query_builder::order_by("{{history_child.column}}"_c, "valid_from"_c.desc());
 
-    return execute_read_query<{{name_singular}}_entity, {{name_singular}}_history_row>(
+    return query_builder::execute_read_query<{{name_singular}}_entity, {{name_singular}}_history_row>(
         ctx_, query,
         [](const auto& entities) {
             std::vector<{{name_singular}}_history_row> rows;
@@ -1722,9 +1679,9 @@ void {{name_singular}}_repository::remove(
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
 {{/has_tenant_id}}
-    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
+    const auto query = query_builder::delete_from<{{name_singular}}_entity> |
 {{#has_tenant_id}}
-        where("tenant_id"_c == tid &&
+        query_builder::where("tenant_id"_c == tid &&
 {{#left.query_needs_str}}
 {{#right.query_needs_str}}
               "{{left.column}}"_c == {{left.column}}_str &&
@@ -1751,21 +1708,21 @@ void {{name_singular}}_repository::remove(
 {{^has_tenant_id}}
 {{#left.query_needs_str}}
 {{#right.query_needs_str}}
-        where("{{left.column}}"_c == {{left.column}}_str &&
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str &&
               "{{right.column}}"_c == {{right.column}}_str &&
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        where("{{left.column}}"_c == {{left.column}}_str &&
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str &&
               "{{right.column}}"_c == {{right.column}} &&
 {{/right.query_needs_str}}
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
 {{#right.query_needs_str}}
-        where("{{left.column}}"_c == {{left.column}} &&
+        query_builder::where("{{left.column}}"_c == {{left.column}} &&
               "{{right.column}}"_c == {{right.column}}_str &&
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        where("{{left.column}}"_c == {{left.column}} &&
+        query_builder::where("{{left.column}}"_c == {{left.column}} &&
               "{{right.column}}"_c == {{right.column}} &&
 {{/right.query_needs_str}}
 {{/left.query_needs_str}}
@@ -1773,7 +1730,7 @@ void {{name_singular}}_repository::remove(
               "version"_c == expected);
 {{/has_tenant_id}}
 
-    execute_delete_query(ctx_, query, lg(),
+    query_builder::execute_delete_query(ctx_, query, lg(),
         "removing {{name_singular_words}} from database");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
@@ -1805,27 +1762,27 @@ void {{name_singular}}_repository::remove_by_{{left.column_short}}(
     const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
-        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str);
+    const auto query = query_builder::delete_from<{{name_singular}}_entity> |
+        query_builder::where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
-        where("{{left.column}}"_c == {{left.column}}_str);
+    const auto query = query_builder::delete_from<{{name_singular}}_entity> |
+        query_builder::where("{{left.column}}"_c == {{left.column}}_str);
 {{/has_tenant_id}}
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
 {{#has_tenant_id}}
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
-        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}});
+    const auto query = query_builder::delete_from<{{name_singular}}_entity> |
+        query_builder::where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}});
 {{/has_tenant_id}}
 {{^has_tenant_id}}
-    const auto query = sqlgen::delete_from<{{name_singular}}_entity> |
-        where("{{left.column}}"_c == {{left.column}});
+    const auto query = query_builder::delete_from<{{name_singular}}_entity> |
+        query_builder::where("{{left.column}}"_c == {{left.column}});
 {{/has_tenant_id}}
 {{/left.query_needs_str}}
 
-    execute_delete_query(ctx_, query, lg(),
+    query_builder::execute_delete_query(ctx_, query, lg(),
         "removing all {{name_words}} from database");
 }
 

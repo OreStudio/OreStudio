@@ -7,7 +7,6 @@
 #+level: cross
 #+component_kind: composite
 #+parts: api core service
-#+repository_backend: libpq
 #+filetags: :reporting:component:
 #+created: 2026-06-02
 #+updated: 2026-09-26

@@ -13,7 +13,6 @@
 #+brief: Telemetry ingestion, storage, and query component
 #+component_kind: composite
 #+parts: core database service
-#+repository_backend: libpq
 
 * Diagram
 

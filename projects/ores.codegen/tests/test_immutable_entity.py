@@ -156,8 +156,8 @@ def test_the_drop_script_removes_the_guard(tmp_path):
 def test_the_repository_inserts_and_never_replaces(tmp_path):
     repository = _repository(tmp_path, _model())
 
-    assert "sqlgen::insert(anchor_record_mapper::map(t))" in repository
-    assert "sqlgen::insert(anchor_record_mapper::map(batch))" in repository
+    assert "query_builder::insert(anchor_record_mapper::map(t))" in repository
+    assert "query_builder::insert(anchor_record_mapper::map(batch))" in repository
     assert "insert_or_replace" not in repository
 
 

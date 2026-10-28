@@ -35,9 +35,6 @@ The full template source. Edit here and re-tangle with
 #include <string>
 #include <string_view>
 #include <vector>
-{{^repository_on_libpq}}
-#include <sqlgen/postgres.hpp>
-{{/repository_on_libpq}}
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -72,7 +69,7 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief {{#repository_on_libpq}}Returns the insert statement the repository writes.{{/repository_on_libpq}}{{^repository_on_libpq}}Returns the SQL created by sqlgen to construct the table.{{/repository_on_libpq}}
+     * @brief Returns the insert statement the repository writes.
      */
     std::string sql();
 
@@ -385,9 +382,6 @@ private:
 #include <optional>
 #include <string>
 #include <vector>
-{{^repository_on_libpq}}
-#include <sqlgen/postgres.hpp>
-{{/repository_on_libpq}}
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_left_or_right}}

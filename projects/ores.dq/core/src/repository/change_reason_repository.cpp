@@ -19,7 +19,7 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository_pq.cpp.mustache
+ * Template: cpp_domain_type_repository.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/change_reason_repository.hpp"

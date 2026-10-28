@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/remove-sqlgen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Step 4 of 7. sqlgen is gone from the build. Starts after every component has mov
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,14 +37,34 @@ Step 4 of 7. sqlgen is gone from the build. Starts after every component has mov
 
 - Nothing in the tree includes sqlgen.
 - The codegen facets that emitted sqlgen code are deleted.
-- vcpkg.json and every CMakeLists.txt no longer name sqlgen.
+- vcpkg.json, the vcpkg overlay port and every CMakeLists.txt no longer name
+  sqlgen.
+- Models, diagrams and docs no longer describe sqlgen as the storage layer.
 - The whole tree builds and every suite passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three PRs, each ending in a green build of the whole tree and every suite.
+
+1. *Codegen: drop the sqlgen backend.* Every component is on libpq, so the
+   sqlgen repository archetype, the backend switch, the
+   =#+repository_backend:= lines and the sqlgen branches of the entity,
+   mapper and header templates go. The sqlgen-only helpers of
+   =ores.database= that only that archetype used (the sqlgen query
+   templates of =bitemporal_operations=, =list_filter=, =stated_order= and
+   =valid_at=) go with it.
+2. *Database: run the context on libpq.* The context holds the libpq pool,
+   its connection options and the session it acts for, and no sqlgen pool.
+   A unit of work leases one libpq connection and holds one transaction, and
+   a context bound to it runs every call on that transaction, so the bridge
+   of #3961 and its overlay patch go. The raw-SQL helpers of
+   =ores::database::repository= keep their signatures and run on libpq. The
+   Postgres listener holds its own libpq connection. =db_timestamp= is
+   reflect-cpp's =rfl::Timestamp=, which sqlgen only re-exported, so no
+   entity changes.
+3. *Build: drop the dependency.* vcpkg.json, the overlay port and its
+   patches, =find_package= and every =sqlgen::sqlgen= link go, with the
+   sqlgen text in models, diagrams and docs.
 
 * Measurements
 

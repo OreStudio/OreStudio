@@ -46,7 +46,7 @@ ir_curve_template_entry_mapper::map(const ir_curve_template_entry_entity& v) {
     domain::ir_curve_template_entry r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
     r.ir_curve_config_id = boost::lexical_cast<boost::uuids::uuid>(v.ir_curve_config_id);

@@ -47,7 +47,7 @@ yield_curve_process_parameter_definition_mapper::map(
     domain::yield_curve_process_parameter_definition r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
 
     r.process_type_code = v.process_type_code;
 

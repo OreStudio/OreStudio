@@ -53,9 +53,13 @@ retry_with_backoff(Fn&& fn,
                    int max_retries = -1) {
 
     using namespace ores::logging;
-    static const std::string_view logger_name = "ores.nats.service.retry";
+    // Named for the retry rather than for the logger it makes: a unity build
+    // puts this header in the same unit as other files that hold a
+    // logger_name, and a local that hides one of those is C4459, which this
+    // build treats as an error.
+    static const std::string_view retry_logger_name = "ores.nats.service.retry";
     static auto& lg = []() -> auto& {
-        static auto instance = make_logger(logger_name);
+        static auto instance = make_logger(retry_logger_name);
         return instance;
     }();
 

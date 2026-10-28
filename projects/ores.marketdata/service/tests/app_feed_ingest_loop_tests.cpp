@@ -38,6 +38,7 @@
 #include "ores.marketdata.service/app/tick_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -245,19 +246,25 @@ market_tick tick_from(const std::string& source, const std::string& oresmd_uri) 
     return t;
 }
 
+/// A setting of the process environment, read through the platform provider.
+///
+/// Reaching the CRT's getenv directly is deprecated on Windows and the build
+/// treats that as an error, and the provider is the one place that knows how
+/// each platform is asked.
+std::optional<std::string> env_setting(const std::string& name) {
+    return ores::platform::environment::environment::get_value(name);
+}
+
 /// The number of rows of @p series in the tick table, read as the marketdata service, which
 /// has no BYPASSRLS, under the tenant and party of the test. This read proves what the
 /// policies let a reader see.
 std::string
 tick_scalar(const std::string& tenant, const std::string& party, const std::string& sql_text) {
-    const auto env = [](const char* name) {
-        const auto* v = std::getenv(name);
-        return v != nullptr ? std::string(v) : std::string();
-    };
-    const auto info = "host=" + env("ORES_TEST_DB_HOST") +
-                      " dbname=" + env("ORES_TEST_DB_DATABASE") +
-                      " user=" + env("ORES_MARKETDATA_SERVICE_DB_USER") +
-                      " password=" + env("ORES_MARKETDATA_SERVICE_DB_PASSWORD");
+    const auto info = "host=" + env_setting("ORES_TEST_DB_HOST").value_or("") +
+                      " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") +
+                      " user=" + env_setting("ORES_MARKETDATA_SERVICE_DB_USER").value_or("") +
+                      " password=" +
+                      env_setting("ORES_MARKETDATA_SERVICE_DB_PASSWORD").value_or("");
     std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
     REQUIRE(PQstatus(conn.get()) == CONNECTION_OK);
     const auto run = [&](const std::string& sql) {
@@ -282,16 +289,15 @@ tick_rows_of(const std::string& tenant, const std::string& party, const std::str
 /// The options of the writer of the tick table as the environment configures them, or nothing
 /// when the role is not set.
 std::optional<ores::marketdata::service::app::tick_writer_options> writer_options() {
-    const auto* user = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
-    const auto* password = std::getenv("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
-    if (user == nullptr || password == nullptr ||
-        std::getenv("ORES_MARKETDATA_SERVICE_DB_USER") == nullptr)
+    const auto user = env_setting("ORES_MARKETDATA_SERVICE_WRITER_DB_USER");
+    const auto password = env_setting("ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD");
+    if (!user || !password || !env_setting("ORES_MARKETDATA_SERVICE_DB_USER"))
         return std::nullopt;
     return ores::marketdata::service::app::tick_writer_options{
-        .user = user,
-        .password = password,
-        .host = std::getenv("ORES_TEST_DB_HOST"),
-        .database = std::getenv("ORES_TEST_DB_DATABASE")};
+        .user = *user,
+        .password = *password,
+        .host = env_setting("ORES_TEST_DB_HOST").value_or("localhost"),
+        .database = env_setting("ORES_TEST_DB_DATABASE").value_or("")};
 }
 
 /// The writer of the tick table as the environment configures it, or nothing when the role is
@@ -583,9 +589,9 @@ constexpr std::size_t burst_datums = 200;
 
 /// A setting of the environment, or @p fallback when it is not set. A profiler run stays short
 /// with fewer ticks and one repetition.
-std::size_t burst_setting(const char* name, std::size_t fallback) {
-    const auto* v = std::getenv(name);
-    return v != nullptr ? static_cast<std::size_t>(std::stoull(v)) : fallback;
+std::size_t burst_setting(const std::string& name, std::size_t fallback) {
+    const auto value = env_setting(name);
+    return value ? static_cast<std::size_t>(std::stoull(*value)) : fallback;
 }
 
 const std::size_t burst_ticks = burst_setting("ORES_BURST_TICKS", 60000);
@@ -631,9 +637,8 @@ public:
     }
 
 private:
-    static std::string env(const char* name) {
-        const auto* v = std::getenv(name);
-        return v != nullptr ? std::string(v) : std::string();
+    static std::string env(const std::string& name) {
+        return env_setting(name).value_or("");
     }
     static std::string connection_info() {
         return "host=" + env("ORES_TEST_DB_HOST") + " dbname=" + env("ORES_TEST_DB_DATABASE") +
@@ -655,16 +660,17 @@ private:
 struct burst_cleanup {
     std::string tenant;
     ~burst_cleanup() {
-        const auto* user = std::getenv("ORES_DB_DDL_USER");
-        const auto* password = std::getenv("ORES_DB_DDL_PASSWORD");
-        if (user == nullptr || password == nullptr) {
+        const auto user = env_setting("ORES_DB_DDL_USER");
+        const auto password = env_setting("ORES_DB_DDL_PASSWORD");
+        if (!user || !password) {
             std::cout << "RESULT cleanup skipped: no DDL user, rows of tenant " << tenant
                       << " remain" << std::endl;
             return;
         }
-        const std::string info = std::string("host=") + std::getenv("ORES_TEST_DB_HOST") +
-                                 " dbname=" + std::getenv("ORES_TEST_DB_DATABASE") +
-                                 " user=" + user + " password=" + password;
+        const std::string info =
+            std::string("host=") + env_setting("ORES_TEST_DB_HOST").value_or("") +
+            " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") + " user=" + *user +
+            " password=" + *password;
         std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
         if (PQstatus(conn.get()) != CONNECTION_OK)
             return;

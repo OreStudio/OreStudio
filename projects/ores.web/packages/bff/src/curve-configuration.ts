@@ -469,10 +469,7 @@ async function saveDocument(
         const stale = /version[_ ]conflict|does not match/i.test(reply.message);
         throw new HttpFailure(stale ? 409 : 400, {
             code: stale ? 'conflict' : 'invalid-request',
-            message:
-                reply.message === ''
-                    ? 'The change was refused.'
-                    : reply.message,
+            message: reply.message === '' ? 'The change was refused.' : reply.message,
         });
     }
 }

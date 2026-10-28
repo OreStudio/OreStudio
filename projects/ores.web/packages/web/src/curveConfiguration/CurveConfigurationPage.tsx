@@ -240,7 +240,11 @@ function CurvesTab({
     readonly curve: CurveConfiguration;
     readonly mode: EditingMode;
     readonly mayWrite: boolean;
-    readonly onAmend: (changes: readonly CurveChange[], reason: string, commentary: string) => Promise<void>;
+    readonly onAmend: (
+        changes: readonly CurveChange[],
+        reason: string,
+        commentary: string,
+    ) => Promise<void>;
 }): ReactNode {
     const { t } = useTranslation();
     const groups = filled(curve.sections);
@@ -464,7 +468,10 @@ function CurveWorkbench({
                     entity: leaf.entity,
                     entryId: entry.id,
                     column: leaf.column,
-                    value: (editing?.[keyOf(leaf)] ?? '') === '' ? null : editing?.[keyOf(leaf)] ?? '',
+                    value:
+                        (editing?.[keyOf(leaf)] ?? '') === ''
+                            ? null
+                            : (editing?.[keyOf(leaf)] ?? ''),
                 })),
                 reason.code,
                 commentary.trim(),
@@ -488,9 +495,7 @@ function CurveWorkbench({
     };
     const edit = (): void =>
         setEditing(
-            Object.fromEntries(
-                entry.parameters.map((leaf) => [keyOf(leaf), leaf.value ?? '']),
-            ),
+            Object.fromEntries(entry.parameters.map((leaf) => [keyOf(leaf), leaf.value ?? ''])),
         );
     const allOpen =
         parameters.length > 0 &&
@@ -509,7 +514,9 @@ function CurveWorkbench({
                 changed={text !== null && text !== (leaf.value ?? '')}
                 refused={refusal}
                 onText={(value) =>
-                    setEditing((before) => (before === null ? before : { ...before, [leafKey]: value }))
+                    setEditing((before) =>
+                        before === null ? before : { ...before, [leafKey]: value },
+                    )
                 }
                 onToggle={() =>
                     setOpened((before) => {
@@ -529,9 +536,7 @@ function CurveWorkbench({
         mayWrite && editing !== null ? (
             <section className="card space-y-4 p-4">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="text-sm font-medium">
-                        {t('curveConfiguration.edit.title')}
-                    </h3>
+                    <h3 className="text-sm font-medium">{t('curveConfiguration.edit.title')}</h3>
                     <span className="text-xs text-ink-faint">
                         {t('curveConfiguration.edit.changed', { count: String(changed.length) })}
                     </span>
@@ -539,9 +544,7 @@ function CurveWorkbench({
                 {conflict ? (
                     <Notice tone="warn">{t('curveConfiguration.edit.conflict')}</Notice>
                 ) : null}
-                {refusal !== null && !conflict ? (
-                    <Notice tone="error">{refusal}</Notice>
-                ) : null}
+                {refusal !== null && !conflict ? <Notice tone="error">{refusal}</Notice> : null}
                 <ReasonFields
                     reason={reason}
                     commentary={commentary}

@@ -314,6 +314,33 @@ std::vector<domain::approval_part> approval_lifecycle::parts() {
     return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
 }
 
+std::vector<std::string> approval_lifecycle::part_codes_of_kind(const std::string& kind_code) {
+    // The kind and the parts it names are system tenant lookups, so they are
+    // read there whatever tenant the request belongs to.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select kp.part_code "
+        "from ores_inbox_approval_kind_parts_tbl kp "
+        "join ores_inbox_approval_parts_tbl p "
+        "  on p.tenant_id = ores_utility_system_tenant_id_fn() "
+        " and p.code = kp.part_code "
+        " and p.valid_to = ores_utility_infinity_timestamp_fn() "
+        "where kp.kind_code = $1 "
+        "  and kp.tenant_id = ores_utility_system_tenant_id_fn() "
+        "  and kp.valid_to = ores_utility_infinity_timestamp_fn() "
+        "order by p.answer_order, p.display_order, p.code",
+        {kind_code},
+        lg(),
+        "Reading the parts a kind of request names");
+
+    std::vector<std::string> codes;
+    for (const auto& row : rows) {
+        if (!row.empty() && row.front())
+            codes.push_back(*row.front());
+    }
+    return codes;
+}
+
 std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,

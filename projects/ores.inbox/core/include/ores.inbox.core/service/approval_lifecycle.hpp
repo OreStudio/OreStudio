@@ -196,6 +196,16 @@ public:
     std::vector<part_progress> progress_of(const std::string& request_id);
 
     /**
+     * @brief The parts a kind of request names, in the order they answer.
+     *
+     * Empty for a kind that names none, which is decided by the decider
+     * permission and the approval count its own row carries. A kind that names
+     * parts names one for each part of the thing it governs, and a request
+     * takes the parts of the parts of the thing it touches.
+     */
+    std::vector<std::string> part_codes_of_kind(const std::string& kind_code);
+
+    /**
      * @brief A part, read from the system tenant's catalogue.
      */
     std::optional<domain::approval_part> part(const std::string& code);

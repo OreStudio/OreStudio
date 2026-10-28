@@ -25,6 +25,13 @@
  * the permission its decider holds. The controller answers first. The other
  * parts answer together. This script runs after the IAM permissions and is
  * idempotent.
+ *
+ * Two parts are the sections of the engine run settings rather than an
+ * institutional function, because a change to those sections is decided by the
+ * section it moves and not by a job title: fixings first, then building. The
+ * standard says both change the numbers a run computes, and the execution
+ * group does not, so execution names no part. Market Risk decides both, because
+ * the fixings and the market the run builds are the desk's numbers.
  */
 
 \echo '--- Approval Parts ---'
@@ -49,6 +56,14 @@ insert into ores_inbox_approval_parts_tbl (
     (ores_utility_system_tenant_id_fn(), 'operations', 0, 'Operations',
      'Access, memberships, links, allowed currencies and products', 'inbox::approvals:decide_operations',
      2, 40,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval parts'),
+    (ores_utility_system_tenant_id_fn(), 'fixings', 0, 'Fixings',
+     'The fixings and cash flows an engine run reads', 'inbox::approvals:decide_market_risk',
+     1, 50,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval parts'),
+    (ores_utility_system_tenant_id_fn(), 'building', 0, 'Building',
+     'How an engine run builds its market and its trades', 'inbox::approvals:decide_market_risk',
+     2, 60,
      current_user, current_user, 'system.initial_load', 'Initial population of approval parts')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

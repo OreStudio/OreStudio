@@ -50,6 +50,7 @@
 #include "ores.shell/app/commands/inbox/approval_policy_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_part_commands.hpp"
+#include "ores.shell/app/commands/inbox/approval_kind_part_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_state_commands.hpp"
 #include "ores.shell/app/commands/inbox/hold_reason_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_argument_commands.hpp"
@@ -77,6 +78,7 @@
 #include "ores.shell/app/commands/reporting/configuration_type_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_building_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_commands.hpp"
+#include "ores.shell/app/commands/reporting/engine_settings_change_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_execution_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_fixings_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_group_commands.hpp"
@@ -184,6 +186,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     engine_settings_execution_commands::register_commands(*root, session_);
     engine_settings_building_commands::register_commands(*root, session_);
     engine_settings_commands::register_commands(*root, session_);
+    engine_settings_change_commands::register_commands(*root, session_);
     engine_settings_group_commands::register_commands(*root, session_);
     engine_settings_group_setting_commands::register_commands(*root, session_);
     configuration_type_commands::register_commands(*root, session_);
@@ -215,6 +218,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     approval_part_commands::register_commands(*root, session_);
     approval_policy_commands::register_commands(*root, session_);
     approval_request_part_commands::register_commands(*root, session_);
+    approval_kind_part_commands::register_commands(*root, session_);
     approval_request_state_commands::register_commands(*root, session_);
     approval_decision_type_commands::register_commands(*root, session_);
     approval_request_commands::register_commands(*root, session_);

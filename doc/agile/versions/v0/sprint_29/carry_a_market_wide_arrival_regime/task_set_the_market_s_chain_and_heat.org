@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/set-the-market-s-chain-and-heat
-#+pr:
+#+pr: 3957
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3957][#3957]] | [synthetic] Set the market's chain, heat and speed while it runs |
 
 * Review
 

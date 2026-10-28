@@ -1,0 +1,124 @@
+#+title: What a trade population is made of
+#+description: The model behind the synthetic trade population: what the generator owns, what the domain owns, and why a per-family "terms" bag is the wrong seam.
+#+filetags: :knowledge:domain:synthetic:
+
+* The question
+
+The synthetic population carries its generated values in a per-asset-class bag:
+=trade_terms= is a variant of =bond_terms=, =commodity_terms=, =rate_terms=,
+=fx_terms=, =equity_terms= and =credit_terms=. A planner fills the bag and a
+writer reads it and constructs the trading domain's rows from it.
+
+That shape produced eight database refusals in one family, each found by a
+provisioning run. This note asks what the bag is, and what the model should be.
+
+* What the bag actually holds
+
+Not one thing. Three different kinds of thing are mixed in it:
+
+1. *The generator's own facts.* Which book, which counterparty, which trader,
+   the trade date, the netting set, the trade identifier. These are facts about
+   the act of generating, and they belong to the generator.
+2. *Drawing parameters.* The seed, the tenor band, the notional band, the
+   catalogue the underlying is drawn from. These are the =how= of generation.
+3. *The product's economic content.* A strike, an expiry, a barrier type, a
+   basket of names. These are facts about a trade, which exist whether or not a
+   generator produced them.
+
+Only the first two are the generator's language. The third is the trading
+domain's, and the bag is a second, weaker description of it.
+
+* Why the bag is not a boundary
+
+An anti-corruption layer translates once, at a boundary, in one direction,
+against a contract that a test can hold still. The bag is the opposite:
+
+- Both sides interpret it independently. The planner decides what a field means
+  and the writer decides again.
+- It is per asset class, not per product, so it states the *union* of what nine
+  tables hold. An =equity_terms= can carry a barrier, a variance strike and a
+  cliquet frequency at once, and no product does.
+- The product's identity is a string beside it. The writer branches on that
+  string to decide what to read, so nothing in the type system connects a
+  product to the fields it is allowed to have.
+
+The consequence is not stylistic. A target on an accumulator, an option type on
+a touch, a forward with no quantity and a swap returning =PriceReturn= were all
+representable, all written, and all refused by the database, one run at a time.
+Had the planner constructed the domain's own types, most of them would have
+been compile errors.
+
+* What the domain says a trade is
+
+The trading model already answers this. A trade is a =trade= row — party, book,
+counterparty, trade date, netting set — and an =instrument_batch= carrying the
+product's rows: a header per family and the product's facts in the table the
+routing table names. The batch is the aggregate the repository writes in one
+transaction, which is why the routing table exists at all.
+
+So the bag's third kind of thing has a home. It is the instrument batch.
+
+* The defect underneath
+
+The trading model states a product's identity as data: a =trade_type_code=
+column plus check constraints that say which columns are legal for which code.
+=equity_digital_option_instruments_tbl= serves two products and its check
+decides which columns each may fill; =equity_option_instruments_tbl= serves
+three.
+
+That is a storage normalisation, and it is a reasonable one: two products whose
+facts coincide share a table. But it means the *type* of a product is only ever
+half in the type system and half in SQL. A generator that wants to be correct
+has to satisfy invariants it cannot see.
+
+* The model this implies
+
+Three parts, with different owners:
+
+| Part | Owner | What it is |
+|------+-------+------------|
+| =trade_generation_config= | generator | A specification: asset class, book, bands, seed, counts. |
+| =population_inputs= (today's scope) | generator | The resolved drawing context: party, books, counterparties, catalogues, as-of date, seed. |
+| The population itself | domain | A list of trades, each a trade envelope and its instrument batch. |
+
+The planner's job becomes: draw the product, then *construct the domain rows*.
+The writer's job becomes: persist them. There is no translation left, and no
+second description of a trade.
+
+The generator keeps the language it is entitled to — specification and drawing —
+and stops describing products. A product description exists once, in the domain.
+
+* What makes the couplings enforceable
+
+Constructing the domain rows directly is necessary and not sufficient: the
+domain's rows are table-shaped, so a coded product still has to be assembled
+correctly. The couplings belong in named constructors beside the types —
+=equity_option_instrument make_equity_cliquet_option(...)= — one per product,
+each taking the product's own facts and filling exactly the columns that
+product states.
+
+Then the rule becomes: a product is constructed, never assembled. The SQL check
+stays as the backstop it should always have been, and a new family cannot add a
+product without writing the constructor that says what that product is.
+
+* What this costs and what it buys
+
+Cost: the per-family planners and the writer are rewritten, and a constructor
+per routed product appears. That is real work, and it is bounded: the routing
+table already enumerates the products.
+
+Buys: one description of a trade instead of two; illegal states unrepresentable
+where the compiler can see them; the writer reduced to persistence; and the
+machinery that the next tenant needs, since Northwind will book through the same
+planners and a bag with Northwind-specific quirks would be a second bag.
+
+* Order of work
+
+1. Introduce the product constructors beside the domain types, one per routed
+   product, with the couplings the checks state.
+2. Change the plan to carry a trade envelope and an instrument batch.
+3. Move each family's planner onto the constructors, one family at a time, and
+   delete that family's =*_terms=.
+4. Reduce the writer to a persister.
+5. Keep =trade_generation_config= and the scope as they are; they are the
+   generator's own language.

@@ -49,7 +49,7 @@ domain::curve_publish curve_publish_mapper::map(const curve_publish_entity& v) {
     domain::curve_publish r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id);
 
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);

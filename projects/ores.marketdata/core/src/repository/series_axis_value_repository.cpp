@@ -19,14 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/series_axis_value_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_axis_value.hpp"
 #include "ores.marketdata.api/domain/series_axis_value_json_io.hpp" // IWYU pragma: keep.
@@ -41,17 +39,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -61,13 +48,13 @@
 
 namespace ores::marketdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string series_axis_value_repository::sql() {
-    return generate_create_table_sql<series_axis_value_entity>(lg());
+    return query_builder::insert_statement_sql<series_axis_value_entity>(lg());
 }
 
 bool series_axis_value_repository::is_sortable(std::string_view field) {
@@ -82,18 +69,19 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 series_axis_value_list_order(const ores::utility::domain::order& order,
                              std::initializer_list<std::string> default_columns,
                              bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns,
-                          default_descending != order.descending,
-                          {"series_id", "axis_field", "value"});
+        return query_builder::make_order(default_columns,
+                                         default_descending != order.descending,
+                                         {"series_id", "axis_field", "value"});
     if (!series_axis_value_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of series axis values cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"series_id", "axis_field", "value"});
+    return query_builder::make_order(
+        {order.field}, order.descending, {"series_id", "axis_field", "value"});
 }
 
 }
@@ -146,10 +134,11 @@ void series_axis_value_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing series axis value. " << "series_id: " << v.series_id
                                << " axis_field: " << v.axis_field << " value: " << v.value;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(series_axis_value_mapper::map(t)),
-                     lg(),
-                     "Writing series axis value to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(series_axis_value_mapper::map(t)),
+        lg(),
+        "Writing series axis value to database.");
 }
 
 void series_axis_value_repository::write(
@@ -161,19 +150,20 @@ void series_axis_value_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert_or_replace(series_axis_value_mapper::map(batch)),
-                     lg(),
-                     "Writing series axis values to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(series_axis_value_mapper::map(batch)),
+        lg(),
+        "Writing series axis values to database.");
 }
 
 std::vector<domain::series_axis_value> series_axis_value_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid) |
-                       order_by("series_id"_c, "axis_field"_c, "value"_c);
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid) |
+                       query_builder::order_by("series_id"_c, "axis_field"_c, "value"_c);
 
-    return execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+    return query_builder::execute_read_query<series_axis_value_entity, domain::series_axis_value>(
         ctx,
         query,
         [](const auto& entities) { return series_axis_value_mapper::map(entities); },
@@ -189,11 +179,11 @@ series_axis_value_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series axis value. " << "series_id: " << series_id
                                << " axis_field: " << axis_field << " value: " << value;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c == series_id &&
-                             "axis_field"_c == axis_field && "value"_c == value);
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
+                                            "axis_field"_c == axis_field && "value"_c == value);
 
-    return execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+    return query_builder::execute_read_query<series_axis_value_entity, domain::series_axis_value>(
         ctx,
         query,
         [](const auto& entities) { return series_axis_value_mapper::map(entities); },
@@ -211,12 +201,12 @@ series_axis_value_repository::read_all(context ctx,
                                << "series_id: " << series_id << " axis_field: " << axis_field
                                << " value: " << value;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c == series_id &&
-                             "axis_field"_c == axis_field && "value"_c == value) |
-                       order_by("series_id"_c, "axis_field"_c, "value"_c);
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
+                                            "axis_field"_c == axis_field && "value"_c == value) |
+                       query_builder::order_by("series_id"_c, "axis_field"_c, "value"_c);
 
-    return execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+    return query_builder::execute_read_query<series_axis_value_entity, domain::series_axis_value>(
         ctx,
         query,
         [](const auto& entities) { return series_axis_value_mapper::map(entities); },
@@ -241,11 +231,12 @@ series_axis_value_repository::remove(context ctx,
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<series_axis_value_entity> |
-                       where("tenant_id"_c == tid && "series_id"_c == series_id &&
-                             "axis_field"_c == axis_field && "value"_c == value);
+    const auto query = query_builder::delete_from<series_axis_value_entity> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c == series_id &&
+                                            "axis_field"_c == axis_field && "value"_c == value);
 
-    execute_delete_query(ctx, query, lg(), "Removing series axis value from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing series axis value from database.");
     return remove_status::removed;
 }
 
@@ -264,10 +255,12 @@ series_axis_value_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series axis values with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<series_axis_value_entity, domain::series_axis_value>(
+    return query_builder::execute_ordered_read_query<series_axis_value_entity,
+                                                     domain::series_axis_value>(
         ctx,
         query,
         series_axis_value_list_order(order, {"series_id", "axis_field", "value"}, false),
@@ -281,10 +274,10 @@ std::uint32_t series_axis_value_repository::get_total_series_axis_value_count(co
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series axis value count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<series_axis_value_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<series_axis_value_entity>(
+    return query_builder::execute_count_query<series_axis_value_entity>(
         ctx, query, std::nullopt, lg(), "Counting series axis values");
 }
 
@@ -296,17 +289,18 @@ series_axis_value_repository::read_latest(context ctx,
     if (series_ids.empty() || axis_fields.empty() || values.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids) &&
-                             "axis_field"_c.in(axis_fields) && "value"_c.in(values));
-    auto result = execute_read_query<series_axis_value_entity, domain::series_axis_value>(
-        ctx,
-        query,
-        [](const auto& entities) { return series_axis_value_mapper::map(entities); },
-        lg(),
-        "Reading latest series axis values by ids.");
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids) &&
+                                            "axis_field"_c.in(axis_fields) && "value"_c.in(values));
+    auto result =
+        query_builder::execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+            ctx,
+            query,
+            [](const auto& entities) { return series_axis_value_mapper::map(entities); },
+            lg(),
+            "Reading latest series axis values by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (axis_fields.size() != series_ids.size() || values.size() != series_ids.size())
         throw std::invalid_argument("series_axis_value_repository::read_latest: key column vectors "
@@ -345,9 +339,9 @@ series_axis_value_repository::read_latest_for_series(context ctx,
     if (series_ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
-                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
-    return execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+    const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
+    return query_builder::execute_read_query<series_axis_value_entity, domain::series_axis_value>(
         ctx,
         query,
         [](const auto& entities) { return series_axis_value_mapper::map(entities); },

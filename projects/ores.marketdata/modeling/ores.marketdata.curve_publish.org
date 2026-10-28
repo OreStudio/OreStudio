@@ -474,11 +474,11 @@ curve_publish_repository::read_latest_by_request(context ctx, const std::string&
     BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_publish_entity>> |
-                       where("tenant_id"_c == tid && "request_id"_c == request_id &&
+    const auto query = query_builder::read<std::vector<curve_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
                              "valid_to"_c == max.value());
 
-    auto rows = execute_read_query<curve_publish_entity, domain::curve_publish>(
+    auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
         ctx,
         query,
         [](const auto& entities) { return curve_publish_mapper::map(entities); },
@@ -518,11 +518,11 @@ curve_publish_repository::read_latest_published_for_series(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
-    const auto query = sqlgen::read<std::vector<curve_publish_entity>> |
-                       where("tenant_id"_c == tid && "output_series_id"_c == sid &&
+    const auto query = query_builder::read<std::vector<curve_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "output_series_id"_c == sid &&
                              "valid_to"_c == max.value());
 
-    auto rows = execute_read_query<curve_publish_entity, domain::curve_publish>(
+    auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
         ctx,
         query,
         [](const auto& entities) { return curve_publish_mapper::map(entities); },
@@ -575,11 +575,11 @@ curve_publish_repository::read_live_for_series(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
-    const auto query = sqlgen::read<std::vector<curve_publish_entity>> |
-                       where("tenant_id"_c == tid && "output_series_id"_c == sid &&
+    const auto query = query_builder::read<std::vector<curve_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "output_series_id"_c == sid &&
                              "valid_to"_c == max.value());
 
-    auto rows = execute_read_query<curve_publish_entity, domain::curve_publish>(
+    auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
         ctx,
         query,
         [](const auto& entities) { return curve_publish_mapper::map(entities); },

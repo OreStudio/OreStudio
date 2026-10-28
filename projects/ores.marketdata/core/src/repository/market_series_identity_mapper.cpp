@@ -46,7 +46,7 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
 
     domain::market_series_identity r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id.value());
+    r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity_kind = v.identity_kind;
     r.asset_class = v.asset_class.value_or("");

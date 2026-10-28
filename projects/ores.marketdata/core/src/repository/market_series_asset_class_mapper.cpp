@@ -46,7 +46,7 @@ market_series_asset_class_mapper::map(const market_series_asset_class_entity& v)
     domain::market_series_asset_class r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.market_series_id = boost::lexical_cast<boost::uuids::uuid>(v.market_series_id.value());
+    r.market_series_id = boost::lexical_cast<boost::uuids::uuid>(v.market_series_id);
     r.asset_class_code = v.asset_class_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -311,11 +311,11 @@ market_observation_repository::read_latest_for_series(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto query =
-        sqlgen::read<std::vector<market_observation_entity>> |
-        where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
-        order_by("observation_datetime"_c);
+        query_builder::read<std::vector<market_observation_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
+        query_builder::order_by("observation_datetime"_c);
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -352,11 +352,11 @@ market_observation_repository::read_latest_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_observation_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("series_id"_c, "observation_datetime"_c);
+    const auto query = query_builder::read<std::vector<market_observation_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("series_id"_c, "observation_datetime"_c);
 
-    return execute_read_query<market_observation_entity, domain::market_observation>(
+    return query_builder::execute_read_query<market_observation_entity, domain::market_observation>(
         ctx,
         query,
         [](const auto& entities) { return market_observation_mapper::map(entities); },
@@ -460,7 +460,7 @@ read_manual_points(market_observation_repository::context ctx,
             AND l.valid_to = $3
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, MAX_TIMESTAMP}, log, "reading manual curve points");
 
     std::vector<observation_record> result;
@@ -490,7 +490,7 @@ std::vector<observation_record> read_manual_points_all(market_observation_reposi
             AND l.valid_to = $2
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, MAX_TIMESTAMP}, log, "reading manual curve points of every series");
 
     std::vector<observation_record> result;
@@ -541,7 +541,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
         ORDER BY oresmd_uri, observation_datetime DESC, src_rank
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of curve snapshot");
 
     std::vector<observation_record> result;
@@ -678,7 +678,7 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
         ORDER BY series_id, oresmd_uri, observation_datetime DESC, src_rank
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {tid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of snapshot of every series");
 
     std::vector<observation_record> result;
@@ -793,7 +793,7 @@ market_observation_repository::read_as_of_buckets(
         ORDER BY b.bucket_ordinal, o.oresmd_uri
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {tid, sid, latest_str, bucket_seconds, count_str, MAX_TIMESTAMP},
@@ -963,7 +963,7 @@ market_observation_repository::read_instants(
         ORDER BY instant, oresmd_uri, src_rank
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str},
@@ -1056,7 +1056,7 @@ void market_observation_repository::write_manual_point(
     // A manual point is written past the insert's guard, which drops an automatic
     // write to a coordinate an operator owns, and this write is the operator's.
     series_shape_check::check(txn_ctx, std::vector<domain::market_observation>{obs});
-    execute_write_query(
+    query_builder::execute_write_query(
         txn_ctx, market_observation_mapper::map(obs), lg(), "Inserting manual market observation.");
 
     domain::observation_lineage lineage;
@@ -1229,7 +1229,7 @@ a manual point, by a path of its own.
     series_shape_check::check(ctx, v);
     if (const auto kept = manual_point_guard::unshadowed(ctx, v); kept.size() != v.size()) {
         if (!kept.empty())
-            execute_write_query(ctx,
+            query_builder::execute_write_query(ctx,
                                 market_observation_mapper::map(kept),
                                 lg(),
                                 "Inserting market observations into database.");

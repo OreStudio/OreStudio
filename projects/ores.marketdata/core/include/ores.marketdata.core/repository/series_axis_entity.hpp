@@ -25,8 +25,8 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_SERIES_AXIS_ENTITY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_SERIES_AXIS_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,11 +42,24 @@ struct series_axis_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_series_axes_tbl";
 
-    sqlgen::PrimaryKey<std::string> series_id;
-    sqlgen::PrimaryKey<std::string> axis_field;
+    std::string series_id;
+    std::string axis_field;
     std::string tenant_id;
     std::string party_id;
     int sequence = 0;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = series_axis_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("series_id", &e::series_id) |
+               query_builder::key("axis_field", &e::axis_field) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("sequence", &e::sequence);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const series_axis_entity& v);

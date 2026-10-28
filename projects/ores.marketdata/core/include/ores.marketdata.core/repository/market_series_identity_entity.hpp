@@ -25,8 +25,8 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_IDENTITY_ENTITY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_IDENTITY_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct market_series_identity_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_market_series_identity_tbl";
 
-    sqlgen::PrimaryKey<std::string> series_id;
+    std::string series_id;
     std::string tenant_id;
     std::string party_id;
     std::string identity_kind;
@@ -100,6 +100,68 @@ struct market_series_identity_entity {
     std::optional<std::string> time_unit;
     std::optional<std::string> underlying_name;
     std::optional<std::string> unit_ccy;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = market_series_identity_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("series_id", &e::series_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("identity_kind", &e::identity_kind) |
+               query_builder::bind("asset_class", &e::asset_class) |
+               query_builder::bind("instrument_type", &e::instrument_type) |
+               query_builder::bind("quote_type", &e::quote_type) |
+               query_builder::bind("atm", &e::atm) |
+               query_builder::bind("cap_floor", &e::cap_floor) |
+               query_builder::bind("ccy", &e::ccy) |
+               query_builder::bind("cds_index_name", &e::cds_index_name) |
+               query_builder::bind("commodity_name", &e::commodity_name) |
+               query_builder::bind("contract", &e::contract) |
+               query_builder::bind("contract_name", &e::contract_name) |
+               query_builder::bind("curve_id", &e::curve_id) |
+               query_builder::bind("day_counter", &e::day_counter) |
+               query_builder::bind("delivery", &e::delivery) |
+               query_builder::bind("delivery_end", &e::delivery_end) |
+               query_builder::bind("delivery_start", &e::delivery_start) |
+               query_builder::bind("doc_clause", &e::doc_clause) |
+               query_builder::bind("dst", &e::dst) | query_builder::bind("eq_name", &e::eq_name) |
+               query_builder::bind("expiry", &e::expiry) |
+               query_builder::bind("family", &e::family) |
+               query_builder::bind("fixed_ccy", &e::fixed_ccy) |
+               query_builder::bind("fixed_tenor", &e::fixed_tenor) |
+               query_builder::bind("flat_ccy", &e::flat_ccy) |
+               query_builder::bind("flat_term", &e::flat_term) |
+               query_builder::bind("float_ccy", &e::float_ccy) |
+               query_builder::bind("float_tenor", &e::float_tenor) |
+               query_builder::bind("future_contract", &e::future_contract) |
+               query_builder::bind("fwd_start", &e::fwd_start) |
+               query_builder::bind("identifier", &e::identifier) |
+               query_builder::bind("index", &e::index) | query_builder::bind("index1", &e::index1) |
+               query_builder::bind("index2", &e::index2) |
+               query_builder::bind("index_name", &e::index_name) |
+               query_builder::bind("index_tenor", &e::index_tenor) |
+               query_builder::bind("index_term", &e::index_term) |
+               query_builder::bind("spread_offset", &e::spread_offset) |
+               query_builder::bind("option_type", &e::option_type) |
+               query_builder::bind("payer_receiver", &e::payer_receiver) |
+               query_builder::bind("qualifier", &e::qualifier) |
+               query_builder::bind("quote_name", &e::quote_name) |
+               query_builder::bind("quote_tag", &e::quote_tag) |
+               query_builder::bind("rating_name", &e::rating_name) |
+               query_builder::bind("relative", &e::relative) |
+               query_builder::bind("running_spread", &e::running_spread) |
+               query_builder::bind("seasonality_type", &e::seasonality_type) |
+               query_builder::bind("security_id", &e::security_id) |
+               query_builder::bind("seniority", &e::seniority) |
+               query_builder::bind("side", &e::side) | query_builder::bind("source", &e::source) |
+               query_builder::bind("tenor", &e::tenor) | query_builder::bind("term", &e::term) |
+               query_builder::bind("time_unit", &e::time_unit) |
+               query_builder::bind("underlying_name", &e::underlying_name) |
+               query_builder::bind("unit_ccy", &e::unit_ccy);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const market_series_identity_entity& v);

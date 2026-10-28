@@ -173,11 +173,11 @@ std::vector<domain::subscription> read_latest_all_tenants(context ctx);
 std::vector<domain::subscription>
 subscription_repository::read_latest_all_tenants(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<subscription_entity>> |
-                       where("valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<subscription_entity>> |
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<subscription_entity, domain::subscription>(
+    return query_builder::execute_read_query<subscription_entity, domain::subscription>(
         ctx,
         query,
         [](const auto& entities) { return subscription_mapper::map(entities); },

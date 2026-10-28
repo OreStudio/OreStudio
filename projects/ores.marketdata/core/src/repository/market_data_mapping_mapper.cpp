@@ -49,7 +49,7 @@ domain::market_data_mapping market_data_mapping_mapper::map(const market_data_ma
     domain::market_data_mapping r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.vendor_instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.vendor_instrument_id);
 
     r.effective_from = timestamp_to_timepoint(std::string_view{v.effective_from});

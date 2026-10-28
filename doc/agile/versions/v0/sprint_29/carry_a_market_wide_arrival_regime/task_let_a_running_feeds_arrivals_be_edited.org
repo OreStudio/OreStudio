@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: EBEF2FA8-D56E-4F04-ADE5-9D4C2F546587
+:END:
+#+title: Task: Let a running feed's arrivals be edited
+#+description: A feed's Arrivals tab locked its fields while the feed ran, and every synthetic feed runs, so no feed could leave the periodic law. Its Save also rendered as bare text. Edit a running feed as the Process tab does, and offer to restart it on the law saved.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/let-a-running-feeds-arrivals-be-edited
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person changes a running feed's arrival law, its Hawkes numbers or its sensitivity on the feed's Arrivals tab, is told the feed runs on its old law until it starts again, and can restart it on save.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A running feed's Arrivals tab is editable for a caller who may write the feed.
+- Saving a change to a running feed offers a restart, ticked by default, and the running law reflects the change after it.
+- Save is a button, and the reason code is a code rather than a translated string.
+- The harness changes a running feed's arrivals and restores them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A running feed's Arrivals tab is editable for a caller who may write the feed,
+as its Process tab is. Saving a change to a running feed says the feed runs on
+its old law and offers to restart it, ticked by default; the save then stops
+and starts the feed. Four defects were found and fixed on the way:
+
+- The feed pages passed =mayWrite && running !== true=, so the fields locked
+  whenever the feed ran, and every synthetic feed runs.
+- Save used a =btn primary= class the product does not define, so it rendered
+  as bare text. It is the product's =Button= now.
+- The save never re-read the feed, so the form compared against the stale row:
+  after one save a person could not save back to the original value, and a
+  second save would have sent the old version (inferred).
+- The reason code was read through translation; it is a constant now.
+
+Evidence: the panel tests pass (206 in marketdata/synthetic). The harness, as
+the system administrator, opens a running feed's Arrivals tab, changes its
+sensitivity, sees the running note with the restart ticked, saves, sees the
+restarted feed run on the new value, and saves the old value back: 14 of 14
+pass live. The feed the first failing run left at 1.5 was put back to 1.
+
+Found and captured, not fixed here: a tenant administrator is offered edits
+to system feeds that the server refuses with a database error
+(=a_tenant_is_offered_edits_to_system_feeds=).
+

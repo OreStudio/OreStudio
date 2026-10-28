@@ -135,6 +135,29 @@ test.describe('the market, as the system administrator', () => {
         await signIn(page, SUPER_ADMIN);
     });
 
+    test('changes a running feed’s arrivals, restarts it on them, and sets them back', async ({
+        page,
+    }) => {
+        await openMarket(page, 'laws');
+        await page.getByRole('link', { name: 'Arrivals tab →' }).first().click();
+        const sensitivity = page.getByRole('spinbutton', { name: /Sensitivity to the market/ });
+        const law = page.locator('[data-running-law]');
+        const save = page.getByRole('button', { name: 'Save' });
+        await expect(law).toContainText('Running now');
+        const before = await sensitivity.inputValue();
+        const target = Number(before) === 1.5 ? '1.25' : '1.5';
+
+        await sensitivity.fill(target);
+        await expect(page.getByText('The feed is running on its old law.')).toBeVisible();
+        await expect(page.getByRole('checkbox', { name: 'Restart it to apply' })).toBeChecked();
+        await save.click();
+        await expect(law).toContainText(`×${Number(target).toFixed(2)}`, { timeout: 20_000 });
+
+        await sensitivity.fill(before);
+        await save.click();
+        await expect(law).toContainText(`×${Number(before).toFixed(2)}`, { timeout: 20_000 });
+    });
+
     test('forces the state, and hands it back to the chain', async ({ page }) => {
         await openMarket(page);
         const force = page.getByRole('region', { name: 'Force the state' });

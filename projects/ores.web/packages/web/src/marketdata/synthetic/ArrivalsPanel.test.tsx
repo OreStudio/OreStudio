@@ -38,10 +38,16 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
     } as unknown as RecordRow;
 }
 
-function render(row: RecordRow, mayWrite = true, market?: MarketRegime): string {
+function render(row: RecordRow, mayWrite = true, market?: MarketRegime, running = false): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <ArrivalsPanel feed={row} market={market} mayWriteFeed={mayWrite} save={noSave} />
+            <ArrivalsPanel
+                feed={row}
+                market={market}
+                mayWriteFeed={mayWrite}
+                running={running}
+                save={noSave}
+            />
         </TranslationProvider>,
     );
 }
@@ -83,6 +89,18 @@ describe('a feed’s arrivals tab', () => {
             'Market now: Calm ×0.5.',
         );
         expect(render(feed())).toContain('the market state is not readable right now');
+    });
+
+    it('edits a running feed, which keeps its old law until it starts again', () => {
+        const html = render(feed({ arrival_mode: 'periodic' }), true, undefined, true);
+        expect(html).not.toMatch(/<select[^>]*disabled/);
+        expect(disabledAfter(html, 'Sensitivity to the market')).toBe(false);
+    });
+
+    it('saves with a button, which waits for a change', () => {
+        const html = render(feed());
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Save/);
+        expect(html).not.toContain('btn primary');
     });
 
     it('refuses to edit when the caller may not write', () => {

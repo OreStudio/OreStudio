@@ -4752,7 +4752,8 @@ export const en: SourceCatalogue = {
             market: 'Market now: {state}. It is read here and set on the Market regime tab.',
             marketUnknown: 'the market state is not readable right now',
             unsaved: 'Unsaved changes',
-            reasonCode: 'system.update',
+            runningNote: 'The feed is running on its old law.',
+            restart: 'Restart it to apply',
         },
         market: {
             title: 'The market',

@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: AFA6F9D7-2CC4-4FBC-BE89-49AEEA13B7F4
+:END:
+#+title: A tenant is offered edits to system feeds it cannot make
+#+description: A tenant administrator sees Edit, Start, Stop and Delete on a system feed's page, and an editable Arrivals tab, but a save fails with a database error: the feed and its collection belong to the system tenant. The screens should offer a tenant what it may do on a system feed, which is to read it.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:permissions:web:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Signed in as the Acme Corporation tenant administrator, the page of a system
+feed (for example =synthetic.bloomberg.audaonia=) offers Edit, Start, Stop and
+Delete, and its Arrivals tab is editable. Saving a change there fails with:
+"Repository error: Executing INSERT failed: ERROR: Invalid config_id … No active
+market_data_generation_config found with this id", raised by
+=ores_synthetic_ir_curve_generation_configs_insert_fn()=. The same save as the
+system administrator succeeds. Observed on 2026-10-28 while fixing the Arrivals
+tab; the cause is inferred, not traced: the write runs under the tenant, and the
+collection it names belongs to the system tenant.
+
+* Why
+
+System feeds belong to the system tenant, and the market switch and settings
+already offer a tenant a read-only view. The feed pages do not: they compute
+=mayWrite= from the tenant's permissions alone, so a tenant is shown controls
+that the server then refuses, and refuses with a database message rather than
+a permission. The fix is the same rule the market uses: a tenant reads a system
+feed, and the page says so, while the server answers a tenant's write with a
+forbidden rather than a trigger error.
+
+* References
+
+- [[id:D84C9FBA-F332-4379-8BB3-28E5A9DBDA3C][Keep the market switch in the system tenant]] — the same rule, for the market.
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the story in which it was found.

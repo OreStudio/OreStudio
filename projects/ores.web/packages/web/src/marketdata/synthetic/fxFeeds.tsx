@@ -319,7 +319,8 @@ export const FX_FEED_KIND: FeedKind = {
             render: ({ feed, running, mayWrite }) => (
                 <ArrivalsTab
                     feed={feed}
-                    mayWriteFeed={mayWrite && running !== true}
+                    mayWriteFeed={mayWrite}
+                    running={running === true}
                     save={async (model, ratio, decay, sensitivity, intent) => {
                         await api.saveSynthetic(
                             FEEDS,

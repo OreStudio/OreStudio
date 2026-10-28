@@ -4783,7 +4783,8 @@ const pt: SourceCatalogue = {
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
             marketUnknown: 'o estado do mercado não está legível agora',
             unsaved: 'Alterações por guardar',
-            reasonCode: 'system.update',
+            runningNote: 'O feed está a correr com a sua lei antiga.',
+            restart: 'Reiniciá-lo para aplicar',
         },
         market: {
             title: 'O mercado',

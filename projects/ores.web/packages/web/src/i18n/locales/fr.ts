@@ -4816,7 +4816,8 @@ const fr: SourceCatalogue = {
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
             marketUnknown: 'l’état du marché n’est pas lisible pour le moment',
             unsaved: 'Modifications non enregistrées',
-            reasonCode: 'system.update',
+            runningNote: 'Le flux tourne sur son ancienne loi.',
+            restart: 'Le redémarrer pour appliquer',
         },
         market: {
             title: 'Le marché',

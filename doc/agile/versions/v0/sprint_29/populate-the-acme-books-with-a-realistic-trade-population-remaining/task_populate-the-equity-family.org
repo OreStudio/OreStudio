@@ -246,3 +246,35 @@ the same pipeline the equity underlying catalogue took.
 
 Until then the family is proven in code and not in the books, and the export
 cases and the population run wait on it.
+
+** The population run, and the two things it found
+
+The run is the proof that matters, and it found two gaps in what came before.
+
+*1. The catalogue's handlers were never registered.* =equity_underlying_registrar=
+exists and =registrar.cpp= declares its function, and nothing called it, so the
+service answered no request for the list:
+
+  generate_trades: failed — no service is handling subject
+  'refdata.v1.equity_underlyings.list'
+
+=registrar.cpp= is hand maintained, which is why the aggregate drifted from the
+entity it was meant to serve. With the call in place the error moves on to the
+next gap, which is how a wiring fix should behave.
+
+*2. The catalogue is seeded but never published.* The run now fails on the
+planner's own refusal:
+
+  generate_trades: failed — The tenant holds no equity underlying, so no
+  equity trade can name one. Publish the equity underlying catalogue first.
+
+The seed fills the data quality artefact table and the publish function works
+when called by hand; the =publish_bundle= step of the =acme_demo= profile does
+not reach it. Adding the dataset to the =base= bundle made no difference, so the
+publish path is not bundle-driven for this dataset and the mechanism is still
+unknown. Commodities are in the same position in this database -- their
+catalogue is empty too -- so the commodity population likely never ran through
+this profile either.
+
+Until publishing is wired, a population cannot depend on a catalogue, and that
+is the next thing to understand rather than to guess at.

@@ -8,7 +8,7 @@
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch: feature/store-fixings-in-a-durable-tick-class
-#+pr:
+#+pr: 3987
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3987][#3987]] | [marketdata] Store fixings in a durable class of their own |
 
 * Review
 

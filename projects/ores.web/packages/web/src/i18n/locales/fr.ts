@@ -4829,7 +4829,7 @@ const fr: SourceCatalogue = {
                 now: { title: 'Maintenant', question: 'que fait-il' },
                 settings: { title: 'Réglages', question: 'ce qui le fait bouger' },
                 arrivals: { title: 'Arrivées', question: 'comment arrivent les ticks' },
-                laws: { title: 'Lois', question: 'la loi de chaque flux' },
+                feeds: { title: 'Flux', question: 'chaque flux, sa loi et ses ticks' },
                 fit: { title: 'Ajustement', question: 'chaque flux suit-il sa loi' },
                 trace: { title: 'Trace', question: 'ce qu’a fait la boucle' },
             },
@@ -4986,10 +4986,17 @@ const fr: SourceCatalogue = {
                 rampLegend: 'aucun → deux fois ce que demande la loi',
                 seenAskedLegend:
                     'vus / demandés : les ticks de la fenêtre face au compte que demande la loi du flux à l’allure qui a eu cours',
+                allLaws: 'Toutes',
+                onlyProcess: 'Seulement {process} ×',
+            },
+            families: {
+                show: 'Voir ces flux →',
+                processes: {
+                    title: 'Processus de prix',
+                    lead: 'Le processus dont chaque flux tire ses prix. Une carte ouvre l’onglet Flux avec ces seuls flux, chacun avec ses paramètres.',
+                },
             },
             laws: {
-                title: 'La loi de chaque flux',
-                lead: 'Lue ici, fixée sur le flux. Une loi appartient à son flux : la loi ouvre l’onglet Arrivées de ce flux, seul endroit où l’on modifie une loi, et ses nombres s’affichent au survol ; le flux prend une nouvelle loi à son prochain démarrage.',
                 feeds: 'flux',
                 intensity: 'Intensité',
                 stableWhen: 'Stable si',
@@ -4998,7 +5005,8 @@ const fr: SourceCatalogue = {
                 stable: 'stable',
                 runsAway: 's’emballe',
                 always: 'toujours',
-                open: 'Onglet Arrivées →',
+                open: 'Ouvrir l’onglet Arrivées →',
+                summary: '{feed} : sa loi',
                 columns: {
                     feed: 'Flux',
                     process: 'Processus',
@@ -5008,7 +5016,6 @@ const fr: SourceCatalogue = {
                     branching: 'Ramification',
                     decay: 'Déclin, /τ',
                     stable: 'Stable',
-                    recent: 'Dernières 60 s',
                 },
                 families: {
                     periodic: {

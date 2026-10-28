@@ -32,21 +32,21 @@ import type {
 } from '../../../api/client.js';
 import { TranslationProvider } from '../../../i18n/Provider.js';
 import { tabAddress } from '../../../ui/Tabs.js';
+import { FamiliesView, processFamilies } from './FamiliesView.js';
 import {
-    ArrivalsView,
     coveredSeconds,
+    FeedsView,
     LANE_SLOTS,
     MARKS_AT_MOST,
-    lawSummary,
     meanPaceOf,
     providerOf,
     slotCounts,
-} from './ArrivalsView.js';
+} from './FeedsView.js';
 import { feedPages } from './FeedLink.js';
 import { FitView, ratioPosition } from './FitView.js';
 import { FoldCard } from './FoldCard.js';
 import { foldHistory, ticksBySecond } from './fold.js';
-import { LawsView, lawRows, lawStable, lawTooltip } from './LawsView.js';
+import { lawLines, lawStable } from './LawTag.js';
 import { MarketStrip } from './MarketStrip.js';
 import { NowView, heldFor, marketChanges } from './NowView.js';
 import { clean, compact, duration } from './numbers.js';
@@ -198,11 +198,30 @@ function history(): MarketHistory {
     };
 }
 
-function render(node: ReactNode): string {
+function render(node: ReactNode, at = '/'): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <MemoryRouter>{node}</MemoryRouter>
+            <MemoryRouter initialEntries={[at]}>{node}</MemoryRouter>
         </TranslationProvider>,
+    );
+}
+
+function feedsAt(at: string): string {
+    const engines = ['gmm', 'vasicek'];
+    const withEngines = {
+        ...raster(),
+        feeds: raster().feeds.map((feed, index) => ({ ...feed, engine: engines[index] ?? '' })),
+    };
+    return render(
+        <FeedsView
+            raster={withEngines}
+            trace={trace()}
+            now={NOW}
+            window={120}
+            onWindow={() => undefined}
+            pages={feedPages(raster())}
+        />,
+        at,
     );
 }
 
@@ -375,10 +394,10 @@ describe('the Settings tab', () => {
     });
 });
 
-describe('the Arrivals tab', () => {
+describe('the Feeds tab', () => {
     const arrivals = (ticks: readonly string[]): string =>
         render(
-            <ArrivalsView
+            <FeedsView
                 raster={raster(ticks)}
                 trace={trace()}
                 now={NOW}
@@ -433,17 +452,27 @@ describe('the Arrivals tab', () => {
         expect(coveredSeconds([{ ticks: [at(200), at(119)] }], 120, NOW)).toBeCloseTo(119);
     });
 
-    it('gives the feed, its process and its law columns of their own', () => {
+    it('names each feed’s process and law, and keeps the law’s numbers for its summary', () => {
         const html = arrivals([new Date(NOW - 10_000).toISOString()]);
         expect(html).toContain('>Process<');
         expect(html).toContain('>Law<');
-        expect(html).toContain('Hawkes · n 0.6 · β 2');
+        expect(html).toMatch(/\?tab=arrivals"[^>]*>Hawkes</);
+        expect(html).not.toContain('0.6');
+        expect(html).not.toContain('role="dialog"');
     });
 
-    it('names a Hawkes law with its branching and decay, and the others by name', () => {
-        const t = (key: string): string => key.split('.').pop() ?? key;
-        expect(lawSummary(law(), t)).toBe('hawkes · n 0.6 · β 2');
-        expect(lawSummary(law({ mode: 'periodic' }), t)).toBe('periodic');
+    it('shows only the feeds of the law the address names', () => {
+        expect(feedsAt('/')).toContain('USD SOFR');
+        const hawkes = feedsAt('/?law=hawkes');
+        expect(hawkes).toContain('EUR/USD');
+        expect(hawkes).not.toContain('USD SOFR');
+    });
+
+    it('shows only the feeds of the process the address names, with a way back to all', () => {
+        const html = feedsAt('/?process=ir_curve:vasicek');
+        expect(html).toContain('USD SOFR');
+        expect(html).not.toContain('EUR/USD');
+        expect(html).toMatch(/>Only [^<]+ ×</);
     });
 
     it('names the provider, which tells two feeds of one pair apart', () => {
@@ -463,36 +492,53 @@ describe('the Arrivals tab', () => {
     });
 });
 
-describe('the Laws tab', () => {
-    it('joins each running law to its feed and links to the feed’s Arrivals tab', () => {
-        const rows = lawRows(trace(), raster());
-        expect(rows.map((row) => row.feed?.label)).toEqual(['EUR/USD', 'USD SOFR']);
+describe('the Arrivals overview', () => {
+    const feedsLink = (param: string, value: string): string => `?view=feeds&${param}=${value}`;
+
+    it('counts the feeds of each law, and opens the Feeds tab narrowed to them', () => {
         const html = render(
-            <LawsView trace={trace()} raster={raster()} now={NOW} pages={feedPages(raster())} />,
+            <FamiliesView trace={trace()} raster={raster()} feedsLink={feedsLink} />,
         );
-        expect(html).toContain('href="/market-data/synthetic/fx/feed-1?tab=arrivals"');
-        expect(html).toContain('href="/market-data/synthetic/ir/feed-2?tab=arrivals"');
-        expect(html).toContain('stable');
-        expect(html).not.toContain('<input');
+        expect(html).toContain('href="/?view=feeds&amp;law=hawkes"');
+        expect(html).toContain('Show these feeds →');
+        expect(html).not.toContain('law=poisson');
+        expect(html).not.toContain('Last 60 s');
     });
 
-    it('keeps the feed, process, law and last minute, with the numbers on the law', () => {
-        const html = render(
-            <LawsView trace={trace()} raster={raster()} now={NOW} pages={feedPages(raster())} />,
-        );
-        expect(html).not.toContain('Ticks an hour</span></th>');
-        expect(html).not.toContain('Arrivals tab →');
-        expect(html).toContain('title="Ticks an hour: 3600');
-    });
-
-    it('states a Hawkes law’s branching, decay and stability in its tooltip, and only the rate and sensitivity otherwise', () => {
+    it('counts the feeds of each price process, the most used first, and leaves out a feed with none', () => {
         const t = (key: string): string => key.split('.').pop() ?? key;
-        expect(lawTooltip(law(), t)).toBe(
-            'perHour: 3600\nsensitivity: 1.2\nbranching: 0.6\ndecay: 2\nstable: stable',
+        const feeds = raster().feeds;
+        const families = processFamilies(
+            {
+                seconds: 120,
+                feeds: [
+                    { ...feeds[0]!, engine: 'gmm' },
+                    { ...feeds[0]!, sourceName: 'live.gbpusd', engine: 'gmm' },
+                    { ...feeds[1]!, engine: 'vasicek' },
+                    { ...feeds[1]!, sourceName: 'live.eurestr', engine: '' },
+                ],
+            },
+            t,
         );
-        expect(lawTooltip(law({ mode: 'periodic', sensitivity: 1 }), t)).toBe(
-            'perHour: 3600\nsensitivity: 1',
-        );
+        expect(families.map((family) => [family.key, family.feeds])).toEqual([
+            ['fx_spot:gmm', 2],
+            ['ir_curve:vasicek', 1],
+        ]);
+    });
+
+    it('states a Hawkes law’s branching, decay and stability, and only the rate and sensitivity otherwise', () => {
+        const t = (key: string): string => key.split('.').pop() ?? key;
+        expect(lawLines(law(), t)).toEqual([
+            { name: 'perHour', value: '3600' },
+            { name: 'sensitivity', value: '1.2' },
+            { name: 'branching', value: '0.6' },
+            { name: 'decay', value: '2' },
+            { name: 'stable', value: 'stable' },
+        ]);
+        expect(lawLines(law({ mode: 'periodic', sensitivity: 1 }), t)).toEqual([
+            { name: 'perHour', value: '3600' },
+            { name: 'sensitivity', value: '1' },
+        ]);
     });
 
     it('calls a Hawkes law that would not settle unstable, and the memoryless laws always stable', () => {
@@ -634,10 +680,10 @@ describe('the intensity on Now', () => {
 });
 
 describe('the market’s links to its feeds', () => {
-    it('opens a feed’s page from its name on Arrivals, Laws, Fit and Trace', () => {
+    it('opens a feed’s page from its name on Feeds, Fit and Trace', () => {
         const pages = feedPages(raster());
         const arrivals = render(
-            <ArrivalsView
+            <FeedsView
                 raster={raster()}
                 trace={trace()}
                 now={NOW}
@@ -647,9 +693,6 @@ describe('the market’s links to its feeds', () => {
             />,
         );
         expect(arrivals).toContain('href="/market-data/synthetic/fx/feed-1"');
-        expect(
-            render(<LawsView trace={trace()} raster={raster()} now={NOW} pages={pages} />),
-        ).toContain('href="/market-data/synthetic/fx/feed-1"');
         const fit = render(<FitView regime={regime()} trace={trace()} pages={pages} />);
         expect(fit).toContain('href="/market-data/synthetic/fx/feed-1"');
         expect(fit).toMatch(
@@ -681,10 +724,10 @@ describe('the market’s links to its feeds', () => {
         expect(html).toContain('href="/market-data/synthetic/fx/feed-1"');
     });
 
-    it('opens the feed’s Arrivals tab from its law on Arrivals and Laws', () => {
+    it('opens the feed’s Arrivals tab from its law on Feeds', () => {
         const pages = feedPages(raster());
         const lanes = render(
-            <ArrivalsView
+            <FeedsView
                 raster={raster()}
                 trace={trace()}
                 now={NOW}
@@ -694,11 +737,14 @@ describe('the market’s links to its feeds', () => {
             />,
         );
         expect(lanes).toMatch(
-            /href="\/market-data\/synthetic\/fx\/feed-1\?tab=arrivals"[^>]*>Hawkes · n/,
-        );
-        const laws = render(<LawsView trace={trace()} raster={raster()} now={NOW} pages={pages} />);
-        expect(laws).toMatch(
             /href="\/market-data\/synthetic\/fx\/feed-1\?tab=arrivals"[^>]*>Hawkes</,
+        );
+    });
+
+    it('reads one feed’s trace with no feed to filter by', () => {
+        expect(render(<TraceView trace={trace()} pages={new Map()} />)).toContain('<input');
+        expect(render(<TraceView trace={trace()} pages={new Map()} oneFeed />)).not.toContain(
+            '<input',
         );
     });
 

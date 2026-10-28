@@ -4796,7 +4796,7 @@ const pt: SourceCatalogue = {
                 now: { title: 'Agora', question: 'o que está a fazer' },
                 settings: { title: 'Definições', question: 'o que o move' },
                 arrivals: { title: 'Chegadas', question: 'como chegam os ticks' },
-                laws: { title: 'Leis', question: 'a lei de cada feed' },
+                feeds: { title: 'Feeds', question: 'cada feed, a sua lei e os seus ticks' },
                 fit: { title: 'Ajuste', question: 'cada feed segue a sua lei' },
                 trace: { title: 'Registo', question: 'o que o ciclo fez' },
             },
@@ -4953,10 +4953,17 @@ const pt: SourceCatalogue = {
                 rampLegend: 'nenhum → o dobro do que a lei pede',
                 seenAskedLegend:
                     'vistos / pedidos: os ticks da janela face à contagem que a lei do feed pede ao ritmo que correu',
+                allLaws: 'Todas',
+                onlyProcess: 'Só {process} ×',
+            },
+            families: {
+                show: 'Ver estes feeds →',
+                processes: {
+                    title: 'Processos de preço',
+                    lead: 'O processo de que cada feed tira os seus preços. Um cartão abre o separador Feeds só com esses feeds, cada um com os seus parâmetros.',
+                },
             },
             laws: {
-                title: 'A lei de cada feed',
-                lead: 'Lida aqui, definida no feed. Uma lei pertence ao seu feed, por isso a lei abre o separador Chegadas desse feed, o único sítio onde se edita uma lei, e os seus números surgem ao passar o cursor; o feed adota uma nova lei quando voltar a arrancar.',
                 feeds: 'feeds',
                 intensity: 'Intensidade',
                 stableWhen: 'Estável se',
@@ -4965,7 +4972,8 @@ const pt: SourceCatalogue = {
                 stable: 'estável',
                 runsAway: 'descontrola-se',
                 always: 'sempre',
-                open: 'Separador Chegadas →',
+                open: 'Abrir o separador Chegadas →',
+                summary: '{feed}: a sua lei',
                 columns: {
                     feed: 'Feed',
                     process: 'Processo',
@@ -4975,7 +4983,6 @@ const pt: SourceCatalogue = {
                     branching: 'Ramificação',
                     decay: 'Decaimento, /τ',
                     stable: 'Estável',
-                    recent: 'Últimos 60 s',
                 },
                 families: {
                     periodic: {

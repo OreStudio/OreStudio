@@ -25,6 +25,7 @@ import { cx } from '../../../ui/Primitives.js';
 import { exponentialQuantiles, feedFit, QQ_MINIMUM_GAPS, tauSpan } from '../marketTrace.js';
 import { MarketCard, MicroLabel } from './MarketCard.js';
 import { FeedLink, type FeedPages } from './FeedLink.js';
+import { LawTag } from './LawTag.js';
 import { clean } from './numbers.js';
 
 /** The pixels a QQ plot takes on each side. */
@@ -36,8 +37,8 @@ export function ratioPosition(ratio: number): number {
 }
 
 /**
- * The Fit tab: each running feed's ticks over the window against its law, the gaps of the
- * feed a person picks against Exp(1), and how the loop that schedules them keeps up.
+ * The Fit tab: how the loop that schedules the feeds keeps up, then each running feed's ticks
+ * over the window against its law, and the gaps of the feed a person picks against Exp(1).
  */
 export function FitView({
     regime,
@@ -67,6 +68,49 @@ export function FitView({
         points.reduce((high, point) => Math.max(high, point.expected, point.observed), 1) * 1.05;
     return (
         <div className="grid gap-4">
+            <MarketCard
+                glyph="health"
+                title={t('marketdata.market.fit.health.title')}
+                lead={t('marketdata.market.fit.health.lead')}
+            >
+                <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 xl:grid-cols-7">
+                    {(
+                        [
+                            [
+                                'ticksPerSecond',
+                                trace === undefined ? '—' : trace.ticksPerSecond.toFixed(1),
+                            ],
+                            ['heap', trace === undefined ? '—' : String(trace.heapSize)],
+                            [
+                                'lateness',
+                                trace === undefined
+                                    ? '—'
+                                    : `${(trace.latenessSeconds * 1000).toFixed(1)} ms`,
+                            ],
+                            [
+                                'latest',
+                                trace === undefined
+                                    ? '—'
+                                    : `${(trace.maxLatenessSeconds * 1000).toFixed(1)} ms`,
+                            ],
+                            ['series', trace === undefined ? '—' : String(trace.series)],
+                            ['enrolled', `${clean(regime.populationRate, 3)}/s`],
+                            ['seed', String(regime.runSeed)],
+                        ] as const
+                    ).map(([key, value]) => (
+                        <div
+                            key={key}
+                            className="grid gap-1 rounded-card border border-line-subtle bg-bg-primary px-3 py-2"
+                        >
+                            <dt>
+                                <MicroLabel>{t(`marketdata.market.fit.health.${key}`)}</MicroLabel>
+                            </dt>
+                            <dd className="font-mono text-base font-bold tabular-nums">{value}</dd>
+                        </div>
+                    ))}
+                </dl>
+            </MarketCard>
+
             <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                 <MarketCard
                     glyph="fit"
@@ -130,15 +174,7 @@ export function FitView({
                                                     />
                                                 </td>
                                                 <td className="px-2 py-1.5">
-                                                    <FeedLink
-                                                        sourceName={feed.sourceName}
-                                                        pages={pages}
-                                                        tab="arrivals"
-                                                    >
-                                                        {t(
-                                                            `marketdata.marketRegime.modes.${feed.mode}`,
-                                                        )}
-                                                    </FeedLink>
+                                                    <LawTag law={feed} pages={pages} />
                                                 </td>
                                                 <td className="px-2 py-1.5 text-right tabular-nums">
                                                     {fit.observed}
@@ -222,49 +258,6 @@ export function FitView({
                     )}
                 </MarketCard>
             </div>
-
-            <MarketCard
-                glyph="health"
-                title={t('marketdata.market.fit.health.title')}
-                lead={t('marketdata.market.fit.health.lead')}
-            >
-                <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 xl:grid-cols-7">
-                    {(
-                        [
-                            [
-                                'ticksPerSecond',
-                                trace === undefined ? '—' : trace.ticksPerSecond.toFixed(1),
-                            ],
-                            ['heap', trace === undefined ? '—' : String(trace.heapSize)],
-                            [
-                                'lateness',
-                                trace === undefined
-                                    ? '—'
-                                    : `${(trace.latenessSeconds * 1000).toFixed(1)} ms`,
-                            ],
-                            [
-                                'latest',
-                                trace === undefined
-                                    ? '—'
-                                    : `${(trace.maxLatenessSeconds * 1000).toFixed(1)} ms`,
-                            ],
-                            ['series', trace === undefined ? '—' : String(trace.series)],
-                            ['enrolled', `${clean(regime.populationRate, 3)}/s`],
-                            ['seed', String(regime.runSeed)],
-                        ] as const
-                    ).map(([key, value]) => (
-                        <div
-                            key={key}
-                            className="grid gap-1 rounded-card border border-line-subtle bg-bg-primary px-3 py-2"
-                        >
-                            <dt>
-                                <MicroLabel>{t(`marketdata.market.fit.health.${key}`)}</MicroLabel>
-                            </dt>
-                            <dd className="font-mono text-base font-bold tabular-nums">{value}</dd>
-                        </div>
-                    ))}
-                </dl>
-            </MarketCard>
         </div>
     );
 }

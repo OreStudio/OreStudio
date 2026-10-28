@@ -4765,7 +4765,7 @@ export const en: SourceCatalogue = {
                 now: { title: 'Now', question: 'what is it doing' },
                 settings: { title: 'Settings', question: 'what moves it' },
                 arrivals: { title: 'Arrivals', question: 'how the ticks come' },
-                laws: { title: 'Laws', question: 'which law each feed draws from' },
+                feeds: { title: 'Feeds', question: 'each feed, its law and its ticks' },
                 fit: { title: 'Fit', question: 'does each feed follow its law' },
                 trace: { title: 'Trace', question: 'what the loop did' },
             },
@@ -4922,10 +4922,17 @@ export const en: SourceCatalogue = {
                 rampLegend: 'none → twice what the law asks',
                 seenAskedLegend:
                     'seen / asked: the ticks in the window against the count the feed’s law asks for at the pace that ran',
+                allLaws: 'All',
+                onlyProcess: 'Only {process} ×',
+            },
+            families: {
+                show: 'Show these feeds →',
+                processes: {
+                    title: 'Price processes',
+                    lead: 'The process each feed draws its prices from. A card opens the Feeds tab with only those feeds, each with its own parameters.',
+                },
             },
             laws: {
-                title: 'Every feed’s law',
-                lead: 'Read here, set on the feed. A law belongs to its feed, so the law opens that feed’s Arrivals tab, the one place a law is edited, and its numbers show when the pointer rests on it; the feed takes a new law when it next starts.',
                 feeds: 'feeds',
                 intensity: 'Intensity',
                 stableWhen: 'Stable when',
@@ -4934,7 +4941,8 @@ export const en: SourceCatalogue = {
                 stable: 'stable',
                 runsAway: 'runs away',
                 always: 'always',
-                open: 'Arrivals tab →',
+                open: 'Open the Arrivals tab →',
+                summary: '{feed}: its law',
                 columns: {
                     feed: 'Feed',
                     process: 'Process',
@@ -4944,7 +4952,6 @@ export const en: SourceCatalogue = {
                     branching: 'Branching',
                     decay: 'Decay, /τ',
                     stable: 'Stable',
-                    recent: 'Last 60 s',
                 },
                 families: {
                     periodic: {

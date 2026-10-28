@@ -21,7 +21,7 @@
 import { useState, type ReactNode } from 'react';
 import type { HistoryResolution, MarketHistory } from '../../../api/client.js';
 import { useTranslation } from '../../../i18n/Provider.js';
-import { ramp, RAMP } from './ArrivalsView.js';
+import { ramp, RAMP } from './FeedsView.js';
 import { FOLDS, foldHistory, type FoldSeries } from './fold.js';
 import { MarketCard, MicroLabel, Segmented } from './MarketCard.js';
 import { clean } from './numbers.js';

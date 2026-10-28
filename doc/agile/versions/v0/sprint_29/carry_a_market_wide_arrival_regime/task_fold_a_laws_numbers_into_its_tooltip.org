@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person scanning the Laws table reads each feed, its process and its law at a glance, and hovers the law for its numbers or clicks it to set them.
+A person reads the market whole on Arrivals and each feed on Feeds, sees each feed's process and law by name, and hovers either for its numbers.
 
 * Status
 
@@ -86,14 +86,27 @@ via its "Verifies task" field.
 
 * Result
 
-The Market tab's Laws table has four columns: the feed, its process, its law and
-its last minute of ticks. The five number columns (ticks an hour, sensitivity,
-branching, decay, stable) moved into the law's tooltip, one to a line, the
-Hawkes three only for a Hawkes law. The column of Arrivals tab links is gone,
-since the law itself opens the feed's Arrivals tab. The table's lead says so.
+The UI review widened the task. The Market tab had two per-feed tables, Laws
+and Arrivals, with two rasters of the same ticks. They are now split by scope:
 
-Evidence: web tests pass (230 in marketdata/synthetic and i18n), typecheck clean,
-and the harness passes 15 of 15 live: it checks the four headers, the law's link
-and its tooltip, and that no Arrivals tab link is left. A screenshot of the table
-was checked. Held for the user's review of the UI before merge.
+- Arrivals reads the market whole: the folded heat map, a card a law with its
+  feed count, and a card a price process with its feed count. Each card opens
+  Feeds narrowed to its feeds.
+- Feeds is the one per-feed table: feed, process, law, the lanes and seen /
+  asked, with a law filter and a process filter carried in the address.
+- The Laws tab is gone.
 
+The process and the law share one summary card. Each shows its name only, and
+the card opens on hover or focus. A click keeps the process card open. The law
+stays a link to the feed's Arrivals tab, and its card holds its numbers. No
+value shows in a row by default. The Fit table uses the same law tag.
+
+The loop's health moved to the top of Fit. A feed's own Arrivals tab shows that
+feed's trace, without the feed filter. The heat map's hot end is red, not gold,
+since gold is the interest-rate colour.
+
+Evidence: web tests pass (2253), typecheck clean, and the harness passes 16 of
+16 live. It checks the tabs, the overview cards' links and filters, the law and
+process cards on hover and on click, the feed's trace, and that health sits
+above the fit table. Screenshots of every changed view were checked. Held for
+the user's review of the UI before merge.

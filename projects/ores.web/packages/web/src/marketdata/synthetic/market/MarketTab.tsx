@@ -33,26 +33,26 @@ import { useSession } from '../../../session/SessionProvider.js';
 import { Notice } from '../../../ui/Primitives.js';
 import { tabAddress, useTabs } from '../../../ui/Tabs.js';
 import { REGIME_KEY, useMarketRegimeQuery, useMarketTrace } from '../useMarketRegime.js';
-import { ArrivalsView, type ArrivalWindow } from './ArrivalsView.js';
+import { FamiliesView } from './FamiliesView.js';
 import { feedPages } from './FeedLink.js';
+import { FeedsView, type ArrivalWindow } from './FeedsView.js';
 import { FitView } from './FitView.js';
 import { FoldCard } from './FoldCard.js';
 import { Glyph, type GlyphName } from './MarketCard.js';
-import { LawsView } from './LawsView.js';
 import { MarketStrip } from './MarketStrip.js';
 import { NowView } from './NowView.js';
 import { SettingsView } from './SettingsView.js';
 import { TraceView } from './TraceView.js';
 
 /** The market's own tabs, one question each. */
-export const VIEWS = ['now', 'settings', 'arrivals', 'laws', 'fit', 'trace'] as const;
+export const VIEWS = ['now', 'settings', 'arrivals', 'feeds', 'fit', 'trace'] as const;
 export type MarketViewName = (typeof VIEWS)[number];
 
 const GLYPHS: Readonly<Record<MarketViewName, GlyphName>> = {
     now: 'pace',
     settings: 'settings',
     arrivals: 'arrivals',
-    laws: 'laws',
+    feeds: 'laws',
     fit: 'fit',
     trace: 'log',
 };
@@ -68,7 +68,7 @@ const OUTER = { tab: 'regime' } as const;
 
 /**
  * The market: one clock for every feed of the installation, as six tabs under one strip of
- * figures. A system session forces the state and sets what moves the market; a tenant reads
+ * figures. Arrivals reads the market whole; Feeds reads it a feed to a row. A system session forces the state and sets what moves the market; a tenant reads
  * the same tabs.
  */
 export function MarketTab(): ReactNode {
@@ -181,7 +181,19 @@ export function MarketTab(): ReactNode {
                 />
             ) : null}
             {view === 'arrivals' ? (
-                <ArrivalsView
+                <FamiliesView
+                    trace={trace.data}
+                    raster={raster.data}
+                    feedsLink={(param, value) =>
+                        `?${new URLSearchParams({
+                            ...tabAddress(VIEWS, 'feeds', 'view', OUTER),
+                            [param]: value,
+                        }).toString()}`
+                    }
+                />
+            ) : null}
+            {view === 'feeds' ? (
+                <FeedsView
                     raster={raster.data}
                     trace={trace.data}
                     now={now}
@@ -189,9 +201,6 @@ export function MarketTab(): ReactNode {
                     onWindow={setArrivalWindow}
                     pages={pages}
                 />
-            ) : null}
-            {view === 'laws' ? (
-                <LawsView trace={trace.data} raster={raster.data} now={now} pages={pages} />
             ) : null}
             {view === 'fit' ? (
                 <FitView regime={regime.data} trace={trace.data} pages={pages} />

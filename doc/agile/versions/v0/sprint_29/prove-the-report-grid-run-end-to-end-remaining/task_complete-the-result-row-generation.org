@@ -28,11 +28,11 @@ permission, and posting a run leaves every earlier run's rows live.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Built and proven; the pull request is open for review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then close the task.            |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -92,3 +92,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as #3986. The entity regenerates to exactly what is committed: every
+layer, from the generator, and nothing hand-edited. A run's rows are read
+through the generated list, which applies the page, every filter member and
+the read permission, and answers the true total.
+
+The generation also exposed the defect this task fixed beyond its first scope:
+the soft-update trigger closed every current row of the tenant before each
+insert, so posting a run erased the rows of every run before it. The model now
+states the natural key and the trigger names the run, so a run's rows stay live
+until something prunes them, and a re-post replaces only its own version.
+
+Proven: the full tree builds; the three reporting suites pass; the trigger test
+left 24 current rows before an insert for another run and 25 after; the live
+read returns 24 rows through the generated path; and the reporting drift check
+exits zero. Codegen now refuses the trigger without a key.
+
+The review's one open point, a generated list with no ceiling of its own, is
+captured rather than fixed here, because it is a page policy for every
+generated list and not this entity's fault.

@@ -32,6 +32,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -50,11 +51,14 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
     r.output_series_id = boost::lexical_cast<boost::uuids::uuid>(v.output_series_id);
 
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.name = v.name;
     r.currency_code = v.currency_code;
     r.index_tenor = v.index_tenor;
     r.curve_family_role = v.curve_family_role;
     r.discount_curve_config_id =
-        boost::lexical_cast<boost::uuids::uuid>(v.discount_curve_config_id);
+        v.discount_curve_config_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.discount_curve_config_id)) :
+            std::nullopt;
     r.interpolation_method = v.interpolation_method;
     r.day_count_convention = v.day_count_convention;
     r.tenor_convention_code = v.tenor_convention_code;
@@ -80,10 +84,14 @@ ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v
     r.output_series_id = boost::uuids::to_string(v.output_series_id);
 
     r.party_id = boost::uuids::to_string(v.party_id);
+    r.name = v.name;
     r.currency_code = v.currency_code;
     r.index_tenor = v.index_tenor;
     r.curve_family_role = v.curve_family_role;
-    r.discount_curve_config_id = boost::uuids::to_string(v.discount_curve_config_id);
+    r.discount_curve_config_id =
+        v.discount_curve_config_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.discount_curve_config_id)) :
+            std::nullopt;
     r.interpolation_method = v.interpolation_method;
     r.day_count_convention = v.day_count_convention;
     r.tenor_convention_code = v.tenor_convention_code;

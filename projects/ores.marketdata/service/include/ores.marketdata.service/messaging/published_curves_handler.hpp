@@ -126,7 +126,11 @@ public:
     void withdraw(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(published_curves_handler_lg(), msg);
-        const auto req_ctx = context_of(msg, "marketdata::curve_bootstrap:publish");
+        // The withdrawal is the maker's act, and the maker is the permission the
+        // withdrawal kind names.
+        const auto req_ctx = context_of(msg,
+                                        service::app::raise_permission_of(
+                                            ctx_, service::app::curve_withdrawal_kind_code));
         if (!req_ctx)
             return;
         auto req = decode<withdraw_curve_request>(msg);
@@ -163,7 +167,7 @@ private:
             error_reply(nats_, msg, req_ctx_expected.error());
             return std::nullopt;
         }
-        if (!has_permission(*req_ctx_expected, permission)) {
+        if (!permission.empty() && !has_permission(*req_ctx_expected, permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;
         }

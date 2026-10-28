@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -65,8 +66,10 @@ using namespace ores::logging;
  * @c curve_republish_service::republish(), so a refusal leaves the curve as it
  * was.
  *
- * The permission is the maker's. The decision is the decider's, and it is taken
- * on the inbox's own operation, so the two halves ask for two different codes.
+ * The permission is the maker's, and it is the one the kind names in
+ * =raise_permission_code=: the pair is per kind, so the handler asks the kind and
+ * never a code of its own. The decision is the decider's, and it is taken on the
+ * inbox's own operation, so the two halves ask for two different codes.
  */
 class approval_gated_curve_publish_handler {
 public:
@@ -87,7 +90,21 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "marketdata::curve_bootstrap:publish")) {
+        // The maker's permission is the kind's, so the gate moves when the tenant
+        // moves the kind and never because a code here went stale.
+        std::string maker_permission;
+        try {
+            maker_permission =
+                service::app::raise_permission_of(req_ctx, service::app::curve_publish_kind_code);
+        } catch (const std::exception& e) {
+            // A kind that cannot be read names no maker, so the gate fails closed
+            // rather than letting a publish through an unstated rule.
+            BOOST_LOG_SEV(curve_publish_handler_lg(), error)
+                << msg.subject << " refused: " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!maker_permission.empty() && !has_permission(req_ctx, maker_permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -118,6 +135,12 @@ private:
      *
      * Both halves read the subject out of the configuration the call names, so
      * the party and the series are the configuration's and never the caller's.
+     *
+     * A kind whose @c approvals_required is zero needs nobody, so the raise is
+     * the publish: the inbox closes the request approved in the same act and
+     * this operation applies it at once, answering with the instant and the
+     * publisher the record holds rather than with a wait. The publisher is the
+     * asker, because the asker is the person who applied it.
      */
     static void answer(const ores::database::context& req_ctx,
                        const publish_curve_request& req,
@@ -129,19 +152,40 @@ private:
                 resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
             const auto raised = raise_publish_request(req_ctx, subject, req.reason);
             const auto id = boost::uuids::to_string(raised.id);
-            resp.success = true;
             resp.approval_request_id = id;
             resp.state_code = raised.state_code;
-            resp.message = "Raised. The publish waits on the decision.";
+            if (raised.state_code != "approved") {
+                resp.success = true;
+                resp.message = "Raised. The publish waits on the decision.";
+                BOOST_LOG_SEV(curve_publish_handler_lg(), info)
+                    << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
+                    << " as of " << req.as_of;
+                return;
+            }
             BOOST_LOG_SEV(curve_publish_handler_lg(), info)
-                << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
-                << " as of " << req.as_of;
+                << "Request " << id << " needs no approval, so the raise is the publish";
+            apply(req_ctx, id, subject, resp);
             return;
         }
 
         const auto attempted = resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
-        const auto verdict = verdict_on_publish(req_ctx, req.approval_request_id, attempted);
         resp.approval_request_id = req.approval_request_id;
+        apply(req_ctx, req.approval_request_id, attempted, resp);
+    }
+
+    /**
+     * @brief Applies the approved request, or says why it may not.
+     *
+     * The set moves before the record is stamped, so a failure to write the
+     * observations leaves the request unused rather than spent.
+     */
+    static void apply(const ores::database::context& req_ctx,
+                      const std::string& request_id,
+                      const service::app::publish_subject& attempted,
+                      publish_curve_response& resp) {
+        using namespace ores::marketdata::service::app;
+
+        const auto verdict = verdict_on_publish(req_ctx, request_id, attempted);
         resp.state_code = verdict.state_code;
         if (!verdict.approved) {
             resp.message = verdict.message;
@@ -149,8 +193,6 @@ private:
         }
 
         curve_republish_service::republish(req_ctx, attempted.bootstrap_config_id, attempted.as_of);
-        // The record is stamped after the set moved, so a failure to write the
-        // observations leaves the request unused rather than spent.
         const auto published = record_publication(
             req_ctx,
             *verdict.record,

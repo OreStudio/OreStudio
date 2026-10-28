@@ -88,6 +88,27 @@ Examples: 'iam::roles:assign'.
 std::string("iam::roles:assign")
 #+end_src
 
+** raise_permission_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The permission a person needs to raise a request of this kind, which is the
+maker's half of the maker and checker pair. It sits on the kind and never on a
+request: a maker who could name a weaker checker would choose their own control.
+
+Examples: 'marketdata::curve_bootstrap:publish'.
+
+Null when the kind names none, and then the raise is the component's own to
+gate, which is how every kind seeded before this column behaves. The permission
+is held by an account in the tenant and never by a party.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** allows_hold
 :PROPERTIES:
 :type:          boolean
@@ -188,6 +209,18 @@ faker::number::integer(1, 100)
 The permission a decider needs. Permissions are held by the system tenant, so
 the check reads it.
 
+** raise_permission_code
+:PROPERTIES:
+:table:             ores_iam_permissions_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid raise_permission_code: %. No permission found with this code.
+:END:
+
+The permission a maker needs. Null names none, so the kind's raise stays the
+owning component's to gate.
+
 * SQL
 
 ** Flags
@@ -260,6 +293,7 @@ request is of is the system's and its rule is what a decider reads.
 | code                   | Code               |
 | name                   | Name               |
 | decide_permission_code | Decide Permission  |
+| raise_permission_code  | Raise Permission   |
 | approvals_required     | Approvals Required |
 | modified_by            | Modified By        |
 | version                | Version            |
@@ -278,6 +312,7 @@ request is of is the system's and its rule is what a decider reads.
 | name                   | Name              | nameEdit         | line_edit |        | true        | Enter display name      |
 | description            | Description       | descriptionEdit  | text_edit |        |             | Enter a description     |
 | decide_permission_code | Decide Permission | permissionEdit   | line_edit |        | true        | Enter a permission code |
+| raise_permission_code  | Raise Permission  | permissionEdit   | line_edit |        |             | Enter a permission code |
 
 *** Columns
 
@@ -286,6 +321,7 @@ request is of is the system's and its rule is what a decider reads.
 | Code                 | code                   | Code               | string    | 160   |
 | Name                 | name                   | Name               | string    | 200   |
 | DecidePermissionCode | decide_permission_code | Decide Permission  | string    | 200   |
+| RaisePermissionCode  | raise_permission_code  | Raise Permission   | string    | 200   |
 | ApprovalsRequired    | approvals_required     | Approvals Required | int       | 100   |
 | Version              | version                | Version            | int       | 80    |
 | ModifiedBy           | modified_by            | Modified By        | string    | 120   |

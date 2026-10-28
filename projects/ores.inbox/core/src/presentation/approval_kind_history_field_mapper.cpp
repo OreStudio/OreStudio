@@ -41,6 +41,8 @@ render_approval_kind_fields(const domain::approval_kind& v) {
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Decide Permission Code", .value = v.decide_permission_code});
+    fields.push_back({.name = "Raise Permission Code",
+                      .value = v.raise_permission_code.value_or(std::string{})});
     fields.push_back({.name = "Allows Hold", .value = v.allows_hold ? "true" : "false"});
     fields.push_back(
         {.name = "Comment On Approve", .value = v.comment_on_approve ? "true" : "false"});

@@ -301,8 +301,10 @@ export const en: SourceCatalogue = {
             asOf: 'Published as-of',
             points: 'Points',
             openComparison: 'Open the comparison',
-            noSubject:
-                'This request is a curve publish, and its subject is not readable here: the market data component holds it, or this account may not read that curve.',
+            noSubjectRefused:
+                'This request is a curve publish, and this account may not read the published curves, so its subject is not drawn here. The request itself is sound.',
+            noSubjectMissing:
+                'This request is a curve publish, and the market data component holds no published set for it. Nothing was found to draw, rather than something being refused.',
             row: '{party} · as of {asOf} · {points} points',
             summary: '{curve} of {party}, as of {asOf}',
             approve: 'Approve the publish',
@@ -494,6 +496,11 @@ export const en: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         'A request for {kind} is due by {deadline} and nobody has answered it.',
+
+    'notification.marketdata.curve_published':
+        'The curve {curve} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the set as of {previous_as_of}, or nothing when it is the first.',
+    'notification.marketdata.curve_withdrawn':
+        'The curve {curve} of {party} was withdrawn on {withdrawn_at} by {withdrawn_by}: {reason}. Its last published set was as of {as_of}.',
 
     signIns: {
         title: 'Sign-ins',
@@ -4377,6 +4384,15 @@ export const en: SourceCatalogue = {
         },
         choices: {
             ore_currency_type: { Major: 'Major', Metal: 'Metal', Crypto: 'Crypto' },
+            curve_family_role: {
+                FUNDING: 'Funding',
+                PROJECTION: 'Projection',
+            },
+            interpolation_method: {
+                LOG_LINEAR_DISCOUNT: 'Log-linear on the discount factor',
+                FLAT_FORWARD_THEN_LOG_LINEAR: 'Flat forward, then log-linear',
+                CUBIC_SPLINE: 'Cubic spline',
+            },
             report_type: { risk: 'Risk report' },
             regulatory_book_type: { Trading: 'Trading book', Banking: 'Banking book' },
             pre_processing: { execute: 'Execute', substitute: 'Substitute' },
@@ -4692,7 +4708,7 @@ export const en: SourceCatalogue = {
             copy: 'Copy blueprint',
             copyTitle: 'Copy {code}',
             copyNote:
-                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, and it names a series of its own: the series is what tells one blueprint from another.",
+                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, its own name and its own series.",
             add: 'Add blueprint',
             addTitle: 'Add a curve blueprint',
             noPillarsNotice:
@@ -4735,6 +4751,8 @@ export const en: SourceCatalogue = {
                 'A set becomes one when a person publishes an approved candidate, in the publish journey.',
             setsNote:
                 "A set is found by the blueprint it was built from, which the read carries; the list contract has no filter for it yet, so the tab reads the party's sets and picks this one's.",
+            removeWarning:
+                'This removes the blueprint and its {count} pillars. The {sets} set(s) it fed stay where they are: a published set is never deleted with a recipe, and the desk reads it by its own record.',
             historyLead:
                 "The recipe's versions and every pillar's versions, newest first, each named by its part. A pillar deleted from the recipe is not in this stream.",
             usedByNone: 'No projection discounts off this recipe.',
@@ -4757,6 +4775,7 @@ export const en: SourceCatalogue = {
                 noSetInUse: 'No set in use since {date}',
             },
             columns: {
+                name: 'Name',
                 curve: 'Curve',
                 currency: 'Currency',
                 role: 'Role',
@@ -4812,8 +4831,10 @@ export const en: SourceCatalogue = {
                     SWAP: 'Bootstraps as a swap from spot to its end tenor.',
                     other: 'A role this screen does not know.',
                 },
+                nameMeans:
+                    'The name the blueprint is known by, such as USD-SOFR-ACME. It is typed here and stored with the record, and the screens never make one out of the output series.',
                 outputSeriesMeans:
-                    'The market series the curve is published into. It is what names the blueprint, so a desk chooses one it holds and no two blueprints claim the same series.',
+                    "The market series the curve is published into, drawn as its URI. It is the record's natural key, so a desk chooses a series it holds and no two blueprints claim the same one.",
                 usedBy: 'Used by',
                 fed: 'Sets it fed',
                 fedCount: '{count} published',
@@ -4822,6 +4843,10 @@ export const en: SourceCatalogue = {
                 addPillar: 'Add a pillar',
                 openPillars: 'Open the pillars',
                 editBlueprint: 'Edit the blueprint',
+            },
+            tabs: {
+                check: 'Check',
+                sets: 'Published sets',
             },
             checks: {
                 one_pillar: 'The recipe holds at least one pillar.',

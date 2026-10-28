@@ -300,8 +300,10 @@ const fr: SourceCatalogue = {
             asOf: 'Date d’arrêté publiée',
             points: 'Points',
             openComparison: 'Ouvrir la comparaison',
-            noSubject:
-                'Cette demande est une publication de courbe, et son sujet n’est pas lisible ici : le composant de données de marché le détient, ou ce compte ne peut pas lire cette courbe.',
+            noSubjectRefused:
+                'Cette demande est une publication de courbe, et ce compte ne peut pas lire les courbes publiées : son sujet n’est donc pas dessiné ici. La demande elle-même est saine.',
+            noSubjectMissing:
+                'Cette demande est une publication de courbe, et le composant de données de marché ne détient aucun ensemble publié pour elle. Rien n’a été trouvé, plutôt que quelque chose de refusé.',
             row: '{party} · arrêté au {asOf} · {points} points',
             summary: '{curve} de {party}, arrêté au {asOf}',
             approve: 'Approuver la publication',
@@ -492,6 +494,11 @@ const fr: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         "Une demande de {kind} est due avant le {deadline} et personne n'y a répondu.",
+
+    'notification.marketdata.curve_published':
+        "La courbe {curve} de {party} est en vigueur depuis {published_at}, publiée par {publisher} à la date d'arrêté {as_of}. Elle remplace l'ensemble arrêté au {previous_as_of}, ou rien lorsqu'il s'agit du premier.",
+    'notification.marketdata.curve_withdrawn':
+        'La courbe {curve} de {party} a été retirée le {withdrawn_at} par {withdrawn_by} : {reason}. Son dernier ensemble publié était arrêté au {as_of}.',
 
     signIns: {
         title: 'Connexions',
@@ -4440,6 +4447,15 @@ const fr: SourceCatalogue = {
         },
         choices: {
             ore_currency_type: { Major: 'Majeure', Metal: 'Métal', Crypto: 'Crypto' },
+            curve_family_role: {
+                FUNDING: 'Financement',
+                PROJECTION: 'Projection',
+            },
+            interpolation_method: {
+                LOG_LINEAR_DISCOUNT: "Log-linéaire sur le facteur d'actualisation",
+                FLAT_FORWARD_THEN_LOG_LINEAR: 'Forward plat, puis log-linéaire',
+                CUBIC_SPLINE: 'Spline cubique',
+            },
             report_type: { risk: 'Rapport de risque' },
             regulatory_book_type: {
                 Trading: 'Portefeuille de négociation',
@@ -4761,7 +4777,7 @@ const fr: SourceCatalogue = {
             copy: 'Copier le plan',
             copyTitle: 'Copier {code}',
             copyNote:
-                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, et elle nomme une série à elle : c'est la série qui distingue un plan d'un autre.",
+                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, son propre nom et sa propre série.",
             add: 'Ajouter un plan',
             addTitle: 'Ajouter un plan de courbe',
             noPillarsNotice:
@@ -4804,6 +4820,8 @@ const fr: SourceCatalogue = {
                 "Un ensemble le devient lorsqu'une personne publie un candidat approuvé, dans le parcours de publication.",
             setsNote:
                 "Un ensemble se retrouve par le plan dont il a été construit, que la lecture transporte ; le contrat de liste n'a pas encore de filtre pour cela, donc l'onglet lit les ensembles de la partie et retient le sien.",
+            removeWarning:
+                "Ceci supprime le plan et ses {count} piliers. Les {sets} ensemble(s) qu'il a alimentés restent où ils sont : un ensemble publié n'est jamais supprimé avec une recette, et le desk le lit par son propre enregistrement.",
             historyLead:
                 "Les versions de la recette et celles de chaque pilier, de la plus récente à la plus ancienne, chacune nommée par sa partie. Un pilier supprimé de la recette n'est pas dans ce flux.",
             usedByNone: "Aucune projection ne s'actualise sur cette recette.",
@@ -4826,6 +4844,7 @@ const fr: SourceCatalogue = {
                 noSetInUse: 'Aucun ensemble en usage depuis le {date}',
             },
             columns: {
+                name: 'Nom',
                 curve: 'Courbe',
                 currency: 'Devise',
                 role: 'Rôle',
@@ -4882,8 +4901,10 @@ const fr: SourceCatalogue = {
                     SWAP: 'Se construit comme un swap du spot à son tenor de fin.',
                     other: 'Un rôle que cet écran ne connaît pas.',
                 },
+                nameMeans:
+                    "Le nom sous lequel le plan est connu, tel que USD-SOFR-ACME. Il est saisi ici et stocké avec l'enregistrement, et les écrans n'en fabriquent jamais un à partir de la série de sortie.",
                 outputSeriesMeans:
-                    "La série de marché dans laquelle la courbe est publiée. C'est elle qui nomme le plan : le desk en choisit une qu'il détient et deux plans ne revendiquent pas la même série.",
+                    "La série de marché dans laquelle la courbe est publiée, dessinée par son URI. C'est la clé naturelle de l'enregistrement : le desk choisit une série qu'il détient et deux plans ne revendiquent pas la même.",
                 usedBy: 'Utilisée par',
                 fed: 'Ensembles alimentés',
                 fedCount: '{count} publiés',
@@ -4892,6 +4913,10 @@ const fr: SourceCatalogue = {
                 addPillar: 'Ajouter un pilier',
                 openPillars: 'Ouvrir les piliers',
                 editBlueprint: 'Modifier le plan',
+            },
+            tabs: {
+                check: 'Contrôle',
+                sets: 'Ensembles publiés',
             },
             checks: {
                 one_pillar: 'La recette tient au moins un pilier.',

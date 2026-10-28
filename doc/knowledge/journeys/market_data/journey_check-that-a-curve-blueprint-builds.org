@@ -70,9 +70,13 @@ names field groups and related plurals, and a check is neither, so the note at
    - a =PROJECTION= blueprint names a =FUNDING= blueprint of the same currency,
      and not itself;
    - the blueprint a projection names is not itself a projection.
-   A check the screen can answer from what it read is answered at once. A check
-   the server decides is shown as answerable only after the test runs, and the
-   tab never shows an unrun check as passed.
+   The last two checks need a projection, and only a projection has a discount
+   curve to judge: a =FUNDING= blueprint's discount curve is null, so both pass
+   without one being read. The tab reads the discount curve only when the
+   record names one, and never asks the server for the record a nil id would
+   name. A check the screen can answer from what it read is answered at once. A
+   check the server decides is shown as answerable only after the test runs, and
+   the tab never shows an unrun check as passed.
 4. *Read what the market must supply.* The person chooses *Run the test*. The
    system calls =marketdata.v1.ops.compute_curve= for this blueprint and as-of.
    For each pillar it names whether the pillar's series held a rate at that
@@ -127,7 +131,7 @@ the steps this journey contributes.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =ir_curve_bootstrap_config= | The recipe under test: currency, index tenor, role, discount curve, interpolation, day count, tenor convention, split tenor | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_config= | The recipe under test: its name, currency, index tenor, role, discount curve (null for a funding curve), interpolation, day count, tenor convention, split tenor | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
 | =ir_curve_bootstrap_pillar= | The pillars the checks judge and the build answers | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
 | =market_series= | The series each pillar's rate is looked for in | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
 | =market_observation= | The rate at the as-of, or its absence | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |

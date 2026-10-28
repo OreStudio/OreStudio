@@ -32,6 +32,7 @@ import { resourceView } from '../refdata/testSupport.js';
 import { CurveBlueprintPage, CurveBlueprintsPage, blueprintFields } from './curveBlueprints.js';
 
 const CONFIGS = 'ir-curve-bootstrap-configs';
+const NAME = 'USD-SOFR-FOMC';
 const SERIES = 'a1a1a1a1-0000-4000-8000-000000000001';
 const URI = 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC';
 
@@ -53,12 +54,13 @@ const everything: AccountAccess = {
 const blueprint: RecordRow = {
     version: 1,
     id: 'b1b1b1b1-0000-4000-8000-000000000001',
+    name: NAME,
     output_series_id: SERIES,
     party_id: 'd82fc8f0-b37a-491e-9acf-4ac69b82303e',
     currency_code: 'USD',
     index_tenor: '1D',
     curve_family_role: 'FUNDING',
-    discount_curve_config_id: '00000000-0000-0000-0000-000000000000',
+    discount_curve_config_id: null,
     interpolation_method: 'FLAT_FORWARD_THEN_LOG_LINEAR',
     day_count_convention: 'A360',
     tenor_convention_code: 'RATES_SPOT_FOMC',
@@ -151,17 +153,8 @@ async function render(
         total: 0,
     });
     client.setQueryData(['records', CONFIGS, 'currencies'], [blueprint]);
-    // The list's own read names each row's series, so the page the table reads
-    // is the row as that read answers it.
-    const rowState = options.rowSeriesState ?? 'read';
     client.setQueryData(pageKey({ key: CONFIGS }, FIRST_PAGE), {
-        rows: [
-            {
-                ...blueprint,
-                series_uri: rowState === 'read' ? URI : '',
-                series_state: rowState,
-            },
-        ],
+        rows: [blueprint],
         total: 1,
     });
     client.setQueryData(
@@ -205,20 +198,30 @@ function specs(): readonly FieldSpec[] {
 }
 
 describe('the blueprint field table', () => {
-    it('asks for the output series the party holds, first and required', async () => {
-        const series = specs()[0];
+    it('asks for the name the person types, first and required', async () => {
+        const name = specs()[0];
+        expect(name?.field).toBe('name');
+        expect(name?.kind).toEqual({ kind: 'text', max: 120 });
+        expect(name?.optional).not.toBe(true);
+    });
+
+    it('asks for the output series the party holds beside the name, and never derives it', async () => {
+        const series = specs()[1];
         expect(series?.field).toBe('output_series_id');
         expect(series?.kind).toEqual({ kind: 'pick', choices: [{ value: SERIES, label: URI }] });
         expect(series?.optional).not.toBe(true);
         expect(series?.fixed).toBe(true);
     });
 
-    it('refuses to save a new blueprint that names no series', async () => {
-        expect(invalidFields(specs(), {})).toContain('output_series_id');
+    it('refuses to save a new blueprint with no name and no series', async () => {
+        const invalid = invalidFields(specs(), {});
+        expect(invalid).toContain('name');
+        expect(invalid).toContain('output_series_id');
     });
 
-    it('writes the series the person chose', async () => {
+    it('writes the name and the series the person gave', async () => {
         const write = writeOf(specs(), {
+            name: NAME,
             output_series_id: SERIES,
             currency_code: 'USD',
             index_tenor: '1D',
@@ -228,9 +231,11 @@ describe('the blueprint field table', () => {
             tenor_convention_code: 'RATES_SPOT_FOMC',
             split_tenor_code: '1Y',
         });
+        expect(write['name']).toBe(NAME);
         expect(write['output_series_id']).toBe(SERIES);
         expect(write['currency_code']).toBe('USD');
         expect(write['split_tenor_code']).toBeNull();
+        expect(write['discount_curve_config_id']).toBeNull();
     });
 });
 
@@ -241,32 +246,52 @@ describe('the blueprint list', () => {
         expect(html).not.toContain('cannot be added here yet');
     });
 
-    it('draws the id and says so when a row names a series that no longer resolves', async () => {
-        const html = await render('/market-data/curve-blueprints', { rowSeriesState: 'missing' });
-        expect(html).toContain(SERIES);
-        expect(html).toContain('The series no longer resolves.');
-        expect(html).not.toContain('USD-SOFR-FOMC');
-    });
-
-    it("says the series could not be read when the row's read failed", async () => {
-        const html = await render('/market-data/curve-blueprints', { rowSeriesState: 'unread' });
-        expect(html).toContain(SERIES);
-        expect(html).toContain('The series could not be read.');
-    });
-
-    it('names each row by the series it publishes into, with its state line', async () => {
+    it("names each row by the record's own name, with its state line", async () => {
         const html = await render('/market-data/curve-blueprints');
-        expect(html).toContain('USD-SOFR-FOMC');
+        expect(html).toContain(NAME);
         expect(html).toContain('No pillars yet');
+    });
+
+    it("never parses the output series for the row's name", async () => {
+        const html = await render('/market-data/curve-blueprints');
+        expect(html).not.toContain(URI);
+        expect(html).not.toContain(SERIES);
     });
 });
 
 describe('the blueprint record page', () => {
-    it('draws the output series as the field it is, linked to the series read', async () => {
+    it('titles the record and its breadcrumb by the name the record holds', async () => {
         const html = await render(`/market-data/curve-blueprints/${blueprint['id']}`);
-        expect(html).toContain('USD-SOFR-FOMC');
+        expect(html).toContain(NAME);
+        expect(html).not.toContain(URI);
+    });
+
+    it('draws the output series on Details as a URI, and as a link', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}`);
+        // The URI is drawn as text inside the link, so the markup escapes the
+        // ampersands the URI carries between its query members.
+        expect(html).toContain('oresmd://ir/USD?type=series&amp;instrument=discount');
         expect(html).toContain(`/market-data/series?series=${SERIES}`);
         expect(html).toContain('US Dollar');
+    });
+
+    it('draws a dash for the discount curve a funding blueprint does not have', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}`);
+        // The label stands and the value is the dash, not the nil uuid and not
+        // the empty string a missing read would leave.
+        expect(html).toContain('Discount curve');
+        expect(html).toContain('—');
+        expect(html).not.toContain('00000000-0000-0000-0000-000000000000');
+    });
+
+    it('opens the Check tab on a funding blueprint without reading a discount curve', async () => {
+        const html = await render(`/market-data/curve-blueprints/${blueprint['id']}?tab=check`);
+        expect(html).toContain('Run the test');
+        expect(html).toContain('Not checked yet.');
+        // The absent discount used to be the nil uuid, and reading that id was
+        // what the tab failed on. Nothing is read now, and nothing is reported.
+        expect(html).not.toContain('There is no');
+        expect(html).not.toContain('00000000-0000-0000-0000-000000000000');
     });
 
     it('lists the pillars in maturity order, with the sequence derived', async () => {

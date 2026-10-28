@@ -50,6 +50,7 @@ generate_synthetic_approval_kind(utility::generation::generation_context& ctx) {
     r.name = std::string(faker::word::noun()) + " Request" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.decide_permission_code = std::string("iam::roles:assign");
+    r.raise_permission_code = std::nullopt;
     r.approvals_required = faker::number::integer(1, 2);
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;

@@ -126,8 +126,9 @@ export interface BlueprintCheck {
  * Whether the split tenor closes the ladder the way the method says it does.
  *
  * A single-segment method splits nowhere, so the value is the last pillar's end
- * tenor. The two-segment method splits inside the ladder, at a tenor after the
- * first pillar and at or before the last, so the two segments both hold points.
+ * tenor. The two-segment method splits inside the ladder, at or after the first
+ * pillar's end and at or before the last, so both segments hold points and the
+ * split may be the knot the first segment closes on.
  */
 export function splitTenorPasses(
     method: string,
@@ -143,7 +144,7 @@ export function splitTenorPasses(
     const split = tenorRank(splitTenor);
     if (method === TWO_SEGMENT_METHOD) {
         return (
-            split > tenorRank(show(first['end_tenor_code'])) &&
+            split >= tenorRank(show(first['end_tenor_code'])) &&
             split <= tenorRank(show(last['end_tenor_code']))
         );
     }

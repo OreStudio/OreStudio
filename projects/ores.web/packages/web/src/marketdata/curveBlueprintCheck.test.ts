@@ -50,7 +50,7 @@ const config = (fields: Readonly<Record<string, unknown>> = {}): RecordRow =>
         currency_code: 'USD',
         index_tenor: '1D',
         curve_family_role: 'FUNDING',
-        discount_curve_config_id: '00000000-0000-0000-0000-000000000000',
+        discount_curve_config_id: null,
         interpolation_method: 'LOG_LINEAR_DISCOUNT',
         split_tenor_code: '1Y',
         ...fields,
@@ -90,6 +90,7 @@ describe('the split tenor', () => {
 
     it('is a tenor inside the ladder for the two-segment method', () => {
         expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', '6M', pillars)).toBe(true);
+        expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', '1M', pillars)).toBe(true);
         expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', '2Y', pillars)).toBe(false);
         expect(splitTenorPasses('FLAT_FORWARD_THEN_LOG_LINEAR', 'SPOT', pillars)).toBe(false);
     });
@@ -97,6 +98,22 @@ describe('the split tenor', () => {
 
 describe('the recipe checks', () => {
     const sound = [pillar('SPOT', '1M', 'DEPOSIT'), pillar('SPOT', '1Y', 'SWAP')];
+
+    it('needs no discount curve on a funding recipe, which has none', () => {
+        const checks = checkRecipe({ config: config(), pillars: sound, discount: undefined });
+        expect(checks.find((check) => check.id === 'projection_funding')?.passed).toBe(true);
+        expect(checks.find((check) => check.id === 'funding_not_projection')?.passed).toBe(true);
+    });
+
+    it('fails a projection that names no discount curve', () => {
+        const checks = checkRecipe({
+            config: config({ curve_family_role: 'PROJECTION', discount_curve_config_id: null }),
+            pillars: sound,
+            discount: undefined,
+        });
+        expect(checks.find((check) => check.id === 'projection_funding')?.passed).toBe(false);
+        expect(checks.find((check) => check.id === 'funding_not_projection')?.passed).toBe(false);
+    });
 
     it('passes every check on a sound funding recipe', () => {
         const checks = checkRecipe({ config: config(), pillars: sound, discount: undefined });

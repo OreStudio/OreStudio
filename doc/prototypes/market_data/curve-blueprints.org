@@ -83,7 +83,7 @@ the table and the pager.
 
 | Column | What it holds |
 |--------+---------------|
-| Curve | The curve code, monospace, and the first column. Under it, one line of state: *No pillars yet*, *Never published*, or *No set in use since <date>* |
+| Name | The record's own name, in the first column. Under it, one line of state: *No pillars yet*, *Never published*, or *No set in use since <date>* |
 | Currency | The currency the curve is quoted in |
 | Role | =FUNDING= or =PROJECTION=, as its label badge |
 | Index tenor | The tenor of the index the curve stands for, as its code |
@@ -94,7 +94,8 @@ the table and the pager.
 | Last changed | Relative, with the exact value on hover in the product |
 
 Two filters stand beside the search: a currency select and a role select. The
-search covers the curve code and the currency. A row opens the record page.
+search covers the name, the currency and the output series. A row opens the
+record page.
 
 *RS-LIST-21* gives the list its states, and the prototype draws each one:
 
@@ -105,16 +106,17 @@ search covers the curve code and the currency. A row opens the record page.
 - Error. The words of the server and Retry, and never a modal box.
 - After a delete. One success notice, and the list without the row.
 
-Two facts of the model shape the table. A blueprint has no name, so the code
-stands in the display field's place; the journeys record the gap. And the key is
-a UUID that RS-LIST-13 keeps out of a table, so the code is the only readable
-handle the list has.
+Two facts of the model shape the table. The blueprint *has* a name -- a required
+column the record carries, such as =USD-SOFR-ACME= -- so the list draws it and
+nothing parses the output series' oresmd URI for one. And the key is a UUID that
+RS-LIST-13 keeps out of a table, so the name is the readable handle the list has:
+the name is what a person searches by, sorts by and opens a row with.
 
 ** The record page
 
-The header carries the curve code as its title, the lead line =<currency> ·
-index tenor <tenor> · <role> · version <n>= and the access mark, and three
-actions: *Copy blueprint*, then *Edit*, then *Delete*. Copy is the kind's own
+The header carries the record's name as its title and in the breadcrumb, the
+lead line =<currency> · index tenor <tenor> · <role> · version <n>= and the
+access mark, and three actions: *Copy blueprint*, then *Edit*, then *Delete*. Copy is the kind's own
 action, in the place RS-PAGE-03 gives one, and it is the whole of the Qt
 window's /New from Existing.../ button.
 
@@ -122,12 +124,14 @@ The tabs are Details, Pillars, Check, Published sets and History, in the
 standard's order: the record's fields, then a part, then the kind's own view,
 then a related plural, then the timeline.
 
-- *Details.* The fields in the field table's order: currency, index tenor, role,
-  discount curve, interpolation method, day count, tenor convention, split
-  tenor, output series and *Used by*. A value that names another record is a
-  link: the discount curve opens that blueprint, the output series names the
-  market series the curve is published into, and *Used by* lists the projection
-  blueprints that discount off this one. The tab ends with the last-changed line.
+- *Details.* The fields in the field table's order: name, currency, index
+  tenor, role, discount curve, interpolation method, day count, tenor
+  convention, split tenor, output series and *Used by*. The name is the first
+  fact, because it is what the record is. A value that names another record is
+  a link: the discount curve opens that blueprint, the output series is the
+  market series' URI and opens the series, and *Used by* lists the projection
+  blueprints that discount off this one, each by its name. A funding blueprint
+  has no discount curve, and the field draws a dash. The tab ends with the last-changed line.
   A blueprint with no pillars says so in a notice that opens the Pillars tab.
   A blueprint whose sets have all ended says so in a notice that names the
   withdrawal and the account that took it.
@@ -179,8 +183,11 @@ The record dialog is the standard's: one dialog, no tabs, two columns, the field
 in the field table's order, the label above the control, one line of small faint
 text under a value that needs it, Cancel and the primary button in the footer.
 
+The name is asked first and is required: it is typed, and no control derives it.
+
 | Field | Control | Asked when |
 |-------+---------+-----------|
+| Name | A text field, required, first | Always |
 | Output series | A record picker over the market series the party holds | Always |
 | Currency | A record picker over the currencies | Always |
 | Index tenor | A select over the tenors =1D=, =3M= and =6M= | Always |
@@ -205,11 +212,16 @@ identity the record is keyed by. The field is therefore a record picker over the
 series the party holds, it is required, and it is the record's natural key, so
 one series names one blueprint and a copy names another.
 
+The series is not the name, and the screen never makes one from the other. The
+record carries the name a person typed, in a column of its own; the series is
+the URI the curve is published into, which Details draws and no title uses.
+
 The pillar dialog asks for three fields: the start tenor, the end tenor and the
 curve role, each a select over the codes the system keeps, and says that the
 sequence follows the end tenor. The copy dialog is the record dialog with the
-conventions and the pillar count carried over and the currency, the index tenor
-and the role blank, because those are what make it another curve. The delete
+conventions and the pillar count carried over and the name, the output series,
+the currency, the index tenor and the role blank, because those are what make it
+another curve. The delete
 dialog says what is lost, and refuses in the server's own words when a projection
 names the blueprint as its discount curve.
 
@@ -339,8 +351,8 @@ draw.
 
 | Step | Intent | How the prototype covers it | What it does not draw |
 |------+--------+-----------------------------+-----------------------|
-| 1 | List the party's blueprints | The list, with the code first, the state line under it, and the role, the interpolation method and the day count as their label badges | The column menu that hides and orders columns, and the audit columns (RS-LIST-13) |
-| 2 | Search and filter | The search over code and currency, the currency and role filters, and the no-match state | A server search: the prototype filters on the page, and RS-LIST-04 wants the filter on the contract |
+| 1 | List the party's blueprints | The list, with the name first, the state line under it, and the role, the interpolation method and the day count as their label badges | The column menu that hides and orders columns, and the audit columns (RS-LIST-13) |
+| 2 | Search and filter | The search over name and currency, the currency and role filters, and the no-match state | A server search: the prototype filters on the page, and RS-LIST-04 wants the filter on the contract |
 | 3 | Open a blueprint and read its fields | The Details tab, the fields in the field table's order, each coded value as its label badge or its code, the output series and *Used by* as links | The output series' own read, which is a different component's screen |
 | 4 | Read the pillars | The Pillars tab in maturity order, with the empty state and its Add | Nothing |
 | 5 | Add a blueprint | The Add dialog: the output series as a picker over the party's series, six more fields, the discount curve for a projection and the split tenor for the two-segment method | A series created from the dialog: a series is chosen, never made here |
@@ -422,8 +434,10 @@ show the new card in context.
 
 The reviewer should know two assumptions. The role of a blueprint and the
 currency it is quoted in are drawn as the fields the model holds, and the curve
-code is a stand-in for the output series' URI, which the model does not store and
-the screen cannot yet spell. And the party is always the session's, because the
+code is a stand-in for the output series' URI: the model stores the series by id
+and the record does not hold the URI, so the screen reads it from the series.
+The name is not a stand-in for anything: it is the record's own column, and it is
+what the page titles the record by. And the party is always the session's, because the
 list read scopes by party and the page has no party filter of its own.
 
 ** Where the code lives
@@ -457,7 +471,7 @@ Open. It is offered for sign-off as the shape of the two journeys' screens: the
 list with its state line, the record page with five tabs and no button that
 repeats one, the pillars as parts in maturity order, the Check tab with its six
 checks and its two lines, the published sets on the record, four dialogs with
-eight fields between them, the label catalogue's badges on every coded value, and
+nine fields between them, the label catalogue's badges on every coded value, and
 the screen's card on the Market data area.
 
 What sign-off settles is that the Qt window is not the web's layout: a record
@@ -481,13 +495,18 @@ and whether the published curves of the
 [[id:654E4DFD-FD96-4A65-A350-AC8DD3F87BE0][published-curves prototype]] sit
 beside it, is the menu's decision and not this prototype's.
 
-The key in the address. The record's key is a UUID and the readable handle is the
-output series' URI. The prototype uses the curve code the published-curves screen
-already uses; the address needs one of the two, and the journeys leave it open.
+The key in the address. The record's key is a UUID and the readable handle is now
+the record's name. The prototype uses the curve code the published-curves screen
+already uses; the address still needs one of the two, and the journeys leave it
+open.
 
-The name. A blueprint is titled by the series it publishes into. Whether the
-config gains a name or a description column, so that two currencies' curves are
-not told apart by a URI, is open.
+The name is settled, and it is settled in the database. =ir_curve_bootstrap_config=
+carries a required =name= that the person types in the Add and Copy dialogs, the
+list draws in its first cell, the record header and breadcrumb draw as the title,
+and Details draws as its first fact. The output series stays a property on
+Details, drawn as its URI and linked, and the screen makes no name out of it. The
+name is unique per tenant and per party among the active rows, by a declared
+unique index, so a party never holds two blueprints of one name.
 
 The check's home. The Check tab is the kind's own tab, and the standard's tab
 table names field groups and related plurals. The published-curves prototype drew

@@ -1545,6 +1545,55 @@ describe('the subject of a curve publish in the queue', () => {
         expect(body['publishedSubject']).toMatchObject({ curve: 'USD-SOFR-ACME' });
     });
 
+    it('says a refused read is a refusal, and not a read that found nothing', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [publishRequest(PUBLISH_REQUEST)],
+                total: 1,
+                answered: [],
+            },
+            // The component answers with an outcome the reader may not have,
+            // so the call itself is what fails, as a refused read does.
+            'marketdata.v1.ops.list_published_curves': () => {
+                throw new Error('Not permitted');
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]).not.toHaveProperty('publishedSubject');
+        expect(body.items[0]?.['publishedSubjectState']).toBe('refused');
+    });
+
+    it('says a read that found nothing is a gap, and not a refusal', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [publishRequest(PUBLISH_REQUEST)],
+                total: 1,
+                answered: [],
+            },
+            'marketdata.v1.ops.list_published_curves': {
+                success: true,
+                message: '',
+                sets: [],
+                total: 0,
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]).not.toHaveProperty('publishedSubject');
+        expect(body.items[0]?.['publishedSubjectState']).toBe('missing');
+    });
+
     it('leaves every other kind’s row as it was', async () => {
         const { server, cookies } = buildTestServer({
             'inbox.v1.ops.list_approval_queue': {

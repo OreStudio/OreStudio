@@ -173,6 +173,15 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::countries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::business_centres:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::trading_account_types:read');
+    -- The tenor vocabulary: the tenors the reference data holds, the
+    -- conventions they resolve under and the schedule axes a pillar names. The
+    -- *Curve blueprints* screen reads the catalogue before it can draw a single
+    -- field, and the tenor picker stands on any screen that states a period.
+    -- No role held the conventions at all, and the tenors and schedules only
+    -- Operations, so the screen answered every person with a refusal.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::tenors:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::tenor_conventions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::tenor_schedules:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::asset_classes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::asset_measures:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'refdata::benchmark_rates:read');
@@ -366,9 +375,38 @@ BEGIN
     -- code is not here, and that is what makes the publish four eyes: the
     -- Operations role holds inbox::approvals:decide_market_risk.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_bootstrap:publish');
+    -- *Check that a curve blueprint builds* names the trader who owns the
+    -- blueprint, or the quant who owns the method, as the actor, and running the
+    -- test needs this code. Nothing but the tenant administrator's wildcard held
+    -- it, so the Check tab refused every person it exists for. The test writes
+    -- nothing, which is what separates this code from :republish and :publish.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_bootstrap:compute');
     -- The subject the request authorises, which the maker reads back under
     -- *My requests* and the published record read shows once it moved.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_publishes:read');
+    -- The people the published screens name. A set carries the account that
+    -- published it, and the list, the points, the comparison and the blueprint's
+    -- *Published sets* tab draw that account with its picture and its full name,
+    -- as the history panel draws any actor. Without this read the directory
+    -- answers nothing for the name, so the screens draw a bare username and the
+    -- initials of a person whose picture they cannot fetch. The read is the
+    -- account read and not the tenant's: row-level security still narrows it to
+    -- the parties the reader works in, which is the same exception Member's own
+    -- line states.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'iam::accounts:read');
+    -- *Maintain the curve blueprints* names a trader holding the market-data
+    -- management role, or a quant acting for the desk, as the actor, and the
+    -- trader is the maker: the blueprint is theirs to author. The blueprint and
+    -- its pillars are two records, so the read, the write and the delete of
+    -- each are here. No seeded role held any of the six, so the *Curve
+    -- blueprints* screen refused every person with the tenant administrator's
+    -- wildcard the only way in.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_configs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_configs:delete');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_pillars:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_pillars:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::ir_curve_bootstrap_pillars:delete');
 
     -- Assign permissions to Sales role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'refdata::currencies:read');
@@ -707,6 +745,7 @@ BEGIN
     -- which party. The queue row carries no subject, so the decider reads the
     -- kind's own record, and this is the code that read takes.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::curve_publishes:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::market_series:read');
     -- The operations decision the other three kinds carry: an operational
     -- authorisation, a book change and a counterparty change all name this
     -- code. *Operational Authorisation* says Operations, the Middle Office,
@@ -723,6 +762,11 @@ BEGIN
     -- routes they serve, so the write and the delete are its own.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::subscriptions:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::subscriptions:delete');
+    -- The curve blueprints read only. A blueprint is the desk's recipe and not
+    -- a source or a route Operations maintains, so the writes stay with the
+    -- maker; Operations reads the recipe behind a curve it is asked about.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::ir_curve_bootstrap_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::ir_curve_bootstrap_pillars:read');
 
     -- Assign permissions to Support role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'iam::accounts:read');
@@ -735,7 +779,11 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'marketdata::routes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'marketdata::providers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'marketdata::market_data_sources:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'marketdata::market_series:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'iam::roles:read');
+    -- The curve blueprints read only, as Support reads everything it supports.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::ir_curve_bootstrap_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'refdata::ir_curve_bootstrap_pillars:read');
 
     -- Assign permissions to Viewer role (default for new accounts)
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::currencies:read');
@@ -746,6 +794,19 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'marketdata::routes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'marketdata::providers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'marketdata::market_data_sources:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'marketdata::market_series:read');
+    -- The curve blueprints read only: a viewer reads the desk's recipes and
+    -- changes none of them.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::ir_curve_bootstrap_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::ir_curve_bootstrap_pillars:read');
+    -- The publisher the published screens name. A viewer reads the published
+    -- curves and the blueprints behind them, and every one of those screens
+    -- draws the account that published a set with its picture and its full
+    -- name, which is the account read. Operations and Support already hold it,
+    -- and Market Risk owners work as Operations, so the deciders could resolve a
+    -- name before this line; the read-only roles that see the same screens could
+    -- not, and drew a bare username.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'iam::accounts:read');
 
     -- Assign permissions to DataPublisher role
     -- Read access to browse the data catalog

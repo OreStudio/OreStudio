@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -166,6 +167,11 @@ withdraw_curve(const ores::database::context& ctx,
     BOOST_LOG_SEV(curve_withdrawal_lg(), info)
         << "Withdrew published set " << request.publish_id << " of series "
         << record.output_series_id << " as " << request.reason_code;
+
+    // The withdrawal is a change a reader must act on, so it is its own notice.
+    // Telling never reverses the act: a failure is logged in the announcer and
+    // the answer still states the withdrawal.
+    announce_withdrawal(ctx, record, record.as_of);
 
     messaging::withdraw_curve_response response;
     response.success = true;

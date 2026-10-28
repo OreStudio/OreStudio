@@ -28,6 +28,7 @@ import { curveStyle } from './synthetic/IrTicksPanel.js';
 import { Stat } from './synthetic/TicksPanel.js';
 import { Input, Notice } from '../ui/Primitives.js';
 import { formatDateTime } from '../ui/Time.js';
+import { PersonCell } from '../access/PersonRef.js';
 import {
     DEFAULT_OVERLAY_SETS,
     MAX_OVERLAY_SETS,
@@ -128,7 +129,7 @@ export function PublishedPointsTab({
                                     : formatDateTime(newest.published_at, language)}
                             </Stat>
                             <Stat label={t('marketdata.published.points.publisher')}>
-                                {newest.published_by === '' ? '—' : newest.published_by}
+                                <PersonCell who={newest.published_by} />
                             </Stat>
                             <Stat label={t('marketdata.published.points.request')}>
                                 {newest.request_id === '' ? '—' : newest.request_id.slice(0, 8)}

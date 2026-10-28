@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::refdata::presentation {
@@ -41,11 +42,14 @@ render_ir_curve_bootstrap_config_fields(const domain::ir_curve_bootstrap_config&
     fields.push_back(
         {.name = "Output Series ID", .value = boost::uuids::to_string(v.output_series_id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
+    fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Currency Code", .value = v.currency_code});
     fields.push_back({.name = "Index Tenor", .value = v.index_tenor});
     fields.push_back({.name = "Curve Family Role", .value = v.curve_family_role});
     fields.push_back({.name = "Discount Curve Config ID",
-                      .value = boost::uuids::to_string(v.discount_curve_config_id)});
+                      .value = v.discount_curve_config_id ?
+                                   boost::uuids::to_string(*v.discount_curve_config_id) :
+                                   std::string{}});
     fields.push_back({.name = "Interpolation Method", .value = v.interpolation_method});
     fields.push_back({.name = "Day Count Convention", .value = v.day_count_convention});
     fields.push_back({.name = "Tenor Convention Code", .value = v.tenor_convention_code});

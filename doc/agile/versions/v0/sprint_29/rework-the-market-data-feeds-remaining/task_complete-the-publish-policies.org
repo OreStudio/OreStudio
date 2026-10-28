@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: D8092FA1-9513-4CF1-8388-B51AADC32DCD
+:END:
+#+title: Task: Complete the publish policies
+#+description: The zero-approval path, the maker/checker pair and the publish notice are decided and not built.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/complete-the-publish-policies
+#+pr: 4020
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A publish can need no decision, the kind names who may raise and who may decide, and consumers are told when a set moves.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A kind with approvals_required zero closes its request approved in one act, and the publish applies.
+- The kind names a raise permission and a decide permission, and the raise is refused without the first.
+- A publish and a withdrawal send their notification kind to the recipients the decision names.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4020][#4020]] | [marketdata] Complete the publish policies |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The three publish policies are built, verified and merged (PR 4020).
+
+- A kind whose approvals_required is zero closes its request approved in the
+  same act, decided by the service account and never the asker, with the comment
+  naming the kind and the count; a one-approval kind is unchanged.
+- approval_kind carries raise_permission_code beside decide_permission_code,
+  nullable so every earlier kind keeps its rule; the two market data kinds name
+  marketdata::curve_bootstrap:publish.
+- marketdata.curve_published and marketdata.curve_withdrawn are seeded; the
+  publish notice is raised once, after the record's transaction, and the
+  withdrawal's by the withdrawal, with the subject and act and no values.
+- The series read accepts the ids the store writes, the blueprint and tenor
+  reads are granted per tenant, and the curve blueprint messages exist.
+
+Evidence: inbox and marketdata zero-path and maker/checker cases, the notices'
+cases, ctest 10/10, BFF 1128, web 2318, contracts 24, refdata suites, shell
+refdata 2809, lint clean, 39 docs components; live raise as henry.jones, decide
+as mark.reid, apply, a replacement cycle, the zero kind, one notice of each
+kind with 24 recipients.
+
+Open: no seed ships a zero kind and no screen offers the path; the consuming
+services cannot be notice recipients and read the change event; mail is not
+expressible per kind; the queue row carries no subject.

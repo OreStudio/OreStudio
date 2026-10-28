@@ -47,10 +47,10 @@ generate_synthetic_ir_curve_bootstrap_config(utility::generation::generation_con
     r.id = ctx.generate_uuid();
     r.output_series_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
+    r.name = std::string("USD-SOFR-ACME");
     r.currency_code = std::string("USD");
     r.index_tenor = std::string("1D");
     r.curve_family_role = std::string("FUNDING");
-    r.discount_curve_config_id = boost::uuids::nil_uuid();
     r.interpolation_method = std::string("LOG_LINEAR_DISCOUNT");
     r.day_count_convention = std::string("A365");
     r.tenor_convention_code = std::string("RATES_SPOT_FORWARD");

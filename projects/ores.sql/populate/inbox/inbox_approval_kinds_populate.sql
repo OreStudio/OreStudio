@@ -54,47 +54,62 @@
  * owns the numbers. It names the apply workflow the reporting service registers,
  * because a proposal nobody applies leaves the version in force as it was and
  * the person who asked waiting.
+ *
+ * The maker and checker pair is per kind. Only the two market data kinds name a
+ * raise permission, and it is the code the market data service's own operations
+ * already check: marketdata::curve_bootstrap:publish. A curve withdrawal is
+ * raised by the account that may publish, as the withdrawal journey states, so
+ * it names the same code. Every other kind names none, which keeps the rule it
+ * had: the raise is the owning component's to gate.
  */
 
 \echo '--- Approval Kinds ---'
 
 insert into ores_inbox_approval_kinds_tbl (
     tenant_id, code, version, name, description, decide_permission_code,
+    raise_permission_code,
     allows_hold, comment_on_approve, expires_after_days, apply_workflow_type,
     apply_window_hours, approvals_required, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     (ores_utility_system_tenant_id_fn(), 'iam.role_grant', 0, 'Role request',
      'A person asks to be given a role', 'iam::roles:assign',
+     null,
      false, false, 14, null, null, 1, 10,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'refdata.book_change', 0, 'Book change',
      'A person proposes changes to books', 'inbox::approvals:decide_operations',
+     null,
      false, false, 14, 'book_apply_workflow', 24, 1, 20,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'refdata.counterparty_change', 0, 'Counterparty change',
      'A person proposes changes to counterparties, their identifiers and the parties that may trade with them',
      'inbox::approvals:decide_operations',
+     null,
      false, false, 14, 'counterparty_apply_workflow', 24, 1, 30,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'marketdata.curve_publish', 0, 'Curve publish',
      'A trader asks for a candidate curve to become the one the desk prices from',
      'inbox::approvals:decide_market_risk',
+     'marketdata::curve_bootstrap:publish',
      true, false, 14, null, null, 1, 50,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'marketdata.curve_withdrawal', 0, 'Curve withdrawal',
      'A trader asks for a published curve to be taken out of use, with the reason kept against the act',
      'inbox::approvals:decide_market_risk',
+     'marketdata::curve_bootstrap:publish',
      true, false, null, null, null, 1, 51,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'trading.operational_authorisation', 0, 'Operational authorisation',
      'Operations is asked to release a live trade',
      'inbox::approvals:decide_operations',
+     null,
      true, true, null, null, null, 1, 40,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'reporting.engine_settings_change', 0, 'Engine run settings change',
      'A person proposes a change to a group of engine run settings that moves the numbers a run computes',
      'inbox::approvals:decide_market_risk',
+     null,
      true, false, 14, 'engine_settings_apply_workflow', 24, 1, 60,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)

@@ -116,6 +116,7 @@ body.nogaps .gap{display:none}
 .listtools{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
 .searchbox{position:relative;flex:1 1 240px;max-width:360px}
 .searchbox input{width:100%;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+.form .field input[type=text]{width:100%;background:#0e1218;border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:6px 8px;font:inherit;font-size:12px}
 .listnote{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
 .rows{width:100%;border-collapse:collapse;font-size:13px}
 .rows th{text-align:left;color:var(--ink-faint);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -330,28 +331,28 @@ body.nogaps .gap{display:none}
 
     var BPS = [
         {
-            code: 'USD-SOFR-1D', cur: 'USD', idx: '1D', role: 'FUNDING', disc: '',
+            code: 'USD-SOFR-1D', name: 'USD SOFR overnight', cur: 'USD', idx: '1D', role: 'FUNDING', disc: '',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '30Y',
             base: 0.0402, version: 4, by: 'n.haugen', at: '2026-10-07T15:41:00Z', reason: 'common.non_material_update',
             why: 'Split tenor to 30Y after the 30Y swap was added',
             pillars: OIS, usedBy: ['USD-SOFR-6M'], missing: []
         },
         {
-            code: 'USD-SOFR-3M', cur: 'USD', idx: '3M', role: 'FUNDING', disc: '',
+            code: 'USD-SOFR-3M', name: 'USD SOFR 3M term', cur: 'USD', idx: '3M', role: 'FUNDING', disc: '',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '30Y',
             base: 0.0411, version: 2, by: 'p.raman', at: '2026-10-06T09:12:00Z', reason: 'common.non_material_update',
             why: 'Index tenor set to 3M for the term curve',
             pillars: OIS, usedBy: [], missing: []
         },
         {
-            code: 'USD-SOFR-6M', cur: 'USD', idx: '6M', role: 'PROJECTION', disc: 'USD-SOFR-1D',
+            code: 'USD-SOFR-6M', name: 'USD SOFR 6M projection', cur: 'USD', idx: '6M', role: 'PROJECTION', disc: 'USD-SOFR-1D',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '30Y',
             base: 0.0448, version: 3, by: 'p.raman', at: '2026-10-05T13:20:00Z', reason: 'system.new_record',
             why: 'Added, to discount off USD-SOFR-1D',
             pillars: OIS, usedBy: [], missing: []
         },
         {
-            code: 'EUR-EURIBOR-6M', cur: 'EUR', idx: '6M', role: 'FUNDING', disc: '',
+            code: 'EUR-EURIBOR-6M', name: 'EUR EURIBOR 6M', cur: 'EUR', idx: '6M', role: 'FUNDING', disc: '',
             interp: 'FLAT_FORWARD_THEN_LOG_LINEAR', dc: 'A365', conv: 'RATES_SPOT_FOMC', split: '1Y',
             base: 0.0317, version: 6, by: 'n.haugen', at: '2026-10-07T15:38:00Z', reason: 'common.market_correction',
             why: 'Split tenor moved to 1Y to follow the FOMC schedule',
@@ -363,7 +364,7 @@ body.nogaps .gap{display:none}
             usedBy: ['EUR-EURIBOR-3M'], missing: []
         },
         {
-            code: 'EUR-EURIBOR-3M', cur: 'EUR', idx: '3M', role: 'PROJECTION', disc: 'EUR-EURIBOR-6M',
+            code: 'EUR-EURIBOR-3M', name: 'EUR EURIBOR 3M basis', cur: 'EUR', idx: '3M', role: 'PROJECTION', disc: 'EUR-EURIBOR-6M',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A365', conv: 'RATES_SPOT_FOMC', split: '30Y',
             base: 0.0341, version: 1, by: 'p.raman', at: '2026-10-06T09:15:00Z', reason: 'system.new_record',
             why: 'Added as the projection curve of EUR-EURIBOR-6M',
@@ -375,14 +376,14 @@ body.nogaps .gap{display:none}
             usedBy: [], missing: []
         },
         {
-            code: 'GBP-SONIA-1D', cur: 'GBP', idx: '1D', role: 'FUNDING', disc: '',
+            code: 'GBP-SONIA-1D', name: 'GBP SONIA overnight', cur: 'GBP', idx: '1D', role: 'FUNDING', disc: '',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A365', conv: 'RATES_SPOT_FORWARD', split: '30Y',
             base: 0.0415, version: 1, by: 'n.haugen', at: '2026-10-07T16:02:00Z', reason: 'system.new_record',
             why: 'Created the recipe; the pillars follow',
             pillars: [], usedBy: [], missing: []
         },
         {
-            code: 'JPY-TONA-6M', cur: 'JPY', idx: '6M', role: 'FUNDING', disc: '',
+            code: 'JPY-TONA-6M', name: 'JPY TONA 6M', cur: 'JPY', idx: '6M', role: 'FUNDING', disc: '',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A365', conv: 'RATES_SPOT_FORWARD', split: '40Y',
             base: 0.0112, version: 7, by: 'k.mori', at: '2026-10-02T08:41:00Z', reason: 'common.non_material_update',
             why: 'Split tenor to 40Y after the 40Y swap was added',
@@ -395,7 +396,7 @@ body.nogaps .gap{display:none}
             usedBy: [], missing: [], bump: { at: 6, factor: 0.42 }
         },
         {
-            code: 'SEK-STIBOR-6M', cur: 'SEK', idx: '6M', role: 'FUNDING', disc: '',
+            code: 'SEK-STIBOR-6M', name: 'SEK STIBOR 6M', cur: 'SEK', idx: '6M', role: 'FUNDING', disc: '',
             interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '10Y',
             base: 0.0259, version: 2, by: 'k.mori', at: '2026-10-04T11:05:00Z', reason: 'common.market_correction',
             why: 'Pillars added after the market dropped the 2Y quote',
@@ -697,7 +698,7 @@ body.nogaps .gap{display:none}
             if (S.fcur !== 'all' && b.cur !== S.fcur) { return false; }
             if (S.frole !== 'all' && b.role !== S.frole) { return false; }
             if (S.q) {
-                var hay = (b.code + ' ' + b.cur + ' ' + b.idx + ' ' + b.role).toLowerCase();
+                var hay = (b.name + ' ' + b.code + ' ' + b.cur + ' ' + b.idx + ' ' + b.role).toLowerCase();
                 if (hay.indexOf(S.q.toLowerCase()) < 0) { return false; }
             }
             return true;
@@ -766,7 +767,7 @@ body.nogaps .gap{display:none}
             '<button class="btn primary" data-act="add">+ Add</button>');
 
         out += '<div class="listtools">' +
-            '<span class="searchbox"><input type="text" data-input="q" placeholder="Search by curve code or currency" value="' +
+            '<span class="searchbox"><input type="text" data-input="q" placeholder="Search by name, currency or series" value="' +
             esc(S.q) + '" aria-label="Search curve blueprints"></span>' +
             select('fcur', [{ v: 'all', t: 'Every currency' }].concat(choices(CUR)), S.fcur) +
             select('frole', [{ v: 'all', t: 'Every role' }].concat(choices(ROLES)), S.frole) +
@@ -809,7 +810,7 @@ body.nogaps .gap{display:none}
         var rows = visibleRows();
         if (!rows.length) { return listState(); }
         var head = '<tr>' +
-            '<th class="sortable" data-act="sort" data-arg="code">Curve<span class="caret">' + caret('code') + '</span></th>' +
+            '<th class="sortable" data-act="sort" data-arg="name">Name<span class="caret">' + caret('name') + '</span></th>' +
             '<th class="sortable" data-act="sort" data-arg="cur">Currency<span class="caret">' + caret('cur') + '</span></th>' +
             '<th>Role</th><th>Index tenor</th><th>Interpolation</th><th>Day count</th>' +
             '<th class="sortable" data-act="sort" data-arg="version">Pillars<span class="caret"></span></th>' +
@@ -821,7 +822,7 @@ body.nogaps .gap{display:none}
                 '<span class="sub">No pillars yet</span>' :
                 (set ? '' : (ended ? '<span class="sub">No set in use since ' + dt(setsOf(b.code)[0].asof) + '</span>' : '<span class="sub">Never published</span>'));
             return '<tr class="pick ' + (ended ? 'ended' : '') + '" data-act="open" data-arg="' + esc(b.code) + '">' +
-                '<td><span class="key">' + esc(b.code) + '</span>' + left + '</td>' +
+                '<td><span class="key">' + esc(b.name) + '</span>' + left + '</td>' +
                 '<td class="mono">' + esc(b.cur) + '</td>' +
                 '<td>' + coded('curve_family_role', b.role) + '</td>' +
                 '<td class="mono">' + esc(b.idx) + '</td>' +
@@ -857,10 +858,10 @@ body.nogaps .gap{display:none}
             { t: 'Home', act: 'area' },
             { t: 'Market data', act: 'area' },
             { t: 'Curve blueprints', act: 'list' },
-            { t: b.code }
+            { t: b.name }
         ]);
         out += '<div class="pagehead"><div>' +
-            '<h1 class="mono">' + esc(b.code) + '</h1>' +
+            '<h1>' + esc(b.name) + '</h1>' +
             '<p class="lead">' + esc(b.cur) + ' · index tenor ' + esc(b.idx) + ' · ' + coded('curve_family_role', b.role) +
             ' · version ' + b.version + ' <span class="access">Editable</span></p></div>' +
             '<div class="actions">' +
@@ -904,6 +905,8 @@ body.nogaps .gap{display:none}
                 '<button class="btn small" data-act="tab" data-arg="pillars">Add a pillar</button></div>';
         }
         out += '<div class="panel"><div class="fields">' +
+            field('Name', esc(b.name),
+                'The record\'s own name, which it carries. The screens never make one out of the output series.') +
             field('Currency', '<span class="mono">' + esc(b.cur) + '</span>') +
             field('Index tenor', '<span class="mono">' + esc(b.idx) + '</span>',
                 'The tenor of the floating-rate index this curve stands for.') +
@@ -1231,11 +1234,11 @@ body.nogaps .gap{display:none}
         if (S.form) { return S.form; }
         var b = S.dlg === 'edit' ? bp(S.bp) : (S.dlg === 'copy' ? bp(S.bp) : null);
         if (S.dlg === 'copy' && b) {
-            S.form = { cur: '', idx: '', role: '', disc: b.disc, interp: b.interp, dc: b.dc, conv: b.conv, split: b.split };
+            S.form = { name: '', series: '', cur: '', idx: '', role: '', disc: b.disc, interp: b.interp, dc: b.dc, conv: b.conv, split: b.split };
         } else if (b) {
-            S.form = { cur: b.cur, idx: b.idx, role: b.role, disc: b.disc, interp: b.interp, dc: b.dc, conv: b.conv, split: b.split };
+            S.form = { name: b.name, series: b.code, cur: b.cur, idx: b.idx, role: b.role, disc: b.disc, interp: b.interp, dc: b.dc, conv: b.conv, split: b.split };
         } else {
-            S.form = { cur: '', idx: '', role: 'FUNDING', disc: '', interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '' };
+            S.form = { name: '', series: '', cur: '', idx: '', role: 'FUNDING', disc: '', interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '' };
         }
         return S.form;
     }
@@ -1257,13 +1260,17 @@ body.nogaps .gap{display:none}
 
     function recordDialog(f) {
         var b = S.dlg === 'edit' || S.dlg === 'copy' ? bp(S.bp) : null;
-        var title = S.dlg === 'edit' ? 'Edit ' + b.code : (S.dlg === 'copy' ? 'Copy ' + b.code : 'Add a curve blueprint');
+        var title = S.dlg === 'edit' ? 'Edit ' + b.name : (S.dlg === 'copy' ? 'Copy ' + b.name : 'Add a curve blueprint');
         var sub = S.dlg === 'edit' ? 'Loaded <b>' + esc(relTime(b.at)) + '</b>, at version ' + b.version + '.' :
-            (S.dlg === 'copy' ? 'Copies the conventions and the <b>' + b.pillars.length + ' pillars</b> of ' + esc(b.code) + '.' :
+            (S.dlg === 'copy' ? 'Copies the conventions and the <b>' + b.pillars.length + ' pillars</b> of ' + esc(b.name) + '. The name is typed, because the copy is another record.' :
                 'A new blueprint is written with the reason <b>system.new_record</b>.');
         var wide = (S.pick === 'currency' || S.pick === 'discount');
 
         var body_ = '<div class="form">' +
+            textField('Name', 'name', f.name,
+                'The name the blueprint is known by, such as USD-SOFR-ACME. It is typed here and stored with the record.') +
+            pickField('Output series', 'series', f.series,
+                'The series the curve is published into, chosen from the series the party holds.') +
             pickField('Currency', 'currency', f.cur,
                 'The currency this curve\'s pillars are quoted in.') +
             selectField('Index tenor', 'idx', choices(INDEX_TENORS), f.idx, 'The tenor of the index this curve stands for.', wide) +
@@ -1275,7 +1282,7 @@ body.nogaps .gap{display:none}
             (f.interp === 'FLAT_FORWARD_THEN_LOG_LINEAR' ?
                 selectField('Split tenor', 'split', choices(TENORS), f.split || '1Y', 'The knot between the two interpolation segments.') : '') +
             (S.dlg === 'copy' ? '<p class="note">The copy is a new record with its own pillars. Choose the currency, the index tenor and the role: they are what make it another curve.</p>' : '') +
-            (S.dlg === 'add' ? '<p class="note">The output series is minted from the currency, the index tenor and the role, so it is not asked for here.</p>' : '') +
+            (S.dlg === 'add' ? '<p class="note">The name is typed and the series is chosen. Nothing is minted from the currency and the index tenor: the curve\'s URI carries the index name, which this record does not hold.</p>' : '') +
             (S.pick ? pickerPanel() : '') +
             '</div>';
 
@@ -1284,6 +1291,12 @@ body.nogaps .gap{display:none}
             '<button class="btn ghost" data-act="closedlg">Cancel</button>' +
             '<button class="btn primary" data-act="save">' + (S.dlg === 'edit' ? 'Save' : 'Add') + '</button>';
         return dialogShell(title, sub, body_, foot);
+    }
+
+    function textField(label, id, value, means) {
+        return '<div class="field wide"><span class="lbl">' + esc(label) + '</span>' +
+            '<input type="text" data-input="' + id + '" placeholder="USD-SOFR-ACME" value="' + esc(value || '') + '">' +
+            (means ? '<p class="hint">' + esc(means) + '</p>' : '') + '</div>';
     }
 
     function selectField(label, id, options, value, means, wide) {
@@ -1352,7 +1365,7 @@ body.nogaps .gap{display:none}
                 'would be left pointing at nothing.</div>' +
                 '<p>The server refuses the delete while a projection names this blueprint. Edit the projection first, ' +
                 'or delete it.</p>';
-            return dialogShell('Delete ' + b.code + '?', 'The record is in use.', body_,
+            return dialogShell('Delete ' + b.name + '?', 'The record is in use.', body_,
                 '<button class="btn ghost" data-act="closedlg">Cancel</button><span class="ml-auto"></span>' +
                 '<button class="btn" data-act="open" data-arg="' + esc(b.usedBy[0]) + '">Open ' + esc(b.usedBy[0]) + '</button>');
         }
@@ -1363,7 +1376,7 @@ body.nogaps .gap{display:none}
                 ' its history and name a blueprint that no longer exists.' :
                 'Nothing was published from it, so no set names it.') + '</p>' +
             '<p class="hint">A versioned record keeps its history; the history is not readable after the delete.</p>';
-        return dialogShell('Delete ' + b.code + '?', 'This cannot be undone from this screen.', body2,
+        return dialogShell('Delete ' + b.name + '?', 'This cannot be undone from this screen.', body2,
             '<button class="btn ghost" data-act="closedlg">Cancel</button>' +
             '<span class="ml-auto"></span><button class="btn" data-act="remove">Delete</button>');
     }
@@ -1471,6 +1484,12 @@ body.nogaps .gap{display:none}
                 var n = document.querySelector('[data-input=q]');
                 n.focus();
                 n.setSelectionRange(pos, pos);
+            });
+        }
+        var ni = document.querySelector('[data-input=name]');
+        if (ni) {
+            ni.addEventListener('input', function () {
+                form().name = ni.value;
             });
         }
         var pi = document.querySelector('[data-input=pickq]');

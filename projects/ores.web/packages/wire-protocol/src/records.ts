@@ -521,6 +521,7 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         writable: true,
         search: true,
         sortable: [
+            'name',
             'currency_code',
             'index_tenor',
             'curve_family_role',

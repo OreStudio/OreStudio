@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { LineChart } from './LineChart.js';
 import { formatDateTime } from '../ui/Time.js';
 import { Button, Notice, Select, Tag } from '../ui/Primitives.js';
+import { PersonCell } from '../access/PersonRef.js';
 import {
     alignOnPillars,
     baselineAt,
@@ -307,7 +308,7 @@ function BaselinePanel({ set }: { readonly set: PublishedCurveSet }): ReactNode 
                     {formatDateTime(set.as_of, language)}
                 </Fact>
                 <Fact label={t('marketdata.published.points.publisher')}>
-                    {set.published_by === '' ? '—' : set.published_by}
+                    <PersonCell who={set.published_by} />
                 </Fact>
                 <Fact label={t('marketdata.published.points.published')}>
                     {set.published_at === null ? '—' : formatDateTime(set.published_at, language)}

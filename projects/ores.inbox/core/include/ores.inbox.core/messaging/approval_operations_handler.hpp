@@ -165,6 +165,21 @@ public:
                                                     "No such kind of request: " + req->kind_code)});
                 return;
             }
+            // The raise is the maker's half of the pair. The kind names the
+            // code, so a tenant that moves the maker moves the gate with it and
+            // no screen changes.
+            if (!lifecycle.may_raise(*kind)) {
+                reply(nats_,
+                      msg,
+                      raise_approval_request_response{
+                          .result = approval_result(outcome::denied,
+                                                    "not_the_maker",
+                                                    "Raising a " + req->kind_code +
+                                                        " request needs the " +
+                                                        *kind->raise_permission_code +
+                                                        " permission.")});
+                return;
+            }
             if (req->reason.empty()) {
                 reply(nats_,
                       msg,
@@ -350,7 +365,7 @@ public:
                 }
             } else {
                 const bool may_decide =
-                    parts.empty() ? has_permission(*ctx, kind->decide_permission_code) :
+                    parts.empty() ? lifecycle.may_decide(*kind) :
                                     std::ranges::any_of(parts, [&](const auto& p) {
                                         return has_permission(*ctx, p.decide_permission_code);
                                     });
@@ -431,7 +446,7 @@ public:
                                                     "The signed-in account was not found.")});
                 return;
             }
-            const auto scope = decidable_by(*ctx, lifecycle);
+            const auto scope = lifecycle.decidable_by_role();
             auto page = lifecycle.queue(scope, *me, req->offset, req->limit);
             auto answered = lifecycle.recently_answered(scope, *me, answered_window_);
             reply(nats_,
@@ -621,26 +636,6 @@ public:
     }
 
     /**
-     * @brief What the caller may decide: the kinds whose permission it holds,
-     * and the parts whose permission it holds.
-     *
-     * A request that names parts is decided by part, so the two are separate:
-     * the kinds a caller may decide reach the requests that name no parts, and
-     * the parts reach the requests that do, once their turn comes.
-     */
-    service::decidable_scope decidable_by(const ores::database::context& ctx,
-                                          service::approval_lifecycle& lifecycle) {
-        service::decidable_scope scope;
-        for (const auto& k : lifecycle.kinds())
-            if (has_permission(ctx, k.decide_permission_code))
-                scope.kind_codes.push_back(k.code);
-        for (const auto& p : lifecycle.parts())
-            if (has_permission(ctx, p.decide_permission_code))
-                scope.part_codes.push_back(p.code);
-        return scope;
-    }
-
-    /**
      * @brief Whether the caller may open a request and read its trail.
      *
      * The person who raised it, whoever may decide its kind, whoever may answer
@@ -653,8 +648,7 @@ public:
                   const domain::approval_request& request) {
         const auto me = lifecycle.actor_account_id();
         const auto kind = lifecycle.kind(request.kind_code);
-        if ((me && request.requested_by == *me) ||
-            (kind && has_permission(ctx, kind->decide_permission_code)) ||
+        if ((me && request.requested_by == *me) || (kind && lifecycle.may_decide(*kind)) ||
             has_permission(ctx, "inbox::approval_requests:read"))
             return true;
         const auto open = lifecycle.open_parts_of(boost::uuids::to_string(request.id));

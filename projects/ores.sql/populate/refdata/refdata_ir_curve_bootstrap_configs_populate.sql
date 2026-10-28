@@ -25,8 +25,14 @@
  * the USD SOFR curve: the segment built off consecutive FOMC-meeting-dated
  * pillars (1F..8F) with a flat-forward step between meetings, handing over
  * to the continuous swap grid at the 1Y split tenor. The config is the
- * FUNDING anchor curve of its family: discount_curve_config_id holds the
- * nil sentinel, per the model's two-tier FUNDING/PROJECTION rule.
+ * FUNDING anchor curve of its family: discount_curve_config_id is null, per
+ * the model's two-tier FUNDING/PROJECTION rule -- a funding curve discounts
+ * off nothing, so nothing stands in for a discount curve.
+ *
+ * The config carries its display name, USD-SOFR-FOMC, which is what the
+ * blueprint screens draw in the list, in the record header and as the first
+ * fact on Details. The name is stored and never parsed out of the output
+ * series' oresmd URI.
  *
  * Interpolation is the two-segment FLAT_FORWARD_THEN_LOG_LINEAR -- flat
  * forward between the meeting-dated pillars (each FOMC-to-FOMC interval
@@ -56,7 +62,7 @@
 \echo '--- IR Curve Bootstrap Configs ---'
 
 insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
-    id, tenant_id, version, output_series_id, party_id, currency_code, index_tenor,
+    id, tenant_id, version, output_series_id, party_id, name, currency_code, index_tenor,
     curve_family_role, discount_curve_config_id, interpolation_method,
     day_count_convention, tenor_convention_code, split_tenor_code,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -67,8 +73,8 @@ values (
     0,
     'f2d3e4a5-6c7d-4e8f-8a9b-1c2d3e4f5061',
     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
-    'USD', '1D',
-    'FUNDING', ores_utility_nil_uuid_fn(), 'FLAT_FORWARD_THEN_LOG_LINEAR',
+    'USD-SOFR-FOMC', 'USD', '1D',
+    'FUNDING', null, 'FLAT_FORWARD_THEN_LOG_LINEAR',
     'A360', 'RATES_SPOT_FOMC', '1Y',
     current_user, current_user, 'system.initial_load',
     'Initial population of IR curve bootstrap configs'
@@ -78,6 +84,7 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 do update set
     output_series_id = excluded.output_series_id,
     party_id = excluded.party_id,
+    name = excluded.name,
     currency_code = excluded.currency_code,
     index_tenor = excluded.index_tenor,
     curve_family_role = excluded.curve_family_role,

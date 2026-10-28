@@ -73,6 +73,19 @@ struct publish_verdict {
 };
 
 /**
+ * @brief The permission the kind names for raising a request of it, or empty.
+ *
+ * The maker's half of the pair is the kind's, so the operation asks the kind and
+ * never a code written here: a tenant that moves the maker moves the gate with
+ * it. Empty means the kind names none, and then the raise is the component's own
+ * to gate, as every kind seeded before the column was behaves.
+ *
+ * @throws std::runtime_error when the kind is not seeded.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::string raise_permission_of(const ores::database::context& ctx,
+                                                               std::string_view kind_code);
+
+/**
  * @brief Reads the subject a publish call names out of the configuration.
  *
  * The configuration states the party it belongs to and the series its output is
@@ -102,6 +115,17 @@ resolve_publish_subject(const ores::database::context& ctx,
  */
 ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request raise_publish_request(
     const ores::database::context& ctx, const publish_subject& subject, const std::string& reason);
+
+/**
+ * @brief The as-of of the set the series has in use, or nothing when it has none.
+ *
+ * Read before an apply, so the notice a publish raises names the version it
+ * replaced. The record's own read states the set in use; a series that carries
+ * two is ended by the next publish, and the newest is the one a reader priced
+ * from.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::optional<std::chrono::system_clock::time_point>
+live_as_of(const ores::database::context& ctx, const boost::uuids::uuid& output_series_id);
 
 /**
  * @brief Asks the approval record whether a publish may go ahead.

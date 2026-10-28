@@ -23,6 +23,7 @@ import {
     curveEvolutionSchema,
     curveSeriesListSchema,
     curveSnapshotSchema,
+    storeUuidSchema,
     type CurveEvolution,
     type CurveIdentity,
     type CurveSeriesList,
@@ -54,9 +55,15 @@ function post(path: string, body: unknown): Promise<unknown> {
  * Both name the object by its typed identity. A read the server refuses comes
  * back as a failure that carries the server's reason.
  */
-/** A series named by its id: the oresmd URI it is published under. */
+/**
+ * A series named by its id: the oresmd URI it is published under.
+ *
+ * The id is the one the store wrote, which does not always carry the RFC
+ * version nibbles, so it is parsed with the shape the contracts own rather
+ * than with `z.uuid()`.
+ */
 const seriesUriSchema = z.object({
-    series: z.array(z.object({ id: z.uuid(), uri: z.string() })),
+    series: z.array(z.object({ id: storeUuidSchema, uri: z.string() })),
 });
 
 /** One point of a built curve: the pillar it answers, its date and its factor. */

@@ -105,6 +105,7 @@ ir_curve_bootstrap_config_to_domain(const messaging::ir_curve_bootstrap_config_w
     domain::ir_curve_bootstrap_config v;
     v.id = write.id;
     v.output_series_id = write.output_series_id;
+    v.name = write.name;
     v.currency_code = write.currency_code;
     v.index_tenor = write.index_tenor;
     v.curve_family_role = write.curve_family_role;

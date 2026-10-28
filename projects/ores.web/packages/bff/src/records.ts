@@ -57,6 +57,7 @@ import type { PartyCounterpartyWrite } from '@ores/wire-protocol/generated/refda
 import type { BusinessUnitWrite } from '@ores/wire-protocol/generated/refdata/protocol/business_unit_protocol';
 import type { IrCurveBootstrapConfigWrite } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_config_protocol';
 import type { IrCurveBootstrapPillarWrite } from '@ores/wire-protocol/generated/refdata/protocol/ir_curve_bootstrap_pillar_protocol';
+import { storeUuidSchema } from '@ores/contracts';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { pageQuerySchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -64,17 +65,12 @@ import type { LiveSession } from './sessions.js';
 const code = z.string().trim().min(1).max(100);
 
 /**
- * A uuid as the store writes one.
+ * A uuid as the store writes one, which is the shape `@ores/contracts` owns.
  *
- * The store's random generator does not set the RFC version bits, so a series
- * id can be a uuid whose version nibble is anything; a pattern that insists on
- * 1 to 8 refuses rows the catalogue really holds. A blueprint names its output
- * series by such an id, so the write accepts the shape and not the version.
+ * A series id can be a uuid whose version nibble is anything, and this file
+ * names such an id in the writes that hold one by reference.
  */
-export const anyUuid = z
-    .string()
-    .trim()
-    .regex(/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/);
+const anyUuid = storeUuidSchema;
 
 const isoCode = z.string().trim().length(3);
 const pairCode = z.string().trim().min(7).max(15);
@@ -320,10 +316,13 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
     'ir-curve-bootstrap-configs': z.object({
         id: anyUuid,
         output_series_id: anyUuid,
+        name: z.string().trim().min(1).max(120),
         currency_code: isoCode,
         index_tenor: code,
         curve_family_role: z.enum(['FUNDING', 'PROJECTION']),
-        discount_curve_config_id: anyUuid,
+        // A funding blueprint discounts off nothing, so it names no discount
+        // curve; the column is nullable and null is what a funding write sends.
+        discount_curve_config_id: anyUuid.nullable(),
         interpolation_method: z.enum([
             'LOG_LINEAR_DISCOUNT',
             'FLAT_FORWARD_THEN_LOG_LINEAR',

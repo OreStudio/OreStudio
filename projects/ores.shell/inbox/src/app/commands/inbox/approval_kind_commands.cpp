@@ -141,27 +141,29 @@ void approval_kind_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <description> <decide_permission_code> <allows_hold> "
-        "<comment_on_approve> <expires_after_days> <apply_workflow_type> <apply_window_hours> "
-        "<approvals_required> <display_order> <reason> <commentary>");
+        "add <code> <name> <description> <decide_permission_code> <raise_permission_code> "
+        "<allows_hold> <comment_on_approve> <expires_after_days> <apply_workflow_type> "
+        "<apply_window_hours> <approvals_required> <display_order> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <name> <description> <decide_permission_code> <allows_hold> "
-        "<comment_on_approve> <expires_after_days> <apply_workflow_type> <apply_window_hours> "
-        "<approvals_required> <display_order> <reason> <commentary> [--version <n>]");
+        "set <code> <name> <description> <decide_permission_code> <raise_permission_code> "
+        "<allows_hold> <comment_on_approve> <expires_after_days> <apply_workflow_type> "
+        "<apply_window_hours> <approvals_required> <display_order> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <name> <description> <decide_permission_code> <allows_hold> "
-        "<comment_on_approve> <expires_after_days> <apply_workflow_type> <apply_window_hours> "
-        "<approvals_required> <display_order> <reason> <commentary>");
+        "put-many --count <n> <code> <name> <description> <decide_permission_code> "
+        "<raise_permission_code> <allows_hold> <comment_on_approve> <expires_after_days> "
+        "<apply_workflow_type> <apply_window_hours> <approvals_required> <display_order> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +358,8 @@ void approval_kind_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -368,6 +370,9 @@ void approval_kind_commands::process_add(std::ostream& out,
         approval_kind_read_token(req.change.write.decide_permission_code,
                                  parsed->positionals[next++],
                                  "decide_permission_code");
+        approval_kind_read_token(req.change.write.raise_permission_code,
+                                 parsed->positionals[next++],
+                                 "raise_permission_code");
         approval_kind_read_token(
             req.change.write.allows_hold, parsed->positionals[next++], "allows_hold");
         approval_kind_read_token(
@@ -425,8 +430,8 @@ void approval_kind_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -437,6 +442,9 @@ void approval_kind_commands::process_set(std::ostream& out,
         approval_kind_read_token(req.change.write.decide_permission_code,
                                  parsed->positionals[next++],
                                  "decide_permission_code");
+        approval_kind_read_token(req.change.write.raise_permission_code,
+                                 parsed->positionals[next++],
+                                 "raise_permission_code");
         approval_kind_read_token(
             req.change.write.allows_hold, parsed->positionals[next++], "allows_hold");
         approval_kind_read_token(
@@ -506,8 +514,8 @@ void approval_kind_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -520,6 +528,9 @@ void approval_kind_commands::process_put_many(std::ostream& out,
             approval_kind_read_token(change.write.decide_permission_code,
                                      parsed->positionals[next++],
                                      "decide_permission_code");
+            approval_kind_read_token(change.write.raise_permission_code,
+                                     parsed->positionals[next++],
+                                     "raise_permission_code");
             approval_kind_read_token(
                 change.write.allows_hold, parsed->positionals[next++], "allows_hold");
             approval_kind_read_token(

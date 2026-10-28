@@ -43,6 +43,7 @@ create table if not exists "ores_inbox_approval_kinds_tbl" (
     "name" text not null,
     "description" text not null,
     "decide_permission_code" text not null,
+    "raise_permission_code" text null,
     "allows_hold" boolean not null default false,
     "comment_on_approve" boolean not null default false,
     "expires_after_days" integer null,
@@ -101,6 +102,19 @@ begin
     ) then
         raise exception 'Invalid decide_permission_code: %. No permission found with this code.', NEW.decide_permission_code
             using errcode = '23503';
+    end if;
+
+    -- Validate raise_permission_code (optional soft FK to ores_iam_permissions_tbl)
+    if NEW.raise_permission_code is not null then
+        if not exists (
+            select 1 from ores_iam_permissions_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.raise_permission_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid raise_permission_code: %. No permission found with this code.', NEW.raise_permission_code
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code

@@ -50,6 +50,7 @@ struct approval_kind_entity {
 
     std::string description;
     std::string decide_permission_code;
+    std::optional<std::string> raise_permission_code;
     bool allows_hold = false;
     bool comment_on_approve = false;
     std::optional<int> expires_after_days;
@@ -75,6 +76,7 @@ struct approval_kind_entity {
                query_builder::bind("version", &e::version) | query_builder::bind("name", &e::name) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("decide_permission_code", &e::decide_permission_code) |
+               query_builder::bind("raise_permission_code", &e::raise_permission_code) |
                query_builder::bind("allows_hold", &e::allows_hold) |
                query_builder::bind("comment_on_approve", &e::comment_on_approve) |
                query_builder::bind("expires_after_days", &e::expires_after_days) |

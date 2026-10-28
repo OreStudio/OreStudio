@@ -227,11 +227,20 @@ const CURVE_PUBLISH_KIND = 'marketdata.curve_publish';
 async function publishedSubjectsOf(
     session: LiveSession,
     requests: readonly { readonly id: string; readonly kindCode: string }[],
-): Promise<ReadonlyMap<string, Record<string, unknown>>> {
+): Promise<{
+    readonly byRequest: ReadonlyMap<string, Record<string, unknown>>;
+    /**
+     * Why a publish request has no subject: the read was refused, or it came
+     * back and the market data component holds no set for the request. A
+     * screen that says only "not readable" tells a person nothing they can act
+     * on, so the reason travels with the absence.
+     */
+    readonly absentBecause: 'refused' | 'missing';
+}> {
     const ids = requests
         .filter((request) => request.kindCode === CURVE_PUBLISH_KIND)
         .map((request) => request.id);
-    if (ids.length === 0) return new Map();
+    if (ids.length === 0) return { byRequest: new Map(), absentBecause: 'missing' };
 
     let sets: readonly Record<string, unknown>[];
     try {
@@ -250,8 +259,9 @@ async function publishedSubjectsOf(
         );
         sets = reply.sets;
     } catch {
-        // The refusal costs the subject and not the queue.
-        return new Map();
+        // The refusal costs the subject and not the queue, and it is named as a
+        // refusal so the screen does not report a read that never ran.
+        return { byRequest: new Map(), absentBecause: 'refused' };
     }
 
     const byRequest = new Map<string, Record<string, unknown>>();
@@ -270,20 +280,23 @@ async function publishedSubjectsOf(
             published_at: (set['published_at'] ?? null) as string | null,
         });
     }
-    return byRequest;
+    return { byRequest, absentBecause: 'missing' };
 }
 
 /** A page of requests, each carrying the subject of its kind when one exists. */
 async function withPublishedSubjects<
     Request extends { readonly id: string; readonly kindCode: string },
 >(session: LiveSession, requests: readonly Request[]): Promise<readonly Request[]> {
-    const subjects = await publishedSubjectsOf(session, requests);
-    if (subjects.size === 0) return requests;
+    const { byRequest, absentBecause } = await publishedSubjectsOf(session, requests);
     // A kind with no such subject carries no field at all, so every other kind's
-    // row is the row it was before this join existed.
+    // row is the row it was before this join existed. A publish request whose
+    // subject is absent says why, in the same field.
     return requests.map((request) => {
-        const subject = subjects.get(request.id);
-        return subject === undefined ? request : { ...request, publishedSubject: subject };
+        if (request.kindCode !== CURVE_PUBLISH_KIND) return request;
+        const subject = byRequest.get(request.id);
+        return subject === undefined
+            ? { ...request, publishedSubjectState: absentBecause }
+            : { ...request, publishedSubject: subject };
     });
 }
 

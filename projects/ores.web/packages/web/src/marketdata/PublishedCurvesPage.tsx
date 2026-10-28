@@ -39,6 +39,7 @@ import { publishedCurvePath } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { stateOf, type SetState } from './publishedCurves.js';
+import { PersonCell } from '../access/PersonRef.js';
 
 /**
  * The tenant's published curves, from
@@ -158,12 +159,7 @@ function columnsOf(t: Translate): readonly ListColumn<PublishedCurveSet>[] {
         {
             id: 'publisher',
             header: t('marketdata.published.columns.publisher'),
-            cell: (row) =>
-                row.published_by === '' ? (
-                    <span className="text-ink-faint">—</span>
-                ) : (
-                    row.published_by
-                ),
+            cell: (row) => <PersonCell who={row.published_by} />,
         },
         {
             id: 'published',

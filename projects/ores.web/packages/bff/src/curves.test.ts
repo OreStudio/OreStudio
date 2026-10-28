@@ -752,6 +752,27 @@ describe('the curve blueprint read routes', () => {
         expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: null } });
     });
 
+    it('reads one curve’s sets for a series id whose version bits are not the RFC’s', async () => {
+        // The store's generator writes such ids, and the published curve screen
+        // reads its sets by the series id a previous read gave it.
+        const odd = 'a1eec62d-a758-f647-de09-d7f2c25d9196';
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.get_published_curve_sets': {
+                success: true,
+                message: '',
+                sets: [{ ...PUBLISHED_SET, series_id: odd }],
+                published_count: 1,
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/published-sets', {
+            series_id: odd,
+            limit: 5,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sets[0].series_id).toBe(odd);
+        expect(calls[0]?.body).toMatchObject({ series_id: odd });
+    });
+
     it('stops walking a catalogue that never comes back short, on the page count', async () => {
         // A server that ignores the offset answers the same full page for ever.
         // The read must end anyway, and it must end on its own count.

@@ -301,8 +301,10 @@ const pt: SourceCatalogue = {
             asOf: 'Data de referência publicada',
             points: 'Pontos',
             openComparison: 'Abrir a comparação',
-            noSubject:
-                'Este pedido é uma publicação de curva, e o seu sujeito não é legível aqui: o componente de dados de mercado detém-no, ou esta conta não pode ler essa curva.',
+            noSubjectRefused:
+                'Este pedido é uma publicação de curva, e esta conta não pode ler as curvas publicadas, por isso o seu sujeito não é desenhado aqui. O pedido em si está são.',
+            noSubjectMissing:
+                'Este pedido é uma publicação de curva, e o componente de dados de mercado não detém nenhum conjunto publicado para ele. Nada foi encontrado, em vez de algo recusado.',
             row: '{party} · com data de referência {asOf} · {points} pontos',
             summary: '{curve} de {party}, com data de referência {asOf}',
             approve: 'Aprovar a publicação',
@@ -491,6 +493,11 @@ const pt: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
+
+    'notification.marketdata.curve_published':
+        'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
+    'notification.marketdata.curve_withdrawn':
+        'A curva {curve} de {party} foi retirada em {withdrawn_at} por {withdrawn_by}: {reason}. O seu ultimo conjunto publicado tinha a data de {as_of}.',
 
     signIns: {
         title: 'Inícios de sessão',
@@ -4405,6 +4412,15 @@ const pt: SourceCatalogue = {
         },
         choices: {
             ore_currency_type: { Major: 'Principal', Metal: 'Metal', Crypto: 'Cripto' },
+            curve_family_role: {
+                FUNDING: 'Financiamento',
+                PROJECTION: 'Projecao',
+            },
+            interpolation_method: {
+                LOG_LINEAR_DISCOUNT: 'Log-linear no fator de atualizacao',
+                FLAT_FORWARD_THEN_LOG_LINEAR: 'Forward plano, depois log-linear',
+                CUBIC_SPLINE: 'Spline cubica',
+            },
             report_type: { risk: 'Relatório de risco' },
             regulatory_book_type: {
                 Trading: 'Carteira de negociação',
@@ -4723,7 +4739,7 @@ const pt: SourceCatalogue = {
             copy: 'Copiar a planta',
             copyTitle: 'Copiar {code}',
             copyNote:
-                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, e nomeia uma serie propria: e a serie que distingue uma planta da outra.',
+                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, o seu proprio nome e a sua propria serie.',
             add: 'Adicionar planta',
             addTitle: 'Adicionar uma planta de curva',
             noPillarsNotice:
@@ -4766,6 +4782,8 @@ const pt: SourceCatalogue = {
                 'Um conjunto torna-se num quando alguem publica um candidato aprovado, na jornada de publicacao.',
             setsNote:
                 'Um conjunto encontra-se pela planta a partir da qual foi construido, que a leitura transporta; o contrato de lista ainda nao tem filtro para isso, por isso o separador le os conjuntos da parte e retem o seu.',
+            removeWarning:
+                'Isto remove a planta e os seus {count} pilares. Os {sets} conjunto(s) que alimentou ficam onde estao: um conjunto publicado nunca e eliminado com uma receita, e a mesa le-o pelo seu proprio registo.',
             historyLead:
                 'As versoes da receita e as versoes de cada pilar, da mais recente para a mais antiga, cada uma nomeada pela sua parte. Um pilar eliminado da receita nao esta neste fluxo.',
             usedByNone: 'Nenhuma projecao se desconta nesta receita.',
@@ -4788,6 +4806,7 @@ const pt: SourceCatalogue = {
                 noSetInUse: 'Nenhum conjunto em uso desde {date}',
             },
             columns: {
+                name: 'Nome',
                 curve: 'Curva',
                 currency: 'Moeda',
                 role: 'Papel',
@@ -4844,8 +4863,10 @@ const pt: SourceCatalogue = {
                     SWAP: 'Constroi-se como um swap do spot ao seu tenor de fim.',
                     other: 'Um papel que este ecra nao conhece.',
                 },
+                nameMeans:
+                    'O nome pelo qual a planta e conhecida, como USD-SOFR-ACME. E escrito aqui e guardado com o registo, e os ecras nunca o compoem a partir da serie de saida.',
                 outputSeriesMeans:
-                    'A serie de mercado em que a curva e publicada. E ela que nomeia a planta, por isso a mesa escolhe uma que detem e duas plantas nao reivindicam a mesma serie.',
+                    'A serie de mercado em que a curva e publicada, desenhada pelo seu URI. E a chave natural do registo, por isso a mesa escolhe uma serie que detem e duas plantas nao reivindicam a mesma.',
                 usedBy: 'Usada por',
                 fed: 'Conjuntos alimentados',
                 fedCount: '{count} publicados',
@@ -4854,6 +4875,10 @@ const pt: SourceCatalogue = {
                 addPillar: 'Adicionar um pilar',
                 openPillars: 'Abrir os pilares',
                 editBlueprint: 'Editar a planta',
+            },
+            tabs: {
+                check: 'Verificacao',
+                sets: 'Conjuntos publicados',
             },
             checks: {
                 one_pillar: 'A receita tem pelo menos um pilar.',

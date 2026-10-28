@@ -31,9 +31,8 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_result_row_repository.hpp"
-#include "ores.reporting.core/results/canonical_log_reader.hpp"
-#include "ores.reporting.core/results/canonical_reader.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/results/canonical_log_reader.hpp"
 #include "ores.reporting.core/results/canonical_reader.hpp"
 #include "ores.reporting.core/service/engine_error_log.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
@@ -549,7 +548,6 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         ack.accept();
     }
 }
-
 
 void report_execution_handler::record_run_log(const std::string& tenant_id,
                                               const std::string& report_instance_id,

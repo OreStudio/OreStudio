@@ -29,13 +29,26 @@ namespace {
 constexpr std::string_view log_expected_header =
     "ordinal,severity,scope,message,subject,subject_id,cause,event_time,source";
 
+/**
+ * @brief The fields of one line, with the writer's doubled quote read back as one.
+ *
+ * The writer doubles a quote inside a quoted field, as CSV does, so the reader
+ * must read a pair as the character it stands for rather than as the end of the
+ * field and the start of another.
+ */
 std::vector<std::string> log_split_fields(std::string_view line) {
     std::vector<std::string> fields;
     std::string field;
     bool quoted = false;
-    for (const auto c : line) {
+    for (std::size_t i = 0; i < line.size(); ++i) {
+        const auto c = line[i];
         if (c == '"') {
-            quoted = !quoted;
+            if (quoted && i + 1 < line.size() && line[i + 1] == '"') {
+                field.push_back('"');
+                ++i;
+            } else {
+                quoted = !quoted;
+            }
         } else if (c == ',' && !quoted) {
             fields.push_back(field);
             field.clear();

@@ -26,11 +26,11 @@ Journeys and a signed-off-ready prototype describe the bootstrapping screens for
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -106,6 +106,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Signed off on 2026-10-28, with two small points applied.
+
+- Two journeys: maintain the curve blueprints, and check that a blueprint
+  builds. They name the record a curve blueprint, its five tabs, its dialogs,
+  and the Qt workbench's departures with a reason for each.
+- The prototype draws the list, the record, five tabs, four dialogs, the in-dialog
+  record picker, and the Market data area card, with 34 states verified headless.
+- Every coded value is drawn through one renderer, after the app's CodedValue:
+  a pill where the label catalogue paints it, the code where it does not. The
+  note lists the six domains the seed would need and that the curve codes are
+  plain until it has them.
+- The card: Curve blueprints, first in the Market data area, at
+  /market-data/curve-blueprints, reading refdata::ir_curve_bootstrap_configs:read,
+  in the words the other cards use.
+
+Open, recorded in the note and the journeys: the record's key, the minted output
+series, retire, delete while published, whether Check is a tab, the Curves menu
+entry, and whether the seed gains the six badge domains.
 
 The journeys and the prototype are on branch =feature/design-the-bootstrapping-screens=
 in two commits:

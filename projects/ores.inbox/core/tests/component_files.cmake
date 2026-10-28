@@ -34,6 +34,7 @@ set(files
     "approval_request_eventing_integration_tests.cpp"
     "approval_request_state_eventing_integration_tests.cpp"
     "approval_rule_refusal_tests.cpp"
+    "approval_zero_approval_tests.cpp"
     "hold_reason_eventing_integration_tests.cpp"
     "main.cpp"
     "notification_center_tests.cpp"

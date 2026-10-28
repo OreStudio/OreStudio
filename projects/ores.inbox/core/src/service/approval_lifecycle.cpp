@@ -163,6 +163,21 @@ std::optional<boost::uuids::uuid> approval_lifecycle::actor_account_id() {
     return found.front().id;
 }
 
+std::optional<boost::uuids::uuid> approval_lifecycle::system_actor_account_id() {
+    // The services are the system tenant's accounts, so the system that closes a
+    // request nobody decides is read where it lives and not where the request
+    // does. A context that names no service account names no system either.
+    const auto name = ctx_.service_account();
+    if (name.empty())
+        return std::nullopt;
+    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), name);
+    ores::iam::repository::account_repository accounts;
+    const auto found = accounts.read_latest_by_username(system_ctx, name);
+    if (found.empty())
+        return std::nullopt;
+    return found.front().id;
+}
+
 std::optional<domain::approval_kind> approval_lifecycle::kind(const std::string& code) {
     repository::approval_kind_repository repo;
     const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
@@ -195,6 +210,19 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
             throw std::invalid_argument("A part code cannot be empty.");
         if (std::ranges::find(codes, code) == codes.end())
             codes.push_back(code);
+    }
+
+    // A kind that needs no approval is closed by the system in the same act, so
+    // the account that closes it is resolved before the request is written: a
+    // zero-approval request left waiting is one no person can answer.
+    const bool closes_at_once = kind.approvals_required <= 0 && codes.empty();
+    std::optional<boost::uuids::uuid> system_actor;
+    if (closes_at_once) {
+        system_actor = system_actor_account_id();
+        if (!system_actor)
+            throw std::runtime_error("A " + kind.code +
+                                     " request needs no approval, and no system account is named "
+                                     "to close it with.");
     }
 
     const auto now = std::chrono::system_clock::now();
@@ -254,7 +282,53 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     const auto written = request(boost::uuids::to_string(r.id));
     if (!written)
         throw std::runtime_error("The raised request could not be read back.");
-    return *written;
+
+    if (!closes_at_once)
+        return *written;
+
+    try {
+        return close_without_approval(*written, kind, *system_actor);
+    } catch (...) {
+        // A request that needs no approval waits on nobody, so one whose close
+        // failed must not stay open: it is withdrawn in the asker's own name,
+        // which is the one decision the asker is allowed to take.
+        BOOST_LOG_SEV(lg(), error) << "Request " << boost::uuids::to_string(r.id)
+                                   << " could not be closed without approval; withdrawing it.";
+        try {
+            const auto current = request(boost::uuids::to_string(r.id));
+            decide(boost::uuids::to_string(r.id),
+                   current ? current->version : 1,
+                   "withdraw",
+                   requested_by,
+                   "The kind needs no approval and the request could not be closed.");
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "The half-raised request was not withdrawn: " << e.what();
+        }
+        throw;
+    }
+}
+
+domain::approval_request
+approval_lifecycle::close_without_approval(const domain::approval_request& request,
+                                           const domain::approval_kind& kind,
+                                           const boost::uuids::uuid& system_actor) {
+    BOOST_LOG_SEV(lg(), info) << "Closing " << kind.code << " request "
+                              << boost::uuids::to_string(request.id)
+                              << " approved: the kind needs no approval.";
+    const auto r = decide(boost::uuids::to_string(request.id),
+                          request.version,
+                          "approve",
+                          system_actor,
+                          "No approval is needed for a " + kind.code +
+                              " request: its kind names " +
+                              std::to_string(kind.approvals_required) + " approvals.");
+    if (r.outcome != "ok")
+        throw std::runtime_error("A " + kind.code + " request that needs no approval was not "
+                                 "closed: " + r.message);
+    const auto closed = this->request(boost::uuids::to_string(request.id));
+    if (!closed)
+        throw std::runtime_error("The closed request could not be read back.");
+    return *closed;
 }
 
 std::vector<part_progress> approval_lifecycle::progress_of(const std::string& request_id) {

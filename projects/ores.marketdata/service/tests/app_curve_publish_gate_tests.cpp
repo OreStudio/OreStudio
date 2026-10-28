@@ -20,7 +20,11 @@
 #include "curve_publish_fixture.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/domain/approval_kind.hpp"
+#include "ores.inbox.core/repository/approval_decision_repository.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
@@ -60,6 +64,58 @@ using ores::marketdata::service::app::record_publication;
 using ores::marketdata::service::app::resolve_publish_subject;
 using ores::marketdata::service::app::verdict_on_publish;
 using namespace ores::marketdata::service::tests;
+
+}
+
+namespace {
+
+using ores::inbox::service::approval_lifecycle;
+
+/**
+ * @brief The seeded curve publish kind, with its count set to zero for one test.
+ *
+ * A tenant sets a kind's approval count, so a zero count is a version of the
+ * kind's own row and not a new kind: the publish operation names the code
+ * =marketdata.curve_publish=, and only that code publishes a curve. The row is
+ * put back to the count it was read at when the test ends, even when the test
+ * fails, because the suites that read the kind expect the seeded value.
+ */
+class zero_approval_kind {
+public:
+    explicit zero_approval_kind(ores::testing::scoped_database_helper& h)
+        : ctx_(h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user())) {
+        approval_lifecycle lifecycle(ctx_);
+        const auto found = lifecycle.kind(std::string(curve_publish_kind_code));
+        if (!found)
+            throw std::runtime_error("The curve publish kind is not seeded.");
+        was_ = *found;
+        auto zeroed = *found;
+        zeroed.approvals_required = 0;
+        zeroed.change_reason_code = "system.test";
+        zeroed.change_commentary = "Zero approvals, for the zero-approval test";
+        ores::inbox::repository::approval_kind_repository repo;
+        repo.write(ctx_, zeroed);
+    }
+
+    ~zero_approval_kind() {
+        try {
+            ores::inbox::repository::approval_kind_repository repo;
+            was_.change_reason_code = "system.test";
+            was_.change_commentary = "Restored after the zero-approval test";
+            repo.write(ctx_, was_);
+        } catch (...) {
+            // The count is the seeded one; a failure here must not fail a suite
+            // that has already asserted what it came for.
+        }
+    }
+
+    zero_approval_kind(const zero_approval_kind&) = delete;
+    zero_approval_kind& operator=(const zero_approval_kind&) = delete;
+
+private:
+    ores::database::context ctx_;
+    ores::inbox::domain::approval_kind was_;
+};
 
 }
 
@@ -357,4 +413,70 @@ TEST_CASE("an_approved_request_of_another_kind_does_not_permit_a_publish", tags)
     CHECK_FALSE(verdict.approved);
     CHECK(verdict.state_code == "approved");
     CHECK(verdict.message.find("iam.role_grant") != std::string::npos);
+}
+
+TEST_CASE("a_kind_that_needs_no_approval_publishes_on_the_raise_itself", tags) {
+    curve_fixture f;
+    const auto maker = seed_person(f.h);
+    zero_approval_kind zeroed(f.h);
+    const auto subject = f.subject();
+
+    // The raise is the whole decision: the request comes back approved, with no
+    // second person standing in the act.
+    const auto raised =
+        raise_publish_request(maker.ctx, subject, "A synthetic curve nobody checks");
+    const auto id = boost::uuids::to_string(raised.id);
+    CHECK(raised.state_code == "approved");
+
+    // The record says so: one approved request, and its decider is the system
+    // rather than the asker.
+    CHECK(raised.reason == "A synthetic curve nobody checks");
+    approval_lifecycle lifecycle(maker.ctx);
+    ores::inbox::repository::approval_decision_repository decisions;
+    const auto written = decisions.read_latest_by_request_id(maker.ctx, id, 0, 10);
+    REQUIRE(written.size() == 1);
+    CHECK(written.front().decision_code == "approve");
+    const auto system = lifecycle.system_actor_account_id();
+    REQUIRE(system.has_value());
+    CHECK(written.front().decided_by == *system);
+    CHECK(written.front().decided_by != maker.account.id);
+    CHECK(written.front().comment.find("marketdata.curve_publish") != std::string::npos);
+
+    // The owning operation applies it at once, and answers with the instant and
+    // the publisher the record holds. The publisher is the asker, because the
+    // asker is the person who applied it.
+    const auto verdict = verdict_on_publish(maker.ctx, id, subject);
+    CHECK(verdict.approved);
+    CHECK(verdict.state_code == "approved");
+    REQUIRE(verdict.record.has_value());
+
+    ores::marketdata::service::app::curve_republish_service::republish(
+        *f.party, subject.bootstrap_config_id, subject.as_of);
+    const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
+    CHECK(published.published_by == maker.account.username);
+    REQUIRE(published.published_at.has_value());
+
+    // The set is the one in use, and the record says which request authorised it.
+    const auto read = f.published();
+    REQUIRE(read.has_value());
+    CHECK(read->request_id == raised.id);
+    CHECK(read->published_by == maker.account.username);
+    CHECK(f.output_point_count() == 2);
+}
+
+TEST_CASE("a_kind_that_needs_one_approval_publishes_nothing_until_a_person_answers", tags) {
+    curve_fixture f;
+    const auto maker = seed_person(f.h);
+    const auto subject = f.subject();
+
+    // The seeded count is one, so the same call only raises, exactly as before.
+    const auto raised = raise_publish_request(maker.ctx, subject, "Today's bootstrapped curve");
+    const auto id = boost::uuids::to_string(raised.id);
+    CHECK(raised.state_code == "waiting");
+
+    const auto verdict = verdict_on_publish(maker.ctx, id, subject);
+    CHECK_FALSE(verdict.approved);
+    CHECK(verdict.state_code == "waiting");
+    CHECK(f.output_point_count() == 0);
+    CHECK_FALSE(f.published().has_value());
 }

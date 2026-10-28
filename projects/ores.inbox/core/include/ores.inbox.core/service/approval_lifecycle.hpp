@@ -162,9 +162,39 @@ public:
     std::optional<domain::approval_request> request(const std::string& id);
 
     /**
-     * @brief Raises a waiting request of a kind for an account.
+     * @brief The system account a kind with no approvals closes a request as.
      *
-     * The request expires when the kind says, or never.
+     * The rule that a decider is not the asker refuses a decision by the asker,
+     * so a request that needs nobody is closed by the system rather than by the
+     * person who raised it. The account is the service's own, resolved where it
+     * lives: the system tenant, because the services are the system tenant's
+     * people. A person's decision and the system's close then never read the
+     * same way.
+     *
+     * Absent when the context names no service account, or when that account
+     * holds no row: a close that cannot name the system names nobody, and the
+     * caller must say so rather than write the asker down as the decider.
+     */
+    std::optional<boost::uuids::uuid> system_actor_account_id();
+
+    /**
+     * @brief Raises a request of a kind for an account.
+     *
+     * The request expires when the kind says, or never, and it starts waiting
+     * on a decider.
+     *
+     * A kind whose @c approvals_required is zero needs nobody: nobody decides
+     * it, and the raise is the decision. The request is written and then closed
+     * approved in the same act, with the system actor as its decider and a
+     * comment that names the kind and its zero count, so a reader of the record
+     * sees one approved request and not a silent write. The owning component
+     * applies it afterwards, as it applies any approved request.
+     *
+     * A request that names parts is decided by part rather than by count, so
+     * the parts still answer it and no zero count closes it.
+     *
+     * @throws std::runtime_error when a kind needs no approval and the system
+     * actor cannot be named.
      */
     domain::approval_request raise(const domain::approval_kind& kind,
                                    const std::string& reason,
@@ -332,6 +362,17 @@ private:
      * swallowed.
      */
     void tell_expiring(const expiring_request& expiring);
+
+    /**
+     * @brief Closes a request the kind needs no approval for, in one act.
+     *
+     * The decision, the state it moves the request to and the request's own
+     * write are one transaction: a request left waiting on a kind that needs
+     * nobody is a request no person can answer.
+     */
+    domain::approval_request close_without_approval(const domain::approval_request& request,
+                                                    const domain::approval_kind& kind,
+                                                    const boost::uuids::uuid& system_actor);
 
     ores::database::context ctx_;
 };

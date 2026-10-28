@@ -75,11 +75,12 @@ credit_simulation_matrix_row_config_list_order(const ores::utility::domain::orde
                                                std::initializer_list<std::string> default_columns,
                                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!credit_simulation_matrix_row_config_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of matrix rows cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -92,20 +93,21 @@ std::optional<query_builder::condition> credit_simulation_matrix_row_config_filt
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->transition_matrix_id)
-        r.push_back(equals("transition_matrix_id", filter_value(*filter->transition_matrix_id)));
+        r.push_back(query_builder::equals(
+            "transition_matrix_id", query_builder::filter_value(*filter->transition_matrix_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->transition_matrix_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->transition_matrix_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("transition_matrix_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("transition_matrix_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -447,7 +449,8 @@ credit_simulation_matrix_row_config_repository::read_latest(
         ctx,
         query,
         credit_simulation_matrix_row_config_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), credit_simulation_matrix_row_config_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                credit_simulation_matrix_row_config_filter_condition(filter)),
         [](const auto& entities) {
             return credit_simulation_matrix_row_config_mapper::map(entities);
         },
@@ -469,7 +472,8 @@ std::uint32_t credit_simulation_matrix_row_config_repository::get_total_row_coun
     return execute_count_query<credit_simulation_matrix_row_config_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), credit_simulation_matrix_row_config_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                credit_simulation_matrix_row_config_filter_condition(filter)),
         lg(),
         "Counting matrix rows");
 }

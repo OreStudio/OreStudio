@@ -72,10 +72,11 @@ query_builder::order catalog_list_order(const ores::utility::domain::order& orde
                                         std::initializer_list<std::string> default_columns,
                                         bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"name"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"name"});
     if (!catalog_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of catalogs cannot be ordered by " + order.field + ".");
-    return make_order({order.field}, order.descending, {"name"});
+    return query_builder::make_order({order.field}, order.descending, {"name"});
 }
 
 /*
@@ -90,10 +91,10 @@ catalog_filter_condition(const std::optional<messaging::catalogs_filter>& filter
     if (filter->name_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->name_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("name", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("name", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -275,7 +276,7 @@ catalog_repository::read_latest(context ctx,
         ctx,
         query,
         catalog_list_order(order, {"name"}, false),
-        narrowed(valid_at(as_of), catalog_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of), catalog_filter_condition(filter)),
         [](const auto& entities) { return catalog_mapper::map(entities); },
         lg(),
         "Reading latest catalogs with pagination.");
@@ -292,7 +293,7 @@ catalog_repository::get_total_catalog_count(context ctx,
     return execute_count_query<catalog_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), catalog_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of), catalog_filter_condition(filter)),
         lg(),
         "Counting catalogs");
 }

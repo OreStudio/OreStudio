@@ -75,11 +75,12 @@ query_builder::order notification_list_order(const ores::utility::domain::order&
                                              std::initializer_list<std::string> default_columns,
                                              bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!notification_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of notifications cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -92,20 +93,21 @@ notification_filter_condition(const std::optional<messaging::notifications_filte
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->kind_code)
-        r.push_back(equals("kind_code", filter_value(*filter->kind_code)));
+        r.push_back(
+            query_builder::equals("kind_code", query_builder::filter_value(*filter->kind_code)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->kind_code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->kind_code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("kind_code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("kind_code", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -346,7 +348,8 @@ notification_repository::read_latest(context ctx,
         ctx,
         query,
         notification_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), notification_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                notification_filter_condition(filter)),
         [](const auto& entities) { return notification_mapper::map(entities); },
         lg(),
         "Reading latest notifications with pagination.");
@@ -365,7 +368,8 @@ std::uint32_t notification_repository::get_total_notification_count(
     return execute_count_query<notification_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), notification_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                notification_filter_condition(filter)),
         lg(),
         "Counting notifications");
 }

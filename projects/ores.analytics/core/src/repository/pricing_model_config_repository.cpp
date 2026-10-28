@@ -74,11 +74,12 @@ pricing_model_config_list_order(const ores::utility::domain::order& order,
                                 std::initializer_list<std::string> default_columns,
                                 bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!pricing_model_config_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of pricing model configurations cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -91,20 +92,21 @@ std::optional<query_builder::condition> pricing_model_config_filter_condition(
         return std::nullopt;
     std::vector<query_builder::condition> r;
     if (filter->configuration_id)
-        r.push_back(equals("configuration_id", filter_value(*filter->configuration_id)));
+        r.push_back(query_builder::equals("configuration_id",
+                                          query_builder::filter_value(*filter->configuration_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->configuration_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->configuration_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("configuration_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("configuration_id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -429,7 +431,8 @@ std::vector<domain::pricing_model_config> pricing_model_config_repository::read_
         ctx,
         query,
         pricing_model_config_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), pricing_model_config_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                pricing_model_config_filter_condition(filter)),
         [](const auto& entities) { return pricing_model_config_mapper::map(entities); },
         lg(),
         "Reading latest pricing model configurations with pagination.");
@@ -448,7 +451,8 @@ std::uint32_t pricing_model_config_repository::get_total_config_count(
     return execute_count_query<pricing_model_config_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), pricing_model_config_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                pricing_model_config_filter_condition(filter)),
         lg(),
         "Counting pricing model configurations");
 }

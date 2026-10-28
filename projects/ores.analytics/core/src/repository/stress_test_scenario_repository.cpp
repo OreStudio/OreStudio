@@ -74,11 +74,12 @@ stress_test_scenario_list_order(const ores::utility::domain::order& order,
                                 std::initializer_list<std::string> default_columns,
                                 bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!stress_test_scenario_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of stress test scenarios cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -93,10 +94,10 @@ std::optional<query_builder::condition> stress_test_scenario_filter_condition(
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -299,7 +300,8 @@ std::vector<domain::stress_test_scenario> stress_test_scenario_repository::read_
         ctx,
         query,
         stress_test_scenario_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), stress_test_scenario_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                stress_test_scenario_filter_condition(filter)),
         [](const auto& entities) { return stress_test_scenario_mapper::map(entities); },
         lg(),
         "Reading latest stress test scenarios with pagination.");
@@ -318,7 +320,8 @@ std::uint32_t stress_test_scenario_repository::get_total_stress_test_scenario_co
     return execute_count_query<stress_test_scenario_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), stress_test_scenario_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                stress_test_scenario_filter_condition(filter)),
         lg(),
         "Counting stress test scenarios");
 }

@@ -73,11 +73,12 @@ treatment_dimension_list_order(const ores::utility::domain::order& order,
                                std::initializer_list<std::string> default_columns,
                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"code"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"code"});
     if (!treatment_dimension_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of treatment dimensions cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"code"});
+    return query_builder::make_order({order.field}, order.descending, {"code"});
 }
 
 /*
@@ -92,10 +93,10 @@ std::optional<query_builder::condition> treatment_dimension_filter_condition(
     if (filter->code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("code", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -287,7 +288,8 @@ std::vector<domain::treatment_dimension> treatment_dimension_repository::read_la
         ctx,
         query,
         treatment_dimension_list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), treatment_dimension_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                treatment_dimension_filter_condition(filter)),
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
         lg(),
         "Reading latest treatment dimensions with pagination.");
@@ -304,7 +306,8 @@ std::uint32_t treatment_dimension_repository::get_total_dimension_count(
     return execute_count_query<treatment_dimension_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), treatment_dimension_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                treatment_dimension_filter_condition(filter)),
         lg(),
         "Counting treatment dimensions");
 }

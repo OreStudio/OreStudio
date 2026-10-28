@@ -72,10 +72,11 @@ query_builder::order lei_bic_list_order(const ores::utility::domain::order& orde
                                         std::initializer_list<std::string> default_columns,
                                         bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"lei"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"lei"});
     if (!lei_bic_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of LEI BIC cannot be ordered by " + order.field + ".");
-    return make_order({order.field}, order.descending, {"lei"});
+    return query_builder::make_order({order.field}, order.descending, {"lei"});
 }
 
 /*
@@ -90,10 +91,10 @@ lei_bic_filter_condition(const std::optional<messaging::lei_bic_filter>& filter)
     if (filter->lei_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->lei_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("lei", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("lei", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }

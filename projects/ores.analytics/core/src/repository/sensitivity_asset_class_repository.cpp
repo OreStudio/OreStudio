@@ -73,12 +73,12 @@ sensitivity_asset_class_list_order(const ores::utility::domain::order& order,
                                    std::initializer_list<std::string> default_columns,
                                    bool default_descending) {
     if (order.field.empty())
-        return make_order(
+        return query_builder::make_order(
             default_columns, default_descending != order.descending, {"asset_class_code"});
     if (!sensitivity_asset_class_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of sensitivity asset classes cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"asset_class_code"});
+    return query_builder::make_order({order.field}, order.descending, {"asset_class_code"});
 }
 
 /*
@@ -93,10 +93,10 @@ std::optional<query_builder::condition> sensitivity_asset_class_filter_condition
     if (filter->asset_class_code_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->asset_class_code_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("asset_class_code", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("asset_class_code", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -309,7 +309,8 @@ std::vector<domain::sensitivity_asset_class> sensitivity_asset_class_repository:
         ctx,
         query,
         sensitivity_asset_class_list_order(order, {"asset_class_code"}, false),
-        narrowed(valid_at(as_of), sensitivity_asset_class_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                sensitivity_asset_class_filter_condition(filter)),
         [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
         lg(),
         "Reading latest sensitivity asset classes with pagination.");
@@ -328,7 +329,8 @@ std::uint32_t sensitivity_asset_class_repository::get_total_asset_class_count(
     return execute_count_query<sensitivity_asset_class_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), sensitivity_asset_class_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                sensitivity_asset_class_filter_condition(filter)),
         lg(),
         "Counting sensitivity asset classes");
 }

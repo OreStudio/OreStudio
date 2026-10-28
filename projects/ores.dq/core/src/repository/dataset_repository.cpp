@@ -73,10 +73,11 @@ query_builder::order dataset_list_order(const ores::utility::domain::order& orde
                                         std::initializer_list<std::string> default_columns,
                                         bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!dataset_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of datasets cannot be ordered by " + order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
@@ -91,10 +92,10 @@ dataset_filter_condition(const std::optional<messaging::datasets_filter>& filter
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -305,7 +306,7 @@ dataset_repository::read_latest(context ctx,
         ctx,
         query,
         dataset_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), dataset_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of), dataset_filter_condition(filter)),
         [](const auto& entities) { return dataset_mapper::map(entities); },
         lg(),
         "Reading latest datasets with pagination.");
@@ -322,7 +323,7 @@ dataset_repository::get_total_dataset_count(context ctx,
     return execute_count_query<dataset_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), dataset_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of), dataset_filter_condition(filter)),
         lg(),
         "Counting datasets");
 }

@@ -1,5 +1,5 @@
 @startuml
-title The market data path: a public fixing, a curve, a report
+title Figure 1. One identity carried through five transformations, broken at the report
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName sans-serif
 skinparam componentStyle rectangle

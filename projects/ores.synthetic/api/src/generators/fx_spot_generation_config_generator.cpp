@@ -54,7 +54,7 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.oresmd_uri = std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     r.price_source = std::string("fixed");
-    r.gmm_initial_price = 0.0;
+    r.gmm_initial_price = faker::number::decimal(0.5, 2.0);
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.process_type = std::string("geometric");
     r.enabled = faker::datatype::boolean();

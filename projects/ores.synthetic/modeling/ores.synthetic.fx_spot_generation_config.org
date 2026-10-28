@@ -164,7 +164,7 @@ Initial spot price the generated process starts from, > 0: the price a
 has a fixing.
 
 #+begin_src cpp :name generator
-0.0
+faker::number::decimal(0.5, 2.0)
 #+end_src
 
 ** ticks_per_hour

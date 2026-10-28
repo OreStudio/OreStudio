@@ -3189,8 +3189,12 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     CHECK(worst_of_data->basket_constituents[1].sequence_number == 2);
     // A price per constituent, a level per period: two names, one date.
     REQUIRE(worst_of_data->basket_constituents.size() == 2);
-    CHECK(worst_of_data->basket_constituents[0].initial_price == 3200.0);
-    CHECK(worst_of_data->basket_constituents[1].initial_price == 11500.0);
+    CHECK(worst_of_data->basket_constituents[0]
+              .initial_price.value_or(ores::utility::decimal::decimal{})
+              .to_string() == "3200");
+    CHECK(worst_of_data->basket_constituents[1]
+              .initial_price.value_or(ores::utility::decimal::decimal{})
+              .to_string() == "11500");
     REQUIRE(worst_of_data->periods.size() == 1);
     CHECK(worst_of_data->periods[0].knock_out_level == 3500.0);
     CHECK(worst_of_data->periods[0].fixed_trigger_level == 3400.0);
@@ -3207,8 +3211,12 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     CHECK(worst_of_again_data->basket_constituents[0].underlying_kind == "Equity");
     CHECK(worst_of_again_data->basket_constituents[1].underlying_name == "RIC:.NDX");
     REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
-    CHECK(worst_of_again_data->basket_constituents[0].initial_price == 3200.0);
-    CHECK(worst_of_again_data->basket_constituents[1].initial_price == 11500.0);
+    CHECK(worst_of_again_data->basket_constituents[0]
+              .initial_price.value_or(ores::utility::decimal::decimal{})
+              .to_string() == "3200");
+    CHECK(worst_of_again_data->basket_constituents[1]
+              .initial_price.value_or(ores::utility::decimal::decimal{})
+              .to_string() == "11500");
     REQUIRE(worst_of_again_data->periods.size() == 1);
     CHECK(worst_of_again_data->periods[0].knock_out_level == 3500.0);
     CHECK(worst_of_again_data->periods[0].fixed_trigger_level == 3400.0);

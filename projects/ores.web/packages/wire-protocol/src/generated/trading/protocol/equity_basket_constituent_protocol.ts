@@ -40,7 +40,7 @@ export interface EquityBasketConstituentWrite {
     underlying_name: string;
     underlying_kind: string;
     weight: number | null;
-    initial_price: number | null;
+    initial_price: string | null;
 }
 
 export interface EquityBasketConstituentChange {

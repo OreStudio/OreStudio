@@ -121,7 +121,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The terms accepted may not be the terms shown | provider_terms_handler.hpp, official.ts | Accept | The request names the provider version the screen showed; the service refuses when the provider changed since. Zero accepts the terms as they stand, for the shell. The provider must state terms, which the service already checked. |
+| 2 | The BFF does not check the accept permission | official.ts | Decline | The service checks =marketdata::providers:accept_terms= and answers forbidden; the BFF holds no permissions of its own. |
+| 3 | The fixings read has no date bound | official.ts | Defer | 12 series grow by about 260 rows each a year. The window read is task T6, "Read the latest fixing and a window". |
+| 4 | The pivot is the first series' base | officialRates.ts, official.ts | Accept | The BFF logs a warning when a provider's series have more than one base. |
+| 5 | Two series for one quote are chosen silently | officialRates.ts | Decline | The catalogue gives a provider one series per currency: the item names the provider's key and the currency. |
+| 6 | The refusals are checked only live | official.test.ts | Accept | Route tests cover the 13-series and non-id refusals, the grouping, and the acceptance with and without a version. |
+| 7 | Confirm the gate failures are main's | — | Note | The same failures as main: equity_underlying (handler permissions, event registrars, entity writes), shell recipes, ER diagram, codegen tests, protocol drift. |
 
 * Result
 

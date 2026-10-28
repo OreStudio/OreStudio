@@ -26,11 +26,11 @@ The curve blueprint screens read a name from the record, treat an absent discoun
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -87,6 +87,31 @@ task and name that file in the Command column.
 | Docs validation | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | HEAD of this task's branch |
 | Docs lint | filetags and generator markers valid | =compass lint= | HEAD of this task's branch |
 | Live walkthrough | see =* Result
+
+The review fixes are built, verified and merged with PR 4020.
+
+- The curve blueprint carries a required name in the model and the table,
+  searchable and sortable and unique per tenant and party; the list, header,
+  Details and the Add and Copy dialogs draw it, and nothing parses the oresmd
+  URI for a name.
+- discount_curve_config_id is a nullable std::optional with no nil sentinel; a
+  FUNDING blueprint names none, Details draws a dash, and the Check runs.
+- Published people draw through PersonCell, the account read is granted to the
+  roles that need it, and a request says whether its subject was refused or
+  absent.
+- The two-segment method's split tenor may close the first segment, and the
+  market series read is granted to Operations, Support and Viewer, so the
+  screens' series resolution no longer reports a partial refusal.
+
+Evidence: refdata api 83, core 474, service 10, marketdata service 202, shell
+refdata 2809, web 2318, BFF 1128, typecheck clean, codegen idempotent over two
+runs, 635 tables with no new warnings, 39 docs components; live named blueprint,
+null discount, check building 12M 0.9580379383023567 and 2Y 0.9210501013169695,
+and Mark Reid resolving Henry Jones with his picture.
+
+Caveats: ores.marketdata.official needed its client certificate, now issued; the
+generated TS filter type for a nullable column spells both no-filter and is-null
+as string | null | null.
 
 All four fixes are in, the entity regenerates cleanly, and the walkthrough ran
 against the provisioned Acme tenant with the rebuilt web and BFF and restarted

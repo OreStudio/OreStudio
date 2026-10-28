@@ -53,7 +53,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string subject_area_repository::sql() {
-    return query_builder::generate_create_table_sql<subject_area_entity>(lg());
+    return query_builder::insert_statement_sql<subject_area_entity>(lg());
 }
 
 bool subject_area_repository::is_sortable(std::string_view field) {

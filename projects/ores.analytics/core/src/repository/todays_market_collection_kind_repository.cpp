@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string todays_market_collection_kind_repository::sql() {
-    return query_builder::generate_create_table_sql<todays_market_collection_kind_entity>(lg());
+    return query_builder::insert_statement_sql<todays_market_collection_kind_entity>(lg());
 }
 
 bool todays_market_collection_kind_repository::is_sortable(std::string_view field) {

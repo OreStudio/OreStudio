@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string lei_entity_repository::sql() {
-    return query_builder::generate_create_table_sql<lei_entity_entity>(lg());
+    return query_builder::insert_statement_sql<lei_entity_entity>(lg());
 }
 
 bool lei_entity_repository::is_sortable(std::string_view field) {

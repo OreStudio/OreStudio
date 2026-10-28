@@ -53,7 +53,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string trade_generation_book_repository::sql() {
-    return query_builder::generate_create_table_sql<trade_generation_book_entity>(lg());
+    return query_builder::insert_statement_sql<trade_generation_book_entity>(lg());
 }
 
 bool trade_generation_book_repository::is_sortable(std::string_view field) {

@@ -54,7 +54,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string fx_spot_generation_config_repository::sql() {
-    return query_builder::generate_create_table_sql<fx_spot_generation_config_entity>(lg());
+    return query_builder::insert_statement_sql<fx_spot_generation_config_entity>(lg());
 }
 
 bool fx_spot_generation_config_repository::is_sortable(std::string_view field) {

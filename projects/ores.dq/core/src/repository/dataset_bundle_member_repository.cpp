@@ -49,7 +49,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string dataset_bundle_member_repository::sql() {
-    return query_builder::generate_create_table_sql<dataset_bundle_member_entity>(lg());
+    return query_builder::insert_statement_sql<dataset_bundle_member_entity>(lg());
 }
 
 dataset_bundle_member_repository::dataset_bundle_member_repository(context ctx)

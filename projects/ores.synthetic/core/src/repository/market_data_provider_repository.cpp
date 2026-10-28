@@ -53,7 +53,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string market_data_provider_repository::sql() {
-    return query_builder::generate_create_table_sql<market_data_provider_entity>(lg());
+    return query_builder::insert_statement_sql<market_data_provider_entity>(lg());
 }
 
 bool market_data_provider_repository::is_sortable(std::string_view field) {

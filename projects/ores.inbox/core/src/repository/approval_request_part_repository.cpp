@@ -51,7 +51,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string approval_request_part_repository::sql() {
-    return query_builder::generate_create_table_sql<approval_request_part_entity>(lg());
+    return query_builder::insert_statement_sql<approval_request_part_entity>(lg());
 }
 
 approval_request_part_repository::approval_request_part_repository(context ctx)

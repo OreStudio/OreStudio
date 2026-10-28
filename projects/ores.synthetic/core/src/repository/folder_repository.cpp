@@ -57,7 +57,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string folder_repository::sql() {
-    return query_builder::generate_create_table_sql<folder_entity>(lg());
+    return query_builder::insert_statement_sql<folder_entity>(lg());
 }
 
 bool folder_repository::is_sortable(std::string_view field) {

@@ -53,7 +53,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string hold_reason_repository::sql() {
-    return query_builder::generate_create_table_sql<hold_reason_entity>(lg());
+    return query_builder::insert_statement_sql<hold_reason_entity>(lg());
 }
 
 bool hold_reason_repository::is_sortable(std::string_view field) {

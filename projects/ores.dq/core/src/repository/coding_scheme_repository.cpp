@@ -52,7 +52,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string coding_scheme_repository::sql() {
-    return query_builder::generate_create_table_sql<coding_scheme_entity>(lg());
+    return query_builder::insert_statement_sql<coding_scheme_entity>(lg());
 }
 
 bool coding_scheme_repository::is_sortable(std::string_view field) {

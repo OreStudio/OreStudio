@@ -42,7 +42,7 @@ domain::analytic_type analytic_type_mapper::map(const analytic_type_entity& v) {
     domain::analytic_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.parameter_entity = v.parameter_entity;

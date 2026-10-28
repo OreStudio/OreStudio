@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
@@ -44,16 +41,6 @@
 #include <initializer_list>
 #include <map>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -62,13 +49,13 @@
 
 namespace ores::reporting::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string report_instance_repository::sql() {
-    return generate_create_table_sql<report_instance_entity>(lg());
+    return query_builder::insert_statement_sql<report_instance_entity>(lg());
 }
 
 bool report_instance_repository::is_sortable(std::string_view field) {
@@ -83,50 +70,51 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-report_instance_list_order(const ores::utility::domain::order& order,
-                           std::initializer_list<std::string> default_columns,
-                           bool default_descending) {
+query_builder::order report_instance_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return query_builder::make_order(
+            default_columns, default_descending != order.descending, {"id"});
     if (!report_instance_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of report instances cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return query_builder::make_order({order.field}, order.descending, {"id"});
 }
 
 /*
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<query_builder::condition>
 report_instance_filter_condition(const std::optional<messaging::report_instances_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->definition_id)
-        r.push_back(equals("definition_id", filter_value(*filter->definition_id)));
+        r.push_back(query_builder::equals("definition_id",
+                                          query_builder::filter_value(*filter->definition_id)));
     if (filter->kind)
-        r.push_back(equals("kind", filter_value(*filter->kind)));
+        r.push_back(query_builder::equals("kind", query_builder::filter_value(*filter->kind)));
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->definition_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->definition_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("definition_id", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("definition_id", std::move(values)));
     }
     if (filter->kind_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->kind_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("kind", std::move(values)));
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("kind", std::move(values)));
     }
-    return all_of(std::move(r));
+    return query_builder::all_of(std::move(r));
 }
 
 }
@@ -185,7 +173,7 @@ void report_instance_repository::write(context ctx,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report instance. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, report_instance_mapper::map(t), lg(), "Writing report instance to database.");
 }
 
@@ -198,18 +186,18 @@ void report_instance_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, report_instance_mapper::map(batch), lg(), "Writing report instances to database.");
 }
 
 std::vector<domain::report_instance> report_instance_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<report_instance_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<report_instance_entity, domain::report_instance>(
+    return query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
@@ -222,10 +210,11 @@ report_instance_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report instance. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const auto query =
+        query_builder::read<std::vector<report_instance_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<report_instance_entity, domain::report_instance>(
+    return query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
@@ -238,14 +227,14 @@ report_instance_repository::read_latest_by_name(context ctx, const std::string& 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report instance by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<report_instance_entity>> |
-        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
+    const auto query = query_builder::read<std::vector<report_instance_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name &&
+                                            "valid_to"_c == max.value());
 
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found = execute_read_query<report_instance_entity, domain::report_instance>(
+    auto found = query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
@@ -260,11 +249,11 @@ std::vector<domain::report_instance>
 report_instance_repository::read_any_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any report instance by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<report_instance_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "name"_c == name) |
+                       query_builder::order_by("valid_from"_c.desc());
 
-    auto found = execute_read_query<report_instance_entity, domain::report_instance>(
+    auto found = query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
@@ -287,11 +276,11 @@ std::vector<domain::report_instance> report_instance_repository::read_all(contex
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report instance versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = query_builder::read<std::vector<report_instance_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id) |
+                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<report_instance_entity, domain::report_instance>(
+    return query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
@@ -304,16 +293,18 @@ std::optional<domain::report_instance> report_instance_repository::read_at_versi
     BOOST_LOG_SEV(lg(), debug) << "Reading report instance at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        query_builder::read<std::vector<report_instance_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+        query_builder::limit(1);
 
-    const auto entities = execute_read_query<report_instance_entity, domain::report_instance>(
-        ctx,
-        query,
-        [](const auto& entities) { return report_instance_mapper::map(entities); },
-        lg(),
-        "Reading report instance at version.");
+    const auto entities =
+        query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
+            ctx,
+            query,
+            [](const auto& entities) { return report_instance_mapper::map(entities); },
+            lg(),
+            "Reading report instance at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -337,11 +328,12 @@ report_instance_repository::remove_status report_instance_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<report_instance_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query = query_builder::delete_from<report_instance_entity> |
+                       query_builder::where("tenant_id"_c == tid && "id"_c == id &&
+                                            "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing report instance from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing report instance from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -364,14 +356,17 @@ std::vector<domain::report_instance> report_instance_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report instances with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<report_instance_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<report_instance_entity, domain::report_instance>(
+    return query_builder::execute_ordered_read_query<report_instance_entity,
+                                                     domain::report_instance>(
         ctx,
         query,
         report_instance_list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), report_instance_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                report_instance_filter_condition(filter)),
         [](const auto& entities) { return report_instance_mapper::map(entities); },
         lg(),
         "Reading latest report instances with pagination.");
@@ -384,13 +379,14 @@ std::uint32_t report_instance_repository::get_total_instance_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report instance count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<report_instance_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<report_instance_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<report_instance_entity>(
+    return query_builder::execute_count_query<report_instance_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), report_instance_filter_condition(filter)),
+        query_builder::narrowed(query_builder::valid_at(as_of),
+                                report_instance_filter_condition(filter)),
         lg(),
         "Counting report instances");
 }
@@ -401,14 +397,16 @@ report_instance_repository::read_latest(context ctx, const std::vector<std::stri
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_instance_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result = execute_read_query<report_instance_entity, domain::report_instance>(
-        ctx,
-        query,
-        [](const auto& entities) { return report_instance_mapper::map(entities); },
-        lg(),
-        "Reading latest report instances by ids.");
+    const auto query =
+        query_builder::read<std::vector<report_instance_entity>> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    auto result =
+        query_builder::execute_read_query<report_instance_entity, domain::report_instance>(
+            ctx,
+            query,
+            [](const auto& entities) { return report_instance_mapper::map(entities); },
+            lg(),
+            "Reading latest report instances by ids.");
     return result;
 }
 
@@ -423,9 +421,10 @@ void report_instance_repository::remove(context ctx, const std::vector<std::stri
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<report_instance_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing report instances.");
+    const auto query =
+        query_builder::delete_from<report_instance_entity> |
+        query_builder::where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing report instances.");
 }
 
 
@@ -452,7 +451,7 @@ std::vector<domain::report_instance> report_instance_repository::read_latest_by_
     // between those, and NULLS LAST keeps a started run ahead of one that
     // never started. The tenant and the policy on the table narrow the scan
     // exactly as they do for the generated reads; no party is stated here.
-    const auto rows = ores::database::repository::execute_parameterized_string_query(
+    const auto rows = query_builder::execute_parameterized_string_query(
         ctx,
         "SELECT DISTINCT ON (definition_id) id::text"
         " FROM ores_reporting_report_instances_tbl"
@@ -489,7 +488,7 @@ report_instance_repository::read_health_facts_by_instance_ids(
     // The runs and their errors are the caller's, so they are read under the
     // caller's tenant and the policy on each table decides what the session
     // may see. No party is stated here.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT ri.id::text, coalesce(ri.fsm_state_id::text, ''), count(e.id)::text"
         " FROM ores_reporting_report_instances_tbl ri"
@@ -531,7 +530,7 @@ report_instance_repository::read_health_facts_by_instance_ids(
     // The states are the system tenant's reference data, so they are read under
     // that tenant. The caller's tenant cannot see them at all, which is why
     // this read exists rather than the screen resolving a state id itself.
-    const auto state_names = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto state_names = query_builder::execute_parameterized_multi_column_query(
         ctx.with_tenant(ores::utility::uuid::tenant_id::system(), ctx.actor()),
         "SELECT id::text, name"
         " FROM ores_dq_fsm_states_tbl"

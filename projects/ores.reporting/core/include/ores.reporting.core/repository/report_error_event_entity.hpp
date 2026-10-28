@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_ERROR_EVENT_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_ERROR_EVENT_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -43,7 +43,7 @@ struct report_error_event_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_error_events_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string report_instance_id;
     std::string party_id;
@@ -53,10 +53,31 @@ struct report_error_event_entity {
     std::optional<std::string> subject;
     std::optional<std::string> subject_id;
     std::optional<int> subject_version;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> subject_as_of;
+    std::optional<db_timestamp> subject_as_of;
     std::optional<std::string> cause;
     std::optional<std::string> detail;
     std::string event_time;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = report_error_event_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("report_instance_id", &e::report_instance_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("scope_code", &e::scope_code) |
+               query_builder::bind("severity", &e::severity) |
+               query_builder::bind("message", &e::message) |
+               query_builder::bind("subject", &e::subject) |
+               query_builder::bind("subject_id", &e::subject_id) |
+               query_builder::bind("subject_version", &e::subject_version) |
+               query_builder::bind("subject_as_of", &e::subject_as_of) |
+               query_builder::bind("cause", &e::cause) | query_builder::bind("detail", &e::detail) |
+               query_builder::bind("event_time", &e::event_time);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const report_error_event_entity& v);

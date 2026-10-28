@@ -42,7 +42,7 @@ domain::report_error_scope report_error_scope_mapper::map(const report_error_sco
     domain::report_error_scope r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;

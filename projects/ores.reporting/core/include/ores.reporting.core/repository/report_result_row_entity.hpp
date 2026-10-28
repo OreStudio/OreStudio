@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_RESULT_ROW_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_RESULT_ROW_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct report_result_row_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_result_rows_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string party_id;
 
@@ -67,6 +67,29 @@ struct report_result_row_entity {
     std::string source;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = report_result_row_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("report_instance_id", &e::report_instance_id) |
+               query_builder::bind("as_of", &e::as_of) |
+               query_builder::bind("subject_type", &e::subject_type) |
+               query_builder::bind("subject_id", &e::subject_id) |
+               query_builder::bind("measure", &e::measure) |
+               query_builder::bind("currency", &e::currency) |
+               query_builder::bind("report_definition_id", &e::report_definition_id) |
+               query_builder::bind("counterparty_id", &e::counterparty_id) |
+               query_builder::bind("figure", &e::figure) |
+               query_builder::bind("source", &e::source) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const report_result_row_entity& v);

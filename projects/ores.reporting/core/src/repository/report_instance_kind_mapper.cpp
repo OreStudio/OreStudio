@@ -43,7 +43,7 @@ report_instance_kind_mapper::map(const report_instance_kind_entity& v) {
     domain::report_instance_kind r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;

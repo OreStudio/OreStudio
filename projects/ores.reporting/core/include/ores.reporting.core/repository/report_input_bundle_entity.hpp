@@ -21,7 +21,7 @@
 #define ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include <optional>
 #include <string>
 
@@ -39,7 +39,7 @@ struct report_input_bundle_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_report_input_bundles_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string report_instance_id;
     std::string definition_id;
@@ -50,6 +50,25 @@ struct report_input_bundle_entity {
     std::optional<std::string> trade_versions;
     int series_count = 0;
     db_timestamp created_at;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = report_input_bundle_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("report_instance_id", &e::report_instance_id) |
+               query_builder::bind("definition_id", &e::definition_id) |
+               query_builder::bind("trades_storage_key", &e::trades_storage_key) |
+               query_builder::bind("market_data_storage_key", &e::market_data_storage_key) |
+               query_builder::bind("fixings_storage_key", &e::fixings_storage_key) |
+               query_builder::bind("trade_count", &e::trade_count) |
+               query_builder::bind("trade_versions", &e::trade_versions) |
+               query_builder::bind("series_count", &e::series_count) |
+               query_builder::bind("created_at", &e::created_at);
+    }
 };
 
 }

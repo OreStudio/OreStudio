@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_RISK_REPORT_CONFIG_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_RISK_REPORT_CONFIG_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct risk_report_config_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_risk_report_configs_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -67,6 +67,37 @@ struct risk_report_config_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = risk_report_config_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("name", &e::name) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("configuration_id", &e::configuration_id) |
+               query_builder::bind("base_currency", &e::base_currency) |
+               query_builder::bind("market_data_type", &e::market_data_type) |
+               query_builder::bind("market_data_date", &e::market_data_date) |
+               query_builder::bind("input_path", &e::input_path) |
+               query_builder::bind("input_path_market", &e::input_path_market) |
+               query_builder::bind("input_path_portfolio", &e::input_path_portfolio) |
+               query_builder::bind("output_path", &e::output_path) |
+               query_builder::bind("log_file", &e::log_file) |
+               query_builder::bind("portfolio_recurse_into_sub_directories",
+                                   &e::portfolio_recurse_into_sub_directories) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const risk_report_config_entity& v);

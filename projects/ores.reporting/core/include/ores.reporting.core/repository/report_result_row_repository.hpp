@@ -34,7 +34,6 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -59,7 +58,7 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Returns the SQL created by sqlgen to construct the table.
+     * @brief Returns the insert statement the repository writes.
      */
     std::string sql();
 
@@ -77,7 +76,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Writes a row, honouring the claim it states.
+     * @brief Writes a report result row, honouring the claim it states.
      *
      * The claim is the version the caller read (@c must_match_version), that no
      * current row exists (@c must_not_exist), or neither (@c any, which
@@ -131,16 +130,6 @@ public:
      */
     std::vector<domain::report_result_row> read_all(context ctx, const std::string& id);
 
-    /**
-     * @brief Reads the rows one run produced, in the order the run wrote them.
-     *
-     * A run's rows are read together or not at all, so the filter is the run
-     * rather than a page of the table. The caller states no order: the screen
-     * sorts what it draws, and the store's own order is by the subject the row is
-     * about.
-     */
-    std::vector<domain::report_result_row> read_by_run(context ctx, const std::string& run_id);
-
 
     /**
      * @brief Whether a list of report result rows can be ordered by a field.
@@ -171,13 +160,13 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active report result rows
      */
-    std::uint32_t get_total__count(
+    std::uint32_t get_total_row_count(
         context ctx,
         const std::optional<messaging::report_result_rows_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
-     * @brief Deletes a row by closing its temporal validity.
+     * @brief Deletes a report result row by closing its temporal validity.
      */
     void remove(context ctx, const std::string& id);
 
@@ -193,7 +182,7 @@ public:
     enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Removes a row, refusing a row that moved on.
+     * @brief Removes a report result row, refusing a row that moved on.
      *
      * A stated version is the version the caller read. The removal is refused
      * with @c conflicting when the current row carries another, so a caller
@@ -208,6 +197,15 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    /**
+     * @brief Reads the rows one run produced, in the order the run wrote them.
+     *
+     * A run's rows are read together or not at all, so the filter is the run
+     * rather than a page of the table. The caller states no order: the screen
+     * sorts what it draws, and the store's own order is by the subject the row is
+     * about.
+     */
+    std::vector<domain::report_result_row> read_by_run(context ctx, const std::string& run_id);
 
 private:
     /**

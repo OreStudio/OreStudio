@@ -43,7 +43,7 @@ ore_parameter_value_set_value_mapper::map(const ore_parameter_value_set_value_en
     domain::ore_parameter_value_set_value r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.value_set_code = v.value_set_code;
     r.value = v.value;
     r.label = v.label;

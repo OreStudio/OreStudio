@@ -46,7 +46,7 @@ engine_settings_building_mapper::map(const engine_settings_building_entity& v) {
     domain::engine_settings_building r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.engine_settings_id = boost::lexical_cast<boost::uuids::uuid>(v.engine_settings_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.observation_model = v.observation_model;

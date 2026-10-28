@@ -127,7 +127,7 @@ std::string write_bundle(const ores::database::context& ctx,
 
     ores::reporting::repository::report_input_bundle_repository bundles;
     bundles.create(ctx, bundle);
-    return bundle.id.value();
+    return bundle.id;
 }
 
 std::vector<ores::reporting::domain::report_error_event>

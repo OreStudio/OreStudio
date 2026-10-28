@@ -25,8 +25,8 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_ENGINE_SETTINGS_FIXINGS_ENTITY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_ENGINE_SETTINGS_FIXINGS_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct engine_settings_fixings_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_reporting_engine_settings_fixings_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string engine_settings_id;
@@ -59,6 +59,32 @@ struct engine_settings_fixings_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = engine_settings_fixings_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("engine_settings_id", &e::engine_settings_id) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("imply_todays_fixings", &e::imply_todays_fixings) |
+               query_builder::bind("include_todays_cash_flows", &e::include_todays_cash_flows) |
+               query_builder::bind("include_reference_date_events",
+                                   &e::include_reference_date_events) |
+               query_builder::bind("enrich_index_fixings", &e::enrich_index_fixings) |
+               query_builder::bind("ignore_fixing_lag", &e::ignore_fixing_lag) |
+               query_builder::bind("ignore_fixing_lead", &e::ignore_fixing_lead) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const engine_settings_fixings_entity& v);

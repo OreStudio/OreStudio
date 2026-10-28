@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curve blueprints — prototype</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--line-strong:#4a5568;
+  --ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;
+  --accent:#58a6ff;--accent-bright:#8ab4f8;--accent-dim:#21262d;
+  --ok:#22c55e;--warn:#eab308;--stale:#e3b341;--bad:#ef4444;--info:#3b82f6;--violet:#a855f7;--inactive:#6b7280;
+  --radius:8px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
+button{font:inherit;color:inherit}
+a{color:var(--accent-bright);text-decoration:none}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-dim)}
+.faint{color:var(--ink-faint)}
+.dash{color:var(--ink-faint)}
+.nowrap{white-space:nowrap}
+a.bare{color:var(--ink-dim);text-decoration:underline;text-decoration-color:var(--line-strong)}
+a.bare:hover{color:var(--ink)}
+
+/* Prototype chrome, deliberately unlike the design on trial. */
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:4px 16px;background:#2a2113;border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px;max-width:96vw;padding:4px 8px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;font-size:12px}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:4px 8px;border-radius:999px;cursor:pointer}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}
+.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px;color:var(--ink-faint);white-space:nowrap}
+.proto-bar .sep{color:var(--line)}
+
+/* A gap the screen draws because the server does not answer yet. */
+.gap{margin-top:16px;border-left:2px solid var(--warn);padding:4px 0 4px 12px;font-size:12px;color:var(--ink-dim)}
+.gap b{color:var(--warn)}
+body.nogaps .gap{display:none}
+
+/* The application shell, as the product draws it. */
+.shell-head{position:fixed;top:26px;left:0;right:0;z-index:50;height:44px;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--line);font-size:13px}
+.shell-head .brand{font-weight:600;letter-spacing:-.01em}
+.shell-head nav{display:flex;gap:4px;flex-wrap:wrap}
+.shell-head nav span{color:var(--ink-dim);padding:4px 8px;border-radius:6px}
+.shell-head nav span.on{color:var(--ink);background:var(--panel-2)}
+.shell-head .who{margin-left:auto;color:var(--ink-dim);white-space:nowrap}
+.shell-head .who b{color:var(--ink);font-weight:500}
+
+.page{padding:86px 24px 96px;max-width:1180px;margin:0 auto}
+.crumbs{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.crumbs .sep{padding:0 4px}
+.crumbs a{color:var(--ink-dim)}
+.crumbs a:hover{color:var(--ink);text-decoration:underline}
+.pagehead{display:flex;align-items:flex-start;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.pagehead h1{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.pagehead .lead{margin:4px 0 0;color:var(--ink-dim);font-size:13px}
+.pagehead .actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Buttons, marks, badges, notices. */
+.btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid var(--line);background:var(--panel-2);border-radius:var(--radius);padding:8px 16px;font-size:13px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--line-strong)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim)}
+.btn.ghost:hover:not(:disabled){color:var(--ink);background:var(--panel-2)}
+.btn.small{padding:4px 12px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.on{border-color:var(--accent);color:var(--accent-bright)}
+.badge{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:12px;line-height:20px;white-space:nowrap}
+.badge.ok{color:var(--ok)}
+.badge.pending{color:var(--info)}
+.badge.caution{color:var(--warn)}
+.badge.bad{color:var(--bad)}
+.badge.inactive{color:var(--inactive)}
+.badge.class{color:var(--violet)}
+.badge.mono{font-family:var(--mono);font-size:11px}
+.access{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink-dim)}
+.notice{border-radius:var(--radius);padding:12px 16px;font-size:13px;margin:0 0 16px;border:1px solid}
+.notice.info{background:#12161f;border-color:#24344d}
+.notice.success{background:#12281d;border-color:#23543a;color:#a8e6c4}
+.notice.warn{background:#2a2113;border-color:#4a3a17;color:#efd39a}
+.notice.error{background:#2b1614;border-color:#5c2a24;color:#f0b7ae}
+.notice b{font-weight:600}
+.notice .btn{margin-left:8px}
+
+/* Cards and panels. */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.card h2{font-size:18px;font-weight:600;margin:0 0 4px}
+.card .lede{margin:0 0 24px;color:var(--ink-dim);font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:0 0 16px}
+.panel h2{font-size:13px;font-weight:600;margin:0 0 4px}
+.panel h2 .sub{font-weight:400;color:var(--ink-faint)}
+.panel .lede{margin:0 0 12px;color:var(--ink-dim);font-size:12px}
+.panelhead{display:flex;align-items:center;gap:8px;margin:0 0 12px;flex-wrap:wrap}
+.panelhead .ml-auto{margin-left:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* Lists: tools, tables, pager. */
+.listtools{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.searchbox{position:relative;flex:1 1 240px;max-width:360px}
+.searchbox input{width:100%;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font:inherit;font-size:13px}
+.listnote{font-size:12px;color:var(--ink-faint);margin:0 0 8px}
+.rows{width:100%;border-collapse:collapse;font-size:13px}
+.rows th{text-align:left;color:var(--ink-faint);font-weight:500;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.rows th.sortable{cursor:pointer}
+.rows th.sortable:hover{color:var(--ink)}
+.rows th .caret{color:var(--accent-bright);padding-left:4px}
+.rows td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.rows tr.pick{cursor:pointer}
+.rows tr.pick:hover td{background:#1e1e23}
+.rows tr.ended td{background:#161619}
+.rows .key{font-family:var(--mono);color:var(--ink)}
+.rows .num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.rows .sub{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
+.rows .same{color:var(--ink-faint)}
+.rows td.acts{text-align:right;white-space:nowrap}
+.rows td.acts .btn{padding:2px 8px;font-size:11px}
+.tblstate{padding:40px 24px;text-align:center;color:var(--ink-dim);font-size:13px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.tblstate b{color:var(--ink);display:block;margin-bottom:8px;font-size:14px}
+.tblstate .btn{margin-top:16px}
+.pager{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--ink-dim);flex-wrap:wrap}
+
+/* A custom select: native selects cannot be styled, so none is used. */
+.sel{position:relative;display:inline-block}
+.sel-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;white-space:nowrap;cursor:pointer;background:#0e1218;border:1px solid var(--line);border-radius:var(--radius);padding:8px 12px;font-size:13px;min-width:180px;text-align:left}
+.sel-trigger:hover{border-color:var(--line-strong)}
+.sel-menu{position:absolute;left:0;top:calc(100% + 4px);z-index:30;min-width:100%;max-height:260px;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);padding:4px}
+.sel-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px}
+.sel-menu button:hover{background:var(--panel-2)}
+.sel-menu button.on{color:var(--accent-bright)}
+
+/* Tabs. */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px;flex-wrap:wrap}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;color:var(--ink-dim);padding:8px 12px;font-size:13px;cursor:pointer}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Fields and the details grid. */
+.fields{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 24px;margin:0}
+@media(max-width:860px){.fields{grid-template-columns:1fr 1fr}}
+.fields dt{font-size:12px;color:var(--ink-dim);margin:0 0 4px}
+.fields dd{margin:0;font-size:13px}
+.fields dd.mono{font-family:var(--mono);font-size:12px;word-break:break-all}
+.fields dd .means{display:block;font-size:11px;color:var(--ink-faint);margin-top:2px}
+.lastchanged{margin-top:24px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--ink-dim)}
+.field{display:block;margin:0 0 12px}
+.field>.lbl{display:block;font-size:12px;color:var(--ink-dim);margin:0 0 4px}
+.field .hint{font-size:11px;color:var(--ink-faint);margin:4px 0 0}
+.field.bad .sel-trigger{border-color:var(--bad)}
+.field .msg{font-size:12px;color:var(--bad);margin:4px 0 0}
+
+/* Dialogs, as the product draws them. */
+.scrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:64px 16px;overflow:auto}
+.dlg{width:100%;max-width:48rem;background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;padding:24px}
+.dlg h2{font-size:18px;font-weight:600;margin:0}
+.dlg .sub{margin:4px 0 16px;font-size:12px;color:var(--ink-faint)}
+.dlg .sub b{color:var(--ink-dim);font-weight:500}
+.dlg .form{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+@media(max-width:700px){.dlg .form{grid-template-columns:1fr}}
+.dlg .form .wide{grid-column:1/-1}
+.dlg .note{grid-column:1/-1;font-size:12px;color:var(--ink-dim);border-left:2px solid var(--line-strong);padding-left:12px;margin:4px 0 0}
+.dlgfoot{display:flex;align-items:center;gap:8px;margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
+.dlgfoot .ml-auto{margin-left:auto}
+.picker{border:1px solid var(--line-strong);border-radius:var(--radius);background:#0e1218;padding:8px;margin:8px 0 0}
+.picker input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:6px 8px;font:inherit;font-size:12px}
+.picker ul{list-style:none;margin:8px 0 0;padding:0;max-height:200px;overflow:auto}
+.picker li{padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;display:flex;gap:8px;align-items:baseline}
+.picker li:hover{background:var(--panel-2)}
+.picker li .key{font-family:var(--mono)}
+.picker li .why{color:var(--ink-faint)}
+
+/* Checks. */
+.checks{list-style:none;margin:0;padding:0}
+.checks li{display:grid;grid-template-columns:88px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+.checks li:last-child{border-bottom:none}
+.checks .mark{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint)}
+.checks li.pass .mark{color:var(--ok)}
+.checks li.fail .mark{color:var(--bad)}
+.checks li.warn .mark{color:var(--warn)}
+.checks .it{color:var(--ink)}
+.checks .fix{display:block;font-size:12px;color:var(--ink-dim);margin-top:2px}
+.checks .fix .btn{margin-top:6px}
+
+/* A chart, as the application draws one: plain SVG, axes in mono. */
+.chartpanel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px;margin:0 0 16px}
+.chartpanel h3{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);margin:0 0 8px}
+.chartlegend{margin:0 0 8px;font-size:12px;color:var(--ink-faint);font-style:italic}
+.chart{width:100%;max-width:760px;height:auto;display:block;overflow:visible}
+.chart text{font-family:var(--mono);font-size:11px;fill:var(--ink-faint)}
+.chart .grid{stroke:var(--line-soft);stroke-width:1}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chartempty{border:1px dashed var(--line);border-radius:var(--radius);padding:24px;text-align:center;color:var(--ink-dim);font-size:13px}
+.chartempty b{display:block;color:var(--ink);margin-bottom:4px}
+
+/* History: the rail. */
+.histrail{list-style:none;margin:0;padding:0}
+.histrail li{display:grid;grid-template-columns:96px 32px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.histrail .gutter{font-size:12px;color:var(--ink-faint);text-align:right}
+.histrail .gutter .cur{display:block;font-size:10px;color:var(--accent-bright);letter-spacing:.04em;margin-top:2px}
+.histrail .avatar{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:10px;color:var(--ink-dim)}
+.histrail .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px}
+.histrail .head .rec{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.histrail .head .why{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.histrail .note{margin:4px 0 0;font-size:13px;color:var(--ink-dim)}
+.histrail details{margin-top:6px}
+.histrail summary{cursor:pointer;font-size:12px;color:var(--accent-bright)}
+.histrail .detailline{font-size:12px;color:var(--ink-faint);margin:2px 0 0}
+.histrail .detailline .old{text-decoration:line-through}
+.daydiv{font-size:12px;font-weight:600;color:var(--ink-dim);padding:16px 0 8px;border-bottom:1px solid var(--line);margin-top:8px}
+.daydiv:first-child{margin-top:0;padding-top:0}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The curve blueprint screens: the list, the record page a row opens with its
+  five tabs, and the dialogs the record opens.
+
+    ?bp=<code>&tab=details|pillars|check|sets|history
+
+  The other parameters:
+
+    ?state=rows|none|nomatch|loading|error   the list's states
+    ?state=removed                           the list after a delete
+    ?check=nopillar|miss|notrun              the Check tab's states; a failing recipe halts it
+    ?dlg=add|edit|copy|pillar|delete|pillar-delete   a dialog, over the list or the record
+    ?pick=currency|discount                  a record picker inside the dialog
+    ?asof=<instant>                          the instant the test reads
+    ?q=<text>&fcur=<code>&frole=<role>&page=<n>&size=<n>   the list's tools
+    ?gaps=0                                  hide the server-gap notes
+
+  A change is written to the query string, so any screen, tab, state and dialog
+  can be linked directly. Every control is prototype chrome.
+-->
+<div class="proto-note" id="note">Prototype · mock data · reads no server</div>
+<header class="shell-head" id="shell"></header>
+<main class="page" id="app"></main>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ---------------------------------------------------------------- */
+    /* The query string is the state, as every prototype here does.       */
+    /* ---------------------------------------------------------------- */
+
+    var Q = new URLSearchParams(location.search);
+
+    var S = {
+        state: Q.get('state') || '',
+        q: Q.get('q') || '',
+        fcur: Q.get('fcur') || 'all',
+        frole: Q.get('frole') || 'all',
+        page: Number(Q.get('page') || 0),
+        size: Number(Q.get('size') || 15),
+        sort: Q.get('sort') || 'code',
+        dir: Number(Q.get('dir') || 1),
+        bp: Q.get('bp') || '',
+        tab: Q.get('tab') || 'details',
+        check: Q.get('check') || '',
+        asof: Q.get('asof') || '',
+        dlg: Q.get('dlg') || '',
+        pick: Q.get('pick') || '',
+        pickq: '',
+        notrun: false,
+        removed: '',
+        menu: '',
+        form: null,
+        actor: 'n.haugen'
+    };
+
+    var TABS = ['details', 'pillars', 'check', 'sets', 'history'];
+
+    var PEOPLE = {
+        'n.haugen': { name: 'Nora Haugen', initials: 'NH', role: 'Market data maker' },
+        'p.raman': { name: 'Priya Raman', initials: 'PR', role: 'Quant' },
+        'k.mori': { name: 'Kenji Mori', initials: 'KM', role: 'Market data maker' },
+        'j.okafor': { name: 'Jide Okafor', initials: 'JO', role: 'Head of market risk' }
+    };
+
+    var CUR = ['EUR', 'GBP', 'JPY', 'SEK', 'USD'];
+    var TENORS = ['SPOT', '1M', '2M', '3M', '6M', '9M', '1Y', '2Y', '3Y', '4Y', '5Y',
+        '7Y', '10Y', '12Y', '15Y', '20Y', '25Y', '30Y', '40Y'];
+    var INDEX_TENORS = ['1D', '3M', '6M'];
+    var ROLES = ['FUNDING', 'PROJECTION'];
+    var INTERPS = ['LOG_LINEAR_DISCOUNT', 'FLAT_FORWARD_THEN_LOG_LINEAR', 'CUBIC_SPLINE'];
+    var DAYCOUNTS = ['A360', 'A365', 'A365F', '30/360'];
+    var CONVENTIONS = ['RATES_SPOT_FORWARD', 'RATES_SPOT_FOMC'];
+    var CURVE_ROLES = ['DEPOSIT', 'FRA', 'SWAP'];
+
+    var TENOR_YEARS = {
+        'SPOT': 0, '1M': 1 / 12, '2M': 2 / 12, '3M': 0.25, '6M': 0.5, '9M': 0.75,
+        '1Y': 1, '2Y': 2, '3Y': 3, '4Y': 4, '5Y': 5, '7Y': 7, '10Y': 10, '12Y': 12,
+        '15Y': 15, '20Y': 20, '25Y': 25, '30Y': 30, '40Y': 40
+    };
+
+    function ladder(rows) {
+        return rows.map(function (r, i) {
+            return { seq: i + 1, start: r[0], end: r[1], role: r[2], version: r[3] || 1, by: r[4] || 'n.haugen', at: r[5] || '2026-10-07T15:41:00Z' };
+        });
+    }
+
+    var OIS = ladder([
+        ['SPOT', '1M', 'DEPOSIT'], ['SPOT', '3M', 'DEPOSIT'], ['SPOT', '6M', 'DEPOSIT'],
+        ['6M', '1Y', 'SWAP'], ['1Y', '2Y', 'SWAP'], ['2Y', '5Y', 'SWAP'],
+        ['5Y', '10Y', 'SWAP'], ['10Y', '20Y', 'SWAP'], ['20Y', '30Y', 'SWAP']
+    ]);
+
+    var BPS = [
+        {
+            code: 'USD-SOFR-1D', cur: 'USD', idx: '1D', role: 'FUNDING', disc: '',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '30Y',
+            base: 0.0402, version: 4, by: 'n.haugen', at: '2026-10-07T15:41:00Z', reason: 'common.non_material_update',
+            why: 'Split tenor to 30Y after the 30Y swap was added',
+            pillars: OIS, usedBy: ['USD-SOFR-6M'], missing: []
+        },
+        {
+            code: 'USD-SOFR-3M', cur: 'USD', idx: '3M', role: 'FUNDING', disc: '',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '30Y',
+            base: 0.0411, version: 2, by: 'p.raman', at: '2026-10-06T09:12:00Z', reason: 'common.non_material_update',
+            why: 'Index tenor set to 3M for the term curve',
+            pillars: OIS, usedBy: [], missing: []
+        },
+        {
+            code: 'USD-SOFR-6M', cur: 'USD', idx: '6M', role: 'PROJECTION', disc: 'USD-SOFR-1D',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '30Y',
+            base: 0.0448, version: 3, by: 'p.raman', at: '2026-10-05T13:20:00Z', reason: 'system.new_record',
+            why: 'Added, to discount off USD-SOFR-1D',
+            pillars: OIS, usedBy: [], missing: []
+        },
+        {
+            code: 'EUR-EURIBOR-6M', cur: 'EUR', idx: '6M', role: 'FUNDING', disc: '',
+            interp: 'FLAT_FORWARD_THEN_LOG_LINEAR', dc: 'A365', conv: 'RATES_SPOT_FOMC', split: '1Y',
+            base: 0.0317, version: 6, by: 'n.haugen', at: '2026-10-07T15:38:00Z', reason: 'common.market_correction',
+            why: 'Split tenor moved to 1Y to follow the FOMC schedule',
+            pillars: ladder([
+                ['SPOT', '1M', 'DEPOSIT'], ['SPOT', '3M', 'DEPOSIT'], ['SPOT', '6M', 'DEPOSIT'],
+                ['6M', '1Y', 'FRA'], ['1Y', '2Y', 'SWAP'], ['2Y', '5Y', 'SWAP'],
+                ['5Y', '10Y', 'SWAP'], ['10Y', '20Y', 'SWAP'], ['20Y', '30Y', 'SWAP'], ['30Y', '40Y', 'SWAP']
+            ]),
+            usedBy: ['EUR-EURIBOR-3M'], missing: []
+        },
+        {
+            code: 'EUR-EURIBOR-3M', cur: 'EUR', idx: '3M', role: 'PROJECTION', disc: 'EUR-EURIBOR-6M',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A365', conv: 'RATES_SPOT_FOMC', split: '30Y',
+            base: 0.0341, version: 1, by: 'p.raman', at: '2026-10-06T09:15:00Z', reason: 'system.new_record',
+            why: 'Added as the projection curve of EUR-EURIBOR-6M',
+            pillars: ladder([
+                ['SPOT', '3M', 'DEPOSIT'], ['SPOT', '6M', 'DEPOSIT'], ['6M', '1Y', 'SWAP'],
+                ['1Y', '2Y', 'SWAP'], ['2Y', '5Y', 'SWAP'], ['5Y', '10Y', 'SWAP'],
+                ['10Y', '20Y', 'SWAP'], ['20Y', '30Y', 'SWAP']
+            ]),
+            usedBy: [], missing: []
+        },
+        {
+            code: 'GBP-SONIA-1D', cur: 'GBP', idx: '1D', role: 'FUNDING', disc: '',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A365', conv: 'RATES_SPOT_FORWARD', split: '30Y',
+            base: 0.0415, version: 1, by: 'n.haugen', at: '2026-10-07T16:02:00Z', reason: 'system.new_record',
+            why: 'Created the recipe; the pillars follow',
+            pillars: [], usedBy: [], missing: []
+        },
+        {
+            code: 'JPY-TONA-6M', cur: 'JPY', idx: '6M', role: 'FUNDING', disc: '',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A365', conv: 'RATES_SPOT_FORWARD', split: '40Y',
+            base: 0.0112, version: 7, by: 'k.mori', at: '2026-10-02T08:41:00Z', reason: 'common.non_material_update',
+            why: 'Split tenor to 40Y after the 40Y swap was added',
+            pillars: ladder([
+                ['SPOT', '1M', 'DEPOSIT'], ['SPOT', '3M', 'DEPOSIT'], ['SPOT', '6M', 'DEPOSIT'],
+                ['6M', '1Y', 'SWAP'], ['1Y', '2Y', 'SWAP'], ['2Y', '5Y', 'SWAP'],
+                ['5Y', '10Y', 'SWAP'], ['10Y', '20Y', 'SWAP'], ['20Y', '30Y', 'SWAP'],
+                ['30Y', '40Y', 'SWAP']
+            ]),
+            usedBy: [], missing: [], bump: { at: 6, factor: 0.42 }
+        },
+        {
+            code: 'SEK-STIBOR-6M', cur: 'SEK', idx: '6M', role: 'FUNDING', disc: '',
+            interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '10Y',
+            base: 0.0259, version: 2, by: 'k.mori', at: '2026-10-04T11:05:00Z', reason: 'common.market_correction',
+            why: 'Pillars added after the market dropped the 2Y quote',
+            pillars: ladder([
+                ['SPOT', '3M', 'DEPOSIT'], ['3M', '6M', 'DEPOSIT'], ['6M', '1Y', 'SWAP'],
+                ['1Y', '10Y', 'SWAP'], ['5Y', '10Y', 'SWAP']
+            ]),
+            usedBy: [], missing: []
+        }
+    ];
+
+    var SETS = {
+        'USD-SOFR-1D': [
+            { asof: '2026-10-07T16:00:00Z', party: 'ACME London', by: 'j.okafor', published: '2026-10-07T16:04:00Z', points: 9, state: 'Published' },
+            { asof: '2026-10-06T16:00:00Z', party: 'ACME London', by: 'j.okafor', published: '2026-10-06T16:03:00Z', points: 9, state: 'Superseded' },
+            { asof: '2026-10-05T16:00:00Z', party: 'ACME London', by: 'j.okafor', published: '2026-10-05T16:02:00Z', points: 9, state: 'Superseded' }
+        ],
+        'USD-SOFR-3M': [
+            { asof: '2026-10-05T16:00:00Z', party: 'ACME London', by: 'j.okafor', published: '2026-10-05T16:06:00Z', points: 9, state: 'Published' }
+        ],
+        'JPY-TONA-6M': [
+            { asof: '2026-10-02T08:45:00Z', party: 'ACME Tokyo', by: 'j.okafor', published: '2026-10-02T09:02:00Z', points: 10, state: 'Withdrawn' },
+            { asof: '2026-10-01T08:45:00Z', party: 'ACME Tokyo', by: 'j.okafor', published: '2026-10-01T09:01:00Z', points: 10, state: 'Superseded' }
+        ]
+    };
+
+    var HISTORY = {
+        'USD-SOFR-1D': [
+            { at: '2026-10-07T15:41:00Z', kind: 'Blueprint', version: 4, by: 'n.haugen', reason: 'common.non_material_update', what: 'Split tenor 20Y to 30Y after the 30Y swap was added', diff: [['Split tenor', '20Y', '30Y']] },
+            { at: '2026-10-07T15:41:00Z', kind: 'Pillar 9', version: 1, by: 'n.haugen', reason: 'common.material_change', what: 'Pillar added: 20Y to 30Y, SWAP', diff: [['Sequence', '—', '9'], ['Start tenor', '—', '20Y'], ['End tenor', '—', '30Y'], ['Curve role', '—', 'SWAP']] },
+            { at: '2026-10-06T11:20:00Z', kind: 'Pillar 2', version: 2, by: 'p.raman', reason: 'common.market_correction', what: 'End tenor 2M to 3M: the market quotes three months', diff: [['End tenor', '2M', '3M']] },
+            { at: '2026-10-05T09:02:00Z', kind: 'Blueprint', version: 3, by: 'n.haugen', reason: 'common.non_material_update', what: 'Day count A365 to A360', diff: [['Day count', 'A365', 'A360']] },
+            { at: '2026-10-02T08:31:00Z', kind: 'Blueprint', version: 1, by: 'n.haugen', reason: 'system.new_record', what: 'The blueprint was created', first: true }
+        ],
+        'GBP-SONIA-1D': [
+            { at: '2026-10-07T16:02:00Z', kind: 'Blueprint', version: 1, by: 'n.haugen', reason: 'system.new_record', what: 'The blueprint was created', first: true }
+        ]
+    };
+
+    /* ---------------------------------------------------------------- */
+    /* Small helpers.                                                    */
+    /* ---------------------------------------------------------------- */
+
+    function esc(v) {
+        return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function person(id) { return PEOPLE[id] || { name: id, initials: '??' }; }
+    function who(id) { return person(id).name; }
+    function badge(kind, text) { return '<span class="badge ' + kind + '">' + esc(text) + '</span>'; }
+    function mono(v) { return '<span class="mono">' + esc(v) + '</span>'; }
+    function dash() { return '<span class="dash">—</span>'; }
+    function bp(code) {
+        return BPS.filter(function (b) { return b.code === code; })[0] || null;
+    }
+    function setsOf(code) { return SETS[code] || []; }
+    function inUse(code) {
+        return setsOf(code).filter(function (s) { return s.state === 'Published'; })[0] || null;
+    }
+    function roleBadge(role) {
+        return badge(role === 'FUNDING' ? 'ok' : 'pending', role);
+    }
+    function stateBadge(state) {
+        var cls = state === 'Published' ? 'ok' : state === 'Withdrawn' ? 'bad' : 'inactive';
+        return badge(cls, state);
+    }
+    function relTime(iso) {
+        var then = new Date(iso).getTime();
+        var now = new Date('2026-10-07T17:20:00Z').getTime();
+        var minutes = Math.round((now - then) / 60000);
+        if (minutes < 60) { return minutes + ' minutes ago'; }
+        var hours = Math.round(minutes / 60);
+        if (hours < 24) { return hours + ' hours ago'; }
+        var days = Math.round(hours / 24);
+        return days === 1 ? 'a day ago' : days + ' days ago';
+    }
+    function gg(iso) { return iso.replace('T', ' ').replace('Z', '').slice(0, 16); }
+    function dt(iso) { return iso.slice(0, 10); }
+    function df(v) { return v.toFixed(6); }
+    function rate(v) { return (v * 100).toFixed(4) + '%'; }
+
+    /* ---------------------------------------------------------------- */
+    /* The curve the mock data implies.                                  */
+    /* ---------------------------------------------------------------- */
+
+    function pointsOf(code) {
+        var b = bp(code);
+        if (!b) { return []; }
+        var out = [];
+        var prev = { t: 0, df: 1 };
+        b.pillars.forEach(function (p, i) {
+            var t = TENOR_YEARS[p.end] || 1;
+            var r = b.base + 0.0004 * Math.sin(i);
+            var v = Math.pow(1 + r, -t);
+            if (b.bump && b.bump.at === i) { v = v * (1 - b.bump.factor / 100); }
+            var fwd = (prev.df / v - 1) / Math.max(t - prev.t, 1 / 12);
+            out.push({ i: i, tenor: p.end, date: dateAt(t), df: v, fwd: fwd, missing: b.missing.indexOf(p.end) >= 0 });
+            prev = { t: t, df: v };
+        });
+        return out;
+    }
+
+    function dateAt(years) {
+        var day = Math.round(years * 365.25);
+        var base = new Date('2026-10-09T00:00:00Z');
+        base.setUTCDate(base.getUTCDate() + day);
+        return base.toISOString().slice(0, 10);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The recipe's own checks.                                          */
+    /* ---------------------------------------------------------------- */
+
+    function checksOf(code) {
+        var b = bp(code);
+        var out = [];
+        if (!b) { return out; }
+        var ps = b.pillars;
+
+        out.push({
+            id: 'pillars',
+            item: 'The blueprint holds at least one pillar',
+            answer: ps.length > 0,
+            fix: ps.length > 0 ? '' : 'Add a pillar under Pillars.',
+            act: ps.length > 0 ? '' : 'pillar'
+        });
+
+        var outOfOrder = null;
+        for (var i = 1; i < ps.length; i += 1) {
+            if ((TENOR_YEARS[ps[i].end] || 0) <= (TENOR_YEARS[ps[i - 1].end] || 0)) {
+                outOfOrder = [ps[i - 1], ps[i]];
+                break;
+            }
+        }
+        out.push({
+            id: 'order',
+            item: 'Each pillar matures after the one before it',
+            answer: ps.length > 1 && !outOfOrder,
+            fix: outOfOrder ? 'Pillars ' + outOfOrder[0].seq + ' and ' + outOfOrder[1].seq +
+                ' both end at ' + outOfOrder[1].end + '. A pillar matures strictly after the one before it.' : '',
+            act: outOfOrder ? 'pillars' : ''
+        });
+
+        var forward = ps.filter(function (p) { return p.role === 'DEPOSIT' && p.start !== 'SPOT'; })[0];
+        out.push({
+            id: 'deposit',
+            item: 'Every DEPOSIT pillar starts at SPOT',
+            answer: ps.length > 0 && !forward,
+            fix: forward ? 'Pillar ' + forward.seq + ' is a DEPOSIT from ' + forward.start + ' to ' +
+                forward.end + '. A deposit starts today; a forward-starting pillar is a FRA or a SWAP.' : '',
+            act: forward ? 'pillars' : ''
+        });
+
+        var last = ps.length ? ps[ps.length - 1].end : '';
+        var splitOk;
+        if (b.interp === 'FLAT_FORWARD_THEN_LOG_LINEAR') {
+            splitOk = ps.length > 0 && (TENOR_YEARS[b.split] || 0) > 0 &&
+                (TENOR_YEARS[b.split] || 0) <= (TENOR_YEARS[last] || 0);
+        } else {
+            splitOk = ps.length > 0 && b.split === last;
+        }
+        out.push({
+            id: 'split',
+            item: b.interp === 'FLAT_FORWARD_THEN_LOG_LINEAR' ?
+                'The split tenor is a tenor inside the pillar ladder' :
+                'The split tenor is the last pillar\'s end tenor',
+            answer: splitOk,
+            fix: splitOk ? '' : 'The split tenor is ' + b.split + ' and the last pillar ends at ' + last +
+                '. For ' + b.interp + ' the two are the same value.',
+            act: splitOk ? '' : 'edit'
+        });
+
+        var discOk = true;
+        if (b.role === 'PROJECTION') {
+            var d = bp(b.disc);
+            discOk = !!d && d.role === 'FUNDING' && d.cur === b.cur && d.code !== b.code;
+        }
+        out.push({
+            id: 'discount',
+            item: 'A PROJECTION names a FUNDING blueprint of its currency, and not itself',
+            answer: discOk,
+            fix: discOk ? '' : 'The discount curve is not a FUNDING blueprint of ' + b.cur + '.',
+            act: discOk ? '' : 'edit'
+        });
+
+        out.push({
+            id: 'chain',
+            item: 'The blueprint a PROJECTION names is not itself a projection',
+            answer: discOk,
+            fix: discOk ? '' : 'The discount curve is a PROJECTION. A projection discounts off a funding curve, and a chain of them is not supported.',
+            act: discOk ? '' : 'edit'
+        });
+
+        return out;
+    }
+
+    function checkState(code) {
+        if (S.check) { return S.check; }
+        if (S.notrun) { return 'notrun'; }
+        return 'run';
+    }
+
+    function missingOf(code) {
+        if (S.check === 'miss') { return ['2Y']; }
+        if (S.check === 'nopillar') { return []; }
+        return bp(code) ? bp(code).missing : [];
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Chrome.                                                           */
+    /* ---------------------------------------------------------------- */
+
+    function shell() {
+        return '<div class="brand">ORE Studio</div><nav>' +
+            ['Market data', 'Requests', 'Reference data', 'Operations'].map(function (n) {
+                return '<span class="' + (n === 'Market data' ? 'on' : '') + '">' + n + '</span>';
+            }).join('') + '</nav><div class="who">Signed in as <b>' + esc(who(S.actor)) + '</b></div>';
+    }
+
+    function crumbs(items) {
+        return '<div class="crumbs">' + items.map(function (it, i) {
+            var label = it.act ? '<a href="#" data-act="' + it.act + '">' + esc(it.t) + '</a>' : esc(it.t);
+            return (i ? '<span class="sep">›</span>' : '') + label;
+        }).join('') + '</div>';
+    }
+
+    function pagehead(title, lead, actions, extra) {
+        return '<div class="pagehead"><div><h1>' + esc(title) + '</h1>' +
+            (lead ? '<p class="lead">' + lead + '</p>' : '') + (extra || '') + '</div>' +
+            (actions ? '<div class="actions">' + actions + '</div>' : '') + '</div>';
+    }
+
+    function gap(text) { return '<p class="gap"><b>Server gap.</b> ' + text + '</p>'; }
+
+    function select(id, options, value) {
+        var found = options.filter(function (o) { return o.v === value; })[0] || options[0];
+        var menu = S.menu === id
+            ? '<div class="sel-menu">' + options.map(function (o) {
+                return '<button data-act="pick" data-arg="' + id + ':' + esc(o.v) + '" class="' +
+                    (o.v === value ? 'on' : '') + '">' + esc(o.t) + '</button>';
+            }).join('') + '</div>'
+            : '';
+        return '<span class="sel">' +
+            '<button class="sel-trigger" data-act="menu" data-arg="' + id + '" aria-haspopup="listbox" aria-expanded="' +
+            (S.menu === id) + '"><span>' + esc(found.t) + '</span><span aria-hidden="true">▾</span></button>' +
+            menu + '</span>';
+    }
+
+    function choices(values) {
+        return values.map(function (v) { return { v: v, t: v }; });
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The list.                                                         */
+    /* ---------------------------------------------------------------- */
+
+    function visibleRows() {
+        var rows = BPS.filter(function (b) {
+            if (S.fcur !== 'all' && b.cur !== S.fcur) { return false; }
+            if (S.frole !== 'all' && b.role !== S.frole) { return false; }
+            if (S.q) {
+                var hay = (b.code + ' ' + b.cur + ' ' + b.idx + ' ' + b.role).toLowerCase();
+                if (hay.indexOf(S.q.toLowerCase()) < 0) { return false; }
+            }
+            return true;
+        });
+        rows.sort(function (a, b) {
+            var x = a[S.sort] || a.code;
+            var y = b[S.sort] || b.code;
+            return (x > y ? 1 : x < y ? -1 : 0) * S.dir;
+        });
+        return rows;
+    }
+
+    function listSurface() {
+        var out = crumbs([{ t: 'Home', act: 'list' }, { t: 'Market data', act: 'list' }, { t: 'Curves' }]);
+        out += pagehead('Curve blueprints',
+            'The recipes that turn a raw instrument grid into a discount curve.',
+            '<button class="btn" data-act="refresh">↻ Refresh</button>' +
+            '<button class="btn primary" data-act="add">+ Add</button>');
+
+        out += '<div class="listtools">' +
+            '<span class="searchbox"><input type="text" data-input="q" placeholder="Search by curve code or currency" value="' +
+            esc(S.q) + '" aria-label="Search curve blueprints"></span>' +
+            select('fcur', [{ v: 'all', t: 'Every currency' }].concat(choices(CUR)), S.fcur) +
+            select('frole', [{ v: 'all', t: 'Every role' }].concat(choices(ROLES)), S.frole) +
+            '</div>';
+
+        if (S.state === 'removed') {
+            out += '<div class="notice success"><b>USD-SOFR-3M was deleted.</b> Its 9 pillars went with it. ' +
+                'The output series and the 1 published set it fed stay, and the set names a blueprint that no longer exists.</div>';
+        }
+        if (S.state !== 'rows' && S.state !== '' && S.state !== 'removed') {
+            out += listState();
+        } else {
+            out += '<p class="listnote">The blueprints of the party the session acts in, by curve code.</p>';
+            out += listTable();
+        }
+        if (S.frole !== 'all') {
+            out += '<p class="listnote">The list shows the ' + esc(S.frole) + ' blueprints of the party the session acts in.</p>';
+        }
+        return out;
+    }
+
+    function listState() {
+        if (S.state === 'loading') {
+            return '<div class="tblstate"><b>Loading…</b>The blueprints of the party the session acts in.</div>';
+        }
+        if (S.state === 'error') {
+            return '<div class="notice error"><b>The server cannot be reached.</b> The blueprints did not load. ' +
+                '<button class="btn small" data-act="retry">Retry</button></div>';
+        }
+        if (S.state === 'nomatch') {
+            return '<div class="tblstate"><b>No curve blueprints match the search.</b>' +
+                '<button class="btn small" data-act="clearq">Clear the search</button></div>';
+        }
+        return '<div class="tblstate"><b>There are no curve blueprints yet.</b>' +
+            'A blueprint is the recipe one curve is built from. Add one for the first currency the desk quotes.' +
+            '<br><button class="btn primary small" data-act="add">+ Add</button></div>';
+    }
+
+    function listTable() {
+        var rows = visibleRows();
+        if (!rows.length) { return listState(); }
+        var head = '<tr>' +
+            '<th class="sortable" data-act="sort" data-arg="code">Curve<span class="caret">' + caret('code') + '</span></th>' +
+            '<th class="sortable" data-act="sort" data-arg="cur">Currency<span class="caret">' + caret('cur') + '</span></th>' +
+            '<th>Role</th><th>Index tenor</th><th>Interpolation</th><th>Day count</th>' +
+            '<th class="sortable" data-act="sort" data-arg="version">Pillars<span class="caret"></span></th>' +
+            '<th>Version</th><th>Last changed</th></tr>';
+        var body = rows.map(function (b) {
+            var set = inUse(b.code);
+            var ended = setsOf(b.code).length > 0 && !set;
+            var left = b.pillars.length === 0 ?
+                '<span class="sub">No pillars yet</span>' :
+                (set ? '' : (ended ? '<span class="sub">No set in use since ' + dt(setsOf(b.code)[0].asof) + '</span>' : '<span class="sub">Never published</span>'));
+            return '<tr class="pick ' + (ended ? 'ended' : '') + '" data-act="open" data-arg="' + esc(b.code) + '">' +
+                '<td><span class="key">' + esc(b.code) + '</span>' + left + '</td>' +
+                '<td class="mono">' + esc(b.cur) + '</td>' +
+                '<td>' + roleBadge(b.role) + '</td>' +
+                '<td class="mono">' + esc(b.idx) + '</td>' +
+                '<td class="mono">' + esc(b.interp) + '</td>' +
+                '<td class="mono">' + esc(b.dc) + '</td>' +
+                '<td class="num">' + b.pillars.length + '</td>' +
+                '<td class="num">' + b.version + '</td>' +
+                '<td>' + esc(relTime(b.at)) + '</td></tr>';
+        }).join('');
+        return '<table class="rows"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
+            pager(rows.length, BPS.length);
+    }
+
+    function caret(col) { return S.sort === col ? (S.dir === 1 ? '▲' : '▼') : ''; }
+
+    function pager(shown, total) {
+        return '<div class="pager"><span>1–' + shown + ' of ' + total + '</span>' +
+            '<button class="btn small" data-act="page">« First</button>' +
+            '<button class="btn small" data-act="page">‹ Previous</button>' +
+            '<button class="btn small" data-act="page">Next ›</button>' +
+            '<button class="btn small" data-act="page">Last »</button>' +
+            '<span>Page size</span><span class="mono">15 ▾</span></div>';
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The record page.                                                  */
+    /* ---------------------------------------------------------------- */
+
+    function recordSurface() {
+        var b = bp(S.bp);
+        if (!b) { return listSurface(); }
+        var out = crumbs([
+            { t: 'Home', act: 'list' },
+            { t: 'Market data', act: 'list' },
+            { t: 'Curves', act: 'list' },
+            { t: b.code }
+        ]);
+        out += '<div class="pagehead"><div>' +
+            '<h1 class="mono">' + esc(b.code) + '</h1>' +
+            '<p class="lead">' + esc(b.cur) + ' · index tenor ' + esc(b.idx) + ' · ' + roleBadge(b.role) +
+            ' · version ' + b.version + ' <span class="access">Editable</span></p></div>' +
+            '<div class="actions">' +
+            '<button class="btn" data-act="dlg" data-arg="copy">Copy blueprint</button>' +
+            '<button class="btn" data-act="dlg" data-arg="edit">✎ Edit</button>' +
+            '<button class="btn" data-act="dlg" data-arg="delete">🗑 Delete</button>' +
+            '</div></div>';
+        out += tabs(b);
+        out += tabBody(b);
+        return out;
+    }
+
+    function tabs(b) {
+        var labels = { details: 'Details', pillars: 'Pillars', check: 'Check', sets: 'Published sets', history: 'History' };
+        return '<div class="tabs">' + TABS.map(function (t) {
+            return '<button data-act="tab" data-arg="' + t + '" class="' + (S.tab === t ? 'on' : '') + '">' +
+                labels[t] + '</button>';
+        }).join('') + '</div>';
+    }
+
+    function tabBody(b) {
+        if (S.tab === 'pillars') { return pillarsTab(b); }
+        if (S.tab === 'check') { return checkTab(b); }
+        if (S.tab === 'sets') { return setsTab(b); }
+        if (S.tab === 'history') { return historyTab(b); }
+        return detailsTab(b);
+    }
+
+    function detailsTab(b) {
+        var set = inUse(b.code);
+        var all = setsOf(b.code);
+        var out = '';
+        if (all.length && !set) {
+            out += '<div class="notice warn"><b>No set of this blueprint is in use.</b> The last set was ' +
+                'withdrawn on ' + dt(all[0].asof) + ' by ' + esc(who(all[0].by)) + '. The recipe stays here, and ' +
+                'the desk prices from no set of this curve.</div>';
+        }
+        if (!b.pillars.length) {
+            out += '<div class="notice info"><b>This blueprint holds no pillars yet.</b> A curve cannot be built, ' +
+                'and the Check tab says the same, until one pillar is added. ' +
+                '<button class="btn small" data-act="tab" data-arg="pillars">Add a pillar</button></div>';
+        }
+        out += '<div class="panel"><div class="fields">' +
+            field('Currency', '<span class="mono">' + esc(b.cur) + '</span>') +
+            field('Index tenor', '<span class="mono">' + esc(b.idx) + '</span>',
+                'The tenor of the floating-rate index this curve stands for.') +
+            field('Role', roleBadge(b.role),
+                b.role === 'FUNDING' ? 'Anchors the discounting of its family.' :
+                    'Discounts off a funding curve of the same currency.') +
+            field('Discount curve', b.disc ?
+                '<a href="#" data-act="open" data-arg="' + esc(b.disc) + '">' + esc(b.disc) + '</a>' :
+                '<span class="dash">—</span>',
+                b.role === 'FUNDING' ? 'A funding blueprint needs none.' : '') +
+            field('Interpolation method', '<span class="mono">' + esc(b.interp) + '</span>') +
+            field('Day count', '<span class="mono">' + esc(b.dc) + '</span>') +
+            field('Tenor convention', '<span class="mono">' + esc(b.conv) + '</span>') +
+            field('Split tenor', '<span class="mono">' + esc(b.split) + '</span>',
+                b.interp === 'FLAT_FORWARD_THEN_LOG_LINEAR' ? 'The knot between the two segments.' :
+                    'For a single-segment method this is the last pillar\'s end tenor.') +
+            field('Output series', '<a href="#" data-act="series">DISCOUNT / RATE / ' + esc(b.code) + '</a>',
+                'The market series the built curve is published into.') +
+            field('Used by', b.usedBy.length ?
+                b.usedBy.map(function (c) {
+                    return '<a href="#" data-act="open" data-arg="' + esc(c) + '">' + esc(c) + '</a>';
+                }).join('<br>') : '<span class="dash">—</span>',
+                b.role === 'FUNDING' ? 'The projection blueprints that discount off this one.' : '') +
+            '</div>' +
+            '<p class="lastchanged">Last changed version ' + b.version + ' · ' + esc(who(b.by)) + ' · ' +
+            esc(relTime(b.at)) + ' · <span class="mono">' + esc(b.reason) + '</span> · ' +
+            '&#8220;' + esc(b.why) + '&#8221;</p></div>';
+        out += gap('The output series, the projections that discount off this blueprint and the sets published ' +
+            'from it are three reads in two components, and no read returns a blueprint\'s dependants. The tab ' +
+            'joins them by the ids it read.');
+        return out;
+    }
+
+    function field(label, value, means) {
+        return '<div><dt>' + esc(label) + '</dt><dd>' + value +
+            (means ? '<span class="means">' + esc(means) + '</span>' : '') + '</dd></div>';
+    }
+
+    function pillarsTab(b) {
+        if (!b.pillars.length) {
+            return '<div class="panel"><div class="panelhead"><h2>Pillars</h2>' +
+                '<button class="btn small primary ml-auto" data-act="dlg" data-arg="pillar">+ Add</button></div>' +
+                '<p class="tblstate"><b>None yet.</b>A pillar is one instrument\'s date range. ' +
+                'A curve needs at least one before it can be built.</p></div>';
+        }
+        var rows = b.pillars.map(function (p) {
+            return '<tr><td class="num">' + p.seq + '</td>' +
+                '<td class="mono">' + esc(p.start) + '</td>' +
+                '<td class="mono">' + esc(p.end) + '</td>' +
+                '<td class="mono">' + esc(p.role) + '</td>' +
+                '<td class="num">' + p.version + '</td>' +
+                '<td>' + esc(who(p.by)) + '</td>' +
+                '<td>' + esc(relTime(p.at)) + '</td>' +
+                '<td class="acts">' +
+                '<button class="btn small" data-act="pillar-hist">History</button> ' +
+                '<button class="btn small" data-act="pillar-edit">Edit</button> ' +
+                '<button class="btn small" data-act="pillar-delete">Delete</button></td></tr>';
+        }).join('');
+        return '<div class="panel"><div class="panelhead"><h2>Pillars <span class="sub">' + b.pillars.length +
+            ' rows, in maturity order</span></h2>' +
+            '<button class="btn small primary ml-auto" data-act="dlg" data-arg="pillar">+ Add</button></div>' +
+            '<p class="lede">Each row is one instrument\'s date range, not a single point: the start tenor is when ' +
+            'its rate period begins and the end tenor is when it matures. A one-month deposit starting today is ' +
+            'start tenor SPOT and end tenor 1M. The order is the maturity order: it follows each row\'s end tenor, ' +
+            'so the rows may be added in any order.</p>' +
+            '<table class="rows"><thead><tr><th>Seq</th><th>Start tenor</th><th>End tenor</th><th>Curve role</th>' +
+            '<th>Version</th><th>Changed by</th><th>Changed</th><th></th></tr></thead><tbody>' + rows +
+            '</tbody></table></div>';
+    }
+
+    function checkTab(b) {
+        var state = checkState(b.code);
+        var checks = checksOf(b.code);
+        var failed = checks.filter(function (c) { return !c.answer; });
+        var missing = missingOf(b.code);
+        var points = pointsOf(b.code);
+        var halted = state !== 'notrun' && failed.length > 0;
+        var out = '';
+
+        out += '<div class="panel"><div class="panelhead">' +
+            '<h2>Check the recipe</h2>' +
+            '<span class="ml-auto faint">As of</span>' +
+            '<span class="mono">' + esc(S.asof ? gg(S.asof) + ' UTC' : '2026-10-07 17:00 UTC') + '</span>' +
+            '<button class="btn small" data-act="run">Run the test</button>' +
+            '<button class="btn small ghost" data-act="asof">Earlier instant</button>' +
+            '</div>';
+
+        if (state === 'notrun') {
+            out += '<div class="notice info"><b>Not checked yet.</b> The test reads the market at the as-of and ' +
+                'writes nothing. Run it to see whether this recipe builds.</div>';
+        }
+        if (halted && b.pillars.length === 0) {
+            out += '<div class="notice warn"><b>This recipe holds no pillars.</b> Nothing can be built from it. ' +
+                '<button class="btn small" data-act="tab" data-arg="pillars">Add a pillar</button></div>';
+        } else if (halted) {
+            out += '<div class="notice error"><b>The test stopped before the market was read.</b> ' +
+                (failed.length === 1 ? 'One of the recipe\'s own checks failed' :
+                    failed.length + ' of the recipe\'s own checks failed') +
+                ', and a build from this recipe could only fail. Each failed check names the act that fixes it.</div>';
+        }
+        if (state === 'miss' && !halted) {
+            out += '<div class="notice warn"><b>One pillar has no rate at this instant.</b> ' +
+                'The market did not quote 2Y for this curve in the source series at 17:00 UTC. ' +
+                'The build answers every other pillar and names the gap.</div>';
+        }
+
+        var show = state !== 'notrun';
+
+        out += '<ul class="checks">' + checks.map(function (c) {
+            var mark = show ? (c.answer ? 'Pass' : 'Fail') : 'Not run';
+            var cls = show ? (c.answer ? 'pass' : 'fail') : '';
+            return '<li class="' + cls + '"><span class="mark">' + mark + '</span><div>' +
+                '<span class="it">' + esc(c.item) + '</span>' +
+                (cls === 'fail' && c.fix ? '<span class="fix">' + esc(c.fix) +
+                    (c.act === 'pillar' ? ' <button class="btn small" data-act="dlg" data-arg="pillar">+ Add a pillar</button>' : '') +
+                    (c.act === 'edit' ? ' <button class="btn small" data-act="dlg" data-arg="edit">Edit the blueprint</button>' : '') +
+                    (c.act === 'pillars' ? ' <button class="btn small" data-act="tab" data-arg="pillars">Open the pillars</button>' : '') +
+                    '</span>' : '') +
+                '</div></li>';
+        }).join('') + '</ul></div>';
+
+        if (halted || !show) { return out; }
+
+        out += '<div class="panel"><div class="panelhead"><h2>What the market supplies <span class="sub">' +
+            b.pillars.length + ' pillars</span></h2></div>' +
+            '<table class="rows"><thead><tr><th>Pillar</th><th>Start</th><th>End</th><th>Role</th><th>Rate at the as-of</th></tr></thead><tbody>' +
+            b.pillars.map(function (p) {
+                var gone = missing.indexOf(p.end) >= 0;
+                return '<tr><td class="num">' + p.seq + '</td><td class="mono">' + esc(p.start) + '</td>' +
+                    '<td class="mono">' + esc(p.end) + '</td><td class="mono">' + esc(p.role) + '</td>' +
+                    '<td>' + (gone ? badge('caution', 'No rate') : badge('ok', 'Observed')) + '</td></tr>';
+            }).join('') + '</tbody></table>' +
+            '<p class="listnote">Every pillar resolves to the series its currency, start tenor and index tenor name. ' +
+            'No read returns that list for a whole recipe; the screen resolves what it can and says where it could not.</p></div>';
+
+        var drawn = points.filter(function (p) { return missing.indexOf(p.tenor) < 0; });
+        out += '<div class="panel"><div class="panelhead"><h2>The points <span class="sub">' + drawn.length +
+            ' of ' + points.length + ' computed</span></h2>' +
+            '<span class="ml-auto">' + badge(missing.length ? 'caution' : 'ok', missing.length ? 'Built with gaps' : 'Built') +
+            '</span></div>' +
+            '<table class="rows"><thead><tr><th>Pillar</th><th>Date</th><th>Discount factor</th>' +
+            '<th>Instantaneous forward</th></tr></thead><tbody>' +
+            points.map(function (p) {
+                if (missing.indexOf(p.tenor) >= 0) {
+                    return '<tr><td class="mono">' + esc(p.tenor) + '</td><td class="mono">' + esc(p.date) + '</td>' +
+                        '<td>' + dash() + '</td><td>' + dash() + '</td></tr>';
+                }
+                return '<tr><td class="mono">' + esc(p.tenor) + '</td><td class="mono">' + esc(p.date) + '</td>' +
+                    '<td class="num">' + df(p.df) + '</td><td class="num">' + rate(p.fwd) + '</td></tr>';
+            }).join('') + '</tbody></table></div>';
+
+        var cats = drawn.map(function (p) { return p.tenor; });
+        out += '<div class="grid2">' +
+            '<div class="chartpanel"><h3>Discount factors</h3>' +
+            '<p class="chartlegend">The discount factor at each pillar\'s date.</p>' +
+            curveChart({ categories: cats, values: drawn.map(function (p) { return p.df; }), caption: 'Discount factors by pillar tenor', fmt: df }) +
+            '</div>' +
+            '<div class="chartpanel"><h3>Forward rates</h3>' +
+            '<p class="chartlegend">A step or a negative rate is what says the recipe is wrong rather than the market.</p>' +
+            curveChart({ categories: cats, values: drawn.map(function (p) { return p.fwd; }), caption: 'Instantaneous forward rates by pillar tenor', fmt: function (v) { return rate(v); } }) +
+            '</div></div>';
+
+        var findings = findingsOf(b, drawn);
+        out += '<div class="panel"><div class="panelhead"><h2>Findings <span class="sub">' +
+            (findings.length ? findings.length + ' to read' : 'none') + '</span></h2></div>' +
+            (findings.length ? '<ul class="checks">' + findings.map(function (f) {
+                return '<li class="warn"><span class="mark">Read</span><div><span class="it">' + esc(f) + '</span>' +
+                    '<span class="fix">The screen derived this from the points it received. The server returns no ' +
+                    'diagnostics, so a finding is the screen\'s reading and not a verdict.</span></div></li>';
+            }).join('') + '</ul>' : '<p class="listnote">The forwards rise and fall without a step, and every ' +
+                'pillar was filled. Nothing here needs a person.</p>') + '</div>';
+
+        out += gap('The compute replies with success, a message and the points. It does not say which check failed, ' +
+            'which pillar\'s series held no rate, or where it interpolated across a gap. The findings above are the ' +
+            'screen\'s own arithmetic on the points.');
+        return out;
+    }
+
+    function findingsOf(b, drawn) {
+        var out = [];
+        drawn.forEach(function (p) {
+            if (p.fwd < 0) {
+                out.push('The forward rate at ' + p.tenor + ' is ' + rate(p.fwd) + ', below zero.');
+            }
+        });
+        var prev = null;
+        drawn.forEach(function (p) {
+            if (prev && prev.fwd > 0 && p.fwd / prev.fwd > 1.25) {
+                out.push('The forward rate jumps from ' + rate(prev.fwd) + ' at ' + prev.tenor + ' to ' +
+                    rate(p.fwd) + ' at ' + p.tenor + '.');
+            }
+            prev = p;
+        });
+        if (missingOf(b.code).length) {
+            out.push('The curve interpolates across ' + missingOf(b.code).join(', ') +
+                ', which the market did not quote at this instant.');
+        }
+        return out;
+    }
+
+    function setsTab(b) {
+        var all = setsOf(b.code);
+        if (!all.length) {
+            return '<div class="panel"><div class="panelhead"><h2>Published sets</h2></div>' +
+                '<p class="tblstate"><b>None yet.</b>Nobody has published a set from this blueprint. A set becomes ' +
+                'the curve the system uses when a person publishes an approved candidate, which is the publish ' +
+                'journey\'s act and not this screen\'s.</p></div>' +
+                gap('The published-curve read filters by party, search, candidates and ended sets, and not by the ' +
+                    'blueprint. The tab filters on the page.');
+        }
+        return '<div class="panel"><div class="panelhead"><h2>Published sets <span class="sub">' + all.length +
+            ' sets, newest first</span></h2></div>' +
+            '<table class="rows"><thead><tr><th>Published as-of</th><th>Party</th><th>Publisher</th>' +
+            '<th>Published</th><th>Points</th><th>State</th></tr></thead><tbody>' +
+            all.map(function (s) {
+                return '<tr class="pick" data-act="sets-open" data-arg="' + esc(b.code) + '">' +
+                    '<td class="mono">' + esc(gg(s.asof)) + '</td>' +
+                    '<td>' + esc(s.party) + '</td>' +
+                    '<td>' + esc(who(s.by)) + '</td>' +
+                    '<td>' + esc(relTime(s.published)) + '</td>' +
+                    '<td class="num">' + s.points + '</td>' +
+                    '<td>' + stateBadge(s.state) + '</td></tr>';
+            }).join('') + '</tbody></table>' +
+            '<p class="listnote">A row opens the published record. The sets are read, never changed here: a ' +
+            'withdrawal is its own act with a reason.</p></div>';
+    }
+
+    function historyTab(b) {
+        var entries = HISTORY[b.code] || [];
+        if (!entries.length) {
+            return '<div class="panel"><p class="tblstate"><b>No versions yet.</b></p></div>';
+        }
+        var out = '<div class="panel"><div class="panelhead"><h2>History <span class="sub">the blueprint and its ' +
+            'pillars, newest first</span></h2><span class="ml-auto faint">Hide system activity</span></div>' +
+            '<ul class="histrail">';
+        var day = '';
+        entries.forEach(function (e, i) {
+            var d = dt(e.at);
+            if (d !== day) { out += '</ul><div class="daydiv">' + d + '</div><ul class="histrail">'; day = d; }
+            out += '<li><span class="gutter">' + esc(e.at.slice(11, 16)) +
+                (i === 0 ? '<span class="cur">Current</span>' : '') + '</span>' +
+                '<span class="avatar">' + esc(person(e.by).initials) + '</span>' +
+                '<div><span class="head"><span class="it">' + esc(e.kind) + ', version ' + e.version + '</span>' +
+                '<span class="rec">' + esc(who(e.by)) + '</span>' +
+                '<span class="why">' + esc(e.reason) + '</span></span>' +
+                '<p class="note">' + esc(e.what) + '</p>' +
+                '<details><summary>Details</summary>' + diffLines(e) + '</details>' +
+                (i === 0 ? '' : '<p class="detailline">Revert to this version</p>') +
+                '</div></li>';
+        });
+        out += '</ul><p class="listnote">A part deleted from the blueprint is not read, so its versions leave ' +
+            'this stream.</p></div>';
+        return out;
+    }
+
+    function diffLines(e) {
+        if (e.first) {
+            return '<p class="detailline">The whole record: the first version is the whole blueprint.</p>';
+        }
+        return (e.diff || []).map(function (d) {
+            return '<p class="detailline">' + esc(d[0]) + ': <span class="old">' + esc(d[1]) +
+                '</span> → ' + esc(d[2]) + '</p>';
+        }).join('');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Charts, plain SVG, as the application draws one.                  */
+    /* ---------------------------------------------------------------- */
+
+    var CHART_W = 720, CHART_H = 230, CHART_LEFT = 64, CHART_RIGHT = 16, CHART_TOP = 16, CHART_BOTTOM = 40;
+
+    function emptyChart(reason) {
+        return '<div class="chartempty"><b>The chart cannot be drawn.</b>' + esc(reason) + '</div>';
+    }
+
+    function curveChart(opts) {
+        var cats = opts.categories;
+        var values = opts.values;
+        if (cats.length === 0) { return emptyChart('The recipe holds no point to draw.'); }
+        if (cats.length < 2) { return emptyChart('A curve needs at least two pillars. One point has no shape; the table above holds it.'); }
+        var low = Math.min.apply(null, values);
+        var high = Math.max.apply(null, values);
+        var room = high === low ? Math.max(Math.abs(high) * 0.0005, 1e-6) : (high - low) * 0.14;
+        var yLow = low - room, yHigh = high + room;
+        var plotW = CHART_W - CHART_LEFT - CHART_RIGHT;
+        var plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
+        function xOf(i) { return CHART_LEFT + ((i + 0.5) * plotW) / cats.length; }
+        function yOf(v) { return CHART_TOP + plotH - ((v - yLow) / (yHigh - yLow)) * plotH; }
+        var svg = ['<svg class="chart" role="img" viewBox="0 0 ' + CHART_W + ' ' + CHART_H +
+            '" preserveAspectRatio="xMidYMid meet" aria-label="' + esc(opts.caption) + '">'];
+        for (var g = 0; g < 5; g += 1) {
+            var level = yLow + ((yHigh - yLow) * g) / 4;
+            var y = yOf(level);
+            svg.push('<line class="grid" x1="' + CHART_LEFT + '" x2="' + (CHART_W - CHART_RIGHT) + '" y1="' +
+                y.toFixed(1) + '" y2="' + y.toFixed(1) + '"></line>');
+            svg.push('<text x="' + (CHART_LEFT - 8) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end">' +
+                opts.fmt(level) + '</text>');
+        }
+        svg.push('<line class="axis" x1="' + CHART_LEFT + '" x2="' + CHART_LEFT + '" y1="' + CHART_TOP + '" y2="' +
+            (CHART_H - CHART_BOTTOM) + '"></line>');
+        svg.push('<line class="axis" x1="' + CHART_LEFT + '" x2="' + (CHART_W - CHART_RIGHT) + '" y1="' +
+            (CHART_H - CHART_BOTTOM) + '" y2="' + (CHART_H - CHART_BOTTOM) + '"></line>');
+        cats.forEach(function (name, i) {
+            svg.push('<text x="' + xOf(i).toFixed(1) + '" y="' + (CHART_H - 22) + '" text-anchor="middle">' +
+                esc(name) + '</text>');
+        });
+        var path = values.map(function (v, i) {
+            return (i === 0 ? 'M ' : 'L ') + xOf(i).toFixed(1) + ' ' + yOf(v).toFixed(1);
+        }).join(' ');
+        svg.push('<path d="' + path + '" fill="none" stroke="var(--accent)" stroke-width="2.2" ' +
+            'vector-effect="non-scaling-stroke"></path>');
+        values.forEach(function (v, i) {
+            svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
+                '" r="2.8" fill="var(--accent)"></circle>');
+        });
+        svg.push('</svg>');
+        return svg.join('');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Dialogs.                                                          */
+    /* ---------------------------------------------------------------- */
+
+    function form() {
+        if (S.form) { return S.form; }
+        var b = S.dlg === 'edit' ? bp(S.bp) : (S.dlg === 'copy' ? bp(S.bp) : null);
+        if (S.dlg === 'copy' && b) {
+            S.form = { cur: '', idx: '', role: '', disc: b.disc, interp: b.interp, dc: b.dc, conv: b.conv, split: b.split };
+        } else if (b) {
+            S.form = { cur: b.cur, idx: b.idx, role: b.role, disc: b.disc, interp: b.interp, dc: b.dc, conv: b.conv, split: b.split };
+        } else {
+            S.form = { cur: '', idx: '', role: 'FUNDING', disc: '', interp: 'LOG_LINEAR_DISCOUNT', dc: 'A360', conv: 'RATES_SPOT_FORWARD', split: '' };
+        }
+        return S.form;
+    }
+
+    function dialogSurface() {
+        if (!S.dlg) { return ''; }
+        var f = form();
+        if (S.dlg === 'pillar') { return pillarDialog(); }
+        if (S.dlg === 'pillar-delete') { return pillarDeleteDialog(); }
+        if (S.dlg === 'delete') { return deleteDialog(); }
+        return recordDialog(f);
+    }
+
+    function dialogShell(title, sub, body, foot) {
+        return '<div class="scrim" data-act="scrim"><div class="dlg" role="dialog" aria-modal="true" aria-label="' +
+            esc(title) + '"><h2>' + esc(title) + '</h2><p class="sub">' + sub + '</p>' + body + '<div class="dlgfoot">' +
+            foot + '</div></div></div>';
+    }
+
+    function recordDialog(f) {
+        var b = S.dlg === 'edit' || S.dlg === 'copy' ? bp(S.bp) : null;
+        var title = S.dlg === 'edit' ? 'Edit ' + b.code : (S.dlg === 'copy' ? 'Copy ' + b.code : 'Add a curve blueprint');
+        var sub = S.dlg === 'edit' ? 'Loaded <b>' + esc(relTime(b.at)) + '</b>, at version ' + b.version + '.' :
+            (S.dlg === 'copy' ? 'Copies the conventions and the <b>' + b.pillars.length + ' pillars</b> of ' + esc(b.code) + '.' :
+                'A new blueprint is written with the reason <b>system.new_record</b>.');
+        var wide = (S.pick === 'currency' || S.pick === 'discount');
+
+        var body_ = '<div class="form">' +
+            pickField('Currency', 'currency', f.cur,
+                'The currency this curve\'s pillars are quoted in.') +
+            selectField('Index tenor', 'idx', choices(INDEX_TENORS), f.idx, 'The tenor of the index this curve stands for.', wide) +
+            selectField('Role', 'role', choices(ROLES), f.role, '') +
+            (f.role === 'PROJECTION' ? pickField('Discount curve', 'discount', f.disc, '') : '') +
+            selectField('Interpolation method', 'interp', choices(INTERPS), f.interp, '') +
+            selectField('Day count', 'dc', choices(DAYCOUNTS), f.dc, '') +
+            selectField('Tenor convention', 'conv', choices(CONVENTIONS), f.conv, 'How the pillars resolve their dates.') +
+            (f.interp === 'FLAT_FORWARD_THEN_LOG_LINEAR' ?
+                selectField('Split tenor', 'split', choices(TENORS), f.split || '1Y', 'The knot between the two interpolation segments.') : '') +
+            (S.dlg === 'copy' ? '<p class="note">The copy is a new record with its own pillars. Choose the currency, the index tenor and the role: they are what make it another curve.</p>' : '') +
+            (S.dlg === 'add' ? '<p class="note">The output series is minted from the currency, the index tenor and the role, so it is not asked for here.</p>' : '') +
+            (S.pick ? pickerPanel() : '') +
+            '</div>';
+
+        var foot = '<span class="faint">' + (S.dlg === 'edit' ? 'The write claims version ' + b.version + '.' : '') + '</span>' +
+            '<span class="ml-auto"></span>' +
+            '<button class="btn ghost" data-act="closedlg">Cancel</button>' +
+            '<button class="btn primary" data-act="save">' + (S.dlg === 'edit' ? 'Save' : 'Add') + '</button>';
+        return dialogShell(title, sub, body_, foot);
+    }
+
+    function selectField(label, id, options, value, means, wide) {
+        return '<div class="field' + (wide ? ' wide' : '') + '"><span class="lbl">' + esc(label) + '</span>' +
+            select('form:' + id, options, value) +
+            (means ? '<p class="hint">' + esc(means) + '</p>' : '') + '</div>';
+    }
+
+    function pickField(label, picker, value, means) {
+        return '<div class="field"><span class="lbl">' + esc(label) + '</span>' +
+            '<span class="sel"><button class="sel-trigger" data-act="openpick" data-arg="' + picker +
+            '" aria-haspopup="listbox" aria-expanded="' + (S.pick === picker) + '"><span>' +
+            (value ? esc(value) : '<span class="faint">Choose…</span>') + '</span><span aria-hidden="true">▾</span>' +
+            '</button></span>' +
+            (means ? '<p class="hint">' + esc(means) + '</p>' : '') + '</div>';
+    }
+
+    function pickerPanel() {
+        var options = [];
+        if (S.pick === 'currency') {
+            options = CUR.map(function (c) { return { v: c, t: c, why: 'currency' }; });
+        } else {
+            options = BPS.filter(function (x) {
+                return x.role === 'FUNDING' && (!form().cur || x.cur === form().cur);
+            }).map(function (x) { return { v: x.code, t: x.code, why: x.cur + ' · ' + x.interp }; });
+        }
+        var q = S.pickq.toLowerCase();
+        options = options.filter(function (o) { return (o.t + ' ' + o.why).toLowerCase().indexOf(q) >= 0; });
+        return '<div class="picker wide"><input type="text" data-input="pickq" placeholder="Search" value="' +
+            esc(S.pickq) + '" aria-label="Search"><ul>' +
+            (options.length ? options.map(function (o) {
+                return '<li data-act="pickval" data-arg="' + S.pick + ':' + esc(o.v) + '">' +
+                    '<span class="key">' + esc(o.t) + '</span><span class="why">' + esc(o.why) + '</span></li>';
+            }).join('') : '<li class="faint">Nothing matches.</li>') + '</ul>' +
+            '<p class="hint">' + (S.pick === 'discount' ?
+                'The funding blueprints of the currency you chose. A projection discounts off one of them.' :
+                'A blueprint is quoted in one currency.') + '</p></div>';
+    }
+
+    function pillarDialog() {
+        var body_ = '<div class="form">' +
+            selectField('Start tenor', 'start', choices(TENORS), 'SPOT', 'When the rate period begins.') +
+            selectField('End tenor', 'end', choices(TENORS), '1M', 'When it matures.') +
+            selectField('Curve role', 'crole', choices(CURVE_ROLES), 'DEPOSIT', 'What prices the instrument.') +
+            '<p class="note">The sequence follows the end tenor, so the row lands where it matures. A DEPOSIT starts at SPOT, because a deposit starts today.</p>' +
+            '</div>';
+        var foot = '<button class="btn ghost" data-act="closedlg">Cancel</button>' +
+            '<span class="ml-auto"></span><button class="btn primary" data-act="save">Add</button>';
+        return dialogShell('Add a pillar', 'One instrument\'s date range, on ' + esc(S.bp) + '.', body_, foot);
+    }
+
+    function pillarDeleteDialog() {
+        var body_ = '<p>A pillar is a part of this blueprint. Its versions go with it, and the blueprint keeps ' +
+            'its own history.</p><p class="hint">The reason applies to the removal.</p>';
+        return dialogShell('Delete pillar 9?', '20Y to 30Y, SWAP.', body_,
+            '<button class="btn ghost" data-act="closedlg">Cancel</button>' +
+            '<span class="ml-auto"></span><button class="btn" data-act="closedlg">Delete</button>');
+    }
+
+    function deleteDialog() {
+        var b = bp(S.bp);
+        if (!b) { return ''; }
+        if (b.usedBy.length) {
+            var body_ = '<div class="notice warn"><b>This blueprint cannot be deleted.</b> ' +
+                esc(b.usedBy.join(', ')) + ' names it as the discount curve. A projection that discounts off it ' +
+                'would be left pointing at nothing.</div>' +
+                '<p>The server refuses the delete while a projection names this blueprint. Edit the projection first, ' +
+                'or delete it.</p>';
+            return dialogShell('Delete ' + b.code + '?', 'The record is in use.', body_,
+                '<button class="btn ghost" data-act="closedlg">Cancel</button><span class="ml-auto"></span>' +
+                '<button class="btn" data-act="open" data-arg="' + esc(b.usedBy[0]) + '">Open ' + esc(b.usedBy[0]) + '</button>');
+        }
+        var body2 = '<p>Its ' + b.pillars.length + ' pillars are deleted first, with the same reason. ' +
+            'The output series and the points already published into it stay.</p>' +
+            '<p>' + (setsOf(b.code).length ? 'Its ' + setsOf(b.code).length + ' published set' +
+                (setsOf(b.code).length === 1 ? '' : 's') + ' keep' + (setsOf(b.code).length === 1 ? 's' : '') +
+                ' its history and name a blueprint that no longer exists.' :
+                'Nothing was published from it, so no set names it.') + '</p>' +
+            '<p class="hint">A versioned record keeps its history; the history is not readable after the delete.</p>';
+        return dialogShell('Delete ' + b.code + '?', 'This cannot be undone from this screen.', body2,
+            '<button class="btn ghost" data-act="closedlg">Cancel</button>' +
+            '<span class="ml-auto"></span><button class="btn" data-act="remove">Delete</button>');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The URL is the state, so a link reopens what the person saw.       */
+    /* ---------------------------------------------------------------- */
+
+    function sync() {
+        var p = new URLSearchParams();
+        if (S.bp) { p.set('bp', S.bp); }
+        if (S.bp && S.tab !== 'details') { p.set('tab', S.tab); }
+        if (S.state) { p.set('state', S.state); }
+        if (S.check) { p.set('check', S.check); }
+        if (S.notrun) { p.set('check', 'notrun'); }
+        if (S.asof) { p.set('asof', S.asof); }
+        if (S.dlg) { p.set('dlg', S.dlg); }
+        if (S.pick) { p.set('pick', S.pick); }
+        if (S.q) { p.set('q', S.q); }
+        if (S.fcur !== 'all') { p.set('fcur', S.fcur); }
+        if (S.frole !== 'all') { p.set('frole', S.frole); }
+        if (S.page) { p.set('page', String(S.page)); }
+        if (S.size !== 15) { p.set('size', String(S.size)); }
+        if (S.sort !== 'code') { p.set('sort', S.sort); }
+        if (S.dir !== 1) { p.set('dir', String(S.dir)); }
+        if (document.body.classList.contains('nogaps')) { p.set('gaps', '0'); }
+        history.replaceState(null, '', p.toString() ? '?' + p.toString() : location.pathname);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The bar.                                                          */
+    /* ---------------------------------------------------------------- */
+
+    function bar() {
+        var out = '';
+        var onRecord = S.bp && TABS.indexOf(S.tab) >= 0;
+        out += '<span class="label">Screen</span>' +
+            '<button data-act="list" class="' + (!S.bp ? 'on' : '') + '">List</button>';
+        out += '<span class="sep">|</span><span class="label">Record</span>' +
+            BPS.map(function (b) {
+                return '<button data-act="open" data-arg="' + esc(b.code) + '" class="' +
+                    (S.bp === b.code ? 'on' : '') + '">' + esc(b.code) + '</button>';
+            }).join('');
+        if (onRecord) {
+            out += '<span class="sep">|</span><span class="label">Tab</span>' +
+                TABS.map(function (t) {
+                    return '<button data-act="tab" data-arg="' + t + '" class="' + (S.tab === t ? 'on' : '') + '">' +
+                        t + '</button>';
+                }).join('');
+            if (S.tab === 'check' || S.check) {
+                out += '<span class="sep">|</span><span class="label">Check</span>' +
+                    [['run', 'passes'], ['nopillar', 'no pillars'], ['miss', 'a missing rate'], ['notrun', 'not run']]
+                    .map(function (s) {
+                        var on = (S.check || (S.notrun ? 'notrun' : 'run')) === s[0];
+                        return '<button data-act="cstate" data-arg="' + s[0] + '" class="' + (on ? 'on' : '') + '">' +
+                            s[1] + '</button>';
+                    }).join('');
+            }
+        }
+        out += '<span class="sep">|</span><span class="label">States</span>' +
+            [['rows', 'rows'], ['none', 'no records'], ['nomatch', 'no match'], ['loading', 'loading'], ['error', 'error'], ['removed', 'after a delete']]
+            .map(function (s) {
+                return '<button data-act="lstate" data-arg="' + s[0] + '" class="' +
+                    ((S.state || 'rows') === s[0] ? 'on' : '') + '">' + s[1] + '</button>';
+            }).join('');
+        out += '<span class="sep">|</span><span class="label">Dialog</span>' +
+            [['add', 'Add'], ['edit', 'Edit'], ['copy', 'Copy'], ['pillar', 'Pillar'], ['delete', 'Delete']]
+            .map(function (d) {
+                return '<button data-act="dlg" data-arg="' + d[0] + '" class="' + (S.dlg === d[0] ? 'on' : '') + '">' +
+                    d[1] + '</button>';
+            }).join('');
+        out += '<span class="sep">|</span><button data-act="gaps">' +
+            (document.body.classList.contains('nogaps') ? 'Show gaps' : 'Hide gaps') + '</button>';
+        return out;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Render and act.                                                   */
+    /* ---------------------------------------------------------------- */
+
+    function render() {
+        if (S.bp && !bp(S.bp)) { S.bp = ''; }
+        if (TABS.indexOf(S.tab) < 0) { S.tab = 'details'; }
+        if (['rows', 'none', 'nomatch', 'loading', 'error', 'removed'].indexOf(S.state) < 0) { S.state = 'rows'; }
+        document.getElementById('shell').innerHTML = shell();
+        var body = S.bp ? recordSurface() : listSurface();
+        document.getElementById('app').innerHTML = body + dialogSurface();
+        document.getElementById('bar').innerHTML = bar();
+        document.getElementById('note').textContent = 'Prototype · mock data · reads no server · ' +
+            (S.bp ? S.bp + ' · ' + S.tab : 'list · ' + (S.state || 'rows')) + (S.dlg ? ' · ' + S.dlg : '');
+        sync();
+        wire();
+    }
+
+    function wire() {
+        var qi = document.querySelector('[data-input=q]');
+        if (qi) {
+            qi.addEventListener('input', function () {
+                S.q = qi.value;
+                var pos = qi.selectionStart;
+                render();
+                var n = document.querySelector('[data-input=q]');
+                n.focus();
+                n.setSelectionRange(pos, pos);
+            });
+        }
+        var pi = document.querySelector('[data-input=pickq]');
+        if (pi) {
+            pi.addEventListener('input', function () {
+                S.pickq = pi.value;
+                var pos = pi.selectionStart;
+                render();
+                var n = document.querySelector('[data-input=pickq]');
+                if (n) { n.focus(); n.setSelectionRange(pos, pos); }
+            });
+        }
+    }
+
+    function go(next) {
+        Object.keys(next).forEach(function (k) { S[k] = next[k]; });
+        S.menu = '';
+        render();
+    }
+
+    function openRecord(code) {
+        go({ bp: code, tab: 'details', state: 'rows', dlg: '', pick: '', check: '', notrun: false });
+    }
+
+    document.addEventListener('click', function (ev) {
+        var el = ev.target.closest('[data-act]');
+        if (!el) {
+            if (S.menu) { S.menu = ''; render(); }
+            return;
+        }
+        var act = el.getAttribute('data-act');
+        var arg = el.getAttribute('data-arg');
+        ev.preventDefault();
+
+        if (act === 'scrim' && ev.target === el) { go({ dlg: '', pick: '' }); return; }
+        if (act === 'list') { go({ bp: '', dlg: '', pick: '', tab: 'details' }); return; }
+        if (act === 'open') { openRecord(arg); return; }
+        if (act === 'tab') { go({ tab: arg }); return; }
+        if (act === 'lstate') { go({ state: arg, bp: '', dlg: '' }); return; }
+        if (act === 'cstate') { go({ check: arg === 'run' ? '' : arg, notrun: arg === 'notrun', tab: 'check' }); return; }
+        if (act === 'refresh' || act === 'retry') { go({ state: 'rows' }); return; }
+        if (act === 'clearq') { go({ q: '', fcur: 'all', frole: 'all', state: 'rows' }); return; }
+        if (act === 'run') { go({ check: '', notrun: false }); return; }
+        if (act === 'asof') { go({ asof: '2026-10-06T16:00:00Z', check: '' }); return; }
+        if (act === 'dlg') { go({ dlg: arg, pick: '', form: null }); return; }
+        if (act === 'closedlg') { go({ dlg: '', pick: '' }); return; }
+        if (act === 'remove') {
+            S.removed = S.bp;
+            go({ bp: '', dlg: '', state: 'removed', check: '', notrun: false });
+            return;
+        }
+        if (act === 'openpick') { go({ pick: arg }); return; }
+        if (act === 'pickval') {
+            var parts = arg.split(':');
+            var f = form();
+            if (parts[0] === 'currency') { f.cur = parts[1]; }
+            if (parts[0] === 'discount') { f.disc = parts[1]; }
+            go({ pick: '' });
+            return;
+        }
+        if (act === 'menu') {
+            S.menu = S.menu === arg ? '' : arg;
+            render();
+            return;
+        }
+        if (act === 'pick') {
+            var kv = arg.split(':');
+            var id = kv[0];
+            var value = kv[1];
+            var fm = form();
+            if (id.indexOf('form:') === 0) {
+                fm[id.slice(5)] = value;
+                if (id === 'form:role' && value === 'FUNDING') { fm.disc = ''; }
+            } else if (id === 'fcur') { S.fcur = value; S.state = 'rows'; }
+            else if (id === 'frole') { S.frole = value; S.state = 'rows'; }
+            go({});
+            return;
+        }
+        if (act === 'save') {
+            var code = form().cur && form().idx ? form().cur + '-' + (form().idx === '1D' ? 'SOFR' : 'EURIBOR') + '-' + form().idx : '';
+            go({ dlg: '', pick: '', bp: code && bp(code) ? code : 'USD-SOFR-1D', tab: 'pillars' });
+            return;
+        }
+        if (act === 'sort') {
+            if (S.sort === arg) { S.dir = -S.dir; } else { S.sort = arg; S.dir = 1; }
+            render();
+            return;
+        }
+        if (act === 'page') { return; }
+        if (act === 'sets-open') { return; }
+        if (act === 'pillar-hist') { go({ tab: 'history' }); return; }
+        if (act === 'pillar-edit') { go({ dlg: 'pillar' }); return; }
+        if (act === 'pillar-delete') { go({ dlg: 'pillar-delete' }); return; }
+        if (act === 'series') { return; }
+        if (act === 'gaps') {
+            document.body.classList.toggle('nogaps');
+            render();
+            return;
+        }
+    });
+
+    if (document.body.classList.contains('nogaps') || new URLSearchParams(location.search).get('gaps') === '0') {
+        document.body.classList.add('nogaps');
+    }
+
+    render();
+})();
+</script>
+</body>
+</html>

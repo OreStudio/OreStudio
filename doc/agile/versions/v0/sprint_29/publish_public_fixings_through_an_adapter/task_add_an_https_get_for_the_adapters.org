@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-an-https-get-for-the-adapters
+#+pr: 3993
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ first, uses one client library, =ores.http.client=, beside the server parts of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -45,9 +45,14 @@ first, uses one client library, =ores.http.client=, beside the server parts of
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Scaffold =ores.http.client= as a part of the =ores.http= composite, through codegen,
+   with its OpenSSL and Boost.URL links declared in its overview.
+2. Write =transport=, the interface a caller holds, and =beast_transport=, a GET over
+   http or https on Boost.Beast, with certificate and host name checks, one deadline
+   for the whole request and a body limit.
+3. Test against a server in the test process, with a certificate made by OpenSSL at
+   test time, so no test needs the network; and once, hidden, against the hosted
+   Frankfurter.
 
 * Measurements
 
@@ -65,6 +70,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- Rescoped on 2026-10-28 at the user's request: a library, =ores.http.client=, on Boost,
+  rather than a GET inside the adapter.
+- Beast holds a stream's deadline only for an asynchronous operation. The first version
+  used synchronous calls, and a slow server held the request past its timeout; the test
+  caught it. Every step is now asynchronous, run in turn on the request's own context.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -80,12 +91,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3993][#3993]] | [http] Add ores.http.client, a GET over TLS on Boost.Beast |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The host name lookup is outside the deadline | transport.cpp | Accept | Resolved asynchronously; a timer on the same deadline cancels it. |
+| 2 | An IPv6 literal keeps its brackets | transport.cpp | Accept | Resolve and verify on host_address; the Host header keeps the brackets; test added. |
+| 3 | SNI is sent for an address | transport.cpp | Accept | Sent only when the host is a name. |
+| 4 | Userinfo is not masked | transport.cpp | Accept | User and password masked; test added. |
+| 5 | Fragments and path keys are not masked | transport.hpp | Accept | Scope stated on redacted. |
+| 6 | The system trust store on Windows and macOS | transport.hpp | Accept | Documented: name a PEM file there. |
+| 7 | The handshake mapping duplicates kind_of | transport.cpp | Accept | Uses kind_of alone. |
+| 8 | The header size limit | transport.hpp | Note | Beast's default of 8 KB is enough for the APIs in view. |
+| 9 | Cleanup errors are ignored | transport.cpp | Accept | Commented. |
+| 10 | Any status is a response | transport.hpp | Accept | Stated; the adapter checks the status. |
 
 * Result
+
+=ores.http.client= is a new part of the =ores.http= composite, the way the system reads
+an outside HTTP API. =transport= is the interface a caller holds; =beast_transport= is a
+GET over http or https on Boost.Beast and Boost.Asio, with OpenSSL for TLS. Over https
+it trusts the system's authorities, or a PEM file given, and checks the host name. One
+deadline bounds the whole request, and a body limit bounds the answer. A failure says
+whether the address was bad, the network or TLS failed, the deadline passed or the body
+was too large, and names the address with any key in its query masked; =redacted= masks
+a URL for a log or a store.
+
+Evidence: =ores.http.client.tests= passes 9 of 9 against a server in the test process,
+with a certificate made at test time: a plain GET, a body over the limit, a timeout
+within the deadline, a trusted certificate, an untrusted one refused, a trusted one for
+another host refused, bad addresses, and masked secrets in the query and in a failure.
+A hidden live test read =https://api.frankfurter.dev/v2/providers= over the system's
+trust store and found the ECB.
+

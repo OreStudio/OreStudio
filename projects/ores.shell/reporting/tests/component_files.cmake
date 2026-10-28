@@ -28,6 +28,7 @@ set(files
     "configuration_parameter_commands_tests.cpp"
     "configuration_type_commands_tests.cpp"
     "engine_settings_building_commands_tests.cpp"
+    "engine_settings_change_commands_tests.cpp"
     "engine_settings_commands_tests.cpp"
     "engine_settings_execution_commands_tests.cpp"
     "engine_settings_fixings_commands_tests.cpp"

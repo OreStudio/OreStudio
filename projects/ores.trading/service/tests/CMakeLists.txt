@@ -48,6 +48,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.utility.lib
+        ores.refdata.core.lib
         ores.storage.core.lib
         ores.refdata.core.lib
         ores.testing.lib

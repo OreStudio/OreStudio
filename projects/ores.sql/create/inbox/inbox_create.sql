@@ -35,6 +35,9 @@
 \ir ./inbox_approval_decision_types_notify_trigger_create.sql
 \ir ./inbox_approval_parts_create.sql
 \ir ./inbox_approval_parts_notify_trigger_create.sql
+
+-- The parts a kind of request always names
+\ir ./inbox_approval_kind_part_create.sql
 \ir ./inbox_approval_policies_create.sql
 \ir ./inbox_approval_policies_notify_trigger_create.sql
 \ir ./inbox_hold_reasons_create.sql

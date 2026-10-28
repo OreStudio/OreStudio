@@ -142,8 +142,8 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id> "
-        "<trigger_id> <output_message> <output_storage_key> <priced_at> <price_note> <reason> "
-        "<commentary>");
+        "<trigger_id> <output_message> <output_storage_key> <priced_at> <price_note> "
+        "<engine_settings_id> <engine_settings_version> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +151,8 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <name> <description> <definition_id> <kind> <run_grant_id> <fsm_state_id> "
-        "<trigger_id> <output_message> <output_storage_key> <priced_at> <price_note> <reason> "
-        "<commentary> [--version <n>]");
+        "<trigger_id> <output_message> <output_storage_key> <priced_at> <price_note> "
+        "<engine_settings_id> <engine_settings_version> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +161,7 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
         },
         "put-many --count <n> <id> <name> <description> <definition_id> <kind> <run_grant_id> "
         "<fsm_state_id> <trigger_id> <output_message> <output_storage_key> <priced_at> "
-        "<price_note> <reason> <commentary>");
+        "<price_note> <engine_settings_id> <engine_settings_version> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void report_instance_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -382,6 +382,11 @@ void report_instance_commands::process_add(std::ostream& out,
             req.change.write.priced_at, parsed->positionals[next++], "priced_at");
         report_instance_read_token(
             req.change.write.price_note, parsed->positionals[next++], "price_note");
+        report_instance_read_token(
+            req.change.write.engine_settings_id, parsed->positionals[next++], "engine_settings_id");
+        report_instance_read_token(req.change.write.engine_settings_version,
+                                   parsed->positionals[next++],
+                                   "engine_settings_version");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -424,8 +429,8 @@ void report_instance_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -450,6 +455,11 @@ void report_instance_commands::process_set(std::ostream& out,
             req.change.write.priced_at, parsed->positionals[next++], "priced_at");
         report_instance_read_token(
             req.change.write.price_note, parsed->positionals[next++], "price_note");
+        report_instance_read_token(
+            req.change.write.engine_settings_id, parsed->positionals[next++], "engine_settings_id");
+        report_instance_read_token(req.change.write.engine_settings_version,
+                                   parsed->positionals[next++],
+                                   "engine_settings_version");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -504,8 +514,8 @@ void report_instance_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -532,6 +542,11 @@ void report_instance_commands::process_put_many(std::ostream& out,
                 change.write.priced_at, parsed->positionals[next++], "priced_at");
             report_instance_read_token(
                 change.write.price_note, parsed->positionals[next++], "price_note");
+            report_instance_read_token(
+                change.write.engine_settings_id, parsed->positionals[next++], "engine_settings_id");
+            report_instance_read_token(change.write.engine_settings_version,
+                                       parsed->positionals[next++],
+                                       "engine_settings_version");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

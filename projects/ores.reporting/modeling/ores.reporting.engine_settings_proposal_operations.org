@@ -1,0 +1,338 @@
+:PROPERTIES:
+:ID: 5C7A2E41-9B3D-4F68-A0E5-2D8C6F1B4A97
+:END:
+#+title: ores.reporting.engine_settings_proposal_operations
+#+description: Codegen operation model for proposing a change to a number-changing group of engine run settings -- a raise that holds the values in an approval request, the lines a decider reads, and the checks they run again -- rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: reporting
+#+subcomponent: api
+#+entity_singular: engine_settings_proposal_operations
+#+namespace: ores::reporting::messaging
++#+brief: Propose and apply a change to a number-changing group of engine run settings.
++#+filetags: :model:operation:reporting:
++#+created: 2026-10-28
++#+updated: 2026-10-28
+
+A number-changing group of engine run settings never changes in place. A write
+to such a group is a proposal: the values are held against an approval request,
+and the version in force keeps the rows a run reads until the request is signed
+off. An operational group, such as execution, still lands directly through the
+group's own entity operation.
+
+The operations here are the proposal's own lifecycle. They are not entity
+verbs, because a proposal is not a write of a part: raising one writes no part,
+and the apply is the workflow step the kind names, not an operation a caller
+takes.
+
+The handler is hand-written beside this model, because each operation applies
+the rules of the approval framework.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** engine_settings_value_change
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One setting of a group beside the value in force.
+ *
+ * The values are text whatever the setting's kind, because a screen draws them
+ * and does not compute with them. An empty before or after is the engine
+ * default for that setting.
+ */
+#+end_src
+
+*** column_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** ore_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** before
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** after
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** changed
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+** engine_settings_change_line
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One proposed write to a group, as a decider reads it: the group, the
+ * configuration it belongs to, the version the maker read, and each setting
+ * beside the value in force.
+ */
+#+end_src
+
+*** line_no
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** group_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** engine_settings_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** base_version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** applied
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<engine_settings_value_change>
+:END:
+
+** engine_settings_value
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One value a person proposes for one setting of a group.
+ *
+ * The value is the setting's own words: true or false for a flag, its digits
+ * for a whole, and one of the words its setting names for a choice. An empty
+ * value unsets the setting, which is the engine default.
+ */
+#+end_src
+
+*** setting_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** text_value
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+** raise_engine_settings_change_request
+:PROPERTIES:
+:subject:  reporting.v1.ops.raise_engine_settings_change
+:response: raise_engine_settings_change_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Holds a proposed change to a group in an approval request.
+ *
+ * A configuration that no report binds is a draft, and its groups change in
+ * place, so a proposal here is refused and the caller writes the group
+ * directly. A group that changes no numbers is refused the same way, because
+ * the execution group is operational and lands directly.
+ *
+ * The proposal names the parts its group needs: the kind names one part for
+ * each number-changing group, and the request takes the part of the group the
+ * proposal writes.
+ */
+#+end_src
+
+*** engine_settings_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** group_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the group's row the person read, or zero for a group
+ * the configuration had not set.
+ */
+#+end_src
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<engine_settings_value>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The values proposed for the group, one per setting it holds.
+ *
+ * Every setting of the group travels, so the proposal states the whole group
+ * and the apply writes it whole. A setting the person left alone travels with
+ * the value in force, which is what makes the proposal a proposal of the group
+ * rather than of the settings that changed.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the person asks, in their words.
+ */
+#+end_src
+
+** raise_engine_settings_change_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The request the proposal was raised as, empty when none was.
+ */
+#+end_src
+
+** get_engine_settings_changes_request
+:PROPERTIES:
+:subject:  reporting.v1.ops.get_engine_settings_changes
+:response: get_engine_settings_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the groups a request proposes to change, each beside the value
+ * in force.
+ *
+ * Answered to the person who raised the request, to whoever may decide its
+ * kind, and to whoever may read the tenant's requests. Answered as not found
+ * otherwise, as opening the request is.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_engine_settings_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** changes
+:PROPERTIES:
+:cpp_type: std::vector<engine_settings_change_line>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The proposed groups, in the order the proposal holds them.
+ */
+#+end_src
+
+** recheck_engine_settings_changes_request
+:PROPERTIES:
+:subject:  reporting.v1.ops.recheck_engine_settings_changes
+:response: recheck_engine_settings_changes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the proposal against the version in force and writes nothing.
+ *
+ * The group may have moved since the proposal was raised, so the checks a
+ * decider reads are read now. Answered to the same callers as the lines are.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** recheck_engine_settings_changes_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** changes
+:PROPERTIES:
+:cpp_type: std::vector<engine_settings_change_line>
+:END:
+
+*** refusals
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One refusal for each group, in the same order as the changes, empty
+ * when the apply would stand.
+ */
+#+end_src
+
+*** part_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+* See also
+
+- [[id:E22F6CCB-FD4D-475F-861D-FD0AB746E76D][ores.reporting.engine_settings_change]] — the lines a proposal holds.
+- [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] — the request lifecycle that decides a proposal.

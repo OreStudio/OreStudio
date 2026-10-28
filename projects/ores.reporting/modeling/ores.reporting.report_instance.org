@@ -258,6 +258,38 @@ it asked for and the date the gathered data ends at when the two differ.
 std::string{}
 #+end_src
 
+** engine_settings_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The engine run settings this run read, copied from the definition's binding when
+the run was admitted. The engine run settings are a configuration of their own,
+owned by the reporting component, so this column is not a checked foreign key. A
+run whose definition binds none has no row and names none.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** engine_settings_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The version of the engine run settings the run read, so a run keeps the settings
+it ran with whatever a later change makes official. A proposal that waits moves
+no version, so this number names the settings a person may reproduce the numbers
+from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 6662CB60-C858-53D0-B464-7161194CAAD9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the engine_settings_changes commands from the shell?
+#+description: Every command the engine_settings_changes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:engine_settings_changes:
+
+This file documents the engine_settings_changes resource at the shell, one section per command. Every command is a subcommand of =engine_settings_changes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D1C807E9-5741-5463-9DED-AA601F7AAC16
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes.list=.
+
+#+name: engine_settings_changes-list
+#+begin_src ores-shell :tangle engine_settings_changes-list.ores :exports none
+engine_settings_changes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 99762E50-D03D-5201-840C-A646B7941695
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes get <id>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes.get=.
+
+#+name: engine_settings_changes-get
+#+begin_src ores-shell :tangle engine_settings_changes-get.ores :exports none
+engine_settings_changes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D8066EB2-E749-5EA8-B3AC-41F1B274144C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes.get_many=.
+
+#+name: engine_settings_changes-get-many
+#+begin_src ores-shell :tangle engine_settings_changes-get-many.ores :exports none
+engine_settings_changes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: 4FBE32DE-5AE5-56FB-B238-0571BC20B800
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes.list_by_request_id=.
+
+#+name: engine_settings_changes-by-request-id
+#+begin_src ores-shell :tangle engine_settings_changes-by-request-id.ores :exports none
+engine_settings_changes by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-engine-settings-id=
+:PROPERTIES:
+:ID: 92C3C759-5B34-5629-9DC8-21AD9F520EC8
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes by-engine-settings-id <engine_settings_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes.list_by_engine_settings_id=.
+
+#+name: engine_settings_changes-by-engine-settings-id
+#+begin_src ores-shell :tangle engine_settings_changes-by-engine-settings-id.ores :exports none
+engine_settings_changes by-engine-settings-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 5EE381EF-405C-50A3-B938-003B1C9FADC0
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes_versions.list=.
+
+#+name: engine_settings_changes-versions
+#+begin_src ores-shell :tangle engine_settings_changes-versions.ores :exports none
+engine_settings_changes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A8C53B11-2A11-5613-B1CA-6EA8C7DA638A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_changes version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_changes_versions.get=.
+
+#+name: engine_settings_changes-version
+#+begin_src ores-shell :tangle engine_settings_changes-version.ores :exports none
+engine_settings_changes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_kind_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
@@ -29,6 +30,7 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <tuple>
 #include <chrono>
 #include <functional>
 #include <stdexcept>
@@ -312,6 +314,31 @@ std::optional<domain::approval_part> approval_lifecycle::part(const std::string&
 std::vector<domain::approval_part> approval_lifecycle::parts() {
     repository::approval_part_repository repo;
     return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
+}
+
+std::vector<std::string> approval_lifecycle::part_codes_of_kind(const std::string& kind_code) {
+    // The kind and the parts it names are system tenant lookups, and the rows
+    // carry the system tenant, so they are read under that tenant. The parts
+    // are read with them because their answer order is what orders the codes.
+    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
+    repository::approval_kind_part_repository repo(system_ctx);
+    const auto named = repo.read_latest_by_kind(kind_code);
+
+    std::vector<domain::approval_part> parts;
+    for (const auto& row : named) {
+        if (auto found = part(row.part_code))
+            parts.push_back(std::move(*found));
+    }
+    std::ranges::sort(parts, [](const auto& a, const auto& b) {
+        return std::tie(a.answer_order, a.display_order, a.code) <
+               std::tie(b.answer_order, b.display_order, b.code);
+    });
+
+    std::vector<std::string> codes;
+    codes.reserve(parts.size());
+    for (const auto& p : parts)
+        codes.push_back(p.code);
+    return codes;
 }
 
 std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {

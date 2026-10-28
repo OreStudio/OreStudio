@@ -52,6 +52,8 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     "completed_at" timestamp with time zone null,
     "priced_at" timestamp with time zone null,
     "price_note" text null,
+    "engine_settings_id" uuid null,
+    "engine_settings_version" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

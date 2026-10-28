@@ -47,6 +47,13 @@
  * expire: a withdrawal nobody answers leaves a wrong set in use, so the ask must
  * stay visible rather than close in silence. It names no apply workflow either:
  * the market data service applies it through marketdata.v1.ops.withdraw_curve.
+ *
+ * An engine run settings change is decided by the parts the kind names, one for
+ * each number-changing group of settings, so the kind's own decide permission
+ * reaches none of its deciders and is the Market Risk one because that function
+ * owns the numbers. It names the apply workflow the reporting service registers,
+ * because a proposal nobody applies leaves the version in force as it was and
+ * the person who asked waiting.
  */
 
 \echo '--- Approval Kinds ---'
@@ -84,6 +91,11 @@ insert into ores_inbox_approval_kinds_tbl (
      'Operations is asked to release a live trade',
      'inbox::approvals:decide_operations',
      true, true, null, null, null, 1, 40,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
+    (ores_utility_system_tenant_id_fn(), 'reporting.engine_settings_change', 0, 'Engine run settings change',
+     'A person proposes a change to a group of engine run settings that moves the numbers a run computes',
+     'inbox::approvals:decide_market_risk',
+     true, false, 14, 'engine_settings_apply_workflow', 24, 1, 60,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

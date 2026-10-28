@@ -45,6 +45,8 @@ export interface ReportInstanceWrite {
     output_storage_key: string;
     priced_at: string | null;
     price_note: string;
+    engine_settings_id: string | null;
+    engine_settings_version: number | null;
 }
 
 export interface ReportInstanceChange {

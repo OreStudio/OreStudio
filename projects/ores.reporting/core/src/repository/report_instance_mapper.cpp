@@ -72,6 +72,11 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
     r.priced_at = v.priced_at.has_value() ? std::optional(timestamp_to_timepoint(*v.priced_at)) :
                                             std::nullopt;
     r.price_note = v.price_note.value_or("");
+    r.engine_settings_id =
+        v.engine_settings_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.engine_settings_id)) :
+            std::nullopt;
+    r.engine_settings_version = v.engine_settings_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -117,6 +122,10 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
                       std::optional(ores::platform::time::datetime::to_db_string(*v.priced_at)) :
                       std::nullopt;
     r.price_note = v.price_note.empty() ? std::nullopt : std::optional(v.price_note);
+    r.engine_settings_id = v.engine_settings_id.has_value() ?
+                               std::optional(boost::uuids::to_string(*v.engine_settings_id)) :
+                               std::nullopt;
+    r.engine_settings_version = v.engine_settings_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

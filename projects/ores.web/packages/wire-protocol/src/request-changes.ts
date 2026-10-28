@@ -25,6 +25,11 @@ import { OperationFailedError } from './errors.js';
 import type { InboxRequestView } from './inbox.js';
 import { resultEnvelopeSchema } from './operations.js';
 import {
+    subjects as engineSettingsProposalSubjects,
+    type GetEngineSettingsChangesRequest,
+    type RecheckEngineSettingsChangesRequest,
+} from './generated/reporting/protocol/engine_settings_proposal_operations_protocol.js';
+import {
     subjects as bookProposalSubjects,
     type GetBookChangesRequest,
     type PreviewBookChangesRequest,
@@ -141,6 +146,7 @@ export const bookRaiseViewSchema = bookPreviewViewSchema.extend({
 
 const BOOK_CHANGE_KIND = 'refdata.book_change';
 const ROLE_GRANT_KIND = 'iam.role_grant';
+const ENGINE_SETTINGS_CHANGE_KIND = 'reporting.engine_settings_change';
 
 const lineOutcomeSchema = z.object({
     line_no: z.int().nonnegative().default(0),
@@ -189,6 +195,39 @@ const raiseReplySchema = z.object({
     part_codes: z.array(z.string()).default([]),
 });
 
+const settingsChangesReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    changes: z
+        .array(
+            z.object({
+                line_no: z.int().nonnegative().default(0),
+                group_code: z.string().default(''),
+                engine_settings_id: z.string().default(''),
+                base_version: z.int().nonnegative().default(0),
+                applied: z.boolean().default(false),
+                fields: z
+                    .array(
+                        z.object({
+                            column_name: z.string().default(''),
+                            ore_name: z.string().default(''),
+                            before: z.string().default(''),
+                            after: z.string().default(''),
+                            changed: z.boolean().default(false),
+                        }),
+                    )
+                    .default([]),
+            }),
+        )
+        .default([]),
+});
+
+const settingsRecheckReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    changes: settingsChangesReplySchema.shape.changes,
+    refusals: z.array(z.string()).default([]),
+    part_codes: z.array(z.string()).default([]),
+});
+
 function ok(subject: string, result: z.infer<typeof resultEnvelopeSchema>): void {
     if (result.outcome !== 'ok') {
         throw new OperationFailedError(subject, result.message);
@@ -218,6 +257,28 @@ export async function readRequestChanges(
             ],
         }));
     }
+    if (request.kindCode === ENGINE_SETTINGS_CHANGE_KIND) {
+        const body: GetEngineSettingsChangesRequest = { request_id: request.id };
+        const subject = engineSettingsProposalSubjects.get_engine_settings_changes_request;
+        const reply = await caller.callAuthenticated(subject, body, settingsChangesReplySchema);
+        if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') return [];
+        ok(subject, reply.result);
+        return reply.changes.map((line) => ({
+            lineNo: line.line_no,
+            // The line names the group of settings it proposes, so a reader
+            // sees which section of the screen the change is about.
+            operation: line.group_code,
+            subjectId: line.engine_settings_id,
+            baseVersion: line.base_version,
+            applied: line.applied,
+            fields: line.fields.map((field) => ({
+                name: field.column_name,
+                before: field.before,
+                after: field.after,
+                changed: field.changed,
+            })),
+        }));
+    }
     if (request.kindCode !== BOOK_CHANGE_KIND) return [];
 
     const body: GetBookChangesRequest = { request_id: request.id };
@@ -245,6 +306,24 @@ export async function readRequestChecks(
     caller: AuthenticatedCaller,
     request: Pick<InboxRequestView, 'id' | 'kindCode'>,
 ): Promise<RequestChecks> {
+    if (request.kindCode === ENGINE_SETTINGS_CHANGE_KIND) {
+        const body: RecheckEngineSettingsChangesRequest = { request_id: request.id };
+        const subject = engineSettingsProposalSubjects.recheck_engine_settings_changes_request;
+        const reply = await caller.callAuthenticated(subject, body, settingsRecheckReplySchema);
+        if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') {
+            return { lines: [], partCodes: [] };
+        }
+        ok(subject, reply.result);
+        return {
+            lines: reply.changes.map((line, index) => ({
+                lineNo: line.line_no,
+                operation: line.group_code,
+                subjectId: line.engine_settings_id,
+                refusal: reply.refusals[index] ?? '',
+            })),
+            partCodes: reply.part_codes,
+        };
+    }
     if (request.kindCode !== BOOK_CHANGE_KIND) return { lines: [], partCodes: [] };
 
     const body: RecheckBookChangesRequest = { request_id: request.id };

@@ -499,6 +499,13 @@ function GroupTab({
         setCommentary('');
         setConflict(false);
     };
+    // The proposal this card raised, until the page is read again.
+    const [proposed, setProposed] = useState<string | null>(null);
+    // A group that changes the numbers, on a configuration a report binds, is
+    // proposed rather than saved: the version in force keeps the rows a run
+    // reads until the sign-off completes.
+    const governed = document.reports !== null && document.reports.length > 0;
+    const proposes = governed && group.changesNumbers;
     const save = useMutation({
         mutationFn: () => {
             if (draft === null) {
@@ -512,8 +519,11 @@ function GroupTab({
                 { reason_code: reason.code, commentary: commentary.trim() },
             );
         },
-        onSuccess: async () => {
+        onSuccess: async (result) => {
             markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
+            // A governed numbers-changing write changes nothing here: the
+            // approval decides it, so the card says what it waits on.
+            setProposed(result.proposal === null ? null : result.proposal.requestId);
             leave();
         },
         onError: (error) => setConflict(error instanceof ApiFailure && error.status === 409),
@@ -602,7 +612,7 @@ function GroupTab({
                             )
                         }
                     >
-                        {t('engineSettings.edit')}
+                        {proposes ? t('engineSettings.propose') : t('engineSettings.edit')}
                     </Button>
                 )}
             </div>
@@ -673,6 +683,14 @@ function GroupTab({
                             {t(problem.key, problem.params)}
                         </Notice>
                     ))}
+                    {proposed !== null && (
+                        <Notice tone="info">
+                            <span className="mr-2">{t('engineSettings.proposal.raised')}</span>
+                            <Link to={`/requests/${proposed}`}>
+                                {t('engineSettings.proposal.follow')}
+                            </Link>
+                        </Notice>
+                    )}
                     {save.isError && !conflict && (
                         <Notice tone="error">{save.error.message}</Notice>
                     )}
@@ -690,7 +708,7 @@ function GroupTab({
                             pending={save.isPending}
                             onClick={() => save.mutate()}
                         >
-                            {t('engineSettings.save')}
+                            {proposes ? t('engineSettings.propose') : t('engineSettings.save')}
                         </Button>
                         <Button variant="ghost" icon="cancel" onClick={leave}>
                             {t('common.cancel')}
@@ -1104,6 +1122,9 @@ function RevertDialog({
             : differenceOf(group, draftOf(group, part), values);
     const reason = useReason('amend', changes.length > 0);
     const [commentary, setCommentary] = useState('');
+    // A revert of a numbers-changing group follows the rule of the change it
+    // reverts, so it may itself be a proposal.
+    const [proposed, setProposed] = useState<string | null>(null);
     const missing = reason.needsCommentary && commentary.trim() === '';
     const revert = useMutation({
         mutationFn: () => {
@@ -1118,8 +1139,12 @@ function RevertDialog({
                 { reason_code: reason.code, commentary: commentary.trim() },
             );
         },
-        onSuccess: async () => {
+        onSuccess: async (result) => {
             markStale(queries, [engineSettingsKey(document.id), ['records', 'engine-settings']]);
+            if (result.proposal !== null) {
+                setProposed(result.proposal.requestId);
+                return;
+            }
             onClose();
         },
     });
@@ -1147,6 +1172,12 @@ function RevertDialog({
         >
             <div className="space-y-4">
                 <p className="text-sm text-ink-muted">{t('engineSettings.revert.lead')}</p>
+                {proposed !== null && (
+                    <Notice tone="info">
+                        <span className="mr-2">{t('engineSettings.proposal.raised')}</span>
+                        <Link to={`/requests/${proposed}`}>{t('engineSettings.proposal.follow')}</Link>
+                    </Notice>
+                )}
                 {group !== undefined && changes.length > 0 ? (
                     <ChangeList group={group} changes={changes} />
                 ) : (

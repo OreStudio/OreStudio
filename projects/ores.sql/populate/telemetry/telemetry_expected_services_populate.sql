@@ -224,6 +224,16 @@ on conflict (service_name) do update set
 
 insert into ores_telemetry_expected_services_tbl
     (service_name, replicas, display_name, description, service_account)
+values ('ores.marketdata.official', 1, 'Official Rates Adapter', 'Reads the daily rates central banks publish and sends them to the market data service as fixings.',
+        null)
+on conflict (service_name) do update set
+    replicas = excluded.replicas,
+    display_name = excluded.display_name,
+    description = excluded.description,
+    service_account = excluded.service_account;
+
+insert into ores_telemetry_expected_services_tbl
+    (service_name, replicas, display_name, description, service_account)
 values ('ores.compute.wrapper', 5, 'Compute Wrapper', 'Runs work units from the compute grid on one node and reports their results and logs.',
         :'compute_wrapper_user')
 on conflict (service_name) do update set

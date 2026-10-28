@@ -273,6 +273,7 @@ const fr: SourceCatalogue = {
             'iam.role_grant': 'Demande de rôle',
             'refdata.book_change': 'Modification de livre',
             'marketdata.curve_publish': 'Publication de courbe',
+            'reporting.engine_settings_change': "Modification des réglages d'exécution du moteur",
         },
         bell: {
             label: 'Notifications, {count} non lues',
@@ -391,6 +392,23 @@ const fr: SourceCatalogue = {
             'iam.role_grant': {
                 role: 'Rôle',
                 description: 'Description',
+            },
+            'reporting.engine_settings_change': {
+                imply_todays_fixings: "Imposer les fixings du jour",
+                include_todays_cash_flows: "Inclure les flux de trésorerie du jour",
+                include_reference_date_events: 'Inclure les événements de date de référence',
+                enrich_index_fixings: "Enrichir les fixings d'indice",
+                ignore_fixing_lag: 'Ignorer le retard de fixing',
+                ignore_fixing_lead: "Ignorer l'avance de fixing",
+                observation_model: "Modèle d'observation",
+                lazy_market_building: 'Construction différée du marché',
+                build_failed_trades: 'Construire les transactions échouées',
+                continue_on_error: "Continuer en cas d'erreur",
+                use_at_par_coupons_curves: 'Coupons au pair pour les courbes',
+                use_at_par_coupons_trades: 'Coupons au pair pour les transactions',
+                n_threads: 'Threads',
+                log_mask: 'Masque de journal',
+                gzip_compression_level: 'Niveau de compression',
             },
         },
         delta: {
@@ -6013,6 +6031,12 @@ const fr: SourceCatalogue = {
         partVersion: 'version {version}',
         edit: 'Modifier',
         save: 'Enregistrer',
+        propose: 'Proposer une modification',
+        proposal: {
+            raised:
+                "Ceci est une proposition. Les réglages en vigueur n'ont pas changé : l'approbation décide de la modification.",
+            follow: "Suivre l'approbation",
+        },
         documentation: 'Documentation',
         showDocumentation: 'Afficher la documentation',
         hideDocumentation: 'Masquer la documentation',

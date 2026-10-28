@@ -275,6 +275,7 @@ export const en: SourceCatalogue = {
             'iam.role_grant': 'Role request',
             'refdata.book_change': 'Book change',
             'marketdata.curve_publish': 'Curve publish',
+            'reporting.engine_settings_change': 'Engine run settings change',
         },
         bell: {
             label: 'Notifications, {count} unread',
@@ -392,6 +393,23 @@ export const en: SourceCatalogue = {
             'iam.role_grant': {
                 role: 'Role',
                 description: 'Description',
+            },
+            'reporting.engine_settings_change': {
+                imply_todays_fixings: 'Imply today\'s fixings',
+                include_todays_cash_flows: 'Include today\'s cash flows',
+                include_reference_date_events: 'Include reference date events',
+                enrich_index_fixings: 'Enrich index fixings',
+                ignore_fixing_lag: 'Ignore fixing lag',
+                ignore_fixing_lead: 'Ignore fixing lead',
+                observation_model: 'Observation model',
+                lazy_market_building: 'Lazy market building',
+                build_failed_trades: 'Build failed trades',
+                continue_on_error: 'Continue on error',
+                use_at_par_coupons_curves: 'At-par coupons for curves',
+                use_at_par_coupons_trades: 'At-par coupons for trades',
+                n_threads: 'Threads',
+                log_mask: 'Log mask',
+                gzip_compression_level: 'Compression level',
             },
         },
         delta: {
@@ -5924,6 +5942,12 @@ export const en: SourceCatalogue = {
         partVersion: 'version {version}',
         edit: 'Edit',
         save: 'Save',
+        propose: 'Propose a change',
+        proposal: {
+            raised:
+                'This is a proposal. The settings in force did not change: the approval decides the change.',
+            follow: 'Follow the approval',
+        },
         documentation: 'Documentation',
         showDocumentation: 'Show documentation',
         hideDocumentation: 'Hide documentation',

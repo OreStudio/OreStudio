@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/put-the-numbers-changing-engine-run-settings-through-sign-off
+#+pr: 4011
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every configuration whose change alters the numbers a run computes goes through 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | The lifecycle is built, tested and driven live. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-24                               |
+| Next         | Review, then mark the conformance line. |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -42,23 +42,83 @@ Every configuration whose change alters the numbers a run computes goes through 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The model
+
+1. The inbox gains =approval_kind_part=: a kind names the parts its requests
+   always need, seeded with =fixings= (answer order 1) and =building= (order 2)
+   for =reporting.engine_settings_change=. =execution= names no part, because a
+   write to it changes no numbers.
+2. The reporting service gains =engine_settings_change=: one held value per
+   setting of a proposed group, with the request, the configuration, the group,
+   the setting, the value as the screen reads it, the version the person read,
+   and whether the apply wrote it.
+3. =report_instance= gains =engine_settings_id= and =engine_settings_version=,
+   stamped when the trigger admits the run from the definition's binding.
+
+** The service
+
+4. =engine_settings_proposal_service= answers whether a group needs approval
+   (the group changes numbers and a report binds the configuration), raises the
+   proposal with the part of the group it touches, reads the lines beside the
+   values in force, checks them against the version in force, and applies an
+   approved request in one transaction.
+5. =engine_settings_apply_workflow= is registered beside the book and
+   counterparty workflows: recheck, apply, tell. The kind names it, so the
+   inbox starts it on the approval.
+6. A proposal operation model renders the raise and the two reads to C++ and
+   TypeScript; the handler serves them and opens a request only to its proposer,
+   a part decider, or a reader of the tenant's requests.
+
+** The screen
+
+7. The BFF group save asks whether the group changes numbers and whether a
+   report binds the configuration. If both hold it raises a proposal and
+   answers ="this is a proposal"= with the approval; otherwise it writes the
+   group as before. A failed reach read proposes rather than writes, because the
+   governed case is the one that must not be got wrong.
+8. The record page draws *Propose a change* there, and both Save and Revert show
+   the approval the write became. The inbox draws the kind with the shared delta.
+
+** Findings: where the standard and the machinery disagree**
+
+- The standard states the lifecycle per *section*, and the engine run settings
+  state whether a setting changes the numbers per *setting*
+  (=engine_settings_group_settings.changes_numbers=). No section-level
+  declaration exists, so a group's status is derived: a group changes the
+  numbers when any of its settings does. That matches the standard for fixings
+  and execution, but the seed declares =building:observation_model= and
+  =building:lazy_market_building= as not changing the numbers, so a *section*
+  declaration and the settings' own declaration disagree about part of building.
+  The group-level reading (building is numbers-changing) is the one the
+  standard names, and it is the one used.
+- The standard says a kind declares which approval parts sign it. The approval
+  machinery had no such table: a request's parts were the parts an *approval
+  policy* named for a changed column, so a kind whose parts are not columns had
+  nowhere to state them. The kind-part table closes that gap.
+- The standard says a numbers-changing write is a proposal on a configuration a
+  report binds. The parts were seeded from the parts of the *thing* (the group),
+  so a proposal takes the part of its group and not every part of the kind.
+- The standard's rule 6 (the proposer cannot sign) is the schema's: the
+  decision trigger refuses it whatever part the proposer holds.
+- =inbox_approval_decide_fn= lets one person approve a request once whatever
+  part, so a proposal touching two number-changing groups needs two people.
+  The standard does not say this; the machinery does.
+- The market data service's approval grants lived only in the generated grants
+  script and not in the registry it comes from; regenerating dropped them. Both
+  are in the registry now.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Groups the data states, with their settings | 3 groups, 15 settings | =compass sql -- -c "select count(*) from ores_reporting_engine_settings_groups_tbl"= | a434c73876 |
+| Parts the engine run settings kind names | 2 (fixings, building) | =compass sql -- -c "select count(*) from ores_inbox_approval_kind_parts_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | a434c73876 |
+| Proposed lines the live run wrote | 30 applied of 126 | =compass sql -- -c "select applied, count(*) from ores_reporting_engine_settings_changes_tbl group by applied"= | a434c73876 |
+| Reporting, inbox, analytics core suites | 4 suites, 0 failures | =compass test run -- -R "ores.reporting.core.tests|ores.inbox.core.tests|ores.reporting.service.tests|ores.analytics.core.tests"= | a434c73876 |
+| BFF engine settings suite | 24 tests, 0 failures | =npx vitest run packages/bff/src/engine-settings.test.ts= | a434c73876 |
+
+The numbers above are from this environment's database after the live drive,
+so the counts of proposals and parts grow with every further run.
 
 * Notes
 
@@ -77,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4011][#4011]] | [reporting] Put the numbers-changing engine run settings through sign-off |
 
 * Review
 
@@ -86,3 +146,58 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The engine run settings now follow the standard's numbers-changing lifecycle,
+on the existing approval machinery.
+
+The model: =ores_inbox_approval_kind_parts_tbl= lets a kind of request name the
+parts its requests need, seeded for =reporting.engine_settings_change= with
+=fixings= and =building=. =ores_reporting_engine_settings_changes_tbl= holds a
+proposal's values until its request is decided.
+=ores_reporting_report_instances_tbl= gained =engine_settings_id= and
+=engine_settings_version=, so a run keeps what it ran with.
+
+The protocol: =reporting.v1.ops.raise_engine_settings_change=,
+=get_engine_settings_changes= and =recheck_engine_settings_changes=, plus the
+=engine_settings_apply_workflow= the kind names. A raise names the part of the
+group it writes, and refuses a draft, an operational group, a value the setting
+does not accept, and a proposal that changes nothing. The apply re-checks the
+version in force, writes the group in one transaction through the part's own
+service, marks each line applied once, and names the request it applied in the
+group's history entry.
+
+The screen: the group save answers ={document, proposal}=, with the approval
+when the write became one; the record page says *Propose a change* and shows
+the approval, and the inbox draws the kind with the shared delta.
+
+The tests: the reporting core suite drives the lifecycle against a database
+(proposal holds its values, draft and operational groups refused, the kind's
+parts, the proposer's own decision refused, the apply, the moved-group refusal,
+and the line applied once); the BFF suite covers the proposal branch, the
+direct-write branch and the response shape.
+
+The live run, through the web BFF: Nadia proposed turning today's fixings on
+(HTTP 202 with the approval, the value in force unchanged), the proposal was in
+her own requests and in Adrian's queue, Nadia's own approval was refused with
+"You asked for this request, so someone else decides it", Adrian approved, the
+workflow applied it (fixings version 3 with =change_commentary = "Applied
+approval request ..."), and a run of the Exposure report recorded
+=engine_settings_version = 6=, the version in force.
+
+Gaps that remain, named rather than hidden:
+
+- The reach read drives the choice between proposing and writing. A
+  configuration that no report binds is a draft and changes in place, as the
+  standard says; the engine settings list does not yet draw a *draft* mark.
+- The inbox queue is oldest first and pages at fifty, so an old queue buries a
+  new proposal at the end. The request is in the queue; the screen offers no
+  filter for kind.
+- =building:observation_model= and =building:lazy_market_building= declare that
+  they change no numbers while their section is numbers-changing. The section
+  decides the lifecycle; the per-setting flag still drives the warning on the
+  row, so a person may see "does not change the numbers" inside a section whose
+  write is proposed.
+- The step handler reads its command as JSON explicitly, because the shared
+  decode helper reads with a process-wide default codec another client can
+  change. The same latent fault sits in every other step handler.
+

@@ -222,7 +222,19 @@ select _ores_grant_dml_fn('ores_scheduler_', :'scheduler_service_user');
 -- reporting_service: Reporting domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_reporting_', :'reporting_service_user');
+select _ores_grant_dml_fn('ores_inbox_approval_requests_', :'reporting_service_user');
+select _ores_grant_dml_fn('ores_inbox_approval_request_parts_', :'reporting_service_user');
+select _ores_grant_dml_fn('ores_inbox_notifications_', :'reporting_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_arguments_', :'reporting_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_recipients_', :'reporting_service_user');
+select _ores_grant_dml_fn('ores_inbox_notification_deliveries_', :'reporting_service_user');
 select _ores_grant_select_fn('ores_dq_fsm_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_inbox_approval_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_inbox_notification_kinds_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_inbox_notification_channels_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_iam_accounts_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_iam_account_parties_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
@@ -282,13 +294,10 @@ select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 -- marketdata_service: Market Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
-select _ores_grant_select_fn('ores_refdata_', :'marketdata_service_user');
-select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
--- The publish is a request, so the service raises one and reads the decision.
--- It writes the request and its parts, and reads the kinds that say who
--- decides, the states a request moves through, and the parts it names.
 select _ores_grant_dml_fn('ores_inbox_approval_requests_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_request_parts_', :'marketdata_service_user');
+select _ores_grant_select_fn('ores_refdata_', :'marketdata_service_user');
+select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_inbox_approval_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'marketdata_service_user');

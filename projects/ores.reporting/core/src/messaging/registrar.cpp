@@ -33,6 +33,7 @@
 #include "ores.reporting.core/messaging/configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/configuration_type_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_building_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_change_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_execution_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_fixings_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_group_registrar.hpp"
@@ -458,6 +459,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_engine_settings_group_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_engine_settings_group_setting_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    // A proposal's lines are read by the operations that propose them; the
+    // entity's own read serves the shell and a future audit screen.
+    for (auto& sub : register_engine_settings_change_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_ore_parameter_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));

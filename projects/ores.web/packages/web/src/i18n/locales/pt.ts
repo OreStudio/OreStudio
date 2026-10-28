@@ -275,6 +275,7 @@ const pt: SourceCatalogue = {
             'iam.role_grant': 'Pedido de papel',
             'refdata.book_change': 'Alteração de livro',
             'marketdata.curve_publish': 'Publicação de curva',
+            'reporting.engine_settings_change': 'Alteração das definições de execução do motor',
         },
         bell: {
             label: 'Notificações, {count} por ler',
@@ -392,6 +393,23 @@ const pt: SourceCatalogue = {
             'iam.role_grant': {
                 role: 'Papel',
                 description: 'Descrição',
+            },
+            'reporting.engine_settings_change': {
+                imply_todays_fixings: 'Impor as fixings de hoje',
+                include_todays_cash_flows: 'Incluir os fluxos de caixa de hoje',
+                include_reference_date_events: 'Incluir os eventos da data de referência',
+                enrich_index_fixings: 'Enriquecer as fixings de índice',
+                ignore_fixing_lag: 'Ignorar o atraso da fixing',
+                ignore_fixing_lead: 'Ignorar a antecedência da fixing',
+                observation_model: 'Modelo de observação',
+                lazy_market_building: 'Construção diferida do mercado',
+                build_failed_trades: 'Construir as transações falhadas',
+                continue_on_error: 'Continuar em caso de erro',
+                use_at_par_coupons_curves: 'Cupões ao par para as curvas',
+                use_at_par_coupons_trades: 'Cupões ao par para as transações',
+                n_threads: 'Threads',
+                log_mask: 'Máscara de registo',
+                gzip_compression_level: 'Nível de compressão',
             },
         },
         delta: {
@@ -5966,6 +5984,12 @@ const pt: SourceCatalogue = {
         partVersion: 'versão {version}',
         edit: 'Editar',
         save: 'Salvar',
+        propose: 'Propor uma alteração',
+        proposal: {
+            raised:
+                'Isto é uma proposta. As definições em vigor não mudaram: a aprovação decide a alteração.',
+            follow: 'Seguir a aprovação',
+        },
         documentation: 'Documentação',
         showDocumentation: 'Mostrar a documentação',
         hideDocumentation: 'Ocultar a documentação',

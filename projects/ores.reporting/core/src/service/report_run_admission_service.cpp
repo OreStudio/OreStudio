@@ -110,6 +110,8 @@ report_run_admission_service::receipt report_run_admission_service::admit(const 
     inst.definition_id = p.definition_id;
     inst.trigger_id = trigger_id;
     inst.run_grant_id = p.run_grant_id;
+    inst.engine_settings_id = p.engine_settings_id;
+    inst.engine_settings_version = p.engine_settings_version;
     inst.name = p.name;
     inst.kind = p.kind;
     inst.description = p.description;

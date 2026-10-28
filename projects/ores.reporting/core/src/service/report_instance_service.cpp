@@ -119,6 +119,8 @@ domain::report_instance report_instance_to_domain(const messaging::report_instan
     v.output_storage_key = write.output_storage_key;
     v.priced_at = write.priced_at;
     v.price_note = write.price_note;
+    v.engine_settings_id = write.engine_settings_id;
+    v.engine_settings_version = write.engine_settings_version;
     return v;
 }
 

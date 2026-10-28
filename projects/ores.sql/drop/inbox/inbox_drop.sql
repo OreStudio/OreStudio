@@ -42,6 +42,7 @@
 \ir ./inbox_approval_decisions_notify_trigger_drop.sql
 \ir ./inbox_approval_decisions_drop.sql
 \ir ./inbox_approval_request_part_drop.sql
+\ir ./inbox_approval_kind_part_drop.sql
 \ir ./inbox_approval_requests_notify_trigger_drop.sql
 \ir ./inbox_approval_requests_drop.sql
 \ir ./inbox_approval_decision_types_notify_trigger_drop.sql

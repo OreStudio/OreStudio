@@ -171,10 +171,27 @@ const CURVE_PUBLISH: KindDescriptor = {
     Extras: CurvePublishExtras,
 };
 
+/**
+ * A change to a number-changing group of engine run settings.
+ *
+ * The lines are the settings of the group beside the values in force, which the
+ * reporting service reads, so the kind draws the shared delta and adds nothing.
+ */
+const ENGINE_SETTINGS_CHANGE: KindDescriptor = {
+    code: 'reporting.engine_settings_change',
+    label: (t) => kindLabel(t, 'reporting.engine_settings_change'),
+    summary: (t) => kindLabel(t, 'reporting.engine_settings_change'),
+    approveLabel: (t) => t('inbox.request.approve'),
+    subjectRoute: () => null,
+    fieldLabel: fieldLabelUnder('reporting.engine_settings_change'),
+    drawsDelta: true,
+};
+
 const KINDS: Readonly<Record<string, KindDescriptor>> = {
     [ROLE_GRANT.code]: ROLE_GRANT,
     [BOOK_CHANGE.code]: BOOK_CHANGE,
     [CURVE_PUBLISH.code]: CURVE_PUBLISH,
+    [ENGINE_SETTINGS_CHANGE.code]: ENGINE_SETTINGS_CHANGE,
 };
 
 /** The descriptor of a kind, or a plain one for a kind this build does not know. */

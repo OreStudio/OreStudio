@@ -30,6 +30,7 @@
 \ir inbox_approval_decision_types_populate.sql
 \ir inbox_approval_kinds_populate.sql
 \ir inbox_approval_parts_populate.sql
+\ir inbox_approval_kind_parts_populate.sql
 \ir inbox_hold_reasons_populate.sql
 \ir inbox_approval_policies_populate.sql
 \ir inbox_notification_channels_populate.sql

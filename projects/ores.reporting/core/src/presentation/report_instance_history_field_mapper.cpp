@@ -66,6 +66,14 @@ render_report_instance_fields(const domain::report_instance& v) {
                                    ores::platform::time::datetime::to_iso8601_utc(*v.priced_at) :
                                    std::string{}});
     fields.push_back({.name = "Price Note", .value = v.price_note});
+    fields.push_back({.name = "Engine Settings ID",
+                      .value = v.engine_settings_id ?
+                                   boost::uuids::to_string(*v.engine_settings_id) :
+                                   std::string{}});
+    fields.push_back({.name = "Engine Settings Version",
+                      .value = v.engine_settings_version ?
+                                   std::to_string(*v.engine_settings_version) :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

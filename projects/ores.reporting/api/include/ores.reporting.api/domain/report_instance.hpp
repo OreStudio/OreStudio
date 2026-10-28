@@ -158,6 +158,21 @@ struct report_instance final {
     std::string price_note;
 
     /**
+     * @brief The engine run settings this run read, copied from the definition's binding when the
+     * run was admitted. The engine run settings are a configuration of their own, owned by the
+     * reporting component, so this column is not a checked foreign key. A run whose definition
+     * binds none has no row and names none.
+     */
+    std::optional<boost::uuids::uuid> engine_settings_id;
+
+    /**
+     * @brief The version of the engine run settings the run read, so a run keeps the settings it
+     * ran with whatever a later change makes official. A proposal that waits moves no version, so
+     * this number names the settings a person may reproduce the numbers from.
+     */
+    std::optional<int> engine_settings_version;
+
+    /**
      * @brief Username of the person who last modified this report instance.
      */
     std::string modified_by;

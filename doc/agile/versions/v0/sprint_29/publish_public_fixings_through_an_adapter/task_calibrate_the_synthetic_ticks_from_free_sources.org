@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
-#+updated: 2026-10-24
+#+updated: 2026-10-28
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ The level of a synthetic price comes from a public source that anyone can check,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | All three plan items are delivered and checked live; the PR waits on review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-23                               |
+| Next         | Review PR #4019.                       |
+| Last touched | 2026-10-28                               |
 
 * Acceptance
 
@@ -78,6 +78,13 @@ Three PRs, each checked on its own:
 3. The feed screen shows the provider, the item, the vendor date and the time
    received of the value a feed started from, or that it kept its fixed level.
 
+The three items shipped in one PR. Item 3 was done last, against a live
+environment, and that check found two gaps in item 1 that no test covered: the
+service held no =marketdata::market_fixings:read= permission, and a fixing read
+demands a party while a service holds none. Both are fixed here: the role gains
+the permission and the fixing reads name the party whose data they want, as the
+series reads already did. The feed names its own config's party.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -90,10 +97,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The whole tree builds | 0 errors, 232 build steps | =./compass.sh build= | 1f8adc9df1 |
+| Seeded FX runs that start from a real fixing | 2 of 2 (ECB EUR/CAD 2026-10-28, 64 fixings in 90 days; IMF USD/CHF, 61 in 90) | =curl -b jar localhost:20002/api/synthetic/fx-feeds/key/<id>= | 1f8adc9df1 |
+| A curve run's start | absent, so the screen draws no start | the same read on an IR feed | 1f8adc9df1 |
+| Synthetic web tests | 233 passed in 19 files | =npx vitest run src/marketdata/synthetic= | 1f8adc9df1 |
+| BFF synthetic and market-regime tests | 83 passed in 2 files | =npx vitest run src/synthetic.test.ts src/market-regime.test.ts= | 1f8adc9df1 |
+| Touched C++ suites | 5 suites passed (synthetic api, synthetic service, shell synthetic, marketdata client, marketdata core) | =./compass.sh test run -- -R "…"= | 1f8adc9df1 |
+| Codegen gates | protocol drift, twin coverage, list requests, model drift all clean | =check_component_drift.py --dry-run=, =check_protocol_twin_coverage.py=, =check_bff_list_requests.py=, =check_model_drift.py= | 1f8adc9df1 |
 
 * Notes
 
+- No test drives a whole fixing feed end to end. The pure calibration helpers
+  are tested, the marketdata fixing read is tested over NATS with, without and
+  beyond a party, and the screen is tested, but nothing starts a feed whose
+  item has a stored fixing and asserts the level it took. That gap is what let
+  the missing permission and the absent party reach a live environment. It is
+  worth a service-level test with a stored fixing.
+- A feed that cannot read its fixing says why on the screen, in the start's
+  note, so the failure is visible rather than silent.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -119,3 +140,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An FX feed whose price source is =fixing= starts from the newest public fixing of
+its best-ranked item, on or before the date of the market clock or the date its
+policy names, and takes the size of its mixture from the spread of the item's
+fixings over its window. An item that quotes the pair the other way round is read
+as one over its value. A pair no source fixes keeps its configured level, and the
+feed records why.
+
+The feed page shows where the run started: the provider, the item as its oresmd
+URI, the publisher's date, the time the value arrived, and the spread the window
+measured; or that no fixing set the level and the run kept it. A curve reports no
+start, since it starts from no published value.
+
+The vintage goes from FX and IR, and with it the columns, the lookup, the
+validity handler, the shell command, the web fields and the dataset dependency
+rows.
+
+Checked live: the two seeded FX feeds start from an ECB fixing of EUR/CAD and an
+IMF fixing of USD/CHF, both published on 2026-10-28, and a curve feed reports no
+start.

@@ -749,6 +749,40 @@ const marketDataCatalogueSchema = z.object({
 
 export type MarketDataCatalogue = z.infer<typeof marketDataCatalogueSchema>;
 
+const officialSeriesSchema = z.object({
+    id: z.string(),
+    oresmd_uri: z.string(),
+    base: z.string(),
+    quote: z.string(),
+});
+
+const officialProviderSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    description: z.string(),
+    terms_url: z.string(),
+    terms_credit: z.string(),
+    allows_storage: z.boolean(),
+    terms_accepted: z.boolean(),
+    terms_accepted_by: z.string(),
+    terms_accepted_at: z.string().nullable(),
+    sources: z.array(z.object({ id: z.string(), name: z.string(), kind: z.string() })),
+    series: z.array(officialSeriesSchema),
+});
+
+const officialRatesSchema = z.object({ providers: z.array(officialProviderSchema) });
+
+/** An official provider: a publisher of daily rates read through the official rates adapter. */
+export type OfficialProvider = z.infer<typeof officialProviderSchema>;
+export type OfficialSeries = z.infer<typeof officialSeriesSchema>;
+
+const officialFixingsSchema = z.object({
+    fixings: z.record(z.string(), z.array(z.object({ date: z.string(), value: z.string() }))),
+});
+
+/** The fixings of each series asked for, oldest first. */
+export type OfficialFixings = z.infer<typeof officialFixingsSchema>['fixings'];
+
 /** One provider of the catalogue, as a selector names it. */
 export type MarketDataProvider = MarketDataCatalogue['providers'][number];
 
@@ -2231,6 +2265,30 @@ export const api = {
         return z
             .object({ routes: z.array(routeRowSchema) })
             .parse(await request('/api/marketdata/routes', { method: 'GET' })).routes;
+    },
+
+    /** The official providers, with their terms, their sources and their fixing series. */
+    async officialRates(): Promise<readonly OfficialProvider[]> {
+        return officialRatesSchema.parse(
+            await request('/api/marketdata/official', { method: 'GET' }),
+        ).providers;
+    },
+
+    /** The fixings of up to a dozen series, oldest first. */
+    async officialFixings(series: readonly string[]): Promise<OfficialFixings> {
+        const query = new URLSearchParams({ series: series.join(',') });
+        return officialFixingsSchema.parse(
+            await request(`/api/marketdata/official/fixings?${query.toString()}`, {
+                method: 'GET',
+            }),
+        ).fixings;
+    },
+
+    /** Accepts a provider's terms as they stand; the service records who and when. */
+    async acceptProviderTerms(code: string): Promise<void> {
+        await request(`/api/marketdata/official/${encodeURIComponent(code)}/accept-terms`, {
+            method: 'POST',
+        });
     },
 
     /** The providers and the sources, which are what a subscription and a route choose from. */

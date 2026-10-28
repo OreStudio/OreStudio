@@ -4828,6 +4828,51 @@ export const en: SourceCatalogue = {
                     'The curve {curve} has no candidate, so there is nothing to compare against the published set.',
             },
         },
+        official: {
+            title: 'Official rates',
+            lead: 'The daily rates that central banks publish, the terms each one sets, and the fixings the platform keeps.',
+            providers: {
+                title: 'Providers',
+                lead: 'A provider is read only once its terms are accepted.',
+                empty: 'No provider publishes official rates.',
+            },
+            columns: {
+                provider: 'Provider',
+                pivot: 'Base',
+                terms: 'Terms',
+                source: 'Source',
+                series: 'Series',
+                date: 'Date',
+                value: 'Value',
+                route: 'How',
+            },
+            terms: {
+                accepted: 'Accepted',
+                acceptedBy: 'By {who} on {when}',
+                notAccepted: 'Not accepted',
+                accept: 'Accept terms',
+                read: 'Read the terms',
+            },
+            detail: {
+                title: 'The rates of {provider}',
+                series: 'Series',
+                empty: 'The provider fills no series.',
+                noFixings: 'No fixing is stored for this series yet.',
+                chart: 'The fixings of {pair}',
+            },
+            compare: {
+                title: 'One pair from every provider',
+                lead: 'Providers that publish the same pair agree to a few basis points.',
+                base: 'Base currency',
+                quote: 'Quote currency',
+                none: 'No provider gives this pair, directly or through its base.',
+            },
+            route: {
+                direct: 'Published',
+                inverse: 'Inverted',
+                cross: 'Crossed',
+            },
+        },
         subscriptions: {
             title: 'Subscriptions',
             description:

@@ -75,6 +75,17 @@ public:
     }
 
     /**
+     * @brief Tilt the law's shape toward its tails from the next step on, keeping its mean
+     * and variance.
+     *
+     * The market's activity reaches a price's shape through this: a positive tilt
+     * makes large moves likelier and small ones likelier too, a negative one the
+     * reverse. Zero is the law as configured. A process with no shape to tilt
+     * ignores it.
+     */
+    virtual void set_tail_tilt(double /*tilt*/) {}
+
+    /**
      * @brief The largest step, in the law's own time unit, this process can be
      * stepped by without its scheme's error dominating.
      *

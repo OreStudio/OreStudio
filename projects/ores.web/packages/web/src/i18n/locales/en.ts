@@ -4815,6 +4815,8 @@ export const en: SourceCatalogue = {
                 jump: 'Heat one tick adds',
                 decay: 'Heat decay, a second',
                 speed: 'Market speed',
+                tailLoading: 'Tail loading',
+                tailHint: 'an active market tilts spot tails by {tilt}',
                 calmSpell: 'a calm spell lasts {seconds} s on average',
                 activeSpell: 'an active spell lasts {seconds} s on average',
                 apply: 'Apply',

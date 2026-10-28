@@ -50,7 +50,15 @@ struct market_config final {
     /// number for the run, so every feed's prices live in one simulated world. The
     /// default keeps a curve at one tick a minute stepping a calendar day a tick.
     double speed = 1440.0;
+    /// How far the market's activity tilts a price's shape toward its tails: a tick
+    /// at pace A tilts by this times ln A. Zero leaves every shape as configured.
+    double tail_loading = 0.0;
 };
+
+/// The largest tail loading the market takes. At a pace of two it tilts a mixture by
+/// about seven, which already leaves the widest component carrying the variance; beyond
+/// it a mixture degenerates to one component and the loading says nothing more.
+constexpr double max_tail_loading = 10.0;
 
 /**
  * @brief Refuse numbers the clock cannot run on.
@@ -139,6 +147,9 @@ public:
     [[nodiscard]] double decay() const {
         return config_.decay;
     }
+
+    /// The tilt a price's shape takes at the pace now: the tail loading times ln pace.
+    [[nodiscard]] double tail_tilt() const;
 
     /// The heat's loop gain, jump over decay. Below one, so the heat settles.
     [[nodiscard]] double loop_gain() const {

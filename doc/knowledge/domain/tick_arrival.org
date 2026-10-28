@@ -61,7 +61,9 @@ now. =remove= and =pin= return once the loop has applied them, so a feed may
 destroy what its body points at, and a reply to a pin shows the pin in force.
 
 The system tenant can also change the market's numbers while it runs: the
-chain's two rates, the heat's jump and decay, and the market speed. =configure=
+chain's two rates, the heat's jump and decay, the market speed, and the tail
+loading that tilts a spot price's shape with the pace (see the market volatility
+channel note). =configure=
 is a command like a pin. It applies at the loop's now and goes in the trace as a
 =configure= event. What has passed stays as it was. The heat keeps its level and
 fades at the new decay. The dwell in progress keeps its unit draw, so it ends at

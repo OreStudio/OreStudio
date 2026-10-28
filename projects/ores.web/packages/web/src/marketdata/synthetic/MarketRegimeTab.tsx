@@ -357,13 +357,13 @@ function SchedulerFacts({
     );
 }
 
-/** The five numbers a system session sets, in the order the form shows them. */
-const SETTINGS = ['wakeRate', 'calmRate', 'jump', 'decay', 'speed'] as const;
+/** The numbers a system session sets, in the order the form shows them. */
+const SETTINGS = ['wakeRate', 'calmRate', 'jump', 'decay', 'speed', 'tailLoading'] as const;
 type Setting = (typeof SETTINGS)[number];
 
 /**
- * The numbers that move the market: the chain's two rates, the heat's jump and decay, and
- * the speed. A system session edits them; a tenant reads them. The service decides what it
+ * The numbers that move the market: the chain's two rates, the heat's jump and decay, the
+ * speed, and how far activity tilts a spot price toward its tails. A system session edits them; a tenant reads them. The service decides what it
  * can run on, so the form shows its refusal rather than guessing; the loop gain it shows
  * while a person types is a preview of the one rule a person most often breaks.
  */
@@ -404,6 +404,11 @@ function MarketSettingsForm({
                 seconds: (1 / numbers.calmRate).toFixed(0),
             });
         }
+        if (key === 'tailLoading' && numbers.tailLoading > 0) {
+            return t('marketdata.marketRegime.settings.tailHint', {
+                tilt: (numbers.tailLoading * Math.log(2)).toFixed(2),
+            });
+        }
         if (key === 'decay' && Number.isFinite(gain)) {
             return t('marketdata.marketRegime.loopGainValue', { gain: gain.toFixed(3) });
         }
@@ -418,7 +423,7 @@ function MarketSettingsForm({
                 {t('marketdata.marketRegime.settings.title')}
             </h3>
             {onSave === undefined ? (
-                <dl className="grid gap-4 sm:grid-cols-5">
+                <dl className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
                     {SETTINGS.map((key) => (
                         <Fact
                             key={key}
@@ -435,7 +440,7 @@ function MarketSettingsForm({
                         onSave(numbers);
                     }}
                 >
-                    <div className="grid gap-3 sm:grid-cols-5">
+                    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
                         {SETTINGS.map((key) => (
                             <Field
                                 key={key}
@@ -445,7 +450,8 @@ function MarketSettingsForm({
                                 <Input
                                     type="number"
                                     step="any"
-                                    min={key === 'jump' ? 0 : undefined}
+                                    min={key === 'jump' || key === 'tailLoading' ? 0 : undefined}
+                                    max={key === 'tailLoading' ? 10 : undefined}
                                     value={value(key)}
                                     aria-invalid={
                                         unreadable.includes(key) || (key === 'decay' && gain >= 1)

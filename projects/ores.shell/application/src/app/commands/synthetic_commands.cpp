@@ -833,7 +833,8 @@ void synthetic_commands::process_regime_get(std::ostream& out,
         << "tau: " << response->tau << "\n"
         << "enrolled rate: " << response->population_rate << " a second\n"
         << "run seed: " << response->run_seed << "\n"
-        << "market speed: " << response->speed << " simulated seconds a unit of tau" << std::endl;
+        << "market speed: " << response->speed << " simulated seconds a unit of tau\n"
+        << "tail loading: " << response->tail_loading << std::endl;
 }
 
 void synthetic_commands::process_regime_trace(std::ostream& out,
@@ -937,7 +938,7 @@ void synthetic_commands::process_regime_set(std::ostream& out,
                                             const std::vector<std::string>& args) {
     if (args.empty()) {
         fail(out) << "synthetic regime set takes one or more of wake_rate=, calm_rate=, jump=, "
-                     "decay= and speed=; see help."
+                     "decay=, speed= and tail_loading=; see help."
                   << std::endl;
         return;
     }
@@ -962,18 +963,22 @@ void synthetic_commands::process_regime_set(std::ostream& out,
                                                                  .calm_rate = current->calm_rate,
                                                                  .jump = current->jump,
                                                                  .decay = current->decay,
-                                                                 .speed = current->speed};
+                                                                 .speed = current->speed,
+                                                                 .tail_loading =
+                                                                     current->tail_loading};
     const std::map<std::string, double*> fields{{"wake_rate", &request.wake_rate},
                                                 {"calm_rate", &request.calm_rate},
                                                 {"jump", &request.jump},
                                                 {"decay", &request.decay},
-                                                {"speed", &request.speed}};
+                                                {"speed", &request.speed},
+                                                {"tail_loading", &request.tail_loading}};
     for (const auto& arg : args) {
         const auto eq = arg.find('=');
         const auto field = fields.find(arg.substr(0, eq));
         if (eq == std::string::npos || field == fields.end()) {
             fail(out) << "Unknown setting '" << arg
-                      << "'. Use wake_rate=, calm_rate=, jump=, decay= or speed=." << std::endl;
+                      << "'. Use wake_rate=, calm_rate=, jump=, decay=, speed= or tail_loading="
+                      << std::endl;
             return;
         }
         const auto text = arg.substr(eq + 1);
@@ -1004,7 +1009,8 @@ void synthetic_commands::process_regime_set(std::ostream& out,
         << "jump: " << response->jump << "\n"
         << "decay: " << response->decay << "\n"
         << "loop gain: " << response->loop_gain << "\n"
-        << "market speed: " << response->speed << " simulated seconds a unit of tau" << std::endl;
+        << "market speed: " << response->speed << " simulated seconds a unit of tau\n"
+        << "tail loading: " << response->tail_loading << std::endl;
 }
 
 void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
@@ -1046,10 +1052,14 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                         [&session](std::ostream& out, std::vector<std::string> args) {
                             process_regime_set(std::ref(out), std::ref(session), args);
                         },
-                        "Set the chain's rates, the heat's jump and decay, or the market speed; "
-                        "a number left out keeps its value",
-                        {"[wake_rate=<n>]", "[calm_rate=<n>]", "[jump=<n>]", "[decay=<n>]",
-                         "[speed=<n>]"});
+                        "Set the chain's rates, the heat's jump and decay, the market speed or "
+                        "the tail loading; a number left out keeps its value",
+                        {"[wake_rate=<n>]",
+                         "[calm_rate=<n>]",
+                         "[jump=<n>]",
+                         "[decay=<n>]",
+                         "[speed=<n>]",
+                         "[tail_loading=<n>]"});
     regime_menu->Insert("trace",
                         [&session](std::ostream& out, std::vector<std::string> args) {
                             process_regime_trace(std::ref(out), std::ref(session), args);

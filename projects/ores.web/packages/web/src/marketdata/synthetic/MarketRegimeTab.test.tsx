@@ -52,6 +52,7 @@ function regime(over: Partial<MarketRegime> = {}): MarketRegime {
         speed: 1440,
         wakeRate: 0.002,
         calmRate: 0.004,
+        tailLoading: 0,
         ...over,
     };
 }
@@ -485,9 +486,9 @@ describe('the market settings for a system session', () => {
         );
     }
 
-    it('offers the five numbers, filled from the service, and says when a speed lands', () => {
+    it('offers the six numbers, filled from the service, and says when a speed lands', () => {
         const html = settings();
-        expect(html.match(/<input/g)).toHaveLength(5);
+        expect(html.match(/<input/g)).toHaveLength(6);
         expect(html).toContain('value="0.002"');
         expect(html).toContain('value="1440"');
         expect(html).toContain('a calm spell lasts 500 s on average');

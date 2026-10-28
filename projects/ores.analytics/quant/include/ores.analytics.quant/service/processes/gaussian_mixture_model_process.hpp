@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/mixture_tilt.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include <cstdint>
 #include <random>
@@ -52,6 +53,7 @@ public:
     double next(double elapsed_ticks) override;
     bool supports_variable_step() const override;
     double current() const override;
+    void set_tail_tilt(double tilt) override;
 
 private:
     /// One nominal tick: the old step, unchanged.
@@ -59,6 +61,10 @@ private:
     /// The fraction of a tick left over after the whole ones.
     void step_partial_tick(double part);
 
+    /// The mixture as configured, which a tilt starts from.
+    math::mixture base_;
+    /// The tilt in force. The steps draw from stdevs_, which it sets.
+    double tilt_ = 0.0;
     std::vector<double> means_;
     std::vector<double> stdevs_;
     std::vector<double> weights_;

@@ -53,6 +53,9 @@ struct tick_context final {
     /// The simulated seconds since this series last ticked: the market's speed times
     /// the market time that passed. What a price step covers.
     double simulated_seconds = 0.0;
+    /// How far the market tilts a price's shape toward its tails now; zero leaves it as
+    /// configured.
+    double tail_tilt = 0.0;
 };
 
 /// What a scheduler needs to know about a series to schedule it.
@@ -93,6 +96,7 @@ struct market_snapshot final {
     double wake_rate;
     double calm_rate;
     double active_multiplier;
+    double tail_loading;
 };
 
 /**

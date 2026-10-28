@@ -225,6 +225,7 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
     // unusable gap still publishes a tick, so it advances the process by one nominal tick.
     const auto elapsed_ticks =
         context.simulated_seconds > 0.0 ? context.simulated_seconds * ticks_per_second_ : 1.0;
+    process_->set_tail_tilt(context.tail_tilt);
     const auto value = std::format("{}", process_->next(elapsed_ticks));
     if (n == 1 || n % 100 == 0) {
         BOOST_LOG_SEV(lg(), ores::logging::info)

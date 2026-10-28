@@ -476,11 +476,24 @@ describe('the market regime', () => {
 });
 
 describe('the market settings', () => {
-    const SETTINGS = { wakeRate: 0.002, calmRate: 0.004, jump: 0.5, decay: 20, speed: 2880 };
+    const SETTINGS = {
+        wakeRate: 0.002,
+        calmRate: 0.004,
+        jump: 0.5,
+        decay: 20,
+        speed: 2880,
+        tailLoading: 1.5,
+    };
 
     it('sends the five numbers and reports the regime the service holds after', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            [CONFIGURE_SUBJECT]: { ...CALM, speed: 2880, wake_rate: 0.002, calm_rate: 0.004 },
+            [CONFIGURE_SUBJECT]: {
+                ...CALM,
+                speed: 2880,
+                wake_rate: 0.002,
+                calm_rate: 0.004,
+                tail_loading: 1.5,
+            },
         });
 
         const response = await send(
@@ -492,11 +505,23 @@ describe('the market settings', () => {
         );
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toMatchObject({ speed: 2880, wakeRate: 0.002, calmRate: 0.004 });
+        expect(response.json()).toMatchObject({
+            speed: 2880,
+            wakeRate: 0.002,
+            calmRate: 0.004,
+            tailLoading: 1.5,
+        });
         expect(calls).toEqual([
             {
                 subject: CONFIGURE_SUBJECT,
-                body: { wake_rate: 0.002, calm_rate: 0.004, jump: 0.5, decay: 20, speed: 2880 },
+                body: {
+                    wake_rate: 0.002,
+                    calm_rate: 0.004,
+                    jump: 0.5,
+                    decay: 20,
+                    speed: 2880,
+                    tail_loading: 1.5,
+                },
             },
         ]);
     });
@@ -517,6 +542,22 @@ describe('the market settings', () => {
 
         expect(response.statusCode).toBe(400);
         expect(response.json().message).toBe(message);
+    });
+
+    it('refuses settings without a tail loading, so an old client cannot reset it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const { tailLoading: _left, ...older } = SETTINGS;
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            older,
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
     });
 
     it('refuses a speed that is not positive before the service hears of it', async () => {

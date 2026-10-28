@@ -212,7 +212,8 @@ market_snapshot tick_scheduler::snapshot() const {
                            .speed = market_.speed(),
                            .wake_rate = market_.config().wake_rate,
                            .calm_rate = market_.config().calm_rate,
-                           .active_multiplier = market_.config().active_multiplier};
+                           .active_multiplier = market_.config().active_multiplier,
+                           .tail_loading = market_.config().tail_loading};
 }
 
 std::vector<heat_reading>
@@ -345,7 +346,8 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     s.last_simulated = market_.simulated();
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due)),
-                               .simulated_seconds = simulated_elapsed};
+                               .simulated_seconds = simulated_elapsed,
+                               .tail_tilt = market_.tail_tilt()};
     record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
     s.last_fired = *due;

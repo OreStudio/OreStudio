@@ -45,6 +45,7 @@ gaussian_mixture_model_process::gaussian_mixture_model_process(std::vector<doubl
     if (initial_price <= 0.0)
         throw std::invalid_argument(
             "gaussian_mixture_model_process: initial_price must be positive");
+    base_ = {.means = means_, .stdevs = stdevs_, .weights = weights_};
 }
 
 double gaussian_mixture_model_process::next() {
@@ -92,6 +93,13 @@ void gaussian_mixture_model_process::step_partial_tick(double part) {
 
 bool gaussian_mixture_model_process::supports_variable_step() const {
     return true;
+}
+
+void gaussian_mixture_model_process::set_tail_tilt(double tilt) {
+    if (tilt == tilt_)
+        return;
+    tilt_ = tilt;
+    stdevs_ = math::tilt(base_, tilt).stdevs;
 }
 
 double gaussian_mixture_model_process::current() const {

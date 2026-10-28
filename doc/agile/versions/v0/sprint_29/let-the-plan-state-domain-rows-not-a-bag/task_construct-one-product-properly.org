@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 1702F734-593F-4BE2-AC4D-10BCC6C3822C
+:END:
+#+title: Task: Construct one product properly
+#+description: Prove the story's shape on one product before five families move. Add a named constructor for EquityCliquetOption beside the equity option instrument type, make the writer build that product through it, and show that a frequency cannot be stated on a product that has none.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/construct-one-product-properly
+#+pr: 4022
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The first product is constructed by name, so the writer stops assembling it from whichever fields the bag happens to carry. EquityCliquetOption leads because its SQL check couples two columns: cliquet_frequency is required, and only for that code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- A named constructor for the Cliquet exists beside the equity option instrument domain type.
+- The constructor states only Cliquet facts, so a caller cannot give it a frequency for a product that has none.
+- The equity trade population writer builds the Cliquet through that constructor instead of filling the row field by field.
+- A provisioning run books the equity family with the Cliquet present, and the suite that covers the writer is green.
+
+* Plan
+
+Put the constructor in a hand-written header beside the generated domain
+type, so codegen leaves it alone and the type keeps one home. Take a terms
+struct rather than ten loose arguments, with the frequency required and
+defaulted to nothing, so a caller cannot reach the construction without
+stating one.
+
+The row the constructor returns is the row the table accepts, so it refuses
+what the check constraints refuse: a non-positive notional, a negative
+strike, an empty underlying or currency, and a vocabulary outside the closed
+set each column holds. The SQL stays as the backstop.
+
+The writer keeps writing the other two codes in this table as it does now,
+minus the cliquet frequency it used to copy into every row. Only the Cliquet
+takes the constructor, and the provisioning run proves the family still
+books.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Equity family rows after provisioning | 17, across nine tables | =compass db sql= counting each =ores_trading_equity_*_instruments_tbl= | =0ebf037334= |
+| Cliquet and plain option rows | 1 each; cliquet frequency =Quarterly=, option frequency null | =compass db sql= on =ores_trading_equity_option_instruments_tbl= | =0ebf037334= |
+| =ores.trading.api.tests= | 421 assertions in 110 test cases | the suite binary | =0ebf037334= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =0ebf037334= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4022][#4022]] | [trading] Construct the equity cliquet option by name |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Cliquet is constructed by name. =construct_equity_cliquet_option= takes
+an =equity_cliquet_option_terms= whose frequency has no default, stamps
+=trade_type_code= itself, and refuses what the table's checks refuse, so the
+writer no longer assembles the row from whichever fields the bag carries.
+The two other codes in the same table keep their existing assembly minus the
+cliquet frequency, which used to be copied into every row.
+
+Proved by a provisioning run on a fresh database: =generate_trades= completed,
+and the equity family holds the same 17 rows across nine tables as before.
+The Cliquet row states =Quarterly=; the plain option's frequency is null, so
+the cross-column check is satisfied by construction rather than by the
+planner's restraint.
+
+One finding, recorded and not fixed here: the planner draws the cliquet's
+=moneyness=, =local_cap= and =global_cap=, and none of them reaches a table,
+because the routed table has no such columns and the
+=equity_cliquet_option_instruments= model that does state them is routed by
+nothing. The constructor cannot state terms its row does not carry. Routing
+that table is the family's own work, not this task's.

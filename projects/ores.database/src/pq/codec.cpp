@@ -19,6 +19,7 @@
 #include "ores.database/pq/codec.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/text.hpp"
+#include <algorithm>
 #include <charconv>
 #include <limits>
 
@@ -36,8 +37,8 @@ constexpr std::int64_t days_since_2000(year_month_day d) {
 
 /*
  * The bitemporal "never": the timestamp the database's infinity function
- * returns. A time point counts nanoseconds and stops in 2262, so it stands for
- * this instant with its maximum.
+ * returns. A time point stands for this instant with its maximum, whether its
+ * clock stops in 2262 (nanoseconds) or reaches past it (microseconds).
  */
 constexpr std::int64_t never_micros =
     days_since_2000(year{9999} / December / 31) * micros_per_day + 86'399'000'000;
@@ -87,29 +88,30 @@ void codec<system_clock::time_point>::encode(system_clock::time_point v, std::st
         wire::put_u64(out, static_cast<std::uint64_t>(never_micros));
         return;
     }
-    if (v == system_clock::time_point::min()) {
-        wire::put_u64(out, static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::min()));
+    constexpr auto earliest = std::numeric_limits<std::int64_t>::min();
+    const auto unix_micros = duration_cast<microseconds>(v.time_since_epoch()).count();
+    if (v == system_clock::time_point::min() || unix_micros < earliest + unix_to_2000_micros) {
+        wire::put_u64(out, static_cast<std::uint64_t>(earliest));
         return;
     }
-    const auto unix_micros = duration_cast<microseconds>(v.time_since_epoch()).count();
     wire::put_u64(out, static_cast<std::uint64_t>(unix_micros - unix_to_2000_micros));
 }
 
 system_clock::time_point codec<system_clock::time_point>::decode(std::span<const std::byte> in) {
     wire::expect_size(in, 8, "timestamptz");
     const auto micros = static_cast<std::int64_t>(wire::get_u64(in));
-    constexpr auto latest =
-        duration_cast<microseconds>(system_clock::time_point::max().time_since_epoch()).count() -
-        unix_to_2000_micros;
-    constexpr auto earliest =
-        duration_cast<microseconds>(system_clock::time_point::min().time_since_epoch()).count() -
-        unix_to_2000_micros;
+    constexpr auto max_unix = duration_cast<microseconds>(system_clock::duration::max()).count();
+    constexpr auto min_unix = duration_cast<microseconds>(system_clock::duration::min()).count();
+    // A clock that counts microseconds reaches past the year 9999, so the
+    // never instant is the bound there, and the end of the clock elsewhere.
+    constexpr auto latest = std::min(never_micros, max_unix - unix_to_2000_micros);
     if (micros >= latest)
         return system_clock::time_point::max();
-    if (micros <= earliest)
+    const auto unix_micros = micros + unix_to_2000_micros;
+    if (unix_micros <= min_unix)
         return system_clock::time_point::min();
     return system_clock::time_point(
-        duration_cast<system_clock::duration>(microseconds(micros + unix_to_2000_micros)));
+        duration_cast<system_clock::duration>(microseconds(unix_micros)));
 }
 
 void codec<year_month_day>::encode(year_month_day v, std::string& out) {

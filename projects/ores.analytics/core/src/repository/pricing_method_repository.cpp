@@ -154,7 +154,7 @@ void pricing_method_repository::write(context ctx,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing method. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, pricing_method_mapper::map(t), lg(), "Writing pricing method to database.");
 }
 
@@ -167,7 +167,7 @@ void pricing_method_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, pricing_method_mapper::map(batch), lg(), "Writing pricing methods to database.");
 }
 
@@ -178,7 +178,7 @@ std::vector<domain::pricing_method> pricing_method_repository::read_latest(conte
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
-    return execute_read_query<pricing_method_entity, domain::pricing_method>(
+    return query_builder::execute_read_query<pricing_method_entity, domain::pricing_method>(
         ctx,
         query,
         [](const auto& entities) { return pricing_method_mapper::map(entities); },
@@ -195,7 +195,7 @@ pricing_method_repository::read_latest(context ctx, const std::string& code) {
         query_builder::read<std::vector<pricing_method_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<pricing_method_entity, domain::pricing_method>(
+    return query_builder::execute_read_query<pricing_method_entity, domain::pricing_method>(
         ctx,
         query,
         [](const auto& entities) { return pricing_method_mapper::map(entities); },
@@ -212,7 +212,7 @@ std::vector<domain::pricing_method> pricing_method_repository::read_all(context 
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<pricing_method_entity, domain::pricing_method>(
+    return query_builder::execute_read_query<pricing_method_entity, domain::pricing_method>(
         ctx,
         query,
         [](const auto& entities) { return pricing_method_mapper::map(entities); },
@@ -229,12 +229,13 @@ std::optional<domain::pricing_method> pricing_method_repository::read_at_version
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities = execute_read_query<pricing_method_entity, domain::pricing_method>(
-        ctx,
-        query,
-        [](const auto& entities) { return pricing_method_mapper::map(entities); },
-        lg(),
-        "Reading pricing method at version.");
+    const auto entities =
+        query_builder::execute_read_query<pricing_method_entity, domain::pricing_method>(
+            ctx,
+            query,
+            [](const auto& entities) { return pricing_method_mapper::map(entities); },
+            lg(),
+            "Reading pricing method at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -261,7 +262,7 @@ pricing_method_repository::remove_status pricing_method_repository::remove(
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing pricing method from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing pricing method from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -288,7 +289,7 @@ std::vector<domain::pricing_method> pricing_method_repository::read_latest(
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<pricing_method_entity, domain::pricing_method>(
+    return query_builder::execute_ordered_read_query<pricing_method_entity, domain::pricing_method>(
         ctx,
         query,
         pricing_method_list_order(order, {"code"}, false),
@@ -309,7 +310,7 @@ std::uint32_t pricing_method_repository::get_total_method_count(
     const auto query =
         query_builder::read<std::vector<pricing_method_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<pricing_method_entity>(
+    return query_builder::execute_count_query<pricing_method_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -327,7 +328,7 @@ pricing_method_repository::read_latest(context ctx, const std::vector<std::strin
     const auto query =
         query_builder::read<std::vector<pricing_method_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result = execute_read_query<pricing_method_entity, domain::pricing_method>(
+    auto result = query_builder::execute_read_query<pricing_method_entity, domain::pricing_method>(
         ctx,
         query,
         [](const auto& entities) { return pricing_method_mapper::map(entities); },
@@ -350,7 +351,7 @@ void pricing_method_repository::remove(context ctx, const std::vector<std::strin
     const auto query =
         query_builder::delete_from<pricing_method_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing pricing methods.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing pricing methods.");
 }
 
 

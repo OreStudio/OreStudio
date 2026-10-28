@@ -152,7 +152,8 @@ void catalog_repository::write(context ctx,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing catalog. " << "name: " << v.name;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, catalog_mapper::map(t), lg(), "Writing catalog to database.");
+    query_builder::execute_write_query(
+        ctx, catalog_mapper::map(t), lg(), "Writing catalog to database.");
 }
 
 void catalog_repository::write(context ctx,
@@ -163,7 +164,8 @@ void catalog_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx, catalog_mapper::map(batch), lg(), "Writing catalogs to database.");
+    query_builder::execute_write_query(
+        ctx, catalog_mapper::map(batch), lg(), "Writing catalogs to database.");
 }
 
 std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
@@ -171,7 +173,7 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        where("valid_to"_c == max.value()) | order_by("name"_c);
 
-    return execute_read_query<catalog_entity, domain::catalog>(
+    return query_builder::execute_read_query<catalog_entity, domain::catalog>(
         ctx,
         query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
@@ -185,7 +187,7 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const 
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
 
-    return execute_read_query<catalog_entity, domain::catalog>(
+    return query_builder::execute_read_query<catalog_entity, domain::catalog>(
         ctx,
         query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
@@ -199,7 +201,7 @@ std::vector<domain::catalog> catalog_repository::read_all(context ctx, const std
     const auto query = query_builder::read<std::vector<catalog_entity>> | where("name"_c == name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<catalog_entity, domain::catalog>(
+    return query_builder::execute_read_query<catalog_entity, domain::catalog>(
         ctx,
         query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
@@ -214,7 +216,7 @@ catalog_repository::read_at_version(context ctx, const std::string& name, std::u
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        where("name"_c == name && "version"_c == version) | query_builder::limit(1);
 
-    const auto entities = execute_read_query<catalog_entity, domain::catalog>(
+    const auto entities = query_builder::execute_read_query<catalog_entity, domain::catalog>(
         ctx,
         query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
@@ -247,7 +249,7 @@ catalog_repository::remove_status catalog_repository::remove(context ctx,
                        where("tenant_id"_c == tid && "name"_c == name &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing catalog from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing catalog from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -272,7 +274,7 @@ catalog_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<catalog_entity, domain::catalog>(
+    return query_builder::execute_ordered_read_query<catalog_entity, domain::catalog>(
         ctx,
         query,
         catalog_list_order(order, {"name"}, false),
@@ -290,7 +292,7 @@ catalog_repository::get_total_catalog_count(context ctx,
 
     const auto query = query_builder::read<std::vector<catalog_entity>>;
 
-    return execute_count_query<catalog_entity>(
+    return query_builder::execute_count_query<catalog_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of), catalog_filter_condition(filter)),
@@ -305,7 +307,7 @@ catalog_repository::read_latest(context ctx, const std::vector<std::string>& nam
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        where("name"_c.in(names) && "valid_to"_c == max.value());
-    auto result = execute_read_query<catalog_entity, domain::catalog>(
+    auto result = query_builder::execute_read_query<catalog_entity, domain::catalog>(
         ctx,
         query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
@@ -328,7 +330,7 @@ void catalog_repository::remove(context ctx, const std::vector<std::string>& nam
     const auto query =
         query_builder::delete_from<catalog_entity> |
         where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing catalogs.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing catalogs.");
 }
 
 

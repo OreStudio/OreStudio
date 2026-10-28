@@ -147,10 +147,10 @@ void delivery_outcome_type_repository::write(context ctx,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing delivery outcome type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     query_builder::insert(delivery_outcome_type_mapper::map(t)),
-                     lg(),
-                     "Writing delivery outcome type to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert(delivery_outcome_type_mapper::map(t)),
+                                    lg(),
+                                    "Writing delivery outcome type to database.");
 }
 
 void delivery_outcome_type_repository::write(
@@ -162,10 +162,10 @@ void delivery_outcome_type_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     query_builder::insert(delivery_outcome_type_mapper::map(batch)),
-                     lg(),
-                     "Writing delivery outcome types to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert(delivery_outcome_type_mapper::map(batch)),
+                                    lg(),
+                                    "Writing delivery outcome types to database.");
 }
 
 std::vector<domain::delivery_outcome_type>
@@ -173,7 +173,8 @@ delivery_outcome_type_repository::read_latest(context ctx) {
     const auto query =
         query_builder::read<std::vector<delivery_outcome_type_entity>> | order_by("code"_c);
 
-    return execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
+    return query_builder::execute_read_query<delivery_outcome_type_entity,
+                                             domain::delivery_outcome_type>(
         ctx,
         query,
         [](const auto& entities) { return delivery_outcome_type_mapper::map(entities); },
@@ -187,7 +188,8 @@ delivery_outcome_type_repository::read_latest(context ctx, const std::string& co
     const auto query =
         query_builder::read<std::vector<delivery_outcome_type_entity>> | where("code"_c == code);
 
-    return execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
+    return query_builder::execute_read_query<delivery_outcome_type_entity,
+                                             domain::delivery_outcome_type>(
         ctx,
         query,
         [](const auto& entities) { return delivery_outcome_type_mapper::map(entities); },
@@ -203,7 +205,8 @@ delivery_outcome_type_repository::read_all(context ctx, const std::string& code)
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
                        where("code"_c == code) | order_by("code"_c);
 
-    return execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
+    return query_builder::execute_read_query<delivery_outcome_type_entity,
+                                             domain::delivery_outcome_type>(
         ctx,
         query,
         [](const auto& entities) { return delivery_outcome_type_mapper::map(entities); },
@@ -225,7 +228,8 @@ delivery_outcome_type_repository::remove_status delivery_outcome_type_repository
     const auto query =
         query_builder::delete_from<delivery_outcome_type_entity> | where("code"_c == code);
 
-    execute_delete_query(ctx, query, lg(), "Removing delivery outcome type from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing delivery outcome type from database.");
     return remove_status::removed;
 }
 
@@ -244,7 +248,8 @@ std::vector<domain::delivery_outcome_type> delivery_outcome_type_repository::rea
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
+    return query_builder::execute_ordered_read_query<delivery_outcome_type_entity,
+                                                     domain::delivery_outcome_type>(
         ctx,
         query,
         delivery_outcome_type_list_order(order, {"code"}, false),
@@ -260,7 +265,7 @@ std::uint32_t delivery_outcome_type_repository::get_total_delivery_outcome_type_
 
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>>;
 
-    return execute_count_query<delivery_outcome_type_entity>(
+    return query_builder::execute_count_query<delivery_outcome_type_entity>(
         ctx,
         query,
         delivery_outcome_type_filter_condition(filter),
@@ -274,7 +279,8 @@ delivery_outcome_type_repository::read_latest(context ctx, const std::vector<std
         return {};
     const auto query =
         query_builder::read<std::vector<delivery_outcome_type_entity>> | where("code"_c.in(codes));
-    auto result = execute_read_query<delivery_outcome_type_entity, domain::delivery_outcome_type>(
+    auto result = query_builder::execute_read_query<delivery_outcome_type_entity,
+                                                    domain::delivery_outcome_type>(
         ctx,
         query,
         [](const auto& entities) { return delivery_outcome_type_mapper::map(entities); },
@@ -294,7 +300,7 @@ void delivery_outcome_type_repository::remove(context ctx, const std::vector<std
         return;
     const auto query =
         query_builder::delete_from<delivery_outcome_type_entity> | where("code"_c.in(codes));
-    execute_delete_query(ctx, query, lg(), "Batch removing delivery outcome types.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing delivery outcome types.");
 }
 
 

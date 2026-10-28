@@ -157,7 +157,8 @@ void folder_repository::write(context ctx,
                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing folder. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx, folder_mapper::map(t), lg(), "Writing folder to database.");
+    query_builder::execute_write_query(
+        ctx, folder_mapper::map(t), lg(), "Writing folder to database.");
 }
 
 void folder_repository::write(context ctx,
@@ -168,7 +169,8 @@ void folder_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx, folder_mapper::map(batch), lg(), "Writing folders to database.");
+    query_builder::execute_write_query(
+        ctx, folder_mapper::map(batch), lg(), "Writing folders to database.");
 }
 
 std::vector<domain::folder> folder_repository::read_latest(context ctx) {
@@ -180,7 +182,7 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx) {
         where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
-    return execute_read_query<folder_entity, domain::folder>(
+    return query_builder::execute_read_query<folder_entity, domain::folder>(
         ctx,
         query,
         [](const auto& entities) { return folder_mapper::map(entities); },
@@ -197,7 +199,7 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx, const st
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<folder_entity, domain::folder>(
+    return query_builder::execute_read_query<folder_entity, domain::folder>(
         ctx,
         query,
         [](const auto& entities) { return folder_mapper::map(entities); },
@@ -214,7 +216,7 @@ std::vector<domain::folder> folder_repository::read_all(context ctx, const std::
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<folder_entity, domain::folder>(
+    return query_builder::execute_read_query<folder_entity, domain::folder>(
         ctx,
         query,
         [](const auto& entities) { return folder_mapper::map(entities); },
@@ -233,7 +235,7 @@ folder_repository::read_at_version(context ctx, const std::string& id, std::uint
                              "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities = execute_read_query<folder_entity, domain::folder>(
+    const auto entities = query_builder::execute_read_query<folder_entity, domain::folder>(
         ctx,
         query,
         [](const auto& entities) { return folder_mapper::map(entities); },
@@ -267,7 +269,7 @@ folder_repository::remove_status folder_repository::remove(context ctx,
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing folder from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing folder from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -295,7 +297,7 @@ folder_repository::read_latest(context ctx,
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<folder_entity, domain::folder>(
+    return query_builder::execute_ordered_read_query<folder_entity, domain::folder>(
         ctx,
         query,
         folder_list_order(order, {"id"}, false),
@@ -316,7 +318,7 @@ folder_repository::get_total_folder_count(context ctx,
     const auto query = query_builder::read<std::vector<folder_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<folder_entity>(
+    return query_builder::execute_count_query<folder_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of), folder_filter_condition(filter)),
@@ -334,7 +336,7 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<folder_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
                              "valid_to"_c == max.value());
-    auto result = execute_read_query<folder_entity, domain::folder>(
+    auto result = query_builder::execute_read_query<folder_entity, domain::folder>(
         ctx,
         query,
         [](const auto& entities) { return folder_mapper::map(entities); },
@@ -356,7 +358,7 @@ void folder_repository::remove(context ctx, const std::vector<std::string>& ids)
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<folder_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing folders.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing folders.");
 }
 
 std::vector<ores::utility::domain::hierarchy_flat_row>
@@ -370,7 +372,8 @@ folder_repository::get_hierarchy(context ctx, const boost::uuids::uuid& root_id,
                             "'::uuid, '" + root_str + "'::uuid, " + (from_root ? "true" : "false") +
                             ")";
 
-    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading folder hierarchy");
+    const auto rows =
+        query_builder::execute_raw_multi_column_query(ctx, sql, lg(), "Reading folder hierarchy");
 
     std::vector<ores::utility::domain::hierarchy_flat_row> result;
     result.reserve(rows.size());

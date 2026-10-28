@@ -156,7 +156,7 @@ void treatment_dimension_repository::write(context ctx,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing treatment dimension. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, treatment_dimension_mapper::map(t), lg(), "Writing treatment dimension to database.");
 }
 
@@ -169,10 +169,10 @@ void treatment_dimension_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        treatment_dimension_mapper::map(batch),
-                        lg(),
-                        "Writing treatment dimensions to database.");
+    query_builder::execute_write_query(ctx,
+                                       treatment_dimension_mapper::map(batch),
+                                       lg(),
+                                       "Writing treatment dimensions to database.");
 }
 
 std::vector<domain::treatment_dimension> treatment_dimension_repository::read_latest(context ctx) {
@@ -180,7 +180,8 @@ std::vector<domain::treatment_dimension> treatment_dimension_repository::read_la
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c);
 
-    return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
+    return query_builder::execute_read_query<treatment_dimension_entity,
+                                             domain::treatment_dimension>(
         ctx,
         query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
@@ -195,7 +196,8 @@ treatment_dimension_repository::read_latest(context ctx, const std::string& code
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
+    return query_builder::execute_read_query<treatment_dimension_entity,
+                                             domain::treatment_dimension>(
         ctx,
         query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
@@ -211,7 +213,8 @@ treatment_dimension_repository::read_all(context ctx, const std::string& code) {
                        where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
+    return query_builder::execute_read_query<treatment_dimension_entity,
+                                             domain::treatment_dimension>(
         ctx,
         query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
@@ -227,7 +230,7 @@ std::optional<domain::treatment_dimension> treatment_dimension_repository::read_
                        where("code"_c == code && "version"_c == version) | query_builder::limit(1);
 
     const auto entities =
-        execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
+        query_builder::execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
             ctx,
             query,
             [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
@@ -259,7 +262,8 @@ treatment_dimension_repository::remove_status treatment_dimension_repository::re
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing treatment dimension from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing treatment dimension from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -284,7 +288,8 @@ std::vector<domain::treatment_dimension> treatment_dimension_repository::read_la
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<treatment_dimension_entity, domain::treatment_dimension>(
+    return query_builder::execute_ordered_read_query<treatment_dimension_entity,
+                                                     domain::treatment_dimension>(
         ctx,
         query,
         treatment_dimension_list_order(order, {"code"}, false),
@@ -303,7 +308,7 @@ std::uint32_t treatment_dimension_repository::get_total_dimension_count(
 
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>>;
 
-    return execute_count_query<treatment_dimension_entity>(
+    return query_builder::execute_count_query<treatment_dimension_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -319,12 +324,13 @@ treatment_dimension_repository::read_latest(context ctx, const std::vector<std::
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
                        where("code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result = execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
-        ctx,
-        query,
-        [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
-        lg(),
-        "Reading latest treatment dimensions by ids.");
+    auto result =
+        query_builder::execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
+            ctx,
+            query,
+            [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
+            lg(),
+            "Reading latest treatment dimensions by ids.");
     return result;
 }
 
@@ -342,7 +348,7 @@ void treatment_dimension_repository::remove(context ctx, const std::vector<std::
     const auto query =
         query_builder::delete_from<treatment_dimension_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing treatment dimensions.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing treatment dimensions.");
 }
 
 

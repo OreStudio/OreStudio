@@ -143,10 +143,10 @@ void publication_repository::write(context ctx,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing publication. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     query_builder::insert_or_replace(publication_mapper::map(t)),
-                     lg(),
-                     "Writing publication to database.");
+    query_builder::execute_write_op(ctx,
+                                    query_builder::insert_or_replace(publication_mapper::map(t)),
+                                    lg(),
+                                    "Writing publication to database.");
 }
 
 void publication_repository::write(context ctx,
@@ -157,16 +157,17 @@ void publication_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     query_builder::insert_or_replace(publication_mapper::map(batch)),
-                     lg(),
-                     "Writing publications to database.");
+    query_builder::execute_write_op(
+        ctx,
+        query_builder::insert_or_replace(publication_mapper::map(batch)),
+        lg(),
+        "Writing publications to database.");
 }
 
 std::vector<domain::publication> publication_repository::read_latest(context ctx) {
     const auto query = query_builder::read<std::vector<publication_entity>> | order_by("id"_c);
 
-    return execute_read_query<publication_entity, domain::publication>(
+    return query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
         query,
         [](const auto& entities) { return publication_mapper::map(entities); },
@@ -179,7 +180,7 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
     BOOST_LOG_SEV(lg(), debug) << "Reading latest publication. " << "id: " << id;
     const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c == id);
 
-    return execute_read_query<publication_entity, domain::publication>(
+    return query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
         query,
         [](const auto& entities) { return publication_mapper::map(entities); },
@@ -194,7 +195,7 @@ std::vector<domain::publication> publication_repository::read_all(context ctx,
     const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c == id) |
                        order_by("id"_c);
 
-    return execute_read_query<publication_entity, domain::publication>(
+    return query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
         query,
         [](const auto& entities) { return publication_mapper::map(entities); },
@@ -217,7 +218,7 @@ publication_repository::remove_status publication_repository::remove(
     const auto query = query_builder::delete_from<publication_entity> |
                        where("tenant_id"_c == tid && "id"_c == id);
 
-    execute_delete_query(ctx, query, lg(), "Removing publication from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing publication from database.");
     return remove_status::removed;
 }
 
@@ -236,7 +237,7 @@ publication_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<publication_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<publication_entity, domain::publication>(
+    return query_builder::execute_ordered_read_query<publication_entity, domain::publication>(
         ctx,
         query,
         publication_list_order(order, {"id"}, false),
@@ -252,7 +253,7 @@ std::uint32_t publication_repository::get_total_publication_count(
 
     const auto query = query_builder::read<std::vector<publication_entity>>;
 
-    return execute_count_query<publication_entity>(
+    return query_builder::execute_count_query<publication_entity>(
         ctx, query, publication_filter_condition(filter), lg(), "Counting publications");
 }
 
@@ -261,7 +262,7 @@ publication_repository::read_latest(context ctx, const std::vector<std::string>&
     if (ids.empty())
         return {};
     const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c.in(ids));
-    auto result = execute_read_query<publication_entity, domain::publication>(
+    auto result = query_builder::execute_read_query<publication_entity, domain::publication>(
         ctx,
         query,
         [](const auto& entities) { return publication_mapper::map(entities); },
@@ -282,7 +283,7 @@ void publication_repository::remove(context ctx, const std::vector<std::string>&
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<publication_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids));
-    execute_delete_query(ctx, query, lg(), "Batch removing publications.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing publications.");
 }
 
 

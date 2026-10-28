@@ -158,10 +158,10 @@ void yield_curve_process_type_repository::write(context ctx,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve process type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        yield_curve_process_type_mapper::map(t),
-                        lg(),
-                        "Writing yield curve process type to database.");
+    query_builder::execute_write_query(ctx,
+                                       yield_curve_process_type_mapper::map(t),
+                                       lg(),
+                                       "Writing yield curve process type to database.");
 }
 
 void yield_curve_process_type_repository::write(
@@ -173,10 +173,10 @@ void yield_curve_process_type_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        yield_curve_process_type_mapper::map(batch),
-                        lg(),
-                        "Writing yield curve process types to database.");
+    query_builder::execute_write_query(ctx,
+                                       yield_curve_process_type_mapper::map(batch),
+                                       lg(),
+                                       "Writing yield curve process types to database.");
 }
 
 std::vector<domain::yield_curve_process_type>
@@ -187,7 +187,8 @@ yield_curve_process_type_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
-    return execute_read_query<yield_curve_process_type_entity, domain::yield_curve_process_type>(
+    return query_builder::execute_read_query<yield_curve_process_type_entity,
+                                             domain::yield_curve_process_type>(
         ctx,
         query,
         [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
@@ -204,7 +205,8 @@ yield_curve_process_type_repository::read_latest(context ctx, const std::string&
         query_builder::read<std::vector<yield_curve_process_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<yield_curve_process_type_entity, domain::yield_curve_process_type>(
+    return query_builder::execute_read_query<yield_curve_process_type_entity,
+                                             domain::yield_curve_process_type>(
         ctx,
         query,
         [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
@@ -222,7 +224,8 @@ yield_curve_process_type_repository::read_all(context ctx, const std::string& co
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<yield_curve_process_type_entity, domain::yield_curve_process_type>(
+    return query_builder::execute_read_query<yield_curve_process_type_entity,
+                                             domain::yield_curve_process_type>(
         ctx,
         query,
         [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
@@ -241,13 +244,13 @@ yield_curve_process_type_repository::read_at_version(context ctx,
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<yield_curve_process_type_entity, domain::yield_curve_process_type>(
-            ctx,
-            query,
-            [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
-            lg(),
-            "Reading yield curve process type at version.");
+    const auto entities = query_builder::execute_read_query<yield_curve_process_type_entity,
+                                                            domain::yield_curve_process_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
+        lg(),
+        "Reading yield curve process type at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -274,7 +277,8 @@ yield_curve_process_type_repository::remove_status yield_curve_process_type_repo
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing yield curve process type from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing yield curve process type from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -301,8 +305,8 @@ std::vector<domain::yield_curve_process_type> yield_curve_process_type_repositor
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<yield_curve_process_type_entity,
-                                      domain::yield_curve_process_type>(
+    return query_builder::execute_ordered_read_query<yield_curve_process_type_entity,
+                                                     domain::yield_curve_process_type>(
         ctx,
         query,
         yield_curve_process_type_list_order(order, {"code"}, false),
@@ -323,7 +327,7 @@ std::uint32_t yield_curve_process_type_repository::get_total_process_type_count(
     const auto query = query_builder::read<std::vector<yield_curve_process_type_entity>> |
                        where("tenant_id"_c == tid);
 
-    return execute_count_query<yield_curve_process_type_entity>(
+    return query_builder::execute_count_query<yield_curve_process_type_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -342,13 +346,13 @@ yield_curve_process_type_repository::read_latest(context ctx,
     const auto query =
         query_builder::read<std::vector<yield_curve_process_type_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<yield_curve_process_type_entity, domain::yield_curve_process_type>(
-            ctx,
-            query,
-            [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
-            lg(),
-            "Reading latest yield curve process types by ids.");
+    auto result = query_builder::execute_read_query<yield_curve_process_type_entity,
+                                                    domain::yield_curve_process_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
+        lg(),
+        "Reading latest yield curve process types by ids.");
     return result;
 }
 
@@ -367,7 +371,8 @@ void yield_curve_process_type_repository::remove(context ctx,
     const auto query =
         query_builder::delete_from<yield_curve_process_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing yield curve process types.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing yield curve process types.");
 }
 
 

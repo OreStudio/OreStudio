@@ -158,10 +158,10 @@ void approval_decision_type_repository::write(context ctx,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval decision type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        approval_decision_type_mapper::map(t),
-                        lg(),
-                        "Writing approval decision type to database.");
+    query_builder::execute_write_query(ctx,
+                                       approval_decision_type_mapper::map(t),
+                                       lg(),
+                                       "Writing approval decision type to database.");
 }
 
 void approval_decision_type_repository::write(
@@ -173,10 +173,10 @@ void approval_decision_type_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        approval_decision_type_mapper::map(batch),
-                        lg(),
-                        "Writing approval decision types to database.");
+    query_builder::execute_write_query(ctx,
+                                       approval_decision_type_mapper::map(batch),
+                                       lg(),
+                                       "Writing approval decision types to database.");
 }
 
 std::vector<domain::approval_decision_type>
@@ -187,7 +187,8 @@ approval_decision_type_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
-    return execute_read_query<approval_decision_type_entity, domain::approval_decision_type>(
+    return query_builder::execute_read_query<approval_decision_type_entity,
+                                             domain::approval_decision_type>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_type_mapper::map(entities); },
@@ -204,7 +205,8 @@ approval_decision_type_repository::read_latest(context ctx, const std::string& c
         query_builder::read<std::vector<approval_decision_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<approval_decision_type_entity, domain::approval_decision_type>(
+    return query_builder::execute_read_query<approval_decision_type_entity,
+                                             domain::approval_decision_type>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_type_mapper::map(entities); },
@@ -222,7 +224,8 @@ approval_decision_type_repository::read_all(context ctx, const std::string& code
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<approval_decision_type_entity, domain::approval_decision_type>(
+    return query_builder::execute_read_query<approval_decision_type_entity,
+                                             domain::approval_decision_type>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_type_mapper::map(entities); },
@@ -239,13 +242,13 @@ std::optional<domain::approval_decision_type> approval_decision_type_repository:
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<approval_decision_type_entity, domain::approval_decision_type>(
-            ctx,
-            query,
-            [](const auto& entities) { return approval_decision_type_mapper::map(entities); },
-            lg(),
-            "Reading approval decision type at version.");
+    const auto entities = query_builder::execute_read_query<approval_decision_type_entity,
+                                                            domain::approval_decision_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return approval_decision_type_mapper::map(entities); },
+        lg(),
+        "Reading approval decision type at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -272,7 +275,8 @@ approval_decision_type_repository::remove_status approval_decision_type_reposito
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing approval decision type from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing approval decision type from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -299,8 +303,8 @@ std::vector<domain::approval_decision_type> approval_decision_type_repository::r
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<approval_decision_type_entity,
-                                      domain::approval_decision_type>(
+    return query_builder::execute_ordered_read_query<approval_decision_type_entity,
+                                                     domain::approval_decision_type>(
         ctx,
         query,
         approval_decision_type_list_order(order, {"code"}, false),
@@ -321,7 +325,7 @@ std::uint32_t approval_decision_type_repository::get_total_decision_type_count(
     const auto query = query_builder::read<std::vector<approval_decision_type_entity>> |
                        where("tenant_id"_c == tid);
 
-    return execute_count_query<approval_decision_type_entity>(
+    return query_builder::execute_count_query<approval_decision_type_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -339,7 +343,8 @@ approval_decision_type_repository::read_latest(context ctx, const std::vector<st
     const auto query =
         query_builder::read<std::vector<approval_decision_type_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result = execute_read_query<approval_decision_type_entity, domain::approval_decision_type>(
+    auto result = query_builder::execute_read_query<approval_decision_type_entity,
+                                                    domain::approval_decision_type>(
         ctx,
         query,
         [](const auto& entities) { return approval_decision_type_mapper::map(entities); },
@@ -362,7 +367,8 @@ void approval_decision_type_repository::remove(context ctx, const std::vector<st
     const auto query =
         query_builder::delete_from<approval_decision_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing approval decision types.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing approval decision types.");
 }
 
 

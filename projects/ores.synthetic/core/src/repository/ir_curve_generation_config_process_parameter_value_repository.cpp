@@ -177,10 +177,11 @@ void ir_curve_generation_config_process_parameter_value_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing IR curve generation config process parameter value. "
                                << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        ir_curve_generation_config_process_parameter_value_mapper::map(t),
-                        lg(),
-                        "Writing IR curve generation config process parameter value to database.");
+    query_builder::execute_write_query(
+        ctx,
+        ir_curve_generation_config_process_parameter_value_mapper::map(t),
+        lg(),
+        "Writing IR curve generation config process parameter value to database.");
 }
 
 void ir_curve_generation_config_process_parameter_value_repository::write(
@@ -193,10 +194,11 @@ void ir_curve_generation_config_process_parameter_value_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        ir_curve_generation_config_process_parameter_value_mapper::map(batch),
-                        lg(),
-                        "Writing IR curve generation config process parameter values to database.");
+    query_builder::execute_write_query(
+        ctx,
+        ir_curve_generation_config_process_parameter_value_mapper::map(batch),
+        lg(),
+        "Writing IR curve generation config process parameter values to database.");
 }
 
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
@@ -210,8 +212,9 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(conte
         where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
-    return execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
-                              domain::ir_curve_generation_config_process_parameter_value>(
+    return query_builder::execute_read_query<
+        ir_curve_generation_config_process_parameter_value_entity,
+        domain::ir_curve_generation_config_process_parameter_value>(
         ctx,
         query,
         [](const auto& entities) {
@@ -234,8 +237,9 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(conte
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
-                              domain::ir_curve_generation_config_process_parameter_value>(
+    return query_builder::execute_read_query<
+        ir_curve_generation_config_process_parameter_value_entity,
+        domain::ir_curve_generation_config_process_parameter_value>(
         ctx,
         query,
         [](const auto& entities) {
@@ -259,8 +263,9 @@ ir_curve_generation_config_process_parameter_value_repository::read_all(context 
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
-                              domain::ir_curve_generation_config_process_parameter_value>(
+    return query_builder::execute_read_query<
+        ir_curve_generation_config_process_parameter_value_entity,
+        domain::ir_curve_generation_config_process_parameter_value>(
         ctx,
         query,
         [](const auto& entities) {
@@ -284,16 +289,16 @@ ir_curve_generation_config_process_parameter_value_repository::read_at_version(
                              "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
-                           domain::ir_curve_generation_config_process_parameter_value>(
-            ctx,
-            query,
-            [](const auto& entities) {
-                return ir_curve_generation_config_process_parameter_value_mapper::map(entities);
-            },
-            lg(),
-            "Reading IR curve generation config process parameter value at version.");
+    const auto entities = query_builder::execute_read_query<
+        ir_curve_generation_config_process_parameter_value_entity,
+        domain::ir_curve_generation_config_process_parameter_value>(
+        ctx,
+        query,
+        [](const auto& entities) {
+            return ir_curve_generation_config_process_parameter_value_mapper::map(entities);
+        },
+        lg(),
+        "Reading IR curve generation config process parameter value at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -324,7 +329,7 @@ ir_curve_generation_config_process_parameter_value_repository::remove(
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
               "version"_c == expected);
 
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx,
         query,
         lg(),
@@ -361,8 +366,9 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<ir_curve_generation_config_process_parameter_value_entity,
-                                      domain::ir_curve_generation_config_process_parameter_value>(
+    return query_builder::execute_ordered_read_query<
+        ir_curve_generation_config_process_parameter_value_entity,
+        domain::ir_curve_generation_config_process_parameter_value>(
         ctx,
         query,
         ir_curve_generation_config_process_parameter_value_list_order(order, {"id"}, false),
@@ -391,7 +397,8 @@ std::uint32_t ir_curve_generation_config_process_parameter_value_repository::
                            std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<ir_curve_generation_config_process_parameter_value_entity>(
+    return query_builder::execute_count_query<
+        ir_curve_generation_config_process_parameter_value_entity>(
         ctx,
         query,
         query_builder::narrowed(
@@ -413,8 +420,9 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(
                            std::vector<ir_curve_generation_config_process_parameter_value_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c.in(ids) &&
                              "valid_to"_c == max.value());
-    auto result = execute_read_query<ir_curve_generation_config_process_parameter_value_entity,
-                                     domain::ir_curve_generation_config_process_parameter_value>(
+    auto result = query_builder::execute_read_query<
+        ir_curve_generation_config_process_parameter_value_entity,
+        domain::ir_curve_generation_config_process_parameter_value>(
         ctx,
         query,
         [](const auto& entities) {
@@ -440,7 +448,7 @@ void ir_curve_generation_config_process_parameter_value_repository::remove(
     const auto query =
         query_builder::delete_from<ir_curve_generation_config_process_parameter_value_entity> |
         where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(
+    query_builder::execute_delete_query(
         ctx, query, lg(), "Batch removing IR curve generation config process parameter values.");
 }
 

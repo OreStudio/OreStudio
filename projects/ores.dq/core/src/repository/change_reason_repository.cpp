@@ -152,7 +152,7 @@ void change_reason_repository::write(context ctx,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing change reason. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, change_reason_mapper::map(t), lg(), "Writing change reason to database.");
 }
 
@@ -165,7 +165,7 @@ void change_reason_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(
+    query_builder::execute_write_query(
         ctx, change_reason_mapper::map(batch), lg(), "Writing change reasons to database.");
 }
 
@@ -174,7 +174,7 @@ std::vector<domain::change_reason> change_reason_repository::read_latest(context
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c);
 
-    return execute_read_query<change_reason_entity, domain::change_reason>(
+    return query_builder::execute_read_query<change_reason_entity, domain::change_reason>(
         ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
@@ -189,7 +189,7 @@ std::vector<domain::change_reason> change_reason_repository::read_latest(context
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<change_reason_entity, domain::change_reason>(
+    return query_builder::execute_read_query<change_reason_entity, domain::change_reason>(
         ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
@@ -205,7 +205,7 @@ std::vector<domain::change_reason> change_reason_repository::read_all(context ct
                        where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<change_reason_entity, domain::change_reason>(
+    return query_builder::execute_read_query<change_reason_entity, domain::change_reason>(
         ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
@@ -220,12 +220,13 @@ std::optional<domain::change_reason> change_reason_repository::read_at_version(
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
                        where("code"_c == code && "version"_c == version) | query_builder::limit(1);
 
-    const auto entities = execute_read_query<change_reason_entity, domain::change_reason>(
-        ctx,
-        query,
-        [](const auto& entities) { return change_reason_mapper::map(entities); },
-        lg(),
-        "Reading change reason at version.");
+    const auto entities =
+        query_builder::execute_read_query<change_reason_entity, domain::change_reason>(
+            ctx,
+            query,
+            [](const auto& entities) { return change_reason_mapper::map(entities); },
+            lg(),
+            "Reading change reason at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -252,7 +253,7 @@ change_reason_repository::remove_status change_reason_repository::remove(
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing change reason from database.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Removing change reason from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -277,7 +278,7 @@ change_reason_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<change_reason_entity, domain::change_reason>(
+    return query_builder::execute_ordered_read_query<change_reason_entity, domain::change_reason>(
         ctx,
         query,
         change_reason_list_order(order, {"code"}, false),
@@ -296,7 +297,7 @@ std::uint32_t change_reason_repository::get_total_reason_count(
 
     const auto query = query_builder::read<std::vector<change_reason_entity>>;
 
-    return execute_count_query<change_reason_entity>(
+    return query_builder::execute_count_query<change_reason_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -312,7 +313,7 @@ change_reason_repository::read_latest(context ctx, const std::vector<std::string
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
                        where("code"_c.in(codes) && "valid_to"_c == max.value());
-    auto result = execute_read_query<change_reason_entity, domain::change_reason>(
+    auto result = query_builder::execute_read_query<change_reason_entity, domain::change_reason>(
         ctx,
         query,
         [](const auto& entities) { return change_reason_mapper::map(entities); },
@@ -335,7 +336,7 @@ void change_reason_repository::remove(context ctx, const std::vector<std::string
     const auto query =
         query_builder::delete_from<change_reason_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing change reasons.");
+    query_builder::execute_delete_query(ctx, query, lg(), "Batch removing change reasons.");
 }
 
 

@@ -13,6 +13,7 @@
 #+brief: Workflow orchestration service component
 #+component_kind: composite
 #+parts: api core service
+#+repository_backend: libpq
 
 * Summary
 

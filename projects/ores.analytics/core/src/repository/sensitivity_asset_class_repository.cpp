@@ -159,10 +159,10 @@ void sensitivity_asset_class_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing sensitivity asset class. "
                                << "asset_class_code: " << v.asset_class_code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        sensitivity_asset_class_mapper::map(t),
-                        lg(),
-                        "Writing sensitivity asset class to database.");
+    query_builder::execute_write_query(ctx,
+                                       sensitivity_asset_class_mapper::map(t),
+                                       lg(),
+                                       "Writing sensitivity asset class to database.");
 }
 
 void sensitivity_asset_class_repository::write(
@@ -174,10 +174,10 @@ void sensitivity_asset_class_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        sensitivity_asset_class_mapper::map(batch),
-                        lg(),
-                        "Writing sensitivity asset classes to database.");
+    query_builder::execute_write_query(ctx,
+                                       sensitivity_asset_class_mapper::map(batch),
+                                       lg(),
+                                       "Writing sensitivity asset classes to database.");
 }
 
 std::vector<domain::sensitivity_asset_class>
@@ -188,7 +188,8 @@ sensitivity_asset_class_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("asset_class_code"_c);
 
-    return execute_read_query<sensitivity_asset_class_entity, domain::sensitivity_asset_class>(
+    return query_builder::execute_read_query<sensitivity_asset_class_entity,
+                                             domain::sensitivity_asset_class>(
         ctx,
         query,
         [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
@@ -206,7 +207,8 @@ sensitivity_asset_class_repository::read_latest(context ctx, const std::string& 
                        where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
                              "valid_to"_c == max.value());
 
-    return execute_read_query<sensitivity_asset_class_entity, domain::sensitivity_asset_class>(
+    return query_builder::execute_read_query<sensitivity_asset_class_entity,
+                                             domain::sensitivity_asset_class>(
         ctx,
         query,
         [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
@@ -224,7 +226,8 @@ sensitivity_asset_class_repository::read_all(context ctx, const std::string& ass
                        where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<sensitivity_asset_class_entity, domain::sensitivity_asset_class>(
+    return query_builder::execute_read_query<sensitivity_asset_class_entity,
+                                             domain::sensitivity_asset_class>(
         ctx,
         query,
         [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
@@ -243,13 +246,13 @@ std::optional<domain::sensitivity_asset_class> sensitivity_asset_class_repositor
                              "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<sensitivity_asset_class_entity, domain::sensitivity_asset_class>(
-            ctx,
-            query,
-            [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
-            lg(),
-            "Reading sensitivity asset class at version.");
+    const auto entities = query_builder::execute_read_query<sensitivity_asset_class_entity,
+                                                            domain::sensitivity_asset_class>(
+        ctx,
+        query,
+        [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
+        lg(),
+        "Reading sensitivity asset class at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -277,7 +280,8 @@ sensitivity_asset_class_repository::remove_status sensitivity_asset_class_reposi
                        where("tenant_id"_c == tid && "asset_class_code"_c == asset_class_code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing sensitivity asset class from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing sensitivity asset class from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -304,8 +308,8 @@ std::vector<domain::sensitivity_asset_class> sensitivity_asset_class_repository:
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<sensitivity_asset_class_entity,
-                                      domain::sensitivity_asset_class>(
+    return query_builder::execute_ordered_read_query<sensitivity_asset_class_entity,
+                                                     domain::sensitivity_asset_class>(
         ctx,
         query,
         sensitivity_asset_class_list_order(order, {"asset_class_code"}, false),
@@ -326,7 +330,7 @@ std::uint32_t sensitivity_asset_class_repository::get_total_asset_class_count(
     const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
                        where("tenant_id"_c == tid);
 
-    return execute_count_query<sensitivity_asset_class_entity>(
+    return query_builder::execute_count_query<sensitivity_asset_class_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -345,13 +349,13 @@ sensitivity_asset_class_repository::read_latest(context ctx,
     const auto query = query_builder::read<std::vector<sensitivity_asset_class_entity>> |
                        where("tenant_id"_c == tid && "asset_class_code"_c.in(asset_class_codes) &&
                              "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<sensitivity_asset_class_entity, domain::sensitivity_asset_class>(
-            ctx,
-            query,
-            [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
-            lg(),
-            "Reading latest sensitivity asset classes by ids.");
+    auto result = query_builder::execute_read_query<sensitivity_asset_class_entity,
+                                                    domain::sensitivity_asset_class>(
+        ctx,
+        query,
+        [](const auto& entities) { return sensitivity_asset_class_mapper::map(entities); },
+        lg(),
+        "Reading latest sensitivity asset classes by ids.");
     return result;
 }
 
@@ -370,7 +374,8 @@ void sensitivity_asset_class_repository::remove(context ctx,
     const auto query = query_builder::delete_from<sensitivity_asset_class_entity> |
                        where("tenant_id"_c == tid && "asset_class_code"_c.in(asset_class_codes) &&
                              "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing sensitivity asset classes.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing sensitivity asset classes.");
 }
 
 

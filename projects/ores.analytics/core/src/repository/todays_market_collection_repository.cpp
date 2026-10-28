@@ -169,10 +169,10 @@ void todays_market_collection_repository::write(context ctx,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        todays_market_collection_mapper::map(t),
-                        lg(),
-                        "Writing today's market collection to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_collection_mapper::map(t),
+                                       lg(),
+                                       "Writing today's market collection to database.");
 }
 
 void todays_market_collection_repository::write(
@@ -184,10 +184,10 @@ void todays_market_collection_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        todays_market_collection_mapper::map(batch),
-                        lg(),
-                        "Writing today's market collections to database.");
+    query_builder::execute_write_query(ctx,
+                                       todays_market_collection_mapper::map(batch),
+                                       lg(),
+                                       "Writing today's market collections to database.");
 }
 
 std::vector<domain::todays_market_collection>
@@ -198,7 +198,8 @@ todays_market_collection_repository::read_latest(context ctx) {
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c);
 
-    return execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
+    return query_builder::execute_read_query<todays_market_collection_entity,
+                                             domain::todays_market_collection>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
@@ -214,7 +215,8 @@ todays_market_collection_repository::read_latest(context ctx, const std::string&
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
+    return query_builder::execute_read_query<todays_market_collection_entity,
+                                             domain::todays_market_collection>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
@@ -236,13 +238,13 @@ todays_market_collection_repository::read_latest_by_collection(context ctx,
     // A key names a row of one party: another party can hold the same key, so
     // the lookup keeps the rows of the session's party when it has one. A
     // finder with a parent column is pinned to its parent's party already.
-    auto found =
-        execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
-            lg(),
-            "Reading latest today's market collection by collection.");
+    auto found = query_builder::execute_read_query<todays_market_collection_entity,
+                                                   domain::todays_market_collection>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market collection by collection.");
     if (const auto party = ctx.party_id(); party.has_value())
         std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
     return found;
@@ -258,13 +260,13 @@ todays_market_collection_repository::read_any_by_collection(context ctx,
                        where("tenant_id"_c == tid && "collection"_c == collection) |
                        order_by("valid_from"_c.desc());
 
-    auto found =
-        execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
-            lg(),
-            "Reading any today's market collection by collection.");
+    auto found = query_builder::execute_read_query<todays_market_collection_entity,
+                                                   domain::todays_market_collection>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+        lg(),
+        "Reading any today's market collection by collection.");
     // A key names a row of one party, and another party of the tenant may hold
     // the same key, so the read keeps the session's party's rows. The filter
     // runs before the newest row is taken because the party column may be
@@ -287,7 +289,8 @@ todays_market_collection_repository::read_all(context ctx, const std::string& id
                        where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
+    return query_builder::execute_read_query<todays_market_collection_entity,
+                                             domain::todays_market_collection>(
         ctx,
         query,
         [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
@@ -306,13 +309,13 @@ todays_market_collection_repository::read_at_version(context ctx,
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
-            lg(),
-            "Reading today's market collection at version.");
+    const auto entities = query_builder::execute_read_query<todays_market_collection_entity,
+                                                            domain::todays_market_collection>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+        lg(),
+        "Reading today's market collection at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -339,8 +342,8 @@ todays_market_collection_repository::read_latest_by_todays_market_config_id(
               "valid_to"_c == max.value()) |
         query_builder::offset(offset) | query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_collection_entity,
-                                      domain::todays_market_collection>(
+    return query_builder::execute_ordered_read_query<todays_market_collection_entity,
+                                                     domain::todays_market_collection>(
         ctx,
         query,
         todays_market_collection_list_order(order, {"id"}, false),
@@ -366,7 +369,7 @@ todays_market_collection_repository::get_total_collection_count_by_todays_market
         where("tenant_id"_c == tid && "todays_market_config_id"_c == todays_market_config_id &&
               "valid_to"_c == max.value());
 
-    return execute_count_query<todays_market_collection_entity>(
+    return query_builder::execute_count_query<todays_market_collection_entity>(
         ctx,
         query,
         todays_market_collection_filter_condition(filter),
@@ -395,7 +398,8 @@ todays_market_collection_repository::remove_status todays_market_collection_repo
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing today's market collection from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing today's market collection from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -422,8 +426,8 @@ std::vector<domain::todays_market_collection> todays_market_collection_repositor
                        where("tenant_id"_c == tid) | query_builder::offset(offset) |
                        query_builder::limit(limit);
 
-    return execute_ordered_read_query<todays_market_collection_entity,
-                                      domain::todays_market_collection>(
+    return query_builder::execute_ordered_read_query<todays_market_collection_entity,
+                                                     domain::todays_market_collection>(
         ctx,
         query,
         todays_market_collection_list_order(order, {"id"}, false),
@@ -444,7 +448,7 @@ std::uint32_t todays_market_collection_repository::get_total_collection_count(
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
                        where("tenant_id"_c == tid);
 
-    return execute_count_query<todays_market_collection_entity>(
+    return query_builder::execute_count_query<todays_market_collection_entity>(
         ctx,
         query,
         query_builder::narrowed(query_builder::valid_at(as_of),
@@ -461,13 +465,13 @@ todays_market_collection_repository::read_latest(context ctx, const std::vector<
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
-            ctx,
-            query,
-            [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
-            lg(),
-            "Reading latest today's market collections by ids.");
+    auto result = query_builder::execute_read_query<todays_market_collection_entity,
+                                                    domain::todays_market_collection>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market collections by ids.");
     return result;
 }
 
@@ -484,7 +488,8 @@ void todays_market_collection_repository::remove(context ctx, const std::vector<
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::delete_from<todays_market_collection_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing today's market collections.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Batch removing today's market collections.");
 }
 
 

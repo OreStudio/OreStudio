@@ -40,6 +40,7 @@ the reflect-cpp removal retires.
 |------+-------+-------+-----+-------------|
 | [[id:06FADE9D-06F3-4809-9B97-16E0415E556E][Scaffold story: Make main green after the sqlgen removal]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:49C5CB14-56BF-4028-900B-6EF8383BDD9C][Fix what the checks and CI find on main]] | DONE | 2026-10-28 | 2026-10-28 | Initial task for: Make main green after the sqlgen removal |
+| [[id:78F77E19-24D3-4276-BE36-E7182F9D6504][Hold the basket's initial price as the decimal the domain now states]] | BACKLOG | | | The trading domain moved a basket constituent's initial price from a double to an exact decimal, but the synthetic writer still assigns the plan's optional double to it, so ores.synthetic.core.lib does not compile on main. Convert at the boundary the decimal type names for it. |
 
 * Decisions
 

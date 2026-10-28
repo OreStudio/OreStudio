@@ -22,7 +22,7 @@
 /**
  * @brief Database persistence layer for variability domain types.
  *
- * Provides ORM support using sqlgen including entities, mappers, and
+ * Provides persistence on the libpq layer, including entities, mappers, and
  * repositories for system_setting. Supports temporal versioning with
  * valid_from/valid_to fields.
  */

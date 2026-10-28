@@ -47,7 +47,7 @@ domain::workflow_instance workflow_instance_mapper::map(const workflow_instance_
     domain::workflow_instance r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.type = v.type;
     r.target_kind = v.target_kind.value_or("");
     r.target_id = v.target_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.target_id) :

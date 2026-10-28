@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1ED5D5B1-FA1D-4CE2-B8E9-347900D75C35
+:END:
+#+title: ores.ore reads reporting's tables, which inverts the layering
+#+description: ores.ore.core links ores.reporting.core and includes ores.reporting.api headers: run_store.cpp opens report_definition_repository, file_type_repository and run_document_service, and run_document_projection.hpp includes risk_report_config and configuration_market_binding. The pure ORE library therefore depends on the reporting component, so reporting cannot use ore's types without a cycle, and the engine's own document is built from another component's entities.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

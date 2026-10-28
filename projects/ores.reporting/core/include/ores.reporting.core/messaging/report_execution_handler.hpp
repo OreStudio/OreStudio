@@ -108,6 +108,17 @@ private:
                               std::span<const std::byte> archive);
 
     /**
+     * @brief Records the log rows the node wrote for one compute result.
+     *
+     * The node alone knows how the engine writes its log, so the service reads
+     * the rows it marshalled and stores them: the run's log is the node's
+     * contract, not the engine's file.
+     */
+    void record_run_log(const std::string& tenant_id,
+                        const std::string& report_instance_id,
+                        const std::string& result_id);
+
+    /**
      * @brief A client that carries the run's token, for calls to an owner.
      *
      * The token comes from the cache, keyed by the grant the report instance

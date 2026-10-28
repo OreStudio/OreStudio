@@ -999,11 +999,14 @@ BEGIN
     -- over NATS, not through a handler.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::run_grants:exchange');
     -- The simulator serves a source of the catalogue, so it reads the sources through marketdata,
-    -- which owns the table. A generator that starts from a vintage price reads the series and the
-    -- observations as the service, since no run token stands in for a person any more.
+    -- which owns the tables. A generator that starts from a published value reads the series, the
+    -- observations and the fixing as the service, since no run token stands in for a person.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_data_sources:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_series:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_observations:read');
+    -- A feed whose price source is "fixing" reads the latest public fixing, which is a tick
+    -- class of its own on a table of its own, so the read is granted by its own name.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_fixings:read');
 
     -- ORE Import service: workflow management + delegated refdata/trading writes
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service', false);

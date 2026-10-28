@@ -1364,7 +1364,12 @@ std::optional<feed_listing> synthetic_commands::read_feed_listing(std::ostream& 
         fail(out) << "Failed to list running feeds." << std::endl;
         return std::nullopt;
     }
-    listing.running = std::move(running->running_source_names);
+    // The list names the runs and where each started; the listing needs only the
+    // names, which answer whether a config runs now.
+    listing.running.clear();
+    listing.running.reserve(running->running_feeds.size());
+    for (const auto& feed : running->running_feeds)
+        listing.running.push_back(feed.source_name);
 
     return listing;
 }

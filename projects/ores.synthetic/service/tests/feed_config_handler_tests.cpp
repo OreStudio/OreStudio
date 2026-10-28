@@ -62,6 +62,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <map>
@@ -443,17 +444,26 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     REQUIRE(ir_start.success);
     CHECK(ir_start.message == "Feed started: " + seeds.ir_enabled_source);
 
-    // List: one request returns every kind's running source_names.
+    // List: one request returns every kind's running feed, with where each run started.
     const auto list = send_request<list_feeds_request, list_feeds_response>(
         f.nats, test_list_subject, token, list_feeds_request{});
     REQUIRE(list.success);
-    REQUIRE(list.running_source_names.size() == 2);
-    CHECK(std::find(list.running_source_names.begin(),
-                    list.running_source_names.end(),
-                    seeds.fx_enabled_source) != list.running_source_names.end());
-    CHECK(std::find(list.running_source_names.begin(),
-                    list.running_source_names.end(),
-                    seeds.ir_enabled_source) != list.running_source_names.end());
+    REQUIRE(list.running_feeds.size() == 2);
+    const auto fx_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
+        return one.source_name == seeds.fx_enabled_source;
+    });
+    REQUIRE(fx_run != list.running_feeds.end());
+    // The FX config states a fixed price, so its run kept its level and names no fixing.
+    REQUIRE(fx_run->start.has_value());
+    CHECK_FALSE(fx_run->start->from_fixing);
+    CHECK(fx_run->start->item.empty());
+    CHECK(fx_run->start->level == Catch::Approx(1.08));
+    // A curve starts from no published value, so its run carries no start.
+    const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
+        return one.source_name == seeds.ir_enabled_source;
+    });
+    REQUIRE(ir_run != list.running_feeds.end());
+    CHECK_FALSE(ir_run->start.has_value());
 
     // Stop the IR feed by config_id: the server resolves it to the
     // config's source_name.

@@ -30,6 +30,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -63,6 +64,13 @@ struct demand_outcome final {
     std::vector<ores::marketdata::messaging::rejected_id> rejected;
     std::size_t started = 0;
     std::size_t stopped = 0;
+};
+
+/** One feed the runner runs now, and where its run started. */
+struct running_feed_start final {
+    std::string source_name;
+    /** Absent for a kind that starts from no published value. */
+    std::optional<ores::marketdata::domain::feed_start> start;
 };
 
 /**
@@ -282,6 +290,24 @@ public:
     [[nodiscard]] std::size_t running_count() const {
         std::lock_guard lock(mu_);
         return running_.size();
+    }
+
+    /**
+     * @brief The feeds this runner runs now, each with where its run started.
+     *
+     * The start is the one the generator recorded when it was built, so it names the
+     * observation this run took and not the one a later run would take.
+     */
+    [[nodiscard]] std::vector<running_feed_start> running_feeds() const {
+        std::lock_guard lock(mu_);
+        std::vector<running_feed_start> out;
+        out.reserve(running_.size());
+        for (const auto& [_, g] : running_) {
+            if (!g.feed)
+                continue;
+            out.push_back({.source_name = g.source_name, .start = g.feed->start_source()});
+        }
+        return out;
     }
 
 private:

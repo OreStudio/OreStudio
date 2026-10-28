@@ -69,6 +69,23 @@ two items. The values stay decimal text, as they are stored.
  */
 #+end_src
 
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whose fixing to read, or empty for the parties the caller can see.
+ *
+ * A fixing is entitled by party, so a read that names none reads across every
+ * party the session sees, and a session that sees none is refused. A service
+ * holds no party of its own and names the party whose data it needs, which is
+ * the party of the record it works for; a session that sees parties narrows to
+ * the one it names and is refused when it cannot see it.
+ */
+#+end_src
+
 *** on_or_before
 :PROPERTIES:
 :cpp_type: std::chrono::year_month_day
@@ -209,6 +226,23 @@ two items. The values stay decimal text, as they are stored.
  * Two providers can deliver one ORE index, the ECB rate from the ECB itself and from
  * a vendor. An item that more than one provider carries is refused as ambiguous
  * unless the request names one.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whose fixings to read, or empty for the parties the caller can see.
+ *
+ * A fixing is entitled by party, so a read that names none reads across every
+ * party the session sees, and a session that sees none is refused. A service
+ * holds no party of its own and names the party whose data it needs, which is
+ * the party of the record it works for; a session that sees parties narrows to
+ * the one it names and is refused when it cannot see it.
  */
 #+end_src
 

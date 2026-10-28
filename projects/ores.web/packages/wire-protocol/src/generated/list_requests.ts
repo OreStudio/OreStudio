@@ -4069,7 +4069,7 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     'synthetic.v1.feed_configs.list': {
         asOf: false,
         filter: [],
-        rows: ['running_source_names'],
+        rows: ['running_feeds'],
     },
     'synthetic.v1.folders.list': {
         asOf: true,
@@ -4077,6 +4077,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['folders'],
     },
     'synthetic.v1.folders_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_spot_fixing_items.list': {
+        asOf: true,
+        filter: ['fx_spot_config_id', 'id_one_of', 'fx_spot_config_id_one_of'],
+        rows: ['fx_spot_fixing_items'],
+    },
+    'synthetic.v1.fx_spot_fixing_items_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

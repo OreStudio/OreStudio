@@ -281,7 +281,7 @@ describe('the market regime', () => {
         const { server, sessionId, publish } = buildTestServer({
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.eurusd', 'live.usdsofr'],
+                running_feeds: [{ source_name: 'live.eurusd' }, { source_name: 'live.usdsofr' }],
             },
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
@@ -364,7 +364,7 @@ describe('the market regime', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.eurusd'],
+                running_feeds: [{ source_name: 'live.eurusd' }],
             },
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
@@ -388,7 +388,7 @@ describe('the market regime', () => {
 
         replies['synthetic.v1.feed_configs.list'] = {
             success: true,
-            running_source_names: ['live.gbpusd'],
+            running_feeds: [{ source_name: 'live.gbpusd' }],
         };
         replies['synthetic.v1.ops.list_folder_feeds'] = {
             success: true,
@@ -452,7 +452,7 @@ describe('the market regime', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_source_names: ['live.eurusd'],
+                running_feeds: [{ source_name: 'live.eurusd' }],
             },
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
@@ -469,7 +469,7 @@ describe('the market regime', () => {
         };
         const { server, sessionId } = buildTestServer(replies);
 
-        replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
+        replies['synthetic.v1.feed_configs.list'] = { success: true, running_feeds: [] };
         const response = await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
 
         expect(response.json()).toEqual({

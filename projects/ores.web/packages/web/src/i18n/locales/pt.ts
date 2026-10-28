@@ -5554,6 +5554,17 @@ const pt: SourceCatalogue = {
                 enabled: 'Um fluxo que não está ativo não pode arrancar.',
                 auto_start: 'O fluxo arranca quando o serviço sintético arranca.',
             },
+            start: {
+                title: 'De onde arrancou esta execução',
+                fromFixing: 'Arrancou do fixing {provider} de {date}, recebido em {received}.',
+                dateUnknown: 'uma data desconhecida',
+                receivedUnknown: 'uma hora desconhecida',
+                fixedLevel:
+                    'Nenhum fixing publicado fixou o nível, por isso a execução manteve o nível fixo de {level}.',
+                inverted:
+                    'O item cita o par ao contrário, por isso o valor foi lido como o seu inverso.',
+                window: '{used} fixings em {days} dias mediram a sua dispersão.',
+            },
             removeWarning:
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
         },

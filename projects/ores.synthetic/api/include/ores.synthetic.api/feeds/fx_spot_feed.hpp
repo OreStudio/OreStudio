@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
+#include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
@@ -115,10 +116,10 @@ public:
         return published_.load(std::memory_order_relaxed);
     }
     /// Where the feed's starting value came from, or that it kept its fixed level.
-    const fixing_start& start_source() const {
+    std::optional<ores::marketdata::domain::feed_start> start_source() const override {
         return start_source_;
     }
-    void record_start_source(fixing_start s) {
+    void record_start_source(ores::marketdata::domain::feed_start s) {
         start_source_ = std::move(s);
     }
 
@@ -148,7 +149,7 @@ private:
     std::string display_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
-    fixing_start start_source_;
+    ores::marketdata::domain::feed_start start_source_;
 };
 
 /**
@@ -159,14 +160,15 @@ private:
  * name, so a run's prices reproduce; the publish subject is derived
  * from the config's source_name via producer_subject().
  *
- * A config with price_source "fixed" starts from gmm_initial_price. One with "fixing" reads @p fixing_items in rank order through @p auth_nats and
- * starts from the first that has a fixing: the latest on or before the date of @p clock, or on
- * the date its policy names. An item that quotes the pair the other way round is read as one over
- * its value. The spread of that item's fixings over its window, in hourly terms, sets the size of
- * the mixture: every component's deviation is scaled by one factor, so its shape is kept. When no
- * item has a fixing, the feed keeps gmm_initial_price and its configured mixture. The feed
- * records where it started, which start_source() reports. The fixings are read once, when the
- * feed is built, so a feed that starts again takes the newest.
+ * A config with price_source "fixed" starts from gmm_initial_price. One with "fixing" reads @p
+ * fixing_items in rank order through @p auth_nats and starts from the first that has a fixing: the
+ * latest on or before the date of @p clock, or on the date its policy names. An item that quotes
+ * the pair the other way round is read as one over its value. The spread of that item's fixings
+ * over its window, in hourly terms, sets the size of the mixture: every component's deviation is
+ * scaled by one factor, so its shape is kept. When no item has a fixing, the feed keeps
+ * gmm_initial_price and its configured mixture. The feed records where it started, which
+ * start_source() reports. The fixings are read once, when the feed is built, so a feed that starts
+ * again takes the newest.
  *
  * @throws std::invalid_argument if @p components is empty or cfg.ticks_per_hour is
  * non-positive. cfg.process_type is not validated here: it is forwarded to

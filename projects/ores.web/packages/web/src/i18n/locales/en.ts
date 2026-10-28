@@ -5521,6 +5521,17 @@ export const en: SourceCatalogue = {
                 enabled: 'A feed that is not enabled cannot start.',
                 auto_start: 'The feed starts when the synthetic service starts.',
             },
+            start: {
+                title: 'Where this run started',
+                fromFixing: 'Started from the {provider} fixing of {date}, received {received}.',
+                dateUnknown: 'an unknown date',
+                receivedUnknown: 'at an unknown time',
+                fixedLevel:
+                    'No published fixing set the level, so the run kept its fixed level of {level}.',
+                inverted:
+                    'The item quotes the pair the other way round, so its value was read as one over it.',
+                window: '{used} fixings over {days} days measured its spread.',
+            },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
         },

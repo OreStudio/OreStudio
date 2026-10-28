@@ -21,7 +21,6 @@
 #define ORES_SYNTHETIC_API_FEEDS_FIXING_CALIBRATION_HPP
 
 #include "ores.synthetic.api/export.hpp"
-#include <chrono>
 #include <cmath>
 #include <expected>
 #include <optional>
@@ -88,28 +87,6 @@ struct mixture_component final {
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<std::vector<double>, std::string> scaled_stdevs(
     const std::vector<mixture_component>& components, double hourly_spread, int ticks_per_hour);
-
-/**
- * @brief Where a feed's starting value came from, or that it kept its fixed level.
- */
-struct fixing_start final {
-    /// True when a fixing set the level; false when the feed kept its fixed level.
-    bool from_fixing = false;
-    std::string item;
-    std::string provider_code;
-    std::string vendor_id;
-    bool inverted = false;
-    std::optional<std::chrono::year_month_day> fixing_date;
-    std::optional<std::chrono::system_clock::time_point> received_at;
-    double level = 0.0;
-    int window_days = 0;
-    /// How many fixings of the window measured the volatility.
-    int used = 0;
-    /// The measured hourly spread, when the window had one.
-    std::optional<double> hourly_spread;
-    /// Why the feed kept its fixed level, or why its volatility was not measured.
-    std::string note;
-};
 
 }
 

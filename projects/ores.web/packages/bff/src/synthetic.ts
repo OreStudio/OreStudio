@@ -547,6 +547,50 @@ async function providerOfFeed(
 }
 
 /**
+ * Where a feed's starting value came from: the fixing the run took, or the level it kept.
+ *
+ * The service reads it when it builds the generator, so it names the value this run
+ * started from and not the one a later run would take.
+ */
+export const feedStartSchema = z.object({
+    from_fixing: z.boolean().default(false),
+    item: z.string().default(''),
+    provider_code: z.string().default(''),
+    vendor_id: z.string().default(''),
+    inverted: z.boolean().default(false),
+    fixing_date: z.string().nullish(),
+    received_at: z.string().nullish(),
+    level: z.number().default(0),
+    window_days: z.int().default(0),
+    used: z.int().default(0),
+    hourly_spread: z.number().nullish(),
+    note: z.string().default(''),
+});
+
+export type FeedStart = z.infer<typeof feedStartSchema>;
+
+/** One feed the service runs now, and where its run started. */
+const runningFeedSchema = z.object({
+    source_name: z.string(),
+    start: feedStartSchema.nullish(),
+});
+
+/** The feeds the service runs now, each with where it started, by source name. */
+async function readRunningFeeds(
+    session: LiveSession,
+): Promise<readonly z.infer<typeof runningFeedSchema>[]> {
+    const reply = await session.client.callAuthenticated(
+        feedSubjects.list_feeds_request,
+        {},
+        operationReplySchema.extend({
+            running_feeds: z.array(runningFeedSchema).default([]),
+        }),
+    );
+    refuseUnless(reply, upstreamFailure);
+    return reply.running_feeds;
+}
+
+/**
  * The source names of the feeds the service runs now, demanded or manual.
  *
  * A feed row says whether it runs by this set alone: the service starts a generator for
@@ -554,13 +598,16 @@ async function providerOfFeed(
  * every generator that runs.
  */
 export async function runningSourceNames(session: LiveSession): Promise<ReadonlySet<string>> {
-    const reply = await session.client.callAuthenticated(
-        feedSubjects.list_feeds_request,
-        {},
-        operationReplySchema.extend({ running_source_names: z.array(z.string()).default([]) }),
-    );
-    refuseUnless(reply, upstreamFailure);
-    return new Set(reply.running_source_names);
+    const feeds = await readRunningFeeds(session);
+    return new Set(feeds.map((feed) => feed.source_name));
+}
+
+/** Where each run of the service started, by source name; absent for a kind with no start. */
+export async function runningStarts(
+    session: LiveSession,
+): Promise<ReadonlyMap<string, z.infer<typeof feedStartSchema> | null>> {
+    const feeds = await readRunningFeeds(session);
+    return new Map(feeds.map((feed) => [feed.source_name, feed.start ?? null]));
 }
 
 /** Why this session cannot write the resource, or undefined when it can. */
@@ -1137,12 +1184,14 @@ export function registerSyntheticRoutes(
             return { row: found };
         }
         const provider = await providerOfFeed(session, found);
-        const running = await runningSourceNames(session);
+        const starts = await runningStarts(session);
+        const sourceName = z.string().parse(found['source_name']);
         return {
             row: {
                 ...found,
                 provider_code: provider,
-                running: running.has(z.string().parse(found['source_name'])),
+                running: starts.has(sourceName),
+                start: starts.get(sourceName) ?? null,
             },
         };
     });

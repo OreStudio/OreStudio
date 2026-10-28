@@ -86,7 +86,7 @@ policy_date(const std::string& policy, const ores::marketdata::domain::market_cl
 /// The level and the measured spread a fixing feed starts from, and the mixture's deviations
 /// scaled to it; or, when no item has a fixing, the record that the feed kept its fixed level.
 struct resolved_start final {
-    fixing_start source;
+    ores::marketdata::domain::feed_start source;
     std::optional<std::vector<double>> stdevs;
 };
 
@@ -115,8 +115,13 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
             skipped.push_back(item.item + ": " + date.error());
             continue;
         }
-        const auto latest = md.get_fixing(
-            {.item = item.item, .provider_code = item.provider_code, .on_or_before = *date});
+        // The feed reads fixings for the party that owns its config: a fixing is entitled by
+        // party, and the service that starts the feed holds no party of its own.
+        const auto party_id = boost::uuids::to_string(cfg.party_id);
+        const auto latest = md.get_fixing({.item = item.item,
+                                           .provider_code = item.provider_code,
+                                           .party_id = party_id,
+                                           .on_or_before = *date});
         if (!latest) {
             skipped.push_back(item.item + ": " + latest.error());
             continue;
@@ -148,6 +153,7 @@ resolve_fixing_start(ores::nats::service::nats_client& auth_nats,
 
         const auto window = md.get_fixing_window({.item = item.item,
                                                   .provider_code = item.provider_code,
+                                                  .party_id = party_id,
                                                   .to = *latest->fixing_date,
                                                   .days = item.window_days});
         if (!window) {
@@ -217,8 +223,10 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     }
 
     // "fixing" starts from the first ranked item with a fixing and sizes the mixture to its
-    // spread; "fixed" uses the stored value as-is. See make_fx_spot_feed's doc comment.
-    fixing_start start;
+    // spread; "fixed" uses the stored value as-is. The start records the level either way, so a
+    // fixed feed reads as one that kept its level rather than as one that started nowhere.
+    ores::marketdata::domain::feed_start start;
+    start.level = cfg.gmm_initial_price;
     double initial_price = cfg.gmm_initial_price;
     if (cfg.price_source == "fixing") {
         auto resolved = resolve_fixing_start(auth_nats, cfg, components, fixing_items, clock);

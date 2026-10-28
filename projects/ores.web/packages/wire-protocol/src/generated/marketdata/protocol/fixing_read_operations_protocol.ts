@@ -41,6 +41,16 @@ export interface GetFixingRequest {
      */
     provider_code: string;
     /**
+     * @brief Whose fixing to read, or empty for the parties the caller can see.
+     *
+     * A fixing is entitled by party, so a read that names none reads across every
+     * party the session sees, and a session that sees none is refused. A service
+     * holds no party of its own and names the party whose data it needs, which is
+     * the party of the record it works for; a session that sees parties narrows to
+     * the one it names and is refused when it cannot see it.
+     */
+    party_id: string;
+    /**
      * @brief The last date the fixing may fall on.
      */
     on_or_before: string;
@@ -99,6 +109,16 @@ export interface GetFixingWindowRequest {
      * unless the request names one.
      */
     provider_code: string;
+    /**
+     * @brief Whose fixings to read, or empty for the parties the caller can see.
+     *
+     * A fixing is entitled by party, so a read that names none reads across every
+     * party the session sees, and a session that sees none is refused. A service
+     * holds no party of its own and names the party whose data it needs, which is
+     * the party of the record it works for; a session that sees parties narrows to
+     * the one it names and is refused when it cannot see it.
+     */
+    party_id: string;
     /**
      * @brief The last date of the window, included.
      */

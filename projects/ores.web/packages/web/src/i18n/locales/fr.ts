@@ -5599,6 +5599,17 @@ const fr: SourceCatalogue = {
                 enabled: 'Un flux non activé ne peut pas démarrer.',
                 auto_start: 'Le flux démarre quand le service synthétique démarre.',
             },
+            start: {
+                title: "D'où part cette exécution",
+                fromFixing: 'Parti du fixing {provider} du {date}, reçu le {received}.',
+                dateUnknown: 'une date inconnue',
+                receivedUnknown: 'à une heure inconnue',
+                fixedLevel:
+                    "Aucun fixing publié n'a fixé le niveau, donc l'exécution a gardé son niveau fixe de {level}.",
+                inverted:
+                    "L'élément cite la paire dans l'autre sens, donc sa valeur a été lue comme son inverse.",
+                window: '{used} fixings sur {days} jours ont mesuré sa dispersion.',
+            },
             removeWarning:
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
         },

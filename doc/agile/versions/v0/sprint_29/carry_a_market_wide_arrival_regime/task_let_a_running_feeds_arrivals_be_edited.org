@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-a-running-feeds-arrivals-be-edited
-#+pr:
+#+pr: 3980
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3980][#3980]] | [web] Let a running feed's arrivals be edited, and restart it on them |
 
 * Review
 

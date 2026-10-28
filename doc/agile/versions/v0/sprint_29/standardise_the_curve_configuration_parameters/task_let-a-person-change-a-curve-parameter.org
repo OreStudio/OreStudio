@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-a-person-change-a-curve-parameter
-#+pr:
+#+pr: 4036
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -149,7 +149,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4036][#4036]] | [refdata] Let a person change a curve parameter |
 
 * Review
 

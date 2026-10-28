@@ -578,6 +578,28 @@ hold the permission.
 - ores_inbox_remind_expiring_approval_requests_
 - ores_inbox_stalled_applies_
 
+* ores.marketdata.official
+:PROPERTIES:
+:description: Official rates adapter. Reads the daily rates that central banks and public bodies publish, through Frankfurter, and sends them to the market data service as fixings. It has no database.
+:display_name: Official Rates Adapter
+:summary:     Reads the daily rates central banks publish and sends them to the market data service as fixings.
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.marketdata.service
+:END:
+
+It carries no =account_var=: it reaches nothing but the bus and Frankfurter, and
+the market data service maps and stores what it sends. Each =--source= is a
+source of the official rates catalogue,
+=projects/ores.sql/populate/marketdata/marketdata_official_catalogue_populate.sql=.
+
+** Extra args
+
+- --source ecb-frankfurter:ecb:ECB
+- --source imf-frankfurter:imf:IMF
+- --source boc-frankfurter:boc:BOC
+- --source tcmb-frankfurter:tcmb:TCMB
+
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

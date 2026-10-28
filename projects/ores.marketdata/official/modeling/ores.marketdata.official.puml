@@ -1,0 +1,81 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.marketdata.official Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace marketdata #F2F2F2 {
+        namespace official #F2F2F2 {
+            namespace domain #F2F2F2 {
+                class published_rate <<struct>> {
+                    +date : year_month_day
+                    +base : string
+                    +quote : string
+                    +rate : string
+                }
+
+                class hosted_source <<struct>> {
+                    +source_name : string
+                    +provider_code : string
+                    +frankfurter_key : string
+                }
+
+                class frankfurter_fetcher {
+                    +currencies(string_view key) : expected<vector<string>, string>
+                    +rates(string_view key, year_month_day from, year_month_day to) : expected<vector<published_rate>, string>
+                }
+
+                class source_feed {
+                    -universe_ : set<string>
+                    -demanded_ : set<string>
+                    -last_sent_ : map<string, year_month_day>
+                    +load_universe() : expected<void, string>
+                    +announcement() : adapter_announce_request
+                    +answer(const adapter_demand_request&) : adapter_demand_response
+                    +demand(const adapter_demand_request&) : adapter_demand_response
+                    +refresh(year_month_day today, publish_fn) : expected<size_t, string>
+                }
+
+                source_feed --> hosted_source
+                source_feed --> frankfurter_fetcher
+                frankfurter_fetcher ..> published_rate
+            }
+
+            namespace app #F2F2F2 {
+                class official_adapter {
+                    +subscribe() : vector<subscription>
+                    +start() : void
+                    +stop() : void
+                }
+
+                class application {
+                    +run(io_context&, const options&) : awaitable<void>
+                }
+
+                application --> official_adapter
+                official_adapter "1" *-- "many" ores::marketdata::official::domain::source_feed
+            }
+        }
+    }
+}
+
+
+@enduml

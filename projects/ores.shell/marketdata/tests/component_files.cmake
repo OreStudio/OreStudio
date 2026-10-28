@@ -36,6 +36,7 @@ set(files
     "market_series_commands_tests.cpp"
     "observation_lineage_commands_tests.cpp"
     "provider_commands_tests.cpp"
+    "provider_terms_operations_operations_commands_tests.cpp"
     "rate_card_component_commands_tests.cpp"
     "route_commands_tests.cpp"
     "series_classification_rule_commands_tests.cpp"

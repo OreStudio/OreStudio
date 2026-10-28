@@ -55,6 +55,7 @@
 #include "ores.marketdata.core/messaging/oresmd_uri_handler.hpp"
 #include "ores.marketdata.core/messaging/provider_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/provider_terms_handler.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.marketdata.core/messaging/rate_card_component_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/rate_card_component_registrar.hpp"
@@ -127,6 +128,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_series_classification_rule_handlers(nats, ctx, verifier));
     fold(register_market_series_asset_class_handlers(nats, ctx, verifier));
     fold(register_curve_publish_handlers(nats, ctx, verifier));
+
+    // The acceptance of a provider's terms, whose one writer is this handler.
+    subs.push_back(nats.queue_subscribe(std::string(accept_provider_terms_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            provider_terms_handler h(nats, ctx, verifier);
+                                            h.accept(std::move(msg));
+                                        }));
 
     // Market series export: the one market-series verb with no generated
     // protocol model, because it is a report-feed read rather than CRUD. It

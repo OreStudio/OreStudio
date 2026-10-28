@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-public-sources-adapter
+#+pr: 3995
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The daily rates of the public providers arrive as fixing ticks through the same 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ The daily rates of the public providers arrive as fixing ticks through the same 
 - The Frankfurter fetcher asks for one provider at a time and never for the blended rate, and is tested on stored responses, a missing day and an empty range included.
 - On start it backfills the window for each demanded item oldest first, then polls each provider once a day after its publication time.
 - The Frankfurter address is a setting.
-- A run against the hosted API stores fixings for several providers of one pair.
+- A run against the hosted API stores fixings for several providers of one pair. (Moved on 2026-10-28 to the catalogue task, which supplies the sources and mappings a live run needs.)
 
 * Plan
 
@@ -63,6 +63,14 @@ task and name that file in the Command column.
 
 * Notes
 
+- The part is =ores.marketdata.official=, not =public=: =public= is a C++ keyword, and
+  codegen generated =namespace ores::marketdata::public=, which does not compile.
+- The adapter reads no catalogue. It announces what each publisher quotes, and the
+  service's demand set says what to send.
+- A rate is written as the shortest text that reads back to the published number,
+  because Frankfurter sends JSON numbers. That keeps the published digits except a
+  trailing zero.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -78,12 +86,39 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3995][#3995]] | [marketdata] Add ores.marketdata.official, the official rates adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A publish that throws kills the process | official_adapter.cpp | Accept | The refresh is caught, logged and retried; a test shows the next refresh sends what was not sent. |
+| 2 | A currency with no data rereads the whole window | source_feed.cpp | Accept | Each currency keeps the day it was read through; a test shows the next read is one day. |
+| 3 | backfill_days narrows unchecked | parser.cpp | Accept | Validated from 1 to 3650. |
+| 4 | parse_rates ignores the base | source_feed.cpp | Accept | Fixed with the catalogue: the request names the pivot and a row in another base is refused. |
+| 5 | Duplicate source names | parser.cpp | Accept | Refused. |
+| 6 | Pagination | frankfurter.hpp | Note | Unpaged: 400 days of the ECB came as 8,190 rows in one response; documented. |
+| 7 | A slow announce delays other heartbeats | official_adapter.cpp | Note | Bounded by the reply timeout and the retry back-off. |
+| 8 | An empty demand answer while not ready | official_adapter.cpp | Accept | Every id is rejected as not_ready. |
+| 9 | A not_ready demand is still kept and served later | official_adapter.cpp | Accept | A refused demand is dropped; the service sends the demand again on announce (=adapter_supervisor::on_announce= owes it). No unit test: the path is NATS glue with no seam; the domain tests cover the feed. |
+| 10 | A new currency widens every read | source_feed.cpp | Note | Once per demand change; =last_sent_= drops the repeats. |
+| 11 | A dropped and re-demanded currency resumes its cursor | source_feed.cpp | Note | Intended: the fixings sent before are stored, and the store is idempotent. |
 
 * Result
+
+=ores.marketdata.official= is a new part of the marketdata composite: a process with
+no database that speaks the adapter contract for official rates. Each hosted source,
+given as =<source>:<provider>:<Frankfurter key>=, reads its universe from
+=/v2/providers=, announces it, answers its demand set from it, sends a heartbeat,
+backfills a window of rates on a new demand, oldest first, and then polls; each rate
+becomes a fixing tick stamped at midday UTC of its date. It asks Frankfurter for one
+provider at a time and never for the blend. A demand is answered on the bus's thread
+from the universe alone, and one source at most reads Frankfurter per pass, so a long
+backfill never delays a reply or another source's heartbeat.
+
+Evidence: =ores.marketdata.official.tests= passes 6 of 6 on responses captured from
+Frankfurter on 2026-10-28: the parsing of rates and providers, a refused malformed
+response, a fetch that names one provider, a source that sends its demanded currencies
+once and then only what is new, and its announce. The process starts and prints its
+options. A live run needs the catalogue of the next task.
+

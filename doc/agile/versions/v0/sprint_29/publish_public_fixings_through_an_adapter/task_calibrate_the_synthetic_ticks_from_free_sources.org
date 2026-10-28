@@ -26,11 +26,11 @@ The level of a synthetic price comes from a public source that anyone can check,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | All three plan items are delivered and checked live; the PR waits on review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review PR #4019.                       |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -137,7 +137,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The local check gate ran against the raised branch | — | Note | 50 of 51 checks pass. The whole web client typechecks, formats and tests; build, component drift, model drift, money columns, protocol twins, handler permissions, event registrars, entity writes and codegen tests pass. The gate's build passed and ctest reached 92 of 98 suites before the run was stopped, all passed. |
+| 2 | `er-diagram` fails | reporting_engine_settings_changes_create.sql | Note | Main's table carries a tenant and no row-level security, so the strict ER parse warns. Not this branch's file. |
+| 3 | The gate's heavy steps were stopped | — | Note | The user merged without waiting for `ticks-smoke`, `pgtap` and the last six ctest suites, to save an hour. The branch was live-checked instead: both seeded FX feeds start from a real fixing, and an IR feed reports no start. |
 
 * Result
 

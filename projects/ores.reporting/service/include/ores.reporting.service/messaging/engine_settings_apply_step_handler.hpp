@@ -27,6 +27,7 @@
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.service/service/engine_settings_proposal.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -145,8 +146,13 @@ private:
                 return;
             }
 
+            // The engine commits a step command as JSON text, whatever wire
+            // format this process speaks elsewhere. The default codec is a
+            // process-wide value another client in this process can change, so
+            // the format is stated here rather than inherited.
             const auto command =
-                ores::service::messaging::decode<ores::inbox::workflow::apply_step_command>(msg);
+                ores::nats::wire_codec(ores::nats::wire_format::json)
+                    .decode<ores::inbox::workflow::apply_step_command>(msg.data);
             if (!command || command->request_id.empty()) {
                 wf->fail("The command names no request.");
                 ack.accept();

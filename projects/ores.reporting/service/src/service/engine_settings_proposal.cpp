@@ -275,7 +275,8 @@ void write_group(const ores::database::context& ctx,
                  const std::string& group_code,
                  const boost::uuids::uuid& engine_settings_id,
                  const boost::uuids::uuid& party_id,
-                 const value_map& values) {
+                 const value_map& values,
+                 const std::string& reason) {
     const auto id = boost::uuids::to_string(engine_settings_id);
     if (group_code == fixings_code) {
         const auto rows =
@@ -296,6 +297,8 @@ void write_group(const ores::database::context& ctx,
         row.enrich_index_fixings = as_flag(values.at("enrich_index_fixings"));
         row.ignore_fixing_lag = as_whole(values.at("ignore_fixing_lag"));
         row.ignore_fixing_lead = as_whole(values.at("ignore_fixing_lead"));
+        row.change_reason_code = "system.update";
+        row.change_commentary = reason;
         engine_settings_fixings_service(ctx).save_engine_settings_fixings(row);
         return;
     }
@@ -318,6 +321,8 @@ void write_group(const ores::database::context& ctx,
         row.continue_on_error = as_flag(values.at("continue_on_error"));
         row.use_at_par_coupons_curves = as_flag(values.at("use_at_par_coupons_curves"));
         row.use_at_par_coupons_trades = as_flag(values.at("use_at_par_coupons_trades"));
+        row.change_reason_code = "system.update";
+        row.change_commentary = reason;
         engine_settings_building_service(ctx).save_engine_settings_building(row);
         return;
     }
@@ -337,6 +342,8 @@ void write_group(const ores::database::context& ctx,
         row.n_threads = as_whole(values.at("n_threads"));
         row.log_mask = as_whole(values.at("log_mask"));
         row.gzip_compression_level = as_whole(values.at("gzip_compression_level"));
+        row.change_reason_code = "system.update";
+        row.change_commentary = reason;
         engine_settings_execution_service(ctx).save_engine_settings_execution(row);
         return;
     }
@@ -587,7 +594,7 @@ ores::reporting::messaging::raise_engine_settings_change_response engine_setting
             row.text_value = values.at(setting.column_name);
             row.base_version = request.base_version;
             row.applied = false;
-            row.modified_by = ctx.actor();
+            row.modified_by = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
             row.performed_by = ctx.service_account();
             row.change_reason_code = "system.new_record";
             row.change_commentary = request.reason;
@@ -727,16 +734,21 @@ engine_settings_apply engine_settings_proposal_service::apply(const std::string&
                 break;
             }
 
+            // The write names the approval that decided it, so the history
+            // entry of an applied proposal says what made the change.
             write_group(ctx,
                         code,
                         first.engine_settings_id,
                         engine_settings.front().party_id,
-                        values_of(pending, *settings));
+                        values_of(pending, *settings),
+                        "Applied approval request " + request_id);
             ++out.groups_applied;
 
             for (auto row : pending) {
                 row.applied = true;
-                row.modified_by = ctx.actor();
+                // The workflow runs for the tenant and no person signs in, so a
+                // line it marks is stamped with the service account.
+                row.modified_by = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
                 row.performed_by = ctx.service_account();
                 row.change_reason_code = "system.update";
                 row.change_commentary = "Applied approval request " + request_id;

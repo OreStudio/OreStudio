@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch: feature/build-the-curve-blueprints
+#+branch: feature/close-the-blueprint-review
 #+pr: 4006
 #+blocked_on:
 #+blocked_since:

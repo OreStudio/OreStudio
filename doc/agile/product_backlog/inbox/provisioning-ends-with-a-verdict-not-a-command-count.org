@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 606A4F9A-76EA-4B0E-B618-D5F1276F059C
+:END:
+#+title: A provisioning run should end with one line that says whethe…
+#+description: A provisioning run should end with one line that says whether it succeeded, and if not, which step failed and why. Today it ends with 'Script complete: 5 commands executed', which says the script ran and nothing about what the tenant got.
+
+The evidence is my own reporting error. I ran the ACME provisioning script, filtered its output through grep for the words I expected, saw nothing, and concluded that the run had never reached generate_trades. The output had been there: the script runner prints 'Script complete: N commands executed' or 'Script aborted at line N: <command>', and neither line matched my filter. The tool was clear and I destroyed the evidence.
+
+So this is not a claim that the shell says nothing. It is a claim that the last thing it says is not a verdict:
+
+- 'Script complete: 5 commands executed' is compatible with a tenant that got its trades and with one whose generate_trades step silently did nothing, because the workflow inside the bootstrap step is what runs the population and the script only counts its own commands.
+- On failure the abort line names the script command, not the workflow step: 'bootstrap setup ...' rather than 'generate_trades failed because ...'. The step detail appears in the progress lines above, and a reader has to assemble the verdict from several places.
+
+The requirement:
+
+1. A final verdict line from the provisioning script, naming success or the failing step and its message.
+2. On success, the counts that prove it: trades booked, catalogues published, staff loaded.
+3. The shell's exit code matching the verdict, so a caller can gate on it without reading prose.
+4. The same for the workflow poller: when a step fails, the last line should be that failure and not the enclosing command.
+
+And separately, a rule for me: a compass command is never piped, because a filter hides both the output and the exit status. That rule exists in CLAUDE.md and I broke it here.
+#+type: capture
+#+level: cross
+#+filetags: :shell:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

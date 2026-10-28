@@ -3461,7 +3461,8 @@ const fr: SourceCatalogue = {
             pickFailed: "Les listes dont le formulaire s'inspire n'ont pas pu être lues. {message}",
             step: {
                 list: 'Contreparties',
-                identity: 'Identité',
+                membershipHistory: 'Historique de l’appartenance',
+            identity: 'Identité',
                 identifiers: 'Identifiants',
                 contacts: 'Contacts',
                 agreements: 'Accords juridiques',

@@ -3422,7 +3422,8 @@ export const en: SourceCatalogue = {
             pickFailed: 'The lists the form draws from could not be read. {message}',
             step: {
                 list: 'Counterparties',
-                identity: 'Identity',
+                membershipHistory: 'Membership history',
+            identity: 'Identity',
                 identifiers: 'Identifiers',
                 contacts: 'Contacts',
                 agreements: 'Legal agreements',

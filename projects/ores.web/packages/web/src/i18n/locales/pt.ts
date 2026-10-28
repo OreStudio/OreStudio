@@ -3449,7 +3449,8 @@ const pt: SourceCatalogue = {
             pickFailed: 'Não foi possível ler as listas de que o formulário se serve. {message}',
             step: {
                 list: 'Contrapartes',
-                identity: 'Identidade',
+                membershipHistory: 'Histórico de pertença',
+            identity: 'Identidade',
                 identifiers: 'Identificadores',
                 contacts: 'Contactos',
                 agreements: 'Acordos jurídicos',

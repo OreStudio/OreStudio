@@ -23,7 +23,7 @@
 namespace ores::telemetry::database::repository {
 
 std::ostream& operator<<(std::ostream& s, const telemetry_entity& v) {
-    s << "telemetry_entity[" << "id=" << v.id.value() << ", timestamp=" << v.timestamp.value().str()
+    s << "telemetry_entity[" << "id=" << v.id << ", timestamp=" << v.timestamp.str()
       << ", source=" << v.source << ", source_name=" << v.source_name << ", level=" << v.level
       << ", component=" << v.component
       << ", message=" << (v.message.size() > 50 ? v.message.substr(0, 50) + "..." : v.message)

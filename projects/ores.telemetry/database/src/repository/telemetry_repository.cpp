@@ -18,7 +18,7 @@
  *
  */
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -32,14 +32,14 @@
 
 namespace ores::telemetry::database::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
 std::string telemetry_repository::sql() {
-    return generate_create_table_sql<telemetry_entity>(lg());
+    return query_builder::insert_statement_sql<telemetry_entity>(lg());
 }
 
 void telemetry_repository::create(context ctx, const messaging::telemetry_log_entry& entry) {
@@ -47,12 +47,11 @@ void telemetry_repository::create(context ctx, const messaging::telemetry_log_en
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
-    const auto r =
-        sqlgen::session(ctx.connection_pool())
-            .and_then(begin_transaction)
-            .and_then(insert(telemetry_mapper::to_entity(entry, ctx.tenant_id().to_string())))
-            .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_write_query(
+        ctx,
+        telemetry_mapper::to_entity(entry, ctx.tenant_id().to_string()),
+        lg(),
+        "Creating telemetry log entry");
 }
 
 std::size_t telemetry_repository::create_batch(context ctx, const domain::telemetry_batch& batch) {
@@ -77,11 +76,7 @@ std::size_t telemetry_repository::create_batch(context ctx, const domain::teleme
         entities.push_back(std::move(entity));
     }
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(begin_transaction)
-                       .and_then(insert(entities))
-                       .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_write_query(ctx, entities, lg(), "Creating telemetry log batch");
 
     BOOST_LOG_SEV(lg(), debug) << "Batch inserted successfully";
     return entities.size();
@@ -200,7 +195,8 @@ telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
     BOOST_LOG_SEV(lg(), trace) << "Executing query: " << sql;
 
     // Use raw SQL execution via bitemporal_operations helper
-    auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Querying telemetry logs");
+    auto rows =
+        query_builder::execute_raw_multi_column_query(ctx, sql, lg(), "Querying telemetry logs");
 
     std::vector<messaging::telemetry_log_entry> entries;
     entries.reserve(rows.size());
@@ -250,7 +246,8 @@ std::uint64_t telemetry_repository::count(context ctx, const messaging::telemetr
     BOOST_LOG_SEV(lg(), trace) << "Executing count: " << sql;
 
     // Use raw SQL execution via bitemporal_operations helper
-    auto results = execute_raw_string_query(ctx, sql, lg(), "Counting telemetry logs");
+    auto results = query_builder::execute_parameterized_string_query(
+        ctx, sql, {}, lg(), "Counting telemetry logs");
 
     if (results.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Count query returned no results";
@@ -270,18 +267,24 @@ std::vector<messaging::telemetry_log_entry> telemetry_repository::read_by_sessio
                                << boost::uuids::to_string(session_id);
 
     const auto session_str = boost::lexical_cast<std::string>(session_id);
-    const auto query = sqlgen::read<std::vector<telemetry_entity>> |
-                       where("session_id"_c == session_str) | order_by("timestamp"_c.desc()) |
-                       sqlgen::limit(static_cast<std::size_t>(limit_count));
+    const auto query = query_builder::read<std::vector<telemetry_entity>> |
+                       query_builder::where("session_id"_c == session_str) |
+                       query_builder::order_by("timestamp"_c.desc()) |
+                       query_builder::limit(limit_count);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    std::vector<messaging::telemetry_log_entry> result;
-    result.reserve(r->size());
-    for (const auto& entity : *r) {
-        result.push_back(telemetry_mapper::to_domain(entity));
-    }
+    const auto result =
+        query_builder::execute_read_query<telemetry_entity, messaging::telemetry_log_entry>(
+            ctx,
+            query,
+            [](const std::vector<telemetry_entity>& entities) {
+                std::vector<messaging::telemetry_log_entry> r;
+                r.reserve(entities.size());
+                for (const auto& entity : entities)
+                    r.push_back(telemetry_mapper::to_domain(entity));
+                return r;
+            },
+            lg(),
+            "Reading telemetry by session");
 
     BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " log entries";
     return result;
@@ -302,20 +305,25 @@ telemetry_repository::read_by_account(context ctx,
     const auto start_ts = db_timestamp{datetime::to_db_string(start)};
     const auto end_ts = db_timestamp{datetime::to_db_string(end)};
 
-    const auto query = sqlgen::read<std::vector<telemetry_entity>> |
-                       where("account_id"_c == account_str && "timestamp"_c >= start_ts &&
-                             "timestamp"_c < end_ts) |
-                       order_by("timestamp"_c.desc()) |
-                       sqlgen::limit(static_cast<std::size_t>(limit_count));
+    const auto query = query_builder::read<std::vector<telemetry_entity>> |
+                       query_builder::where("account_id"_c == account_str &&
+                                            "timestamp"_c >= start_ts && "timestamp"_c < end_ts) |
+                       query_builder::order_by("timestamp"_c.desc()) |
+                       query_builder::limit(limit_count);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    std::vector<messaging::telemetry_log_entry> result;
-    result.reserve(r->size());
-    for (const auto& entity : *r) {
-        result.push_back(telemetry_mapper::to_domain(entity));
-    }
+    const auto result =
+        query_builder::execute_read_query<telemetry_entity, messaging::telemetry_log_entry>(
+            ctx,
+            query,
+            [](const std::vector<telemetry_entity>& entities) {
+                std::vector<messaging::telemetry_log_entry> r;
+                r.reserve(entities.size());
+                for (const auto& entity : entities)
+                    r.push_back(telemetry_mapper::to_domain(entity));
+                return r;
+            },
+            lg(),
+            "Reading telemetry by account");
 
     BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " log entries";
     return result;
@@ -329,19 +337,23 @@ telemetry_repository::read_hourly_stats(context ctx, const domain::telemetry_sta
     const auto start_str = ores::platform::time::datetime::to_db_string(q.start_time);
     const auto end_str = ores::platform::time::datetime::to_db_string(q.end_time);
 
-    // NOTE: sqlgen doesn't support dynamically adding where() clauses.
     // Query by time range only, apply optional filters in memory.
-    const auto query = sqlgen::read<std::vector<telemetry_stats_hourly_entity>> |
-                       where("hour"_c >= start_str && "hour"_c < end_str) |
-                       order_by("hour"_c.desc());
+    const auto query = query_builder::read<std::vector<telemetry_stats_hourly_entity>> |
+                       query_builder::where("hour"_c >= start_str && "hour"_c < end_str) |
+                       query_builder::order_by("hour"_c.desc());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
+    const auto rows = query_builder::execute_read_query<telemetry_stats_hourly_entity,
+                                                        telemetry_stats_hourly_entity>(
+        ctx,
+        query,
+        [](const auto& entities) { return entities; },
+        lg(),
+        "Reading hourly telemetry stats");
 
     // Apply in-memory filtering for optional criteria
     std::vector<domain::telemetry_stats> result;
-    result.reserve(r->size());
-    for (const auto& entity : *r) {
+    result.reserve(rows.size());
+    for (const auto& entity : rows) {
         if (q.source.has_value()) {
             const auto source_str = std::string(domain::to_string(*q.source));
             if (entity.source != source_str)
@@ -369,18 +381,23 @@ telemetry_repository::read_daily_stats(context ctx, const domain::telemetry_stat
     const auto start_str = ores::platform::time::datetime::to_db_string(q.start_time);
     const auto end_str = ores::platform::time::datetime::to_db_string(q.end_time);
 
-    // NOTE: sqlgen doesn't support dynamically adding where() clauses.
     // Query by time range only, apply optional filters in memory.
-    const auto query = sqlgen::read<std::vector<telemetry_stats_daily_entity>> |
-                       where("day"_c >= start_str && "day"_c < end_str) | order_by("day"_c.desc());
+    const auto query = query_builder::read<std::vector<telemetry_stats_daily_entity>> |
+                       query_builder::where("day"_c >= start_str && "day"_c < end_str) |
+                       query_builder::order_by("day"_c.desc());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
+    const auto rows = query_builder::execute_read_query<telemetry_stats_daily_entity,
+                                                        telemetry_stats_daily_entity>(
+        ctx,
+        query,
+        [](const auto& entities) { return entities; },
+        lg(),
+        "Reading daily telemetry stats");
 
     // Apply in-memory filtering for optional criteria
     std::vector<domain::telemetry_stats> result;
-    result.reserve(r->size());
-    for (const auto& entity : *r) {
+    result.reserve(rows.size());
+    for (const auto& entity : rows) {
         if (q.source.has_value()) {
             const auto source_str = std::string(domain::to_string(*q.source));
             if (entity.source != source_str)
@@ -411,21 +428,27 @@ domain::telemetry_summary telemetry_repository::get_summary(context ctx, std::ui
     summary.end_time = std::chrono::system_clock::now();
     summary.start_time = summary.end_time - std::chrono::hours(hours);
 
-    const auto start_ts = db_timestamp{datetime::to_db_string(summary.start_time)};
-    const auto end_ts = db_timestamp{datetime::to_db_string(summary.end_time)};
+    const auto start_ts = datetime::to_db_string(summary.start_time);
+    const auto end_ts = datetime::to_db_string(summary.end_time);
 
-    struct count_result {
-        long long count;
-    };
+    // A count that fails leaves its figure at zero, so one bad read does not
+    // lose the rest of the summary.
+    const auto count_of =
+        [&](const std::string& sql, const std::vector<std::string>& params, std::uint64_t& target) {
+            try {
+                const auto rows = query_builder::execute_parameterized_string_query(
+                    ctx, sql, params, lg(), "Counting telemetry logs for the summary");
+                if (!rows.empty())
+                    target = std::stoull(rows.front());
+            } catch (const ores::database::repository::repository_exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Summary count failed: " << e.what();
+            }
+        };
 
-    auto total_query = sqlgen::select_from<telemetry_entity>(sqlgen::count().as<"count">()) |
-                       where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts) |
-                       sqlgen::to<count_result>;
-
-    auto total_r = sqlgen::session(ctx.connection_pool()).and_then(total_query);
-    if (total_r) {
-        summary.total_logs = static_cast<std::uint64_t>(total_r->count);
-    }
+    count_of("SELECT COUNT(*) FROM ores_telemetry_logs_tbl"
+             " WHERE timestamp >= $1::timestamptz AND timestamp <= $2::timestamptz",
+             {start_ts, end_ts},
+             summary.total_logs);
 
     // Count by level
     const std::vector<std::pair<std::string, std::uint64_t*>> level_targets = {
@@ -436,15 +459,11 @@ domain::telemetry_summary telemetry_repository::get_summary(context ctx, std::ui
         {"trace", &summary.trace_count}};
 
     for (const auto& [level, target] : level_targets) {
-        auto level_query =
-            sqlgen::select_from<telemetry_entity>(sqlgen::count().as<"count">()) |
-            where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts && "level"_c == level) |
-            sqlgen::to<count_result>;
-
-        auto level_r = sqlgen::session(ctx.connection_pool()).and_then(level_query);
-        if (level_r) {
-            *target = static_cast<std::uint64_t>(level_r->count);
-        }
+        count_of("SELECT COUNT(*) FROM ores_telemetry_logs_tbl"
+                 " WHERE timestamp >= $1::timestamptz AND timestamp <= $2::timestamptz"
+                 " AND level = $3",
+                 {start_ts, end_ts, level},
+                 *target);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Summary: " << summary.total_logs << " total, "
@@ -462,23 +481,18 @@ std::uint64_t telemetry_repository::count_errors(context ctx,
 
     const auto end_time = std::chrono::system_clock::now();
     const auto start_time = end_time - std::chrono::hours(hours);
-    const auto start_ts = db_timestamp{datetime::to_db_string(start_time)};
-    const auto end_ts = db_timestamp{datetime::to_db_string(end_time)};
+    const auto rows = query_builder::execute_parameterized_string_query(
+        ctx,
+        "SELECT COUNT(*) FROM ores_telemetry_logs_tbl"
+        " WHERE timestamp >= $1::timestamptz AND timestamp < $2::timestamptz"
+        " AND source_name = $3 AND level = 'error'",
+        {datetime::to_db_string(start_time), datetime::to_db_string(end_time), source_name},
+        lg(),
+        "Counting telemetry errors");
+    const std::uint64_t count = rows.empty() ? 0 : std::stoull(rows.front());
 
-    struct count_result {
-        long long count;
-    };
-
-    auto query = sqlgen::select_from<telemetry_entity>(sqlgen::count().as<"count">()) |
-                 where("timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
-                       "source_name"_c == source_name && "level"_c == "error") |
-                 sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    BOOST_LOG_SEV(lg(), debug) << "Error count: " << r->count;
-    return static_cast<std::uint64_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Error count: " << count;
+    return count;
 }
 
 std::uint64_t
@@ -489,12 +503,13 @@ telemetry_repository::delete_old_logs(context ctx,
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 
     const auto older_ts = db_timestamp{datetime::to_db_string(older_than)};
-    const auto query = sqlgen::delete_from<telemetry_entity> | where("timestamp"_c < older_ts);
+    const auto query = query_builder::delete_from<telemetry_entity> |
+                       query_builder::where("timestamp"_c < older_ts);
 
-    execute_delete_query(ctx, query, lg(), "deleting old telemetry logs");
+    query_builder::execute_delete_query(ctx, query, lg(), "deleting old telemetry logs");
 
-    // Note: We don't easily get the count from sqlgen delete.
-    // With TimescaleDB, this should be handled by retention policies anyway.
+    // The delete reports no count. With TimescaleDB, retention policies should
+    // remove old logs anyway.
     return 0;
 }
 
@@ -503,12 +518,11 @@ void telemetry_repository::insert_server_sample(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
 
-    const auto r =
-        sqlgen::session(ctx.connection_pool())
-            .and_then(begin_transaction)
-            .and_then(insert(telemetry_mapper::to_entity(sample, ctx.tenant_id().to_string())))
-            .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_write_query(
+        ctx,
+        telemetry_mapper::to_entity(sample, ctx.tenant_id().to_string()),
+        lg(),
+        "Inserting NATS server sample");
 }
 
 void telemetry_repository::insert_stream_samples(
@@ -528,11 +542,7 @@ void telemetry_repository::insert_stream_samples(
         entities.push_back(telemetry_mapper::to_entity(s, tenant_id_str));
     }
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(begin_transaction)
-                       .and_then(insert(entities))
-                       .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_write_query(ctx, entities, lg(), "Inserting NATS stream samples");
 }
 
 std::vector<messaging::nats_server_sample>
@@ -544,19 +554,23 @@ telemetry_repository::query_server_samples(context ctx,
     const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
     const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
 
-    const auto qry = sqlgen::read<std::vector<nats_server_sample_entity>> |
-                     where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
-                     order_by("sampled_at"_c.desc()) |
-                     sqlgen::limit(static_cast<std::size_t>(q.limit));
+    const auto qry = query_builder::read<std::vector<nats_server_sample_entity>> |
+                     query_builder::where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
+                     query_builder::order_by("sampled_at"_c.desc()) | query_builder::limit(q.limit);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
-    ensure_success(r, lg());
-
-    std::vector<messaging::nats_server_sample> result;
-    result.reserve(r->size());
-    for (const auto& entity : *r) {
-        result.push_back(telemetry_mapper::to_domain(entity));
-    }
+    const auto result =
+        query_builder::execute_read_query<nats_server_sample_entity, messaging::nats_server_sample>(
+            ctx,
+            qry,
+            [](const std::vector<nats_server_sample_entity>& entities) {
+                std::vector<messaging::nats_server_sample> r;
+                r.reserve(entities.size());
+                for (const auto& entity : entities)
+                    r.push_back(telemetry_mapper::to_domain(entity));
+                return r;
+            },
+            lg(),
+            "Querying NATS server samples");
 
     BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " server sample(s)";
     return result;
@@ -571,20 +585,24 @@ telemetry_repository::query_stream_samples(context ctx,
     const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
     const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
 
-    const auto qry = sqlgen::read<std::vector<nats_stream_sample_entity>> |
-                     where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
-                           "stream_name"_c == q.stream_name) |
-                     order_by("sampled_at"_c.desc()) |
-                     sqlgen::limit(static_cast<std::size_t>(q.limit));
+    const auto qry = query_builder::read<std::vector<nats_stream_sample_entity>> |
+                     query_builder::where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
+                                          "stream_name"_c == q.stream_name) |
+                     query_builder::order_by("sampled_at"_c.desc()) | query_builder::limit(q.limit);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
-    ensure_success(r, lg());
-
-    std::vector<messaging::nats_stream_sample> result;
-    result.reserve(r->size());
-    for (const auto& entity : *r) {
-        result.push_back(telemetry_mapper::to_domain(entity));
-    }
+    const auto result =
+        query_builder::execute_read_query<nats_stream_sample_entity, messaging::nats_stream_sample>(
+            ctx,
+            qry,
+            [](const std::vector<nats_stream_sample_entity>& entities) {
+                std::vector<messaging::nats_stream_sample> r;
+                r.reserve(entities.size());
+                for (const auto& entity : entities)
+                    r.push_back(telemetry_mapper::to_domain(entity));
+                return r;
+            },
+            lg(),
+            "Querying NATS stream samples");
 
     BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " stream sample(s)";
     return result;
@@ -596,11 +614,8 @@ void telemetry_repository::insert_service_sample(context ctx,
     BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: " << sample.service_name
                                << " instance=" << sample.instance_id;
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(begin_transaction)
-                       .and_then(insert(telemetry_mapper::to_entity(sample)))
-                       .and_then(commit);
-    ensure_success(r, lg());
+    query_builder::execute_write_query(
+        ctx, telemetry_mapper::to_entity(sample), lg(), "Inserting service heartbeat");
 }
 
 std::vector<messaging::service_sample> telemetry_repository::list_service_samples(context ctx) {
@@ -609,21 +624,26 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
 
     // Fetch all rows inside the running window so we can pick
     // the most recent per (service_name, instance_id) in C++.
-    // This avoids a DISTINCT ON which sqlgen doesn't model directly.
     const auto cutoff = std::chrono::system_clock::now() - service_running_window;
     const auto cutoff_ts = db_timestamp{datetime::to_db_string(cutoff)};
 
-    const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
-                     where("sampled_at"_c >= cutoff_ts) | order_by("sampled_at"_c.desc());
+    const auto qry = query_builder::read<std::vector<service_sample_entity>> |
+                     query_builder::where("sampled_at"_c >= cutoff_ts) |
+                     query_builder::order_by("sampled_at"_c.desc());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
-    ensure_success(r, lg());
+    const auto rows =
+        query_builder::execute_read_query<service_sample_entity, service_sample_entity>(
+            ctx,
+            qry,
+            [](const auto& entities) { return entities; },
+            lg(),
+            "Listing service heartbeat samples");
 
     // Keep only the most recent row per (service_name, instance_id).
     // Rows are ordered by sampled_at desc so try_emplace keeps the first seen.
     std::map<std::pair<std::string, std::string>, messaging::service_sample> latest;
-    for (const auto& entity : *r) {
-        latest.try_emplace({entity.service_name.value(), entity.instance_id.value()},
+    for (const auto& entity : rows) {
+        latest.try_emplace({entity.service_name, entity.instance_id},
                            telemetry_mapper::to_domain(entity));
     }
 
@@ -645,7 +665,8 @@ telemetry_repository::list_service_roster(context ctx, std::chrono::system_clock
         "SELECT service_name, display_name, description, service_account, slot, "
         "instance_id, host_id, version, sampled_at "
         "FROM ores_telemetry_service_roster_fn()";
-    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading the services roster");
+    const auto rows = query_builder::execute_raw_multi_column_query(
+        ctx, sql, lg(), "Reading the services roster");
 
     std::vector<messaging::service_roster_slot> result;
     result.reserve(rows.size());

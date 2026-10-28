@@ -27,8 +27,7 @@ namespace ores::database::query_builder {
 namespace {
 
 /*
- * The longest a statement may take before its timing is logged as a warning,
- * the threshold the sqlgen operations used.
+ * The longest a statement may take before its timing is logged as a warning.
  */
 constexpr long long slow_statement_ms = 250;
 

@@ -428,7 +428,6 @@ The import is a catalogue of report templates. It has no party, lifecycle state,
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

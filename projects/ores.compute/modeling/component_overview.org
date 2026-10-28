@@ -13,7 +13,6 @@
 #+brief: Distributed compute grid component
 #+component_kind: composite
 #+parts: api client core service wrapper
-#+repository_backend: libpq
 
 * Summary
 

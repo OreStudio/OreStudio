@@ -168,8 +168,6 @@ ID of the tag applied to the image; must exist in ores_assets_tags_tbl.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

@@ -179,7 +179,6 @@ Why the id differs from the vendor's own, when =minted= is true. Empty otherwise
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

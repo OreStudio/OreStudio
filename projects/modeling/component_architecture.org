@@ -43,7 +43,7 @@ Current simple components:
 
 | Component | Role |
 |-----------|------|
-| =ores.database= | Database access layer (sqlgen, migrations) |
+| =ores.database= | Database access layer (libpq pool, transactions, unit of work, query builder) |
 | =ores.diff= | Structural diff utilities |
 | =ores.geo= | Geographic utilities (IP-to-country, etc.) |
 | =ores.logging= | Boost.Log setup and logger factory |
@@ -162,7 +162,7 @@ protocol types.
 | Name | Full name | Role |
 |------|-----------|------|
 | =api= | =ores.<group>.api= | Public domain types (POCOs), JSON I/O, table I/O, generators, NATS protocol structs, eventing event types. No DB or service deps. Consumed by all other sub-components and by external consumers. |
-| =core= | =ores.<group>.core= | Repositories (sqlgen entities, mappers, CRUD), business-logic service layer, DB access. Depends on =api=. Not runnable. |
+| =core= | =ores.<group>.core= | Repositories (row entities, mappers, CRUD), business-logic service layer, DB access. Depends on =api=. Not runnable. |
 | =service= | =ores.<group>.service= | Runnable host: NATS message handlers, startup wiring, main entry point. Depends on =core=. |
 
 ** Specialist roles
@@ -206,7 +206,7 @@ in exactly one sub-component:
 | =generators= | ✓ | | | Test-data generators |
 | =messaging= | ✓ | ✓ | | NATS protocol structs in =api=; handler class in =core= |
 | =eventing= | ✓ | | | Event types |
-| =repository= | | ✓ | | sqlgen entities, mappers, repositories |
+| =repository= | | ✓ | | Row entities, mappers, repositories |
 | =service= | | ✓ | | Business-logic service layer |
 | =presentation= | | ✓ | | Drawers and renderers the UI reads; the entity's table display |
 | =log= | | ✓ | | Parsers for a log format the component owns |

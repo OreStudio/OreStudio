@@ -13,7 +13,7 @@ through to the string fallback, which does not compile against the domain
 member's ``std::chrono::system_clock::time_point``.
 
 The entity keeps the estate-wide text binding for a timestamp
-(``sqlgen::PrimaryKey<std::string>``), so the mapper parses the column on
+(a ``std::string`` key column), so the mapper parses the column on
 read and formats it on write, and the generator fills it from the past.
 """
 import sys
@@ -98,14 +98,14 @@ def _render(tmp_path, template, suffix):
 
 def test_the_entity_binds_the_timestamp_key_as_text(tmp_path):
     entity = _render(tmp_path, "cpp_domain_type_entity.hpp.mustache", "hpp")
-    assert "sqlgen::PrimaryKey<std::string> id;" in entity
-    assert "sqlgen::PrimaryKey<std::string> start_time;" in entity
+    assert "std::string id;" in entity
+    assert "std::string start_time;" in entity
 
 
 def test_the_mapper_converts_the_timestamp_key(tmp_path):
     mapper = _render(tmp_path, "cpp_domain_type_mapper.cpp.mustache", "cpp")
     assert (
-        "r.start_time = timestamp_to_timepoint(std::string_view{v.start_time.value()});"
+        "r.start_time = timestamp_to_timepoint(std::string_view{v.start_time});"
         in mapper
     )
     assert (

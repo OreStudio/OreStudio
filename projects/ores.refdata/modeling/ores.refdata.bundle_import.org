@@ -171,8 +171,6 @@ ctx.past_timepoint()
 #include <chrono>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

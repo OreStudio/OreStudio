@@ -14,7 +14,7 @@ This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen
 the one segment that does not map to a single facet — a column
 declaration is relevant to *both* [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] (to generate the table's DDL) and
 [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]/[[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] (to generate the domain struct field and the
-sqlgen-mapped entity field), so it was abstracted into a segment of
+repository entity field), so it was abstracted into a segment of
 its own rather than duplicated in each. Author a column once here; it
 becomes a SQL column, a domain struct field, and a repository entity
 field, all three kept in sync by construction.
@@ -185,10 +185,11 @@ entries that reach them. Its narrative home is
 
 The entity's surrogate key. In SQL this becomes part of the
 composite primary key (paired with =tenant_id= and the temporal
-range — see [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]); in C++ it becomes an =sqlgen::PrimaryKey<T>=-wrapped
-field on the repository entity (not on the domain struct — the
-domain struct exposes it as a plain field, the wrapping is a
-repository-layer concern).
+range — see [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]]); in C++ it becomes a plain field on both the
+domain struct and the repository entity. The repository entity's
+column list marks it as the key, and the generated statements match
+rows on it; the key is a repository-layer concern, so the domain
+struct does not carry the marker.
 
 | Property      | Required | Meaning                                               |
 |---------------+----------+---------------------------------------------------------|
@@ -216,7 +217,7 @@ struct book_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_books_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     // ...
 };
 #+end_src
@@ -294,7 +295,7 @@ struct image {
 };
 #+end_src
 
-And, in the sqlgen entity and mapper:
+And, in the repository entity and mapper:
 
 #+begin_src cpp
 struct image_entity {
@@ -363,4 +364,4 @@ create table if not exists "ores_refdata_books_tbl" (
 - [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][SQL]] — how these columns become the table's DDL, temporal constraints, and triggers.
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the structural/non-structural distinction referenced above.
 - [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]] — how they become the plain domain struct.
-- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — how they become the sqlgen-mapped entity and mapper.
+- [[id:7929F019-F9C3-4EC3-8E27-4642E99DD76D][C++ Repository]] — how they become the repository entity and mapper.

@@ -6,7 +6,6 @@
 #+type: ores.codegen.component
 #+component_kind: composite
 #+parts: api core service
-#+repository_backend: libpq
 #+level: cross
 #+filetags: :inbox:component:
 #+created: 2026-10-04

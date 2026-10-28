@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/pq/connection.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -26,8 +27,9 @@
 #include <chrono>
 #include <functional>
 #include <future>
+#include <libpq-fe.h>
+#include <memory>
 #include <mutex>
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -53,14 +55,28 @@ bool wait_for(const std::function<bool()>& predicate, std::chrono::milliseconds 
  *
  * This simulates an external process sending a notification.
  */
-void send_notify(const sqlgen::postgres::Credentials& credentials,
+bool exec_ok(ores::database::pq::connection& c, const std::string& sql) {
+    PGresult* r = PQexec(c.native(), sql.c_str());
+    const auto status = PQresultStatus(r);
+    PQclear(r);
+    return status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK;
+}
+
+std::unique_ptr<ores::database::pq::connection>
+open_connection(const ores::database::pq::connection_options& options) {
+    return std::make_unique<ores::database::pq::connection>(options);
+}
+
+void send_notify(const ores::database::pq::connection_options& options,
                  const std::string& channel_name,
                  const std::string& payload) {
-    auto conn_result = sqlgen::postgres::connect(credentials);
-    REQUIRE(conn_result);
-
-    auto result = (*conn_result)->notify(channel_name, payload);
-    REQUIRE(result);
+    auto c = open_connection(options);
+    const char* values[] = {channel_name.c_str(), payload.c_str()};
+    PGresult* r = PQexecParams(
+        c->native(), "SELECT pg_notify($1, $2)", 2, nullptr, values, nullptr, nullptr, 0);
+    const auto status = PQresultStatus(r);
+    PQclear(r);
+    REQUIRE(status == PGRES_TUPLES_OK);
 }
 
 }
@@ -110,7 +126,7 @@ TEST_CASE("postgres_listener_service_notification_reception", "[service][postgre
     };
 
     database_helper h;
-    const auto& credentials = h.context().credentials();
+    const auto& credentials = h.context().connection_options();
 
     postgres_listener_service listener(h.context(), callback);
     listener.start();
@@ -148,7 +164,7 @@ TEST_CASE("postgres_listener_service_no_notification_without_subscribe",
     };
 
     database_helper h;
-    const auto& credentials = h.context().credentials();
+    const auto& credentials = h.context().connection_options();
 
     postgres_listener_service listener(h.context(), callback);
     listener.start();
@@ -188,7 +204,7 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", "[service][postgre
     };
 
     database_helper h;
-    const auto& credentials = h.context().credentials();
+    const auto& credentials = h.context().connection_options();
 
     postgres_listener_service listener(h.context(), callback);
 
@@ -258,17 +274,17 @@ TEST_CASE("postgres_listener_service_notify_method", "[service][postgres_listene
 
 TEST_CASE("postgres_listener_service_connect_forces_utc_session", "[service][postgres_listener]") {
     database_helper h;
-    const auto& credentials = h.context().credentials();
+    const auto& credentials = h.context().connection_options();
 
-    auto conn_result = connect_utc(credentials, "ores.database.test.session");
-    REQUIRE(conn_result);
+    auto conn = connect_utc(credentials, "ores.database.test.session");
+    REQUIRE(conn);
 
     // Behavioral assertion: in a UTC session the sentinel function equals the
     // naive literal's fold, so this DO block raises. In any non-UTC session
     // (the server default is Europe/London) the naive literal folds away and
     // the DO block succeeds -- which would fail the REQUIRE_FALSE below.
-    auto result = (*conn_result)
-                      ->execute("DO $$ BEGIN IF ores_utility_infinity_timestamp_fn() = "
+    const bool result = exec_ok(*conn,
+                                "DO $$ BEGIN IF ores_utility_infinity_timestamp_fn() = "
                                 "'9999-12-31 23:59:59'::timestamptz THEN RAISE EXCEPTION 'utc'; "
                                 "END IF; END $$;");
     REQUIRE_FALSE(result);
@@ -290,7 +306,7 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
     };
 
     database_helper h;
-    const auto& credentials = h.context().credentials();
+    const auto& credentials = h.context().connection_options();
 
     postgres_listener_service listener(h.context(), callback);
     listener.subscribe(channel_name);
@@ -305,7 +321,7 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
     // are never matched, and plain connections of this user never match
     // either. A role may terminate its own sessions, so the DML test user
     // can signal the listener backend.
-    auto control = sqlgen::postgres::connect(credentials);
+    auto control = open_connection(credentials);
     REQUIRE(control);
 
     const std::string backend_filter = "usename = current_user AND datname = current_database() "
@@ -324,19 +340,17 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
         ") THEN RAISE EXCEPTION 'listener backend still present'; END IF; END $$;";
 
     // Precondition: the listener session is registered in pg_stat_activity.
-    REQUIRE(wait_for([&] { return bool((*control)->execute(expect_present)); },
-                     std::chrono::seconds(10)));
+    REQUIRE(wait_for([&] { return exec_ok(*control, expect_present); }, std::chrono::seconds(10)));
 
     // Kill the listener session. PostgreSQL delivers NOTIFY only to live
     // LISTEN sessions, so everything sent from here until the reconnect is
     // a lost window.
-    auto terminated = (*control)->execute(terminate_listener);
+    const bool terminated = exec_ok(*control, terminate_listener);
     REQUIRE(terminated);
 
     // Wait until the session is gone before sending the in-flight NOTIFY,
     // so the loss is guaranteed rather than racy.
-    REQUIRE(
-        wait_for([&] { return bool((*control)->execute(expect_gone)); }, std::chrono::seconds(10)));
+    REQUIRE(wait_for([&] { return exec_ok(*control, expect_gone); }, std::chrono::seconds(10)));
 
     // Sent while the listener is down: lost forever. The surfacing is the
     // counter and the error logs, not a recovery.
@@ -348,8 +362,7 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
 
     // Wait until the listener session is back, then let the reissued LISTEN
     // land before sending the recovery notification.
-    REQUIRE(wait_for([&] { return bool((*control)->execute(expect_present)); },
-                     std::chrono::seconds(10)));
+    REQUIRE(wait_for([&] { return exec_ok(*control, expect_present); }, std::chrono::seconds(10)));
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
     send_notify(credentials, channel_name, recovered_payload);
@@ -397,12 +410,13 @@ TEST_CASE("postgres_listener_service_drains_a_burst_of_notifications",
 
     // One statement, so the whole burst commits at once, with payloads the size
     // a notify trigger writes.
-    auto sender = sqlgen::postgres::connect(h.context().credentials());
+    auto sender = open_connection(h.context().connection_options());
     REQUIRE(sender);
     const auto start = std::chrono::steady_clock::now();
-    REQUIRE((*sender)->execute("SELECT pg_notify('" + channel_name +
-                               "', repeat('x', 300) || g::text) FROM generate_series(1, " +
-                               std::to_string(burst) + ") AS g"));
+    REQUIRE(exec_ok(*sender,
+                    "SELECT pg_notify('" + channel_name +
+                        "', repeat('x', 300) || g::text) FROM generate_series(1, " +
+                        std::to_string(burst) + ") AS g"));
 
     const bool drained = wait_for([&] { return received == burst; }, std::chrono::seconds(60));
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(

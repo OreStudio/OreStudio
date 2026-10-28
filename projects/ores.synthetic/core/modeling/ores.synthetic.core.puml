@@ -99,7 +99,7 @@ namespace ores #F2F2F2 {
             class folder_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -122,7 +122,7 @@ namespace ores #F2F2F2 {
             class fx_spot_generation_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -155,7 +155,7 @@ namespace ores #F2F2F2 {
             class gmm_component_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -180,7 +180,7 @@ namespace ores #F2F2F2 {
             class ir_curve_generation_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -212,7 +212,7 @@ namespace ores #F2F2F2 {
             class ir_curve_generation_config_process_parameter_value_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +config_id : string
@@ -236,7 +236,7 @@ namespace ores #F2F2F2 {
             class ir_curve_template_entry_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -260,7 +260,7 @@ namespace ores #F2F2F2 {
             class market_data_generation_config_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : optional<string>
@@ -285,7 +285,7 @@ namespace ores #F2F2F2 {
             class market_data_provider_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -329,7 +329,7 @@ namespace ores #F2F2F2 {
             class yield_curve_process_parameter_definition_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +process_type_code : string
@@ -358,7 +358,7 @@ namespace ores #F2F2F2 {
             class yield_curve_process_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -657,7 +657,7 @@ class ores::synthetic::repository::yield_curve_process_type_mapper {
 }
 
 note top of "ores::synthetic::repository::folder_mapper"
-Every mapper exists for the same reason: sqlgen reads and
+Every mapper exists for the same reason: the repository reads and
 writes the *_entity struct, while the protocol and the
 services speak the domain type. The mapper is the only place
 the two meet, so a column rename touches the entity, the

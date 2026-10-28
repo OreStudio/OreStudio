@@ -53,7 +53,7 @@ namespace ores #F2F2F2 {
             class system_setting_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string

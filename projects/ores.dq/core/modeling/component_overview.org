@@ -59,7 +59,7 @@ persistence without depending on =ores.dq=.
 - =ores.dq.api= — shared domain types and NATS protocol schemas.
 - =ores.iam.core= — identity and authorisation context.
 - =rfl= — JSON serialisation via reflection.
-- =sqlgen= — SQL ORM and query generator for PostgreSQL persistence.
+- =ores.database= — PostgreSQL access on libpq: the query builder, the unit of work and the context.
 - =nats.c= — NATS messaging client.
 
 * Build dependencies
@@ -106,7 +106,6 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.utility.lib
         ores.security.lib
-        sqlgen::sqlgen
         libfort::fort
         Boost::graph
         Boost::boost)

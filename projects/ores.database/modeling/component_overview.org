@@ -5,7 +5,7 @@
 #+name: database
 #+full_name: ores.database
 #+brief: Shared PostgreSQL access layer for every ORE Studio service.
-#+description: PostgreSQL database access layer — connection pool, tenant context, bitemporal operations, and repository helpers.
+#+description: PostgreSQL access on libpq — connection pool, context, unit of work, query builder, bitemporal operations and repository helpers.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :database:persistence:component:
@@ -21,16 +21,36 @@
 * Summary
 
 =ores.database= is the shared PostgreSQL access layer used by every domain
-service. It provides a connection pool (=tenant_aware_pool=), tenant and party
-context management, bitemporal CRUD operations, repository base helpers, and
-the mapper and exception scaffolding the generated repositories build on. It
-also exposes a =health_monitor= and a =postgres_listener_service= for
-LISTEN/NOTIFY integration. All persistence code in domain services builds on
-this library.
+service, built on libpq, the PostgreSQL C client.
 
-The layer's target shape, pooled long-lived connections, a unit of work that
-hands repositories an open transaction, typed statements and classed errors,
-is set out in [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]].
+- A =context= names who a statement acts for: the tenant, the party and the
+  parties it sees, the actor, and the service account. Copies of a context
+  share one =pq::pool= of long-lived connections to pgbouncer, which runs in
+  transaction pooling mode in front of PostgreSQL. The pool opens under
+  an open policy that retries a database that refuses connections while it
+  restarts.
+- Every call runs in one =pq::transaction=, which sets the context's tenant,
+  party, visible parties, actor and service as transaction-local settings,
+  pipelined with its first statement. The row-level security policies and
+  the audit columns read them, and they end with the transaction, so a pooled
+  connection carries nothing from one caller to the next.
+- A =repository::unit_of_work= leases one connection and holds one
+  transaction; the context it hands out is bound to that transaction, so
+  every call made with it joins the unit of work, which commits once or rolls
+  back. A call on a unit of work that has committed is refused, and a commit
+  after a failed statement rolls back and throws.
+- Generated repositories state their queries with =query_builder= and run
+  them through its =execute_*= helpers, binding and reading each column in
+  the binary format, in its own C++ type. Hand-written SQL runs through the
+  raw helpers of =repository/bitemporal_operations.hpp=, on the same pool and
+  the same unit of work as the repositories.
+- A =health_monitor= probes the database, and a =postgres_listener_service=
+  holds a direct connection to PostgreSQL for LISTEN/NOTIFY, which needs a
+  session that transaction pooling does not give.
+
+[[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] sets out the design: pooled long-lived connections, a unit
+of work that hands repositories an open transaction, typed statements and
+classed errors.
 
 The component owns no codegen entity models. It is hand-written
 infrastructure, and every type it exposes stays below the audit, history and
@@ -50,13 +70,15 @@ it to =exit_code::schema_mismatch= after printing its message.
 
 * Outputs
 
-- Pooled libpq connections scoped to tenant/party context.
+- Transactions on pooled libpq connections that act for a context's tenant
+  and party.
 - Bitemporal entity CRUD results with version-conflict detection.
 
 * Entry points
 
-- =include/ores.database/domain/= — =database_options=, =context=, =tenant_aware_pool=.
-- =include/ores.database/repository/= — bitemporal operations, mapper helpers.
+- =include/ores.database/domain/= — =database_options=, =context=, =transact=.
+- =include/ores.database/repository/= — =unit_of_work=, the raw-SQL helpers, mapper helpers.
+- =include/ores.database/query_builder/= — the query builder and its =execute_*= helpers.
 - =include/ores.database/service/= — =health_monitor=, =postgres_listener_service=,
   =tenant_context=, =party_context=.
 - =include/ores.database/config/= — =database_configuration= parsing.
@@ -65,8 +87,7 @@ it to =exit_code::schema_mismatch= after printing its message.
 
 * Dependencies
 
-- libpq, the PostgreSQL C client, directly for the =pq= layer.
-- sqlgen — statements and connections over libpq, the PostgreSQL C client.
+- libpq, the PostgreSQL C client, for the =pq= layer.
 - =ores.logging= — structured logging.
 
 * Entity modules
@@ -75,12 +96,11 @@ None. The component has no codegen entity models.
 
 * See also
 
-- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the target shape of this layer.
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the design of this layer.
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC
-        sqlgen::sqlgen
         ores.logging.lib
         ores.platform.lib
     PRIVATE

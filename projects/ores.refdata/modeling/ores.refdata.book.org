@@ -583,8 +583,6 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

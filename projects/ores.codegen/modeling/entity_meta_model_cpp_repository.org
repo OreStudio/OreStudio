@@ -81,14 +81,14 @@ Mutations (insert, update, delete) always stay tenant-scoped, whichever value is
 * Entity includes
 
 Same shape as [[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]'s =Domain includes=, but for the
-repository entity header (the sqlgen-mapped struct) instead of the
+repository entity header (the struct a row reads into) instead of the
 domain struct.
 
 Generates, in =book_entity.hpp=:
 
 #+begin_src cpp
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -101,8 +101,14 @@ struct book_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_refdata_books_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     // ... fields from Keys and columns ...
+
+    static constexpr auto columns() {
+        using e = book_entity;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               // ... a bind for each column ...
+    }
 };
 
 }

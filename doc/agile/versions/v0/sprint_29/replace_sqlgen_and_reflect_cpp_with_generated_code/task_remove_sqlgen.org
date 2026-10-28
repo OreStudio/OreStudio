@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-sqlgen
+#+pr: 3994
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,25 +26,58 @@ Step 4 of 7. sqlgen is gone from the build. Starts after every component has mov
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
 
 - Nothing in the tree includes sqlgen.
 - The codegen facets that emitted sqlgen code are deleted.
-- vcpkg.json and every CMakeLists.txt no longer name sqlgen.
+- vcpkg.json, the vcpkg overlay port and every CMakeLists.txt no longer name
+  sqlgen.
+- Models, diagrams and docs no longer describe sqlgen as the storage layer.
 - The whole tree builds and every suite passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three PRs, each ending in a green build of the whole tree and every suite.
+
+1. *Codegen: drop the sqlgen backend.* Every component is on libpq, so the
+   sqlgen repository archetype, the backend switch, the
+   =#+repository_backend:= lines and the sqlgen branches of the entity,
+   mapper and header templates go. The sqlgen-only helpers of
+   =ores.database= that only that archetype used (the sqlgen query
+   templates of =bitemporal_operations=, =list_filter=, =stated_order= and
+   =valid_at=) go with it.
+2. *Database: run the context on libpq.* The context holds the libpq pool,
+   its connection options and the session it acts for, and no sqlgen pool.
+   A unit of work leases one libpq connection and holds one transaction, and
+   a context bound to it runs every call on that transaction, so the bridge
+   of #3961 and its overlay patch go. The raw-SQL helpers of
+   =ores::database::repository= keep their signatures and run on libpq. The
+   Postgres listener holds its own libpq connection. =db_timestamp= is
+   reflect-cpp's =rfl::Timestamp=, which sqlgen only re-exported, so no
+   entity changes.
+3. *Build: drop the dependency.* vcpkg.json, the overlay port and its
+   patches, =find_package= and every =sqlgen::sqlgen= link go, with the
+   sqlgen text in models, diagrams and docs.
+4. *Docs: describe the Postgres architecture as it now is.* Every document
+   that describes how the services reach Postgres (the =ores.database=
+   overview, the knowledge documents, recipes, component models and
+   diagrams) names the libpq layer, the query builder, the unit of work and
+   the per-transaction session settings, and nothing describes sqlgen as
+   current.
+
+The user asked for one PR, checked by the full build, every suite and the
+services starting, with a full analysis of main after it merges. The core
+change is tested beyond that: the pool's open policy, the unit of work's
+commit, rollback and abort, a re-scoped context on a unit of work, the raw
+helpers beside a unit of work, and an end-to-end run that provisions a
+tenant on the running services.
 
 * Measurements
 
@@ -62,6 +95,24 @@ task and name that file in the Command column.
 
 * Notes
 
+** Semantics that differ from sqlgen, signed off
+
+The move keeps sqlgen's semantics unless they did not make sense; each
+difference below was put to the user with its reason and signed off.
+
+- *A call on a committed unit of work is refused.* Under sqlgen, the
+  context of a unit of work that had committed still held its connection,
+  outside any transaction, so a later call ran and committed on its own. A
+  context taken from a unit of work promises one unit, and running outside it
+  silently hides a caller bug. #3961 already refused it for every repository
+  on libpq, with every suite green; =pq::transaction::ended()= now makes the
+  refusal hold even for work that runs no statement.
+- *A commit after a failed statement throws.* Under sqlgen, COMMIT on an
+  aborted transaction was answered by Postgres with a rollback and no error,
+  so the caller believed its writes were kept. The transaction now rolls back
+  and throws, and the unit of work reports =Cannot commit the transaction=.
+  The work is discarded either way; only the failure becomes visible.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,12 +128,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3994][#3994]] | [database] Remove sqlgen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Valgrind libpq rule names sqlgen; check its frames still match | build/valgrind/custom.supp | Accept | Wording now names pq::pool. The rule pins PQconnectdb, which pq::connection still calls, so it still matches. |
+| 2 | Docstring lists sqlgen as a third-party example | build/scripts/check_boost_dependencies.py | Accept | Names libpq instead. |
+| 3 | Windows libpq fix-up assumes every user goes through ores.database | CMakeLists.txt | Decline | Only ores.database links PostgreSQL::PostgreSQL; the fix-up sits on the imported target, so any later direct user inherits it too. |
+| 4 | Unconditional find_package(PostgreSQL) needs libpq documented for non-vcpkg builds | CMakeLists.txt | Decline | vcpkg.json supplies libpq; with ORES_VCPKG_ENABLED=OFF the configure returns at line 329, before any find_package, so doc-only builds are unaffected. |
+| 5 | Track the workflow recovery errors | — | Accept | Capture: workflow_recovery_fails_on_test_tenants_left_by_ctest. |
+| 6 | Is the open-policy test bounded? | projects/ores.database/tests/pq_layer_tests.cpp | No change | Port 1 on localhost refuses at once; three attempts with waits of 1 s and 2 s, about 3 s; the one-attempt case fails at once. |
+| 7 | (found while syncing) main's new ores.http.client links sqlgen::sqlgen | projects/ores.http/client/src/CMakeLists.txt | Fix | Generated on main from the old template; link removed. |
 
 * Result
+
+sqlgen is gone from the tree. The context, the unit of work and the listener
+run on the libpq layer; the pool retries opening under an open policy; the
+codegen has one repository archetype; vcpkg.json names libpq and the sqlgen
+overlay port is deleted.
+
+Every acceptance point is met:
+
+- No source, CMake file, template or vcpkg file names sqlgen
+  (=grep -rln sqlgen projects build/cmake CMakeLists.txt vcpkg.json= over
+  code, CMake, JSON and mustache files: no match).
+- The sqlgen repository facet and its backend switch are deleted.
+- Models, diagrams and docs describe the libpq layer and the target state of
+  the arc; only the agile history, the plans and one investigation record
+  name sqlgen.
+- Full build green at -j4; ctest 96/96; database recreated, 24/24 services
+  running, Acme provisioning complete, no ERROR or FATAL line in the journal.
+  Codegen tests: 1637 pass, and the 5 failures also fail on origin/main.
+
+Two semantics changed, signed off by the user: a call on a committed unit of
+work is refused, and a commit after a failed statement rolls back and throws.
+
+The raw-SQL helpers still open a connection per call; [[id:29333023-8206-4B41-9190-10D15ED3FA6A][Run every query on the pool behind pgbouncer]]
+moves them onto the pool.

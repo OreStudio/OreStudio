@@ -208,7 +208,6 @@ what the scheduler declares, so this reference is typed bigint and not uuid.
 #include <cstdint>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

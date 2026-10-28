@@ -18,40 +18,33 @@
  *
  */
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include <boost/exception/exception.hpp>
 #include <format>
-#include <sqlgen/postgres.hpp>
 
 namespace ores::database::repository {
 
 unit_of_work::unit_of_work(context ctx)
     : base_(std::move(ctx))
-    , transaction_(begin(base_))
-    , ctx_(base_.with_transaction(transaction_)) {}
+    , lease_(base_.pq_pool().acquire())
+    , transaction_(std::make_unique<pq::transaction>(lease_.get(), base_.pq_session()))
+    , ctx_(base_.with_transaction(*transaction_)) {}
 
 unit_of_work::~unit_of_work() {
     if (!committed_)
-        (void)transaction_->rollback();
+        transaction_->rollback();
 }
 
 void unit_of_work::commit() {
     if (committed_)
         return;
-
-    const auto r = transaction_->commit();
-    if (!r)
-        BOOST_THROW_EXCEPTION(repository_exception(
-            std::format("Cannot commit the transaction: {}", r.error().what())));
-    committed_ = true;
-}
-
-sqlgen::Ref<context::transaction_type> unit_of_work::begin(context& base) {
-    const auto r = sqlgen::session(base.connection_pool()).and_then(sqlgen::begin_transaction);
-    if (!r)
+    try {
+        transaction_->commit();
+    } catch (const pq::store_error& e) {
         BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Cannot begin a transaction: {}", r.error().what())));
-    return *r;
+            repository_exception(std::format("Cannot commit the transaction: {}", e.what())));
+    }
+    committed_ = true;
 }
 
 }

@@ -8,12 +8,7 @@
 #include <optional>
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
-{{^repository_on_libpq}}
-#include "sqlgen/PrimaryKey.hpp"
-{{/repository_on_libpq}}
-{{#repository_on_libpq}}
 #include "ores.database/query_builder/columns.hpp"
-{{/repository_on_libpq}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
 {{/cpp.includes.entity}}
@@ -30,7 +25,7 @@ struct {{entity_singular}}_entity {
     constexpr static const char* tablename = "{{sql.tablename}}";
 
 {{#primary_key.columns}}
-    {{#repository_on_libpq}}std::string{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::PrimaryKey<std::string>{{/repository_on_libpq}} {{column}};
+    std::string {{column}};
 {{/primary_key.columns}}
 {{#has_tenant_id}}
 {{#nullable_tenant_id}}
@@ -65,7 +60,7 @@ struct {{entity_singular}}_entity {
     std::string {{name}};
 {{/is_uuid}}
 {{#is_optional_timestamp}}
-    std::optional<{{#repository_on_libpq}}db_timestamp{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">{{/repository_on_libpq}}> {{name}};
+    std::optional<db_timestamp> {{name}};
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     std::string {{name}};
@@ -122,7 +117,6 @@ struct {{entity_singular}}_entity {
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 {{/current_state}}
-{{#repository_on_libpq}}
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -144,7 +138,9 @@ struct {{entity_singular}}_entity {
             | query_builder::bind("{{column}}", &e::{{column}})
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
             | query_builder::bind("{{name}}", &e::{{name}})
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
             | query_builder::bind("modified_by", &e::modified_by)
@@ -158,7 +154,6 @@ struct {{entity_singular}}_entity {
 {{/current_state}}
             ;
     }
-{{/repository_on_libpq}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
@@ -175,12 +170,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include <optional>
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
-{{^repository_on_libpq}}
-#include "sqlgen/PrimaryKey.hpp"
-{{/repository_on_libpq}}
-{{#repository_on_libpq}}
 #include "ores.database/query_builder/columns.hpp"
-{{/repository_on_libpq}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
 {{/cpp.includes.entity}}
@@ -198,7 +188,7 @@ struct {{name_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
-    {{#repository_on_libpq}}std::string{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::PrimaryKey<std::string>{{/repository_on_libpq}} {{left.column}};
+    std::string {{left.column}};
 {{#has_tenant_id}}
     std::string tenant_id;
 {{/has_tenant_id}}
@@ -206,7 +196,7 @@ struct {{name_singular}}_entity {
     int version = 0;
 {{#columns}}{{#is_uuid}}    std::string {{name}};
 {{/is_uuid}}{{#is_optional_uuid}}    std::optional<std::string> {{name}};
-{{/is_optional_uuid}}{{#is_optional_timestamp}}    std::optional<{{#repository_on_libpq}}db_timestamp{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">{{/repository_on_libpq}}> {{name}};
+{{/is_optional_uuid}}{{#is_optional_timestamp}}    std::optional<db_timestamp> {{name}};
 {{/is_optional_timestamp}}{{#is_required_timestamp}}    std::string {{name}};
 {{/is_required_timestamp}}{{#is_date}}    std::string {{name}};
 {{/is_date}}{{#is_base64}}    std::string {{name}};
@@ -220,7 +210,6 @@ struct {{name_singular}}_entity {
 {{#history}}
     std::optional<std::string> closed_by;
 {{/history}}
-{{#repository_on_libpq}}
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -236,7 +225,9 @@ struct {{name_singular}}_entity {
             | query_builder::bind("{{right.column}}", &e::{{right.column}})
             | query_builder::bind("version", &e::version)
 {{#columns}}
+{{^sql_only}}
             | query_builder::bind("{{name}}", &e::{{name}})
+{{/sql_only}}
 {{/columns}}
             | query_builder::bind("modified_by", &e::modified_by)
             | query_builder::bind("performed_by", &e::performed_by)
@@ -249,7 +240,6 @@ struct {{name_singular}}_entity {
 {{/history}}
             ;
     }
-{{/repository_on_libpq}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);

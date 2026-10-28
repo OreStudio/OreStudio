@@ -18,13 +18,14 @@
  *
  */
 #include "ores.database/service/postgres_listener_service.hpp"
-#include "ores.database/domain/session_utilities.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.platform/process/pid.hpp"
 #include <boost/algorithm/string/join.hpp>
 #include <algorithm>
 #include <chrono>
-#include <list>
+#include <libpq-fe.h>
 #include <thread>
+#include <vector>
 
 namespace ores::database::service {
 
@@ -36,7 +37,6 @@ postgres_listener_service::postgres_listener_service(context ctx, notification_c
     , application_name_("ores.database.listener." +
                         std::to_string(ores::platform::process::current_pid()) + "." +
                         std::to_string(instance_counter_.fetch_add(1)))
-    , connection_(std::nullopt)
     , running_(false) {
     BOOST_LOG_SEV(lg(), debug) << "Listener service created.";
 }
@@ -46,63 +46,110 @@ postgres_listener_service::~postgres_listener_service() {
     BOOST_LOG_SEV(lg(), debug) << "Listener service destroyed.";
 }
 
-sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-connect_utc(const sqlgen::postgres::Credentials& credentials, const std::string& application_name) {
-    auto conn_result = sqlgen::postgres::connect(credentials);
-    if (!conn_result)
-        return conn_result;
+namespace {
 
-    auto tz_result = domain::force_session_utc(**conn_result);
-    if (!tz_result) {
-        return sqlgen::error("Failed to set session timezone to UTC: " +
-                             std::string(tz_result.error().what()));
-    }
+/**
+ * @brief Runs a statement that returns no rows, and says whether it succeeded.
+ */
+bool run_command(PGconn* c, const std::string& sql, std::string& error) {
+    PGresult* r = PQexec(c, sql.c_str());
+    const auto status = PQresultStatus(r);
+    const bool ok = status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK;
+    if (!ok)
+        error = PQerrorMessage(c);
+    PQclear(r);
+    return ok;
+}
 
-    // Stamp the session so pg_stat_activity identifies the listener backend;
-    // the reconnect test scopes its pg_terminate_backend signal to this name.
-    auto name_result =
-        (*conn_result)
-            ->execute("SELECT set_config('application_name', '" + application_name + "', false)");
-    if (!name_result) {
-        return sqlgen::error("Failed to set application_name: " +
-                             std::string(name_result.error().what()));
+/**
+ * @brief LISTEN on a channel, its name quoted as an identifier.
+ */
+bool listen_on(pq::connection& c, const std::string& channel, std::string& error) {
+    char* quoted = PQescapeIdentifier(c.native(), channel.c_str(), channel.size());
+    if (!quoted) {
+        error = PQerrorMessage(c.native());
+        return false;
     }
-    return conn_result;
+    const std::string sql = std::string("LISTEN ") + quoted;
+    PQfreemem(quoted);
+    return run_command(c.native(), sql, error);
+}
+
+/**
+ * @brief Sends a notification, the channel and the payload bound.
+ */
+bool notify_on(pq::connection& c,
+               const std::string& channel,
+               const std::string& payload,
+               std::string& error) {
+    const char* values[] = {channel.c_str(), payload.c_str()};
+    PGresult* r = PQexecParams(
+        c.native(), "SELECT pg_notify($1, $2)", 2, nullptr, values, nullptr, nullptr, 0);
+    const bool ok = PQresultStatus(r) == PGRES_TUPLES_OK;
+    if (!ok)
+        error = PQerrorMessage(c.native());
+    PQclear(r);
+    return ok;
+}
+
+/**
+ * @brief The notifications the connection has read so far.
+ */
+std::vector<pg_notification> drain(pq::connection& c) {
+    std::vector<pg_notification> out;
+    while (PGnotify* n = PQnotifies(c.native())) {
+        out.push_back({.channel = n->relname, .payload = n->extra, .backend_pid = n->be_pid});
+        PQfreemem(n);
+    }
+    return out;
+}
+
+}
+
+std::unique_ptr<pq::connection> connect_utc(const pq::connection_options& options,
+                                            const std::string& application_name) {
+    auto with_name = options;
+    with_name.application_name = application_name;
+    auto c = std::make_unique<pq::connection>(with_name);
+    std::string problem;
+    if (!run_command(c->native(), "SELECT set_config('TimeZone', 'UTC', false)", problem))
+        throw pq::store_error(
+            "Failed to set session timezone to UTC: " + problem, "", pq::error_kind::refused);
+    return c;
 }
 
 bool postgres_listener_service::open_connection() {
     std::lock_guard lock(mutex_);
 
-    if (connection_.has_value()) {
+    if (connection_) {
         BOOST_LOG_SEV(lg(), debug) << "Connection already open.";
         return true;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
 
-    auto result = connect_utc(ctx_.credentials(), application_name_);
-    if (!result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: " << result.error().what();
+    try {
+        connection_ = connect_utc(ctx_.connection_options(), application_name_);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: " << e.what();
         return false;
     }
-
-    connection_ = std::move(*result);
     BOOST_LOG_SEV(lg(), info) << "Dedicated listener connection established.";
     return true;
 }
 
 void postgres_listener_service::issue_pending_listens() {
     // Note: Called from listen_loop with mutex held
-    if (!connection_.has_value()) {
+    if (!connection_) {
         BOOST_LOG_SEV(lg(), error) << "Cannot issue listens: no connection.";
         return;
     }
 
     for (const auto& channel : subscribed_channels_) {
-        auto result = (*connection_)->listen(channel);
-        if (!result) {
+        std::string problem;
+        if (!listen_on(*connection_, channel, problem)) {
             BOOST_LOG_SEV(lg(), error)
-                << "Failed to LISTEN on channel '" << channel << "': " << result.error().what();
+                << "Failed to LISTEN on channel '" << channel << "': " << problem;
         } else {
             BOOST_LOG_SEV(lg(), info) << "Listening on channel: " << channel;
         }
@@ -162,11 +209,11 @@ void postgres_listener_service::subscribe(const std::string& channel_name) {
     subscribed_channels_.push_back(channel_name);
 
     // If connection is open and running, issue LISTEN immediately
-    if (connection_.has_value() && running_) {
-        auto result = (*connection_)->listen(channel_name);
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to LISTEN on channel '" << channel_name
-                                       << "': " << result.error().what();
+    if (connection_ && running_) {
+        std::string problem;
+        if (!listen_on(*connection_, channel_name, problem)) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to LISTEN on channel '" << channel_name << "': " << problem;
         } else {
             BOOST_LOG_SEV(lg(), info) << "Listening on channel: " << channel_name;
         }
@@ -180,15 +227,15 @@ void postgres_listener_service::notify(const std::string& channel_name,
                                        const std::string& payload) {
     std::lock_guard lock(mutex_);
 
-    if (!connection_.has_value()) {
+    if (!connection_) {
         BOOST_LOG_SEV(lg(), error) << "Cannot notify: no connection.";
         return;
     }
 
-    auto result = (*connection_)->notify(channel_name, payload);
-    if (!result) {
+    std::string problem;
+    if (!notify_on(*connection_, channel_name, payload, problem)) {
         BOOST_LOG_SEV(lg(), error)
-            << "Failed to NOTIFY on channel '" << channel_name << "': " << result.error().what();
+            << "Failed to NOTIFY on channel '" << channel_name << "': " << problem;
     } else {
         BOOST_LOG_SEV(lg(), debug) << "Sent NOTIFY on channel: " << channel_name;
     }
@@ -221,15 +268,15 @@ void postgres_listener_service::listen_loop() {
         // long as the whole batch takes, and — because that same mutex
         // guards the 100ms poll cycle above — starves the listener's own
         // next iteration, making it appear to have died under load.
-        std::list<sqlgen::postgres::Notification> batch;
+        std::vector<pg_notification> batch;
         {
             std::lock_guard lock(mutex_);
 
-            if (!connection_.has_value()) {
+            if (!connection_) {
                 connection_ok = false;
-            } else if (!(*connection_)->consume_input()) {
+            } else if (PQconsumeInput(connection_->native()) != 1) {
                 BOOST_LOG_SEV(lg(), error) << "Connection error while consuming input.";
-                connection_ = std::nullopt;
+                connection_.reset();
                 connection_ok = false;
                 ++connection_loss_count_;
                 loss_start_ = std::chrono::steady_clock::now();
@@ -239,7 +286,7 @@ void postgres_listener_service::listen_loop() {
                     << "]; notifications in flight may be lost";
             } else {
                 backoff = min_backoff; // reset on successful poll
-                batch = (*connection_)->get_notifications();
+                batch = drain(*connection_);
             }
         }
         for (const auto& notification : batch)
@@ -258,12 +305,12 @@ void postgres_listener_service::listen_loop() {
                 break;
 
             std::lock_guard lock(mutex_);
-            auto result = connect_utc(ctx_.credentials(), application_name_);
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error) << "Reconnect failed: " << result.error().what();
-                continue; // will retry after next backoff
+            try {
+                connection_ = connect_utc(ctx_.connection_options(), application_name_);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Reconnect failed: " << e.what();
+                continue;
             }
-            connection_ = std::move(*result);
             const auto loss_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - loss_start_);
             BOOST_LOG_SEV(lg(), error) << "Reconnected after " << loss_duration.count()
@@ -288,8 +335,7 @@ void postgres_listener_service::listen_loop() {
     BOOST_LOG_SEV(lg(), info) << "Listener thread stopped.";
 }
 
-void postgres_listener_service::handle_notification(
-    const sqlgen::postgres::Notification& notification) {
+void postgres_listener_service::handle_notification(const pg_notification& notification) {
     if (!notification_callback_) {
         BOOST_LOG_SEV(lg(), warn)
             << "Received notification but no callback registered for channel: "

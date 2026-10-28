@@ -117,8 +117,6 @@ The dataset is scoped to the party a publish names, so it stages the country onl
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

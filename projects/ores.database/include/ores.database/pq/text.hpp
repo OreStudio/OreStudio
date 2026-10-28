@@ -30,9 +30,9 @@
 
 /*
  * The text form of the values a repository entity holds: what a generated
- * repository binds as text parameters and reads from text results. It is the
- * form sqlgen read and wrote, so an entity filled here holds what it held
- * before, and its mapper is unchanged.
+ * repository binds as text parameters and reads from text results. An entity
+ * holds strings, booleans, integers, floating point and db_timestamp; a
+ * column of any other type is held as its string, and the mapper converts it.
  */
 namespace ores::database::pq {
 

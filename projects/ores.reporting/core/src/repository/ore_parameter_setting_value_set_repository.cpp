@@ -19,7 +19,7 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository_pq.cpp.mustache
+ * Template: cpp_domain_type_repository.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/ore_parameter_setting_value_set_repository.hpp"

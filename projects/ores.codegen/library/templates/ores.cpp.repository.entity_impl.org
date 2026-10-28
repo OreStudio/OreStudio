@@ -2,7 +2,7 @@
 :ID: 2EC5AE36-6305-42A3-8FDD-747555B87E89
 :END:
 #+title: ores.cpp.repository.entity_impl
-#+description: Out-of-class implementations for the sqlgen entity. =repository= profile.
+#+description: Out-of-class implementations for the repository entity. =repository= profile.
 #+type: archetype
 #+output: projects/{component_core_dir}/src/repository/{entity}_entity.cpp
 #+facet: ores.cpp.repository
@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-Out-of-class implementations for the sqlgen entity. =repository= profile.
+Out-of-class implementations for the repository entity. =repository= profile.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -22,7 +22,7 @@ The full template source. Edit here and re-tangle with
 =compass build --direct tangle_codegen_templates= to regenerate
 =library/templates/cpp_domain_type_entity.cpp.mustache=.
 
-The generated file's only job is to give the sqlgen entity struct a
+The generated file's only job is to give the repository entity struct a
 =std::ostream= =operator<<= — the entity itself is a plain aggregate
 with no out-of-class members, so this is the entire =.cpp=. It's a
 thin wrapper over =rfl::json::write=: printing an entity as JSON is

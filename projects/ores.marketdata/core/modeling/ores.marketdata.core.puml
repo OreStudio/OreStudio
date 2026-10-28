@@ -178,7 +178,7 @@ namespace ores #F2F2F2 {
             class market_fixing_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +party_id : string
                 +series_id : string
@@ -220,7 +220,7 @@ namespace ores #F2F2F2 {
             class market_observation_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +party_id : string
                 +series_id : string
@@ -266,7 +266,7 @@ namespace ores #F2F2F2 {
             class market_series_asset_class_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +market_series_id : sqlgen::PrimaryKey<string>
+                +market_series_id : string
                 +tenant_id : string
                 +asset_class_code : string
                 +version : int
@@ -312,7 +312,7 @@ namespace ores #F2F2F2 {
             class market_series_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -358,7 +358,7 @@ namespace ores #F2F2F2 {
             class observation_lineage_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +party_id : string
@@ -407,8 +407,8 @@ namespace ores #F2F2F2 {
             class series_classification_rule_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +series_type : sqlgen::PrimaryKey<string>
-                +metric : sqlgen::PrimaryKey<string>
+                +series_type : string
+                +metric : string
                 +tenant_id : string
                 +version : int
                 +asset_class_source : string

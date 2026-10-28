@@ -22,15 +22,17 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/export.hpp"
+#include "ores.database/pq/pool.hpp"
+#include "ores.database/pq/transaction.hpp"
 #include "ores.database/repository/repository_exception.hpp"
-#include <sqlgen/Transaction.hpp>
+#include <memory>
 
 namespace ores::database::repository {
 
 /**
  * @brief One transaction, shared by every repository write made through it.
  *
- * A unit of work owns one pooled connection and one transaction. Its
+ * A unit of work leases one libpq connection and holds one transaction on it. Its
  * ctx() returns a context bound to that transaction, and every repository
  * call made with that context joins it. A use case that must write
  * several rows together opens one unit of work, writes through it, and
@@ -40,9 +42,9 @@ namespace ores::database::repository {
  * work without committing, the destructor rolls the transaction back, so
  * a thrown exception between the writes leaves none of them.
  *
- * The tenant and the party are set on the connection when it is acquired.
- * A held connection cannot change them, so a caller that needs another
- * tenant or party builds that context before it opens the unit of work.
+ * The transaction sets the tenant and the party of the context the unit of
+ * work opens with, once, so a caller that needs another tenant or party
+ * builds that context before it opens the unit of work.
  *
  * A unit of work does not move or copy: its address is the lifetime of
  * the transaction, and repository calls must happen inside that lifetime.
@@ -93,10 +95,9 @@ public:
     void commit();
 
 private:
-    static sqlgen::Ref<context::transaction_type> begin(context& base);
-
     context base_;
-    sqlgen::Ref<context::transaction_type> transaction_;
+    pq::pool::lease lease_;
+    std::unique_ptr<pq::transaction> transaction_;
     context ctx_;
     bool committed_ = false;
 };

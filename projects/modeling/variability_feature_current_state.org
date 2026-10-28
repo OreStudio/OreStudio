@@ -39,7 +39,7 @@ entity keeps every one of them.
 * Structural consequence
 
 The table shape, and through it the entity struct: the audit tail and the
-temporal columns are absent, so the generated sqlgen entity carries neither.
+temporal columns are absent, so the generated repository entity carries neither.
 A current-state model and a bi-temporal model of the same columns therefore
 do not produce the same table.
 

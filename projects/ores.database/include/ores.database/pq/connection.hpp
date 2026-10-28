@@ -95,13 +95,11 @@ private:
 };
 
 /**
- * @brief Closes a connection the layer opened, and leaves a borrowed one open.
+ * @brief Closes a connection the layer opened.
  */
 struct connection_closer final {
-    bool owned = true;
     void operator()(PGconn* c) const noexcept {
-        if (owned)
-            PQfinish(c);
+        PQfinish(c);
     }
 };
 
@@ -117,14 +115,6 @@ public:
      * @brief Opens the connection; a failure to connect is retryable.
      */
     explicit connection(const connection_options& options);
-
-    /**
-     * @brief Wraps a connection that sqlgen holds open, and leaves it open.
-     *
-     * It never goes into a pool. It is the connection of a transaction that
-     * joins an open sqlgen transaction, and it goes with sqlgen.
-     */
-    [[nodiscard]] static connection borrow(PGconn* c) noexcept;
 
     [[nodiscard]] PGconn* native() const noexcept {
         return handle_.get();
@@ -148,8 +138,6 @@ public:
     void mark_prepared(std::string_view name);
 
 private:
-    connection() = default;
-
     std::unique_ptr<PGconn, connection_closer> handle_;
     std::unordered_set<std::string> prepared_;
 };

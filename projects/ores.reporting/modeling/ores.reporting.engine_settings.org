@@ -161,7 +161,6 @@ ctx.generate_uuid()
 #include <optional>
 #include <ostream>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

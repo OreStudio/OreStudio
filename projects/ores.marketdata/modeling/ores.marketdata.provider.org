@@ -276,7 +276,6 @@ policy still decides which system rows a tenant sees and who may write them.
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

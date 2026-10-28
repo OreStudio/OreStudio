@@ -65,7 +65,7 @@ namespace ores #F2F2F2 {
             class concurrency_policy_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +version : int
                 +name : string
                 +description : string
@@ -84,7 +84,7 @@ namespace ores #F2F2F2 {
             class report_definition_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -108,7 +108,7 @@ namespace ores #F2F2F2 {
             }
             class report_input_bundle_entity <<struct>> {
                 +schema : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +report_instance_id : string
                 +definition_id : string
@@ -123,7 +123,7 @@ namespace ores #F2F2F2 {
             class report_instance_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -149,7 +149,7 @@ namespace ores #F2F2F2 {
             class report_type_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
-                +code : sqlgen::PrimaryKey<string>
+                +code : string
                 +tenant_id : string
                 +version : int
                 +name : string
@@ -168,7 +168,7 @@ namespace ores #F2F2F2 {
             }
             class risk_report_config_entity <<struct>> {
                 +schema : constexpr static const char*
-                +id : sqlgen::PrimaryKey<string>
+                +id : string
                 +tenant_id : string
                 +version : int
                 +report_definition_id : string

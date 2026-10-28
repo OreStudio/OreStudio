@@ -16,7 +16,7 @@ it mentions, the relation the file has to that table:
   reads       a FROM or JOIN reference, including a publish function.
   drops       a DROP TABLE.
   registers   a dataset or artefact-type registration that names it.
-  cpp         a C++ source, which usually means sqlgen built the SQL.
+  cpp         a C++ source, which usually means the query builder built the SQL.
   doc         a document.
   mentions    a reference none of the above explains. Not proof of use.
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/domain/context_transact.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -37,6 +38,14 @@ struct ip2country_probe {
     std::string ip_range;
     std::string tenant_id;
     std::string country_code;
+
+    static constexpr auto columns() {
+        using e = ip2country_probe;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::bind("ip_range", &e::ip_range) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("country_code", &e::country_code);
+    }
 };
 
 /**
@@ -89,10 +98,10 @@ TEST_CASE("a unit of work binds its transaction to the context it hands out", "[
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 
-    REQUIRE_FALSE(h.context().active_transaction().has_value());
+    REQUIRE_FALSE(h.context().active_transaction() != nullptr);
 
     unit_of_work uow(h.context());
-    REQUIRE(uow.ctx().active_transaction().has_value());
+    REQUIRE(uow.ctx().active_transaction() != nullptr);
     uow.commit();
 }
 
@@ -102,7 +111,7 @@ TEST_CASE("a unit of work that is not committed frees its connection", "[unit_of
 
     {
         unit_of_work uow(h.context());
-        REQUIRE(uow.ctx().active_transaction().has_value());
+        REQUIRE(uow.ctx().active_transaction() != nullptr);
     }
 
     // The destructor rolled the transaction back, so the next acquisition
@@ -124,7 +133,7 @@ TEST_CASE("a raw insert through a unit of work is rolled back", "[unit_of_work]"
     {
         unit_of_work uow(h.context());
         const auto& ctx = uow.ctx();
-        REQUIRE((*ctx.active_transaction())->execute(sql).has_value());
+        pq_execute(ctx, sql);
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
@@ -150,7 +159,7 @@ TEST_CASE("a raw insert through a committed unit of work is kept", "[unit_of_wor
     {
         unit_of_work uow(h.context());
         const auto& ctx = uow.ctx();
-        REQUIRE((*ctx.active_transaction())->execute(sql).has_value());
+        pq_execute(ctx, sql);
         uow.commit();
     }
 
@@ -176,8 +185,8 @@ TEST_CASE("an entity insert through a unit of work is rolled back", "[unit_of_wo
         const ip2country_probe probe{.ip_range = probe_range(),
                                      .tenant_id = h.context().tenant_id().to_string(),
                                      .country_code = code};
-        ores::database::repository::execute_write_op(
-            ctx, sqlgen::insert(probe), lg, "Probing an entity insert");
+        ores::database::query_builder::execute_write_op(
+            ctx, ores::database::query_builder::insert(probe), lg, "Probing an entity insert");
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
@@ -202,11 +211,12 @@ TEST_CASE("a failed insert leaves no earlier row in the unit of work", "[unit_of
         const auto& ctx = uow.ctx();
         const ip2country_probe good{
             .ip_range = probe_range(), .tenant_id = tid, .country_code = code + "G"};
-        ores::database::repository::execute_write_op(ctx, sqlgen::insert(good), lg, "Good insert");
+        ores::database::query_builder::execute_write_op(
+            ctx, ores::database::query_builder::insert(good), lg, "Good insert");
         const ip2country_probe bad{
             .ip_range = "not-a-range", .tenant_id = tid, .country_code = code + "B"};
-        CHECK_THROWS(ores::database::repository::execute_write_op(
-            ctx, sqlgen::insert(bad), lg, "Bad insert"));
+        CHECK_THROWS(ores::database::query_builder::execute_write_op(
+            ctx, ores::database::query_builder::insert(bad), lg, "Bad insert"));
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
@@ -222,8 +232,7 @@ TEST_CASE("a failed insert leaves no earlier row in the unit of work", "[unit_of
 /**
  * @brief A read joins the unit of work's transaction without ending it.
  *
- * The read runs through sqlgen's postgres iterator, which the overlay patch
- * stops from running its own BEGIN and END around a transaction it joined. The
+ * The read runs on the unit of work's transaction and does not end it. The
  * insert that follows the read is therefore still part of the unit of work,
  * and destroying the unit of work without commit rolls it back.
  */
@@ -237,17 +246,17 @@ TEST_CASE("a read inside a unit of work does not commit it", "[unit_of_work]") {
     {
         unit_of_work uow(h.context());
         const auto& ctx = uow.ctx();
-        using namespace sqlgen::literals;
-        const auto query =
-            sqlgen::read<std::vector<ip2country_probe>> | sqlgen::where("country_code"_c == code);
-        const auto found =
-            ores::database::repository::execute_read_query<ip2country_probe, ip2country_probe>(
-                ctx, query, [](const auto& v) { return v; }, lg, "probe read");
+        namespace query_builder = ores::database::query_builder;
+        using namespace ores::database::query_builder::literals;
+        const auto query = query_builder::read<std::vector<ip2country_probe>> |
+                           query_builder::where("country_code"_c == code);
+        const auto found = query_builder::execute_read_query<ip2country_probe, ip2country_probe>(
+            ctx, query, [](const auto& v) { return v; }, lg, "probe read");
         CHECK(found.empty());
 
         const ip2country_probe probe{
             .ip_range = probe_range(), .tenant_id = tid, .country_code = code};
-        ores::database::repository::execute_write_op(ctx, sqlgen::insert(probe), lg, "insert");
+        query_builder::execute_write_op(ctx, query_builder::insert(probe), lg, "insert");
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
@@ -285,14 +294,13 @@ TEST_CASE("a libpq write inside a unit of work is kept when it commits", "[unit_
     CHECK(committed_count(code) == "1");
 }
 
-TEST_CASE("a libpq read inside a unit of work sees its uncommitted sqlgen write",
-          "[unit_of_work]") {
+TEST_CASE("a libpq read inside a unit of work sees its uncommitted write", "[unit_of_work]") {
     ores::testing::scoped_database_helper h;
     const auto code = probe_code();
 
     unit_of_work uow(h.context());
     const auto& ctx = uow.ctx();
-    REQUIRE((*ctx.active_transaction())->execute(probe_insert(ctx, code)).has_value());
+    pq_execute(ctx, probe_insert(ctx, code));
 
     const auto sql = probe_count(code);
     const ores::database::pq::text_statement count({}, sql);
@@ -318,4 +326,53 @@ TEST_CASE("a named libpq statement runs in every call that joins a unit of work"
         CHECK(one == "1");
     }
     uow.commit();
+}
+
+TEST_CASE("a failed statement aborts the unit of work, and nothing before it is kept",
+          "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    const auto code = probe_code();
+    {
+        unit_of_work uow(h.context());
+        pq_execute(uow.ctx(), probe_insert(uow.ctx(), code));
+        CHECK_THROWS(pq_execute(uow.ctx(), "select * from no_such_table_anywhere"));
+        CHECK_THROWS(pq_execute(uow.ctx(), probe_count(code)));
+        CHECK_THROWS(uow.commit());
+    }
+
+    CHECK(committed_count(code) == "0");
+}
+
+TEST_CASE("a raw helper inside a unit of work runs on its own connection, as it always did",
+          "[unit_of_work]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::scoped_database_helper h;
+    const auto code = probe_code();
+    {
+        unit_of_work uow(h.context());
+        ores::database::repository::execute_raw_command(
+            uow.ctx(), probe_insert(uow.ctx(), code), lg, "Raw insert beside a unit of work");
+    }
+
+    CHECK(committed_count(code) == "1");
+}
+
+TEST_CASE("a context re-scoped on a unit of work writes on its transaction", "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    const auto code = probe_code();
+    {
+        unit_of_work uow(h.context());
+        const auto scoped = uow.ctx().with_tenant(uow.ctx().tenant_id(), "someone else");
+        REQUIRE(scoped.active_transaction() == uow.ctx().active_transaction());
+        pq_execute(scoped, probe_insert(scoped, code));
+    }
+
+    CHECK(committed_count(code) == "0");
+}
+
+TEST_CASE("a unit of work that ran nothing commits", "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    unit_of_work uow(h.context());
+    CHECK_NOTHROW(uow.commit());
+    CHECK_NOTHROW(uow.commit());
 }

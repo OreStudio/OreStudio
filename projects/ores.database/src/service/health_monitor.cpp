@@ -19,12 +19,12 @@
  */
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.database/pq/connection.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/log/sources/severity_feature.hpp>
-#include <sqlgen/postgres.hpp>
 
 namespace ores::database {
 
@@ -60,10 +60,9 @@ bool health_monitor::check_health() {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Checking database connectivity...";
 
-        auto credentials = to_credentials(options_);
-        auto conn_result = sqlgen::postgres::connect(credentials);
-
-        if (conn_result) {
+        // A probe that cannot connect throws, and the catch below reports it.
+        const pq::connection probe(to_connection_options(options_));
+        {
             // Connection successful
             available_ = true;
             {
@@ -87,30 +86,6 @@ bool health_monitor::check_health() {
                 BOOST_LOG_SEV(lg(), debug) << "Database connectivity check passed";
             }
             return true;
-        } else {
-            // Connection failed - use actual error from connection result
-            std::string error_msg = conn_result.error().what();
-            available_ = false;
-            {
-                std::lock_guard lock(mutex_);
-                last_error_ = error_msg;
-            }
-
-            if (was_available) {
-                BOOST_LOG_SEV(lg(), error) << "Database connection lost: " << error_msg;
-
-                status_change_callback callback;
-                {
-                    std::lock_guard lock(mutex_);
-                    callback = status_callback_;
-                }
-                if (callback) {
-                    callback(false, error_msg);
-                }
-            } else {
-                BOOST_LOG_SEV(lg(), warn) << "Database still unavailable: " << error_msg;
-            }
-            return false;
         }
     } catch (const std::exception& e) {
         std::string error_msg = e.what();

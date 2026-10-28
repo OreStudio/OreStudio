@@ -35,13 +35,9 @@ using std::chrono::system_clock;
 namespace {
 
 connection_options options_of(ores::testing::scoped_database_helper& h) {
-    const auto& c = h.context().credentials();
-    return {.host = c.host,
-            .port = static_cast<std::uint16_t>(c.port),
-            .dbname = c.dbname,
-            .user = c.user,
-            .password = c.password,
-            .application_name = "ores.database.tests.pq"};
+    auto options = h.context().connection_options();
+    options.application_name = "ores.database.tests.pq";
+    return options;
 }
 
 session_context context_of(ores::testing::scoped_database_helper& h) {
@@ -299,7 +295,7 @@ TEST_CASE("a batch goes out in one pipeline and a bulk load through copy", "[pq]
 
 TEST_CASE("a pool that stays busy refuses with a retryable error", "[pq]") {
     ores::testing::scoped_database_helper h;
-    pool p(options_of(h), 1, std::chrono::milliseconds(20));
+    pool p(options_of(h), 1, {}, std::chrono::milliseconds(20));
     const auto held = p.acquire();
     try {
         (void)p.acquire();
@@ -378,7 +374,7 @@ TEST_CASE("a context reaches the layer through one pool that every copy shares",
     CHECK(scoped.pq_session().actor == "someone");
 }
 
-TEST_CASE("a context re-scoped inside a sqlgen unit of work still reads the tenant sqlgen set",
+TEST_CASE("a context re-scoped inside a unit of work still reads the tenant it opened with",
           "[pq]") {
     ores::testing::scoped_database_helper h;
     ores::database::repository::unit_of_work uow(h.context());
@@ -390,7 +386,7 @@ TEST_CASE("a context re-scoped inside a sqlgen unit of work still reads the tena
     CHECK(seen == h.context().tenant_id().to_string());
 }
 
-TEST_CASE("a call joined to a committed sqlgen unit of work is refused", "[pq]") {
+TEST_CASE("a call on a committed unit of work is refused", "[pq]") {
     ores::testing::scoped_database_helper h;
     ores::database::repository::unit_of_work uow(h.context());
     uow.commit();
@@ -402,7 +398,7 @@ TEST_CASE("a call joined to a committed sqlgen unit of work is refused", "[pq]")
     }
 }
 
-TEST_CASE("a text statement fills an entity's text fields as sqlgen did", "[pq]") {
+TEST_CASE("a text statement fills an entity's text fields", "[pq]") {
     ores::testing::scoped_database_helper h;
     pool p(options_of(h), 1);
     const auto ctx = context_of(h);
@@ -460,4 +456,31 @@ TEST_CASE("a list read's conditions bind their values and order by the key", "[p
     REQUIRE(rows.size() == 2);
     CHECK(std::get<0>(rows[0]) == "gamma");
     CHECK(std::get<0>(rows[1]) == "alpha");
+}
+
+TEST_CASE("a pool that cannot connect waits between its attempts and then gives up", "[pq]") {
+    const connection_options unreachable{.host = "127.0.0.1", .port = 1, .dbname = "none"};
+    const open_policy policy{
+        .attempts = 3, .wait = std::chrono::seconds(1), .shape = backoff::linear};
+
+    const auto began = std::chrono::steady_clock::now();
+    try {
+        pool p(unreachable, 1, policy);
+        FAIL("a pool opened against a port nothing listens on");
+    } catch (const store_error& e) {
+        CHECK(e.retryable());
+    }
+    const auto took = std::chrono::steady_clock::now() - began;
+
+    // Linear waits of one and two seconds sit between the three attempts.
+    CHECK(took >= std::chrono::seconds(3));
+    CHECK(took < std::chrono::seconds(10));
+}
+
+TEST_CASE("a pool with one attempt gives up at once", "[pq]") {
+    const connection_options unreachable{.host = "127.0.0.1", .port = 1, .dbname = "none"};
+
+    const auto began = std::chrono::steady_clock::now();
+    CHECK_THROWS_AS(pool(unreachable, 1, open_policy{.attempts = 1}), store_error);
+    CHECK(std::chrono::steady_clock::now() - began < std::chrono::seconds(1));
 }

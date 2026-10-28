@@ -18,44 +18,24 @@
  *
  */
 #include "ores.database/domain/database_options.hpp"
-#include "ores.logging/make_logger.hpp"
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include <string_view>
 
 namespace ores::database {
 
-namespace {
-
-auto& lg() {
-    using namespace ores::logging;
-    static auto instance = make_logger("ores.utility.database.postgres");
-    return instance;
-}
-
-}
 
 std::ostream& operator<<(std::ostream& s, const database_options& v) {
     rfl::json::write(v, s);
     return s;
 }
 
-sqlgen::postgres::Credentials to_credentials(const database_options& opts) {
-    return sqlgen::postgres::Credentials{.user = opts.user,
-                                         .password = opts.password(),
-                                         .host = opts.host,
-                                         .dbname = opts.database,
-                                         .port = opts.port,
-                                         .notice_handler = [](const char* msg) {
-                                             using namespace ores::logging;
-                                             // libpq appends a trailing newline; strip it before
-                                             // logging.
-                                             std::string_view sv(msg);
-                                             if (!sv.empty() && sv.back() == '\n')
-                                                 sv.remove_suffix(1);
-                                             BOOST_LOG_SEV(lg(), debug) << sv;
-                                         }};
+pq::connection_options to_connection_options(const database_options& opts) {
+    return {.host = opts.host,
+            .port = static_cast<std::uint16_t>(opts.port),
+            .dbname = opts.database,
+            .user = opts.user,
+            .password = opts.password()};
 }
 
 }

@@ -43,6 +43,11 @@ mapper's string conversions go.
 - The generated repositories read and bind in the binary format; the text
   mode of the layer has no generated caller.
 - The mapper templates convert no column through its text.
+- The code matches the docs that already describe this state: the time types
+  and the WHERE clauses in [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][the time architecture]], and the entity type
+  mapping in =projects/ores.codegen/docs/cpp_generation_analysis.md=. The
+  meta-model docs' entity and mapper examples show typed fields; the example
+  of a text column decoded through base64 goes.
 - The repository benchmark is measured before and after, and the timestamp
   parse no longer shows in a profile of a read.
 

@@ -22,24 +22,16 @@ namespace ores::database {
 
 pq::pool& context::pq_pool() const {
     std::scoped_lock lock(pq_->mutex);
-    if (!pq_->pool) {
-        pq_->pool = std::make_unique<pq::pool>(
-            pq::connection_options{.host = credentials_.host,
-                                   .port = static_cast<std::uint16_t>(credentials_.port),
-                                   .dbname = credentials_.dbname,
-                                   .user = credentials_.user,
-                                   .password = credentials_.password,
-                                   .application_name = service_account_},
-            pq_->size);
-    }
+    if (!pq_->pool)
+        pq_->pool = std::make_unique<pq::pool>(options_, pq_->size, policy_);
     return *pq_->pool;
 }
 
 pq::session_context context::pq_session() const {
-    return {.tenant = tenant_id(),
-            .party = party_id(),
-            .visible_parties = visible_party_ids(),
-            .actor = actor(),
+    return {.tenant = tenant_id_,
+            .party = party_id_,
+            .visible_parties = visible_party_ids_,
+            .actor = actor_,
             .service = service_account_};
 }
 

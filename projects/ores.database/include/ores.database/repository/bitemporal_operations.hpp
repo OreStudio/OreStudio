@@ -22,14 +22,12 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/export.hpp"
-#include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <chrono>
 #include <map>
 #include <optional>
-#include <sqlgen/postgres.hpp>
 #include <vector>
 
 namespace ores::database::repository {
@@ -44,199 +42,10 @@ namespace ores::database::repository {
 inline constexpr long long slow_statement_ms = 250;
 
 /**
- * @brief Executes a read query and maps the results to domain objects.
- *
- * This helper encapsulates the common pattern of:
- * 1. Executing a query on a session
- * 2. Ensuring success
- * 3. Logging the result count
- * 4. Mapping entities to domain objects
- *
- * @tparam EntityType The database entity type
- * @tparam DomainType The domain model type
- * @tparam QueryType The sqlgen query type
- * @tparam MapperFunc The mapper function type
- * @param ctx The repository context
- * @param query The pre-built sqlgen query
- * @param mapper The function to map entities to domain objects
- * @param logger_name The name to use for logging
- * @param operation_desc Description of the operation for logging
- * @return A vector of domain objects
- *
- * @example
- * const auto query = sqlgen::read<std::vector<account_entity>> |
- *     where("valid_to"_c == max.value()) |
- *     order_by("valid_from"_c.desc());
- * return execute_read_query<account_entity, domain::account>(
- *     ctx_, query,
- *     [](const auto& entities) { return account_mapper::map(entities); },
- *     "ores.iam.repository.account_repository",
- *     "Read latest accounts");
- */
-template <typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
-std::vector<DomainType> execute_read_query(context ctx,
-                                           const QueryType& query,
-                                           MapperFunc&& mapper,
-                                           logging::logger_t& lg,
-                                           const std::string& operation_desc) {
-
-    using namespace ores::logging;
-    using namespace sqlgen;
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
-
-    const auto began = std::chrono::steady_clock::now();
-    const auto r = ctx.active_transaction() ? query(*ctx.active_transaction()) :
-                                              session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg);
-
-    const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::steady_clock::now() - began)
-                          .count();
-    BOOST_LOG_SEV(lg, took >= slow_statement_ms ? warn : debug)
-        << operation_desc << ". Total: " << r->size() << " in " << took << " ms";
-    return std::forward<MapperFunc>(mapper)(*r);
-}
-
-/**
- * @brief Executes a write composable in the context's transaction, or in
- * a transaction of its own.
- *
- * A context bound to a unit of work carries a transaction, and the write
- * joins it and does not commit; the unit of work commits once for all the
- * writes made through it. A context without one runs the write in a
- * transaction of its own, committed here.
- *
- * @tparam QueryType The sqlgen write composable, such as insert(entity).
- * @param ctx The repository context
- * @param query The write composable to run
- * @param lg The logger to use
- * @param operation_desc Description of the operation for logging
- */
-template <typename QueryType>
-void execute_write_op(context ctx,
-                      const QueryType& query,
-                      logging::logger_t& lg,
-                      const std::string& operation_desc) {
-
-    using namespace ores::logging;
-    using namespace sqlgen;
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
-
-    if (ctx.active_transaction())
-        ensure_success(query(*ctx.active_transaction()), lg);
-    else
-        ensure_success(session(ctx.connection_pool())
-                           .and_then(begin_transaction)
-                           .and_then(query)
-                           .and_then(commit),
-                       lg);
-
-    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
-}
-
-/**
- * @brief Executes a write operation within a transaction.
- *
- * This helper encapsulates the common pattern of:
- * 1. Starting a session
- * 2. Beginning a transaction
- * 3. Executing an insert/update query
- * 4. Committing the transaction
- * 5. Ensuring success
- *
- * It joins the context's own transaction when the context carries one.
- *
- * An entity whose component specialises @c entity_write_observer is observed
- * after the write, in the same transaction as it. When the context carries no
- * transaction the write and its observation share one opened here, so a
- * failure in either leaves neither.
- *
- * @tparam EntityType The database entity type
- * @param ctx The repository context
- * @param entity The entity or vector of entities to write
- * @param lg The logger to use
- * @param operation_desc Description of the operation for logging
- *
- * @example
- * execute_write_query(ctx_,
- *     account_mapper::map(account),
- *     lg(), "Writing account to database");
- */
-template <typename EntityType>
-void execute_write_query(context ctx,
-                         const EntityType& entity,
-                         logging::logger_t& lg,
-                         const std::string& operation_desc) {
-
-    if constexpr (entity_write_observer<EntityType>::observes) {
-        if (ctx.active_transaction()) {
-            execute_write_op(ctx, sqlgen::insert(entity), lg, operation_desc);
-            entity_write_observer<EntityType>::observe(ctx, entity, lg);
-        } else {
-            /*
-             * The observation reads and writes the entity's parent, and is one
-             * unit with the write, so the write opens the transaction the
-             * caller did not.
-             */
-            unit_of_work uow(ctx);
-            execute_write_op(uow.ctx(), sqlgen::insert(entity), lg, operation_desc);
-            entity_write_observer<EntityType>::observe(uow.ctx(), entity, lg);
-            uow.commit();
-        }
-    } else {
-        execute_write_op(ctx, sqlgen::insert(entity), lg, operation_desc);
-    }
-}
-
-/**
- * @brief Executes a delete operation within a transaction.
- *
- * For bitemporal tables, this typically triggers a database function that sets
- * valid_to = current_timestamp instead of actually deleting the record.
- *
- * @tparam QueryType The sqlgen delete query type
- * @param ctx The repository context
- * @param query The pre-built delete query
- * @param logger_name The name to use for logging
- * @param operation_desc Description of the operation for logging
- *
- * @example
- * const auto query = sqlgen::delete_from<account_entity> |
- *     where("id"_c == id_str);
- * execute_delete_query(ctx_, query,
- *     "ores.iam.repository.account_repository",
- *     "Removing account from database");
- */
-template <typename QueryType>
-void execute_delete_query(context ctx,
-                          const QueryType& query,
-                          logging::logger_t& lg,
-                          const std::string& operation_desc) {
-
-    using namespace ores::logging;
-    using namespace sqlgen;
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
-
-    if (ctx.active_transaction())
-        ensure_success(query(*ctx.active_transaction()), lg);
-    else
-        ensure_success(session(ctx.connection_pool())
-                           .and_then(begin_transaction)
-                           .and_then(query)
-                           .and_then(commit),
-                       lg);
-
-    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
-}
-
-/**
  * @brief Executes a raw SQL query that returns a single column of strings.
  *
  * This helper is useful for complex queries with JOINs that cannot be expressed
- * through sqlgen's ORM interface.
+ * through the query builder.
  *
  * @param ctx The repository context
  * @param sql The raw SQL query string

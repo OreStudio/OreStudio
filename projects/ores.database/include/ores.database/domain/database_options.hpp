@@ -21,9 +21,9 @@
 #define ORES_DATABASE_DATABASE_OPTIONS_HPP
 
 #include "ores.database/export.hpp"
+#include "ores.database/pq/connection.hpp"
 #include <iosfwd>
 #include <rfl.hpp>
-#include <sqlgen/postgres.hpp>
 #include <string>
 
 namespace ores::database {
@@ -75,12 +75,12 @@ struct database_options final {
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);
 
 /**
- * @brief Converts database_options to sqlgen::postgres::Credentials.
+ * @brief The libpq connection options of database_options.
  *
  * @param opts The database options to convert.
- * @return The corresponding sqlgen credentials.
+ * @return The options a libpq connection opens with.
  */
-ORES_DATABASE_EXPORT sqlgen::postgres::Credentials to_credentials(const database_options& opts);
+ORES_DATABASE_EXPORT pq::connection_options to_connection_options(const database_options& opts);
 
 }
 

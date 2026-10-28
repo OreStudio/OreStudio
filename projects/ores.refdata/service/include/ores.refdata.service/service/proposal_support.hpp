@@ -21,6 +21,8 @@
 #define ORES_REFDATA_SERVICE_SERVICE_PROPOSAL_SUPPORT_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_transact.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -45,9 +47,16 @@ namespace ores::refdata::service::support {
  * opened would not exist on the one the writes run on.
  */
 inline void in_transaction(const ores::database::context& ctx, const std::string& sql) {
-    const auto r = (*ctx.active_transaction())->execute(sql);
-    if (!r)
-        throw std::runtime_error(r.error().what());
+    if (!ctx.active_transaction())
+        throw std::logic_error(
+            "A statement for the open transaction needs a context bound to one.");
+    try {
+        const ores::database::pq::text_statement statement({}, sql);
+        ores::database::transact(
+            ctx, [&](ores::database::pq::transaction& tx) { tx.run(statement, {}); });
+    } catch (const ores::database::pq::store_error& e) {
+        throw std::runtime_error(e.what());
+    }
 }
 
 /**

@@ -115,14 +115,16 @@ _ENTITY_STRUCT_FLAGS = (
     'is_value_type',
     # A plain date column's domain member is std::chrono::year_month_day (or
     # its optional) while the entity member is the ISO-8601 std::string the
-    # database stores -- sqlgen cannot bind year_month_day. The template pairs
+    # database stores -- the query builder's text forms hold no
+    # year_month_day. The template pairs
     # these flags with a std::string/std::optional<std::string> member, so
     # without them the guard would refuse a shape the template carries.
     'is_required_date',
     'is_optional_date',
     # A money column's domain member is ores::utility::decimal::decimal (or
     # its optional) while the entity member is the exact decimal std::string
-    # the numeric column binds -- sqlgen cannot bind a multiprecision type.
+    # the numeric column binds -- the query builder's text forms hold no
+    # multiprecision type.
     # The template pairs these flags with a std::string/std::optional<
     # std::string> member, so without them the guard would refuse a shape the
     # template carries.
@@ -2847,52 +2849,6 @@ def shell_command_surface(projects_dir, component):
     return enabled, local_units
 
 
-# The libraries a component's generated repositories may run on. A
-# component names its own in its modeling/component_overview.org, as
-# ``#+repository_backend:``; one that names none stays on sqlgen until its
-# move. See :func:`repository_backend`.
-_REPOSITORY_BACKENDS = ("sqlgen", "libpq")
-
-# The templates whose libpq form is a template of its own. The rest take the
-# ``repository_on_libpq`` flag and switch a line at a time.
-_LIBPQ_TEMPLATE_VARIANTS = {
-    "cpp_domain_type_repository.cpp.mustache": "cpp_domain_type_repository_pq.cpp.mustache",
-}
-
-
-@functools.lru_cache(maxsize=None)
-def repository_backend(projects_dir, component):
-    """The library a component's generated repositories run on.
-
-    Read from ``#+repository_backend:`` in the component's
-    ``modeling/component_overview.org``. A component that names none runs on
-    sqlgen. A name outside :data:`_REPOSITORY_BACKENDS` is refused, so a typo
-    cannot leave a component on the old library unnoticed.
-    """
-    # Deferred import: org_loader imports this module.
-    from .org_loader import parse_org
-
-    if not component:
-        return "sqlgen"
-    overview = (Path(projects_dir) / f"ores.{component}" / "modeling" / "component_overview.org")
-    if not overview.is_file():
-        return "sqlgen"
-    frontmatter = parse_org(overview.read_text(encoding="utf-8")).frontmatter
-    backend = str(frontmatter.get("repository_backend", "sqlgen")).strip() or "sqlgen"
-    if backend not in _REPOSITORY_BACKENDS:
-        raise ValueError(
-            f"{overview}: #+repository_backend: {backend} is not one of "
-            f"{', '.join(_REPOSITORY_BACKENDS)}")
-    return backend
-
-
-def template_for_backend(template_name, data):
-    """The template that renders ``template_name`` for the data's backend."""
-    if not data.get("repository_on_libpq"):
-        return template_name
-    return _LIBPQ_TEMPLATE_VARIANTS.get(template_name, template_name)
-
-
 def _convention_family_row(entry):
     """One registry entry, with the one-hot mode flags a Mustache section needs."""
     return {
@@ -3776,10 +3732,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 is_enum_type = col.get('is_enum', False)
                 is_inet_address_type = 'boost::asio::ip::address' in col.get('cpp_type', '')
                 # A plain date column: the domain member is
-                # std::chrono::year_month_day (or its optional), but sqlgen
-                # cannot bind year_month_day -- its parsing layer rejects the
-                # type with a static_assert -- so the entity member stays the
-                # ISO-8601 std::string the database column stores, exactly as
+                # std::chrono::year_month_day (or its optional), but the
+                # entity is the row the query builder binds and reads as text,
+                # in the forms ores::database::pq::text knows, and a
+                # year_month_day is not one of them -- so the entity member
+                # stays the ISO-8601 std::string the database column stores, exactly as
                 # the refdata date columns already do, and the mapper converts
                 # at the boundary. The domain type is read from the resolved
                 # domain type, not the raw :cpp_type:, so a domain-grouped
@@ -3800,9 +3757,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_optional_date'] = col['is_date'] and col.get('nullable', False)
                 col['is_required_date'] = col['is_date'] and not col.get('nullable', False)
                 # A money column: the domain member is the exact decimal of
-                # ores.utility and the database column is numeric, which sqlgen
-                # binds as the text it already is but cannot hold a
-                # boost::multiprecision value. The entity member is therefore
+                # ores.utility and the database column is numeric, which the
+                # query builder binds as the text it already is; its text forms
+                # hold no boost::multiprecision value. The entity member is therefore
                 # the decimal's canonical std::string and the mapper parses and
                 # renders at the boundary, the same seam a plain date uses. The
                 # projection keys on the resolved domain type, never on
@@ -3823,9 +3780,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_required_decimal'] = col['is_decimal'] and not col.get('nullable', False)
                 # A key column is reached through the entity's own key
                 # projections, none of which carries the decimal: the primary
-                # key is a sqlgen::PrimaryKey<std::string> and the natural-key
-                # block renders the raw cpp_type, so a decimal key would reach
-                # the entity as the domain type and sqlgen would refuse it.
+                # key is a std::string and the natural-key block renders the
+                # raw cpp_type, so a decimal key would reach the entity as the
+                # domain type, which has no text form the query builder binds.
                 # Refuse the shape here, where the reason is known, rather
                 # than emit an entity that cannot compile.
                 if (is_numeric_sql_type and is_decimal_domain
@@ -3850,22 +3807,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
                 # A required (NOT NULL) plain timestamp column needs the same
                 # entity-layer std::string representation natural-key timestamps
-                # already get -- sqlgen cannot serialise a raw
+                # already get -- the query builder's text forms hold no raw
                 # std::chrono::time_point, and is_simple's raw-cpp_type passthrough
                 # (below) doesn't know about timestamps at all. Without this, a
                 # required, non-natural-key timestamp column silently falls
-                # through to is_simple and fails at compile time inside sqlgen's
-                # transpilation layer.
+                # through to is_simple and fails at compile time in the
+                # query builder's text codec.
                 col['is_required_timestamp'] = is_timestamp_type and not col.get('nullable', False)
-                # The same shape for a NOT NULL IP-address column: sqlgen
-                # cannot transpile or bind boost::asio::ip::address -- its
-                # parsing layer rejects the type with a static_assert -- so
+                # The same shape for a NOT NULL IP-address column: the query
+                # builder's text forms hold no boost::asio::ip::address, so
                 # the entity member is std::string and the mapper converts
                 # with make_address / to_string. The test is the cpp_type,
                 # not the ':type: inet' SQL type: an inet column already
                 # declared ':cpp_type: std::string' binds as text and needs
-                # no conversion, while a boost::asio::ip::address member
-                # breaks sqlgen whatever SQL type it is declared under.
+                # no conversion, while a boost::asio::ip::address member has
+                # no text form whatever SQL type it is declared under.
                 col['is_required_inet'] = is_inet_address_type and not col.get('nullable', False)
                 # A base64 column's domain member is a byte vector while the
                 # database column is text holding its base64 spelling. The
@@ -3879,7 +3835,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     col.get('base64', False) is True and not col.get('nullable', False)
                 )
                 col['is_enum'] = is_enum_type and not col.get('nullable', False)
-                # A value type sqlgen cannot serialise -- a domain class such
+                # A value type with no text form in the query builder -- a domain class such
                 # as cron_expression that wraps a string behind a validated
                 # constructor. The entity member is that string and the mapper
                 # converts through the type's own to_string()/from_string(),
@@ -4099,7 +4055,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # stops being on the wire. Two shapes reach that state today --
                 # a nullable column whose cpp_type is outside the string and
                 # numeric sets (std::vector<double> for a numeric[] column,
-                # which sqlgen cannot bind), and a nullable scoped enum.
+                # which has no text form in the query builder), and a nullable scoped enum.
                 # Refuse, rather than generate a struct with a hole.
                 if not any(col.get(flag) for flag in _ENTITY_STRUCT_FLAGS):
                     raise ValueError(
@@ -5127,7 +5083,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # valid_from/valid_to no longer existed. The entity model's
         # :tablename: (minus the trailing _tbl) is the explicit base when set
         # -- the documented contract for the generated table's name, which the
-        # C++ sqlgen entity template already honours via {{sql.tablename}} --
+        # C++ entity template already honours via {{sql.tablename}} --
         # with the conventional composition as fallback; the truncation
         # safety net below applies in both cases so a suffix always survives.
         base_candidates = [4, 10, 11, 9, 12]  # _tbl, _insert_fn, _insert_trg, _delete_fn, _delete_rule
@@ -5259,7 +5215,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'extra_delete_sets' in sql_section:
             _mark_last_item(sql_section['extra_delete_sets'])
         # Row-selection fragment the repository templates splice into their
-        # sqlgen where() chains. A bi-temporal table reads only the open row
+        # query builder where() chains. A bi-temporal table reads only the open row
         # (valid_to = infinity); a current-state table has no such column and
         # reads the row itself, so the fragment is empty.
         domain_entity['temporal_filter'] = (
@@ -5388,9 +5344,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # log-statement text is built once here as a single token,
             # rather than as nested mustache loops repeated across every
             # tenant/workspace-filtered branch in the repository templates.
-            # sqlgen's where() only composes && at compile time over a
-            # fixed set of columns, so this joins cleanly for both the
-            # single-column (back-compat) and compound cases.
+            # The query builder's where() composes && over the key columns,
+            # so this joins cleanly for both the single-column and compound
+            # cases.
             pk['where_and'] = ' && '.join(
                 f'"{c["column"]}"_c == {c["column"]}' for c in pk_columns
             )
@@ -5491,12 +5447,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 + c["column"]
                 for c in pk_columns
             )
-            # Batch (vector) overloads: sqlgen has no tuple/composite IN, so
+            # Batch (vector) overloads: the query builder has no tuple IN, so
             # the query fetches a per-column .in() candidate superset (a
             # cross-product over-fetch for compound keys) and the exact
-            # requested key-tuples are then filtered in C++ -- see
-            # getml/sqlgen#107 and the "Support compound primary keys in
-            # repository templates" task for why.
+            # requested key-tuples are then filtered in C++.
             pk['batch_params'] = ', '.join(
                 f'const std::vector<std::string>& {c["column"]}s' for c in pk_columns
             )
@@ -6861,14 +6815,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if git_path is None:
         git_path = current_path
 
-    owner = data.get('domain_entity') or data.get('junction')
-    if isinstance(owner, dict) and owner.get('component'):
-        data['repository_on_libpq'] = repository_backend(
-            str(_repo_root_from(model_path) / 'projects'), owner['component']) == 'libpq'
-
     # Process each associated template
     for template_name in templates_to_process:
-        template_path = templates_dir / template_for_backend(template_name, data)
+        template_path = templates_dir / template_name
         if not template_path.exists():
             print(f"Template not found: {template_path}")
             continue

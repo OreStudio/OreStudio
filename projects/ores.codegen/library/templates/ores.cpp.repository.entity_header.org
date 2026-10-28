@@ -2,7 +2,7 @@
 :ID: 12A5AACD-D13B-4192-90EF-7ACFF7DC149A
 :END:
 #+title: ores.cpp.repository.entity_header
-#+description: sqlgen-side struct mirroring the table shape. =repository= profile.
+#+description: The repository entity: a struct mirroring the table shape, with the column list the query builder binds. =repository= profile.
 #+type: archetype
 #+output: projects/{component_core_dir}/include/ores.{component_core}/repository/{entity}_entity.hpp
 #+facet: ores.cpp.repository
@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-sqlgen-side struct mirroring the table shape. =repository= profile.
+The repository entity: a struct mirroring the table shape, with the column list the query builder binds. =repository= profile.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -33,12 +33,7 @@ The full template source. Edit here and re-tangle with
 #include <optional>
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
-{{^repository_on_libpq}}
-#include "sqlgen/PrimaryKey.hpp"
-{{/repository_on_libpq}}
-{{#repository_on_libpq}}
 #include "ores.database/query_builder/columns.hpp"
-{{/repository_on_libpq}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
 {{/cpp.includes.entity}}
@@ -55,7 +50,7 @@ struct {{entity_singular}}_entity {
     constexpr static const char* tablename = "{{sql.tablename}}";
 
 {{#primary_key.columns}}
-    {{#repository_on_libpq}}std::string{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::PrimaryKey<std::string>{{/repository_on_libpq}} {{column}};
+    std::string {{column}};
 {{/primary_key.columns}}
 {{#has_tenant_id}}
 {{#nullable_tenant_id}}
@@ -90,7 +85,7 @@ struct {{entity_singular}}_entity {
     std::string {{name}};
 {{/is_uuid}}
 {{#is_optional_timestamp}}
-    std::optional<{{#repository_on_libpq}}db_timestamp{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">{{/repository_on_libpq}}> {{name}};
+    std::optional<db_timestamp> {{name}};
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     std::string {{name}};
@@ -147,7 +142,6 @@ struct {{entity_singular}}_entity {
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 {{/current_state}}
-{{#repository_on_libpq}}
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -169,7 +163,9 @@ struct {{entity_singular}}_entity {
             | query_builder::bind("{{column}}", &e::{{column}})
 {{/natural_keys}}
 {{#columns}}
+{{^sql_only}}
             | query_builder::bind("{{name}}", &e::{{name}})
+{{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
             | query_builder::bind("modified_by", &e::modified_by)
@@ -183,7 +179,6 @@ struct {{entity_singular}}_entity {
 {{/current_state}}
             ;
     }
-{{/repository_on_libpq}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
@@ -200,12 +195,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include <optional>
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
-{{^repository_on_libpq}}
-#include "sqlgen/PrimaryKey.hpp"
-{{/repository_on_libpq}}
-{{#repository_on_libpq}}
 #include "ores.database/query_builder/columns.hpp"
-{{/repository_on_libpq}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
 {{/cpp.includes.entity}}
@@ -223,7 +213,7 @@ struct {{name_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
 
-    {{#repository_on_libpq}}std::string{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::PrimaryKey<std::string>{{/repository_on_libpq}} {{left.column}};
+    std::string {{left.column}};
 {{#has_tenant_id}}
     std::string tenant_id;
 {{/has_tenant_id}}
@@ -231,7 +221,7 @@ struct {{name_singular}}_entity {
     int version = 0;
 {{#columns}}{{#is_uuid}}    std::string {{name}};
 {{/is_uuid}}{{#is_optional_uuid}}    std::optional<std::string> {{name}};
-{{/is_optional_uuid}}{{#is_optional_timestamp}}    std::optional<{{#repository_on_libpq}}db_timestamp{{/repository_on_libpq}}{{^repository_on_libpq}}sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">{{/repository_on_libpq}}> {{name}};
+{{/is_optional_uuid}}{{#is_optional_timestamp}}    std::optional<db_timestamp> {{name}};
 {{/is_optional_timestamp}}{{#is_required_timestamp}}    std::string {{name}};
 {{/is_required_timestamp}}{{#is_date}}    std::string {{name}};
 {{/is_date}}{{#is_base64}}    std::string {{name}};
@@ -245,7 +235,6 @@ struct {{name_singular}}_entity {
 {{#history}}
     std::optional<std::string> closed_by;
 {{/history}}
-{{#repository_on_libpq}}
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -261,7 +250,9 @@ struct {{name_singular}}_entity {
             | query_builder::bind("{{right.column}}", &e::{{right.column}})
             | query_builder::bind("version", &e::version)
 {{#columns}}
+{{^sql_only}}
             | query_builder::bind("{{name}}", &e::{{name}})
+{{/sql_only}}
 {{/columns}}
             | query_builder::bind("modified_by", &e::modified_by)
             | query_builder::bind("performed_by", &e::performed_by)
@@ -274,7 +265,6 @@ struct {{name_singular}}_entity {
 {{/history}}
             ;
     }
-{{/repository_on_libpq}}
 };
 
 std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
@@ -298,16 +288,14 @@ e.g. the header of a domain-enum column type such as
 repeat the standard set leave regeneration byte-identical.
 
 The filter (org_loader's =_ENTITY_HEADER_STANDARD_INCLUDES=) also drops
-the tokens legacy blocks add that no emitted member can require, and
+the tokens org blocks add that no emitted member can require, and
 applies to junction entity headers as well as domain ones:
 
-- =sqlgen/Timestamp.hpp= arrives via =db_types.hpp='s =db_timestamp= alias,
-  which the template always emits and which includes Timestamp.hpp;
 - =boost/uuid/uuid.hpp= is never needed: the template renders every
   uuid-typed column and junction PK/FK side as =std::string=;
-- =<cstdint>= appears in drift-rollout-era blocks as a stale transcription
-  of pre-org headers; the canonical entity headers compile without it and
-  the drift registry pins them byte-for-byte.
+- =<cstdint>= is a stale transcription of headers no entity member needs;
+  the canonical entity headers compile without it and the drift registry
+  pins them byte-for-byte.
 
 Without these drops, the whole-estate drift check flags the four
 registered-component headers whose orgs declare them (compute
@@ -316,28 +304,12 @@ registered-component headers whose orgs declare them (compute
 these headers in the entity header belongs in this template's fixed
 include set, not in an org block.
 
-** Domain entity vs junction: unified on =db_timestamp= (2026-07-15)
+** Domain entity and junction
 
-Both the ={{#domain_entity}}= and ={{#junction}}= sections now use the
-=db_timestamp= type alias (=ores::database::repository::db_timestamp=,
-imported via =db_types.hpp=) for =valid_from=/=valid_to=, and both use the
+Both the ={{#domain_entity}}= and ={{#junction}}= sections use the
+=db_timestamp= type (=ores::database::repository::db_timestamp=, from
+=db_types.hpp=) for =valid_from= and =valid_to=, and both use the
 =component_core_upper=-based include guard.
-
-This was previously a documented, deliberate divergence (the junction
-section used raw =sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">= and a
-=component_upper=-based guard instead), justified by "the composite-PK
-interaction with =sqlgen='s =db_timestamp= alias has not been validated" —
-but the existing hand-authored =party_currency_entity.hpp=/
-=party_country_entity.hpp= (real, currently-compiling junction entities)
-already use =db_timestamp= and the CORE-prefixed guard in production, which
-is exactly the validation the old note said was missing. Unified the
-template to match what already ships, while adding a codegen junction
-facet for =tenor_convention_resolution= (see the
-[[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile
-system; add junction support to physical-space codegen]] story).
-
-Capture [[id:0CD7A581-8C72-40E9-B87D-62C80BBD342D][Unify junction entity
-timestamp type to db_timestamp alias]] can be closed as done.
 
 * See also
 

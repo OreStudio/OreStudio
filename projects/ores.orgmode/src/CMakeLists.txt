@@ -38,7 +38,7 @@ target_link_libraries(${lib_target_name}
         Boost::boost
         unofficial::sqlite3::sqlite3)
 # A pure parsing/indexing library: reads the org-roam SQLite index
-# directly (unofficial::sqlite3::sqlite3), no ores.database/sqlgen
-# (those are for this project's own Postgres access) and no NATS.
+# directly (unofficial::sqlite3::sqlite3), no ores.database
+# (that is for this project's own Postgres access) and no NATS.
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

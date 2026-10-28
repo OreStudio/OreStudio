@@ -31,6 +31,27 @@
 namespace ores::database::pq {
 
 /**
+ * @brief The shape of the waits between attempts to open a pool.
+ */
+enum class backoff { linear, exponential };
+
+/**
+ * @brief How hard a pool tries to open its connections before it gives up.
+ *
+ * A database that is restarting refuses connections for a while; the attempts
+ * absorb that instead of failing the first request after it. Only a failure
+ * to connect is retried.
+ */
+struct open_policy final {
+    /// Maximum number of attempts.
+    std::size_t attempts = 10;
+    /// Base wait between attempts.
+    std::chrono::seconds wait{1};
+    /// Wait shape between attempts.
+    backoff shape = backoff::exponential;
+};
+
+/**
  * @brief A service's few long-lived connections.
  *
  * Every connection opens when the pool is made and lives as long as the pool,
@@ -68,8 +89,13 @@ public:
     /**
      * @brief Opens @p size connections; a failure to open any is retryable.
      */
+    /**
+     * @brief Opens @p size connections, retrying a failure to connect under
+     * @p policy.
+     */
     pool(connection_options options,
          std::size_t size,
+         open_policy policy = {},
          std::chrono::milliseconds acquire_timeout = std::chrono::seconds(5));
 
     pool(const pool&) = delete;
@@ -88,6 +114,7 @@ public:
     [[nodiscard]] std::size_t idle() const;
 
 private:
+    void open_all();
     void give_back(std::unique_ptr<connection> c) noexcept;
 
     connection_options options_;

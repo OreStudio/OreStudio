@@ -154,7 +154,6 @@ parameter of every analytic, so the row carries it rather than inferring it.
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

@@ -195,11 +195,11 @@ def test_current_state_entity_struct_has_no_temporal_members(tmp_path):
 def test_current_state_repository_upserts_and_hard_deletes(tmp_path):
     impl = _render(tmp_path, "cpp_domain_type_repository.cpp.mustache",
                    "current_state_entity_repository.cpp", CURRENT_STATE_MODEL)
-    assert "sqlgen::insert_or_replace(" in impl
+    assert "query_builder::insert_or_replace(" in impl
     assert "valid_to" not in impl
     assert "max.value()" not in impl
     assert "read_at_version" not in impl
-    assert "sqlgen::delete_from<current_state_entity_entity>" in impl
+    assert "query_builder::delete_from<current_state_entity_entity>" in impl
 
 
 def test_current_state_service_has_no_history_accessor(tmp_path):

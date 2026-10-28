@@ -19,11 +19,10 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository_pq.cpp.mustache
+ * Template: cpp_domain_type_repository.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/session.hpp"

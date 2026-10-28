@@ -83,7 +83,6 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.utility.lib
         ores.security.lib
-        sqlgen::sqlgen
         faker-cxx::faker-cxx
         magic_enum::magic_enum
         Boost::boost

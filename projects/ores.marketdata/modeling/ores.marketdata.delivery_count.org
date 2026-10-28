@@ -225,7 +225,6 @@ delivery_count_repository::read_latest_all_tenants(context ctx) {
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

@@ -306,8 +306,6 @@ not part of the natural key -- (=party_id=, =unit_name=) is. Using
 
 #+begin_src cpp :name includes
 #include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #+end_src
 
 ** Conventions

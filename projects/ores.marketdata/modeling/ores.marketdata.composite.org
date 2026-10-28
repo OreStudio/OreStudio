@@ -176,7 +176,6 @@ One current composite produces an item, so the inputs of two composites never me
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
 #+end_src
 
 ** Conventions

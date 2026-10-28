@@ -6,8 +6,8 @@ Run::
 
 A =numeric= column whose domain member is
 ``ores::utility::decimal::decimal`` is the shape every monetary amount
-column needs (decision D11, clean trading). sqlgen binds a fixed set of
-types and =boost::multiprecision= is not one of them, so the entity
+column needs (decision D11, clean trading). The query builder's text codec
+holds a fixed set of types and =boost::multiprecision= is not one of them, so the entity
 struct stays the exact decimal ``std::string`` the database column
 stores and the mapper parses and renders at the boundary through the
 type's own =from_string= / =to_string=. The history field mapper
@@ -179,7 +179,7 @@ def test_a_money_column_is_a_decimal_in_the_domain_struct(tmp_path):
 
 
 def test_a_money_column_reaches_the_entity_as_an_exact_string(tmp_path):
-    """The entity is the database row type, and sqlgen cannot bind a decimal."""
+    """The entity is the database row type, and its text codec holds no decimal."""
     entity = _render_entity(tmp_path)
     assert "std::string amount;" in entity
     assert "std::optional<std::string> optional_amount;" in entity

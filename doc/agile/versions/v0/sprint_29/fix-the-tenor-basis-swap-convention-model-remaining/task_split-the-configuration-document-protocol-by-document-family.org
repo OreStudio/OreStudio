@@ -13,7 +13,7 @@
 #+blocked_since: 2026-10-14
 #+created: 2026-10-14
 #+updated: 2026-10-24
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The configuration document protocol is split on the seam the investigation names
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -40,7 +40,41 @@ The configuration document protocol is split on the seam the investigation names
 - The Windows MSVC job of continuous-windows.yml passes, or the remaining failure is recorded against its own task.
 - No new MSVC compiler flag is added, and the existing ores.trading.api flags are left as they are unless a separate task removes them.
 
+* What the Windows job says first
+
+The task's premise is that the MSVC build fails on C1202 in the reflected
+aggregate. On 2026-10-28 it does not: the nightly run
+[[https://github.com/OreStudio/OreStudio/actions/runs/40643890504][40643890504]]
+contains no C1202 at all, because the build stops earlier:
+
+#+begin_example
+real_environment_provider.cpp(28): error C2220: the following warning is
+treated as an error
+clang-cl: error: 'getenv' is deprecated [-Wdeprecated-declarations]
+#+end_example
+
+That is a unity-build effect: the file defined _CRT_SECURE_NO_WARNINGS, which
+arrives after the CRT has already been included by an earlier file in the same
+unity unit, so it suppressed nothing. Fixed by reading the environment with
+_dupenv_s on Windows and dropping the define.
+
+The consequence for this task is an order, not a change of goal: the C1202
+cannot be observed, let alone measured, until the build gets past the errors in
+front of it. The Windows job also reports =nats-server did not become ready
+within 30s=, which is its own problem and does not stop the compile.
+
 * Plan
+
+** The order of work
+
+1. Clear the compile errors the job reports before C1202, one at a time, and
+   keep the C1202 question open until the build reaches the aggregate.
+2. Re-run the nightly and read the first error again. The curve configuration
+   document may turn out to have been fixed by other work, in which case this
+   task becomes a measurement rather than a split, and the story closes with
+   the evidence.
+3. Only if C1202 appears, split on the seam: no translation unit's encode path
+   may reach every convention and curve type at once.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -58,7 +92,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C1202 occurrences in the 2026-10-28 Windows nightly | 0 | `gh run view 40643890504 --log \| grep -c C1202` | `623a7268e7` |
+| The error the MSVC job stops on | C2220, `getenv` deprecated, `real_environment_provider.cpp:28` | `gh run view 40643890504 --log-failed` | `623a7268e7` |
+| The error the clang-cl job stops on | `-Wdeprecated-declarations`, same line | same | `623a7268e7` |
 
 * Notes
 

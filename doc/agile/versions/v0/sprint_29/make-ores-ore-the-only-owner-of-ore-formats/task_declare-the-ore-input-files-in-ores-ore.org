@@ -72,6 +72,12 @@ task and name that file in the Command column.
 
 * Notes
 
+The pricing engines export still asks the file types table, at
+=pricing_engines_handler.cpp=. That call reads the file's canonical *name*,
+which a tenant may override, and not the Setup parameter that names it. The
+parameter is a fact of ORE and lives in the codec; the name is a tenant's choice
+and stays in the table.
+
 The schema types the Setup list as a repeatable =Parameter= with a free name,
 so it cannot say which parameter carries the conventions file. That is why the
 knowledge was in a generated table rather than in the schema, and why this

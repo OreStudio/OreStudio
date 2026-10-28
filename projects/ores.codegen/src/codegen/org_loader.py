@@ -2645,12 +2645,10 @@ _TS_DOMAIN_TYPE_RE = re.compile(
 # the shared module the same way it imports an entity interface. An unlisted
 # type of this kind still has no projection, which is what keeps the gap loud.
 #
-# Most are ``ores::utility::*`` -- the shared protocol records. The diff engine's
-# payloads are the other kind: a component with an engine but no entity models,
-# whose types still travel in a history response. The trading envelope is a
-# hand-written struct of the same kind, and the export's instrument batch is
-# generated from the trade-type catalogue rather than from an entity model, so
-# its interface lives in a generated module of its own.
+# Most are ``ores::utility::*`` -- the shared protocol records. The trading
+# envelope is a hand-written struct of the same kind, and the export's
+# instrument batch is generated from the trade-type catalogue rather than from
+# an entity model, so its interface lives in a generated module of its own.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
     "ores::utility::domain::result": ("Result", "utility/protocol"),
@@ -2658,10 +2656,6 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::change_intent": ("ChangeIntent", "utility/protocol"),
     "ores::utility::domain::order": ("Order", "utility/protocol"),
     "ores::utility::domain::scope": ("Scope", "utility/protocol"),
-    "ores::diff::domain::field_value": ("FieldValue", "diff/protocol"),
-    "ores::diff::domain::diff_span": ("DiffSpan", "diff/protocol"),
-    "ores::diff::domain::diff_entry": ("DiffEntry", "diff/protocol"),
-    "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
     "ores::trading::domain::instrument_batch": (
         "InstrumentBatch", "generated/trading/instrument_batch"),
     "ores::trading::domain::trade_envelope_data": ("TradeEnvelopeData", "trading/payload"),
@@ -2934,17 +2928,20 @@ def _ts_message(
     return message
 
 
-def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def ts_domain_imports(messages: list[dict[str, Any]],
+                      component: str | None = None) -> list[dict[str, Any]]:
     """The domain interfaces an operation's fields render, one entry each.
 
     A field whose C++ type names ``ores::<component>::domain::<entity>`` --
     on its own or inside a container -- renders that entity's interface, so
     the module must import it or the name is undefined. Returns
-    ``{"entity": ..., "entity_pascal": ...}`` in entity-name order, so the
-    template emits one import per entity regardless of how many messages
-    reference it.
+    ``{"entity": ..., "entity_pascal": ..., "module_dir": ...}`` in entity-name
+    order, so the template emits one import per entity regardless of how many
+    messages reference it. ``module_dir`` is the domain directory relative to
+    the protocol module: its own component's, or the owning component's when
+    @p component names another.
     """
-    entities: set[str] = set()
+    entities: dict[str, str] = {}
     registered = _custom_type_names()
     for message in messages:
         for field in message.get("fields") or []:
@@ -2953,15 +2950,18 @@ def ts_domain_imports(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 # is no interface to import. See _ts_type.
                 if match.group(0) in registered:
                     continue
-                entities.add(match.group(1))
+                entities[match.group(1)] = match.group(0).split("::")[1]
     # A type whose TypeScript is hand-written is imported from its shared
     # module by ts_utility_imports(); claiming it here too would emit a second
     # import from a per-component domain module that does not exist.
     hand_written = {qualified.rsplit("::", 1)[-1]
                     for qualified in _TS_UTILITY_DOMAIN_TYPES}
     return [
-        {"entity": entity, "entity_pascal": _to_pascal_case(entity)}
-        for entity in sorted(entities - hand_written)
+        {"entity": entity, "entity_pascal": _to_pascal_case(entity),
+         "module_dir": ("../domain" if component is None or owner == component
+                        else f"../../{owner}/domain")}
+        for entity, owner in sorted(entities.items())
+        if entity not in hand_written
     ]
 
 
@@ -4536,7 +4536,7 @@ def load_org_operation_model(path: Path | str) -> dict[str, Any]:
     # The subject rule the model states with a hole in it, emitted once for the
     # whole model so the subscriber and every client read it from one place.
     op.update(derived_subject(messages, op.get("entity_singular", "")))
-    op["domain_imports"] = ts_domain_imports(messages)
+    op["domain_imports"] = ts_domain_imports(messages, op.get("component"))
     op["utility_imports"] = ts_utility_imports(messages)
 
     # The shell's view of the same list: one command per addressable message,
@@ -4728,7 +4728,8 @@ def load_org_family_model(path: Path | str) -> dict[str, Any]:
         _require_family_part(owner, part, central, part_model)
 
     family.update(family_protocol_messages(family, central_model))
-    family["domain_imports"] = ts_domain_imports(family["messages"])
+    family["domain_imports"] = ts_domain_imports(family["messages"],
+                                                 family.get("component"))
     family["utility_imports"] = ts_utility_imports(family["messages"])
     return {"family": family}
 

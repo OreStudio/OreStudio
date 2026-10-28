@@ -3,7 +3,7 @@
 {{#domain_entity}}
 import type { {{entity_pascal}}{{#entity_ts_alias}} as {{entity_ts_alias}}{{/entity_ts_alias}} } from '../domain/{{entity_singular}}.js';
 {{#extra_domain_imports}}
-import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+import type { {{entity_pascal}} } from '{{module_dir}}/{{entity}}.js';
 {{/extra_domain_imports}}
 {{#utility_imports}}
 import type { {{name_pascal}} } from '../../../{{module}}.js';
@@ -96,7 +96,7 @@ export const requiresSession = {
 {{/junction}}
 {{#operation}}
 {{#domain_imports}}
-import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+import type { {{entity_pascal}} } from '{{module_dir}}/{{entity}}.js';
 {{/domain_imports}}
 {{#utility_imports}}
 import type { {{name_pascal}} } from '../../../{{module}}.js';
@@ -161,7 +161,7 @@ export const requiresSession = {
 {{/operation}}
 {{#family}}
 {{#domain_imports}}
-import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+import type { {{entity_pascal}} } from '{{module_dir}}/{{entity}}.js';
 {{/domain_imports}}
 {{#protocol_imports}}
 import type { {{entity_pascal}}Change } from './{{entity}}_protocol.js';

@@ -6097,6 +6097,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 (domain_entity.get('audit_group_qualified') or '').split('::')[-1])
             domain_entity['audit_group_import'] = _group_import(
                 domain_entity.get('audit_group_qualified'))
+        # A column whose type is another entity names that entity's interface,
+        # so the module declaring it is imported, as a field group's member
+        # is. Names the groups above already import are left to them.
+        from .org_loader import field_group_ts_imports
+        _already = {g.get('ts_type') for g in domain_entity.get('domain_groups') or []}
+        _already.add(domain_entity.get('identity_group_pascal'))
+        _already.add(domain_entity.get('audit_group_pascal'))
+        domain_entity['ts_column_imports'] = [
+            _imp for _imp in field_group_ts_imports({
+                'component': domain_entity.get('component'),
+                'entity_singular': domain_entity.get('entity_singular'),
+                'fields': domain_entity.get('columns') or [],
+            })
+            if _imp.get('pascal') not in _already
+        ]
         # A domain member the projection cannot state would render
         # '<member>: ;', a module that does not compile. Only the TypeScript
         # domain twin refuses the model; the C++ class has no such gap, so the
@@ -6283,7 +6298,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # declares.
             entity_name = domain_entity.get('entity_singular')
             domain_entity['extra_domain_imports'] = [
-                imp for imp in ts_domain_imports(domain_entity['messages'])
+                imp for imp in ts_domain_imports(domain_entity['messages'],
+                                                 domain_entity.get('component'))
                 if imp['entity'] != entity_name
             ]
         data['domain_entity'] = domain_entity

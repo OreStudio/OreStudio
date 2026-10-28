@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-the-latest-fixing-and-a-window
+#+pr: 4012
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
 #+updated: 2026-10-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A consumer, the calibration first, asks for a fixing by item and date and gets t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -42,9 +42,47 @@ A consumer, the calibration first, asks for a fixing by item and date and gets t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The consumer is the calibration of the synthetic feeds (T7), which runs in another
+service, so the reader is a NATS read of the marketdata service, as the series
+ticks read is.
+
+1. Two operations in a new model, =ores.marketdata.fixing_read_operations.org=:
+   - =marketdata.v1.ops.get_fixing= takes the item, the fixing's oresmd URI, and a
+     date, and answers the latest fixing on or before it.
+   - =marketdata.v1.ops.get_fixing_window= takes the item, an end date and a number
+     of days, and answers every fixing in those calendar days, oldest first, with
+     the number of days asked and the number of values found.
+   Each answer names the provider, the vendor id behind the item, and for each
+   value its date, its source and the time the service stored it. Values stay
+   decimal text, as they are stored.
+2. A reader, =service::fixing_reader=, follows =series_tick_reader=: a session
+   with no party is refused, the item names one series among the parties the
+   session sees or the read is refused as ambiguous, and a window over a ceiling
+   is refused.
+3. A hand-written repository, =fixing_reads=, reads the current rows of one
+   series on or before a date or between two dates with their =valid_from=,
+   which the generated domain type does not carry, and the vendor id of the
+   item through the mapping.
+4. A handler checks =marketdata::market_fixings:read= and replies; the registrar
+   subscribes it.
+5. Tests: the reader against the database (a gap, a date before the first
+   fixing, two providers of one pair, a window over the ceiling), and the
+   handler over NATS (the permission).
+
+Deviation from the acceptance: a daily publisher states a date and not a time,
+and the adapter stamps midday UTC only to make a tick. So the vendor time of a
+fixing is its date, and no column holds a made-up time. The time received is the
+row's =valid_from=.
+
+Found while building:
+
+- An ORE index names the fixing's source, not the provider that delivered it: the
+  ECB rate is =FX-ECB-EUR-USD= from the ECB adapter and from the ORE sample data
+  alike. One party holds one series of an index (=market_series_identity_fixing_identity_idx=),
+  so two providers of one item meet across the parties a session sees. A request
+  may name the provider; without one, such an item is refused as ambiguous.
+- The read has no shell command. The shell generator has no token form for a
+  date, and adding one is a change to the generator, not to this task.
 
 * Measurements
 
@@ -58,7 +96,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reader and handler tests | 9 cases, 58 assertions passed | =ores.marketdata.core.tests "[fixing_reader],[fixing_read_handler]"= | a7f48b6e02 |
+| Vendor id of the live items | ECB EUR/USD maps to iso4217:USD (281 fixings); IMF USD/EUR to iso4217:EUR (270) | the =vendor_of= join run against the dev database | a7f48b6e02 |
 
 * Notes
 
@@ -77,12 +116,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4012][#4012]] | [marketdata] Read the latest fixing and a window |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | One provider under two parties gets a refusal that names providers only | fixing_reader.cpp | Accept | The reason names the parties and the providers, as the tick read's does; a test covers one provider under two parties. |
+| 2 | vendor_of reads the mappings with no party filter | fixing_read_repository.cpp | Decline | The mappings and vendor instruments are tenant catalogue data (own or system tenant rows), with no party column. |
+| 3 | No fixing before the date looks like a success with an empty value | fixing_read_operations.org | Decline | The model says so: =fixing_date= is absent when the item has no fixing on or before the date. An unknown item is =not_found=. |
+| 4 | Check the window against the broker's message cap | fixing_reader.hpp | Note | 3,660 fixings at about 40 bytes is about 150 KB, under the cap; the tick read keeps 375 KB. |
+| 5 | Epoch microseconds through a double could be off by one | fixing_read_repository.cpp | Decline | PostgreSQL 18 here; =extract= returns =numeric=, so the value is exact. |
+| 6 | fixing_reader.cpp uses chrono without including it | fixing_reader.cpp | Accept | Included. |
+| 7 | The window read has no test over NATS | messaging_fixing_read_handler_tests.cpp | Accept | Window with and without the permission, over NATS. |
+| 8 | The handler's other branches are untested on the wire | messaging_fixing_read_handler_tests.cpp | Accept | A body that does not decode is refused bad_request; the party case is the reader's and is tested there. |
+| 9 | The exception text goes to the client | fixing_read_handler.hpp | Decline | The repository's convention: series_ticks_handler puts e.what() in the result message too. |
+| 10 | The ambiguity tests rely on a made-up party | service_fixing_reader_tests.cpp | Accept | A comment says why it works. |
+| 11 | The window edges: exactly max_days, and the first day | service_fixing_reader_tests.cpp | Accept in part | A window of exactly max_days is accepted. The first day is already covered: the 4-day window ending 10-23 starts on 10-20, which holds a fixing that the test expects. |
+| 12 | The ambiguity reason is a contract if parsed | fixing_reader.cpp | Note | No client parses it; clients read the code. |
+| 13 | Say why the first date of the window is safe | fixing_reader.cpp | Accept | Commented. |
 
 * Result
+
+The marketdata service answers two reads of the durable fixings over NATS:
+=marketdata.v1.ops.get_fixing=, the latest fixing of an item on or before a date,
+and =marketdata.v1.ops.get_fixing_window=, every fixing in a number of calendar
+days, which skips the days with none and says how many it used. Each answer names
+the provider and the vendor id behind the item, and each value its date, source
+and the time the service stored it. The read checks =marketdata::market_fixings:read=
+and refuses a session with no party, an item that names more than one series
+unless the request names the provider, and a window over ten years. Tests cover a
+gap, a date before the first fixing, a window with missing days, two providers of
+one item, the refusals, and the permission over NATS.

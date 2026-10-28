@@ -23,9 +23,9 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Six of nine tasks done; the official rates are stored and shown. |
+| Now           | Seven of nine tasks done; the fixings can be read by item and date. |
 | Waiting on    | Nothing.                               |
-| Next          | Start [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]]: the calibration reads fixings through it. |
+| Next          | Start [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]]: it reads the fixings through the new reader. |
 | Last touched  | 2026-10-28                               |
 
 * Acceptance
@@ -46,7 +46,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 | [[id:C10674F6-19EC-4810-95E2-B2DEDAA6B3AF][Add the ores.http.client library]] | DONE | 2026-10-28 | 2026-10-28 | A client library beside ores.http, with a GET over TLS first, behind an interface a test can replace. |
 | [[id:BB825EA1-594C-4E96-A528-F186DB4A21A8][Build the public sources adapter]] | DONE | 2026-10-28 | 2026-10-28 | One adapter service for every public source: announce, demand, heartbeat and ticks, with Frankfurter as its first fetcher. |
 | [[id:D70A2111-A473-4001-B998-2DF55D303861][Catalogue the public providers and their vendor ids]] | DONE | 2026-10-28 | 2026-10-28 | Every daily Frankfurter provider whose terms are read and allow storage, with its vendor ids mapped to FX fixing items. |
-| [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]] | BACKLOG | | | A reader that returns an item's latest fixing on or before a date, and a window, with the provider and the time. |
+| [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]] | DONE | 2026-10-28 | 2026-10-28 | A reader that returns an item's latest fixing on or before a date, and a window, with the provider and the time. |
 | [[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]] | BACKLOG | | | The first-run journey shows each public publisher's terms and credit, and a publisher is enabled only when the system administrator accepts them. |
 | [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]] | BACKLOG | | | Each generator config names a free public source that sets its initial value and its volatility, and the feed screen shows when the value was retrieved. |
 | [[id:C10FE647-3B5D-4365-B92D-689E0C567BA5][Build the public sources control surface]] | DONE | 2026-10-28 | 2026-10-28 | A screen where a person sees each public provider, its terms state, its adapter's health and its stored fixings, and can start a backfill or pause a provider. |

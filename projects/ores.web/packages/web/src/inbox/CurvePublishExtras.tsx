@@ -49,7 +49,16 @@ export function CurvePublishExtras({
     const { t, language } = useTranslation();
     const subject = request.publishedSubject ?? null;
     if (subject === null) {
-        return <Notice tone="info">{t('inbox.curvePublish.noSubject')}</Notice>;
+        // A refused read and a read that found nothing are different facts: the
+        // first says the person lacks the read, the second says the component
+        // holds no set for this request. The BFF knows which one happened.
+        return (
+            <Notice tone="info">
+                {request.publishedSubjectState === 'refused'
+                    ? t('inbox.curvePublish.noSubjectRefused')
+                    : t('inbox.curvePublish.noSubjectMissing')}
+            </Notice>
+        );
     }
     return (
         <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">

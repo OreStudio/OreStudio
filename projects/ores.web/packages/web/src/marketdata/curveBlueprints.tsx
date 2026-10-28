@@ -24,6 +24,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type PublishedCurveSet, type RecordRow } from '../api/client.js';
+import { PersonCell } from '../access/PersonRef.js';
 import { curves } from '../api/curves.js';
 import { tenors } from '../api/tenors.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -272,7 +273,8 @@ function useLadderChoices(): {
  * A record page knows its currency and narrows to it. A dialog that is creating
  * one does not, because the currency is what the person is choosing in the same
  * form, so it offers every funding blueprint of the party and the check that
- * names one of the same currency answers afterwards.
+ * names one of the same currency answers afterwards. Each choice is named by the
+ * blueprint's own name, which the record carries, and never by its series' URI.
  */
 function useFundingChoices(currency = ''): readonly {
     readonly value: string;
@@ -1054,7 +1056,9 @@ function PublishedSetsTab({ sets }: { readonly sets: readonly PublishedCurveSet[
                                         </Link>
                                     </td>
                                     <td className="px-4 py-2">{set.party}</td>
-                                    <td className="px-4 py-2">{set.published_by}</td>
+                                    <td className="px-4 py-2">
+                                        <PersonCell who={set.published_by} />
+                                    </td>
                                     <td className="px-4 py-2">
                                         {set.published_at === null ? (
                                             <span className="text-ink-faint">—</span>

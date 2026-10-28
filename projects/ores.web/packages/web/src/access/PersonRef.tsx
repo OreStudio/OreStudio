@@ -24,7 +24,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { imageUrl } from '../ui/Images.js';
+import { Avatar, imageUrl } from '../ui/Images.js';
 import { useHolds } from './holds.js';
 import { actorPathFor } from './PeoplePage.js';
 
@@ -125,6 +125,34 @@ export function PersonRef({ who }: { readonly who: string }): ReactNode {
         >
             {label}
         </Link>
+    );
+}
+
+/**
+ * A person as a table cell, a header or a fact draws them: the picture beside
+ * the name, which is the pairing the history panel uses and the only way the
+ * product draws a person. A row that names nobody draws the dash a missing
+ * value carries everywhere else.
+ *
+ * The picture is the directory's, so a reader who may not read people sees the
+ * initials the name gives and the name as the username the screen was handed.
+ */
+export function PersonCell({
+    who,
+    size = 'sm',
+}: {
+    readonly who: string;
+    readonly size?: 'sm' | 'md' | 'lg';
+}): ReactNode {
+    const pictureOf = useActorPictures();
+    if (who === '') {
+        return <span className="text-ink-faint">—</span>;
+    }
+    return (
+        <span className="inline-flex items-center gap-2">
+            <Avatar name={who} size={size} src={pictureOf(who)} />
+            <PersonRef who={who} />
+        </span>
     );
 }
 

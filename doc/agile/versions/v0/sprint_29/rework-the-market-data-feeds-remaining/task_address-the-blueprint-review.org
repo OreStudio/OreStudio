@@ -41,9 +41,26 @@ The curve blueprint screens read a name from the record, treat an absent discoun
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Both model changes are one edit to
+   =projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_config.org=:
+   a required =name= column that is searchable and sortable, a declared unique
+   index over =(tenant_id, party_id, name)= for the active rows, and
+   =discount_curve_config_id= as =uuid= / =std::optional<boost::uuids::uuid>= /
+   nullable with the nil-sentinel default and prose removed.
+2. =compass codegen entity generate ir_curve_bootstrap_config= regenerates the
+   domain, entity, mapper, repository, service, protocol, shell commands, SQL
+   create and the web protocol; the hand-written uses follow: the republish
+   service, the publish fixture, the refdata seed, the BFF write schema and the
+   web registry.
+3. The screens follow the model: the list's first cell, the record header and
+   breadcrumb, Details' first fact and the Add and Copy dialogs all draw the
+   name; the Check tab reads the discount curve only when the record names one;
+   the published screens draw the publisher with the standard person cell.
+4. The grants are seeded in =iam_roles_populate.sql= and applied to the Acme
+   tenant with the DDL user.
+5. The environment is rebuilt (=db recreate=, Acme provisioning, the evidence
+   seed, the demo publish flow) and the walkthrough runs against the restarted
+   services.
 
 * Measurements
 
@@ -57,9 +74,165 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Codegen idempotence | two consecutive =entity generate= runs leave the tree unchanged | =compass codegen entity generate ir_curve_bootstrap_config= twice, then =git diff --stat= | HEAD of this task's branch |
+| refdata api suite | 83 cases, 0 failed | =compass test run -- -R ores.refdata.api.tests= | HEAD of this task's branch |
+| refdata core suite | 474 cases, 0 failed | =compass test run -- -R ores.refdata.core.tests= | HEAD of this task's branch |
+| refdata service suite | 10 cases, 0 failed | =compass test run -- -R ores.refdata.service.tests= | HEAD of this task's branch |
+| marketdata service suite | 202 cases, 0 failed | =compass test run -- -R ores.marketdata.service.tests= | HEAD of this task's branch |
+| shell refdata suite | 2809 cases, 0 failed | =compass test run -- -R ores.shell.refdata.tests= | HEAD of this task's branch |
+| web workspace tests | 2318 cases, 0 failed | =npm run test --workspace @ores/web= in =projects/ores.web= | HEAD of this task's branch |
+| BFF suite | 1128 cases, 0 failed | =npm run test --workspace @ores/bff= in =projects/ores.web= | HEAD of this task's branch |
+| typecheck | clean across every workspace | =npm run typecheck= in =projects/ores.web= | HEAD of this task's branch |
+| SQL schema validation | 635 tables, 11 warnings, none new | =./projects/ores.sql/utility/validate_schemas.sh= | HEAD of this task's branch |
+| Docs validation | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | HEAD of this task's branch |
+| Docs lint | filetags and generator markers valid | =compass lint= | HEAD of this task's branch |
+| Live walkthrough | see =* Result
+
+All four fixes are in, the entity regenerates cleanly, and the walkthrough ran
+against the provisioned Acme tenant with the rebuilt web and BFF and restarted
+services.
+
+** Fix 1 -- the name comes from the database
+
+=ir_curve_bootstrap_config= carries a required =name= (text, searchable,
+sortable) with a unique index over =(tenant_id, party_id, name)= for the active
+rows. The entity was regenerated and every affected piece follows: the domain,
+the repository and its mappers, the service, the protocol, the shell commands,
+the SQL create, the refdata seed (=USD-SOFR-FOMC=), the BFF write schema and the
+web protocol. The model's list contract says the name replaces the sentence that
+said a blueprint has no name. The web draws the name in the list's first cell,
+in the record header and breadcrumb, and as Details' first fact; the output
+series stays a property on Details, drawn as its URI and linked; the Add and Copy
+dialogs ask for the name first and it is typed, never derived. No screen parses
+the URI for a name anywhere.
+
+** Fix 2 and Fix 4 -- the discount curve is null, and the check runs
+
+=discount_curve_config_id= is =std::optional<boost::uuids::uuid>= and nullable,
+with no default; the nil-sentinel shape check became an =is null= / =is not null=
+pair per role, and the trigger's two-tier guard compares no nil uuid. Every use
+follows: the republish service reads a projection's discount curve through the
+optional and refuses a projection that names none, the test fixture writes null,
+the refdata seed and the evidence seed leave it out, and the BFF write schema
+accepts null. On the web the field is optional wherever it is read, Details draws
+"—", and the Check tab reads a discount curve only when the record names one, so
+it no longer asks the server for the record a nil id names. The recipe's two
+discount checks still need a projection, and a funding curve passes them without
+a discount being read.
+
+** Fix 3 -- people are drawn as people
+
+=PersonCell= is the shared pairing the history panel already uses -- an =Avatar=
+with the picture beside a =PersonRef= -- added to =PersonRef.tsx= because no
+shared component paired them. The published list's Publisher column, the
+blueprint's *Published sets* tab, and the Points and Compare tabs draw
+=published_by= through it, and the published record's Details does too. The
+request page keeps =AccountPicture= and =PersonRef= and now resolves them,
+because the reader holds =iam::accounts:read=. The subject-missing message on a
+request is two messages: the BFF passes =publishedSubjectState= =refused= or
+=missing=, and the screen says whether the read was refused or found nothing.
+
+** The live walkthrough, 2026-10-28, against the restarted services
+
+Environment: =db recreate=, the Acme provisioning recipe, the evidence seed
+applied as the DDL user, the three demo publish scripts replayed. The web and BFF
+were rebuilt by =compass build= and the services restarted; the served bundle
+carries the new copy.
+
+| Step | What was seen |
+|------+---------------|
+| =GET /api/refdata/ir-curve-bootstrap-configs?sort=name= | one row, =name= =USD-SOFR-ACME=, =discount_curve_config_id= =null=, sorted on =name= |
+| =PUT /api/refdata/ir-curve-bootstrap-configs= (the Add dialog's write) | 204; the record reads back with =name= =USD-SOFR-ACME-NEW= and =discount_curve_config_id= =null= |
+| =POST /api/curves/compute= on the new blueprint | =curve_republish_service: bootstrap config has no pillars= -- the honest refusal, and not the nil-uuid record read that failed before |
+| =POST /api/curves/compute= on the seeded blueprint | two points: 12M 0.9580379383023567 and 2Y 0.9210501013169695 |
+| Details of the seeded blueprint | =name= =USD-SOFR-ACME=, =output_series_id= =c1a2b3c4-...= whose URI is =oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME=, discount =null= |
+| =GET /api/curves/published= as =mark.reid= | one set, =published_by= =henry.jones=, =state_code= =published=, two points |
+| =GET /api/accounts= as =mark.reid= | =henry.jones= reads as =Henry Jones= with =imageId= =01a1847c-7a75-b64b-edb8b40f3203= |
+| =GET /api/images/01a1847c-...= as =mark.reid= and as =henry.jones= | 200, =image/jpeg=, 101340 bytes -- the picture the person cell draws |
+| =GET /api/requests/01a18485-...= as =mark.reid= | the request raised by Henry Jones, with =publishedSubject= =USD-SOFR-ACME= / =ACCOUS= / 2 points |
+| =GET /market-data/curve-blueprints= on the running app | 200, and the served bundle carries the new name and subject-missing copy |
+
+** What is left
+
+The =ores.marketdata.official= service fails to start in this environment for a
+reason that predates this task: its NATS TLS client certificate is missing
+(=build/keys/nats/ores.marketdata.official.crt=). It serves the public fixings
+adapter and touches none of these screens.= | the BFF on port 21402, restarted after the build | HEAD of this task's branch |
 
 * Notes
+
+** The name is a column, and two natural keys are not two indexes
+
+=name= is a plain required column, not a natural key. The natural-key machinery
+emits one index per entity, and the entity already carries =output_series_id= as
+its natural key -- exactly one active config, tenant-wide, may claim an output
+series. A second natural key would be emitted as one composite index over both
+columns, which would drop that rule and let two blueprints claim one series as
+long as their names differ. The model therefore states the name's uniqueness as
+a declared unique index over =(tenant_id, party_id, name)= for the active rows,
+which is what the model *can* express: tenant plus party, exactly as the review
+asked.
+
+** The grants, and why each role holds the account read
+
+=iam::accounts:read= is now held by =Trading= and =Viewer= in
+=iam_roles_populate.sql=, beside the roles that already held it: =Member=,
+=Operations=, =Support= and the service accounts. The set and its reason:
+
+- =Trading= raises a publish request and reads back the sets it published, and
+  every one of those rows names the account that published it. The maker also
+  reads the request page, where the decider's name and picture are drawn.
+- =Viewer= is the read-only role that sees the published curves, the points, the
+  comparison and the blueprint's *Published sets* tab. It sees the same people
+  and could not resolve one.
+- =Operations= already held it, and the seed has no Market Risk role: the
+  demonstration's Head of Market Risk works as an Operations account, so the
+  deciders already resolved a name before this task. The task's report of a
+  decider that could not is about the maker's side of the same page, which the
+  Trading grant answers.
+- The read is the account read and not a tenant-wide one: row-level security
+  still narrows it to the parties the reader works in, the same exception
+  =Member='s own line states.
+
+The seed is the source and the apply is per tenant, with the DDL user:
+
+#+begin_src sql
+select ores_iam_role_permissions_assign_fn(
+    '<tenant id>', 'Trading', 'iam::accounts:read');
+select ores_iam_role_permissions_assign_fn(
+    '<tenant id>', 'Viewer', 'iam::accounts:read');
+#+end_src
+
+Running it as =postgres= is refused (=Invalid modified_by: postgres=): the
+function validates its actor against the account table, so the DDL user is the
+one that works.
+
+=marketdata::curve_bootstrap:compute= is now held by =Trading= as well. The
+*Check that a curve blueprint builds* journey names running the test as needing
+it, and only the tenant administrator's wildcard held it, so the Check tab
+refused the trader it exists for. Fix 4 read "the check runs"; the missing code
+is the other half of why it did not.
+
+** What the model could not express, and what the evidence seed had to fix
+
+- The unique index over =(tenant_id, party_id, name)= is declared, so nothing was
+  lost here. The model has no per-column unique flag; the SQL section's =Indexes=
+  table is the only way to say it, and it says it.
+- The generated shell recipe spells the absent discount curve as =-=, which
+  =from_token<std::optional<...>>= maps to nullopt. Nothing else in the generated
+  set needed a hand edit.
+- The generated TypeScript filter type for a nullable filter column reads
+  =string | null | null=, because the C++ filter is =std::optional<std::optional<>>=
+  -- the outer optional says "no filter", the inner null says "is null". The
+  screen passes the outer one and the double null is the generator's spelling of
+  it, not a second state.
+- The evidence seed's config id carried variant nibble =7=, which the strict uuid
+  reader the compute route uses refuses as =Invalid UUID=. It is now an RFC 4122
+  id, and the seed says why. The seed also wrote series straight into the table
+  with no identity row, so no picker offered them; it now writes the identity
+  projection the pickers read, and its config insert is guarded rather than
+  =on conflict= (the insert trigger refuses a second write at version zero before
+  the conflict could resolve, so a re-apply failed).
 
 * Test Scenarios
 

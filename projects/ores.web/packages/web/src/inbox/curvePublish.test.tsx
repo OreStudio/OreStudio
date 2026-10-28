@@ -179,12 +179,12 @@ describe('the curve publish in the queue', () => {
         );
     });
 
-    it('says the subject is not readable rather than drawing an empty block', () => {
+    it('says the read was refused when this account may not read the curves', () => {
         const html = render(
             (client) => {
                 client.setQueryData(
                     ['request', REQUEST],
-                    publishRequest({ publishedSubject: null }),
+                    publishRequest({ publishedSubject: null, publishedSubjectState: 'refused' }),
                 );
                 client.setQueryData(['request-changes', REQUEST], { changes: [] });
                 client.setQueryData(['request-checks', REQUEST], { lines: [] });
@@ -193,7 +193,26 @@ describe('the curve publish in the queue', () => {
             `/requests/${REQUEST}`,
         );
 
-        expect(html).toContain('its subject is not readable here');
+        expect(html).toContain('may not read the published curves');
+        expect(html).not.toContain('holds no published set for it');
+    });
+
+    it('says the read found nothing when the component holds no set for it', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    ['request', REQUEST],
+                    publishRequest({ publishedSubject: null, publishedSubjectState: 'missing' }),
+                );
+                client.setQueryData(['request-changes', REQUEST], { changes: [] });
+                client.setQueryData(['request-checks', REQUEST], { lines: [] });
+            },
+            <RequestPage />,
+            `/requests/${REQUEST}`,
+        );
+
+        expect(html).toContain('holds no published set for it');
+        expect(html).not.toContain('may not read the published curves');
     });
 
     it('names the kind in the summary, so the title of the page says what it is about', () => {

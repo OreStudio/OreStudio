@@ -375,9 +375,25 @@ BEGIN
     -- code is not here, and that is what makes the publish four eyes: the
     -- Operations role holds inbox::approvals:decide_market_risk.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_bootstrap:publish');
+    -- *Check that a curve blueprint builds* names the trader who owns the
+    -- blueprint, or the quant who owns the method, as the actor, and running the
+    -- test needs this code. Nothing but the tenant administrator's wildcard held
+    -- it, so the Check tab refused every person it exists for. The test writes
+    -- nothing, which is what separates this code from :republish and :publish.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_bootstrap:compute');
     -- The subject the request authorises, which the maker reads back under
     -- *My requests* and the published record read shows once it moved.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_publishes:read');
+    -- The people the published screens name. A set carries the account that
+    -- published it, and the list, the points, the comparison and the blueprint's
+    -- *Published sets* tab draw that account with its picture and its full name,
+    -- as the history panel draws any actor. Without this read the directory
+    -- answers nothing for the name, so the screens draw a bare username and the
+    -- initials of a person whose picture they cannot fetch. The read is the
+    -- account read and not the tenant's: row-level security still narrows it to
+    -- the parties the reader works in, which is the same exception Member's own
+    -- line states.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'iam::accounts:read');
     -- *Maintain the curve blueprints* names a trader holding the market-data
     -- management role, or a quant acting for the desk, as the actor, and the
     -- trader is the maker: the blueprint is theirs to author. The blueprint and
@@ -780,6 +796,14 @@ BEGIN
     -- changes none of them.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::ir_curve_bootstrap_configs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::ir_curve_bootstrap_pillars:read');
+    -- The publisher the published screens name. A viewer reads the published
+    -- curves and the blueprints behind them, and every one of those screens
+    -- draws the account that published a set with its picture and its full
+    -- name, which is the account read. Operations and Support already hold it,
+    -- and Market Risk owners work as Operations, so the deciders could resolve a
+    -- name before this line; the read-only roles that see the same screens could
+    -- not, and drew a bare username.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'iam::accounts:read');
 
     -- Assign permissions to DataPublisher role
     -- Read access to browse the data catalog

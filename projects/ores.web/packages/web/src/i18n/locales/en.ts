@@ -301,8 +301,10 @@ export const en: SourceCatalogue = {
             asOf: 'Published as-of',
             points: 'Points',
             openComparison: 'Open the comparison',
-            noSubject:
-                'This request is a curve publish, and its subject is not readable here: the market data component holds it, or this account may not read that curve.',
+            noSubjectRefused:
+                'This request is a curve publish, and this account may not read the published curves, so its subject is not drawn here. The request itself is sound.',
+            noSubjectMissing:
+                'This request is a curve publish, and the market data component holds no published set for it. Nothing was found to draw, rather than something being refused.',
             row: '{party} · as of {asOf} · {points} points',
             summary: '{curve} of {party}, as of {asOf}',
             approve: 'Approve the publish',

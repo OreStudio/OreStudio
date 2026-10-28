@@ -301,8 +301,10 @@ const pt: SourceCatalogue = {
             asOf: 'Data de referência publicada',
             points: 'Pontos',
             openComparison: 'Abrir a comparação',
-            noSubject:
-                'Este pedido é uma publicação de curva, e o seu sujeito não é legível aqui: o componente de dados de mercado detém-no, ou esta conta não pode ler essa curva.',
+            noSubjectRefused:
+                'Este pedido é uma publicação de curva, e esta conta não pode ler as curvas publicadas, por isso o seu sujeito não é desenhado aqui. O pedido em si está são.',
+            noSubjectMissing:
+                'Este pedido é uma publicação de curva, e o componente de dados de mercado não detém nenhum conjunto publicado para ele. Nada foi encontrado, em vez de algo recusado.',
             row: '{party} · com data de referência {asOf} · {points} pontos',
             summary: '{curve} de {party}, com data de referência {asOf}',
             approve: 'Aprovar a publicação',

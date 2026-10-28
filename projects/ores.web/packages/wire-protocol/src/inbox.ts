@@ -415,6 +415,12 @@ export const inboxRequestViewSchema = z.object({
      * may not read, and for a request the market data component has no record of.
      */
     publishedSubject: inboxPublishedSubjectSchema.nullable().optional(),
+    /**
+     * Why a publish request carries no subject: `refused` is a read this reader
+     * may not make, and `missing` is a read that came back and found no set. The
+     * two are different facts and the screen says each in its own words.
+     */
+    publishedSubjectState: z.enum(['refused', 'missing']).optional(),
 });
 
 /**

@@ -300,8 +300,10 @@ const fr: SourceCatalogue = {
             asOf: 'Date d’arrêté publiée',
             points: 'Points',
             openComparison: 'Ouvrir la comparaison',
-            noSubject:
-                'Cette demande est une publication de courbe, et son sujet n’est pas lisible ici : le composant de données de marché le détient, ou ce compte ne peut pas lire cette courbe.',
+            noSubjectRefused:
+                'Cette demande est une publication de courbe, et ce compte ne peut pas lire les courbes publiées : son sujet n’est donc pas dessiné ici. La demande elle-même est saine.',
+            noSubjectMissing:
+                'Cette demande est une publication de courbe, et le composant de données de marché ne détient aucun ensemble publié pour elle. Rien n’a été trouvé, plutôt que quelque chose de refusé.',
             row: '{party} · arrêté au {asOf} · {points} points',
             summary: '{curve} de {party}, arrêté au {asOf}',
             approve: 'Approuver la publication',

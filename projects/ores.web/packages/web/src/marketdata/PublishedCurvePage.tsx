@@ -38,6 +38,7 @@ import { useTabs } from '../ui/Tabs.js';
 import { formatDateTime } from '../ui/Time.js';
 import { PublishedCompareTab } from './PublishedCompareTab.js';
 import { PublishedPointsTab } from './PublishedPointsTab.js';
+import { PersonCell } from '../access/PersonRef.js';
 import {
     DEFAULT_OVERLAY_SETS,
     hasEnded,
@@ -255,7 +256,7 @@ function DetailsTab({
                 </h2>
                 <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <Fact label={t('marketdata.published.details.publisher')}>
-                        {record.published_by === '' ? '—' : record.published_by}
+                        <PersonCell who={record.published_by} />
                     </Fact>
                     <Fact label={t('marketdata.published.details.publishedAt')}>
                         {record.published_at === null

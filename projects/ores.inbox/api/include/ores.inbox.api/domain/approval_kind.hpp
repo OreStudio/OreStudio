@@ -82,6 +82,19 @@ struct approval_kind final {
     std::string decide_permission_code;
 
     /**
+     * @brief The permission a person needs to raise a request of this kind, which is the maker's
+     * half of the maker and checker pair. It sits on the kind and never on a request: a maker who
+     * could name a weaker checker would choose their own control.
+     *
+     * Examples: 'marketdata::curve_bootstrap:publish'.
+     *
+     * Null when the kind names none, and then the raise is the component's own to gate, which is
+     * how every kind seeded before this column behaves. The permission is held by an account in the
+     * tenant and never by a party.
+     */
+    std::optional<std::string> raise_permission_code;
+
+    /**
      * @brief Whether held is a state this kind uses.
      */
     bool allows_hold = false;

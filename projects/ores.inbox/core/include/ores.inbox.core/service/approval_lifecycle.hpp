@@ -162,6 +162,37 @@ public:
     std::optional<domain::approval_request> request(const std::string& id);
 
     /**
+     * @brief Whether the context's actor may raise a request of this kind.
+     *
+     * A kind names the maker's permission beside the checker's. A kind that
+     * names none keeps the rule it had: the raise is the owning component's to
+     * gate, so anybody the component let through may raise.
+     *
+     * A context that carries no permission list is the service's own, and its
+     * permission checks pass: no production service runs that way, and a test
+     * that builds a context without one is saying it is trusted.
+     */
+    [[nodiscard]] bool may_raise(const domain::approval_kind& kind) const;
+
+    /**
+     * @brief Whether the context's actor may decide a request of this kind.
+     *
+     * The queue is filtered by the same answer, so a person who may not decide
+     * a kind neither sees it nor is offered it.
+     */
+    [[nodiscard]] bool may_decide(const domain::approval_kind& kind) const {
+        return holds(kind.decide_permission_code);
+    }
+
+    /**
+     * @brief The kinds and parts the context's actor may decide.
+     *
+     * What a queue read is filtered by: a request whose kind, or whose open
+     * part, is in this scope is one the actor may answer.
+     */
+    [[nodiscard]] decidable_scope decidable_by_role();
+
+    /**
      * @brief The system account a kind with no approvals closes a request as.
      *
      * The rule that a decider is not the asker refuses a decision by the asker,
@@ -362,6 +393,14 @@ private:
      * swallowed.
      */
     void tell_expiring(const expiring_request& expiring);
+
+    /**
+     * @brief Whether the context's actor holds a permission code.
+     *
+     * An empty code names no permission, and a context that carries no
+     * permission list is the service's own, so both pass.
+     */
+    [[nodiscard]] bool holds(const std::string& permission_code) const;
 
     /**
      * @brief Closes a request the kind needs no approval for, in one act.

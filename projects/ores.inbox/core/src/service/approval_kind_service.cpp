@@ -101,6 +101,7 @@ domain::approval_kind approval_kind_to_domain(const messaging::approval_kind_wri
     v.name = write.name;
     v.description = write.description;
     v.decide_permission_code = write.decide_permission_code;
+    v.raise_permission_code = write.raise_permission_code;
     v.allows_hold = write.allows_hold;
     v.comment_on_approve = write.comment_on_approve;
     v.expires_after_days = write.expires_after_days;

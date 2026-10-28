@@ -130,6 +130,14 @@ void end_previous_sets(const ores::database::context& ctx, const domain::curve_p
 
 }
 
+std::string raise_permission_of(const ores::database::context& ctx, std::string_view kind_code) {
+    ores::inbox::service::approval_lifecycle lifecycle(ctx);
+    const auto kind = lifecycle.kind(std::string(kind_code));
+    if (!kind)
+        throw std::runtime_error("No such kind of request: " + std::string(kind_code) + ".");
+    return kind->raise_permission_code.value_or(std::string{});
+}
+
 publish_subject resolve_publish_subject(const ores::database::context& ctx,
                                         const std::string& bootstrap_config_id,
                                         std::chrono::system_clock::time_point as_of) {

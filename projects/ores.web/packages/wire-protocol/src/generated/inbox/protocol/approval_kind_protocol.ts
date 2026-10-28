@@ -37,6 +37,7 @@ export interface ApprovalKindWrite {
     name: string;
     description: string;
     decide_permission_code: string;
+    raise_permission_code: string | null;
     allows_hold: boolean;
     comment_on_approve: boolean;
     expires_after_days: number | null;

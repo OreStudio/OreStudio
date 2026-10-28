@@ -73,6 +73,19 @@ struct publish_verdict {
 };
 
 /**
+ * @brief The permission the kind names for raising a request of it, or empty.
+ *
+ * The maker's half of the pair is the kind's, so the operation asks the kind and
+ * never a code written here: a tenant that moves the maker moves the gate with
+ * it. Empty means the kind names none, and then the raise is the component's own
+ * to gate, as every kind seeded before the column was behaves.
+ *
+ * @throws std::runtime_error when the kind is not seeded.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::string raise_permission_of(const ores::database::context& ctx,
+                                                               std::string_view kind_code);
+
+/**
  * @brief Reads the subject a publish call names out of the configuration.
  *
  * The configuration states the party it belongs to and the series its output is

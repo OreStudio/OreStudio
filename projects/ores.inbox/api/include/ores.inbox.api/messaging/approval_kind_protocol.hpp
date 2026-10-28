@@ -44,6 +44,7 @@ struct approval_kind_write {
     std::string name;
     std::string description;
     std::string decide_permission_code;
+    std::optional<std::string> raise_permission_code;
     bool allows_hold;
     bool comment_on_approve;
     std::optional<int> expires_after_days;

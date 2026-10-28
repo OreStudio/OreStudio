@@ -65,8 +65,10 @@ using namespace ores::logging;
  * @c curve_republish_service::republish(), so a refusal leaves the curve as it
  * was.
  *
- * The permission is the maker's. The decision is the decider's, and it is taken
- * on the inbox's own operation, so the two halves ask for two different codes.
+ * The permission is the maker's, and it is the one the kind names in
+ * =raise_permission_code=: the pair is per kind, so the handler asks the kind and
+ * never a code of its own. The decision is the decider's, and it is taken on the
+ * inbox's own operation, so the two halves ask for two different codes.
  */
 class approval_gated_curve_publish_handler {
 public:
@@ -87,7 +89,21 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "marketdata::curve_bootstrap:publish")) {
+        // The maker's permission is the kind's, so the gate moves when the tenant
+        // moves the kind and never because a code here went stale.
+        std::string maker_permission;
+        try {
+            maker_permission =
+                service::app::raise_permission_of(req_ctx, service::app::curve_publish_kind_code);
+        } catch (const std::exception& e) {
+            // A kind that cannot be read names no maker, so the gate fails closed
+            // rather than letting a publish through an unstated rule.
+            BOOST_LOG_SEV(curve_publish_handler_lg(), error)
+                << msg.subject << " refused: " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!maker_permission.empty() && !has_permission(req_ctx, maker_permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

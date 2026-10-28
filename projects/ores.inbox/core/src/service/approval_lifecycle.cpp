@@ -27,6 +27,7 @@
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.security/authorization/grants.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -161,6 +162,32 @@ std::optional<boost::uuids::uuid> approval_lifecycle::actor_account_id() {
     if (found.empty())
         return std::nullopt;
     return found.front().id;
+}
+
+bool approval_lifecycle::holds(const std::string& permission_code) const {
+    if (permission_code.empty())
+        return true;
+    const auto& granted = ctx_.roles();
+    if (!granted)
+        return true;
+    return ores::security::authorization::grants(*granted, permission_code);
+}
+
+bool approval_lifecycle::may_raise(const domain::approval_kind& kind) const {
+    if (!kind.raise_permission_code)
+        return true;
+    return holds(*kind.raise_permission_code);
+}
+
+decidable_scope approval_lifecycle::decidable_by_role() {
+    decidable_scope scope;
+    for (const auto& k : kinds())
+        if (may_decide(k))
+            scope.kind_codes.push_back(k.code);
+    for (const auto& p : parts())
+        if (holds(p.decide_permission_code))
+            scope.part_codes.push_back(p.code);
+    return scope;
 }
 
 std::optional<boost::uuids::uuid> approval_lifecycle::system_actor_account_id() {

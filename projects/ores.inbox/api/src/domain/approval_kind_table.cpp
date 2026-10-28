@@ -25,19 +25,33 @@
 #include "ores.inbox.api/domain/approval_kind_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::inbox::domain {
 
+namespace {
+template <typename T>
+std::string approval_kind_opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<approval_kind>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Decide Permission" << "Approvals Required"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Decide Permission" << "Raise Permission"
+          << "Approvals Required" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ak : v) {
-        table << ak.code << ak.name << ak.decide_permission_code << ak.approvals_required
+        table << ak.code << ak.name << ak.decide_permission_code
+              << approval_kind_opt_str(ak.raise_permission_code) << ak.approvals_required
               << ak.modified_by << ak.version << fort::endr;
     }
     return table.to_string();

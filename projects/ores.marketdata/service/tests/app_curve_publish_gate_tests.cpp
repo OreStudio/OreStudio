@@ -33,6 +33,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
+#include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
@@ -479,4 +480,35 @@ TEST_CASE("a_kind_that_needs_one_approval_publishes_nothing_until_a_person_answe
     CHECK(verdict.state_code == "waiting");
     CHECK(f.output_point_count() == 0);
     CHECK_FALSE(f.published().has_value());
+}
+
+TEST_CASE("the_maker_permission_a_publish_asks_for_is_the_kinds_own", tags) {
+    curve_fixture f;
+    const auto maker = seed_person(f.h);
+
+    // The pair is per kind: the operation asks the kind for the maker's code
+    // rather than carrying one of its own, so a tenant that moves the maker moves
+    // the gate with it.
+    const auto publish = ores::marketdata::service::app::raise_permission_of(
+        maker.ctx, ores::marketdata::service::app::curve_publish_kind_code);
+    CHECK(publish == "marketdata::curve_bootstrap:publish");
+    CHECK(publish == approval_lifecycle(maker.ctx)
+                          .kind(std::string(curve_publish_kind_code))
+                          ->raise_permission_code);
+
+    // A withdrawal is raised by the account that may publish, as the withdrawal
+    // journey states, so its kind names the same code.
+    const auto withdrawal = ores::marketdata::service::app::raise_permission_of(
+        maker.ctx, ores::marketdata::service::app::curve_withdrawal_kind_code);
+    CHECK(withdrawal == "marketdata::curve_bootstrap:publish");
+
+    // A kind that names no maker's code answers empty, and the operation then
+    // keeps the rule it had rather than inventing one.
+    const auto grant = ores::marketdata::service::app::raise_permission_of(maker.ctx,
+                                                                          "iam.role_grant");
+    CHECK(grant.empty());
+
+    // A kind that does not exist is a failure and not an empty answer: the gate
+    // must not read "no maker" from a kind it could not find.
+    CHECK_THROWS(ores::marketdata::service::app::raise_permission_of(maker.ctx, "no.such_kind"));
 }

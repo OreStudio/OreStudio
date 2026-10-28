@@ -87,18 +87,19 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <description> <decide_permission_code> <allows_hold>
-     * <comment_on_approve> <expires_after_days> <apply_workflow_type> <apply_window_hours>
-     * <approvals_required> <display_order> <reason> <commentary>
+     * @brief add <code> <name> <description> <decide_permission_code> <raise_permission_code>
+     * <allows_hold> <comment_on_approve> <expires_after_days> <apply_workflow_type>
+     * <apply_window_hours> <approvals_required> <display_order> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <name> <description> <decide_permission_code> <allows_hold>
-     * <comment_on_approve> <expires_after_days> <apply_workflow_type> <apply_window_hours>
-     * <approvals_required> <display_order> <reason> <commentary> [--version <n>]
+     * @brief set <code> <name> <description> <decide_permission_code> <raise_permission_code>
+     * <allows_hold> <comment_on_approve> <expires_after_days> <apply_workflow_type>
+     * <apply_window_hours> <approvals_required> <display_order> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,8 +107,9 @@ public:
 
     /**
      * @brief put-many --count <n> <code> <name> <description> <decide_permission_code>
-     * <allows_hold> <comment_on_approve> <expires_after_days> <apply_workflow_type>
-     * <apply_window_hours> <approvals_required> <display_order> <reason> <commentary>
+     * <raise_permission_code> <allows_hold> <comment_on_approve> <expires_after_days>
+     * <apply_workflow_type> <apply_window_hours> <approvals_required> <display_order> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

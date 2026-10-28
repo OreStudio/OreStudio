@@ -48,6 +48,7 @@ domain::approval_kind approval_kind_mapper::map(const approval_kind_entity& v) {
 
     r.description = v.description;
     r.decide_permission_code = v.decide_permission_code;
+    r.raise_permission_code = v.raise_permission_code;
     r.allows_hold = v.allows_hold;
     r.comment_on_approve = v.comment_on_approve;
     r.expires_after_days = v.expires_after_days;
@@ -77,6 +78,7 @@ approval_kind_entity approval_kind_mapper::map(const domain::approval_kind& v) {
 
     r.description = v.description;
     r.decide_permission_code = v.decide_permission_code;
+    r.raise_permission_code = v.raise_permission_code;
     r.allows_hold = v.allows_hold;
     r.comment_on_approve = v.comment_on_approve;
     r.expires_after_days = v.expires_after_days;

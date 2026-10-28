@@ -47,4 +47,3 @@ TEST_CASE("the system clock gives the date of the host in UTC", "[market_clock]"
     CHECK(today <= after);
     CHECK(clock.today_text().size() == 10);
 }
-

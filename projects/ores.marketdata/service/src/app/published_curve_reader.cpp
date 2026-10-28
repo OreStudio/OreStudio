@@ -348,15 +348,19 @@ get_published_curve_sets(const ores::database::context& ctx,
     // The newest published sets, counted from the newest and returned oldest
     // first, so the caller draws them in the order they happened and colours the
     // last one strongest.
+    //
+    // published_at keeps whole seconds, so two publishes in one second tie. A
+    // superseded set is older than the set that superseded it, so it sorts as
+    // the older of a tie.
     const auto published_sql =
         std::string("select * from (select") + set_columns + set_from +
         " where cp.tenant_id = $1::uuid"
         "   and cp.output_series_id = $2::uuid"
         "   and cp.valid_to = ores_utility_infinity_timestamp_fn()"
         "   and cp.published_at is not null"
-        " order by cp.published_at desc"
+        " order by cp.published_at desc, (cp.superseded_at is null) desc, cp.as_of desc"
         " limit $3::bigint) newest"
-        " order by published_at, as_of";
+        " order by published_at, (superseded_at is null), as_of";
     const auto published_rows = execute_parameterized_multi_column_query(ctx,
                                                                         published_sql,
                                                                         {tenant, request.series_id, limit},

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 27D7C5B9-DBF6-4EE0-B989-DBA599F5EF3E
+:END:
+#+title: Task: Mend the synthetic test build and a tied curve-set read
+#+description: Main's synthetic service tests missed a constructor argument, and a marketdata read returned a superseded curve set on a timestamp tie.
+#+type: task
+#+level: s1
+#+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
+#+owner: marco
+#+branch: fix/mend-synthetic-test-build-and-curve-set-tie
+#+pr: 3962
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Main builds and its marketdata service suite passes every run. Both breaks
+were found while moving ores.inbox to libpq.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The synthetic service test target compiles.
+- The newest-published-sets read returns the live set when two publishes tie.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3962][#3962]] | [build] Mend the synthetic test build and a tied curve-set read |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Add =as_of desc= as a last tie-break | =published_curve_reader.cpp= | Accept | Added; the order is now deterministic. |
+| 2 | The list query could tie too | =published_curve_reader.cpp= | Decline | No test shows it; it already breaks ties by =as_of= and URI. |
+| 3 | A test that publishes twice in one second on purpose | =app_published_curves_tests.cpp= | Decline | The existing case publishes twice in a row and hit the tie in 1 of 3 runs. |
+| 4 | Run =compass check= | PR body | Decline | It runs once at the end of the arc, as agreed. |
+
+* Result
+
+The synthetic adapter tests pass the =step_speed= that 2b44eb0155 added. The
+newest-published-sets read breaks a =published_at= tie (the column keeps whole
+seconds) by sorting the superseded set as the older: the case passed 2 of 3
+runs on main and 10 of 10 after.

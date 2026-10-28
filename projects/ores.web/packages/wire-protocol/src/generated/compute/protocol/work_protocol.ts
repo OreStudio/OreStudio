@@ -71,6 +71,13 @@ export interface WorkAssignmentEvent {
      */
     output_uri: string;
     /**
+     * @brief Pre-assigned upload location for the canonical result rows (HTTP PUT).
+     *
+     * Beside the archive and granted to the same claim. Empty when the job produces
+     * no rows.
+     */
+    results_uri: string;
+    /**
      * @brief The object capability the node presents to storage.
      *
      * Minted for this assignment alone: it names the package, the input and the
@@ -198,7 +205,16 @@ export interface ClaimWorkResponse {
      */
     output_uri: string;
     /**
-     * @brief A capability for exactly the package, the input and the output of this job, minted at the claim.
+     * @brief Pre-assigned upload location for the canonical result rows.
+     *
+     * Beside the archive and granted to the same claim: the node writes the rows it
+     * marshalled from the engine's output here, and the reporting service reads them
+     * to load its result table. An empty value means the job produces no rows.
+     */
+    results_uri: string;
+    /**
+     * @brief A capability for exactly the package, the input, the output and the canonical rows of
+     * this job, minted at the claim.
      */
     storage_token: string;
     /**

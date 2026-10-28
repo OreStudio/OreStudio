@@ -379,8 +379,9 @@ void session_repository::update_bytes(context ctx,
                                       std::uint64_t bytes_received) {
     query_builder::execute_parameterized_multi_column_query(
         ctx,
-        "update ores_iam_sessions_tbl set bytes_sent = $1::bigint, bytes_received = $2::bigint"
-        " where id = $3::uuid and start_time = $4::timestamptz",
+        std::string("update ") + session_entity::tablename +
+            " set bytes_sent = $1::bigint, bytes_received = $2::bigint"
+            " where id = $3::uuid and start_time = $4::timestamptz",
         {std::to_string(bytes_sent),
          std::to_string(bytes_received),
          boost::lexical_cast<std::string>(session_id),
@@ -397,8 +398,9 @@ void session_repository::end_session(context ctx,
                                      std::uint64_t bytes_received) {
     query_builder::execute_parameterized_multi_column_query(
         ctx,
-        "update ores_iam_sessions_tbl set end_time = $1::timestamptz, bytes_sent = $2::bigint,"
-        " bytes_received = $3::bigint where id = $4::uuid and start_time = $5::timestamptz",
+        std::string("update ") + session_entity::tablename +
+            " set end_time = $1::timestamptz, bytes_sent = $2::bigint,"
+            " bytes_received = $3::bigint where id = $4::uuid and start_time = $5::timestamptz",
         {ores::platform::time::datetime::to_db_string(end_time),
          std::to_string(bytes_sent),
          std::to_string(bytes_received),

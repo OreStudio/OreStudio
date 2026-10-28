@@ -32,6 +32,8 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.reporting.core/repository/engine_settings_repository.hpp"
+#include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
 #include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -52,6 +54,7 @@
 #include <format>
 #include <limits>
 #include <optional>
+#include <utility>
 #include <rfl/json.hpp>
 #include <string>
 #include <string_view>
@@ -381,6 +384,12 @@ private:
         // cannot change the authority of this run.
         plan.run_grant_id = *grant;
         plan.fsm_state_id = initial_state;
+        // The run reads the engine run settings its definition binds, so it
+        // records which ones and at which version. A run already produced keeps
+        // what it ran with, whatever a later change makes official.
+        const auto engine_settings = engine_settings_of(tenant_ctx, *def);
+        plan.engine_settings_id = engine_settings.first;
+        plan.engine_settings_version = engine_settings.second;
         // Only an instance that will run states when it started. One that is
         // queued, skipped or failed never began.
         if (dispatch) {
@@ -405,6 +414,33 @@ private:
 
         response.result.code = dispatch ? "triggered" : "not_dispatched";
         response.result.message = std::format("Report instance {} created.", inst_id_str);
+    }
+
+    /**
+     * @brief The engine run settings the definition binds, and the version in
+     * force.
+     *
+     * A definition that binds none, or whose binding names a configuration with
+     * no settings row, answers nothing: a run records what it reads and invents
+     * nothing.
+     */
+    std::pair<std::optional<boost::uuids::uuid>, std::optional<int>>
+    engine_settings_of(const ores::database::context& tenant_ctx,
+                       const ores::reporting::domain::report_definition& def) {
+        const auto bindings =
+            repository::report_configuration_repository{}.read_latest_by_report_definition_id(
+                tenant_ctx, boost::uuids::to_string(def.id), 0, 1000);
+        for (const auto& binding : bindings) {
+            if (binding.configuration_type_code != "engine_settings")
+                continue;
+            const auto settings =
+                repository::engine_settings_repository{}.read_latest_by_configuration_id(
+                    tenant_ctx, boost::uuids::to_string(binding.configuration_id), 0, 1);
+            if (settings.empty())
+                return {std::nullopt, std::nullopt};
+            return {settings.front().id, settings.front().version};
+        }
+        return {std::nullopt, std::nullopt};
     }
 
     /**

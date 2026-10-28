@@ -52,6 +52,8 @@ struct report_instance_write {
     std::string output_storage_key;
     std::optional<std::chrono::system_clock::time_point> priced_at;
     std::string price_note;
+    std::optional<boost::uuids::uuid> engine_settings_id;
+    std::optional<int> engine_settings_version;
 };
 
 struct report_instance_change {

@@ -61,6 +61,8 @@ struct report_instance_entity {
     std::optional<db_timestamp> completed_at;
     std::optional<db_timestamp> priced_at;
     std::optional<std::string> price_note;
+    std::optional<std::string> engine_settings_id;
+    std::optional<int> engine_settings_version;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -90,6 +92,8 @@ struct report_instance_entity {
                query_builder::bind("completed_at", &e::completed_at) |
                query_builder::bind("priced_at", &e::priced_at) |
                query_builder::bind("price_note", &e::price_note) |
+               query_builder::bind("engine_settings_id", &e::engine_settings_id) |
+               query_builder::bind("engine_settings_version", &e::engine_settings_version) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

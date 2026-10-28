@@ -1,0 +1,257 @@
+:PROPERTIES:
+:ID: E22F6CCB-FD4D-475F-861D-FD0AB746E76D
+:END:
+#+title: ores.reporting.engine_settings_change
+#+description: Codegen entity model for the reporting engine_settings_change table: one proposed setting value held until its approval request is decided.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:pending:
+#+entity_singular: engine_settings_change
+#+entity_plural: engine_settings_changes
+#+entity_title: Engine Settings Change
+#+brief: One proposed setting value, held for its approval request.
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A number-changing group of engine run settings never changes in place. A write
+to such a group is a proposal: the values the person asked for are held here,
+one row for each setting of the group, and the version in force keeps the rows a
+run reads until the request is signed off.
+
+The apply reads the rows of an approved request and writes the group it names
+with the values stated here, so a proposal that waits changes no part.
+
+A row names the setting by its code, which is the group and the column joined,
+so a proposal survives a change to the columns of a part.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        reporting
+:profile:          uuid-identified-lookup
+:client_read_only: true
+:END:
+
+The rows are written only by the service that raises a request and applies it,
+so no client writes them.
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID identifying this line.
+
+One proposed setting value inside a request.
+
+** request_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The approval request this line belongs to.
+
+References the approval requests table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** engine_settings_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The engine run settings the proposal would change.
+
+References ores_reporting_engine_settings_tbl.id.
+
+** group_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The group of settings the proposal writes, for example =fixings=.
+
+References ores_reporting_engine_settings_groups_tbl.code.
+
+** setting_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The setting the line proposes a value for, which is its group and its column
+joined with a colon, for example =fixings:imply_todays_fixings=.
+
+References ores_reporting_engine_settings_group_settings_tbl.code.
+
+** text_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The value the person proposes, as the screen reads it, or null for the engine
+default. A flag is =true= or =false=, a whole is its digits, and a choice is one
+of the words its setting names.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** base_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+The version of the group's row the person read, or zero for a group the
+configuration had not set. The apply claims it, so a group that moved since the
+proposal was raised is refused rather than overwritten.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** applied
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether the apply has written this line. A line is applied once.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_engine_settings_changes_tbl
+:END:
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the line belongs to; it must exist in the inbox's requests.
+
+** engine_settings_id
+:PROPERTIES:
+:table:         ores_reporting_engine_settings_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid engine_settings_id: %. No active engine settings found with this id.
+:END:
+
+The configuration the proposal would change.
+
+** group_code
+:PROPERTIES:
+:table:             ores_reporting_engine_settings_groups_tbl
+:target_column:     code
+:use_system_tenant: true
+:error_message:     Invalid group_code: %. No engine settings group found with this code.
+:END:
+
+The group the proposal writes. The groups are a system-wide lookup.
+
+** setting_code
+:PROPERTIES:
+:table:             ores_reporting_engine_settings_group_settings_tbl
+:target_column:     code
+:use_system_tenant: true
+:error_message:     Invalid setting_code: %. No engine settings group setting found with this code.
+:END:
+
+The setting the line proposes a value for. The settings are a system-wide
+lookup.
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+A group and a setting are checked by the foreign keys above. A proposed value
+that the setting does not accept is refused by the apply, which writes the part
+through the group's own service and so meets the same check a direct write
+meets.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: engine_settings_change
+:entity_plural_short:   engine_settings_changes
+:entity_singular_words: engine settings change
+:entity_plural_words:   engine settings changes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: esc
+:END:
+
+** Table display
+
+| column             | header           |
+|--------------------+------------------|
+| request_id         | Request          |
+| group_code         | Group            |
+| setting_code       | Setting          |
+| text_value         | Value            |
+| applied            | Applied          |
+| modified_by        | Modified By      |
+| version            | Version          |
+
+* See also
+
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the request that decides these lines.

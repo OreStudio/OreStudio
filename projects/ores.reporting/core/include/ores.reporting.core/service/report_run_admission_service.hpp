@@ -104,6 +104,16 @@ public:
         std::optional<boost::uuids::uuid> fsm_state_id;
 
         /**
+         * @brief The engine run settings the run reads, and their version.
+         *
+         * Fixed at admission, so a change made official after the run keeps the
+         * numbers this run computed and a person can reproduce them from the
+         * version named here. A definition that binds none names none.
+         */
+        std::optional<boost::uuids::uuid> engine_settings_id;
+        std::optional<int> engine_settings_version;
+
+        /**
          * @brief When the run began, stated by the caller because only the
          * caller knows whether the instance will run at all.
          */

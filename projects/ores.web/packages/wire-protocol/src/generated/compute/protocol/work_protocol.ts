@@ -78,6 +78,14 @@ export interface WorkAssignmentEvent {
      */
     results_uri: string;
     /**
+     * @brief Pre-assigned upload location for the canonical log rows.
+     *
+     * Beside the archive and granted to the same claim: the node writes what the
+     * engine's log says here, and the reporting service reads it to fill the run's
+     * log. An empty value means the job produces no log.
+     */
+    logs_uri: string;
+    /**
      * @brief The object capability the node presents to storage.
      *
      * Minted for this assignment alone: it names the package, the input and the
@@ -213,8 +221,16 @@ export interface ClaimWorkResponse {
      */
     results_uri: string;
     /**
-     * @brief A capability for exactly the package, the input, the output and the canonical rows of
-     * this job, minted at the claim.
+     * @brief Pre-assigned upload location for the canonical log rows.
+     *
+     * Beside the archive and granted to the same claim: the node writes what the
+     * engine's log says here, and the reporting service reads it to fill the run's
+     * log. An empty value means the job produces no log.
+     */
+    logs_uri: string;
+    /**
+     * @brief A capability for exactly the package, the input, the output and the
+     * canonical rows and log rows of this job, minted at the claim.
      */
     storage_token: string;
     /**

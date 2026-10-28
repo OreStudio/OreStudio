@@ -266,8 +266,8 @@ struct claim_work_response {
      */
     std::string logs_uri;
     /**
-     * @brief A capability for exactly the package, the input, the output and the canonical rows of
-     * this job, minted at the claim.
+     * @brief A capability for exactly the package, the input, the output and the
+     * canonical rows and log rows of this job, minted at the claim.
      */
     std::string storage_token;
     /**

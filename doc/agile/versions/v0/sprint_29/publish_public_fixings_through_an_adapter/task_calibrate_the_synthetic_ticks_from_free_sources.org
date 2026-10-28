@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calibrate-the-synthetic-ticks-from-free-sources
 #+pr: 3678
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The level of a synthetic price comes from a public source that anyone can check,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,9 +44,39 @@ The level of a synthetic price comes from a public source that anyone can check,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decisions taken with the user (2026-10-28):
+
+- Volatility: the spread of the daily log returns over the window, in hourly terms,
+  sets the size of the feed's mixture. Every component's deviation is scaled by one
+  factor, so the configured shape, its jumps and tails, is kept.
+- Items: a pair may start from an item that publishes it directly or the other way
+  round, read as 1/x; no crosses, since the ECB counts a computed rate as a change
+  to its data.
+- Vintage goes altogether, from FX and from IR. Market data as of a past date for
+  specific uses is a separate investigation:
+  [[id:39EBABD1-CE5F-4D9C-A47C-CD0FCD492B46][Investigate backdated market data for specific use cases]].
+
+Three PRs, each checked on its own:
+
+1. Calibrate FX from fixings.
+   - A child entity of the FX config, =fx_spot_fixing_item=, modelled as
+     =gmm_component= is: the item, an optional provider, a rank, a policy
+     (=latest_on_or_before_clock= or =exact:<date>=) and a window in days, staged
+     through DQ like the components.
+   - =price_source= takes =fixing=; =gmm_initial_price= stays the level a pair
+     keeps when no item has a fixing.
+   - At start, the feed reads its ranked items through =get_fixing= and
+     =get_fixing_window=, takes the first with a value, inverts it when the item
+     quotes the pair the other way, and scales the mixture to the measured spread.
+     The provenance of the start is kept for the screen.
+   - The seeds rank, for each FX config, every catalogue item of its pair, direct
+     or inverted: ECB, IMF, BOC, TCMB. The thirteen vintage configs become
+     =fixing=.
+2. Remove vintage: the FX and IR columns and checks, the vintage lookup and the
+   validity handler, the marketdata vintage read, the shell and web surfaces, the
+   vintage dataset dependency rows.
+3. The feed screen shows the provider, the item, the vendor date and the time
+   received of the value a feed started from, or that it kept its fixed level.
 
 * Measurements
 

@@ -28,6 +28,7 @@
 #include "ores.reporting.core/messaging/registrar.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
+#include "ores.reporting.service/messaging/engine_settings_proposal_registrar.hpp"
 #include "ores.reporting.service/messaging/report_definition_event_registrar.hpp"
 #include "ores.reporting.service/messaging/report_instance_event_registrar.hpp"
 #include "ores.reporting.service/messaging/report_type_event_registrar.hpp"
@@ -124,8 +125,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         db_ctx,
         "ores.reporting.service",
         [&svc_nats, &cfg](auto& n, auto c, auto v) {
-            return ores::reporting::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), svc_nats, cfg.http_base_url);
+            auto subs = ores::reporting::messaging::registrar::register_handlers(
+                n, c, v, svc_nats, cfg.http_base_url);
+            // The proposal operations raise approval requests, so they are
+            // registered here and not with the entity handlers.
+            auto proposals =
+                ores::reporting::messaging::engine_settings_proposal_registrar::register_handlers(
+                    n, std::move(c), std::move(v));
+            for (auto& sub : proposals)
+                subs.push_back(std::move(sub));
+            return subs;
         },
         [&nats, &svc_nats, db_ctx](boost::asio::io_context& ioc) {
             // Reconcile scheduler jobs for all unscheduled report definitions.

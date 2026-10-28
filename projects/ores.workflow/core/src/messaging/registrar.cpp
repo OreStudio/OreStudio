@@ -28,6 +28,7 @@
 #include "ores.refdata.api/workflow/book_apply_workflow.hpp"
 #include "ores.refdata.api/workflow/counterparty_apply_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.reporting.api/workflow/engine_settings_apply_workflow.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
@@ -113,6 +114,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
     ores::refdata::workflow::register_book_apply_workflow(*registry);
+    reporting::workflow::register_engine_settings_apply_workflow(*registry);
     ores::refdata::workflow::register_counterparty_apply_workflow(*registry);
     ores::iam::workflow::register_provision_tenant_workflow(*registry);
     ores::iam::workflow::register_tenant_setup_workflow(*registry);

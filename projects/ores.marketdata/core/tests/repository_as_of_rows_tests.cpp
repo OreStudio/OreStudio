@@ -56,7 +56,7 @@ as_of_row bucket_row(std::optional<std::string> ordinal) {
 TEST_CASE("an_as_of_row_maps_every_observation_column", "[repository][as_of]") {
     const auto e = as_of_observation(bucket_row("0"), 1, "read_as_of_buckets");
 
-    CHECK(e.id.value() == "id");
+    CHECK(e.id == "id");
     CHECK(e.series_id == "series");
     CHECK(e.value == "1.0845");
     CHECK_FALSE(e.source.has_value());

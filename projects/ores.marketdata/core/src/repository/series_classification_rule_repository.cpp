@@ -19,14 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule_json_io.hpp" // IWYU pragma: keep.
@@ -40,14 +38,6 @@
 #include <initializer_list>
 #include <optional>
 #include <set>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -57,13 +47,13 @@
 
 namespace ores::marketdata::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string series_classification_rule_repository::sql() {
-    return generate_create_table_sql<series_classification_rule_entity>(lg());
+    return query_builder::insert_statement_sql<series_classification_rule_entity>(lg());
 }
 
 bool series_classification_rule_repository::is_sortable(std::string_view field) {
@@ -78,17 +68,17 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
+query_builder::order
 series_classification_rule_list_order(const ores::utility::domain::order& order,
                                       std::initializer_list<std::string> default_columns,
                                       bool default_descending) {
     if (order.field.empty())
-        return make_order(
+        return query_builder::make_order(
             default_columns, default_descending != order.descending, {"series_type", "metric"});
     if (!series_classification_rule_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of series classification rules cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"series_type", "metric"});
+    return query_builder::make_order({order.field}, order.descending, {"series_type", "metric"});
 }
 
 }
@@ -152,10 +142,10 @@ void series_classification_rule_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rule. "
                                << "series_type: " << v.series_type << " metric: " << v.metric;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_query(ctx,
-                        series_classification_rule_mapper::map(t),
-                        lg(),
-                        "Writing series classification rule to database.");
+    query_builder::execute_write_query(ctx,
+                                       series_classification_rule_mapper::map(t),
+                                       lg(),
+                                       "Writing series classification rule to database.");
 }
 
 void series_classification_rule_repository::write(
@@ -167,22 +157,22 @@ void series_classification_rule_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_query(ctx,
-                        series_classification_rule_mapper::map(batch),
-                        lg(),
-                        "Writing series classification rules to database.");
+    query_builder::execute_write_query(ctx,
+                                       series_classification_rule_mapper::map(batch),
+                                       lg(),
+                                       "Writing series classification rules to database.");
 }
 
 std::vector<domain::series_classification_rule>
 series_classification_rule_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("series_type"_c, "metric"_c);
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       query_builder::order_by("series_type"_c, "metric"_c);
 
-    return execute_read_query<series_classification_rule_entity,
-                              domain::series_classification_rule>(
+    return query_builder::execute_read_query<series_classification_rule_entity,
+                                             domain::series_classification_rule>(
         ctx,
         query,
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
@@ -196,12 +186,13 @@ std::vector<domain::series_classification_rule> series_classification_rule_repos
                                << "series_type: " << series_type << " metric: " << metric;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid && "series_type"_c == series_type &&
+    const auto query =
+        query_builder::read<std::vector<series_classification_rule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
                              "metric"_c == metric && "valid_to"_c == max.value());
 
-    return execute_read_query<series_classification_rule_entity,
-                              domain::series_classification_rule>(
+    return query_builder::execute_read_query<series_classification_rule_entity,
+                                             domain::series_classification_rule>(
         ctx,
         query,
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
@@ -216,12 +207,13 @@ std::vector<domain::series_classification_rule> series_classification_rule_repos
                                << "series_type: " << series_type << " metric: " << metric;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<series_classification_rule_entity>> |
-        where("tenant_id"_c == tid && "series_type"_c == series_type && "metric"_c == metric) |
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+        query_builder::read<std::vector<series_classification_rule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
+                             "metric"_c == metric) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
-    return execute_read_query<series_classification_rule_entity,
-                              domain::series_classification_rule>(
+    return query_builder::execute_read_query<series_classification_rule_entity,
+                                             domain::series_classification_rule>(
         ctx,
         query,
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
@@ -238,18 +230,19 @@ series_classification_rule_repository::read_at_version(context ctx,
                                << "series_type: " << series_type << " metric: " << metric
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid && "series_type"_c == series_type &&
+    const auto query =
+        query_builder::read<std::vector<series_classification_rule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
                              "metric"_c == metric && "version"_c == version) |
-                       sqlgen::limit(1);
+        query_builder::limit(1);
 
-    const auto entities =
-        execute_read_query<series_classification_rule_entity, domain::series_classification_rule>(
-            ctx,
-            query,
-            [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
-            lg(),
-            "Reading series classification rule at version.");
+    const auto entities = query_builder::execute_read_query<series_classification_rule_entity,
+                                                            domain::series_classification_rule>(
+        ctx,
+        query,
+        [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
+        lg(),
+        "Reading series classification rule at version.");
 
     if (entities.empty())
         return std::nullopt;
@@ -277,11 +270,13 @@ series_classification_rule_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<series_classification_rule_entity> |
-        where("tenant_id"_c == tid && "series_type"_c == series_type && "metric"_c == metric &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+        query_builder::delete_from<series_classification_rule_entity> |
+        query_builder::where("tenant_id"_c == tid && "series_type"_c == series_type &&
+                             "metric"_c == metric && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
-    execute_delete_query(ctx, query, lg(), "Removing series classification rule from database.");
+    query_builder::execute_delete_query(
+        ctx, query, lg(), "Removing series classification rule from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
@@ -305,15 +300,16 @@ series_classification_rule_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series classification rules with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
-    return execute_ordered_read_query<series_classification_rule_entity,
-                                      domain::series_classification_rule>(
+    return query_builder::execute_ordered_read_query<series_classification_rule_entity,
+                                                     domain::series_classification_rule>(
         ctx,
         query,
         series_classification_rule_list_order(order, {"series_type", "metric"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
         lg(),
         "Reading latest series classification rules with pagination.");
@@ -324,13 +320,13 @@ std::uint32_t series_classification_rule_repository::get_total_rule_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series classification rule count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<series_classification_rule_entity>> | where("tenant_id"_c == tid);
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
-    return execute_count_query<series_classification_rule_entity>(
+    return query_builder::execute_count_query<series_classification_rule_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), std::nullopt),
+        query_builder::narrowed(query_builder::valid_at(as_of), std::nullopt),
         lg(),
         "Counting series classification rules");
 }
@@ -343,18 +339,19 @@ series_classification_rule_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid && "series_type"_c.in(series_types) &&
+    const auto query =
+        query_builder::read<std::vector<series_classification_rule_entity>> |
+        query_builder::where("tenant_id"_c == tid && "series_type"_c.in(series_types) &&
                              "metric"_c.in(metrics) && "valid_to"_c == max.value());
-    auto result =
-        execute_read_query<series_classification_rule_entity, domain::series_classification_rule>(
-            ctx,
-            query,
-            [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
-            lg(),
-            "Reading latest series classification rules by ids.");
+    auto result = query_builder::execute_read_query<series_classification_rule_entity,
+                                                    domain::series_classification_rule>(
+        ctx,
+        query,
+        [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
+        lg(),
+        "Reading latest series classification rules by ids.");
     // Compound key: the query above is a per-column .in() cross-product
-    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // over-fetch (the query builder has no tuple IN), so filter down to the
     // exact requested key-tuples here.
     if (metrics.size() != series_types.size())
         throw std::invalid_argument("series_classification_rule_repository::read_latest: key "

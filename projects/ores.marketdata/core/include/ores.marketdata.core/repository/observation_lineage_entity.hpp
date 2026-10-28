@@ -25,8 +25,8 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_OBSERVATION_LINEAGE_ENTITY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_OBSERVATION_LINEAGE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct observation_lineage_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_marketdata_observation_lineages_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
     std::string party_id;
@@ -57,7 +57,7 @@ struct observation_lineage_entity {
     std::string point_source_kind = "derived";
     std::optional<std::string> derivation_config_id;
     int derivation_config_version = 0;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> source_as_of;
+    std::optional<db_timestamp> source_as_of;
     std::string source_series_ids;
     std::string modified_by;
     std::string performed_by;
@@ -65,6 +65,32 @@ struct observation_lineage_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = observation_lineage_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("series_id", &e::series_id) |
+               query_builder::bind("observation_datetime", &e::observation_datetime) |
+               query_builder::bind("oresmd_uri", &e::oresmd_uri) |
+               query_builder::bind("point_source_kind", &e::point_source_kind) |
+               query_builder::bind("derivation_config_id", &e::derivation_config_id) |
+               query_builder::bind("derivation_config_version", &e::derivation_config_version) |
+               query_builder::bind("source_as_of", &e::source_as_of) |
+               query_builder::bind("source_series_ids", &e::source_series_ids) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const observation_lineage_entity& v);

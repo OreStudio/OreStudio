@@ -45,7 +45,7 @@ domain::composite_input composite_input_mapper::map(const composite_input_entity
     domain::composite_input r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.composite_id = boost::lexical_cast<boost::uuids::uuid>(v.composite_id);
 
 

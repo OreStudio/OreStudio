@@ -175,11 +175,11 @@ std::vector<domain::route> read_latest_all_tenants(context ctx);
 std::vector<domain::route>
 route_repository::read_latest_all_tenants(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<route_entity>> |
-                       where("valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto query = query_builder::read<std::vector<route_entity>> |
+                       query_builder::where("valid_to"_c == max.value()) |
+                       query_builder::order_by("id"_c);
 
-    return execute_read_query<route_entity, domain::route>(
+    return query_builder::execute_read_query<route_entity, domain::route>(
         ctx,
         query,
         [](const auto& entities) { return route_mapper::map(entities); },

@@ -117,6 +117,7 @@ via its "Verifies task" field.
 | 9 | Stale public-API comment, an unused flag test, a =find= where =contains= reads better, comments that restate names | several | Accepted | All corrected. |
 | 10 | The synthetic build fix is unrelated to this task's subject | trading_trade_population_writer.cpp | Accepted | It was needed to build; a parallel environment landed the same fix as =c18fc190ad=, so it is redundant history and cannot be removed from a merged commit. |
 | — | The review bot did not run: three requests each failed within a second with an infrastructure error, at no cost, before reading anything | — | Not reviewed by the bot | The branch was reviewed by hand instead: the publisher keeps the old level table and the old skip set, the verdict's reasons keep their wording, and the comment on =message_after_separator= was moved back onto its function after the diff review found it orphaned. |
+| — | The review bot did not run for #4026 either: the same infrastructure error, at no cost, before reading anything | — | Not reviewed by the bot | #4026 was reviewed by hand: the line parser was replayed against each fixture the old suite held, the level table against all five levels, and the whitespace and parenthesis cases each have a test. |
 
 * Result
 

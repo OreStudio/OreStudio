@@ -227,6 +227,9 @@ describe('the routes of the application', () => {
         '/tenants/new',
         // Opened from the trade list's own button, so no card leads to it.
         '/trading/trades/new',
+        // Opened from the structures list and the blotter, both by their own
+        // button: grouping starts from the trades a person picks, not from a card.
+        PATHS.groupStructures,
         '/development',
         PATHS.reporting,
         // Opened from an oresmd URL, so no card leads to it.

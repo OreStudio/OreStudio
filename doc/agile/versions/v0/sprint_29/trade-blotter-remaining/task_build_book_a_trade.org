@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-book-a-trade
-#+pr: 3936
+#+pr: 3951
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -26,11 +26,11 @@ Build Book a trade from doc/prototypes/trades/book-a-trade. Settle two open item
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | The write and its refusals are mapped; the open-book rule is missing. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide the open-book rule, then build the form. |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -148,11 +148,13 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 | [[id:E45DD02C-CB73-4D63-8EAF-692A4C0F8CD3][Verify Book a trade]] | PENDING | The form, its two visible rules, and the page a booking opens. |
+| [[id:9969BCF5-6C44-4768-90FB-30FBC8A3E32A][Verify the structure screens]] | PENDING | The structures list, a deal's page and its parts, unlinking a leg, and grouping trades. Walked once, with three findings; all three answered and the screens approved by the reviewer on 2026-10-28. A fresh walk is the remaining check. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3951][#3951]] | [web] Give a deal a page, and let a trade be its leg |
 | [[https://github.com/OreStudio/OreStudio/pull/3928][#3928]] | [trading] Name a structure, and serve the family that creates one |
 | [[https://github.com/OreStudio/OreStudio/pull/3936][#3936]] | [iam] Unblock main: seed the structure identifier permissions |
 | [[https://github.com/OreStudio/OreStudio/pull/3907][#3907]] | [trading] Model the identifiers a structure carries |
@@ -170,7 +172,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The unlink route deleted by trade alone, so a key of one deal took a leg out of another | =bff/src/structures.ts= | Accepted | The member is read and its structure compared before the write; a refusal says which fault it is. |
+| 2 | Grouping wrote the structure before checking what it held | =bff/src/structures.ts= | Accepted | Kind, duplicates and existing membership are checked before the write. |
 
 * Result
 
@@ -181,3 +184,17 @@ The booking service now asks a =book_status_port= whether the book is open and r
 The service registrar passes a port that knows nothing until the service process is given a bus-backed one, and the rule logs and carries on when the answer is =unknown=. That is deliberate: refusing every booking while refdata is busy would be a worse fault than the one the rule prevents. Wiring the bus-backed port is the next step, and it is the only reason the rule is inert today.
 
 Proved by =a_booking_into_a_book_that_is_not_open_is_refused=: a fake port that says =not_open= produces =failed= with =book_not_open=, and the 31 existing cases pass through a port that says =open=.
+
+* The structure screens, and the booking that joins one
+
+A structure is a tree the desk groups, and the arc built the screens that show it. The list draws the tenant's trees, indented, with what each row holds. A deal's page states its identity, how it confirms and prices, its legs, and the tree it sits in, drawn beside the page as the prototype draws it: a twisty folds a structure, and a trade row selects the leg being read, with the choice in the address as =?leg=.
+
+The History tab is the shared timeline, not the legacy compare panel: the stream is the deal's own versions and those of every leg it holds now, merged, each leg's entry named by its leg. A leg taken out of the deal is not in the stream, and the panel says so.
+
+Booking a leg now joins it. The button on a deal names the deal and the role, the form states the deal it will join and offers the deal's counterparty rather than another, and the trade is a leg before the form closes; the deal's page answers with the new leg in place.
+
+Three reads that came back empty, each hidden by a fallback, were found and fixed. A filter may name only the members its struct declares: the type catalogue's filter named =code= beside =code_one_of= and was refused. The response names its array =types=, not =trade_types=. And the party of a deal's legs is named from the login session, because the read is party-scoped and the trading roles hold no =refdata::parties:read=.
+
+The trading roles now read the type catalogue the screens read, verified on a recreated database. The trade's own history provider was generated but never registered; it is registered now, and the trade page draws the shared timeline over the trade, its booking and the structure it is a leg of.
+
+Proved by =specs/structures.spec.ts= and =specs/trade-page.spec.ts= over the provisioned population, by the BFF's 1101 cases and the web's 2255.

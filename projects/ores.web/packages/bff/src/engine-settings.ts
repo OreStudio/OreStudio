@@ -589,9 +589,10 @@ async function proposeGroup(
     values: Readonly<Record<string, unknown>>,
     intent: z.infer<typeof intentSchema>,
 ): Promise<Readonly<Record<string, unknown>>> {
-    const reason = intent.commentary.trim() === ''
-        ? intent.reason_code
-        : `${intent.reason_code}: ${intent.commentary}`;
+    const reason =
+        intent.commentary.trim() === ''
+            ? intent.reason_code
+            : `${intent.reason_code}: ${intent.commentary}`;
     const reply = await session.client.callAuthenticated(
         proposalSubjects.raise_engine_settings_change_request,
         {
@@ -849,7 +850,14 @@ export function registerEngineSettingsRoutes(
                 text(central['configuration_id']),
             ).catch(() => null);
             if (reports === null || reports.length > 0) {
-                const proposal = await proposeGroup(session, group, id, body.version, values, body.intent);
+                const proposal = await proposeGroup(
+                    session,
+                    group,
+                    id,
+                    body.version,
+                    values,
+                    body.intent,
+                );
                 void reply.code(202);
                 return { document: await documentOf(session, central, groups), proposal };
             }
@@ -869,7 +877,10 @@ export function registerEngineSettingsRoutes(
         if (result.outcome !== 'ok') {
             throw writeRefusal(result);
         }
-        return { document: await documentOf(session, await readCentral(session, id), groups), proposal: null };
+        return {
+            document: await documentOf(session, await readCentral(session, id), groups),
+            proposal: null,
+        };
     });
 
     server.delete('/api/reporting/engine-settings/:id', async (request, reply) => {

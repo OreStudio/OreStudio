@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 2B6C808D-88CE-46D0-B1E1-65339BAD6650
+:END:
+#+title: Task: Give the embedded table a selection contract
+#+description: The grouping screen needs a table whose rows can be chosen: a chosen count, a mixed-counterparty guard and a submit that enables with the choice. RecordTable carries no selection, so that screen hand-rolls a table — the copy-paste the standard components exist to prevent.
+#+type: task
+#+level: s1
+#+filetags: :trade-blotter-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let RecordTable carry an optional selection, so a screen that chooses rows uses the house table instead of copying it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- RecordTable takes an opt-in selection: which rows are chosen, how a row is toggled, and whether the whole set may be chosen at once.
+- A screen that does not ask for selection draws exactly as it does today.
+- The grouping screen draws its picker with RecordTable and loses its hand-rolled table.
+- The chosen count and the mixed-counterparty guard stay the screen's, since they are its rule and not the table's.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

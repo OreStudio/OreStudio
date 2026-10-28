@@ -72,6 +72,7 @@ export interface TradeIdentifier {
     readonly id_type: string;
     readonly id_value: string;
     readonly issuing_party_id: string | null;
+    readonly version: number;
 }
 
 /** One party role the trade was written with. */
@@ -79,6 +80,7 @@ export interface TradePartyRole {
     readonly trade_id: string;
     readonly party_id: string;
     readonly role_type: string;
+    readonly version: number;
 }
 
 /** The trade's booking terms. */
@@ -86,6 +88,7 @@ export interface TradeBooking {
     readonly trade_id: string;
     readonly trade_date: string | null;
     readonly execution_timestamp: string | null;
+    readonly version: number;
 }
 
 /** One link, seen from the trade the page is on. */
@@ -95,6 +98,17 @@ export interface TradeLink {
     readonly link_type: string;
     /** The identifier of the trade at the other end, or empty when it has none. */
     readonly other_label: string;
+}
+
+/** The structure a trade is a leg of, with the role it takes there. */
+export interface TradeStructure {
+    readonly structure_id: string;
+    /** The reference the structure is known by, or empty when it has none. */
+    readonly reference: string;
+    readonly role: string;
+    readonly sequence_number: number;
+    /** The version of the membership, which is the record its history holds. */
+    readonly version: number;
 }
 
 /** One version of the trade, newest first. */
@@ -115,6 +129,8 @@ export interface TradePageRecord {
     readonly roles: readonly TradePartyRole[];
     readonly booking: TradeBooking | null;
     readonly links: { readonly from: readonly TradeLink[]; readonly to: readonly TradeLink[] };
+    /** The structure this trade is a leg of, when it is one. */
+    readonly structures: readonly TradeStructure[];
     readonly history: readonly TradeVersion[];
 }
 
@@ -156,6 +172,7 @@ const tradePageRecordSchema = z.object({
             id_value: z.string().default(''),
             // The domain allows an identifier no party issues, so the read answers null.
             issuing_party_id: z.string().nullable().default(null),
+            version: z.coerce.number().int().default(0),
         }),
     ),
     roles: z.array(
@@ -163,12 +180,14 @@ const tradePageRecordSchema = z.object({
             trade_id: z.string().default(''),
             party_id: z.string().default(''),
             role_type: z.string().default(''),
+            version: z.coerce.number().int().default(0),
         }),
     ),
     booking: z
         .looseObject({
             trade_date: z.string().nullable().default(null),
             execution_timestamp: z.string().nullable().default(null),
+            version: z.coerce.number().int().default(0),
         })
         .nullable()
         .default(null),
@@ -190,6 +209,17 @@ const tradePageRecordSchema = z.object({
             }),
         ),
     }),
+    structures: z
+        .array(
+            z.looseObject({
+                structure_id: z.string(),
+                reference: z.string().default(''),
+                role: z.string().default(''),
+                sequence_number: z.coerce.number().int().default(0),
+                version: z.coerce.number().int().default(0),
+            }),
+        )
+        .default([]),
     history: z.array(z.looseObject({ version: z.coerce.number().int() })),
 });
 

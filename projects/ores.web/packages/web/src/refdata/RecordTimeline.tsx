@@ -63,11 +63,19 @@ export function RecordTimeline({
     entityType,
     entityId,
     parts = [],
+    hideUnchanged = false,
     onRevert,
 }: {
     readonly entityType: string;
     readonly entityId: string;
     readonly parts?: readonly TimelinePart[];
+    /**
+     * Leaves out the versions of the record itself that changed none of its
+     * fields. An immutable anchor, such as a trade, is written once and bumped
+     * by every write to its parts, so its own versions would otherwise fill the
+     * stream with entries that say nothing happened.
+     */
+    readonly hideUnchanged?: boolean;
     readonly onRevert?: (version: HistoryVersion) => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -131,6 +139,7 @@ export function RecordTimeline({
             actorPicture={actorPicture}
             isService={isService}
             recordName={(event) => names.get(`${event.entityType}:${event.entityId}`)}
+            hideUnchanged={hideUnchanged}
             renderActions={(event) => {
                 if (onRevert === undefined || event.entityType !== entityType) return undefined;
                 if (event.version >= newest) return undefined;

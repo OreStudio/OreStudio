@@ -27,6 +27,8 @@ import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/tra
 import { subjects as bondSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as structureIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
+import { subjects as structureMemberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
 import { subjects as partyRoleSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_party_role_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
@@ -34,6 +36,27 @@ import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading
 import { invalidRequest, notFound } from './errors.js';
 import { input, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
+
+/**
+ * The answer to a read the page can do without, or nothing.
+ *
+ * The structure a trade belongs to is supplementary to the trade: a caller who may
+ * read trades and not structures still gets the trade, and the page says nothing
+ * about a structure rather than failing. Only this read is treated so; a read the
+ * page is about still refuses loudly.
+ */
+async function optionalRead(
+    session: LiveSession,
+    subject: string,
+    rows: string,
+    request: Readonly<Record<string, unknown>>,
+): Promise<readonly Record<string, unknown>[]> {
+    try {
+        return await readAll(session, subject, rows, request);
+    } catch {
+        return [];
+    }
+}
 
 /** The most rows one page may hold, which is what the record list offers, including Load all. */
 const MAX_PAGE = 1000;
@@ -348,6 +371,49 @@ function registerTradePageRoute(
         ): readonly Record<string, unknown>[] =>
             rows.map((row) => ({ ...row, other_label: labels.get(text(row[other])) ?? '' }));
 
+        /*
+         * The structure this trade is a leg of, if any. A trade is a leg of one
+         * structure at a time, which the store states by keying members on the
+         * trade, so one read answers it.
+         */
+        const memberships = await optionalRead(
+            session,
+            structureMemberSubjects.list_structure_members_request,
+            'members',
+            { filter: { trade_id_one_of: [id] }, as_of: null },
+        );
+        const memberStructures = distinct(memberships.map((entry) => text(entry['structure_id'])));
+        const memberIdentifiers =
+            memberStructures.length === 0
+                ? []
+                : await optionalRead(
+                      session,
+                      structureIdentifierSubjects.list_structure_identifiers_request,
+                      'identifiers',
+                      {
+                          filter: {
+                              structure_id: null,
+                              structure_id_one_of: memberStructures,
+                          },
+                          as_of: null,
+                      },
+                  );
+        const referenceOfStructure = new Map(
+            memberIdentifiers.map(
+                (entry) => [text(entry['structure_id']), text(entry['id_value'])] as const,
+            ),
+        );
+        const structureOfTrade = memberships.map((entry) => {
+            const structureId = text(entry['structure_id']);
+            return {
+                structure_id: structureId,
+                reference: referenceOfStructure.get(structureId) ?? '',
+                role: text(entry['role']),
+                sequence_number: Number(entry['sequence_number'] ?? 0),
+                version: Number(entry['version'] ?? 0),
+            };
+        });
+
         const versions = await readAll(
             session,
             tradeSubjects.list_trade_versions_request,
@@ -365,6 +431,7 @@ function registerTradePageRoute(
                 from: labelled(fromLinks, 'to_trade_id'),
                 to: labelled(toLinks, 'from_trade_id'),
             },
+            structures: structureOfTrade,
             history: versions,
         };
     });
@@ -393,9 +460,37 @@ async function enrich(
     const bookIds = distinct(summaries.map((entry) => text(entry['book_id'])));
     const counterpartyIds = distinct(summaries.map((entry) => text(entry['counterparty_id'])));
 
-    if (ids.length === 0 && bookIds.length === 0 && counterpartyIds.length === 0) {
+    /*
+     * A structure row is a row in its own right, and the identifier that names
+     * it is its own: a trade's identifiers say nothing about it, so the rows are
+     * read separately and the two meet on the row.
+     */
+    const structureIds = distinct(
+        summaries
+            .filter((entry) => text(entry['row_kind']) === 'structure')
+            .map((entry) => text(entry['id'])),
+    );
+
+    if (
+        ids.length === 0 &&
+        structureIds.length === 0 &&
+        bookIds.length === 0 &&
+        counterpartyIds.length === 0
+    ) {
         return summaries;
     }
+    const structureIdentifiers =
+        structureIds.length === 0
+            ? []
+            : await optionalRead(
+                  session,
+                  structureIdentifierSubjects.list_structure_identifiers_request,
+                  'identifiers',
+                  {
+                      filter: { structure_id: null, structure_id_one_of: structureIds },
+                      as_of: null,
+                  },
+              );
     const identifiers = await readAll(
         session,
         identifierSubjects.list_trade_identifiers_request,
@@ -437,6 +532,11 @@ async function enrich(
               });
 
     const identifiersOf = bestIdentifier(identifiers);
+    const structureIdentifierOf = new Map(
+        structureIdentifiers
+            .map((entry) => [text(entry['structure_id']), text(entry['id_value'])] as const)
+            .filter(([structureId, value]) => structureId !== '' && value !== ''),
+    );
     const bookOf = nameById(books, 'name');
     const counterpartyOf = nameById(counterparties, 'full_name');
     const tradeOf = new Map(trades.map((entry) => [text(entry['id']), entry]));
@@ -444,9 +544,12 @@ async function enrich(
     return summaries.map((summary) => {
         const id = text(summary['id']);
         const trade = tradeOf.get(id);
+        const isStructure = text(summary['row_kind']) === 'structure';
         return {
             ...summary,
-            identifier: identifiersOf.get(id) ?? '',
+            identifier: isStructure
+                ? (structureIdentifierOf.get(id) ?? '')
+                : (identifiersOf.get(id) ?? ''),
             counterparty_name: counterpartyOf.get(text(summary['counterparty_id'])) ?? '',
             book_name: bookOf.get(text(summary['book_id'])) ?? '',
             version: trade === undefined ? null : (trade['version'] ?? null),

@@ -1041,6 +1041,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'inbox.v1.approval_kind_parts.list': {
+        asOf: false,
+        filter: ['kind_code', 'kind_code_one_of'],
+        rows: ['approval_kind_parts'],
+    },
+    'inbox.v1.approval_kind_parts.list_by_kind_code': {
+        asOf: false,
+        filter: ['kind_code', 'kind_code_one_of'],
+        rows: ['approval_kind_parts'],
+    },
     'inbox.v1.approval_kinds.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -3654,6 +3664,44 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['engine_settings_building'],
     },
     'reporting.v1.engine_settings_building_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.engine_settings_changes.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'engine_settings_id',
+            'id_one_of',
+            'request_id_one_of',
+            'engine_settings_id_one_of',
+        ],
+        rows: ['engine_settings_changes'],
+    },
+    'reporting.v1.engine_settings_changes.list_by_engine_settings_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'engine_settings_id',
+            'id_one_of',
+            'request_id_one_of',
+            'engine_settings_id_one_of',
+        ],
+        rows: ['engine_settings_changes'],
+    },
+    'reporting.v1.engine_settings_changes.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'engine_settings_id',
+            'id_one_of',
+            'request_id_one_of',
+            'engine_settings_id_one_of',
+        ],
+        rows: [],
+    },
+    'reporting.v1.engine_settings_changes_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

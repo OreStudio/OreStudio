@@ -68,7 +68,8 @@ export const MENU: readonly MenuItem[] = [
         // whoever holds it, and the card itself needs the same read.
         nameKey: 'shell.menu.trading',
         to: PATHS.trading,
-        permission: 'trading::trade_summaries:read',
+        // The area is drawn for a person who may read either of its screens.
+        permission: ['trading::trade_summaries:read', 'trading::structures:read'],
     },
     { nameKey: 'shell.menu.requests', to: '/requests' },
     { nameKey: 'shell.menu.operations', to: PATHS.operations },

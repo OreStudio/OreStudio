@@ -524,6 +524,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::intraday_power_curve_configs:read',             'View intraday power curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::intraday_power_curve_configs:write',            'Create and modify intraday power curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::intraday_power_curve_configs:delete',           'Delete intraday power curves');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_underlyings:read',                       'View equity underlyings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_underlyings:write',                      'Create and modify equity underlyings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_underlyings:delete',                     'Delete equity underlyings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_curve_configs:read',                     'View equity curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_curve_configs:write',                    'Create and modify equity curves');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_curve_configs:delete',                   'Delete equity curves');

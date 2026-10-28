@@ -32,13 +32,14 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 36
+Tables: 37
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
 
 note as OtherGroups
 Keys this group states reach into:
+- ores_inbox_approval_requests_tbl (inbox)
 - ores_refdata_regulatory_book_types_tbl (refdata)
 - ores_scheduler_job_definitions_tbl (scheduler)
 - ores_scheduler_job_instances_tbl (scheduler)
@@ -311,6 +312,41 @@ package "reporting" #E0F7FA {
     The market and trade building part of a named engine settings configuration. How the engine builds the market and the trades, and what it does when that fails. A change here changes the numbers. A column that is null means the engine default,
     and a configuration with no row in this part uses the default for every setting in it. A write to this part bumps the version of the
     central engine_settings row in the same transaction.
+    end note
+
+    entity ores_reporting_engine_settings_changes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * engine_settings_id : uuid <<FK>>
+        * group_code : text <<FK>>
+        * setting_code : text <<FK>>
+          text_value : text
+        * base_version : integer
+        * applied : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_engine_settings_changes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Engine Settings Change Table
+    A number-changing group of engine run settings never changes in place. A write
+    to such a group is a proposal: the values the person asked for are held here,
+    one row for each setting of the group, and the version in force keeps the rows a
+    run reads until the request is signed off.
+    The apply reads the rows of an approved request and writes the group it names
+    with the values stated here, so a proposal that waits changes no part.
+    A row names the setting by its code, which is the group and the column joined,
+    so a proposal survives a change to the columns of a part.
     end note
 
     entity ores_reporting_engine_settings_execution_tbl <<temporal>> #C6F0D8 {
@@ -974,6 +1010,8 @@ package "reporting" #E0F7FA {
           completed_at : timestamptz
           priced_at : timestamptz
           price_note : text
+          engine_settings_id : uuid <<FK>>
+          engine_settings_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1228,6 +1266,9 @@ ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_parameters
 ores_reporting_ore_parameters_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_configurations_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_building_tbl : "has"
+ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_changes_tbl : "has"
+ores_reporting_engine_settings_groups_tbl ||--o{ ores_reporting_engine_settings_changes_tbl : "has"
+ores_reporting_engine_settings_group_settings_tbl ||--o{ ores_reporting_engine_settings_changes_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_engine_settings_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_execution_tbl : "has"
 ores_reporting_engine_settings_tbl ||--o{ ores_reporting_engine_settings_fixings_tbl : "has"

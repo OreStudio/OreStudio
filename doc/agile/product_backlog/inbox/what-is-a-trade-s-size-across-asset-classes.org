@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: A28AB521-A540-4787-8490-1CB7F092CFAC
+:END:
+#+title: What is a trade's size across asset classes?
+#+description: The structure page drew a notional column because the prototype draws one. A bond states a notional, a rate trade states an amount per leg, an FX trade states bought and sold amounts, and the families cannot be read by one rule. What should a screen state as a trade's size, if anything?
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* Why it is asked
+
+The structure page was built to the prototype, and the prototype draws a
+notional for each leg of a deal. The implementation read it where it could be
+read and stated nothing elsewhere, which produced a column of dashes beside a
+few numbers — a screen that looks broken rather than one that is honest.
+
+The reason is not a missing read. It is that the question has no single answer.
+
+* What the model holds, per family
+
+| Family | Where the size lives | What it means |
+|--------+----------------------+---------------|
+| Bond | =bond_instruments.notional= | The face value held |
+| Rate | =swap_leg_amounts.amount=, per leg and per period | The notional of one leg; a swap has two, often equal, not always |
+| FX | =fx_*_instruments= bought and sold amounts and currencies | Two amounts in two currencies — there is no single number |
+| Equity, credit, commodity | their own tables | Their own conventions |
+
+A screen that states "notional" for all of them states the bond's convention for
+families that do not have it, and an FX trade has no answer at all.
+
+* The options
+
+1. *State the size only where the family defines one*, and leave the column out
+   for the rest — which is what the page does today, and it reads as a fault.
+2. *Name the family's own fact*: "Face value" on a bond, "Leg notional" on a
+   rate leg, "Bought / sold" on an FX trade. Honest, and a different column per
+   family.
+3. *State no size on the composition screens at all*, and leave size to the
+   instrument tabs a trade's own page already has. The composition screen is
+   about what is grouped and how it confirms, and a size that means four things
+   adds noise to that.
+
+The page currently does (1); the proposal is (3), and (2) if a composition screen
+is ever meant to answer "how big is this deal".
+
+* What would settle it
+
+A decision on whether the structure screen is about composition or about
+exposure. If it is about composition, the column goes; if it is about exposure,
+it needs a per-family vocabulary and probably a currency and a converted total,
+which is a report and not a column.

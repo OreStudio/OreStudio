@@ -64,6 +64,13 @@ export const CARDS = {
         icon: 'document',
         permission: 'trading::trade_summaries:read',
     },
+    structures: {
+        titleKey: 'trading.structures.title',
+        bodyKey: 'trading.structures.lead',
+        to: PATHS.structures,
+        icon: 'document',
+        permission: 'trading::structures:read',
+    },
     parties: {
         titleKey: 'home.tenant.parties',
         bodyKey: 'home.tenant.partiesBody',
@@ -396,7 +403,7 @@ export const AREA_CARDS = {
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataSources'],
     reporting: ['reports', 'pricingEngines', 'sensitivityTemplates', 'engineSettings'],
     tenants: ['tenants'],
-    trading: ['trades'],
+    trading: ['trades', 'structures'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type CardArea = keyof typeof AREA_CARDS;

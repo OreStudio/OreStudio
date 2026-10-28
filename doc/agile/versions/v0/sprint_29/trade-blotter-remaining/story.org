@@ -57,7 +57,7 @@ authorisation queue (see =* Decisions=).
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] | DONE | 2026-10-24 | 2026-10-25 | Build the trade list and the trade page in the web client from the two prototypes. |
-| [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] | STARTED | 2026-10-25 | | Build the booking screen from its prototype, with the structure card for a leg. |
+| [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] | DONE | 2026-10-25 | 2026-10-28 | Build the booking screen from its prototype, with the structure card for a leg. |
 | [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]] | BACKLOG | | | Build the structure page from its prototype: members, leg checks, a Price tab and history. |
 | [[id:0FDD4D67-C1EF-4D8A-9A1D-8F652362893A][Import real deals through the authorisation queue]] | BACKLOG | | | Make the ORE import raise authorisation requests, report the rows it cannot book, and prove a second run is safe. |
 | [[id:3E7A494E-F80D-41D4-AAEC-ACB3DA044ED3][Build the authorisation queue screen]] | BACKLOG | | | Build the Operations screen that works the operational authorisation queue. |
@@ -66,6 +66,8 @@ authorisation queue (see =* Decisions=).
 | [[id:54F97D03-408C-4C60-9419-9AA3AB73E6EC][Add a draft reason and a structure hold]] | BACKLOG | | | A draft states why it is not live and who must unblock it, and a leg names the structure it waits for. |
 | [[id:F6A6BAA9-5F73-4D39-9FA7-04517576AD7E][Complete a structure in one unit]] | BACKLOG | | | One operation makes the draft legs of a structure live, and writes the structure, members and links, in one unit of work. |
 | [[id:C3D61F4A-C71A-4884-A35A-2F10ADCD8D44][Grant the Trade Blotter its reads and writes]] | DONE | 2026-10-25 | 2026-10-25 | Every code each Trade Blotter screen needs is seeded and granted to no human role, so each screen would open dark. Decide which human role owns the blotter, grant it the reads and writes the arc needs, and add the check that would have caught the gap. |
+| [[id:CE4DB20B-905C-4840-9891-4C6B958DE25C][Analyse how a trade states its size]] | BACKLOG | | | A notional column was drawn on the structure screens because the prototype draws one. It states a bond's convention for every family, and an FX trade has no such number at all, so the column read as a fault. This task settles what a screen states as a trade's size, if anything. |
+| [[id:2B6C808D-88CE-46D0-B1E1-65339BAD6650][Give the embedded table a selection contract]] | BACKLOG | | | The grouping screen needs a table whose rows can be chosen: a chosen count, a mixed-counterparty guard and a submit that enables with the choice. RecordTable carries no selection, so that screen hand-rolls a table — the copy-paste the standard components exist to prevent. |
 
 
 * Permissioning
@@ -83,6 +85,12 @@ Every screen of this story reads and writes =ores.trading=, and the story is whe
 * Decisions
 
 - Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- A leg is a membership, not a trade. Unlinking removes the membership and leaves the trade booked and groupable, which is what the desk means by unlinking.
+- The deal's tree is drawn beside its page and selects the leg being read; the selection is in the address, so it is shareable.
+- History is the shared timeline over the record and the parts it holds now. The two-pane compare of =HistoryPanel= is the retired shape and is not used on the trading screens.
+- A history read is gated twice: the service must register a provider for the entity type, and the route must allow it. Both were missing for the trade and its parts.
+- A screen's party is named from the login session when the read is party-scoped, rather than reading the parties table the trading roles may not see.
+- A trade booked from a deal joins it: the deal and the role travel with the form, and the trade is a leg before the form closes.
 
 * Out of scope
 

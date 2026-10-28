@@ -29,7 +29,7 @@ import { RecordList, type ListSource } from '../refdata/RecordList.js';
 import { show } from '../refdata/records.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
-import { Detail, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Tag } from '../ui/Primitives.js';
 
 /** The trade types the filter offers. The read model holds the catalogue's code. */
 const TYPES = [
@@ -117,9 +117,23 @@ export function TradesPage(): ReactNode {
                 onAdd={() => {
                     void navigate(PATHS.newTrade);
                 }}
-                // A structure has no page of its own yet, so only a trade opens.
+                actions={
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                            void navigate(PATHS.groupStructures);
+                        }}
+                    >
+                        {t('trading.group.open')}
+                    </Button>
+                }
                 pathOf={(row) =>
-                    row.row_kind === 'trade' ? `${PATHS.trades}/${row.id}` : undefined
+                    row.row_kind === 'structure'
+                        ? `${PATHS.structures}/${encodeURIComponent(
+                              row.identifier === '' ? row.id : row.identifier,
+                          )}`
+                        : `${PATHS.trades}/${row.id}`
                 }
                 columns={[
                     {
@@ -231,7 +245,9 @@ function stateLabel(t: (key: string) => string, state: string): string {
 function IdentifierCell({ row }: { readonly row: TradeRow }): ReactNode {
     const { t } = useTranslation();
     if (row.row_kind === 'structure') {
-        return t('trading.trades.structureRow');
+        // The structure's own reference, when it has one
+        // is addressed by the reference it was given, not by its kind.
+        return row.identifier === '' ? t('trading.trades.structureRow') : show(row.identifier);
     }
     return show(row.identifier);
 }

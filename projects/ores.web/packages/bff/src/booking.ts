@@ -65,6 +65,11 @@ function emptyBatch(): Record<string, readonly unknown[]> {
         balance_guaranteed_swap_instruments: [],
         balance_guaranteed_swap_tranche_notionals: [],
         balance_guaranteed_swap_tranches: [],
+        // Every array the batch declares must be named, even empty: the service
+        // refuses a request that omits one, and a family added to the batch
+        // without a line here breaks every booking with a decode error.
+        equity_basket_constituents: [],
+        equity_swap_periods: [],
         bond_instruments: [],
         callable_swap_call_dates: [],
         callable_swap_instruments: [],
@@ -259,7 +264,7 @@ export function registerBookingRoutes(
      * A link is made by an activity, and the activity is the one that last
      * moved the trade: the state names it, so the client does not have to know
      * which write came last. The link type is the caller's, because whether a
-     * relationship is a hedge or a close-out is a fact about the deal.
+     * relationship is a hedge or a close-out is a fact about the structure.
      */
     server.post('/api/trades/:id/links', async (request) => {
         const session = requireSession(request);

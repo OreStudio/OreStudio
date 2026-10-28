@@ -95,8 +95,19 @@ select
     'not_applicable'::text as authorisation_status,
     null::date as trade_date,
     coalesce(m.member_count, 0)::integer as trade_count,
-    s.id::text || ' ' || coalesce(m.id_values, '') as search_text
+    -- A structure is found by its own reference first: the desk looks for the
+    -- deal it grouped, and the legs' identifiers are what it groups, not what
+    -- names it.
+    s.id::text || ' ' || coalesce(r.id_values, '') || ' ' || coalesce(m.id_values, '')
+        as search_text
 from ores_trading_structures_tbl s
+left join lateral (
+    select string_agg(i.id_value, ' ' order by i.id_type) as id_values
+    from ores_trading_structure_identifiers_tbl i
+    where i.tenant_id = s.tenant_id
+      and i.structure_id = s.id
+      and i.valid_to = ores_utility_infinity_timestamp_fn()
+) r on true
 left join lateral (
     select
         count(distinct sm.trade_id) as member_count,

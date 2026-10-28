@@ -53,7 +53,11 @@ const PAY_RECEIVE_ONLY = [
  * both forms is passed over rather than counted as a failure: the point of the
  * check is what a one-form convention draws.
  */
-async function openOneFormConvention(page: Page, want: string, avoid: readonly string[]): Promise<void> {
+async function openOneFormConvention(
+    page: Page,
+    want: string,
+    avoid: readonly string[],
+): Promise<void> {
     await page.goto(LIST);
     const rows = page.locator('table tbody tr');
     await expect(rows.first()).toBeVisible({ timeout: 20_000 });
@@ -90,7 +94,10 @@ async function openOneFormConvention(page: Page, want: string, avoid: readonly s
 
 /** The term row a label names, as the person reads it. */
 function termRow(page: Page, label: string) {
-    return page.locator('li').filter({ has: page.getByText(label, { exact: true }) }).first();
+    return page
+        .locator('li')
+        .filter({ has: page.getByText(label, { exact: true }) })
+        .first();
 }
 
 /**

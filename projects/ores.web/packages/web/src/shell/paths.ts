@@ -35,6 +35,8 @@ export const PATHS = {
     trading: '/trading',
     trades: '/trading/trades',
     newTrade: '/trading/trades/new',
+    structures: '/trading/structures',
+    groupStructures: '/trading/structures/group',
     parties: '/refdata/parties',
     newParty: '/refdata/parties/new',
     onboardCounterparty: '/refdata/counterparties/onboard',

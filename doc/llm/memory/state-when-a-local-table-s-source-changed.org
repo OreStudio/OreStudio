@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B5FE5695-E686-4035-98E5-73FFB4F300EB
+:END:
+#+title: State when a local table's source changed
+#+description: A RecordTable over rows the page holds caches its page by the source key, so the source must state when those rows changed.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:web:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+A ListSource over rows the screen already holds must carry a revision, or RecordTable keeps drawing the rows it read first while the page around it shows the new ones.
+
+*Why:* The table caches one page by the source, and a local source has no server behind it: adding a leg to a deal re-rendered the tree with two legs while the legs table still drew one, and invalidating the page's query never reached the table's cache key.
+
+*How to apply:* Pass revision to localSource, or scope on a hand-written ListSource, with a string that changes when the rows change - the ids and the fields a row shows. The browser case that books a leg into a deal catches the omission.

@@ -34,6 +34,7 @@ import { registerReportingRoutes } from './reporting.js';
 import { registerBookChangeRoutes } from './book-changes.js';
 import { registerBookRoutes } from './books.js';
 import { registerBookingRoutes } from './booking.js';
+import { registerStructureRoutes } from './structures.js';
 import { registerTradeRoutes } from './trades.js';
 import { registerConventionRoutes } from './conventions.js';
 import { registerEngineSettingsRoutes } from './engine-settings.js';
@@ -2673,6 +2674,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerReportingRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
     registerTradeRoutes(server, requireSession);
+    registerStructureRoutes(server, requireSession);
     registerBookingRoutes(server, requireSession);
     registerBookChangeRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);

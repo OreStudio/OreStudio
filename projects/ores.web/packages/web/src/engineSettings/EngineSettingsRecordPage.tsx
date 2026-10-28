@@ -1175,7 +1175,9 @@ function RevertDialog({
                 {proposed !== null && (
                     <Notice tone="info">
                         <span className="mr-2">{t('engineSettings.proposal.raised')}</span>
-                        <Link to={`/requests/${proposed}`}>{t('engineSettings.proposal.follow')}</Link>
+                        <Link to={`/requests/${proposed}`}>
+                            {t('engineSettings.proposal.follow')}
+                        </Link>
                     </Notice>
                 )}
                 {group !== undefined && changes.length > 0 ? (

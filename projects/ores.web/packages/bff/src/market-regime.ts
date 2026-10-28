@@ -75,6 +75,7 @@ const answeredRegime = z.object({
     wake_rate: z.number().default(0),
     calm_rate: z.number().default(0),
     tail_loading: z.number().default(0),
+    active_multiplier: z.number().default(0),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -95,6 +96,8 @@ export const RASTER_LANES = 120;
 
 /** The facts a raster row draws from the service's own feed list. */
 const feedRow = z.object({
+    id: z.string().default(''),
+    kind: z.string().default(''),
     label: z.string(),
     source_name: z.string(),
     asset_class_code: z.string().default(''),
@@ -115,6 +118,9 @@ const everyFeed = {
 
 /** One row of the raster: a feed, whether it runs, and when its ticks arrived. */
 interface RasterRow {
+    /** The feed's id and kind, so a screen can open the feed's own page. */
+    readonly id: string;
+    readonly kind: string;
     readonly sourceName: string;
     readonly label: string;
     readonly assetClass: string;
@@ -150,6 +156,8 @@ interface Regime {
     readonly calmRate: number;
     /** How far activity tilts a price's shape toward its tails; zero is off. */
     readonly tailLoading: number;
+    /** The pace of an active market; the calm pace follows from it. */
+    readonly activeMultiplier: number;
 }
 
 /**
@@ -178,6 +186,7 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
         wakeRate: reply.wake_rate,
         calmRate: reply.calm_rate,
         tailLoading: reply.tail_loading,
+        activeMultiplier: reply.active_multiplier,
     };
 }
 
@@ -205,6 +214,8 @@ const seriesState = z.object({
     effective_rate: z.number(),
     phase: z.number().default(0),
     excess: z.number().default(0),
+    branching_ratio: z.number().default(0),
+    decay: z.number().default(0),
 });
 
 const answeredTrace = z.object({
@@ -289,6 +300,8 @@ export function registerMarketRegimeRoutes(
                 effectiveRate: f.effective_rate,
                 phase: f.phase,
                 excess: f.excess,
+                branchingRatio: f.branching_ratio,
+                decay: f.decay,
             })),
         };
     });
@@ -396,6 +409,8 @@ export function registerMarketRegimeRoutes(
                 ticks.watch(row.source_name);
             }
             return {
+                id: row.id,
+                kind: row.kind,
                 sourceName: row.source_name,
                 label: row.label,
                 assetClass: row.asset_class_code,

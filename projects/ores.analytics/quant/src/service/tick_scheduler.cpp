@@ -268,7 +268,9 @@ std::vector<series_state> tick_scheduler::series_states() const {
             .effective_rate =
                 domain::intensity_after(s.law, elapsed) * sensitivity * market_.pace(),
             .phase = s.phase,
-            .excess = hawkes ? hawkes->excess * std::exp(-hawkes->decay * elapsed) : 0.0});
+            .excess = hawkes ? hawkes->excess * std::exp(-hawkes->decay * elapsed) : 0.0,
+            .branching_ratio = hawkes ? s.spec.arrival.branching_ratio : 0.0,
+            .decay = hawkes ? s.spec.arrival.decay : 0.0});
     }
     std::ranges::sort(out, {}, &series_state::name);
     return out;

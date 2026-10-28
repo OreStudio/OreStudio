@@ -134,6 +134,10 @@ struct series_state final {
     double phase;
     /// For a Hawkes law: the excess intensity now, above the baseline.
     double excess;
+    /// For a Hawkes law: how many ticks a tick begets on average, and how fast that
+    /// fades in the series' own operational time. Zero for the other laws.
+    double branching_ratio;
+    double decay;
 };
 
 /// A slice of the trace, with the name of every series it mentions.

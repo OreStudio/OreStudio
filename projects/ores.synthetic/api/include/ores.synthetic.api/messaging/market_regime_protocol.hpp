@@ -92,6 +92,8 @@ struct get_market_regime_response {
     double calm_rate = 0.0;
     /** @brief How far activity tilts a price's shape toward its tails; zero is off. */
     double tail_loading = 0.0;
+    /** @brief The pace of an active market; the calm pace follows from it. Zero when not reported. */
+    double active_multiplier = 0.0;
 };
 
 /**
@@ -151,6 +153,10 @@ struct market_series_state {
     double phase = 0.0;
     /** @brief For a Hawkes law: the excess intensity now, above the baseline. */
     double excess = 0.0;
+    /** @brief For a Hawkes law: the branching ratio; zero for the other laws. */
+    double branching_ratio = 0.0;
+    /** @brief For a Hawkes law: the decay, per unit of operational time; zero otherwise. */
+    double decay = 0.0;
 };
 
 struct get_market_trace_response {
@@ -210,6 +216,7 @@ struct pin_market_regime_response {
     double wake_rate = 0.0;
     double calm_rate = 0.0;
     double tail_loading = 0.0;
+    double active_multiplier = 0.0;
 };
 
 /**

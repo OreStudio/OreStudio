@@ -334,6 +334,8 @@ describe('the market regime', () => {
             seconds: 60,
             feeds: [
                 {
+                    id: '',
+                    kind: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -342,6 +344,8 @@ describe('the market regime', () => {
                     expectedPerSecond: 1,
                 },
                 {
+                    id: '',
+                    kind: '',
                     sourceName: 'live.usdsofr',
                     label: 'USD SOFR',
                     assetClass: 'interest_rates',
@@ -416,6 +420,8 @@ describe('the market regime', () => {
                 // The feed that runs comes first, and the one that stopped keeps
                 // its row: a picture that dropped it could not show it is silent.
                 {
+                    id: '',
+                    kind: '',
                     sourceName: 'live.gbpusd',
                     label: 'GBP/USD',
                     assetClass: 'fx',
@@ -424,6 +430,8 @@ describe('the market regime', () => {
                     expectedPerSecond: 1,
                 },
                 {
+                    id: '',
+                    kind: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -463,6 +471,8 @@ describe('the market regime', () => {
             seconds: 120,
             feeds: [
                 {
+                    id: '',
+                    kind: '',
                     sourceName: 'live.eurusd',
                     label: 'EUR/USD',
                     assetClass: 'fx',
@@ -748,6 +758,8 @@ describe('the market trace feeds', () => {
                 effectiveRate: 2.02,
                 phase: 0.37,
                 excess: 0,
+                branchingRatio: 0,
+                decay: 0,
             },
         ]);
     });

@@ -285,7 +285,9 @@ public:
                 .sensitivity = state.sensitivity,
                 .effective_rate = state.effective_rate,
                 .phase = state.phase,
-                .excess = state.excess});
+                .excess = state.excess,
+                .branching_ratio = state.branching_ratio,
+                .decay = state.decay});
         reply(nats_, msg, response);
     }
 
@@ -323,6 +325,7 @@ private:
         response.wake_rate = market.wake_rate;
         response.calm_rate = market.calm_rate;
         response.tail_loading = market.tail_loading;
+        response.active_multiplier = market.active_multiplier;
         constexpr auto window = std::chrono::minutes(2);
         const auto from = std::chrono::system_clock::now() - window;
         for (const auto& reading : scheduler_.readings_since(from)) {

@@ -42,7 +42,7 @@ describe('the screens of Synthetic', () => {
         expect(text).toContain('<Pane />');
         expect(text).toContain('dashboard: DashboardTab');
         expect(text).toContain('provider: ProviderTab');
-        expect(text).toContain('regime: MarketRegimeTab');
+        expect(text).toContain('regime: MarketTab');
     });
 
     for (const name of ['DashboardTab.tsx', 'ProviderTab.tsx']) {

@@ -507,6 +507,8 @@ const marketRegimeSchema = z.object({
     calmRate: z.number().default(0),
     /** How far activity tilts a price's shape toward its tails; zero is off. */
     tailLoading: z.number().default(0),
+    /** The pace of an active market; the calm pace follows from it so the mean is one. */
+    activeMultiplier: z.number().default(0),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;
@@ -548,6 +550,9 @@ const traceFeedSchema = z.object({
     effectiveRate: z.number(),
     phase: z.number(),
     excess: z.number(),
+    /** For a Hawkes law: its branching ratio and its decay; zero for the other laws. */
+    branchingRatio: z.number().default(0),
+    decay: z.number().default(0),
 });
 
 /** The scheduler's recent decisions, its own numbers, and every running feed's law. */
@@ -576,6 +581,9 @@ const feedRasterSchema = z.object({
     seconds: z.number(),
     feeds: z.array(
         z.object({
+            /** The feed's id and kind, so a screen can open the feed's own page. */
+            id: z.string().default(''),
+            kind: z.string().default(''),
             sourceName: z.string(),
             label: z.string(),
             assetClass: z.string(),

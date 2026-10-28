@@ -88,7 +88,8 @@ void adapter_supervisor::start() {
 void adapter_supervisor::refresh() {
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     auto next = std::make_shared<snapshot>();
-    for (const auto& provider : repository::provider_repository{}.read_latest(system_ctx))
+    next->catalogue.providers = repository::provider_repository{}.read_latest(system_ctx);
+    for (const auto& provider : next->catalogue.providers)
         next->providers.insert(provider.code);
     next->catalogue.sources = repository::market_data_source_repository{}.read_latest(system_ctx);
     next->catalogue.instruments =

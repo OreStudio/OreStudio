@@ -103,6 +103,107 @@ Order for UI display purposes.
 faker::number::integer(1, 100)
 #+end_src
 
+** terms_url
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+The page that states the provider's terms of use. Empty for a provider whose terms
+are a contract outside the system, such as a vendor's licence, which the system does not
+check before it takes data.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** terms_credit
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+The credit the terms ask a copy of the data to carry, such as "Source: ECB statistics".
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** allows_storage
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether the terms allow the provider's values to be stored. A provider whose terms do
+not is not fetched, whatever its acceptance.
+
+** credential_ref
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Where the key the provider needs is read from, such as
+=env:ORES_MARKETDATA_FRED_API_KEY=. Never the key itself. Empty when no key is needed.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** terms_accepted_digest
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+The digest of the terms when they were accepted: the SHA-256 of the terms page, the
+credit and the storage permission. The terms hold while it matches the digest of the
+terms as they stand, so a change of any of them clears the acceptance with no further
+write. Empty when the terms were never accepted.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** terms_accepted_by
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       ''
+:default_value: ""
+:END:
+
+Who accepted the terms. Empty when they were never accepted.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** terms_accepted_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the terms were accepted. Empty when they never were.
+
 * SQL
 
 ** Flags
@@ -119,6 +220,7 @@ faker::number::integer(1, 100)
 | "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
 | "kind" in ('data_vendor', 'exchange', 'broker', 'reference')         |
 | "name" <> ''                                                        |
+| "terms_accepted_digest" = '' or ("terms_accepted_by" <> '' and "terms_accepted_at" is not null) |
 
 ** Extra drops
 
@@ -163,12 +265,15 @@ policy still decides which system rows a tenant sees and who may write them.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
 #include <string>
 #+end_src
 
 ** Entity includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #+end_src
@@ -217,6 +322,9 @@ policy still decides which system rows a tenant sees and who may write them.
 | kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker or reference |
 | description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description       |
 | display_order | Display Order | displayOrderEdit | spin_box |        | true        |                           |
+| terms_url     | Terms page    | termsUrlEdit    | line_edit |        |             | https://...               |
+| terms_credit  | Credit        | termsCreditEdit | line_edit |        |             | Source: ...               |
+| credential_ref | Credential   | credentialRefEdit | line_edit |      |             | env:NAME                  |
 
 *** Columns
 

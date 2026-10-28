@@ -101,6 +101,13 @@ domain::provider provider_to_domain(const messaging::provider_write& write) {
     v.kind = write.kind;
     v.description = write.description;
     v.display_order = write.display_order;
+    v.terms_url = write.terms_url;
+    v.terms_credit = write.terms_credit;
+    v.allows_storage = write.allows_storage;
+    v.credential_ref = write.credential_ref;
+    v.terms_accepted_digest = write.terms_accepted_digest;
+    v.terms_accepted_by = write.terms_accepted_by;
+    v.terms_accepted_at = write.terms_accepted_at;
     return v;
 }
 

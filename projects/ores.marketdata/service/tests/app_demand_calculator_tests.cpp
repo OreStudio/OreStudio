@@ -145,6 +145,37 @@ TEST_CASE("parties_of_two_sources_give_each_adapter_its_own_set", "[app][demand_
     CHECK(result.by_adapter.size() == 2);
 }
 
+TEST_CASE("a_subscribed_route_to_a_provider_whose_terms_are_not_accepted_demands_nothing",
+          "[app][demand_calculator]") {
+    app_demand_calculator_world w;
+    ores::marketdata::domain::provider bloomberg;
+    bloomberg.code = "bloomberg";
+    bloomberg.terms_url = "https://example.org/terms";
+    bloomberg.allows_storage = true;
+    w.c.providers = {bloomberg};
+    const auto party = w.party_routed_to(w.sim);
+
+    const auto result = compute_demand(w.c, w.now);
+
+    CHECK(result.by_adapter.at("bloomberg-sim").empty());
+    REQUIRE(result.refused.size() == 1);
+    CHECK(result.refused.front().party_id == party);
+    CHECK(result.refused.front().reason == "terms_not_accepted");
+}
+
+TEST_CASE("a_provider_with_no_terms_page_is_demanded_as_before", "[app][demand_calculator]") {
+    app_demand_calculator_world w;
+    ores::marketdata::domain::provider bloomberg;
+    bloomberg.code = "bloomberg";
+    w.c.providers = {bloomberg};
+    w.party_routed_to(w.sim);
+
+    const auto result = compute_demand(w.c, w.now);
+
+    CHECK(result.refused.empty());
+    CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
+}
+
 TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", "[app][demand_calculator]") {
     app_demand_calculator_world w;
     const auto party = w.party_routed_to(w.sim, false);

@@ -42,7 +42,7 @@ A synthetic feed that starts takes the most recent rate that a central bank or p
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7627343E-CA50-4103-852F-B6AC73150353][Store fixings in a durable tick class]] | BACKLOG | | | A tick class keyed by instrument type sets durability, and the FX fixings are durable: no age gate, a table of their own, kept for good. |
-| [[id:13EF1C37-CC1A-472C-B14C-EE80A1450294][Give every provider its terms]] | BACKLOG | | | The provider carries its terms page, credit, storage permission and who accepted which version, and a fetch needs an accepted version. |
+| [[id:13EF1C37-CC1A-472C-B14C-EE80A1450294][Give every provider its terms]] | STARTED | 2026-10-28 | | The provider carries its terms page, credit, storage permission and who accepted which version, and a fetch needs an accepted version. |
 | [[id:C10674F6-19EC-4810-95E2-B2DEDAA6B3AF][Add the ores.http.client library]] | BACKLOG | | | A client library beside ores.http, with a GET over TLS first, behind an interface a test can replace. |
 | [[id:BB825EA1-594C-4E96-A528-F186DB4A21A8][Build the public sources adapter]] | BACKLOG | | | One adapter service for every public source: announce, demand, heartbeat and ticks, with Frankfurter as its first fetcher. |
 | [[id:D70A2111-A473-4001-B998-2DF55D303861][Catalogue the public providers and their vendor ids]] | BACKLOG | | | Every daily Frankfurter provider whose terms are read and allow storage, with its vendor ids mapped to FX fixing items. |

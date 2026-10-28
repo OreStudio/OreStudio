@@ -608,6 +608,11 @@ const resultReplySchema = z.object({ result: resultEnvelopeSchema });
  * A list's filter record, with every member the resource's filter has. The
  * server decodes the record whole, so a member the call does not use is sent
  * as null rather than left out.
+ *
+ * A column the model made filterable gives two members, an equals and a one-of
+ * of the same name with the suffix, so a call that narrows by one column sends
+ * the pair. A screen states the column it narrows by, and the pair is written
+ * here rather than at every call site.
  */
 function filterFor(
     resource: RecordResource,
@@ -618,6 +623,7 @@ function filterFor(
     },
 ): Record<string, unknown> {
     const [key] = resource.keyFields;
+    const given = members.filters ?? {};
     const named = resource.filters ?? [];
     return {
         ...(key === undefined || resource.keyFields.length !== 1
@@ -625,7 +631,10 @@ function filterFor(
             : { [`${key}_one_of`]: members.oneOf ?? null }),
         ...(resource.search ? { search: members.search ?? null } : {}),
         ...Object.fromEntries(
-            Object.entries(members.filters ?? {}).filter(([id]) => named.includes(id)),
+            named.flatMap((column) => [
+                [column, given[column] ?? null],
+                [`${column}_one_of`, null],
+            ]),
         ),
     };
 }
@@ -670,7 +679,7 @@ export async function listRecordPage(
             limit: page.limit,
             order: { field: page.sort, descending: page.descending },
             filter:
-                page.search === '' && page.filters === undefined
+                page.search === '' && page.filters === undefined && resource.filters === undefined
                     ? null
                     : filterFor(resource, {
                           search: page.search,

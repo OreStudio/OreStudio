@@ -923,8 +923,19 @@ describe('the curve blueprint resources', () => {
         );
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({ total: 1, rows: [{ id: CONFIG }] });
+        // The server decodes the filter record whole, so every member travels,
+        // including the ones this call leaves unset.
         expect(calls[0]?.body).toMatchObject({
-            filter: { currency_code: 'USD', curve_family_role: 'FUNDING' },
+            filter: {
+                id_one_of: null,
+                search: '',
+                currency_code: 'USD',
+                currency_code_one_of: null,
+                curve_family_role: 'FUNDING',
+                curve_family_role_one_of: null,
+                discount_curve_config_id: null,
+                discount_curve_config_id_one_of: null,
+            },
         });
     });
 
@@ -951,7 +962,13 @@ describe('the curve blueprint resources', () => {
             `/api/refdata/ir-curve-bootstrap-pillars?offset=0&limit=15&f.bootstrap_config_id=${CONFIG}`,
         );
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.body).toMatchObject({ filter: { bootstrap_config_id: CONFIG } });
+        expect(calls[0]?.body).toMatchObject({
+            filter: {
+                id_one_of: null,
+                bootstrap_config_id: CONFIG,
+                bootstrap_config_id_one_of: null,
+            },
+        });
     });
 
     it('orders by a column the model made sortable', async () => {

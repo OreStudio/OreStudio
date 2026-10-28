@@ -38,6 +38,7 @@ namespace json = boost::json;
 
 /// The name the engine gives its own account of the errors of a run.
 constexpr std::string_view structured_log_entry = "log_structured.json";
+constexpr std::string_view text_log_entry = "log.txt";
 
 /// The category the engine writes for an error it continued past.
 constexpr std::string_view category_warning = "Warning";
@@ -204,6 +205,46 @@ std::optional<engine_log_error> parse_engine_log_line(std::string_view line) {
     return error;
 }
 
+
+engine_log_read read_text_log_errors(const std::filesystem::path& path);
+
+/**
+ * @brief Reads the errors an engine wrote into its own text log.
+ *
+ * The engine's text log carries the structured message as JSON after a marker,
+ * on one line:
+ *
+ * @code
+ * ALERT [2026-Oct-27 19:42:07.139446] (ored/utilities/log.cpp:214) :
+ *   StructuredMessage { "category": "Error", "group": "Curve", ... }
+ * @endcode
+ *
+ * The JSON is the same the structured log holds, so it is handed to the same
+ * parser and the two files cannot disagree about what an error means.
+ */
+engine_log_read read_text_log_errors(const std::filesystem::path& path) {
+    engine_log_read read;
+    std::ifstream stream(path, std::ios::binary);
+    if (!stream) {
+        read.error = std::format("The run's {} could not be opened.", text_log_entry);
+        return read;
+    }
+
+    constexpr std::string_view marker = "StructuredMessage";
+    std::string line;
+    while (std::getline(stream, line)) {
+        const auto at = line.find(marker);
+        if (at == std::string::npos)
+            continue;
+        const auto start = line.find('{', at);
+        if (start == std::string::npos)
+            continue;
+        if (auto error = parse_engine_log_line(std::string_view(line).substr(start)))
+            read.errors.push_back(std::move(*error));
+    }
+    return read;
+}
+
 engine_log_read read_engine_errors_from_archive(std::span<const std::byte> archive_bytes) {
     engine_log_read read;
 
@@ -225,13 +266,24 @@ engine_log_read read_engine_errors_from_archive(std::span<const std::byte> archi
         return read;
     }
 
+    // The engine writes its structured messages into log_structured.json when it
+    // is asked for that file, and into its text log when it is not: the same
+    // JSON, on a line that starts with the engine's own "StructuredMessage"
+    // marker. The text log is what an engine built without the structured file
+    // leaves behind, so a run is read from whichever of the two it wrote rather
+    // than losing its errors to a setting.
     const auto log = output.path() / structured_log_entry;
     std::error_code ec;
     if (!fs::exists(log, ec)) {
-        read.error = std::format("The run's output holds no {}, so its errors were not "
-                                 "recorded by the engine.",
-                                 structured_log_entry);
-        return read;
+        const auto text_log = output.path() / text_log_entry;
+        if (!fs::exists(text_log, ec)) {
+            read.error = std::format("The run's output holds neither {} nor {}, so its errors "
+                                     "were not recorded by the engine.",
+                                     structured_log_entry,
+                                     text_log_entry);
+            return read;
+        }
+        return read_text_log_errors(text_log);
     }
 
     std::ifstream stream(log, std::ios::binary);

@@ -330,14 +330,20 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                             <p className="text-sm">Analytic and report failures</p>
                             <ul className="space-y-1">
                                 {others.map((other) => (
-                                    <li key={other.id} className="flex gap-2 font-mono text-xs">
-                                        <Tag
-                                            tone={other.severity === 'error' ? 'down' : 'warn'}
-                                            small
-                                        >
-                                            {other.severity}
-                                        </Tag>
-                                        <span className="text-ink-muted">{other.message}</span>
+                                    <li key={other.id} className="flex items-start gap-2 text-xs">
+                                        <span className="shrink-0">
+                                            <Tag
+                                                tone={other.severity === 'error' ? 'down' : 'warn'}
+                                                small
+                                            >
+                                                {other.severity}
+                                            </Tag>
+                                        </span>
+                                        {/* The engine states one reason per line, so the
+                                            message keeps the lines it came with. */}
+                                        <span className="min-w-0 flex-1 whitespace-pre-wrap font-mono break-words text-ink-muted">
+                                            {other.message}
+                                        </span>
                                     </li>
                                 ))}
                             </ul>

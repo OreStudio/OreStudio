@@ -91,6 +91,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:672C8E2B-0209-4437-B166-77177E322C4B][Fix the test failures found after the unity build merge]] | DONE | | 2026-10-27 | The full ctest run after PR #3904 merged found the vendor catalogue test still expecting 86 ids per provider, which main's per-feed catalogue seed had made wrong, and a second feed ingest test that times out under load. |
 | [[id:A2FCBFF0-2BF7-472F-9FB6-BCFD1EA34CB9][Update the report chain tests for post-processing]] | DONE | 2026-10-28 | 2026-10-28 | 0b3f87fedd added post_process_results to the report execution chain and left four reporting api tests expecting the old chain. |
 | [[id:08CAF63B-967A-4917-B072-13E97FDC9A64][Check that every observed entity's repository sees its observer]] | BACKLOG | | | A repository that does not include its entity's write observer compiles and silently skips the observer; a check in the generator or the build should refuse it. |
+| [[id:29333023-8206-4B41-9190-10D15ED3FA6A][Run every query on the pool behind pgbouncer]] | BACKLOG | | | Move the raw-SQL helpers onto the context's pool and unit of work, and run pgbouncer in transaction mode as a systemd unit of each environment, so every service connects through it. |
 
 * Decisions
 

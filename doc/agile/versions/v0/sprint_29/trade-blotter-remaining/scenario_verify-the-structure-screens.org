@@ -50,7 +50,7 @@ that note, and see the capture filed for it.
 | Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]   |
 | Target screen | Structures and packages, at =/trading/structures=, and a deal's page under it |
 | Clients       |                                          |
-| State         | FAILED |
+| State         | PENDING |
 
 * Steps
 
@@ -69,7 +69,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Reach the structures list from the area
 
@@ -84,7 +84,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Read the list's columns and its trees
 
@@ -104,7 +104,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Search by identifier and by kind
 
@@ -118,7 +118,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Open a deal and read its identity
 
@@ -144,7 +144,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PENDING |
 | Notes  | render product name as human readable, e.g. "FxBarrierOption" should be "FX Barrier Option" |
 
 ** See the tree, and open another node from it
@@ -162,7 +162,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PENDING |
 | Notes  | Need better width managment of product names; [[file:scenario_verify-the-structure-screens_step6_20261028_112001.png]] |
 
 ** Add a leg, then take it out
@@ -180,7 +180,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Read the history and the price notice
 
@@ -195,7 +195,7 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PENDING |
 | Notes  | uses a non standard history view. does not show link, unlink etc events. must follow standard history approach.; ; [[file:scenario_verify-the-structure-screens_step8_20261028_112123.png]] |
 
 ** Group two trades into a new deal
@@ -216,15 +216,15 @@ provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PENDING |
 | Notes  | in order to test grouping we need a easy way to see trades for the same counterparty so we can select them. at present cant do this ; [[file:scenario_verify-the-structure-screens_step9_20261028_112332.png]] |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-10-28T11:24:46Z |
+| Status        |       |
+| Completed at  |       |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

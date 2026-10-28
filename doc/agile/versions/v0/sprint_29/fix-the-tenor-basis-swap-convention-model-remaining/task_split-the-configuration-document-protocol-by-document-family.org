@@ -58,6 +58,14 @@ arrives after the CRT has already been included by an earlier file in the same
 unity unit, so it suppressed nothing. Fixed by reading the environment with
 _dupenv_s on Windows and dropping the define.
 
+The same sweep found the rule broken in four test files, eighteen calls in all,
+one of which suppressed the warning with the same macro and one of which used
+=setenv=, =unsetenv= and =tzset= with no platform guard at all -- a Windows
+build break waiting behind this one. They read through =ores.platform= now, and
+the timezone calls have a portable shim. No warning is suppressed anywhere in
+the tree; the only native =getenv= left is the provider's own POSIX branch,
+which is where the project's memory says it belongs.
+
 The consequence for this task is an order, not a change of goal: the C1202
 cannot be observed, let alone measured, until the build gets past the errors in
 front of it. The Windows job also reports =nats-server did not become ready

@@ -28,10 +28,10 @@
  * @file repository_floating_point_precision_tests.cpp
  * @brief A double written through a generated repository reads back unchanged.
  *
- * sqlgen once wrote every double with std::to_string, which keeps six decimal
- * places: 1e-12 was stored as 0 and 0.0123456789 as 0.012346. The value here
- * is written and read back through the same generated repository every entity
- * uses, so the check covers the path, not a helper.
+ * A double written with six decimal places would store 1e-12 as 0 and
+ * 0.0123456789 as 0.012346. The value here is written and read back through
+ * the same generated repository every entity uses, so the check covers the
+ * path, not a helper.
  */
 
 namespace {

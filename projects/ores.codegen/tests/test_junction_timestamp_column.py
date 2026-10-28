@@ -7,10 +7,10 @@ Run::
 The junction half of the entity and mapper templates once emitted a column's
 raw ``cpp_type``, unlike the entity half, which switches on the type flags.
 A junction declaring a ``timestamp with time zone`` column therefore got a
-raw ``std::chrono::system_clock::time_point`` in its sqlgen struct, and
-sqlgen cannot serialise one: the failure surfaced as a compile error inside
-sqlgen's transpilation layer, naming the query rather than the model. The
-template now switches on ``is_required_timestamp`` in both directions.
+raw ``std::chrono::system_clock::time_point`` in its entity struct, which
+the query builder's text codec cannot hold: the failure surfaced as a compile
+error inside the codec, naming the query rather than the model. The template
+switches on ``is_required_timestamp`` in both directions.
 """
 import sys
 from pathlib import Path
@@ -118,7 +118,7 @@ def _render(tmp_path, template, output):
     return (output_dir / output).read_text(encoding="utf-8")
 
 
-def test_a_junction_timestamp_column_is_a_string_in_the_sqlgen_struct(tmp_path):
+def test_a_junction_timestamp_column_is_a_string_in_the_entity_struct(tmp_path):
     header = _render(
         tmp_path, "cpp_domain_type_entity.hpp.mustache", "probe_link_entity.hpp")
 

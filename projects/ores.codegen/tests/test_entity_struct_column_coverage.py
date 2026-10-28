@@ -89,7 +89,7 @@ def _generate(tmp_path, extra=""):
 
 
 def test_a_column_the_template_cannot_express_is_refused(tmp_path):
-    """sqlgen cannot bind a Postgres array, so no entity member carries one."""
+    """The text codec holds no Postgres array, so no entity member carries one."""
     with pytest.raises(ValueError, match="reaches no member"):
         _generate(tmp_path, extra="""
 ** readings

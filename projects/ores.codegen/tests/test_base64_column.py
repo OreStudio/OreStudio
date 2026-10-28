@@ -7,7 +7,7 @@ Run::
 A column can say ``:base64: true`` to mean its database column is ``text``
 holding the base64 spelling of a byte vector, while the domain member is the
 raw ``std::vector<std::uint8_t>``. The entity layer is a database row type
-that sqlgen binds, so it keeps the ``std::string`` the column stores, and the
+that the query builder binds as text, so it keeps the ``std::string`` the column stores, and the
 mapper performs the base64 hop in both directions -- the same shape a
 required timestamp gets, with the encoding in place of the datetime
 conversion.
@@ -135,7 +135,7 @@ def test_a_base64_column_is_bytes_in_the_domain_struct(tmp_path):
     assert "#include <vector>" in domain
 
 
-def test_a_base64_column_is_base64_text_in_the_sqlgen_struct(tmp_path):
+def test_a_base64_column_is_base64_text_in_the_entity_struct(tmp_path):
     """The entity is the database row type, and the column stores text."""
     entity = _render_entity(tmp_path, BASE64_COLUMN + PLAIN_COLUMN)
     assert "std::string payload;" in entity

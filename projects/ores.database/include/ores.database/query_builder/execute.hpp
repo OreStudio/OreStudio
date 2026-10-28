@@ -40,10 +40,10 @@
 
 /*
  * How a generated repository's queries run: each call is one transaction on
- * the context's libpq pool, as each sqlgen call was one session. A statement
- * whose text is fixed is prepared once per connection; one whose text varies
- * with a list or a request's filter runs unnamed. A store error reaches the
- * caller as the repository_exception sqlgen's errors became.
+ * the context's libpq pool, or runs on the transaction of the unit of work the
+ * context is bound to. A statement whose text is fixed is prepared once per
+ * connection; one whose text varies with a list or a request's filter runs
+ * unnamed. A store error reaches the caller as a repository_exception.
  */
 namespace ores::database::query_builder {
 
@@ -328,7 +328,7 @@ void execute_write_op(context ctx,
 
 /**
  * @brief Inserts rows, and observes each one when its entity has a write
- * observer, as sqlgen's execute_write_query did.
+ * observer.
  *
  * The observation is one unit with the write. A context bound to a unit of
  * work already is one; for any other the write opens a unit of work, so a

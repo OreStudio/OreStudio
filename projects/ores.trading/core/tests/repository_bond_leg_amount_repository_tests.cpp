@@ -91,7 +91,7 @@ bond_leg_amount make_amount(database_helper& h,
 
 /*
  * Reads the rows as the repository's own entity, so the member checked is the
- * std::string sqlgen binds to the numeric column and not the decimal the
+ * std::string the query builder binds to the numeric column and not the decimal the
  * mapper renders from it. This is what proves the seam.
  */
 std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,

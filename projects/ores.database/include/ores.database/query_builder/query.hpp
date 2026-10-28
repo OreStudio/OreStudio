@@ -36,12 +36,10 @@
 #include <vector>
 
 /*
- * The queries a generated repository states, run on the libpq layer. The
- * names are the ones the repository templates used with sqlgen, so a
- * repository moves by changing its namespace, and the SQL is the SQL sqlgen
- * wrote: every value a text parameter the server types from where it is
- * used, as a literal was. A condition holds its SQL with '?' for each
- * parameter, and the statement numbers them when it is run.
+ * The queries a generated repository states, run on the libpq layer. Every
+ * value is a text parameter the server types from where it is used. A
+ * condition holds its SQL with '?' for each parameter, and the statement
+ * numbers them when it is run.
  */
 namespace ores::database::query_builder {
 

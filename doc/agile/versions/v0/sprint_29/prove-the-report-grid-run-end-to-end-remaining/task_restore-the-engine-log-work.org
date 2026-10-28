@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/restore-the-engine-log-work
-#+pr:
+#+pr: 4017
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-28
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4017][#4017]] | [ore] Read the engine's log in one place and load it in reporting |
 
 * Review
 

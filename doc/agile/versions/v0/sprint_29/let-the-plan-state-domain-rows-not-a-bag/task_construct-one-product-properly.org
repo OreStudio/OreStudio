@@ -70,6 +70,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Equity family rows after provisioning | 17, across nine tables | =compass db sql= counting each =ores_trading_equity_*_instruments_tbl= | =0ebf037334= |
+| Cliquet and plain option rows | 1 each; cliquet frequency =Quarterly=, option frequency null | =compass db sql= on =ores_trading_equity_option_instruments_tbl= | =0ebf037334= |
+| =ores.trading.api.tests= | 421 assertions in 110 test cases | the suite binary | =0ebf037334= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =0ebf037334= |
 |      |       |         |        |
 
 * Notes
@@ -98,3 +102,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Cliquet is constructed by name. =construct_equity_cliquet_option= takes
+an =equity_cliquet_option_terms= whose frequency has no default, stamps
+=trade_type_code= itself, and refuses what the table's checks refuse, so the
+writer no longer assembles the row from whichever fields the bag carries.
+The two other codes in the same table keep their existing assembly minus the
+cliquet frequency, which used to be copied into every row.
+
+Proved by a provisioning run on a fresh database: =generate_trades= completed,
+and the equity family holds the same 17 rows across nine tables as before.
+The Cliquet row states =Quarterly=; the plain option's frequency is null, so
+the cross-column check is satisfied by construction rather than by the
+planner's restraint.
+
+One finding, recorded and not fixed here: the planner draws the cliquet's
+=moneyness=, =local_cap= and =global_cap=, and none of them reaches a table,
+because the routed table has no such columns and the
+=equity_cliquet_option_instruments= model that does state them is routed by
+nothing. The constructor cannot state terms its row does not carry. Routing
+that table is the family's own work, not this task's.

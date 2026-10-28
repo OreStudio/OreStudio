@@ -276,9 +276,13 @@ describe('the Settings tab', () => {
         const values = settingsOf(regime());
         expect(clean(values.calmSpell)).toBe('600');
         expect(clean(values.activeSpell)).toBe('300');
-        const settings = toSettings({ ...values, calmSpell: 900 });
+        const settings = toSettings(regime(), { ...values, calmSpell: 900 }, ['calmSpell']);
         expect(settings.wakeRate).toBeCloseTo(1 / 900);
-        expect(settings.calmRate).toBeCloseTo(1 / 300);
+        // A number nobody touched goes back exactly as the service holds it.
+        expect(settings.calmRate).toBe(1 / 300);
+        expect(toSettings(regime(), { ...values, calmSpell: 600.0000001 }, []).wakeRate).toBe(
+            1 / 600,
+        );
     });
 
     it('applies the service’s rules as a person types, naming the number', () => {

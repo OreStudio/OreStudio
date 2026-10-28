@@ -54,14 +54,23 @@ export function settingsOf(regime: MarketRegime): SettingValues {
     };
 }
 
-export function toSettings(values: SettingValues): MarketSettings {
+/**
+ * The settings to send: the market as the service holds it, with only the edited numbers
+ * replaced. A number nobody touched goes back exactly as it came, not as the form printed it.
+ */
+export function toSettings(
+    regime: MarketRegime,
+    values: SettingValues,
+    changed: readonly SettingKey[],
+): MarketSettings {
+    const edited = (key: SettingKey): boolean => changed.includes(key);
     return {
-        wakeRate: 1 / values.calmSpell,
-        calmRate: 1 / values.activeSpell,
-        jump: values.jump,
-        decay: values.decay,
-        speed: values.speed,
-        tailLoading: values.tailLoading,
+        wakeRate: edited('calmSpell') ? 1 / values.calmSpell : regime.wakeRate,
+        calmRate: edited('activeSpell') ? 1 / values.activeSpell : regime.calmRate,
+        jump: edited('jump') ? values.jump : regime.jump,
+        decay: edited('decay') ? values.decay : regime.decay,
+        speed: edited('speed') ? values.speed : regime.speed,
+        tailLoading: edited('tailLoading') ? values.tailLoading : regime.tailLoading,
     };
 }
 
@@ -244,6 +253,9 @@ export function SettingsView({
     const share = values.activeSpell / (values.calmSpell + values.activeSpell);
     const calm = activeMultiplier > 0 ? (1 - share * activeMultiplier) / (1 - share) : Number.NaN;
     const gain = values.jump / values.decay;
+    // The tilt an active market gives; unknown when the service does not report its multiplier.
+    const activeTilt =
+        activeMultiplier > 0 ? clean(values.tailLoading * Math.log(activeMultiplier), 3) : '—';
     const bad = Object.keys(problems).length > 0;
     return (
         <div className="grid gap-4">
@@ -257,7 +269,7 @@ export function SettingsView({
                             <Button
                                 size="sm"
                                 variant="secondary"
-                                disabled={Object.keys(draft).length === 0 || pending}
+                                disabled={changed.length === 0 || pending}
                                 onClick={() => setDraft({})}
                             >
                                 {t('marketdata.market.settings.discard')}
@@ -267,7 +279,7 @@ export function SettingsView({
                                 variant="primary"
                                 pending={pending}
                                 disabled={changed.length === 0 || bad}
-                                onClick={() => onApply(toSettings(values))}
+                                onClick={() => onApply(toSettings(regime, values, changed))}
                             >
                                 {t('marketdata.market.settings.apply')}
                             </Button>
@@ -380,7 +392,7 @@ export function SettingsView({
                 >
                     {field('speed', duration(60 * values.speed))}
                     <p className="text-[13px] text-ink-faint">
-                        {t('marketdata.marketRegime.settings.speedNote')}
+                        {t('marketdata.market.settings.time.note')}
                     </p>
                 </MarketCard>
 
@@ -388,24 +400,10 @@ export function SettingsView({
                     title={t('marketdata.market.settings.tails.title')}
                     lead={t('marketdata.market.settings.tails.lead')}
                 >
-                    {field(
-                        'tailLoading',
-                        clean(
-                            values.tailLoading *
-                                Math.log(activeMultiplier > 0 ? activeMultiplier : 2),
-                            3,
-                        ),
-                    )}
+                    {field('tailLoading', activeTilt)}
                     <FactRows
                         rows={[
-                            [
-                                t('marketdata.market.settings.tails.active'),
-                                clean(
-                                    values.tailLoading *
-                                        Math.log(activeMultiplier > 0 ? activeMultiplier : 2),
-                                    3,
-                                ),
-                            ],
+                            [t('marketdata.market.settings.tails.active'), activeTilt],
                             [
                                 t('marketdata.market.settings.tails.calm'),
                                 calm > 0 ? clean(values.tailLoading * Math.log(calm), 3) : '—',

@@ -4941,6 +4941,7 @@ const fr: SourceCatalogue = {
                 time: {
                     title: 'Temps simulé',
                     lead: 'Combien de secondes simulées couvre une unité de temps de marché. Un seul nombre pour l’exécution, pour que chaque flux vive dans un même monde simulé.',
+                    note: 'Un changement s’applique dès maintenant. Un flux spot prend la nouvelle vitesse à son prochain tick ; une courbe la prend à son prochain démarrage.',
                 },
                 tails: {
                     title: 'Les queues',

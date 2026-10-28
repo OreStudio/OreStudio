@@ -4877,6 +4877,7 @@ export const en: SourceCatalogue = {
                 time: {
                     title: 'Simulated time',
                     lead: 'How many simulated seconds one unit of market time spans. One number for the run, so every feed lives in one simulated world.',
+                    note: 'A change applies from now. A spot feed takes a new speed at its next tick; a curve takes it when it next starts.',
                 },
                 tails: {
                     title: 'The tails',

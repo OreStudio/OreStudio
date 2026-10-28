@@ -4908,6 +4908,7 @@ const pt: SourceCatalogue = {
                 time: {
                     title: 'Tempo simulado',
                     lead: 'Quantos segundos simulados abrange uma unidade de tempo de mercado. Um número para a execução, para que todos os feeds vivam num só mundo simulado.',
+                    note: 'Uma alteração aplica-se a partir de agora. Um feed spot adota a nova velocidade no próximo tick; uma curva adota-a quando voltar a arrancar.',
                 },
                 tails: {
                     title: 'As caudas',

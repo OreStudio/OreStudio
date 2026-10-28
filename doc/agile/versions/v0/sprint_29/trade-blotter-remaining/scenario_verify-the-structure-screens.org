@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 9969BCF5-6C44-4768-90FB-30FBC8A3E32A
+:END:
+#+title: Test Scenario: Verify the structure screens
+#+description: Manual steps confirming the structures list draws the tenant's trees, a deal's page states its kind, its tree and its parts as the prototype draws them, a leg is added and unlinked, and two trades of one counterparty are grouped into a new deal.
+#+type: test_scenario
+#+level: s1
+#+filetags: :trading:structure:trade-blotter-remaining:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: jolly_knuth
+#+todo: PENDING | PASSED FAILED ABANDONED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] in [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]. It is filled in with the target screens and checklist of steps before testing starts; record the outcome by hand in =*** Result=.
+
+* Before you start
+
+Ready to test as it stands. The fleet is up on this checkout, and the database
+holds tenant =acme_corporation= provisioned from =acme_demo= with its trade
+population: 22 structures, each carrying an identifier, and 44 legs over 80
+trades.
+
+*Sign out and back in before Step 1 if this browser was signed in before the
+database was last provisioned.* A session outlives the data it names, and a
+stale one shows you the party it was opened with rather than the one the
+provisioned run made.
+
+**What the screen shows is one party's holdings.** The structures list is
+party-scoped, as every trading read is: signed in as =diane.kay= you see the
+structures of =ACME Corporation UK plc=, which the population grouped as six
+or seven deals of two legs each. The database holds 22 across the four legal
+entities; the other fifteen belong to parties this session does not work for.
+
+**A rule the data does not yet meet — read this before Step 6.** A structure's
+legs are supposed to share one party *and* one counterparty. The store enforces
+the party and not the counterparty, so the population's own pairs carry two
+different counterparties each. The grouping screen states the rule and refuses a
+mixed pair, which means a grouping can only succeed where two ungrouped trades
+happen to share a counterparty. If the picker offers no such pair, Step 6 cannot
+pass, and that is the data's fault and not the screen's: record it as FAILED with
+that note, and see the capture filed for it.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] |
+| Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]   |
+| Target screen | Structures and packages, at =/trading/structures=, and a deal's page under it |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step names what to click and what confirms it passed. The persona is the
+provisioned Trading one: =diane.kay@acme_corporation= / =Secure-Password-123=.
+
+** Log in as diane.kay
+
+- Open http://127.0.0.1:20802/
+- Username =diane.kay@acme_corporation=, password =Secure-Password-123=, then
+  *Sign in*.
+- Passes when the home page greets *Welcome, Diane Kay* and the status bar names
+  tenant *Acme Corporation* and party *ACME Corporation UK plc*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Reach the structures list from the area
+
+- Choose *Trading* in the menu.
+- Passes when the area page offers two cards, *Trades* and *Structures and
+  packages*.
+- Open *Structures and packages*.
+- Passes when the address is =/trading/structures= and the crumb reads
+  *Home › Trading › Structures and packages*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read the list's columns and its trees
+
+- Passes when the header row reads *Identifier · Kind · Template ·
+  Counterparty · Inside it · Confirms · Priced*, in that order.
+- Every row shows a reference that starts with =PKG-= or =DYN-=, a kind chip, a
+  counterparty name, and what it holds (*2 trades*, or *N inner · M trades* for a
+  structure that contains another).
+- A structure inside another is drawn under it, indented and marked with =└=.
+- A package row states *Each leg confirms on its own* and *Priced leg by leg*; a
+  strategy, typed or dynamic row states *Confirmed as one document* and *Priced
+  as a whole*.
+- Passes when the footer reads *Showing N of N* with the same N as the rows you
+  can count.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Search by identifier and by kind
+
+- Type =PKG-= into the search box.
+- Passes when every row left is a package and the footer's total falls.
+- Choose *Package* in the kind filter.
+- Passes when the rows stay packages and clearing the filter brings the rest
+  back.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open a deal and read its identity
+
+- Click a reference in the list.
+- Passes when the address is =/trading/structures/<the reference>=, the title is
+  the *kind* (*Package*), and beneath it sit the reference and the kind chip.
+- The Details tab is the one open, and holds three cards:
+  * *Identity*: Party (a link, with the sentence *Shared by every leg, for the
+    life of the structure.*), Counterparty (a link, same sentence), Kind with a
+    sentence about what the kind is, and *Inside* — =—= for a root.
+  * *How it confirms and prices*: Confirmation, Pricing and External version,
+    each with the sentence that explains it, and each matching the kind's row in
+    Step 3.
+  * *Trades*: the legs table, with *LEG · TRADE · TYPE · STATE · NOTIONAL ·
+    EXTERNAL VERSION* and an *Unlink* per row.
+- Passes when every leg shows its product name, a *live* state chip and its
+  external version, and when a bond or rate leg states a notional (an FX leg
+  states =—=: no reader names that family's size yet).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** See the tree, and open another node from it
+
+- Read the panel on the left, titled *The tree*, whose header states
+  *N inner structures · root <the reference>*.
+- Passes when the root row is drawn with its kind chip and reference, each leg
+  beneath it with its product name, its reference and its role (*leg*), and the
+  note *The model nests one level at most, and a deeper tree is refused.*
+- Click a leg's reference in the tree.
+- Passes when the trade's own page opens, and its Details tab names the deal in
+  a *Structure* field whose link comes back to this deal.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Add a leg, then take it out
+
+- Open the *Members* tab: the same legs table, with *Add a leg* under it.
+- Choose a trade in the picker, keep the role =leg=, press *Add the leg*.
+- Passes when the table gains the row, the count rises, and the new leg states
+  its state and external version.
+- Press *Unlink* on that row.
+- Passes when the row goes, the count falls, and no error banner appears. The
+  trade itself is untouched: it becomes groupable again and appears in the
+  grouping picker in Step 8.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read the history and the price notice
+
+- Open the *History* tab.
+- Passes when it lists the deal's versions with the person who wrote each, when,
+  and why — the reason you typed when grouping it, or =system.new_record= for a
+  population's deal.
+- Open the *Price* tab.
+- Passes when it states that pricing is not read yet, rather than a number.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Group two trades into a new deal
+
+- From the list, press *Group trades* (or reach it from the blotter's toolbar).
+  The address is =/trading/structures/group=.
+- Choose a kind. The option states what the kind does: *Dynamic — confirmed as
+  one document*, *Package — each leg confirms on its own*.
+- Read the picker: it offers only trades no structure holds, and names each
+  trade's counterparty.
+- Tick two trades that name the *same* counterparty.
+- Passes when no mixed-counterparty notice appears and *Group the trades* is
+  enabled; press it.
+- Passes when the address is the new deal's reference, both trades are legs of
+  it on Details, and its row now appears in the list with the kind you chose.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Notes
+
+- The list is party-scoped by design, so its total is the party's and not the
+  tenant's. Compare against =select count(*) from
+  ores_trading_structures_tbl where valid_to = ores_utility_infinity_timestamp_fn()=
+  only if you are signed in as a system administrator.
+- The population's pairs carry two counterparties each, so Step 8 may find no
+  valid pair. That is the inconsistency the * Before you start section states,
+  and it is filed as a capture rather than fixed here.

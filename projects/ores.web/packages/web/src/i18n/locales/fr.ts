@@ -673,7 +673,6 @@ const fr: SourceCatalogue = {
                 'Les parties et les personnes de ce locataire sont modifiées par ses propres administrateurs.',
             tab: {
                 details: 'Détails',
-                details: 'Détails',
                 parties: 'Parties',
                 people: 'Personnes',
                 history: 'Historique',
@@ -3806,6 +3805,7 @@ const fr: SourceCatalogue = {
             reason: 'Motif',
             tabsLabel: 'Sections de la structure',
             tab: {
+                details: 'Détails',
                 members: 'Membres',
                 price: 'Prix',
                 history: 'Historique',

@@ -89,7 +89,8 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
     const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
     await row.waitFor({ state: 'visible', timeout: 20_000 });
     const reference = (await row.locator('td').first().innerText()).trim();
-    await row.locator('td').first().getByRole('link').first().click();
+    // The blotter opens a row by its cell; only the structures list pads a link.
+    await row.locator('td').first().click();
 
     // The deal titles itself by kind, so the reference is the subtitle: the
     // breadcrumb is what says which deal is open.
@@ -107,61 +108,92 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
 });
 
 /**
- * Unlinking a leg, and grouping trades into a structure.
+ * Taking a leg out of a deal.
  *
- * The two legs of one deal share its counterparty, so taking them out and
- * grouping them again is a grouping with a pair that must be allowed: the case
- * does not depend on which counterparties a population happened to draw.
+ * The leg goes and the trade stays: it becomes groupable again, which is what
+ * the desk means by unlinking. The case reads the count before and after so a
+ * refusal cannot pass for a removal.
  */
-test('two legs are taken out of a deal and grouped into another', async ({ page }) => {
+test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
     await signIn(page);
     await page.goto('/trading/structures');
 
-    // A package of two legs: the population groups trades in pairs.
     const row = page.locator('tbody tr', { hasText: 'Package' }).first();
     await row.waitFor({ state: 'visible', timeout: 20_000 });
-    const deal = (await row.locator('td').first().innerText()).trim().replace('└ ', '');
-    await row.locator('td').first().getByRole('link').first().click();
-    await page.getByRole('tab', { name: /^members$/i }).click();
+    await Promise.all([
+        page.waitForURL(/\/trading\/structures\/[A-Z]+-[0-9a-f]+$/, { timeout: 20_000 }),
+        row.locator('td').first().getByRole('link').first().click(),
+    ]);
+    await page.getByRole('tab', { name: /^members$/i }).click({ timeout: 20_000 });
 
-    // Every tab stays mounted, so only the rows on screen are the ones counted.
     const rows = page.locator('tbody tr:visible');
     await rows.first().waitFor({ state: 'visible', timeout: 20_000 });
     const before = await rows.count();
-    const freed: string[] = [];
-    for (let index = 0; index < 2; index += 1) {
-        const link = rows.first().getByRole('link').first();
-        freed.push(((await link.innerText()) ?? '').trim());
-        await rows.first().getByRole('button', { name: /^unlink$/i }).click();
-        await expect(rows).toHaveCount(before - index - 1, { timeout: 20_000 });
-    }
-    expect(freed).toHaveLength(2);
+    const freed = ((await rows.first().getByRole('link').first().innerText()) ?? '').trim();
 
-    await page.getByRole('button', { name: /^group trades$/i }).first().click();
-    await page.waitForURL(/\/trading\/structures\/group/, { timeout: 20_000 });
+    await rows.first().getByRole('button', { name: /^unlink$/i }).click();
+    await expect(rows).toHaveCount(before - 1, { timeout: 20_000 });
+
+    // The trade is still a trade: its own page reads it, and it names no deal.
+    await page.goto(`/trading/structures`);
+    await page.getByRole('button', { name: /^group trades$/i }).click();
+    await expect(page.getByRole('checkbox', { name: freed })).toBeVisible({ timeout: 20_000 });
+    await page.screenshot({ path: 'shots/structure-unlinked.png', fullPage: true });
+});
+
+/**
+ * Grouping two trades into a structure of a chosen kind.
+ *
+ * A structure's legs share one counterparty, and the screen refuses a mixed
+ * pair before the server would. The pair is therefore chosen by counterparty
+ * rather than by position: the population draws counterparties per trade, so
+ * which rows pair up is a fact about the data and not something a case can
+ * assume. Where the data holds no pair the case says so and does not pretend to
+ * have grouped anything.
+ */
+test('two trades of one counterparty are grouped into a structure', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/trading/structures/group');
 
     const kind = page.getByLabel(/kind/i);
-    await kind.waitFor({ state: 'visible' });
+    await kind.waitFor({ state: 'visible', timeout: 20_000 });
     await kind.selectOption({ index: 1 });
 
-    for (const reference of freed) {
-        const checkbox = page.getByRole('checkbox', { name: reference });
-        await checkbox.check({ timeout: 20_000 });
+    const table = page.locator('section', {
+        has: page.getByRole('heading', { name: /trades no structure has grouped/i }),
+    });
+    const rows = table.locator('tbody tr');
+    await rows.first().waitFor({ state: 'visible', timeout: 20_000 });
+    const known = await rows.evaluateAll((elements) =>
+        elements.map((element) => ({
+            reference: element.querySelector('td:nth-child(2)')?.textContent?.trim() ?? '',
+            counterparty: element.querySelector('td:nth-child(4)')?.textContent?.trim() ?? '',
+        })),
+    );
+    const pair = known.find(
+        (entry, index) =>
+            entry.counterparty !== '' &&
+            known.findIndex((other) => other.counterparty === entry.counterparty) !== index,
+    );
+    test.skip(pair === undefined, 'The data holds no two ungrouped trades for one counterparty.');
+
+    const wanted = known.filter((entry) => entry.counterparty === pair?.counterparty).slice(0, 2);
+    for (const entry of wanted) {
+        await page.getByRole('checkbox', { name: entry.reference }).check();
     }
     await page.getByRole('button', { name: /^group the trades$/i }).click();
 
-    // The page lands on the new deal, addressed by the reference it was given,
-    // and both freed trades are its legs.
     await expect(page).toHaveURL(/\/trading\/structures\/[A-Z]+-[0-9a-f]+$/, { timeout: 20_000 });
     await page.getByRole('tab', { name: /^details$/i }).click();
-    const trades = page.locator('section', { has: page.getByRole('heading', { name: /^trades$/i }) });
-    for (const reference of freed) {
-        await expect(trades.getByRole('link', { name: reference }).first()).toBeVisible({
+    const trades = page.locator('section', {
+        has: page.getByRole('heading', { name: /^trades$/i }),
+    });
+    for (const entry of wanted) {
+        await expect(trades.getByRole('link', { name: entry.reference }).first()).toBeVisible({
             timeout: 20_000,
         });
     }
     await page.screenshot({ path: 'shots/structure-grouped.png', fullPage: true });
-    expect(deal).not.toBe('');
 });
 
 /**

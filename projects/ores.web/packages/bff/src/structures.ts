@@ -454,12 +454,15 @@ async function notionalsOf(
     const [bonds, amounts, legs] = await Promise.all([
         readAll(session, bondSubject.list_bond_instruments_request, 'bond_instruments', {
             filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+            as_of: null,
         }),
         readAll(session, swapLegAmountSubjects.list_swap_leg_amounts_request, 'swap_leg_amounts', {
             filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+            as_of: null,
         }),
         readAll(session, swapLegSubjects.list_swap_legs_request, 'swap_legs', {
             filter: { trade_id: null, trade_id_one_of: [...tradeIds] },
+            as_of: null,
         }),
     ]);
     for (const entry of bonds) {
@@ -949,7 +952,7 @@ export function registerStructureRoutes(
             {
                 removal: {
                     key: { trade_id: tradeId },
-                    precondition: { kind: 'must_match_version', version: null },
+                    precondition: { kind: 'any', version: null },
                 },
                 intent: {
                     reason_code: 'system.amend_record',

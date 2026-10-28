@@ -93,10 +93,9 @@ its window, who accepted what, and the trail of the acts done to it.
   open questions from it.
 
 The page shipped with the row and the page, the three failure states, both
-paused variants, both freshness lines, the backfill at rest, running and done,
-and the feed start the row explains. Its states are addresses, and it was
-rendered with Playwright in every state and read against the standard before
-this task closed.
+paused variants, both freshness lines, the compare panel, the withdrawn terms,
+the provider page for any provider, the pause held in the address, and the
+backfill at rest, running and done. Every state is an address.
 
 * Measurements
 
@@ -110,7 +109,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Prototype states rendered and read | 11 states (default, late, down, never, paused hidden, freshness strong, compare, withdrawn terms, paused page, backfill running, backfill done) | =node .runtime/shot.mjs= from =projects/ores.web= with Playwright | e2f32acbc6 |
+| Prototype inventory | 95 prototypes in 22 groups, all listed | =python3 build/scripts/check_prototype_inventory.py= | e2f32acbc6 |
+| Documentation gate | 7 of 7 checks passed (lint, org-links, rule-identifiers, structure-notes, pattern-uses, prototypes, site-page) | =./compass.sh check= | e2f32acbc6 |
 
 * Notes
 
@@ -135,16 +136,32 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The never-fixed state cannot be reached | prototype.js | Accept | A provider with accepted terms, a serving adapter and no fixing was added, and =?state=never= shows it alone. |
+| 2 | The withdrawn-terms question is prose only | prototype.js | Accept | =?terms=withdraw= draws the deletion where the version is accepted, with the values and feeds it touches. |
+| 3 | Competing answers are not side by side | prototype.js | Accept | =?compare=1= draws the two paused answers and the two freshness lines together. |
+| 4 | The journey does not name every gap's owner | journey | Accept | The health task and the pause task are linked from the gaps they own. |
+| 5 | The wireframe is inside an example block, so it does not render | journey | Accept | The caption, the width and the link are written bare, as its siblings are. |
+| 6 | The wireframe shows deleting fixings as a command | wireframe | Accept | The command is gone and the deletion is drawn where a withdrawn version is accepted. |
+| 7 | The table header and the row disagree | prototype.js | Accept | A State column was added; the expected line and the badge each have their own cell. |
+| 8 | The journey's prototype links are one directory short | journey | Accept | They now resolve to =doc/prototypes/market_data/= from the journey folder. |
+| 9 | Q1 is partial: the page always shows the first provider | prototype.js | Accept | =?provider=<code>= shows any provider, and Open moves the address to it. |
+| 10 | The design note's account of what is fake is wrong | official-rates.org | Accept | It says which buttons are inert and which state the address holds. |
+| 11 | Pause and resume do not survive a reload | prototype.js | Accept | They are addresses now, =?pause=<code>= and =?resume=<code>=. |
+| 12 | Dead code: a state filter with no element, an unused link, a history button that clears | prototype.js, index.html | Accept | Removed. |
+| 13 | The result claims states it did not reach | task | Accept | The result and the measurements name the eleven rendered states. |
+| 14 | The auto-recorded PR commit has no Environment trailer | 9615236ec1 | Decline | The PR tool wrote it before the review; the runbook forbids amending a commit under review. |
+| 15 | Passive and long sentences in the journey and result | journey, task | Accept | Rewritten in the active voice. |
 
 * Result
 
 The prototype is at =doc/prototypes/market_data/official-rates/=, with its design
 note =official-rates.org= beside it and a row on the market data prototypes page.
-It answers the four questions: the paused row stays and is drawn hidden beside
-it, the backfill shows a progress and a done state that says what the store
-skipped, three failure states read as three sentences, and deleting fixings is
-offered after a withdrawal rather than as a row action.
+It answers the four questions. The paused row stays, dimmed, and =?paused=hidden=
+draws the row that leaves beside it. The backfill shows a progress and a done
+state that names what the store skipped. The three failures read as three
+badges and three sentences, and =?state=never= reaches the never-fixed provider
+on its own. Withdrawing terms draws the deletion of the provider's fixings where
+the person accepts the new version, not as a row action.
 
 The design note states what is fake and what the two decision tasks still own.
 

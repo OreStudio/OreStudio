@@ -22,6 +22,8 @@
     <button role="radio" data-q="fresh" data-v="quiet">quiet</button>
     <button role="radio" data-q="fresh" data-v="strong">strong</button>
   </span>
+  <a href="?compare=1">competing answers</a>
+  <a href="?terms=withdraw">withdrawn terms</a>
 </div>
 
 <header class="page">
@@ -37,6 +39,8 @@
 </header>
 
 <main>
+  <div id="compare"></div>
+
   <section class="card" aria-label="The providers">
     <div class="card-head">
       <h2>The providers</h2>
@@ -46,11 +50,12 @@
       <thead>
         <tr>
           <th>Provider</th><th>Terms</th><th>Last fixing</th><th>Received</th>
-          <th>Next expected</th><th>Adapter</th><th class="acts">Acts</th>
+          <th>Next expected</th><th>State</th><th>Adapter</th><th class="acts">Acts</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+    <div class="card-body" id="withdraw" hidden></div>
     <div class="card-body legend" id="legend"></div>
   </section>
 
@@ -70,8 +75,6 @@
     <div class="card-body" id="backfill"></div>
   </section>
 </main>
-
-<a hidden id="note-link" href="../official-rates.org"></a>
 <script src="prototype.js"></script>
 </body>
 </html>

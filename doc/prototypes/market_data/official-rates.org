@@ -55,6 +55,11 @@ Every state has an address, so a reviewer opens it rather than clicking to it.
 | Never fixed | =?state=never= | The same row with the never-fixed badge, telling it apart from the adapter being down |
 | Paused, kept | =?paused=muted= (default) | The paused provider stays in the list, dimmed, with Resume; its fixings and the feed start it explains stay |
 | Paused, hidden | =?paused=hidden= | The paused provider leaves the list; a count and a link bring it back |
+| Competing answers | =?compare=1= | The paused row kept, the row hidden, and both freshness lines side by side above the list |
+| Paused provider's page | =?provider=boe= | A paused provider's fixings, chart and pair still drawn, and a notice that nothing new arrives |
+| Pause, in the address | =?pause=boe= and =?resume=boe= | A pause survives a reload because the address holds it |
+| Withdrawn terms | =?terms=withdraw= | The fund's v2 withdraws storage: the row says so, and the consequence offers deleting its fixings |
+| Terms and paused states | =?state=terms= and =?state=paused= | One state alone, as the three failures are shown |
 | Freshness, quiet | =?fresh=quiet= (default) | The date and the received line, small and grey |
 | Freshness, strong | =?fresh=strong= | The same facts in the body colour, for the comparison |
 | Backfill at rest | =?backfill=none= (default) | The range fields and the sentence that the contract cannot carry the request yet |
@@ -96,8 +101,9 @@ Every state has an address, so a reviewer opens it rather than clicking to it.
   read answers them per adapter, with the ids it serves and refuses.
 - The backfill progress is a fixed number, and no request is made.
 - Refresh does nothing, and the history and feed links point nowhere.
-- Nothing is written: accept, pause, resume and fetch only move the query
-  string to the next state.
+- Nothing is written. Accepting terms and deleting fixings are inert buttons.
+  Pause and resume move the query string, so the state survives a reload.
+  Fetch moves the address to the running state and no request leaves the page.
 
 * Where the code lives
 
@@ -120,6 +126,11 @@ The shape is agreed for review: the row carries terms, freshness, next
 publication, the adapter and the acts; the three failures have three sentences;
 the paused row stays unless the hidden variant's count and the lost comparison
 column are wanted; the backfill is a dialog that says the adapter answers it.
+
+The comparison state is the one the prototype now recommends: the paused row
+stays, and the hidden variant's only gain is a shorter list whose pair
+comparison silently loses a column. The withdrawn-terms state draws the
+deletion where the person accepts the new version, never as a row command.
 
 What the prototype cannot settle is what this story's two decision tasks own:
 whether the pause is a demand fact or a provider state, and what form the

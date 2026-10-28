@@ -70,7 +70,7 @@ acts the architecture can carry.
    accepted, reads the terms page and the credit it asks for, and accepts them
    at the version shown or declines. The service refuses an acceptance of a
    version that changed since the person read it, and the screen reloads and
-   says so. Only an accepted provider is fetched.
+   says so. The service fetches a provider only after someone accepts its terms.
 5. *Read a provider's fixings.* The person opens the provider and reads its
    series as a table and a chart over a window, one item at a time. Each value
    keeps the publisher's own id of the item and the time it was received.
@@ -103,11 +103,9 @@ The list and the provider page of the standard, with a freshness line and an
 adapter badge on each row, a backfill range dialog, and a pause dialog that
 names what stops and what stays.
 
-#+begin_example
 #+caption: The provider list with terms state, freshness and adapter state, and one provider's page with its fixings, pair comparison and the backfill range.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_run-the-public-sources.png]]
-#+end_example
 
 Every step is judged against what the standard draws today, and what the server
 answers today.
@@ -129,10 +127,12 @@ answers today.
 
 * Prototype
 
-- Directory :: [[file:../../prototypes/market_data/official-rates/][doc/prototypes/market_data/official-rates/]]
-- Note :: [[file:../../prototypes/market_data/official-rates.org][the design note]]
-- States :: =?state=live|late|down|never=, =?paused=muted|hidden=,
-  =?backfill=none|progress|fill=, =?fresh=quiet|strong=
+- Directory :: [[file:../../../prototypes/market_data/official-rates/][doc/prototypes/market_data/official-rates/]]
+- Note :: [[file:../../../prototypes/market_data/official-rates.org][the design note]]
+- States :: =?state=live|late|down|never|paused|terms=, =?paused=muted|hidden=,
+  =?fresh=quiet|strong=, =?compare=1=, =?provider=<code>=,
+  =?pause=<code>= and =?resume=<code>=, =?terms=withdraw=,
+  =?backfill=none|progress|fill=
 
 The prototype draws the provider row and the provider page, the three failure
 states, the two paused variants, and the backfill range at rest and in
@@ -179,12 +179,16 @@ progress. It is a static page: no build, no server, no session.
   already fetches and says that the choice cannot yet be made from here.
 - *Deleting a provider's fixings.* The durable table is never deleted today,
   because the terms in force when a value was stored keep it. A terms version
-  that withdraws storage needs an act with an actor, which the pause decision
-  carries alongside it.
+  that withdraws storage needs an act with an actor, which
+  [[id:EFAC2D06-56C6-41FD-856E-2B2AB415A947][Decide how a provider is
+  paused]] carries alongside the pause.
 - *Freshness in one read.* The fixings read answers one item at a time, so the
   screen reads the latest fixing of every item a provider serves. A single read
   that answers the last fixing of each series would make the row cheap; until
   then the screen reads the provider's best item and says which one it read.
+  The row and the three states are
+  [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness
+  and its adapter's health]].
 
 * Related journeys
 

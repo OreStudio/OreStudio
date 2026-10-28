@@ -26,14 +26,15 @@ salt
     1 | European Central Bank | accepted v3 | 2026-10-28 | 19:23 today | today, on time | serving | [ Open ] [ Pause ]
     2 | Bank of Canada | accepted v2 | 2026-10-27 | 19:20 yesterday | today, late | serving | [ Open ] [ Pause ]
     3 | International Monetary Fund | not accepted | — | — | — | serving | [ Review terms ]
-    4 | Central Bank of Turkiye | accepted v1 | — | — | — | not serving | [ Open ] [ Resume ]
-    5 | Bank of England | accepted v1 | 2026-10-28 | 15:00 today | today, on time | paused | [ Open ] [ Resume ]
+    4 | Central Bank of Turkiye | accepted v1 | — | — | — | not serving | [ Open ]
+    5 | Bank of England | accepted v1 | 2026-10-28 | 15:00 today | today, on time | serving · paused by a person | [ Open ] [ Resume ]
   }
-  [ Accept terms ] | [ Pause ] | [ Backfill a range ] | [ Delete fixings ] | [ History ]
+  [ Accept terms ] | [ Pause ] | [ Backfill a range ] | [ History ]
   --
   Legend: <i>serving</i> · <i>late</i> · <i>not serving</i> · <i>paused</i> · <i>never fixed</i>
   --
   <b>European Central Bank — EUR/CAD, 2026-10-28, 1.5638</b>
+  <i>Terms v2 withdrawals are offered where the terms are accepted, with the fixings they remove, not as a row command.</i>
   {#
     Date | Value | Item | Received
     2026-10-28 | 1.5638 | FX-ECB-EUR-CAD | 19:23:58

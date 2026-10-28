@@ -32,7 +32,7 @@ The analysis this story carries, taken with the user on 2026-10-28:
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The journey and the prototype are agreed in this PR; the health read is next. |
+| Now           | The journey and the prototype are in PR #4032 for review; the health read is next. |
 | Waiting on    | Nothing.                               |
 | Next          | Start [[id:3003F16C-C239-4C5C-A36A-29A2D376EEE1][Show each provider's freshness and its adapter's health]]. |
 | Last touched  | 2026-10-28                               |

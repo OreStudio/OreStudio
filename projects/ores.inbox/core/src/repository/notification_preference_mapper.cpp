@@ -46,9 +46,9 @@ notification_preference_mapper::map(const notification_preference_entity& v) {
     domain::notification_preference r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id.value());
-    r.kind_code = v.kind_code.value();
-    r.channel_code = v.channel_code.value();
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
+    r.kind_code = v.kind_code;
+    r.channel_code = v.channel_code;
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

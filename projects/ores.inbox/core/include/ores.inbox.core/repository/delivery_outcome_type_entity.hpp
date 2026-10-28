@@ -25,8 +25,8 @@
 #ifndef ORES_INBOX_CORE_REPOSITORY_DELIVERY_OUTCOME_TYPE_ENTITY_HPP
 #define ORES_INBOX_CORE_REPOSITORY_DELIVERY_OUTCOME_TYPE_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,8 +42,18 @@ struct delivery_outcome_type_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_inbox_delivery_outcome_types_tbl";
 
-    sqlgen::PrimaryKey<std::string> code;
+    std::string code;
     std::string description;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = delivery_outcome_type_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("description", &e::description);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const delivery_outcome_type_entity& v);

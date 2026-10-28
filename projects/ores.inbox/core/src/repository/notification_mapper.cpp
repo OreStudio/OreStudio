@@ -48,7 +48,7 @@ domain::notification notification_mapper::map(const notification_entity& v) {
     domain::notification r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.kind_code = v.kind_code;
     r.raised_by = boost::lexical_cast<boost::uuids::uuid>(v.raised_by);
     r.raised_at = timestamp_to_timepoint(std::string_view{v.raised_at});

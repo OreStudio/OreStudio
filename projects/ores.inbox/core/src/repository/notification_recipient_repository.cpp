@@ -19,12 +19,11 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/repository/notification_recipient_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.inbox.api/domain/notification_recipient.hpp"
@@ -39,16 +38,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +45,14 @@
 
 namespace ores::inbox::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string notification_recipient_repository::sql() {
-    return generate_create_table_sql<notification_recipient_entity>(lg());
+    return query_builder::generate_create_table_sql<notification_recipient_entity>(lg());
 }
 
 notification_recipient_repository::notification_recipient_repository(context ctx)
@@ -146,7 +136,7 @@ void notification_recipient_repository::write(
 std::vector<domain::notification_recipient> notification_recipient_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("notification_id"_c, "notification_id"_c);
 
@@ -164,10 +154,10 @@ notification_recipient_repository::read_latest(std::uint32_t offset, std::uint32
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c, "notification_id"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       order_by("notification_id"_c, "notification_id"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_read_query<notification_recipient_entity, domain::notification_recipient>(
         ctx_,
@@ -187,7 +177,7 @@ notification_recipient_repository::read_latest(const boost::uuids::uuid& notific
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "account_id"_c == account_id_str && "valid_to"_c == max.value());
 
@@ -203,19 +193,12 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<notification_recipient_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<notification_recipient_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting notification recipients");
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count: " << count;
     return count;
 }
@@ -229,7 +212,7 @@ notification_recipient_repository::read_latest_by_notification(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "valid_to"_c == max.value()) |
                        order_by("notification_id"_c);
@@ -251,7 +234,7 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
                        order_by("notification_id"_c);
@@ -274,21 +257,13 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_no
         << notification_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<notification_recipient_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
+                       where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<notification_recipient_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting notification recipients");
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by notification: "
                                << count;
     return count;
@@ -304,11 +279,11 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
                              "valid_to"_c == max.value()) |
-                       order_by("notification_id"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       order_by("notification_id"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     auto rows = execute_read_query<notification_recipient_entity, domain::notification_recipient>(
         ctx_,
@@ -327,21 +302,13 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_ac
                                << account_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<notification_recipient_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<notification_recipient_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting notification recipients");
     BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by account: "
                                << count;
     return count;
@@ -354,7 +321,7 @@ notification_recipient_repository::read_all_by_account(const boost::uuids::uuid&
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_recipient_entity>> |
+    const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
                        where("tenant_id"_c == tid && "account_id"_c == account_id_str) |
                        order_by("notification_id"_c, "valid_from"_c.desc());
 
@@ -419,7 +386,7 @@ notification_recipient_repository::remove(const boost::uuids::uuid& notification
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<notification_recipient_entity> |
+    const auto query = query_builder::delete_from<notification_recipient_entity> |
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str &&
                              "account_id"_c == account_id_str && "valid_to"_c == max.value() &&
                              "version"_c == expected);
@@ -453,7 +420,7 @@ void notification_recipient_repository::remove_by_notification(
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<notification_recipient_entity> |
+    const auto query = query_builder::delete_from<notification_recipient_entity> |
                        where("tenant_id"_c == tid && "notification_id"_c == notification_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing all notification recipients from database");

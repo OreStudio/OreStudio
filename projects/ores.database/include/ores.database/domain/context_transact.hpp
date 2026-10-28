@@ -20,7 +20,6 @@
 #define ORES_DATABASE_DOMAIN_CONTEXT_TRANSACT_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/unit_of_work.hpp"
 #include <utility>
 
@@ -31,16 +30,19 @@ namespace ores::database {
  * and service that @p ctx names.
  *
  * A repository that has moved to the libpq layer calls this, so its callers
- * keep passing a context. A context bound to a sqlgen unit of work is refused:
- * the work would run outside that transaction, and a rollback of the unit of
- * work would not undo it.
+ * keep passing a context. A context bound to a sqlgen unit of work joins that
+ * transaction on its connection, so the work commits or rolls back with the
+ * unit of work, and sees the tenant and party set on that connection, as a
+ * sqlgen repository does. This lets components move one at a time, and goes
+ * with sqlgen.
  */
 template <typename Work>
 auto transact(const context& ctx, Work&& work) {
-    if (ctx.active_transaction())
-        throw pq::store_error("A repository on the libpq layer cannot join a sqlgen unit of work",
-                              "25000",
-                              pq::error_kind::refused);
+    if (const auto& open = ctx.active_transaction()) {
+        auto c = pq::connection::borrow((*open)->conn()->conn()->native_handle());
+        auto tx = pq::transaction::join(c);
+        return std::forward<Work>(work)(tx);
+    }
     return pq::transact(ctx.pq_pool(), ctx.pq_session(), std::forward<Work>(work));
 }
 

@@ -70,6 +70,15 @@ transaction::transaction(connection& c, session_context context)
     : connection_(c)
     , context_(std::move(context)) {}
 
+transaction::transaction(connection& c, joined_tag)
+    : connection_(c)
+    , begun_(true)
+    , joined_(true) {}
+
+transaction transaction::join(connection& c) {
+    return transaction(c, joined_tag{});
+}
+
 void transaction::round_trip(std::span<const sent_statement> statements) {
     if (done_)
         throw store_error("The transaction has ended", "25000", error_kind::refused);
@@ -102,7 +111,7 @@ void transaction::round_trip(std::span<const sent_statement> statements) {
             lengths.push_back(static_cast<int>(p.bytes.size()));
             formats.push_back(p.text ? 0 : 1);
         }
-        if (s.name.empty()) {
+        if (s.name.empty() || joined_) {
             const std::string sql(s.sql);
             if (PQsendQueryParams(c,
                                   sql.c_str(),
@@ -245,7 +254,7 @@ void transaction::commit() {
     if (done_)
         return;
     done_ = true;
-    if (!begun_)
+    if (!begun_ || joined_)
         return;
     const result r(PQexec(connection_.native(), "commit"));
     check(connection_, r, "commit");
@@ -255,7 +264,7 @@ void transaction::rollback() noexcept {
     if (done_)
         return;
     done_ = true;
-    if (!begun_ || !connection_.healthy())
+    if (!begun_ || joined_ || !connection_.healthy())
         return;
     const result r(PQexec(connection_.native(), "rollback"));
 }

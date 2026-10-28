@@ -103,6 +103,12 @@ connection::connection(const connection_options& options)
         throw store_error(message_of(*this, "Could not connect"), "08001", error_kind::retryable);
 }
 
+connection connection::borrow(PGconn* c) noexcept {
+    connection out;
+    out.handle_ = std::unique_ptr<PGconn, connection_closer>(c, connection_closer{.owned = false});
+    return out;
+}
+
 bool connection::healthy() const noexcept {
     return PQstatus(handle_.get()) == CONNECTION_OK;
 }

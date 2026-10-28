@@ -23,10 +23,10 @@ ores.ore converts between ORE formats and our domain types and does nothing else
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The story is scaffolded and scoped from an audit of the codec's dependencies. No work task has started. |
+| Now           | Two work tasks are done: the codec holds no database store, and the conventions bundle is in refdata's contract. Its declared libraries are down from 22 to 18. |
 | Waiting on    | Nothing.                               |
-| Next          | [[id:B46F663A-361B-478C-9124-8220698FC897][Remove the database store from the ORE codec]], which drops four of the six unjustified links on its own. |
-| Last touched  | 2026-10-27                               |
+| Next          | [[id:591D3F6E-3DA9-4A8D-8CFE-77497D1AEB37][Declare the ORE input files in ores.ore]], so the import stops asking a table which setup parameter names a file. |
+| Last touched  | 2026-10-28                               |
 
 * Acceptance
 
@@ -41,7 +41,7 @@ ores.ore converts between ORE formats and our domain types and does nothing else
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B46F663A-361B-478C-9124-8220698FC897][Remove the database store from the ORE codec]] | BACKLOG | | | The ORE codec's run store writes reporting, refdata and analytics tables through their repositories and services, and only its own tests call it. Remove the import and export, keep the package helpers, and drop the core libraries the codec no longer needs. |
+| [[id:B46F663A-361B-478C-9124-8220698FC897][Remove the database store from the ORE codec]] | DONE | 2026-10-28 | 2026-10-28 | The ORE codec's run store writes reporting, refdata and analytics tables through their repositories and services, and only its own tests call it. Remove the import and export, keep the package helpers, and drop the core libraries the codec no longer needs. |
 | [[id:DB1BED52-46E6-4736-954A-CB1A014BCEF5][Move the conventions bundle into refdata's contract]] | DONE | 2026-10-28 | 2026-10-28 | conventions_package.hpp includes ores.refdata.core for conventions_bundle_row, a three-field payload type. That one type is why the ORE codec depends on refdata's service layer. Move the bundle types to refdata.api, where the stage and commit protocol that carries them lives. |
 | [[id:591D3F6E-3DA9-4A8D-8CFE-77497D1AEB37][Declare the ORE input files in ores.ore]] | BACKLOG | | | The run configuration import learns that the conventions document is named by the conventionsFile setup parameter by reading reporting's file_types.ore_parameter column, a seed generated from external/ore. A fact of ore.xsd belongs in ores.ore. |
 | [[id:D839BB0D-CE10-423A-B0EB-61D68925F0F2][Read the engine log with one parser]] | BACKLOG | | | ores.ore carries two log parsers. ore_log_parser returns a normalised line and has one client, the compute node's log publisher; engine_log reads both log.txt and log_structured.json. Two readers of one format disagree eventually. |

@@ -97,6 +97,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_structure_identifiers_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

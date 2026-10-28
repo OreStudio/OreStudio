@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists sensitivity_methods_tbl_tenant_isolation_policy on "ores_analytics_sensitivity_methods_tbl";
 drop rule if exists ores_analytics_sensitivity_methods_delete_rule on "ores_analytics_sensitivity_methods_tbl";
 drop trigger if exists ores_analytics_sensitivity_methods_insert_trg on "ores_analytics_sensitivity_methods_tbl";
 drop function if exists ores_analytics_sensitivity_methods_insert_fn;

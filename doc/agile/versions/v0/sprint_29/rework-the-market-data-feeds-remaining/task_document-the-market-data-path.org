@@ -1,13 +1,13 @@
 :PROPERTIES:
-:ID: 725D6265-A89F-4AA6-A430-73A4FCC90E23
+:ID: 407E2CD6-3607-4B3E-9A95-61DDD3096CC9
 :END:
-#+title: Task: Scenario, bootstrap a curve to publication
-#+description: A from-scratch scenario that shows how a curve is bootstrapped and published, live-verified.
+#+title: Task: Document the market data path
+#+description: One path from a public provider's fixing to a report, clean via oresmd, with the in-flight Frankfurter work covered.
 #+type: task
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch: feature/scenario-bootstrap-a-curve
+#+branch: feature/document-the-market-data-path
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A document explains the bootstrapping model and walks a person from an empty party to a published curve, with a diagram and evidence.
+A reader follows a single path from a public provider through generation, subscription, a curve recipe, its publication and a report, with the oresmd identity stated at every hop.
 
 * Status
 
@@ -35,8 +35,9 @@ A document explains the bootstrapping model and walks a person from an empty par
 
 * Acceptance
 
-- The scenario explains where the quotes come from, how the pillars map to them, and what the compute and the publish do.
-- The walkthrough is verified live, with the exact commands and screens, and every gap recorded.
+- One hub note links the stages, with a diagram, and each stage names its records, its oresmd identity, its permission and its screen or command.
+- The Frankfurter provider and the fixings that seed the stochastic processes are documented from the in-flight prime origin work, without duplicating it.
+- The existing notes are reconciled: stale names fixed, register rows added, and every gap recorded rather than smoothed over.
 
 * Plan
 

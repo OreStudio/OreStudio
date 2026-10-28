@@ -148,7 +148,9 @@ Read this section to drive the service and to read what it leaves behind.
 2. [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]]. The shell commands.
 3. [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]]. The simulator screens.
 4. [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]], then [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]], then [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]]. The identity of a datum
-   and the stored result.
+   and the stored result. [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+   states the rule the identity implies: an oresmd URI is the runtime
+   identity, and an ORE key lives only at the ORE XML boundary.
 5. [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]]. Snapshots and cuts.
 6. [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]. How an ORE market data vintage becomes observations.
 

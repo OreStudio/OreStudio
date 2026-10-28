@@ -199,6 +199,7 @@ carries no audit columns, so a point has no readable trail.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
 - [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] — the input this journey builds from, and the decision that a pillar names its series rather than deriving it
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
 
 * See also

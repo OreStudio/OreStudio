@@ -1,0 +1,75 @@
+@startuml scenario_bootstrap_a_curve_to_publication
+' Scenario: a blueprint becomes a published curve.
+' Source for doc/knowledge/demo/scenario_bootstrap_a_curve_to_publication.org.
+' Regenerate with: plantuml -tpng <this file>
+
+skinparam maxMessageSize 200
+skinparam wrapWidth 240
+skinparam sequenceMessageAlign left
+
+actor "Henry Jones\nmaker, Trading" as Maker
+participant "Curve screens\nweb + BFF" as Web
+participant "ores.refdata\nblueprint + pillars" as Refdata
+participant "Simulated IR feed" as Feed
+participant "ores.marketdata" as Market
+actor "Mark Reid\ndecider, Operations" as Decider
+participant "ores.inbox" as Inbox
+
+== The market publishes its quotes ==
+
+Feed -> Feed: build each pillar as an oresmd datum
+Feed -> Market: tick per pillar, at the datum URI
+Market -> Market: create the party's series,\nstore each observation
+
+== The maker authors the blueprint ==
+
+Maker -> Web: Curve blueprints > Add
+Web -> Refdata: put ir_curve_bootstrap_config\n(name, output series, currency, index tenor, role, conventions)
+Refdata --> Web: the blueprint, version 1
+Maker -> Web: Pillars > Add, one per pillar
+Web -> Refdata: put ir_curve_bootstrap_pillar\n(start tenor, end tenor, curve role)
+Refdata --> Web: the pillars in maturity order
+
+== The maker checks the recipe ==
+
+Maker -> Web: Check > Run the test
+Web -> Market: compute_curve(config, as_of)
+Market -> Refdata: read the config and its pillars
+Market -> Market: compose the pillar's datum,\nread its observation at the as-of
+Market -> Market: bootstrap engine
+Market --> Web: points (point_id, date, discount_factor)
+Web --> Maker: six checks, points, forwards, findings
+
+== The maker asks for the publish ==
+
+Maker -> Market: publish-curve <config> <as_of> (shell)
+Market -> Market: read the subject from the config
+Market -> Inbox: raise marketdata.curve_publish
+Inbox --> Market: request, state waiting
+Market -> Market: write the curve_publish detail
+Market --> Maker: "Raised. The publish waits on the decision."
+
+== The decider decides ==
+
+Decider -> Web: Approvals > open the request
+Web -> Inbox: queue, request and subject
+Decider -> Web: Approve, with a comment
+Web -> Inbox: decide_approval
+Inbox --> Web: approved, not by the asker
+
+== The maker publishes the approved set ==
+
+Maker -> Market: publish-curve <config> <as_of> --approval_request_id <request>
+Market -> Inbox: verdict: approved, same subject, unused
+Inbox --> Market: publish may proceed
+Market -> Market: compute, then write observations and lineage
+Market -> Market: stamp the output series\n(candidate becomes a published curve)
+Market -> Market: record the publication\nand send the notice
+Market --> Maker: published_at, published_by
+
+== The published set is read ==
+
+Decider -> Web: Published sets tab, published list
+Web -> Market: list_published_curves,\nget_published_curve_sets
+Market --> Web: sets with publisher, as-of, points, state
+@enduml

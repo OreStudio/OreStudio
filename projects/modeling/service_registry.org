@@ -238,12 +238,35 @@
 
 - ores_reporting_
 
+# A change to a number-changing group of engine run settings is a proposal, so
+# the service raises the approval request that decides it and writes the parts
+# of that request. It writes no decision: the inbox service owns those.
+- ores_inbox_approval_requests_
+- ores_inbox_approval_request_parts_
+- ores_inbox_notifications_
+- ores_inbox_notification_arguments_
+- ores_inbox_notification_recipients_
+- ores_inbox_notification_deliveries_
+
 ** Select prefixes
 
 # The report_instance_lifecycle state map loads from DQ's own tables, through
 # fsm_state_repository::read_latest_by_machine_name: a state's name is unique
 # only within its machine, so the machine is resolved where its name lives.
 - ores_dq_fsm_
+
+# The raise reads the kind, the parts the kind names, and the decisions the
+# request has taken, through the approval lifecycle. It reads the account the
+# actor signs in as, which is the account the request is raised for.
+- ores_inbox_approval_
+- ores_inbox_notification_kinds_
+- ores_inbox_notification_channels_
+- ores_inbox_delivery_outcome_types_
+- ores_iam_accounts_
+
+# A read of an account is limited by a policy that looks at the account-party
+# links, and a policy runs with the privileges of the caller.
+- ores_iam_account_parties_
 
 ** Execute prefixes
 
@@ -442,10 +465,22 @@
 
 - ores_marketdata_
 
+# The publish is a request, so the service raises one and reads the decision.
+# It writes the request and its parts, and reads the kinds that say who
+# decides, the states a request moves through, and the parts it names.
+- ores_inbox_approval_requests_
+- ores_inbox_approval_request_parts_
+
 ** Select prefixes
 
 - ores_refdata_
 - ores_ore_
+- ores_inbox_approval_
+- ores_iam_accounts_
+
+# A read of an account is limited by a policy that looks at the account-party
+# links, and a policy runs with the privileges of the caller.
+- ores_iam_account_parties_
 
 ** Extra args
 

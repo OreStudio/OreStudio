@@ -39,6 +39,7 @@ A system administrator who sets up a new installation reads the terms of each pu
 - The administrator accepts or declines each provider. An acceptance records the terms version, the principal who accepted and when; a declined provider is not fetched.
 - A provider whose terms change has a new version, and the system administrator is asked again before the adapter fetches it.
 - The terms can be read and changed later from the provider's own screen, not only in the first run.
+- Acceptance is set only by the accept operation, on the server: it computes the digest, takes the accepting account from the authenticated session and the time from the server clock. A provider write ignores acceptance fields that a client sends. (Added on 2026-10-28 from the review of #3992.)
 
 * Plan
 

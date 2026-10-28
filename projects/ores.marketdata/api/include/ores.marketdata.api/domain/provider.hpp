@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -84,6 +85,49 @@ struct provider final {
      * @brief Order for UI display purposes.
      */
     int display_order = 0;
+
+    /**
+     * @brief The page that states the provider's terms of use. Empty for a provider whose terms are
+     * a contract outside the system, such as a vendor's licence, which the system does not check
+     * before it takes data.
+     */
+    std::string terms_url = "";
+
+    /**
+     * @brief The credit the terms ask a copy of the data to carry, such as "Source: ECB
+     * statistics".
+     */
+    std::string terms_credit = "";
+
+    /**
+     * @brief Whether the terms allow the provider's values to be stored. A provider whose terms do
+     * not is not fetched, whatever its acceptance.
+     */
+    bool allows_storage = false;
+
+    /**
+     * @brief Where the key the provider needs is read from, such as
+     * env:ORES_MARKETDATA_FRED_API_KEY. Never the key itself. Empty when no key is needed.
+     */
+    std::string credential_ref = "";
+
+    /**
+     * @brief The digest of the terms when they were accepted: the SHA-256 of the terms page, the
+     * credit and the storage permission. The terms hold while it matches the digest of the terms as
+     * they stand, so a change of any of them clears the acceptance with no further write. Empty
+     * when the terms were never accepted.
+     */
+    std::string terms_accepted_digest = "";
+
+    /**
+     * @brief Who accepted the terms. Empty when they were never accepted.
+     */
+    std::string terms_accepted_by = "";
+
+    /**
+     * @brief When the terms were accepted. Empty when they never were.
+     */
+    std::optional<std::chrono::system_clock::time_point> terms_accepted_at;
 
     /**
      * @brief Username of the person who last modified this provider.

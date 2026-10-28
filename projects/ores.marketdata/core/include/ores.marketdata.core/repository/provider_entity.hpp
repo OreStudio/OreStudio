@@ -51,6 +51,13 @@ struct provider_entity {
     std::string kind;
     std::string description;
     int display_order = 0;
+    std::string terms_url = "";
+    std::string terms_credit = "";
+    bool allows_storage = false;
+    std::string credential_ref = "";
+    std::string terms_accepted_digest = "";
+    std::string terms_accepted_by = "";
+    std::optional<db_timestamp> terms_accepted_at;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -70,6 +77,13 @@ struct provider_entity {
                query_builder::bind("kind", &e::kind) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("display_order", &e::display_order) |
+               query_builder::bind("terms_url", &e::terms_url) |
+               query_builder::bind("terms_credit", &e::terms_credit) |
+               query_builder::bind("allows_storage", &e::allows_storage) |
+               query_builder::bind("credential_ref", &e::credential_ref) |
+               query_builder::bind("terms_accepted_digest", &e::terms_accepted_digest) |
+               query_builder::bind("terms_accepted_by", &e::terms_accepted_by) |
+               query_builder::bind("terms_accepted_at", &e::terms_accepted_at) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 4A3E7802-182D-41A1-B51B-E940F1BED38B
+:END:
+#+title: The check gate builds on files its drift check rewrote
+#+description: compass check regenerates drifted components in place and then builds on the result, so a hand-edited build file on main fails the build of every branch that touches that component.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The =component-drift= step of =compass check= regenerates each changed component
+in the working tree and leaves the result there. The build step that follows then
+compiles the regenerated files, not the committed ones. On 2026-10-28,
+=projects/ores.marketdata/core/tests/CMakeLists.txt= on main links =ores.iam= and
+=ores.inbox= by hand, which its model does not declare; the drift step removed those
+links, and the build of every branch that touched =ores.marketdata= failed on
+=curve_publish_eventing_integration_tests.cpp= with a missing =ores.iam.core= header.
+The gate also re-tangles other drifted shell recipes into the tree. The drift check
+should compare in a copy, or restore what it rewrote, before the build runs; and the
+hand edit on main should move into the model's =extra_test_dependencies=.
+
+* Why
+
+A gate that fails on every branch for a reason no branch caused is a gate people learn
+to ignore, and it hides the failures that are real. It also leaves a dirty tree that a
+careless commit would carry. Found while raising #3992, where the build, the database
+and every suite after it failed on this rewrite alone.
+
+* References
+
+- PR #3992, whose gate run showed it.
+- =build/scripts/local_checks.py=, the =component-drift= and =build= checks.
+
+* See also
+
+- [[id:4512DD80-5A5D-42DC-996B-9C62DC88E16B][Repair the baseline drift the gate reports]] -- the other drift on main the gate reports.

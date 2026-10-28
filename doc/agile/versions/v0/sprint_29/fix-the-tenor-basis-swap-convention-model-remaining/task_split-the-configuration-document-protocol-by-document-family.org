@@ -103,6 +103,30 @@ configuration document is involved. It is recorded here so the split is not
 blamed for it, and it wants its own task before the clang-cl job can prove
 anything about this one.
 
+* What the split actually is
+
+The measurement first: =curve_configuration_document= holds **33 typed vectors**
+plus its configuration object, in one reflected struct. The C1202 limit is a
+per-struct count, so a file split -- moving the same struct into more headers --
+cannot lower it. The task's original instruction ("split the header and the
+handler") was written before that was measured, and on its own it would not have
+worked.
+
+The mechanism that does work is already in this tree: field groups.
+=projects/ores.codegen/library/templates/ores.cpp.field-group.field_group_header.org=
+states it in its own words --
+
+#+begin_quote
+By composing the parent struct via =rfl::Flatten<SubStruct>= each sub-struct is
+reflected independently, keeping the per-struct field count low while preserving
+the original flat JSON wire format.
+#+end_quote
+
+So the split is: the document's families become field groups, the document
+composes them with =rfl::Flatten=, and each family is reflected on its own. The
+wire stays flat, which is what the acceptance asks for, and no subject or
+handler changes.
+
 * Plan
 
 ** The order of work

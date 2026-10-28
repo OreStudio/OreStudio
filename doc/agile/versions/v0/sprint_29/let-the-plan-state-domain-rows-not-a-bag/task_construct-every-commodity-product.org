@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: E3D9AF40-C60F-47D7-AFD0-EF76D9C11A50
+:END:
+#+title: Task: Construct every commodity product by shape
+#+description: The commodity writer copies every field of the bag into one row for all twenty-five codes, and the table has no cross-column check to stop a forward carrying a barrier. Give each code a named constructor whose terms hold only the columns its shape states, so a mixture cannot be assembled.
+#+type: task
+#+level: s1
+#+filetags: :let-the-plan-state-domain-rows-not-a-bag:sprint_29:v0:
+#+owner: marco
+#+branch: feature/construct-every-commodity-product
+#+pr: 4029
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every routed commodity code is constructed by a function that names it, and its terms hold only the columns that shape states. The generated population is unchanged, so the refactor is proved by the population staying the same.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9BB217A3-C60C-482C-9384-DC2E7DF8E322][Let the plan state domain rows, not a bag]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- One constructor per routed commodity code, fixing the trade type code.
+- Twelve shape terms structs, and no terms struct carries a column another shape states.
+- The writer selects a constructor and no longer copies the bag field by field.
+- A provisioning run books the same commodity population as before, and the suites are green.
+
+* Plan
+
+Twelve shapes, ten terms structs and twenty-five constructors: a terms struct
+per distinct set of columns, a constructor per routed code, each stamping its
+own trade type. Products that state identical columns share terms and still
+get their own constructor, because the table cannot tell them apart.
+
+The writer keeps the choice of constructor, because something has to read the
+recorded trade type, and loses the field-by-field copy.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.trading.api.tests= | 462 assertions in 124 test cases | the suite binary | =8322b1eb19= |
+| =ores.synthetic.core.tests= | 1733 assertions in 78 test cases | the suite binary | =8322b1eb19= |
+| Commodity rows before the change | 0 | =compass db sql= on =ores_trading_commodity_instruments_tbl= | =c81da34a1e= |
+| Commodity generation configs | 0 | =compass db sql= on =ores_synthetic_trade_generation_configs_tbl= | =c81da34a1e= |
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4029][#4029]] | [trading] Construct every commodity product by shape |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every routed commodity code is constructed by a function that names it. The
+writer no longer copies the bag into the row: it builds the terms its shape
+states, calls the constructor, and stamps the audit columns.
+
+The product code is the only thing several of these products can state. Seven
+codes share the option shape and three share the basket option shape, so their
+rows differ by =trade_type_code= alone; the table has no column that would
+distinguish a rainbow option from a basket option, and no child table for a
+basket's members. That is recorded as the family's next problem rather than
+worked around.
+
+* What the population proves, and what it does not
+
+The claim that a run books the same population is true and vacuous: the ACME
+profile seeds no commodity generation config and the tenant has no commodity
+book, so the commodity arm is never reached. Measured at =c81da34a1e=: zero
+commodity rows and zero commodity configs.
+
+So the evidence for this change is the suites, measured on this branch at
+=8322b1eb19=: =ores.trading.api.tests= at 462 assertions in 124 test cases
+and =ores.synthetic.core.tests= at 1733 assertions in 78 -- twenty-five
+constructors each
+asserting the trade type it stamps, the vocabulary refusals, and a zero
+quantity refused on every shape -- plus the writer's dispatch, which the
+compiler proves total over the type strings it handles. A provisioning run
+cannot prove it until commodities have a book and a config, which is its own
+task.

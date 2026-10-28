@@ -36,6 +36,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
@@ -581,37 +582,130 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         row.instrument.audit.change_commentary = "Generated trade population.";
         book_req.instruments.bond_instruments.push_back(row);
     } else if (const auto* commodity = std::get_if<domain::commodity_terms>(&slot.terms)) {
-        const auto money = [](std::optional<double> value) {
+        namespace tdom = ores::trading::domain;
+        const auto money = [](std::optional<double> value) -> std::optional<tdom::decimal> {
             if (!value.has_value())
-                return std::optional<ores::utility::decimal::decimal>();
-            return std::optional<ores::utility::decimal::decimal>(
-                ores::utility::decimal::decimal::from_double(*value).value());
+                return std::nullopt;
+            return tdom::decimal::from_double(*value).value();
         };
 
-        ores::trading::domain::commodity_instrument row;
-        row.commodity_code = commodity->commodity_code;
-        row.currency = slot.currency;
-        row.quantity = commodity->quantity;
-        row.unit = commodity->unit;
-        row.start_date = commodity->start_date;
-        row.maturity_date = commodity->maturity_date;
-        row.fixed_price = money(commodity->fixed_price);
-        row.option_type = commodity->option_type;
-        row.strike_price = money(commodity->strike_price);
-        row.exercise_type = commodity->exercise_type;
-        row.average_type = commodity->average_type;
-        row.averaging_start_date = commodity->averaging_start_date;
-        row.averaging_end_date = commodity->averaging_end_date;
-        row.spread_commodity_code = commodity->spread_commodity_code;
-        row.spread_amount = money(commodity->spread_amount);
-        row.strip_frequency_code = commodity->strip_frequency_code;
-        row.variance_strike = commodity->variance_strike;
-        row.accumulation_amount = money(commodity->accumulation_amount);
-        row.knock_out_barrier = money(commodity->knock_out_barrier);
-        row.barrier_type = commodity->barrier_type;
-        row.lower_barrier = money(commodity->lower_barrier);
-        row.upper_barrier = money(commodity->upper_barrier);
-        row.swaption_expiry_date = commodity->swaption_expiry_date;
+        tdom::commodity_common_terms common;
+        common.commodity_code = commodity->commodity_code;
+        common.currency = slot.currency;
+        common.quantity = commodity->quantity;
+        common.unit = commodity->unit;
+        common.start_date = commodity->start_date;
+        common.maturity_date = commodity->maturity_date;
+
+        const auto& type = slot.trade_type_code;
+        auto row = [&] {
+            if (type == "CommodityForward" || type == "IntradayPowerForward" ||
+                type == "CommodityForwardVolatilityAgreement" || type == "CommodityPosition") {
+                tdom::commodity_forward_terms terms{common, money(commodity->fixed_price)};
+                if (type == "CommodityForward")
+                    return tdom::construct_commodity_forward(terms);
+                if (type == "IntradayPowerForward")
+                    return tdom::construct_intraday_power_forward(terms);
+                if (type == "CommodityForwardVolatilityAgreement")
+                    return tdom::construct_commodity_forward_volatility_agreement(terms);
+                return tdom::construct_commodity_position(terms);
+            }
+            if (type == "CommodityOption" || type == "CommodityDigitalOption" ||
+                type == "CommodityAsianOption" || type == "CommodityStrikeResettableOption" ||
+                type == "CommodityBasketOption" || type == "CommodityRainbowOption" ||
+                type == "CommodityBestEntryOption") {
+                tdom::commodity_option_terms terms{common, commodity->option_type,
+                                                   money(commodity->strike_price).value_or(
+                                                       tdom::decimal{}),
+                                                   commodity->exercise_type};
+                if (type == "CommodityOption")
+                    return tdom::construct_commodity_option(terms);
+                if (type == "CommodityDigitalOption")
+                    return tdom::construct_commodity_digital_option(terms);
+                if (type == "CommodityAsianOption")
+                    return tdom::construct_commodity_asian_option(terms);
+                if (type == "CommodityStrikeResettableOption")
+                    return tdom::construct_commodity_strike_resettable_option(terms);
+                if (type == "CommodityBasketOption")
+                    return tdom::construct_commodity_basket_option(terms);
+                if (type == "CommodityRainbowOption")
+                    return tdom::construct_commodity_rainbow_option(terms);
+                return tdom::construct_commodity_best_entry_option(terms);
+            }
+            if (type == "CommodityAveragePriceOption" ||
+                type == "CommodityDigitalAveragePriceOption") {
+                tdom::commodity_average_price_option_terms terms{
+                    common, commodity->option_type,
+                    money(commodity->strike_price).value_or(tdom::decimal{}),
+                    commodity->average_type, commodity->averaging_start_date,
+                    commodity->averaging_end_date};
+                if (type == "CommodityAveragePriceOption")
+                    return tdom::construct_commodity_average_price_option(terms);
+                return tdom::construct_commodity_digital_average_price_option(terms);
+            }
+            if (type == "CommodityOptionStrip") {
+                tdom::commodity_option_strip_terms terms{
+                    common, commodity->option_type,
+                    money(commodity->strike_price).value_or(tdom::decimal{}),
+                    commodity->average_type, commodity->averaging_start_date,
+                    commodity->averaging_end_date, commodity->strip_frequency_code};
+                return tdom::construct_commodity_option_strip(terms);
+            }
+            if (type == "CommodityWindowBarrierOption" ||
+                type == "CommodityGenericBarrierOption") {
+                tdom::commodity_barrier_option_terms terms{
+                    common, commodity->option_type,
+                    money(commodity->strike_price).value_or(tdom::decimal{}),
+                    commodity->barrier_type,
+                    money(commodity->lower_barrier).value_or(tdom::decimal{}),
+                    money(commodity->upper_barrier)};
+                if (type == "CommodityWindowBarrierOption")
+                    return tdom::construct_commodity_window_barrier_option(terms);
+                return tdom::construct_commodity_generic_barrier_option(terms);
+            }
+            if (type == "CommodityAccumulator" || type == "CommodityTaRF") {
+                tdom::commodity_accumulation_terms terms{
+                    common, commodity->option_type,
+                    money(commodity->accumulation_amount).value_or(tdom::decimal{}),
+                    money(commodity->knock_out_barrier)};
+                if (type == "CommodityAccumulator")
+                    return tdom::construct_commodity_accumulator(terms);
+                return tdom::construct_commodity_target_redemption_forward(terms);
+            }
+            if (type == "CommoditySpreadOption") {
+                tdom::commodity_spread_option_terms terms{
+                    common, commodity->option_type,
+                    money(commodity->strike_price).value_or(tdom::decimal{}),
+                    commodity->spread_commodity_code,
+                    money(commodity->spread_amount).value_or(tdom::decimal{})};
+                return tdom::construct_commodity_spread_option(terms);
+            }
+            if (type == "CommodityVarianceSwap" || type == "CommodityPairwiseVarianceSwap" ||
+                type == "CommodityBasketVarianceSwap") {
+                tdom::commodity_variance_swap_terms terms{
+                    common, commodity->variance_strike.value_or(0.0)};
+                if (type == "CommodityVarianceSwap")
+                    return tdom::construct_commodity_variance_swap(terms);
+                if (type == "CommodityPairwiseVarianceSwap")
+                    return tdom::construct_commodity_pairwise_variance_swap(terms);
+                return tdom::construct_commodity_basket_variance_swap(terms);
+            }
+            if (type == "CommoditySwap" || type == "CommodityWorstOfBasketSwap") {
+                tdom::commodity_swap_terms terms{common, money(commodity->fixed_price)};
+                if (type == "CommoditySwap")
+                    return tdom::construct_commodity_swap(terms);
+                return tdom::construct_commodity_worst_of_basket_swap(terms);
+            }
+            if (type == "CommoditySwaption") {
+                tdom::commodity_swaption_terms terms{
+                    common, commodity->option_type,
+                    money(commodity->strike_price).value_or(tdom::decimal{}),
+                    commodity->swaption_expiry_date};
+                return tdom::construct_commodity_swaption(terms);
+            }
+            throw trade_population_write_error("The commodity trade type " + type +
+                                               " states no table this writer knows.");
+        }();
         row.audit.change_reason_code = std::string(population_reason);
         row.audit.change_commentary = "Generated trade population.";
         book_req.instruments.commodity_instruments.push_back(row);

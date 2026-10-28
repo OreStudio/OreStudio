@@ -674,6 +674,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/commodity_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/commodity_instrument_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/commodity_instrument_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/commodity_instruments.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/composite_instrument.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/composite_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/composite_instrument_table.hpp"

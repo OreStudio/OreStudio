@@ -21,7 +21,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import {
     structures,
     type StructureLeg,
@@ -85,78 +85,165 @@ function Explained({
     );
 }
 
+/**
+ * One row of the structure's tree.
+ *
+ * A structure is a row that opens: its twisty folds the structures and trades
+ * beneath it, and its reference leads to that structure's page. A trade is a row
+ * that selects: it marks itself as the leg being read, which the page states
+ * beside the tree and the address carries as `?leg=`, so the selection a person
+ * made is the one they can send to a colleague.
+ */
 function TreeNodeRow({
     node,
-    depth,
-    current,
+    level,
+    selectedId,
+    onSelect,
+    isOpen,
+    onToggle,
 }: {
     readonly node: StructureTreeNode;
-    readonly depth: number;
-    readonly current: string;
+    readonly level: number;
+    readonly selectedId: string;
+    readonly onSelect: (node: StructureTreeNode) => void;
+    readonly isOpen: (id: string) => boolean;
+    readonly onToggle: (id: string) => void;
 }): ReactNode {
+    const { t } = useTranslation();
     const isStructure = node.role === 'structure' || node.children.length > 0;
-    const isHere = node.id === current;
-    return (
-        <li>
-            <div
-                className={`flex items-start gap-2 py-1 ${isHere ? 'text-ink' : 'text-ink-muted'}`}
-                style={{ paddingLeft: `${depth * 14}px` }}
-            >
-                {/* The chip is the asset class, as the prototype draws it: the
-                    product's own name is the line beside it. */}
-                <Tag tone={kindTone(node.asset_class)}>
-                    {node.asset_class === '' ? 'trade' : node.asset_class}
-                </Tag>
-                <div className="min-w-0 flex-1">
-                    {node.product === '' ? null : (
-                        <div className="truncate text-sm text-ink" title={node.product}>
-                            {node.product}
-                        </div>
-                    )}
-                    <div className="font-mono text-xs">
-                        {isStructure ? (
-                            <Link
-                                className="text-accent hover:text-accent-bright"
-                                to={structurePathFor(node)}
-                            >
-                                {node.reference === '' ? node.id : node.reference}
-                            </Link>
-                        ) : (
-                            <Link
-                                className="text-accent hover:text-accent-bright"
-                                to={`${PATHS.trades}/${node.id}`}
-                            >
-                                {node.reference === '' ? node.id : node.reference}
-                            </Link>
-                        )}
-                        {node.role === '' ? null : <span> · {node.role}</span>}
-                    </div>
+    const hasChildren = node.children.length > 0;
+    const open = isOpen(node.id);
+    const selected = node.id === selectedId;
+    const label = node.reference === '' ? node.id : node.reference;
+    const role =
+        node.role === '' ? null : <span className="font-mono text-xs"> · {node.role}</span>;
+    /*
+     * A structure's reference is the link and its role is stated beside it, so
+     * the link a person follows is named by the reference alone. A trade is one
+     * control: pressing any part of the row selects the leg.
+     */
+    const facts = (
+        <div className="min-w-0 flex-1">
+            {node.product === '' ? null : (
+                <div className="truncate text-sm text-ink" title={node.product}>
+                    {node.product}
                 </div>
+            )}
+            <div className="font-mono text-xs">
+                {isStructure ? (
+                    <Link
+                        className="text-accent hover:text-accent-bright"
+                        to={structurePathFor(node)}
+                    >
+                        {label}
+                    </Link>
+                ) : (
+                    label
+                )}
+                {role}
             </div>
-            {node.children.length === 0 ? null : (
-                <ul className="m-0 list-none p-0">
+        </div>
+    );
+    return (
+        <li role="none">
+            <div
+                role="treeitem"
+                aria-level={level + 1}
+                aria-selected={selected}
+                aria-expanded={hasChildren ? open : undefined}
+                className={`flex items-start gap-2 py-1 ${
+                    selected
+                        ? 'bg-surface-hover text-ink shadow-[inset_2px_0_0_var(--accent)]'
+                        : 'text-ink-muted'
+                }`}
+                style={{ paddingLeft: `${level * 14}px` }}
+            >
+                {hasChildren ? (
+                    <button
+                        type="button"
+                        aria-label={t(
+                            open ? 'trading.structure.collapse' : 'trading.structure.expand',
+                        )}
+                        className="w-3 shrink-0 text-xs text-ink-faint"
+                        onClick={() => {
+                            onToggle(node.id);
+                        }}
+                    >
+                        {open ? '▾' : '▸'}
+                    </button>
+                ) : (
+                    <span className="w-3 shrink-0" aria-hidden="true" />
+                )}
+                {/* A structure is chipped by its kind and a trade by its asset
+                    class, which is what the prototype draws and what a reader
+                    compares across the tree. */}
+                {isStructure ? (
+                    <>
+                        <Tag tone={kindTone(node.kind)}>{node.kind}</Tag>
+                        {facts}
+                    </>
+                ) : (
+                    <button
+                        type="button"
+                        className="flex min-w-0 flex-1 items-start gap-2 text-left"
+                        onClick={() => {
+                            onSelect(node);
+                        }}
+                    >
+                        <Tag tone={kindTone(node.asset_class)}>
+                            {node.asset_class === ''
+                                ? t('trading.structure.trade')
+                                : node.asset_class}
+                        </Tag>
+                        {facts}
+                    </button>
+                )}
+            </div>
+            {hasChildren && open ? (
+                <ul role="group" className="m-0 list-none p-0">
                     {node.children.map((child) => (
                         <TreeNodeRow
                             key={child.id}
                             node={child}
-                            depth={depth + 1}
-                            current={current}
+                            level={level + 1}
+                            selectedId={selectedId}
+                            onSelect={onSelect}
+                            isOpen={isOpen}
+                            onToggle={onToggle}
                         />
                     ))}
                 </ul>
-            )}
+            ) : null}
         </li>
     );
 }
 
 function TreePanel({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
+    const [params, setParams] = useSearchParams();
+    const [closed, setClosed] = useState<ReadonlySet<string>>(new Set<string>());
     if (record.tree === null) {
         return null;
     }
+    const selectedId = params.get('leg') ?? '';
+    const chosen = record.legs.find((leg) => leg.trade_id === selectedId);
     const inner = record.tree.children.filter(
         (child) => child.role === 'structure' || child.children.length > 0,
     ).length;
+    const select = (node: StructureTreeNode): void => {
+        const next = new URLSearchParams(params);
+        next.set('leg', node.id);
+        setParams(next, { replace: true });
+    };
+    const toggle = (id: string): void => {
+        const next = new Set(closed);
+        if (next.has(id)) {
+            next.delete(id);
+        } else {
+            next.add(id);
+        }
+        setClosed(next);
+    };
     return (
         <aside className="h-fit min-w-0 rounded-md border border-line bg-surface-raised">
             <header className="flex items-baseline gap-2 border-b border-line px-3 py-2">
@@ -170,9 +257,36 @@ function TreePanel({ record }: { readonly record: StructurePageRecord }): ReactN
                     })}
                 </span>
             </header>
-            <ul className="m-0 list-none p-3">
-                <TreeNodeRow node={record.tree} depth={0} current={record.id} />
+            <ul
+                role="tree"
+                aria-label={t('trading.structure.treeLabel')}
+                className="m-0 list-none p-3"
+            >
+                <TreeNodeRow
+                    node={record.tree}
+                    level={0}
+                    selectedId={selectedId}
+                    onSelect={select}
+                    isOpen={(id) => !closed.has(id)}
+                    onToggle={toggle}
+                />
             </ul>
+            {chosen === undefined ? null : (
+                <div className="space-y-1 border-t border-line px-3 py-2">
+                    <p className="text-xs text-ink-muted">
+                        {t('trading.structure.readingLeg', {
+                            reference: chosen.reference === '' ? chosen.trade_id : chosen.reference,
+                            role: chosen.role,
+                        })}
+                    </p>
+                    <Link
+                        className="text-xs text-accent hover:text-accent-bright"
+                        to={`${PATHS.trades}/${chosen.trade_id}`}
+                    >
+                        {t('trading.structure.openTrade')}
+                    </Link>
+                </div>
+            )}
             <p className="border-t border-line px-3 py-2 text-xs text-ink-faint">
                 {t('trading.structure.treeNote')}
             </p>
@@ -309,6 +423,14 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
 
     const source: ListSource<StructureLeg> = {
         key: `structure-legs-${record.id}`,
+        /*
+         * The legs arrive with the deal, so the table reads the ones the page
+         * now holds: adding or unlinking a leg changes this, and the table
+         * reads again rather than keeping the page it first drew.
+         */
+        scope: record.legs
+            .map((leg) => `${leg.trade_id}:${leg.sequence_number}:${leg.state}`)
+            .join(','),
         read: async (page) => {
             const needle = page.search.toLowerCase();
             const matched = record.legs.filter(
@@ -368,8 +490,7 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
                     {
                         id: 'state',
                         header: t('trading.structure.state'),
-                        cell: (leg) =>
-                            leg.state === '' ? '—' : <Tag tone="up">{leg.state}</Tag>,
+                        cell: (leg) => (leg.state === '' ? '—' : <Tag tone="up">{leg.state}</Tag>),
                     },
                     {
                         id: 'external_version',
@@ -397,11 +518,13 @@ function LegsTable({ record }: { readonly record: StructurePageRecord }): ReactN
     );
 }
 
-
 function DetailsTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const asOne = record.kind !== 'Package';
+    const key = record.reference === '' ? record.id : record.reference;
+    const roles = record.roles.length > 0 ? record.roles : ['leg'];
+    const [role, setRole] = useState(roles[0] ?? 'leg');
     return (
         <div className="space-y-4">
             <IdentityCard record={record} />
@@ -410,15 +533,35 @@ function DetailsTab({ record }: { readonly record: StructurePageRecord }): React
                 title={t('trading.structure.trades')}
                 version={t('trading.structure.legCount', { count: String(record.legs.length) })}
                 actions={
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => {
-                            void navigate(PATHS.newTrade);
-                        }}
-                    >
-                        {t('trading.structure.bookLeg')}
-                    </Button>
+                    <div className="flex items-end gap-2">
+                        <Field label={t('trading.structure.role')}>
+                            <Select value={role} onChange={(event) => setRole(event.target.value)}>
+                                {roles.map((value) => (
+                                    <option key={value} value={value}>
+                                        {value}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => {
+                                /*
+                                 * The booking names the deal and the role: the
+                                 * trade it makes is a leg before the person
+                                 * leaves the form, rather than one they must
+                                 * come back and link.
+                                 */
+                                void navigate(
+                                    `${PATHS.newTrade}?structure=${encodeURIComponent(key)}` +
+                                        `&role=${encodeURIComponent(role)}`,
+                                );
+                            }}
+                        >
+                            {t('trading.structure.bookLeg')}
+                        </Button>
+                    </div>
                 }
             >
                 <p className="text-xs text-ink-muted">
@@ -503,40 +646,46 @@ function MembersTab({ record }: { readonly record: StructurePageRecord }): React
     );
 }
 
+/**
+ * The record of what changed.
+ *
+ * Two records change when a deal does: the deal itself, when its kind or its
+ * template is corrected, and the membership of each leg, when a trade is linked
+ * or unlinked. Both are read with the application's history panel, the one every
+ * record page shows, so a link reads as a version with a reason and a person on
+ * it rather than as a row in a table built for this screen.
+ */
 function HistoryTab({ record }: { readonly record: StructurePageRecord }): ReactNode {
     const { t } = useTranslation();
-    if (record.history.length === 0) {
-        return <Notice tone="info">{t('trading.structure.noHistory')}</Notice>;
-    }
+    const [legId, setLegId] = useState('');
+    const leg = record.legs.find((row) => row.trade_id === legId);
     return (
-        <section className="overflow-hidden rounded-md border border-line">
-            <table className="w-full text-left text-sm">
-                <thead>
-                    <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
-                        <th className="px-3 py-2 font-medium">
-                            {t('trading.structure.version')}
-                        </th>
-                        <th className="px-3 py-2 font-medium">{t('trading.structure.by')}</th>
-                        <th className="px-3 py-2 font-medium">{t('trading.structure.when')}</th>
-                        <th className="px-3 py-2 font-medium">{t('trading.structure.reason')}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {record.history.map((version) => (
-                        <tr key={version.version} className="border-b border-line last:border-0">
-                            <td className="px-3 py-2 text-ink-muted">{version.version}</td>
-                            <td className="px-3 py-2 text-ink">{version.modified_by}</td>
-                            <td className="px-3 py-2 text-ink-muted">{version.recorded_at}</td>
-                            <td className="px-3 py-2 text-ink">
-                                {version.change_commentary === ''
-                                    ? version.change_reason_code
-                                    : version.change_commentary}
-                            </td>
-                        </tr>
+        <div className="space-y-4">
+            <Field
+                label={t('trading.structure.historyRecord')}
+                hint={t('trading.structure.historyHint')}
+            >
+                <Select value={legId} onChange={(event) => setLegId(event.target.value)}>
+                    <option value="">
+                        {record.reference === '' ? record.id : record.reference} ·{' '}
+                        {t('trading.structure.historyDeal')}
+                    </option>
+                    {record.legs.map((row) => (
+                        <option key={row.trade_id} value={row.trade_id}>
+                            {(row.reference === '' ? row.trade_id : row.reference) +
+                                ' · ' +
+                                row.role}
+                        </option>
                     ))}
-                </tbody>
-            </table>
-        </section>
+                </Select>
+            </Field>
+            <HistoryPanel
+                entityType={
+                    leg === undefined ? 'ores.trading.structure' : 'ores.trading.structure_member'
+                }
+                entityId={leg === undefined ? record.id : leg.trade_id}
+            />
+        </div>
     );
 }
 

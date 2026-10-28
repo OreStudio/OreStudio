@@ -123,6 +123,11 @@ const HISTORY_TYPES = new Set([
     'ores.refdata.counterparty',
     'ores.refdata.counterparty_identifier',
     'ores.refdata.counterparty_contact_information',
+    // Trading's own records: a trade and a deal read their versions here, and a
+    // leg's link or unlink is a version of the membership.
+    'ores.trading.trade',
+    'ores.trading.structure',
+    'ores.trading.structure_member',
     ...SYNTHETIC_HISTORY_TYPES,
 ]);
 

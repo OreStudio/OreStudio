@@ -395,16 +395,27 @@ export function RecordList<Row>({
 export function localSource<Row>({
     key,
     rows,
+    revision,
     searchOf,
     orderOf,
 }: {
     readonly key: string;
     readonly rows: readonly Row[];
+    /**
+     * What the rows say, where a row can change while the screen stays open.
+     *
+     * A list caches its page by its source, so a source over rows the screen
+     * holds must state when those rows changed: without it the table keeps
+     * drawing the rows it read first while the page around it shows the new
+     * ones, as when a leg is added to a deal.
+     */
+    readonly revision?: string;
     readonly searchOf?: (row: Row) => string;
     readonly orderOf?: (left: Row, right: Row) => number;
 }): ListSource<Row> {
     return {
         key,
+        ...(revision === undefined ? {} : { scope: revision }),
         read: async (page) => {
             const needle = page.search.toLowerCase();
             const matched =

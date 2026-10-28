@@ -71,6 +71,9 @@ function PartTable({
                     source={localSource<PartRow>({
                         key: `trade-part-${caption}`,
                         rows: rows.map((cells, index) => ({ key: String(index), cells })),
+                        revision: rows
+                            .map((cells) => cells.map((cell) => String(cell ?? '')).join(' '))
+                            .join('\n'),
                         searchOf: (entry) =>
                             entry.cells.map((cell) => String(cell ?? '')).join(' '),
                     })}
@@ -254,6 +257,7 @@ function LinkTable({
     const source = localSource({
         key: `trade-links-${caption}`,
         rows,
+        revision: rows.map((row) => `${row.key}:${row.link_type}:${row.other}`).join(','),
         searchOf: (row) => `${row.link_type} ${row.other}`,
     });
     if (links.length === 0) {

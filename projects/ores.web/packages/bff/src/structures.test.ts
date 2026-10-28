@@ -120,7 +120,7 @@ const lists = {
     counterparties: 'refdata.v1.counterparties.list',
     summaries: 'trading.v1.trade_summaries.list',
     trades: 'trading.v1.trades.list',
-    versions: 'trading.v1.structures_versions.list',
+    tradeTypes: 'trading.v1.trade_types.list',
     kinds: 'trading.v1.structure_kinds.list',
     putStructure: 'trading.v1.structures.put',
     deleteMember: 'trading.v1.structure_members.delete',
@@ -182,17 +182,14 @@ function repliesWith(extra: Readonly<Record<string, unknown>> = {}) {
                 },
             ],
         },
-        [lists.versions]: {
+        /*
+         * The catalogue names the product and the class its family belongs to:
+         * the response carries the array as `types`, and a name that only
+         * repeats the code leaves the class empty.
+         */
+        [lists.tradeTypes]: {
             result: ok,
-            versions: [
-                {
-                    version: 1,
-                    modified_by: 'diane.kay',
-                    recorded_at: '2026-10-27 10:00:00+00',
-                    change_reason_code: 'system.new_record',
-                    change_commentary: 'Grouped by the population.',
-                },
-            ],
+            types: [{ code: 'Swap', description: 'Interest Rate Swap', product_type: 'swap' }],
         },
         ...extra,
     };
@@ -227,12 +224,14 @@ describe('the structure page route', () => {
             reference: 'POP-1',
             role: 'leg',
             sequence_number: 1,
-            // The product is the type's name, and the state and the notional are
-            // the facts the page states beside it.
+            // The product is the catalogue's name for the type, the asset class
+            // is the family that name belongs to, and the state and the external
+            // version are the facts the page states beside them.
             kind: 'Swap',
+            product: 'Interest Rate Swap',
+            asset_class: 'Rates',
             external_version: 3,
         });
-        expect(body.history).toHaveLength(1);
         expect(body.structure.counterparty_name).toBe('Banque Banorient France');
         expect(body.roles).toEqual(['leg']);
     });

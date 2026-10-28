@@ -1,7 +1,8 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { counterparties } from '../api/counterparties.js';
+import { structures } from '../api/structures.js';
 import { trades, type BookingRequest } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
@@ -26,6 +27,15 @@ function today(): string {
 export function BookTradePage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const queries = useQueryClient();
+    const [params] = useSearchParams();
+    /*
+     * A booking made from a deal names it: the trade it makes is a leg of that
+     * deal before the person leaves the form. Booking from the blotter names no
+     * deal and the trade stands alone.
+     */
+    const structureKey = params.get('structure') ?? '';
+    const legRole = params.get('role') ?? '';
     const trail = [
         { label: t('shell.menu.home'), to: '/' },
         { label: t('shell.menu.trading'), to: PATHS.trading },
@@ -41,6 +51,11 @@ export function BookTradePage(): ReactNode {
         queryKey: ['counterparties', 'pick'],
         queryFn: () => counterparties.page({ offset: 0, limit: 200, search: '', status: 'active' }),
     });
+    const deal = useQuery({
+        queryKey: ['structure', structureKey],
+        queryFn: () => structures.one(structureKey),
+        enabled: structureKey !== '',
+    });
 
     const [bookId, setBookId] = useState('');
     const [counterpartyId, setCounterpartyId] = useState('');
@@ -50,19 +65,39 @@ export function BookTradePage(): ReactNode {
     const [identifierType, setIdentifierType] = useState('');
     const [identifierValue, setIdentifierValue] = useState('');
 
+    const [booked, setBooked] = useState('');
     const booking = useMutation({
-        mutationFn: (request: BookingRequest) => trades.book(request),
-        onSuccess: (id) => {
-            void navigate(`${PATHS.trades}/${id}`);
+        mutationFn: async (request: BookingRequest) => {
+            const id = await trades.book(request);
+            setBooked(id);
+            if (structureKey !== '') {
+                await structures.addLeg(structureKey, id, legRole === '' ? 'leg' : legRole);
+            }
+            return id;
+        },
+        onSuccess: async (id) => {
+            if (structureKey === '') {
+                void navigate(`${PATHS.trades}/${id}`);
+                return;
+            }
+            await queries.invalidateQueries({ queryKey: ['structure'] });
+            await queries.invalidateQueries({ queryKey: ['structures'] });
+            void navigate(`${PATHS.structures}/${encodeURIComponent(structureKey)}`);
         },
     });
 
     const openBooks = offered.data?.books ?? [];
     const issues = offered.data?.issues ?? [];
     const idTypes = offered.data?.idTypes ?? [];
+    /*
+     * Every leg of a deal is booked with the deal's counterparty, so the deal
+     * states it and the form does not offer another.
+     */
+    const dealCounterparty = structureKey === '' ? '' : (deal.data?.counterparty_id ?? '');
+    const statedCounterparty = dealCounterparty === '' ? counterpartyId : dealCounterparty;
     const ready =
         bookId !== '' &&
-        counterpartyId !== '' &&
+        statedCounterparty !== '' &&
         issueId !== '' &&
         notional !== '' &&
         identifierType !== '' &&
@@ -75,14 +110,38 @@ export function BookTradePage(): ReactNode {
             description={t('trading.booking.lead')}
         >
             <div className="max-w-3xl space-y-5">
+                {structureKey === '' ? null : (
+                    <Notice tone="info">
+                        {t('trading.booking.legNotice', {
+                            reference:
+                                deal.data === undefined
+                                    ? structureKey
+                                    : deal.data.reference === ''
+                                      ? deal.data.id
+                                      : deal.data.reference,
+                            role: legRole === '' ? 'leg' : legRole,
+                        })}
+                    </Notice>
+                )}
                 {booking.isError && <Notice tone="error">{booking.error.message}</Notice>}
+                {booking.isError && booked !== '' && (
+                    <Notice tone="info">
+                        {t('trading.booking.legFailed')}{' '}
+                        <Link
+                            className="text-accent hover:text-accent-bright"
+                            to={`${PATHS.trades}/${booked}`}
+                        >
+                            {t('trading.booking.legFailedOpen')}
+                        </Link>
+                    </Notice>
+                )}
                 <form
                     className="space-y-5"
                     onSubmit={(event) => {
                         event.preventDefault();
                         booking.mutate({
                             bookId,
-                            counterpartyId,
+                            counterpartyId: statedCounterparty,
                             tradeDate,
                             issueId,
                             notional,
@@ -111,13 +170,30 @@ export function BookTradePage(): ReactNode {
                             </Field>
                             <Field
                                 label={t('trading.booking.counterparty')}
-                                hint={t('trading.booking.counterpartyHint')}
+                                hint={
+                                    dealCounterparty === ''
+                                        ? t('trading.booking.counterpartyHint')
+                                        : t('trading.booking.legCounterpartyHint')
+                                }
                             >
                                 <Select
-                                    value={counterpartyId}
+                                    value={statedCounterparty}
+                                    disabled={dealCounterparty !== ''}
                                     onChange={(event) => setCounterpartyId(event.target.value)}
                                 >
                                     <option value="">{t('trading.booking.choose')}</option>
+                                    {/* The deal's own counterparty may sit outside
+                                        the page a picker reads, so it is stated even
+                                        when the list does not hold it. */}
+                                    {deal.data !== undefined &&
+                                        dealCounterparty !== '' &&
+                                        !(known.data?.rows ?? []).some(
+                                            (row) => row.id === dealCounterparty,
+                                        ) && (
+                                            <option value={dealCounterparty}>
+                                                {deal.data.counterparty_name}
+                                            </option>
+                                        )}
                                     {(known.data?.rows ?? []).map((row) => (
                                         <option key={row.id} value={row.id}>
                                             {row.full_name}

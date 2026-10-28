@@ -85,15 +85,6 @@ export interface StructureTreeNode {
     readonly children: readonly StructureTreeNode[];
 }
 
-/** One version of the structure, newest first. */
-export interface StructureVersion {
-    readonly version: number;
-    readonly modified_by: string;
-    readonly recorded_at: string;
-    readonly change_reason_code: string;
-    readonly change_commentary: string;
-}
-
 /** The deal a page is on, with the tree it sits in and the legs it holds. */
 export interface StructurePageRecord {
     readonly id: string;
@@ -114,7 +105,6 @@ export interface StructurePageRecord {
     readonly legs: readonly StructureLeg[];
     /** The roles a leg may take on this deal. */
     readonly roles: readonly string[];
-    readonly history: readonly StructureVersion[];
 }
 
 /** A trade the deal may take as a leg: one no structure has grouped yet. */
@@ -175,17 +165,6 @@ const structurePageRecordSchema = z.object({
         )
         .default([]),
     roles: z.array(z.string()).default([]),
-    history: z
-        .array(
-            z.looseObject({
-                version: z.coerce.number().int(),
-                modified_by: z.string().default(''),
-                recorded_at: z.string().default(''),
-                change_reason_code: z.string().default(''),
-                change_commentary: z.string().default(''),
-            }),
-        )
-        .default([]),
 });
 
 /** A trade a grouping may take: one no structure holds yet. */
@@ -228,7 +207,6 @@ export const structures = {
             tree: parsed.tree,
             legs: parsed.legs,
             roles: parsed.roles,
-            history: parsed.history,
         };
     },
 
@@ -294,10 +272,9 @@ export const structures = {
                     .default([]),
             })
             .parse(
-                await request(
-                    `/api/structures/${encodeURIComponent(key)}/leg-candidates`,
-                    { method: 'GET' },
-                ),
+                await request(`/api/structures/${encodeURIComponent(key)}/leg-candidates`, {
+                    method: 'GET',
+                }),
             );
         return answer.rows;
     },
@@ -340,16 +317,17 @@ export const structures = {
     },
 
     /** Groups the chosen trades into one structure of the kind stated. */
-    async group(kind: string, tradeIds: readonly string[]): Promise<{ id: string; reference: string }> {
-        return z
-            .object({ id: z.string(), reference: z.string().default('') })
-            .parse(
-                await request('/api/structures', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kind, tradeIds }),
-                }),
-            );
+    async group(
+        kind: string,
+        tradeIds: readonly string[],
+    ): Promise<{ id: string; reference: string }> {
+        return z.object({ id: z.string(), reference: z.string().default('') }).parse(
+            await request('/api/structures', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ kind, tradeIds }),
+            }),
+        );
     },
 
     /** Adds a trade to the deal, in the role the desk gives it. */

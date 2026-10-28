@@ -23,7 +23,6 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
-import { subjects as partySubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
 import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_kind_protocol';
@@ -402,8 +401,8 @@ function verdictsOf(kind: string): { confirms: string; prices: string } {
 async function catalogueOf(
     session: LiveSession,
 ): Promise<{ names: ReadonlyMap<string, string>; classes: ReadonlyMap<string, string> }> {
-    const types = await readAll(session, tradeTypeSubjects.list_trade_types_request, 'trade_types', {
-        filter: { code: null, code_one_of: null },
+    const types = await readAll(session, tradeTypeSubjects.list_trade_types_request, 'types', {
+        filter: { code_one_of: null },
     });
     return {
         names: new Map(
@@ -824,7 +823,7 @@ export function registerStructureRoutes(
             ),
         ];
 
-        const [structureReferences, tradeReferences, trades, history, catalogue, states] =
+        const [structureReferences, tradeReferences, trades, catalogue, states] =
             await Promise.all([
             referencesOf(
                 session,
@@ -833,14 +832,7 @@ export function registerStructureRoutes(
             ),
             referencesOf(session, 'trade', allTradeIds),
             tradesByIds(session, allTradeIds),
-            readAll(session, structureSubjects.list_structure_versions_request, 'versions', {
-                key: { id: structureId },
-                order: { field: 'version', descending: true },
-            }),
-            optional(
-                () => catalogueOf(session),
-                { names: new Map<string, string>(), classes: new Map<string, string>() },
-            ),
+            catalogueOf(session),
             optional(() => statesOf(session, allTradeIds), new Map<string, string>()),
         ]);
 
@@ -882,19 +874,18 @@ export function registerStructureRoutes(
                     .filter((id) => id !== ''),
             ),
         ];
-        const parties =
-            legPartyIds.length === 0
-                ? []
-                : await optional(
-                      () =>
-                          readAll(session, partySubjects.list_parties_request, 'parties', {
-                              filter: { id_one_of: legPartyIds, search: null },
-                          }),
-                      [] as readonly Record<string, unknown>[],
-                  );
+        /*
+         * The session's own party names the legs, because the read is
+         * party-scoped: every trade this session may see is booked as the party
+         * the person works as, and the login already carries its name.
+         */
+        const partyId = legPartyIds[0] ?? '';
         const party = {
-            id: legPartyIds[0] ?? '',
-            name: text(parties[0]?.['full_name']),
+            id: partyId,
+            name:
+                partyId !== '' && partyId === session.party?.id
+                    ? (session.party?.name ?? '')
+                    : '',
             shared: legPartyIds.length <= 1,
         };
 
@@ -930,7 +921,6 @@ export function registerStructureRoutes(
             ),
             legs,
             roles: [...FREE_ROLES],
-            history,
         };
     });
 

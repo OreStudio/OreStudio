@@ -30,7 +30,9 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     await row.locator('td').first().getByRole('link').first().click();
     // The kind titles the page and the reference sits under it, as the
     // prototype draws it: what the customer receives, then its name.
-    await expect(page.getByRole('heading', { name: /^(Package|Strategy|Typed|Dynamic)$/ })).toBeVisible({
+    await expect(
+        page.getByRole('heading', { name: /^(Package|Strategy|Typed|Dynamic)$/ }),
+    ).toBeVisible({
         timeout: 20_000,
     });
     await expect(page.getByText(reference, { exact: true }).first()).toBeVisible();
@@ -41,6 +43,10 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     // rows.
     const tree = page.locator('aside', { has: page.getByRole('heading', { name: /the tree/i }) });
     await expect(tree.getByRole('link', { name: reference }).first()).toBeVisible();
+    // The trade rows fold away and come back: a tree a person can read at the
+    // depth they need.
+    const folds = tree.getByRole('button', { name: /^collapse$/i });
+    await expect(folds.first()).toBeVisible({ timeout: 20_000 });
     await page.getByRole('tab', { name: /details/i }).click();
 
     /*
@@ -71,12 +77,25 @@ test('a structure shows its reference and its legs, and takes another leg', asyn
     });
     await page.screenshot({ path: 'shots/structure-page.png', fullPage: true });
 
-    // The record of the structure is its own tab, and adding a leg is a change
-    // the structure's history holds.
-    await page.getByRole('tab', { name: /history/i }).click();
-    await expect(page.getByRole('cell', { name: '1', exact: true }).first()).toBeVisible({
+    // The leg is taken out again, as the scenario's step does: the case proves
+    // the link and the unlink, and leaves the deal as it found it.
+    const added = page.locator('tbody tr', { hasText: chosen }).first();
+    await added.getByRole('button', { name: /^unlink$/i }).click();
+    await expect(page.locator('tbody tr', { hasText: chosen })).toHaveCount(0, {
         timeout: 20_000,
     });
+
+    // The record of the structure is its own tab, and adding a leg is a change
+    // the leg's membership history holds: the record picker chooses which of the
+    // two records is read, and the history panel is the page's own.
+    await page.getByRole('tab', { name: /history/i }).click();
+    const timeline = page.getByRole('list', { name: /timeline/i });
+    await expect(timeline).toBeVisible({ timeout: 20_000 });
+    // The deal and each leg are separate records: choosing a leg reads the
+    // versions that hold its link, which the deal's own versions do not.
+    const records = page.getByLabel(/^record/i);
+    await records.selectOption({ index: 1 });
+    await expect(timeline).toBeVisible({ timeout: 20_000 });
 });
 
 /**
@@ -99,16 +118,14 @@ test('a trade names the structure it is a leg of', async ({ page }) => {
     // breadcrumb is what says which deal is open.
     await page.getByRole('tab', { name: /^members$/i }).click();
 
-    // The leg's own link leads to the trade, and the trade names the structure it
-    // belongs to by the same reference the structure shows.
+    // The leg is chosen in the tree, which marks it as the leg being read and
+    // names the trade it is: the trade's page is one press away.
     const tree = page.locator('aside', { has: page.getByRole('heading', { name: /the tree/i }) });
-    const treeLinks = tree.getByRole('link');
-    test.skip(
-        (await treeLinks.count()) <= 1,
-        'The deal holds no leg: an earlier run took them out.',
-    );
-    // The root's own link is first; the first leg is the one after it.
-    await treeLinks.nth(1).click();
+    const leg = tree.getByRole('treeitem').filter({ hasText: '\u00b7 leg' }).first();
+    test.skip((await leg.count()) === 0, 'The deal holds no leg: an earlier run took them out.');
+    await leg.getByRole('button').first().click();
+    await expect(leg).toHaveAttribute('aria-selected', 'true');
+    await tree.getByRole('link', { name: /open the trade/i }).click();
     await expect(page.getByRole('heading', { name: reference })).toBeHidden({ timeout: 20_000 });
     await expect(page.getByRole('tab', { name: /details/i })).toHaveAttribute(
         'aria-selected',
@@ -155,7 +172,10 @@ test('a leg is taken out of a deal and the trade stays', async ({ page }) => {
     await legs.first().waitFor({ state: 'visible', timeout: 20_000 });
     const freed = ((await legs.first().getByRole('link').first().innerText()) ?? '').trim();
 
-    await legs.first().getByRole('button', { name: /^unlink$/i }).click();
+    await legs
+        .first()
+        .getByRole('button', { name: /^unlink$/i })
+        .click();
 
     /*
      * The removal is proved by what the trade becomes, not by what the page stops
@@ -257,4 +277,90 @@ test('the structures list draws the trees with what each row holds', async ({ pa
     // A package's legs each confirm on their own, which the row states.
     await expect(row).toContainText(/each leg confirms on its own/i);
     await page.screenshot({ path: 'shots/structures-list.png', fullPage: true });
+});
+
+/**
+ * Booking a leg from the deal it joins.
+ *
+ * The booking form is the blotter's own, and a person reaching it from a deal
+ * should not have to link the trade afterwards: the trade the form makes is a leg
+ * of that deal before the form closes. The counterparty is the deal's, so the
+ * form states it rather than offering another.
+ */
+test('a trade booked from a deal becomes its leg', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/trading/structures');
+
+    const row = page.locator('tbody tr', { hasText: 'PKG-' }).first();
+    await row.waitFor({ state: 'visible', timeout: 20_000 });
+    const reference = (await row.locator('td').first().innerText()).trim();
+    await row.locator('td').first().getByRole('link').first().click();
+
+    const trades = page.locator('section', {
+        has: page.getByRole('heading', { name: /^trades$/i }),
+    });
+    const countOf = async (): Promise<number> => {
+        const stated = (
+            await trades
+                .getByText(/\d+ legs?/i)
+                .first()
+                .innerText()
+        ).trim();
+        return Number(stated.split(' ')[0]);
+    };
+    await trades.waitFor({ state: 'visible', timeout: 20_000 });
+    const before = await countOf();
+
+    await page.getByRole('button', { name: /^book a leg$/i }).click();
+    // The deal the form was reached from is stated, and the counterparty is the
+    // deal's: it is offered disabled rather than chosen again.
+    await expect(page).toHaveURL(/\/trading\/trades\/new\?structure=/);
+    await expect(page.getByText(/becomes a leg of/i)).toBeVisible();
+    const counterparty = page.getByRole('combobox', { name: /^counterparty/i });
+    await expect(counterparty).toBeDisabled();
+    await expect(counterparty).not.toHaveValue('');
+
+    await page.getByRole('combobox', { name: /^book$/i }).selectOption({ index: 1 });
+    await page.getByRole('textbox', { name: /notional/i }).fill('250000');
+    await page.getByRole('combobox', { name: /^security$/i }).selectOption({ index: 1 });
+    await page.getByRole('combobox', { name: /^identifier scheme/i }).selectOption({ index: 1 });
+    await page.getByRole('textbox', { name: /^identifier/i }).fill(`E2E-LEG-${Date.now()}`);
+    await page.getByRole('button', { name: /^book trade$/i }).click();
+
+    // The deal answers, not the trade: the point of the case is that the leg is
+    // in it, and the count is the deal's own statement of that.
+    await expect(page).toHaveURL(new RegExp(`/trading/structures/${reference}$`), {
+        timeout: 30_000,
+    });
+    const legs = page.locator('section', {
+        has: page.getByRole('heading', { name: /^trades$/i }),
+    });
+    await expect
+        .poll(async () => {
+            const stated = (
+                await legs
+                    .getByText(/\d+ legs?/i)
+                    .first()
+                    .innerText()
+            ).trim();
+            return Number(stated.split(' ')[0]);
+        })
+        .toBe(before + 1);
+    await page.screenshot({ path: 'shots/structure-booked-leg.png', fullPage: true });
+
+    // The trade was booked and joined the deal; the deal is left as it was
+    // found, so a second run reads the same population. The trade itself stays
+    // booked, which is what unlinking means.
+    await legs.locator('tbody tr').last().getByRole('button', { name: /^unlink$/i }).click();
+    await expect
+        .poll(async () => {
+            const stated = (
+                await legs
+                    .getByText(/\d+ legs?/i)
+                    .first()
+                    .innerText()
+            ).trim();
+            return Number(stated.split(' ')[0]);
+        })
+        .toBe(before);
 });

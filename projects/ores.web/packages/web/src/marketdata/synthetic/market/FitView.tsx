@@ -24,6 +24,7 @@ import { useTranslation } from '../../../i18n/Provider.js';
 import { cx } from '../../../ui/Primitives.js';
 import { exponentialQuantiles, feedFit, QQ_MINIMUM_GAPS, tauSpan } from '../marketTrace.js';
 import { MarketCard, MicroLabel } from './MarketCard.js';
+import { FeedLink, type FeedPages } from './FeedLink.js';
 import { clean } from './numbers.js';
 
 /** The pixels a QQ plot takes on each side. */
@@ -41,9 +42,11 @@ export function ratioPosition(ratio: number): number {
 export function FitView({
     regime,
     trace,
+    pages,
 }: {
     readonly regime: MarketRegime;
     readonly trace: MarketTrace | undefined;
+    readonly pages: FeedPages;
 }): ReactNode {
     const { t } = useTranslation();
     const [picked, setPicked] = useState<string | undefined>(undefined);
@@ -120,7 +123,13 @@ export function FitView({
                                                 )}
                                                 onClick={() => setPicked(feed.sourceName)}
                                             >
-                                                <td className="px-2 py-1.5">{feed.sourceName}</td>
+                                                <td className="px-2 py-1.5">
+                                                    <FeedLink
+                                                        sourceName={feed.sourceName}
+                                                        pages={pages}
+                                                        tab="arrivals"
+                                                    />
+                                                </td>
                                                 <td className="px-2 py-1.5">
                                                     {t(
                                                         `marketdata.marketRegime.modes.${feed.mode}`,

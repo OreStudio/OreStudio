@@ -18,13 +18,59 @@
  *
  */
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
+import { PATHS } from '../../shell/paths.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { api, type MarketRegime, type RecordRow, type TraceFeed } from '../../api/client.js';
 import { show } from '../../refdata/records.js';
-import { Notice } from '../../ui/Primitives.js';
+import { Button, Notice } from '../../ui/Primitives.js';
 import { lawText } from './marketTrace.js';
 import { regimeLabel, useMarketRegime, useMarketTrace } from './useMarketRegime.js';
+
+/** The reason an arrivals change is recorded under: a code, the same in every language. */
+const REASON_CODE = 'system.update';
+
+/** How a save of the arrivals ended: stored, stored but not restarted, or not stored. */
+export type ArrivalsSaveOutcome =
+    | { readonly kind: 'saved' }
+    | { readonly kind: 'restartFailed'; readonly message: string }
+    | { readonly kind: 'failed'; readonly message: string };
+
+function messageOf(cause: unknown): string {
+    return cause instanceof Error ? cause.message : String(cause);
+}
+
+/**
+ * Stores the arrivals, re-reads the feed, and restarts it when asked. The feed is re-read as
+ * soon as the save is stored, so a restart that fails cannot leave the form comparing against
+ * the old row; and a failed restart is told apart from a failed save, since the law is stored
+ * either way.
+ */
+export async function saveArrivals(steps: {
+    readonly save: () => Promise<void>;
+    readonly saved?: (() => Promise<void>) | undefined;
+    readonly restart?: (() => Promise<void>) | undefined;
+}): Promise<ArrivalsSaveOutcome> {
+    try {
+        await steps.save();
+    } catch (cause) {
+        return { kind: 'failed', message: messageOf(cause) };
+    }
+    await steps.saved?.();
+    if (steps.restart === undefined) {
+        return { kind: 'saved' };
+    }
+    try {
+        await steps.restart();
+        await steps.saved?.();
+        return { kind: 'saved' };
+    } catch (cause) {
+        await steps.saved?.();
+        return { kind: 'restartFailed', message: messageOf(cause) };
+    }
+}
 
 /** The models a feed's ticks can arrive under. */
 const MODELS = ['periodic', 'poisson', 'hawkes'] as const;
@@ -41,13 +87,20 @@ type Model = (typeof MODELS)[number];
  * The two Hawkes numbers are kept in the row whatever the model is, but only a
  * Hawkes feed reads them, so they are disabled under the other two models rather
  * than hidden: a person switching models sees what will be used.
+ *
+ * A running feed drew its law when it started and keeps it, as it keeps its
+ * process, so the tab edits it all the same and offers to restart the feed on the
+ * law saved, as the Process tab does.
  */
 export function ArrivalsPanel({
     feed,
     market,
     law,
     mayWriteFeed,
+    running = false,
     save,
+    restart,
+    saved,
 }: {
     readonly feed: RecordRow;
     /** The market in force, or undefined while it is not read. The panel states it and cannot set it. */
@@ -55,6 +108,8 @@ export function ArrivalsPanel({
     /** The feed's law as the scheduler runs it now, or undefined when the feed does not run. */
     readonly law?: TraceFeed | undefined;
     readonly mayWriteFeed: boolean;
+    /** Whether the feed runs, and so runs on the law it started with until it starts again. */
+    readonly running?: boolean;
     readonly save: (
         model: Model,
         ratio: number,
@@ -62,8 +117,13 @@ export function ArrivalsPanel({
         sensitivity: number,
         intent: { readonly reasonCode: string; readonly commentary: string },
     ) => Promise<void>;
+    /** Stops and starts the feed, so it draws its law again. */
+    readonly restart?: () => Promise<void>;
+    /** Re-reads the feed once a save is done, so the next edit is against what was stored. */
+    readonly saved?: () => Promise<void>;
 }): ReactNode {
     const { t } = useTranslation();
+    const [restartAfter, setRestartAfter] = useState(true);
     const [model, setModel] = useState<Model>(modelOf(feed));
     const [ratio, setRatio] = useState(numberOf(feed, 'branching_ratio', 0));
     const [decay, setDecay] = useState(numberOf(feed, 'decay', 1));
@@ -81,16 +141,18 @@ export function ArrivalsPanel({
     const saveNow = async (): Promise<void> => {
         setSaving(true);
         setError(null);
-        try {
-            await save(model, ratio, decay, sensitivity, {
-                reasonCode: t('marketdata.arrivals.reasonCode'),
-                commentary: '',
-            });
-        } catch (cause) {
-            setError(cause instanceof Error ? cause.message : String(cause));
-        } finally {
-            setSaving(false);
+        const outcome = await saveArrivals({
+            save: () =>
+                save(model, ratio, decay, sensitivity, { reasonCode: REASON_CODE, commentary: '' }),
+            saved,
+            restart: running && restartAfter ? restart : undefined,
+        });
+        if (outcome.kind === 'failed') {
+            setError(outcome.message);
+        } else if (outcome.kind === 'restartFailed') {
+            setError(t('marketdata.arrivals.restartFailed', { message: outcome.message }));
         }
+        setSaving(false);
     };
 
     return (
@@ -140,13 +202,16 @@ export function ArrivalsPanel({
             </div>
 
             {/* Read only, and the only global fact on this tab. */}
-            <p className="text-sm text-ink-muted">
+            <p className="flex flex-wrap items-baseline gap-x-3 text-sm text-ink-muted">
                 {t('marketdata.arrivals.market', {
                     state:
                         market === undefined
                             ? t('marketdata.arrivals.marketUnknown')
                             : regimeLabel(market, t),
                 })}
+                <Link to={`${PATHS.synthetic}?tab=regime`} className="text-accent hover:underline">
+                    {t('marketdata.arrivals.openMarket')}
+                </Link>
             </p>
 
             <p data-running-law className="font-mono text-xs text-ink-muted">
@@ -157,15 +222,30 @@ export function ArrivalsPanel({
 
             {error === null ? null : <Notice tone="error">{error}</Notice>}
 
+            {running && changed && mayWriteFeed ? (
+                <div className="space-y-2 rounded-md border border-line p-3 text-sm">
+                    <p>{t('marketdata.arrivals.runningNote')}</p>
+                    <label className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={restartAfter}
+                            onChange={(event) => setRestartAfter(event.target.checked)}
+                        />
+                        {t('marketdata.arrivals.restart')}
+                    </label>
+                </div>
+            ) : null}
+
             <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    className="btn primary"
-                    disabled={!mayWriteFeed || !changed || saving}
+                <Button
+                    variant="primary"
+                    size="sm"
+                    pending={saving}
+                    disabled={!mayWriteFeed || !changed}
                     onClick={() => void saveNow()}
                 >
-                    {saving ? t('entity.saving') : t('entity.save')}
-                </button>
+                    {t('entity.save')}
+                </Button>
                 {changed ? (
                     <span className="text-xs text-ink-muted">
                         {t('marketdata.arrivals.unsaved')}
@@ -187,10 +267,12 @@ export function ArrivalsPanel({
 export function ArrivalsTab({
     feed,
     mayWriteFeed,
+    running,
     save,
 }: {
     readonly feed: RecordRow;
     readonly mayWriteFeed: boolean;
+    readonly running: boolean;
     readonly save: (
         model: Model,
         ratio: number,
@@ -199,6 +281,7 @@ export function ArrivalsTab({
         intent: { readonly reasonCode: string; readonly commentary: string },
     ) => Promise<void>;
 }): ReactNode {
+    const queries = useQueryClient();
     const source = show(feed['source_name']);
     const trace = useMarketTrace(source);
     return (
@@ -207,7 +290,17 @@ export function ArrivalsTab({
             market={useMarketRegime()}
             law={trace.data?.feeds.find((running) => running.sourceName === source)}
             mayWriteFeed={mayWriteFeed}
+            running={running}
             save={save}
+            restart={async () => {
+                const id = show(feed['id']);
+                await api.stopFeed(id);
+                await api.startFeed(id);
+            }}
+            saved={async () => {
+                await queries.invalidateQueries({ queryKey: ['records'] });
+                await queries.invalidateQueries({ queryKey: ['history'] });
+            }}
         />
     );
 }

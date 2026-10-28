@@ -26,6 +26,7 @@ import { assetClassColour } from '../../assetClassColour.js';
 import { markGroups, type StateBand } from '../marketRaster.js';
 import { lawText, tauPositions, tauSpan, traceBands } from '../marketTrace.js';
 import { MarketCard, MicroLabel, Segmented } from './MarketCard.js';
+import { FeedLink, type FeedPages } from './FeedLink.js';
 import { compact } from './numbers.js';
 
 /** The windows a person can look back over, in seconds. */
@@ -132,6 +133,7 @@ function Lane({
     dense,
     meanPace,
     covered,
+    pages,
 }: {
     readonly feed: FeedRaster['feeds'][number];
     readonly seconds: number;
@@ -143,6 +145,7 @@ function Lane({
     readonly meanPace: number;
     /** The seconds of the window the ticks cover, which is less just after a restart. */
     readonly covered: number;
+    readonly pages: FeedPages;
 }): ReactNode {
     const { t } = useTranslation();
     const groups =
@@ -169,7 +172,9 @@ function Lane({
                 )}
             >
                 <span className={cx('size-[7px] shrink-0 rounded-sm', colour.dot)} />
-                <span className="truncate">{feed.label}</span>
+                <FeedLink sourceName={feed.sourceName} pages={pages} className="truncate">
+                    {feed.label}
+                </FeedLink>
                 <span className="truncate text-[10px] text-ink-faint">
                     {providerOf(feed.sourceName)}
                 </span>
@@ -253,12 +258,14 @@ export function ArrivalsView({
     now,
     window: seconds,
     onWindow,
+    pages,
 }: {
     readonly raster: FeedRaster | undefined;
     readonly trace: MarketTrace | undefined;
     readonly now: number;
     readonly window: ArrivalWindow;
     readonly onWindow: (window: ArrivalWindow) => void;
+    readonly pages: FeedPages;
 }): ReactNode {
     const { t } = useTranslation();
     const [axis, setAxis] = useState<'clock' | 'tau'>('clock');
@@ -296,6 +303,7 @@ export function ArrivalsView({
             dense={dense}
             meanPace={meanPace}
             covered={covered}
+            pages={pages}
         />
     );
     return (

@@ -4766,7 +4766,7 @@ const pt: SourceCatalogue = {
         },
         arrivals: {
             title: 'Chegadas de ticks',
-            lead: 'Como os ticks deste fluxo chegam, e com que força segue o mercado. O mercado define-se no separador Regime de mercado.',
+            lead: 'Como os ticks deste fluxo chegam, e com que força segue o mercado. O mercado define-se no separador Mercado do ecrã Sintético.',
             model: 'Modelo de chegada dos ticks',
             'model.periodic': 'Periódico — intervalos iguais',
             'model.poisson': 'Poisson — intervalos exponenciais',
@@ -4780,10 +4780,14 @@ const pt: SourceCatalogue = {
             runningLaw: 'Em curso: {law}',
             decayHelp:
                 'Apenas Hawkes: com que rapidez uma rajada desaparece, por segundo de tempo de mercado. Uma rajada desaparece mais depressa num mercado agitado.',
-            market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
+            market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Mercado do ecrã Sintético.',
             marketUnknown: 'o estado do mercado não está legível agora',
             unsaved: 'Alterações por guardar',
-            reasonCode: 'system.update',
+            runningNote: 'O feed está a correr com a sua lei antiga.',
+            openMarket: 'Abrir o mercado →',
+            restart: 'Reiniciá-lo para aplicar',
+            restartFailed:
+                'Guardado, mas o reinício falhou: {message}. O feed corre com a sua lei antiga até voltar a arrancar.',
         },
         market: {
             title: 'O mercado',

@@ -20,9 +20,10 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import type { MarketRegime, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
-import { ArrivalsPanel } from './ArrivalsPanel.js';
+import { ArrivalsPanel, saveArrivals } from './ArrivalsPanel.js';
 
 const noSave = (): Promise<void> => Promise.resolve();
 
@@ -38,10 +39,18 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
     } as unknown as RecordRow;
 }
 
-function render(row: RecordRow, mayWrite = true, market?: MarketRegime): string {
+function render(row: RecordRow, mayWrite = true, market?: MarketRegime, running = false): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <ArrivalsPanel feed={row} market={market} mayWriteFeed={mayWrite} save={noSave} />
+            <MemoryRouter>
+                <ArrivalsPanel
+                    feed={row}
+                    market={market}
+                    mayWriteFeed={mayWrite}
+                    running={running}
+                    save={noSave}
+                />
+            </MemoryRouter>
         </TranslationProvider>,
     );
 }
@@ -85,8 +94,68 @@ describe('a feed’s arrivals tab', () => {
         expect(render(feed())).toContain('the market state is not readable right now');
     });
 
+    it('edits a running feed, which keeps its old law until it starts again', () => {
+        const html = render(feed({ arrival_mode: 'periodic' }), true, undefined, true);
+        expect(html).not.toMatch(/<select[^>]*disabled/);
+        expect(disabledAfter(html, 'Sensitivity to the market')).toBe(false);
+    });
+
+    it('saves with a button, which waits for a change', () => {
+        const html = render(feed());
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Save/);
+        expect(html).not.toContain('btn primary');
+    });
+
+    it('links to the market, which is set on the Synthetic screen’s Market tab', () => {
+        expect(render(feed())).toContain('href="/market-data/synthetic?tab=regime"');
+    });
+
     it('refuses to edit when the caller may not write', () => {
         const html = render(feed(), false);
         expect(html).toContain('disabled');
+    });
+});
+
+describe('saving a feed’s arrivals', () => {
+    function steps(fail?: 'save' | 'restart') {
+        const calls: string[] = [];
+        return {
+            calls,
+            save: async () => {
+                calls.push('save');
+                if (fail === 'save') throw new Error('refused');
+            },
+            saved: async () => {
+                calls.push('saved');
+            },
+            restart: async () => {
+                calls.push('restart');
+                if (fail === 'restart') throw new Error('no bus');
+            },
+        };
+    }
+
+    it('stores, re-reads, restarts and re-reads again', async () => {
+        const run = steps();
+        expect(await saveArrivals(run)).toEqual({ kind: 'saved' });
+        expect(run.calls).toEqual(['save', 'saved', 'restart', 'saved']);
+    });
+
+    it('tells a failed restart from a failed save, and still re-reads the feed', async () => {
+        const run = steps('restart');
+        expect(await saveArrivals(run)).toEqual({ kind: 'restartFailed', message: 'no bus' });
+        expect(run.calls).toEqual(['save', 'saved', 'restart', 'saved']);
+    });
+
+    it('neither re-reads nor restarts when the save is refused', async () => {
+        const run = steps('save');
+        expect(await saveArrivals(run)).toEqual({ kind: 'failed', message: 'refused' });
+        expect(run.calls).toEqual(['save']);
+    });
+
+    it('skips the restart when it is not asked for', async () => {
+        const run = steps();
+        expect(await saveArrivals({ save: run.save, saved: run.saved })).toEqual({ kind: 'saved' });
+        expect(run.calls).toEqual(['save', 'saved']);
     });
 });

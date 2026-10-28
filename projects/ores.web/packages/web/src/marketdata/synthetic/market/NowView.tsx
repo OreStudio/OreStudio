@@ -34,6 +34,7 @@ import { ticksBySecond } from './fold.js';
 import { paceSteps, traceBands } from '../marketTrace.js';
 import { stateName } from '../useMarketRegime.js';
 import { FactRows, MarketCard } from './MarketCard.js';
+import { FeedLink, type FeedPages } from './FeedLink.js';
 import { clean, duration } from './numbers.js';
 
 /** The decisions that changed the market rather than ticked it, newest first. */
@@ -343,9 +344,11 @@ function ForceCard({
 function ChangesCard({
     trace,
     onOpenTrace,
+    pages,
 }: {
     readonly trace: MarketTrace | undefined;
     readonly onOpenTrace: () => void;
+    readonly pages: FeedPages;
 }): ReactNode {
     const { t } = useTranslation();
     const changes = trace === undefined ? [] : marketChanges(trace.events);
@@ -380,9 +383,11 @@ function ChangesCard({
                                     <KindChip kind={event.kind} />
                                 </td>
                                 <td className="py-1.5 pr-3 text-ink-muted">
-                                    {event.sourceName === ''
-                                        ? stateName(event.state, t)
-                                        : event.sourceName}
+                                    {event.sourceName === '' ? (
+                                        stateName(event.state, t)
+                                    ) : (
+                                        <FeedLink sourceName={event.sourceName} pages={pages} />
+                                    )}
                                 </td>
                                 <td className="py-1.5 text-right text-ink-faint tabular-nums">
                                     {`τ ${event.tau.toFixed(2)}`}
@@ -432,6 +437,7 @@ export function NowView({
     error,
     onPin,
     onOpenTrace,
+    pages,
 }: {
     readonly regime: MarketRegime;
     readonly trace: MarketTrace | undefined;
@@ -442,6 +448,7 @@ export function NowView({
     readonly error: string | null;
     readonly onPin: (mode: RegimeMode) => void;
     readonly onOpenTrace: () => void;
+    readonly pages: FeedPages;
 }): ReactNode {
     return (
         <div className="grid gap-4">
@@ -457,7 +464,7 @@ export function NowView({
                     onPin={onPin}
                 />
             </div>
-            <ChangesCard trace={trace} onOpenTrace={onOpenTrace} />
+            <ChangesCard trace={trace} onOpenTrace={onOpenTrace} pages={pages} />
         </div>
     );
 }

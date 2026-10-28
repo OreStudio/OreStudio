@@ -4798,7 +4798,7 @@ const fr: SourceCatalogue = {
         },
         arrivals: {
             title: 'Arrivées de ticks',
-            lead: 'Comment les ticks de ce flux arrivent, et à quel point il suit le marché. Le marché se règle dans l’onglet Régime de marché.',
+            lead: 'Comment les ticks de ce flux arrivent, et à quel point il suit le marché. Le marché se règle dans l’onglet Marché de l’écran Synthétique.',
             model: 'Modèle d’arrivée des ticks',
             'model.periodic': 'Périodique — intervalles égaux',
             'model.poisson': 'Poisson — intervalles exponentiels',
@@ -4813,10 +4813,14 @@ const fr: SourceCatalogue = {
             runningLaw: 'En cours : {law}',
             decayHelp:
                 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, par seconde de temps de marché. Une rafale s’estompe plus vite dans un marché animé.',
-            market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
+            market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Marché de l’écran Synthétique.',
             marketUnknown: 'l’état du marché n’est pas lisible pour le moment',
             unsaved: 'Modifications non enregistrées',
-            reasonCode: 'system.update',
+            runningNote: 'Le flux tourne sur son ancienne loi.',
+            openMarket: 'Ouvrir le marché →',
+            restart: 'Le redémarrer pour appliquer',
+            restartFailed:
+                'Enregistré, mais le redémarrage a échoué : {message}. Le flux tourne sur son ancienne loi jusqu’à son prochain démarrage.',
         },
         market: {
             title: 'Le marché',

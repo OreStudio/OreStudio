@@ -201,7 +201,13 @@ function Lane({
                 <ProcessTag feed={feed} />
             </span>
             <span className="truncate px-2 font-mono text-[11px] text-ink-muted">
-                {law === undefined ? '—' : lawSummary(law, t)}
+                {law === undefined ? (
+                    '—'
+                ) : (
+                    <FeedLink sourceName={feed.sourceName} pages={pages} tab="arrivals">
+                        {lawSummary(law, t)}
+                    </FeedLink>
+                )}
             </span>
             <svg
                 aria-hidden

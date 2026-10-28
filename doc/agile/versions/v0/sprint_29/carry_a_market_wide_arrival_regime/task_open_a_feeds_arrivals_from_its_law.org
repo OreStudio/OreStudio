@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 4DE45251-DA69-4E0E-85D7-7A84188ABBD5
+:END:
+#+title: Task: Open a feed's arrivals from its law
+#+description: The market's lists name each feed's arrival law (periodic, Poisson, Hawkes) as plain text. The law is set on the feed's Arrivals tab, so the law itself should open it.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/open-a-feeds-arrivals-from-its-law
+#+pr: 3982
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who reads a feed's law in any market list opens the tab that sets it with one click.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The law cell on Arrivals, Laws and Fit opens the feed's Arrivals tab.
+- A feed the list does not know shows its law as plain text.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3982][#3982]] | [web] Open a feed's arrivals from its law, and edit them in a dialog |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A cleared field is saved as zero | ArrivalsPanel.tsx | Accept | The dialog keeps what was typed; an empty or unreadable field is invalid and holds Save back. |
+| 2 | After a failed restart Save is disabled | ArrivalsPanel.tsx | Note | The save is stored, so there is nothing left to save; the message names the restart. |
+| 3 | The facts show a dash where the dialog shows values | ArrivalsPanel.tsx | Note | Intended: the facts show what the law uses, the dialog what is stored. |
+| 4 | compass check skipped | — | Note | At the user's request. |
+
+* Result
+
+A feed's law on the Market tab's Arrivals, Laws and Fit opens the feed's
+Arrivals tab, and every feed name opens the feed's main page; Fit's name had
+opened the Arrivals tab, and now opens the page as the others do.
+
+At the user's request the feed's Arrivals tab follows the product's section
+pattern: it reads the model, the sensitivity and the two Hawkes numbers as
+facts, and an Edit button, offered to a caller who may write the feed, opens a
+dialog that holds the fields, the running note with its restart, and Save. The
+dialog lays the fields out with the product's =Field=, =Input= and =Select= in
+a two-column grid, which fixes the misaligned boxes the tab had.
+
+Evidence: web tests pass (227 in marketdata/synthetic and i18n), typecheck
+clean, and the harness passes 15 of 15 live: it checks the tab has no field to
+type in, edits a running feed's sensitivity through Edit and the dialog, sees the
+restarted feed run on it, and saves the old value back. Screenshots of the tab
+and of the dialog were checked.
+

@@ -127,13 +127,18 @@ export function FitView({
                                                     <FeedLink
                                                         sourceName={feed.sourceName}
                                                         pages={pages}
-                                                        tab="arrivals"
                                                     />
                                                 </td>
                                                 <td className="px-2 py-1.5">
-                                                    {t(
-                                                        `marketdata.marketRegime.modes.${feed.mode}`,
-                                                    )}
+                                                    <FeedLink
+                                                        sourceName={feed.sourceName}
+                                                        pages={pages}
+                                                        tab="arrivals"
+                                                    >
+                                                        {t(
+                                                            `marketdata.marketRegime.modes.${feed.mode}`,
+                                                        )}
+                                                    </FeedLink>
                                                 </td>
                                                 <td className="px-2 py-1.5 text-right tabular-nums">
                                                     {fit.observed}

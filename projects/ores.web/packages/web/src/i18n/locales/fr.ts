@@ -4818,6 +4818,7 @@ const fr: SourceCatalogue = {
             unsaved: 'Modifications non enregistrées',
             runningNote: 'Le flux tourne sur son ancienne loi.',
             openMarket: 'Ouvrir le marché →',
+            editTitle: 'Modifier les arrivées de {feed}',
             restart: 'Le redémarrer pour appliquer',
             restartFailed:
                 'Enregistré, mais le redémarrage a échoué : {message}. Le flux tourne sur son ancienne loi jusqu’à son prochain démarrage.',

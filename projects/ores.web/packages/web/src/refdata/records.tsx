@@ -85,7 +85,14 @@ export type FieldKind =
           readonly label: string;
           /** Where the choices are read; reference data unless it says otherwise. */
           readonly store?: RecordStore;
-      };
+      }
+    /**
+     * A picker over a list the screen supplies, such as the tenor ladder or the
+     * blueprints one currency funds. The chosen value is the code the list
+     * gives, so a field naming a record of a kind the registry does not carry
+     * still reads as the standard picker (RS-WRITE-06).
+     */
+    | { readonly kind: 'pick'; readonly choices: readonly Choice[] };
 
 export interface FieldSpec {
     readonly field: string;
@@ -348,6 +355,9 @@ function useChoices(kind: FieldKind, flag?: FlagSource): readonly Choice[] {
             kind.kind === 'record' ? (kind.store ?? refdataStore).records(kind.resource) : [],
         enabled: kind.kind === 'record',
     });
+    if (kind.kind === 'pick') {
+        return kind.choices;
+    }
     if (kind.kind === 'classification') {
         return (classification.data ?? []).map((row) => ({
             value: row.code,
@@ -407,6 +417,22 @@ export function FieldInput({
         return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
     }
     if (spec.kind.kind === 'record') {
+        return (
+            <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
+                <RecordPicker
+                    value={value}
+                    choices={choices}
+                    onChange={onChange}
+                    disabled={disabled}
+                    optional={spec.optional === true}
+                    placeholder={t('refdata.records.linkChoose')}
+                    label={label}
+                    onBlur={onBlur}
+                />
+            </Field>
+        );
+    }
+    if (spec.kind.kind === 'pick') {
         return (
             <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
                 <RecordPicker
@@ -927,7 +953,7 @@ function DetailValue({
     if (spec.kind.kind === 'bool') {
         return <>{text === 'true' ? t('refdata.records.yes') : t('refdata.records.no')}</>;
     }
-    if (spec.kind.kind === 'record') {
+    if (spec.kind.kind === 'record' || spec.kind.kind === 'pick') {
         const value = <RecordValue kind={spec.kind} code={text} pathOf={spec.pathOf} />;
         return spec.flag === undefined ? (
             value
@@ -975,7 +1001,7 @@ function RecordValue({
     code,
     pathOf,
 }: {
-    readonly kind: Extract<FieldKind, { kind: 'record' }>;
+    readonly kind: Extract<FieldKind, { kind: 'record' } | { kind: 'pick' }>;
     readonly code: string;
     readonly pathOf: ((value: string) => string) | undefined;
 }): ReactNode {
@@ -1637,6 +1663,7 @@ export function PartsPanel({
     columns,
     sort,
     keep,
+    complete,
     initial,
     lead,
     titles,
@@ -1665,6 +1692,12 @@ export function PartsPanel({
     }[];
     readonly sort: (row: RecordRow) => string;
     readonly keep?: readonly string[];
+    /**
+     * Fills the fields that follow from the others, such as the position a part
+     * takes in its parent's list (RS-WRITE-07). It runs on an add and on an
+     * edit alike, so a part that moves is written where it now stands.
+     */
+    readonly complete?: (write: Readonly<Record<string, unknown>>) => Record<string, unknown>;
     readonly initial?: Readonly<Record<string, string>>;
     readonly lead?: string;
     /** How the dialogs name one part: adding it, opening it, and deleting it. */
@@ -1802,6 +1835,7 @@ export function PartsPanel({
                     row={open.row}
                     keep={kept}
                     given={{ id: open.id, [parentField]: parent }}
+                    {...(complete === undefined ? {} : { complete })}
                     {...(open.row === undefined && initial !== undefined ? { initial } : {})}
                     {...(loadedAt !== undefined ? { loadedAt } : {})}
                     onClose={() => setOpen(null)}
@@ -1852,6 +1886,7 @@ export function PartsPanel({
                     row={reverting.row}
                     version={reverting.version}
                     keep={kept}
+                    {...(complete === undefined ? {} : { complete })}
                     onClose={() => setReverting(null)}
                 />
             )}

@@ -876,3 +876,160 @@ describe('GET /api/timeline for a party', () => {
         ]);
     });
 });
+
+describe('the curve blueprint resources', () => {
+    const CONFIG = '99999999-9999-4999-8999-999999999998';
+    const row = {
+        version: 2,
+        id: CONFIG,
+        currency_code: 'USD',
+        index_tenor: '1D',
+        curve_family_role: 'FUNDING',
+        interpolation_method: 'LOG_LINEAR_DISCOUNT',
+        day_count_convention: 'A360',
+    };
+
+    it('reaches the registry under the permission the server checks', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const response = await send(server, sessionId, 'GET', '/api/refdata');
+        const resources = (response.json() as { resources: Record<string, unknown>[] }).resources;
+        expect(resources.find((it) => it.key === 'ir-curve-bootstrap-configs')).toMatchObject({
+            keyFields: ['id'],
+            writable: true,
+            search: true,
+            writePermission: 'refdata::ir_curve_bootstrap_configs:write',
+            deletePermission: 'refdata::ir_curve_bootstrap_configs:delete',
+            events: { component: 'refdata', entity: 'ir_curve_bootstrap_configs' },
+        });
+        expect(resources.find((it) => it.key === 'ir-curve-bootstrap-pillars')).toMatchObject({
+            keyFields: ['id'],
+            writePermission: 'refdata::ir_curve_bootstrap_pillars:write',
+        });
+    });
+
+    it('sends the filters a page sets as the filter members the model made filterable', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ir_curve_bootstrap_configs.list': {
+                result: ok,
+                bootstrap_configs: [row],
+                total: 1,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/ir-curve-bootstrap-configs?offset=0&limit=15&f.currency_code=USD&f.curve_family_role=FUNDING',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ total: 1, rows: [{ id: CONFIG }] });
+        // The server decodes the filter record whole, so every member travels,
+        // including the ones this call leaves unset.
+        expect(calls[0]?.body).toMatchObject({
+            filter: {
+                id_one_of: null,
+                search: '',
+                currency_code: 'USD',
+                currency_code_one_of: null,
+                curve_family_role: 'FUNDING',
+                curve_family_role_one_of: null,
+                discount_curve_config_id: null,
+                discount_curve_config_id_one_of: null,
+            },
+        });
+    });
+
+    it('refuses a filter the resource does not declare', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/ir-curve-bootstrap-configs?offset=0&limit=15&f.nonsense=1',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('narrows one parent by the member the pillar model made filterable', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ir_curve_bootstrap_pillars.list': { result: ok, pillars: [], total: 0 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/refdata/ir-curve-bootstrap-pillars?offset=0&limit=15&f.bootstrap_config_id=${CONFIG}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            filter: {
+                id_one_of: null,
+                bootstrap_config_id: CONFIG,
+                bootstrap_config_id_one_of: null,
+            },
+        });
+    });
+
+    it('orders by a column the model made sortable', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ir_curve_bootstrap_configs.list': {
+                result: ok,
+                bootstrap_configs: [],
+                total: 0,
+            },
+        });
+        await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/ir-curve-bootstrap-configs?offset=0&limit=15&sort=index_tenor&descending=true',
+        );
+        expect(calls[0]?.body).toMatchObject({
+            order: { field: 'index_tenor', descending: true },
+        });
+    });
+
+    it('refuses a write that is not a blueprint row', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/refdata/ir-curve-bootstrap-configs',
+            {
+                write: { id: CONFIG, currency_code: 'US' },
+                version: null,
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('writes a pillar the model accepts, and answers no content', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ir_curve_bootstrap_pillars.put': { result: ok },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/refdata/ir-curve-bootstrap-pillars',
+            {
+                write: {
+                    id: '99999999-9999-4999-8999-999999999997',
+                    party_id: '88888888-8888-4888-8888-888888888888',
+                    bootstrap_config_id: CONFIG,
+                    sequence_index: 0,
+                    start_tenor_code: 'SPOT',
+                    end_tenor_code: '1Y',
+                    curve_role_code: 'DEPOSIT',
+                },
+                version: null,
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls).toHaveLength(1);
+    });
+});

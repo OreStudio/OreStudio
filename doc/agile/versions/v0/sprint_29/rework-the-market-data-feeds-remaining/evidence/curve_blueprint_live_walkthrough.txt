@@ -1,0 +1,109 @@
+Curve blueprint screens: live walk-through against the Acme database
+====================================================================
+
+Environment: eager_maxwell. Database rebuilt 2026-10-28 16:31 from
+8630e8b097-dirty (schema fingerprint 03963e16947cdc60, in sync), every
+service started from the same build, Acme Corporation provisioned by
+projects/ores.shell/scripts/library/provisioning/
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores.
+Session: tenant_admin@acme_corporation, acting party
+acme_corporation_system (8b3fad4f-4c08-48df-843d-0fe6edb35902).
+The party's two curve blueprints and the series they publish into are seeded
+by evidence/curve_blueprint_walkthrough_seed.sql, which derives the tenant and
+party ids and is idempotent. It is needed because the Acme provisioning seeds
+neither a curve blueprint nor an interest-rate series.
+
+1. The list, searched and filtered on the server
+------------------------------------------------
+GET /api/refdata/ir-curve-bootstrap-configs?offset=0&limit=15
+  200, total 1: USD / 1D / FUNDING / version 1.
+GET ...?search=USD&f.curve_family_role=FUNDING   200, total 1.
+GET ...?f.nope=1
+  400 {"code":"invalid-request","message":"ir-curve-bootstrap-configs cannot
+  be filtered by nope."}
+
+2. The record and the series it publishes into
+----------------------------------------------
+GET /api/refdata/ir-curve-bootstrap-configs/key/b1b1b1b1-0000-4000-8000-000000000001
+  200, version 1.
+POST /api/curves/series-by-id {"ids":["a1a1a1a1-0000-4000-8000-000000000001"]}
+  200 {"series":[{"id":"a1a1a1a1-...","uri":"oresmd://ir/USD?type=series&
+  instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC"}]}
+
+3. The pillars, narrowed by the parent on the server
+----------------------------------------------------
+GET /api/refdata/ir-curve-bootstrap-pillars?f.bootstrap_config_id=b1b1b1b1-...
+  200, total 9: SPOT-1F, 1F-2F ... 8F-1Y (sequence 0..8).
+
+4. The picker's list: every series the party holds
+--------------------------------------------------
+POST /api/curves/series-by-id {"ids":[]}
+  200, 329 series, each with its oresmd URI, including the two curve series
+  a1a1a1a1-... (USD-SOFR-FOMC) and a2a2a2a-... (EUR-EURIBOR-6M).
+  The ids are uuids whose version bits are not RFC's
+  (a1eec62d-a758-f647-de09-d7f2c25d9196 is one), because the store's random
+  generator does not set them; the route accepts the shape and not the version.
+
+5. Adding a blueprint, with the output series chosen
+----------------------------------------------------
+PUT /api/refdata/ir-curve-bootstrap-configs
+  {output_series_id: a2a2a2a2-..., currency EUR, index tenor 6M, FUNDING,
+   LOG_LINEAR_DISCOUNT, A360, RATES_SPOT_FORWARD, 1Y, system.new_record}
+  204
+GET .../key/f1f1f1f1-0000-4000-8000-000000000001
+  200, version 1, EUR 6M, series a2a2a2a2-..., LOG_LINEAR_DISCOUNT.
+POST /api/curves/series-by-id with that id
+  200, oresmd://ir/EUR?type=series&instrument=discount&quote=rate&
+  curve_id=EUR-EURIBOR-6M
+
+  A create that names the series the USD recipe already claims is refused:
+  502, "duplicate key value violates unique constraint
+  ir_curve_bootstrap_configs_output_series_id_uniq_idx". One series names one
+  blueprint, which is what makes the column the record's natural key.
+
+6. A pillar added, then edited
+------------------------------
+PUT .../ir-curve-bootstrap-pillars (SPOT to 6M, DEPOSIT, sequence 0, new row)
+  204
+PUT .../ir-curve-bootstrap-pillars (same row, 6M to 1Y, version 1,
+  common.rectification, "Take the deposit out to a year")   204
+GET  ...?f.bootstrap_config_id=f1f1f1f1-...   200, one row: 1Y, version 2.
+
+7. The list and the history
+---------------------------
+GET /api/refdata/ir-curve-bootstrap-configs   200, total 2: USD 1D FUNDING v1
+  and EUR 6M FUNDING v1.
+GET /api/history for f1f1f1f1-...  config versions [1]
+GET /api/history for c2c2c2c2-...  pillar versions [2, 1]
+
+8. The check
+------------
+POST /api/curves/compute {"bootstrap_config_id":"b1b1b1b1-...","as_of":"2026-10-07 17:00:00Z"}
+  422 {"code":"invalid-request","message":"pillar key:
+  'IR_SWAP/RATE/USD/0D/1D/1F': '1F' is not a period, a date, ON, TN, SN or a
+  continuation"}
+  The Check tab draws this as the server's own words in a notice: the build
+  refuses a schedule-resolved (FOMC) pillar, which the screen does not hide.
+
+9. The published sets
+---------------------
+POST /api/curves/published {"include_ended":true,"limit":10}
+  200 {"sets":[],"total":0}  -> the tab draws "None yet."
+
+10. The badges the screen reads, on a fresh environment
+-------------------------------------------------------
+GET /api/labels, without any manual publish step: a provisioned tenant
+publishes its catalogue from the artefact seeds, and the six curve domains
+arrive with it:
+  curve_family_role (2): Funding curve, Projection curve
+  interpolation_method (3): Cubic spline, Flat forward then log-linear,
+    Log-linear discount
+  day_count_convention (4): 30/360, A360, A365, A365F
+  tenor_convention (2): Rates, spot FOMC; Rates, spot forward
+  bootstrap_curve_role (3): Deposit, FRA, Swap
+  curve_publish_state (3): Published, Superseded, Withdrawn
+
+11. The routes serve the bundle
+-------------------------------
+GET /market-data/curve-blueprints                                200
+GET /market-data/curve-blueprints/<id>?tab=check                 200

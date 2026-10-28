@@ -24,8 +24,10 @@ import { z } from 'zod';
 import { isWireTimestamp } from '@ores/wire-protocol';
 import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
 import { subjects as publishedCurves } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
+import { subjects as marketSeriesSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_series_protocol';
 import { HttpFailure } from './errors.js';
-import { input } from './refdata-calls.js';
+import { NO_ORDER, input, resultSchema } from './refdata-calls.js';
+import { anyUuid } from './records.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -165,6 +167,35 @@ const publishedSetsBody = z.strictObject({
     include_candidates: z.boolean().default(true),
 });
 
+/** The most series one read of a party's catalogue asks for, which is the server's page. */
+const SERIES_PAGE = 200;
+
+/**
+ * The series a blueprint names, by the URI each is published under.
+ *
+ * A curve blueprint holds its output series as a soft reference, so the screen
+ * that reads blueprints has to name each one, and the series table is the only
+ * place the URI lives. Stated ids reach the server as its own one-of filter, so
+ * a page of rows is one read of the rows asked for; no ids asks for every
+ * series the session's party holds, which is the list a person chooses a
+ * blueprint's output series from.
+ */
+const seriesByBody = z.strictObject({
+    ids: z.array(anyUuid).max(SERIES_PAGE).default([]),
+});
+
+/**
+ * The recipe a person tests, and the instant to test it at.
+ *
+ * The test writes nothing: it builds the curve in the market data service and
+ * echoes the points back, so a refusal is the recipe's or the market's and not a
+ * state the screen has to undo.
+ */
+const computeBody = z.strictObject({
+    bootstrap_config_id: z.uuid(),
+    as_of: instant,
+});
+
 /**
  * The act that takes a published set out of use.
  *
@@ -209,6 +240,83 @@ export function registerCurveRoutes(
         const session = requireSession(request);
         const body = input(identityBody, request.body);
         return call(session, subjects.resolve_series_identity_request, body.identity);
+    });
+
+    // The oresmd URI of each series a set of ids names, or of every series the
+    // session's party holds when no id is stated. A blueprint names its output
+    // series by id, and the screen that lists blueprints shows the URI the curve
+    // is published under.
+    server.post('/api/curves/series-by-id', async (request) => {
+        const session = requireSession(request);
+        const body = input(seriesByBody, request.body);
+        const stated = body.ids.length > 0;
+        const series: { id: string; uri: string }[] = [];
+        for (let offset = 0; ; offset += SERIES_PAGE) {
+            const reply = await session.client.callAuthenticated(
+                marketSeriesSubjects.list_market_series_request,
+                {
+                    offset,
+                    limit: SERIES_PAGE,
+                    order: NO_ORDER,
+                    filter: {
+                        id_one_of: stated ? body.ids : null,
+                        provider_code: null,
+                        provider_code_one_of: null,
+                    },
+                    as_of: null,
+                },
+                z.looseObject({
+                    result: resultSchema,
+                    market_series: z
+                        .array(z.looseObject({ id: anyUuid, oresmd_uri: z.string() }))
+                        .default([]),
+                }),
+            );
+            if (reply.result.outcome !== 'ok') {
+                throw refused(reply.result.message);
+            }
+            series.push(...reply.market_series.map((row) => ({ id: row.id, uri: row.oresmd_uri })));
+            // A stated set is one page; the party's catalogue is read until a
+            // page comes back short, so the picker offers all of it.
+            if (stated || reply.market_series.length < SERIES_PAGE) {
+                break;
+            }
+        }
+        return { series };
+    });
+
+    // Builds the recipe's curve at an instant and echoes its points. Nothing is
+    // written and nothing is published; the check tab reads the answer.
+    server.post('/api/curves/compute', async (request) => {
+        const session = requireSession(request);
+        const body = input(computeBody, request.body);
+        const reply = await session.client.callAuthenticated(
+            subjects.compute_curve_request,
+            { bootstrap_config_id: body.bootstrap_config_id, as_of: body.as_of },
+            z.looseObject({
+                success: z.boolean(),
+                message: z.string().default(''),
+                points: z
+                    .array(
+                        z.looseObject({
+                            point_id: z.string(),
+                            date: z.string(),
+                            discount_factor: z.number(),
+                        }),
+                    )
+                    .default([]),
+            }),
+        );
+        if (!reply.success) {
+            throw refused(reply.message);
+        }
+        return {
+            points: reply.points.map((point) => ({
+                point_id: point.point_id,
+                date: point.date,
+                discount_factor: point.discount_factor,
+            })),
+        };
     });
 
     // The series the session's party can see, each as the identity the other reads

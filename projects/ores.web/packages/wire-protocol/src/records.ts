@@ -48,6 +48,8 @@ import { subjects as businessUnitSubjects } from './generated/refdata/protocol/b
 import { subjects as businessUnitTypeSubjects } from './generated/refdata/protocol/business_unit_type_protocol.js';
 import { subjects as partyIdSchemeSubjects } from './generated/refdata/protocol/party_id_scheme_protocol.js';
 import { subjects as counterpartySubjects } from './generated/refdata/protocol/counterparty_protocol.js';
+import { subjects as irCurveBootstrapConfigSubjects } from './generated/refdata/protocol/ir_curve_bootstrap_config_protocol.js';
+import { subjects as irCurveBootstrapPillarSubjects } from './generated/refdata/protocol/ir_curve_bootstrap_pillar_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
 
 /**
@@ -69,6 +71,13 @@ export interface RecordResource {
     readonly asOf: boolean;
     readonly search: boolean;
     readonly sortable: readonly string[];
+    /**
+     * The filter members the list contract carries beyond the key, as a screen
+     * names them: the address holds each as `f.<id>` and the page sends it with
+     * the request. A member the resource does not name is refused, so a screen
+     * can only filter by what the model made filterable.
+     */
+    readonly filters?: readonly string[];
     readonly listBy?: string;
     readonly subjects: {
         readonly list: string;
@@ -503,6 +512,46 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
             remove: counterpartySubjects.delete_counterparty_request,
         },
     },
+    {
+        key: 'ir-curve-bootstrap-configs',
+        entityType: 'ores.refdata.ir_curve_bootstrap_config',
+        keyFields: ['id'],
+        rows: 'bootstrap_configs',
+        versioned: true,
+        writable: true,
+        search: true,
+        sortable: [
+            'currency_code',
+            'index_tenor',
+            'curve_family_role',
+            'interpolation_method',
+            'day_count_convention',
+        ],
+        filters: ['currency_code', 'curve_family_role', 'discount_curve_config_id'],
+        asOf: true,
+        subjects: {
+            list: irCurveBootstrapConfigSubjects.list_ir_curve_bootstrap_configs_request,
+            put: irCurveBootstrapConfigSubjects.put_ir_curve_bootstrap_config_request,
+            remove: irCurveBootstrapConfigSubjects.delete_ir_curve_bootstrap_config_request,
+        },
+    },
+    {
+        key: 'ir-curve-bootstrap-pillars',
+        entityType: 'ores.refdata.ir_curve_bootstrap_pillar',
+        keyFields: ['id'],
+        rows: 'pillars',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        filters: ['bootstrap_config_id'],
+        asOf: true,
+        subjects: {
+            list: irCurveBootstrapPillarSubjects.list_ir_curve_bootstrap_pillars_request,
+            put: irCurveBootstrapPillarSubjects.put_ir_curve_bootstrap_pillar_request,
+            remove: irCurveBootstrapPillarSubjects.delete_ir_curve_bootstrap_pillar_request,
+        },
+    },
 ];
 
 export function recordResource(key: string): RecordResource | undefined {
@@ -559,27 +608,46 @@ const resultReplySchema = z.object({ result: resultEnvelopeSchema });
  * A list's filter record, with every member the resource's filter has. The
  * server decodes the record whole, so a member the call does not use is sent
  * as null rather than left out.
+ *
+ * A column the model made filterable gives two members, an equals and a one-of
+ * of the same name with the suffix, so a call that narrows by one column sends
+ * the pair. A screen states the column it narrows by, and the pair is written
+ * here rather than at every call site.
  */
 function filterFor(
     resource: RecordResource,
-    members: { readonly oneOf?: readonly string[]; readonly search?: string },
+    members: {
+        readonly oneOf?: readonly string[];
+        readonly search?: string;
+        readonly filters?: Readonly<Record<string, string>>;
+    },
 ): Record<string, unknown> {
     const [key] = resource.keyFields;
+    const given = members.filters ?? {};
+    const named = resource.filters ?? [];
     return {
         ...(key === undefined || resource.keyFields.length !== 1
             ? {}
             : { [`${key}_one_of`]: members.oneOf ?? null }),
         ...(resource.search ? { search: members.search ?? null } : {}),
+        ...Object.fromEntries(
+            named.flatMap((column) => [
+                [column, given[column] ?? null],
+                [`${column}_one_of`, null],
+            ]),
+        ),
     };
 }
 
-/** How a list asks for one page: where it starts, how long it is, the search and the order. */
+/** How a list asks for one page: where it starts, how long it is, the search, the order and the filters. */
 export interface PageRequest {
     readonly offset: number;
     readonly limit: number;
     readonly search: string;
     readonly sort: string;
     readonly descending: boolean;
+    /** The filters set, by the member the resource names. */
+    readonly filters?: Readonly<Record<string, string>>;
 }
 
 /** One page of a list, and how many rows match in all. */
@@ -610,7 +678,13 @@ export async function listRecordPage(
             offset: page.offset,
             limit: page.limit,
             order: { field: page.sort, descending: page.descending },
-            filter: page.search === '' ? null : filterFor(resource, { search: page.search }),
+            filter:
+                page.search === '' && page.filters === undefined && resource.filters === undefined
+                    ? null
+                    : filterFor(resource, {
+                          search: page.search,
+                          ...(page.filters === undefined ? {} : { filters: page.filters }),
+                      }),
             ...(resource.asOf ? { as_of: null } : {}),
         },
         pageReplySchema,

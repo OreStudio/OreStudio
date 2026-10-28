@@ -686,3 +686,116 @@ describe('the published curve routes', () => {
         expect(calls).toHaveLength(0);
     });
 });
+
+describe('the curve blueprint read routes', () => {
+    const CONFIG = '99999999-9999-4999-8999-999999999998';
+    const SERIES = '77777777-7777-4777-8777-777777777777';
+    const INSTANT = '2026-10-07 17:00:00Z';
+
+    it('names the series a set of ids holds, so a blueprint can show what it builds into', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: 1,
+                market_series: [
+                    { version: 1, id: SERIES, oresmd_uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [SERIES],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            series: [{ id: SERIES, uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' }],
+        });
+        expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: [SERIES] } });
+    });
+
+    it("accepts a series id whose version bits are not RFC's, as the store writes them", async () => {
+        const odd = 'a1eec62d-a758-f647-de09-d7f2c25d9196';
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: 1,
+                market_series: [
+                    { version: 1, id: odd, oresmd_uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [odd],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            series: [{ id: odd, uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' }],
+        });
+    });
+
+    it('answers every series the party holds when no id is stated, for the picker', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.market_series.list': {
+                result: ok,
+                total: 2,
+                market_series: [
+                    { version: 1, id: SERIES, oresmd_uri: 'DISCOUNT/RATE/USD/USD-SOFR-1D' },
+                    { version: 1, id: CONFIG, oresmd_uri: 'IR_SWAP/RATE/USD/1D' },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/series-by-id', {
+            ids: [],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json().series).toHaveLength(2);
+        // No id means the party's catalogue: the filter names none.
+        expect(calls[0]?.body).toMatchObject({ filter: { id_one_of: null } });
+    });
+
+    it('builds a recipe at an instant and answers the points, without publishing', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.compute_curve': {
+                success: true,
+                message: '',
+                points: [{ point_id: '1Y', date: '2027-10-07', discount_factor: 0.97 }],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/compute', {
+            bootstrap_config_id: CONFIG,
+            as_of: INSTANT,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            points: [{ point_id: '1Y', date: '2027-10-07', discount_factor: 0.97 }],
+        });
+        expect(calls[0]?.body).toEqual({ bootstrap_config_id: CONFIG, as_of: INSTANT });
+    });
+
+    it("answers a refused build with the server's own words", async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.compute_curve': {
+                success: false,
+                message: 'output market_series not found for bootstrap config',
+                points: [],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/compute', {
+            bootstrap_config_id: CONFIG,
+            as_of: INSTANT,
+        });
+        expect(response.statusCode).toBe(422);
+        expect(response.json()).toMatchObject({
+            message: 'output market_series not found for bootstrap config',
+        });
+    });
+
+    it('refuses an instant that is not a wire timestamp', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/curves/compute', {
+            bootstrap_config_id: CONFIG,
+            as_of: 'now',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+});

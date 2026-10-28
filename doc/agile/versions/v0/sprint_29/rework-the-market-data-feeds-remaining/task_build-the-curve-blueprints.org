@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: 5E222CAA-EC8C-4A16-A835-6C76FD660406
+:END:
+#+title: Task: Build the curve blueprint screens
+#+description: Implement the signed-off prototype with the standard record infrastructure.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/build-the-curve-blueprints
+#+pr: 4006
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The curve blueprint list and record work against the service, using the history dialog, standard widgets and UX patterns.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-28                               |
+
+* Acceptance
+
+- The list and record render from real reads, with the standard tabs, dialogs and history.
+- The badged values and the Market data card follow the signed-off prototype and the standards.
+
+* Plan
+
+Four units, each ending in something to check.
+
+1. *The reads and the BFF exposure.* The list contract of
+   =ir_curve_bootstrap_config= gains the columns the screen searches, filters
+   and sorts on (RS-LIST-04, RS-LIST-05, RS-LIST-07), and the pillar's
+   =bootstrap_config_id= is filterable so one blueprint's pillars are a filtered
+   read rather than a page the screen narrows. Both kinds join =REFDATA_RECORDS=,
+   and the generic record route forwards the filters an address states as
+   =f.<member>=. Two reads the generic path cannot serve are added to the curve
+   routes: the oresmd URI of a set of series ids, and the build itself
+   (=marketdata.v1.ops.compute_curve=), which had a handler and no route.
+2. *The web screens.* =CurveBlueprintsPage= and =CurveBlueprintPage= over the
+   shared parts: =RecordList=, =RecordGate=, =RecordHeader=, =useRecordTabs=,
+   =RecordDetails=, =PartsPanel=, =RecordTimeline=, =RecordDialog=,
+   =RemoveRecordDialog=, =RecordPicker=. The five tabs are Details, Pillars,
+   Check, Published sets and History. The card, =AREA_CARDS= and the menu entry
+   follow the prototype's table.
+3. *The check flow.* The six checks are the screen's own reading of the recipe
+   and are answered from what it read; the points come from =compute_curve=; the
+   forwards and the findings are the screen's arithmetic on those points, said as
+   such. A recipe that fails a check stops before the market is read. The pure
+   readings live in =curveBlueprintCheck.ts= so they are asserted without a
+   browser.
+4. *The badges.* Six code domains join the badge seed with one badge definition
+   per code and a mapping from each code, following =tenor_kind='s shape.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| BFF suite | 1107 tests pass, 81 files | =npm run test --workspace @ores/bff= | 8630e8b097 |
+| Web suite | 2281 tests pass, 181 files | =npm run test --workspace @ores/web= | 8630e8b097 |
+| Wire protocol suite | 225 tests pass, 23 files | =npm run test --workspace @ores/wire-protocol= | 8630e8b097 |
+| Web typecheck | clean, every workspace | =npm run typecheck= | df4c37fb3a |
+| Refdata C++ suites | core: 5637 assertions in 474 cases; api: 598 in 83 | =publish/bin/ores.refdata.core.tests=, =.api.tests= | f98fa38218 |
+| Docs checks | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | 0e2f638e1b |
+| Lint | filetags and generator markers valid | =compass lint= | 0e2f638e1b |
+| Live walk-through | =evidence/curve_blueprint_live_walkthrough.txt= | =evidence/curve_blueprint_walkthrough_seed.sql= | 21b4ad0e92 |
+
+* Notes
+
+** What the units delivered
+
+1. *The reads and the BFF exposure.* =ir_curve_bootstrap_config= declares the
+   list contract its screen needs: =currency_code= and =index_tenor= are
+   searchable, =currency_code= and =curve_family_role= are filterable,
+   =discount_curve_config_id= is filterable, and five columns are sortable. The
+   pillar's =bootstrap_config_id= is filterable, so the Pillars tab is one
+   filtered read. Both kinds are in =REFDATA_RECORDS= with their generated
+   subjects, write schemas and the permissions the handlers check, and the
+   generic record route forwards filters as =f.<member>=. Two reads join the
+   curve routes: the oresmd URI of a set of series ids, and the build itself
+   (=marketdata.v1.ops.compute_curve=, which had a handler and no route).
+2. *The web screens.* =CurveBlueprintsPage= and =CurveBlueprintPage= on the
+   shared parts, at =/market-data/curve-blueprints=, with Details, Pillars,
+   Check, Published sets and History. Add, Edit and Copy are the standard record
+   dialog, and the output series is chosen there with the record picker over the
+   series the party holds. The pillar's sequence is completed from
+   its end tenor rather than typed. Two field kinds were added to the shared
+   table instead of built in the screen: a picker over a list the screen
+   supplies (the tenor ladder, a currency's funding blueprints), and the parts
+   panel's =.complete=, for a part whose parent decides a field.
+3. *The check flow.* The six checks, the forwards and the findings are one pure
+   module (=curveBlueprintCheck.ts=) with 18 assertions; the points come from
+   the build route; the tab never shows an unrun check as passed and a recipe
+   that fails a check stops before the market is read.
+4. *The badges.* Six domains, 17 badge definitions and 17 mappings in the
+   system seed, and the same rows in the three artefact seeds the catalogue
+   publishes to a tenant from.
+
+** The decision reversed mid-task
+
+The task opened with the rule that the server mints the output series. It does
+not, and it cannot: a curve's oresmd URI carries the index name
+(=DISCOUNT/RATE/USD/USD-SOFR-FOMC=) and the config holds the currency and the
+index tenor and not the index, so no operation can compose the identity the
+record is keyed by. On 2026-10-28 the owner decided the other way: the output
+series is *chosen* when the blueprint is created, with the standard record
+picker over the series the party holds. Add and Copy now create the record
+through the store like every other kind, the journeys and the design note carry
+the reversal, and the minting rule is struck where it appeared -- in
+=journey_maintain-the-curve-blueprints.org=, in
+=doc/prototypes/market_data/curve-blueprints.org= and in the model's own note.
+The candidate for later is a series created from the same dialog, which is what
+the Qt window did inline.
+
+** What is missing, and why the screen says so
+
+- *The curve code is not searchable on the server.* The first column and the
+  display handle are the output series' URI, which lives in another component's
+  table; the list contract can search the currency and the index tenor, and
+  that is what the search covers.
+- *The published sets are filtered on the page.* =list_published_curves= has no
+  =bootstrap_config_id= filter, so the tab reads the party's sets and picks this
+  blueprint's. The journey records the same gap.
+- *The check is the screen's.* No operation validates a recipe, so a recipe that
+  fails its checks can still be saved, and the result is held by the person who
+  ran it and not against the version.
+- *A schedule-resolved pillar does not build.* The live build refuses a =1F=
+  pillar ('1F is not a period, a date, ON, TN, SN or a continuation'), so the
+  Check tab draws the server's words for the seeded FOMC recipe; the FOMC key
+  derivation in =compute_curve= is a separate gap.
+- *Retire.* The record has no status, so the page draws the state it can infer
+  ("no set in use since ...") and offers no action.
+- *The as-of is a text field.* The standard's field table has no instant kind, so
+  the Check tab takes the instant in one line of text, held in the address as
+  =?asof=, and says nothing it cannot. Adding the kind is the capture the journey
+  names.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4006][#4006]] | [marketdata] Build the curve blueprint screens |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The list, the record page with its five tabs, the four dialogs, the record
+picker, the check and the badge catalogue are built on the standard
+infrastructure and verified against the provisioned Acme database. A blueprint
+cannot be created from the screen yet, because nothing mints the output series
+it is created with; the page states that in the list's note and the gap is
+recorded above.
+

@@ -132,6 +132,8 @@ describe('the record registry', () => {
             'party-currencies': 'party_currencies',
             'party-id-schemes': 'party_id_schemes',
             'party-identifiers': 'party_identifiers',
+            'ir-curve-bootstrap-configs': 'ir_curve_bootstrap_configs',
+            'ir-curve-bootstrap-pillars': 'ir_curve_bootstrap_pillars',
         });
     });
 });

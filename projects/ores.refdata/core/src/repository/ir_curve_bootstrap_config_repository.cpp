@@ -57,7 +57,13 @@ std::string ir_curve_bootstrap_config_repository::sql() {
 }
 
 bool ir_curve_bootstrap_config_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "currency_code",
+        "index_tenor",
+        "curve_family_role",
+        "interpolation_method",
+        "day_count_convention",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -90,12 +96,42 @@ std::optional<query_builder::condition> ir_curve_bootstrap_config_filter_conditi
     if (!filter)
         return std::nullopt;
     std::vector<query_builder::condition> r;
+    if (filter->currency_code)
+        r.push_back(query_builder::equals("currency_code",
+                                          query_builder::filter_value(*filter->currency_code)));
+    if (filter->curve_family_role)
+        r.push_back(query_builder::equals("curve_family_role",
+                                          query_builder::filter_value(*filter->curve_family_role)));
+    if (filter->discount_curve_config_id)
+        r.push_back(
+            query_builder::equals("discount_curve_config_id",
+                                  query_builder::filter_value(*filter->discount_curve_config_id)));
     if (filter->id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("id", std::move(values)));
     }
+    if (filter->currency_code_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->currency_code_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("currency_code", std::move(values)));
+    }
+    if (filter->curve_family_role_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->curve_family_role_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("curve_family_role", std::move(values)));
+    }
+    if (filter->discount_curve_config_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->discount_curve_config_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("discount_curve_config_id", std::move(values)));
+    }
+    if (filter->search && !filter->search->empty())
+        r.push_back(query_builder::contains_any({"currency_code", "index_tenor"}, *filter->search));
     return query_builder::all_of(std::move(r));
 }
 

@@ -55,6 +55,7 @@ export const MENU: readonly MenuItem[] = [
         nameKey: 'shell.menu.marketdata',
         to: '/market-data',
         permission: [
+            'refdata::ir_curve_bootstrap_configs:read',
             'synthetic::fx_spot_generation_configs:read',
             'synthetic::ir_curve_generation_configs:read',
             'marketdata::curve_snapshots:read',

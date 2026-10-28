@@ -4110,6 +4110,9 @@ export const en: SourceCatalogue = {
                 ticks: 'Ticks',
                 process: 'Process',
                 template: 'Curve template',
+                pillars: 'Pillars',
+                check: 'Check',
+                sets: 'Published sets',
             },
         },
         fields: {
@@ -4217,6 +4220,15 @@ export const en: SourceCatalogue = {
             end_tenor_code: 'End tenor',
             instrument_code: 'Instrument',
             component_index: 'Index',
+            output_series_id: 'Output series',
+            index_tenor: 'Index tenor',
+            curve_family_role: 'Role',
+            discount_curve_config_id: 'Discount curve',
+            interpolation_method: 'Interpolation method',
+            day_count_convention: 'Day count',
+            tenor_convention_code: 'Tenor convention',
+            split_tenor_code: 'Split tenor',
+            curve_role_code: 'Curve role',
         },
         choices: {
             ore_currency_type: { Major: 'Major', Metal: 'Metal', Crypto: 'Crypto' },
@@ -4529,6 +4541,153 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        curveBlueprints: {
+            title: 'Curve blueprints',
+            lead: 'The recipes each curve is built from: its pillars, its conventions and the sets it fed.',
+            copy: 'Copy blueprint',
+            copyTitle: 'Copy {code}',
+            copyNote:
+                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, and it names a series of its own: the series is what tells one blueprint from another.",
+            add: 'Add blueprint',
+            addTitle: 'Add a curve blueprint',
+            noPillarsNotice:
+                'This recipe holds no pillars, so there is nothing to build a curve from.',
+            openPillars: 'Open the pillars.',
+            allSetsEnded:
+                'Every set this recipe fed has left use: the last was withdrawn at {date} by {account}. Nothing is retired, because the recipe has no status of its own.',
+            noneYet: 'None yet.',
+            addPillar: 'Add a pillar',
+            onePillar: 'Pillar',
+            removePillar: 'Delete pillar',
+            pillarName: '{start} to {end}, {role}',
+            pillarsLead:
+                "A pillar is one instrument's date range and not a single point, so a one-month deposit starting today is a start tenor of SPOT and an end tenor of 1M. The order follows each pillar's end tenor and is derived, never typed.",
+            checkLead:
+                'Whether this recipe builds, read from the recipe itself and then from the market it needs.',
+            notChecked: 'Not checked yet.',
+            checksTitle: 'What the recipe must satisfy',
+            marketTitle: 'What the market supplied',
+            pointsTitle: 'The points the build returned',
+            findingsTitle: 'What the screen read off the points',
+            discountFactors: 'Discount factors',
+            forwards: 'Instantaneous forwards',
+            asOf: 'As-of',
+            runTest: 'Run the test',
+            notRun: 'Not run',
+            pass: 'Pass',
+            fail: 'Fail',
+            observed: 'Observed',
+            noRate: 'No rate',
+            builtNothing: 'The build returned no points.',
+            validationFailed:
+                'The recipe fails {count} of its own checks, so the market was not read and no curve was built.',
+            noFindings: 'Nothing stands out in the points.',
+            derivedNote:
+                "The forwards and the findings are this screen's own arithmetic on the points the server returned. The server answers with the points and nothing about them.",
+            setsLead:
+                'The sets published from this recipe, newest first. A row opens the published record. The sets are read here and never changed: a withdrawal is its own act, with a reason.',
+            setsNoneLead:
+                'A set becomes one when a person publishes an approved candidate, in the publish journey.',
+            setsNote:
+                "A set is found by the blueprint it was built from, which the read carries; the list contract has no filter for it yet, so the tab reads the party's sets and picks this one's.",
+            historyLead:
+                "The recipe's versions and every pillar's versions, newest first, each named by its part. A pillar deleted from the recipe is not in this stream.",
+            usedByNone: 'No projection discounts off this recipe.',
+            usedByUnread: 'The projections could not be read.',
+            filterCurrency: 'Currency',
+            filterAllCurrencies: 'All currencies',
+            filterRole: 'Role',
+            filterAllRoles: 'All roles',
+            roles: { FUNDING: 'Funding', PROJECTION: 'Projection' },
+            state: {
+                noPillars: 'No pillars yet',
+                neverPublished: 'Never published',
+                published: 'In use',
+                noSetInUse: 'No set in use since {date}',
+            },
+            columns: {
+                curve: 'Curve',
+                currency: 'Currency',
+                role: 'Role',
+                indexTenor: 'Index tenor',
+                interpolation: 'Interpolation',
+                dayCount: 'Day count',
+                pillars: 'Pillars',
+                lastChanged: 'Last changed',
+                sequence: 'Sequence',
+                startTenor: 'Start tenor',
+                endTenor: 'End tenor',
+                curveRole: 'Role',
+                changedBy: 'Changed by',
+                asOf: 'As-of',
+                party: 'Party',
+                publisher: 'Publisher',
+                publishedAt: 'Published',
+                points: 'Points',
+                state: 'State',
+                date: 'Date',
+                discountFactor: 'Discount factor',
+                forward: 'Forward',
+            },
+            fields: {
+                currencyMeans: "The currency this curve's pillars are quoted in.",
+                indexTenorMeans:
+                    'The tenor of the floating-rate index the curve stands for, such as 1D for an overnight index.',
+                roleMeans: {
+                    FUNDING: 'Anchors its family: the curve the others discount off.',
+                    PROJECTION: 'A dependent curve, discounted off a funding curve.',
+                    other: 'A role this screen does not know.',
+                },
+                discountMeans: 'The funding curve this projection discounts off during the build.',
+                interpolationMeans: {
+                    LOG_LINEAR_DISCOUNT:
+                        'Interpolates the log of the discount factor between pillars.',
+                    FLAT_FORWARD_THEN_LOG_LINEAR:
+                        'A flat-forward short end to the split tenor, then log-linear beyond it.',
+                    CUBIC_SPLINE: 'A cubic spline through the pillars.',
+                    other: 'A method this screen does not know.',
+                },
+                dayCountMeans: 'The day count the bootstrap applies between two pillars.',
+                tenorConventionMeans:
+                    'The convention the pillars resolve their dates under, which the curve owns and never borrows from a series name.',
+                splitTenorMeans:
+                    'Where the two segments meet: a tenor inside the ladder for the two-segment method.',
+                startTenorMeans:
+                    'Where the instrument starts. A deposit starts at SPOT, because it starts today.',
+                endTenorMeans: 'Where the instrument matures, which is where the pillar stands.',
+                curveRoleMeans: {
+                    DEPOSIT: 'Bootstraps as a deposit: spot to its end tenor.',
+                    FRA: 'Bootstraps as a forward rate agreement over its own period.',
+                    SWAP: 'Bootstraps as a swap from spot to its end tenor.',
+                    other: 'A role this screen does not know.',
+                },
+                outputSeriesMeans:
+                    'The market series the curve is published into. It is what names the blueprint, so a desk chooses one it holds and no two blueprints claim the same series.',
+                usedBy: 'Used by',
+                fed: 'Sets it fed',
+                fedCount: '{count} published',
+            },
+            acts: {
+                addPillar: 'Add a pillar',
+                openPillars: 'Open the pillars',
+                editBlueprint: 'Edit the blueprint',
+            },
+            checks: {
+                one_pillar: 'The recipe holds at least one pillar.',
+                maturity_order: 'Each pillar matures after the one before it.',
+                deposit_from_spot: 'Every deposit pillar starts at spot.',
+                split_tenor: 'The split tenor closes the ladder the way the method says it does.',
+                projection_funding:
+                    'A projection names a funding blueprint of its currency, and not itself.',
+                funding_not_projection:
+                    'The blueprint a projection names is not itself a projection.',
+            },
+            findings: {
+                negative_forward: 'The forward at {pillar} is below zero ({value}).',
+                jump: 'The forward jumps at {pillar}, to {value}.',
+                gap: 'The market held no rate for {pillar}, so the curve was built across the gap.',
+            },
+        },
         published: {
             title: 'Published curves',
             plural: 'published curves',

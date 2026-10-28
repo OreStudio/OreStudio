@@ -181,6 +181,7 @@ text under a value that needs it, Cancel and the primary button in the footer.
 
 | Field | Control | Asked when |
 |-------+---------+-----------|
+| Output series | A record picker over the market series the party holds | Always |
 | Currency | A record picker over the currencies | Always |
 | Index tenor | A select over the tenors =1D=, =3M= and =6M= | Always |
 | Role | A select over =FUNDING= and =PROJECTION= | Always |
@@ -190,14 +191,19 @@ text under a value that needs it, Cancel and the primary button in the footer.
 | Tenor convention | A select over the conventions | Always |
 | Split tenor | A select over the tenors | The method is =FLAT_FORWARD_THEN_LOG_LINEAR= |
 
-Two fields the Qt window draws are absent, on purpose. *Source series* is not
+One field the Qt window draws is absent, on purpose. *Source series* is not
 asked at all: the config names no input series, and each pillar reads the series
-its own tenor, role and index resolve to. *Output series* is not asked either:
-the server mints it from the currency, the index tenor and the role, so a value
-that follows from other fields is not a question (RS-WRITE-07). The two pickers
-the Qt window opens for them are therefore not needed; the picker the web screen
-does need is the one over a record kind, and it is drawn inside the dialog for
-the currency and for the discount curve.
+its own tenor, role and index resolve to, so its picker is not needed.
+
+*Output series* is asked, and the note was reversed on 2026-10-28 when the
+screen was built. The draft drew it as a value that follows from the currency,
+the index tenor and the role, so that the server could mint it and the dialog
+would not ask (RS-WRITE-07). It does not follow: a curve's oresmd URI carries
+the index name (=DISCOUNT/RATE/USD/USD-SOFR-FOMC=), and the config holds the
+currency and the index tenor and not the index, so no operation can compose the
+identity the record is keyed by. The field is therefore a record picker over the
+series the party holds, it is required, and it is the record's natural key, so
+one series names one blueprint and a copy names another.
 
 The pillar dialog asks for three fields: the start tenor, the end tenor and the
 curve role, each a select over the codes the system keeps, and says that the
@@ -337,7 +343,7 @@ draw.
 | 2 | Search and filter | The search over code and currency, the currency and role filters, and the no-match state | A server search: the prototype filters on the page, and RS-LIST-04 wants the filter on the contract |
 | 3 | Open a blueprint and read its fields | The Details tab, the fields in the field table's order, each coded value as its label badge or its code, the output series and *Used by* as links | The output series' own read, which is a different component's screen |
 | 4 | Read the pillars | The Pillars tab in maturity order, with the empty state and its Add | Nothing |
-| 5 | Add a blueprint | The Add dialog: six fields, plus the discount curve for a projection and the split tenor for the two-segment method; the output series is not asked | The write, and the new page it opens: nothing on the page writes |
+| 5 | Add a blueprint | The Add dialog: the output series as a picker over the party's series, six more fields, the discount curve for a projection and the split tenor for the two-segment method | A series created from the dialog: a series is chosen, never made here |
 | 6 | Define the pillars | The Add a pillar dialog's three fields, over the parts panel, whose rows carry the pillar's role as its label badge | Editing a pillar: the dialog is drawn in its Add state only, though it is the same shape |
 | 7 | Read the order, and the refusal a DEPOSIT gets | The panel says the order follows the end tenor; the Check tab names a =DEPOSIT= that does not start at =SPOT= and the act that fixes it | The message under the start tenor field: the standard puts a failed field's message under the field (RS-WRITE-05), and the dialog is not drawn with one |
 | 8 | Change a blueprint | The Edit dialog with the current values, the version it claims, and the discount curve asked when the role becomes =PROJECTION= | The notice for a role change the server refuses, because a projection still discounts off the blueprint; the delete dialog's refusal is the pattern it would use |

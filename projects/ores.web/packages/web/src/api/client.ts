@@ -1654,7 +1654,7 @@ export const api = {
             .parse(await request(path, { method: 'GET' })).rows;
     },
 
-    /** One page of a resource and the server's total, searched and ordered on the server. */
+    /** One page of a resource and the server's total, searched, filtered and ordered on the server. */
     async recordPage(
         resource: string,
         page: {
@@ -1663,6 +1663,8 @@ export const api = {
             readonly search: string;
             readonly sort: string;
             readonly descending: boolean;
+            /** The filters set, each named in the address as `f.<id>`. */
+            readonly filters?: Readonly<Record<string, string>>;
         },
     ): Promise<{ readonly rows: readonly RecordRow[]; readonly total: number }> {
         const query = new URLSearchParams({
@@ -1672,6 +1674,9 @@ export const api = {
             sort: page.sort,
             descending: String(page.descending),
         });
+        for (const [id, value] of Object.entries(page.filters ?? {})) {
+            query.set(`f.${id}`, value);
+        }
         return z.object({ rows: z.array(recordRowSchema), total: z.int().nonnegative() }).parse(
             await request(`/api/refdata/${encodeURIComponent(resource)}?${query.toString()}`, {
                 method: 'GET',

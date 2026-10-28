@@ -4139,6 +4139,9 @@ const pt: SourceCatalogue = {
                 ticks: 'Cotações',
                 process: 'Processo',
                 template: 'Modelo da curva',
+                pillars: 'Pilares',
+                check: 'Verificação',
+                sets: 'Conjuntos publicados',
             },
         },
         fields: {
@@ -4246,6 +4249,15 @@ const pt: SourceCatalogue = {
             end_tenor_code: 'Prazo de fim',
             instrument_code: 'Instrumento',
             component_index: 'Índice',
+            output_series_id: 'Série de saída',
+            index_tenor: 'Tenor do índice',
+            curve_family_role: 'Papel',
+            discount_curve_config_id: 'Curva de desconto',
+            interpolation_method: 'Método de interpolação',
+            day_count_convention: 'Base de contagem',
+            tenor_convention_code: 'Convenção de tenor',
+            split_tenor_code: 'Tenor de divisão',
+            curve_role_code: 'Papel da curva',
         },
         choices: {
             ore_currency_type: { Major: 'Principal', Metal: 'Metal', Crypto: 'Cripto' },
@@ -4561,6 +4573,154 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        curveBlueprints: {
+            title: 'Plantas de curva',
+            lead: 'As receitas a partir das quais cada curva e construida: os seus pilares, as suas convencoes e os conjuntos que alimentou.',
+            copy: 'Copiar a planta',
+            copyTitle: 'Copiar {code}',
+            copyNote:
+                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, e nomeia uma serie propria: e a serie que distingue uma planta da outra.',
+            add: 'Adicionar planta',
+            addTitle: 'Adicionar uma planta de curva',
+            noPillarsNotice:
+                'Esta receita nao tem pilares, por isso nao ha nada a partir do qual construir uma curva.',
+            openPillars: 'Abrir os pilares.',
+            allSetsEnded:
+                'Todos os conjuntos que esta receita alimentou sairam de uso: o ultimo foi retirado em {date} por {account}. Nada e retirado do servico, porque a receita nao tem estado proprio.',
+            noneYet: 'Nenhum por agora.',
+            addPillar: 'Adicionar um pilar',
+            onePillar: 'Pilar',
+            removePillar: 'Eliminar o pilar',
+            pillarName: '{start} a {end}, {role}',
+            pillarsLead:
+                'Um pilar e o intervalo de datas de um instrumento e nao um ponto isolado: um deposito de um mes que comeca hoje tem, por isso, um tenor de inicio SPOT e um tenor de fim 1M. A ordem segue o tenor de fim de cada pilar e e derivada, nunca escrita.',
+            checkLead:
+                'Se esta receita se constroi, lido primeiro na propria receita e depois no mercado de que precisa.',
+            notChecked: 'Ainda nao verificado.',
+            checksTitle: 'O que a receita tem de cumprir',
+            marketTitle: 'O que o mercado forneceu',
+            pointsTitle: 'Os pontos devolvidos pela construcao',
+            findingsTitle: 'O que o ecra leu nos pontos',
+            discountFactors: 'Fatores de desconto',
+            forwards: 'Taxas forward instantaneas',
+            asOf: 'Data de referencia',
+            runTest: 'Executar o teste',
+            notRun: 'Nao executado',
+            pass: 'Passa',
+            fail: 'Falha',
+            observed: 'Observado',
+            noRate: 'Sem taxa',
+            builtNothing: 'A construcao nao devolveu pontos.',
+            validationFailed:
+                'A receita falha {count} dos seus proprios controlos, por isso o mercado nao foi lido e nenhuma curva foi construida.',
+            noFindings: 'Nada se destaca nos pontos.',
+            derivedNote:
+                'As forwards e as conclusoes sao a aritmetica deste ecra sobre os pontos devolvidos pelo servidor. O servidor responde com os pontos e nada sobre eles.',
+            setsLead:
+                'Os conjuntos publicados a partir desta receita, do mais recente para o mais antigo. Uma linha abre o registo publicado. Os conjuntos sao lidos aqui e nunca alterados: uma retirada e um ato proprio, com um motivo.',
+            setsNoneLead:
+                'Um conjunto torna-se num quando alguem publica um candidato aprovado, na jornada de publicacao.',
+            setsNote:
+                'Um conjunto encontra-se pela planta a partir da qual foi construido, que a leitura transporta; o contrato de lista ainda nao tem filtro para isso, por isso o separador le os conjuntos da parte e retem o seu.',
+            historyLead:
+                'As versoes da receita e as versoes de cada pilar, da mais recente para a mais antiga, cada uma nomeada pela sua parte. Um pilar eliminado da receita nao esta neste fluxo.',
+            usedByNone: 'Nenhuma projecao se desconta nesta receita.',
+            usedByUnread: 'Nao foi possivel ler as projecoes.',
+            filterCurrency: 'Moeda',
+            filterAllCurrencies: 'Todas as moedas',
+            filterRole: 'Papel',
+            filterAllRoles: 'Todos os papeis',
+            roles: { FUNDING: 'Financiamento', PROJECTION: 'Projecao' },
+            state: {
+                noPillars: 'Ainda sem pilares',
+                neverPublished: 'Nunca publicado',
+                published: 'Em uso',
+                noSetInUse: 'Nenhum conjunto em uso desde {date}',
+            },
+            columns: {
+                curve: 'Curva',
+                currency: 'Moeda',
+                role: 'Papel',
+                indexTenor: 'Tenor do indice',
+                interpolation: 'Interpolacao',
+                dayCount: 'Base de contagem',
+                pillars: 'Pilares',
+                lastChanged: 'Ultima alteracao',
+                sequence: 'Sequencia',
+                startTenor: 'Tenor de inicio',
+                endTenor: 'Tenor de fim',
+                curveRole: 'Papel',
+                changedBy: 'Alterado por',
+                asOf: 'Data de referencia',
+                party: 'Parte',
+                publisher: 'Publicado por',
+                publishedAt: 'Publicado em',
+                points: 'Pontos',
+                state: 'Estado',
+                date: 'Data',
+                discountFactor: 'Fator de desconto',
+                forward: 'Forward',
+            },
+            fields: {
+                currencyMeans: 'A moeda em que os pilares desta curva sao cotados.',
+                indexTenorMeans:
+                    'O tenor do indice de taxa variavel que a curva representa, por exemplo 1D para um indice a vista.',
+                roleMeans: {
+                    FUNDING: 'Ancora a sua familia: a curva em que as outras se descontam.',
+                    PROJECTION: 'Uma curva dependente, descontada numa curva de financiamento.',
+                    other: 'Um papel que este ecra nao conhece.',
+                },
+                discountMeans:
+                    'A curva de financiamento em que esta projecao se desconta durante a construcao.',
+                interpolationMeans: {
+                    LOG_LINEAR_DISCOUNT:
+                        'Interpola o logaritmo do fator de desconto entre os pilares.',
+                    FLAT_FORWARD_THEN_LOG_LINEAR:
+                        'Um inicio de forward plano ate ao tenor de divisao, e log-linear depois disso.',
+                    CUBIC_SPLINE: 'Uma spline cubica que passa pelos pilares.',
+                    other: 'Um metodo que este ecra nao conhece.',
+                },
+                dayCountMeans: 'A base de contagem que o bootstrap aplica entre dois pilares.',
+                tenorConventionMeans:
+                    'A convencao sob a qual os pilares resolvem as suas datas, que a curva possui e nunca empresta do nome de uma serie.',
+                splitTenorMeans:
+                    'Onde os dois segmentos se encontram: um tenor dentro da escada para o metodo de dois segmentos.',
+                startTenorMeans:
+                    'Onde o instrumento comeca. Um deposito comeca em SPOT, porque comeca hoje.',
+                endTenorMeans: 'Onde o instrumento vence, e portanto onde o pilar se situa.',
+                curveRoleMeans: {
+                    DEPOSIT: 'Constroi-se como um deposito: do spot ao seu tenor de fim.',
+                    FRA: 'Constroi-se como um acordo de taxa futura sobre o seu proprio periodo.',
+                    SWAP: 'Constroi-se como um swap do spot ao seu tenor de fim.',
+                    other: 'Um papel que este ecra nao conhece.',
+                },
+                outputSeriesMeans:
+                    'A serie de mercado em que a curva e publicada. E ela que nomeia a planta, por isso a mesa escolhe uma que detem e duas plantas nao reivindicam a mesma serie.',
+                usedBy: 'Usada por',
+                fed: 'Conjuntos alimentados',
+                fedCount: '{count} publicados',
+            },
+            acts: {
+                addPillar: 'Adicionar um pilar',
+                openPillars: 'Abrir os pilares',
+                editBlueprint: 'Editar a planta',
+            },
+            checks: {
+                one_pillar: 'A receita tem pelo menos um pilar.',
+                maturity_order: 'Cada pilar vence depois do anterior.',
+                deposit_from_spot: 'Cada pilar de deposito comeca no spot.',
+                split_tenor: 'O tenor de divisao fecha a escada como o metodo diz.',
+                projection_funding:
+                    'Uma projecao nomeia uma planta de financiamento da sua moeda, e nao a si propria.',
+                funding_not_projection:
+                    'A planta que uma projecao nomeia nao e ela propria uma projecao.',
+            },
+            findings: {
+                negative_forward: 'A forward em {pillar} esta abaixo de zero ({value}).',
+                jump: 'A forward salta em {pillar}, para {value}.',
+                gap: 'O mercado nao tinha taxa para {pillar}, por isso a curva foi construida sobre a falha.',
+            },
+        },
         published: {
             title: 'Curvas publicadas',
             plural: 'curvas publicadas',

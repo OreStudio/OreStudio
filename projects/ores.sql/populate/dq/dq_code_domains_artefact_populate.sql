@@ -84,4 +84,10 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'leg_type', 0, 'Leg Type', 'Classification codes for trade leg records (asset swap, CMS, CMS spread, CPI, digital CMS, fixed, floating, OIS, YoY, zero coupon).', 65),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'purpose_type', 0, 'Purpose Type', 'Purpose classification codes for portfolios (client reporting, internal, regulatory, risk).', 66),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'rounding_type', 0, 'Rounding Type', 'Rounding method classification codes for currencies (ceiling, closest, down, floor, up).', 67),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor', 0, 'Tenor Anchor', 'Anchor classification codes for tenors (IMM roll, near leg, none, spot, today, tomorrow).', 68);
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor', 0, 'Tenor Anchor', 'Anchor classification codes for tenors (IMM roll, near leg, none, spot, today, tomorrow).', 68),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_family_role', 0, 'Curve Family Role', 'Whether a curve blueprint anchors its family (FUNDING) or discounts off one (PROJECTION).', 69),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'interpolation_method', 0, 'Interpolation Method', 'The method that joins a curve blueprint''s pillars (log-linear discount, flat forward then log-linear, cubic spline).', 70),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'day_count_convention', 0, 'Day Count Convention', 'The day count a curve bootstrap applies per pillar (actual/360, actual/365, actual/365 fixed, 30/360).', 71),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_convention', 0, 'Tenor Convention', 'The convention a curve''s pillars resolve their dates under (spot forward, spot FOMC).', 72),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'bootstrap_curve_role', 0, 'Bootstrap Curve Role', 'The instrument role one curve pillar bootstraps as (deposit, FRA, swap).', 73),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'curve_publish_state', 0, 'Curve Publish State', 'The state of a curve set published from a blueprint (published, withdrawn, superseded).', 74);

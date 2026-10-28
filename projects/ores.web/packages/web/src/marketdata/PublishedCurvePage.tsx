@@ -22,11 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
-import {
-    orderTimeline,
-    recordEvents,
-    type TimelineEvent,
-} from '@ores/wire-protocol/browser';
+import { orderTimeline, recordEvents, type TimelineEvent } from '@ores/wire-protocol/browser';
 import { api, type PublishedCurveSet } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -131,9 +127,7 @@ export function PublishedCurvePage(): ReactNode {
             <div className="space-y-6">
                 <AreaTrail area="marketdata" />
                 <PageHeader title={curve} description={party} />
-                <Notice tone="warn">
-                    {t('marketdata.published.noSuchCurve', { curve })}
-                </Notice>
+                <Notice tone="warn">{t('marketdata.published.noSuchCurve', { curve })}</Notice>
             </div>
         );
     }
@@ -340,7 +334,7 @@ function DetailsTab({
 
             <p className="text-sm text-ink-muted">
                 {t('marketdata.published.details.lastChanged', {
-                    at: lastChangedAt(record) === null ? '—' : lastChangedAt(record) ?? '',
+                    at: lastChangedAt(record) === null ? '—' : (lastChangedAt(record) ?? ''),
                     count: String(publishedSetsOf(sets).length),
                 })}
             </p>
@@ -442,7 +436,13 @@ function HistoryTab({ record }: { readonly record: PublishedCurveSet }): ReactNo
     );
 }
 
-function Fact({ label, children }: { readonly label: string; readonly children: ReactNode }): ReactNode {
+function Fact({
+    label,
+    children,
+}: {
+    readonly label: string;
+    readonly children: ReactNode;
+}): ReactNode {
     return (
         <div>
             <dt className="text-[10px] tracking-wide text-ink-faint uppercase">{label}</dt>

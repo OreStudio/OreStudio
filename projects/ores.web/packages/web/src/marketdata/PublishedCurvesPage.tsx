@@ -25,7 +25,13 @@ import { api, type PublishedCurveSet } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translate } from '../inbox/kinds.js';
 import { PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
-import { RecordList, type ListColumn, type ListFilter, type ListNote, type ListSource } from '../refdata/RecordList.js';
+import {
+    RecordList,
+    type ListColumn,
+    type ListFilter,
+    type ListNote,
+    type ListSource,
+} from '../refdata/RecordList.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { Crumbs } from '../refdata/shared.js';
@@ -75,7 +81,11 @@ export function stateLabelKey(state: SetState): string {
 
 function filtersOf(t: Translate): readonly ListFilter[] {
     return [
-        { kind: 'toggle', id: CANDIDATES_FILTER, label: t('marketdata.published.filter.candidates') },
+        {
+            kind: 'toggle',
+            id: CANDIDATES_FILTER,
+            label: t('marketdata.published.filter.candidates'),
+        },
         { kind: 'toggle', id: ENDED_FILTER, label: t('marketdata.published.filter.ended') },
     ];
 }

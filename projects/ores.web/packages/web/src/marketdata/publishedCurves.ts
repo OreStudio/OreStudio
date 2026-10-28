@@ -88,9 +88,7 @@ export function publishedSetsOf(sets: readonly PublishedCurveSet[]): readonly Pu
  * A curve whose newest set has ended still has a record, and that record is the
  * newest one: the list's ended-set filter is how a person reaches it.
  */
-export function newestPublished(
-    sets: readonly PublishedCurveSet[],
-): PublishedCurveSet | undefined {
+export function newestPublished(sets: readonly PublishedCurveSet[]): PublishedCurveSet | undefined {
     return publishedSetsOf(sets).at(-1);
 }
 
@@ -241,8 +239,7 @@ export function comparePoints(
     const candidateOf = new Map(candidate.map((point) => [point.pillar, point]));
     const pillars: string[] = [];
     for (const point of published) if (!pillars.includes(point.pillar)) pillars.push(point.pillar);
-    for (const point of candidate)
-        if (!pillars.includes(point.pillar)) pillars.push(point.pillar);
+    for (const point of candidate) if (!pillars.includes(point.pillar)) pillars.push(point.pillar);
 
     return pillars.map((pillar) => {
         const left = publishedOf.get(pillar);

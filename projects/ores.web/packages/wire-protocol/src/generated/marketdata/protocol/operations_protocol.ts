@@ -681,6 +681,37 @@ export interface GetCurveSnapshotResponse {
      * read reports the crossing, and the view decides what to show.
      */
     warning: boolean;
+    /**
+     * @brief When a person last published this series, or absent when nobody has.
+     *
+     * The values the snapshot serves are the latest observations, published or
+     * not. This is what tells a reader which of the two it is looking at, and a
+     * series no person published answers absent rather than a plausible instant.
+     */
+    published_at: string | null;
+    /**
+     * @brief The account that published the set, or empty when nobody has.
+     *
+     * The decider and the publisher are two people: the approval records who
+     * answered the request, and this records who applied the answer.
+     */
+    published_by: string;
+    /**
+     * @brief The market instant the published set was bootstrapped against.
+     *
+     * The epoch when nobody has published the series. The snapshot's own instant
+     * is now, and the values carry their own ages; this is the as-of the published
+     * set was built at, which is what a delta against the live set is measured
+     * from.
+     */
+    published_as_of: string;
+    /**
+     * @brief The approval request that authorised the published set, or empty.
+     *
+     * The request a decider answered, so a reader sees which decision the set in
+     * use stands on and can read its decisions, its reason and its state.
+     */
+    approval_request_id: string;
 }
 
 /**

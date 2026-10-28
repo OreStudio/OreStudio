@@ -41,11 +41,7 @@ import { formatDateTime } from '../ui/Time.js';
  * A request whose subject this reader may not read says so, rather than drawing
  * an empty block that reads like a request about nothing.
  */
-export function CurvePublishExtras({
-    request,
-}: {
-    readonly request: InboxRequestView;
-}): ReactNode {
+export function CurvePublishExtras({ request }: { readonly request: InboxRequestView }): ReactNode {
     const { t, language } = useTranslation();
     const subject = request.publishedSubject ?? null;
     if (subject === null) {

@@ -1460,7 +1460,8 @@ describe('the subject of a curve publish in the queue', () => {
         request_id: PUBLISH_REQUEST,
         curve: 'USD-SOFR-ACME',
         series_id: '88888888-8888-4888-8888-888888888888',
-        series_uri: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
+        series_uri:
+            'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
         bootstrap_config_id: '99999999-9999-4999-8999-999999999999',
         party: 'ACCOUS',
         party_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',

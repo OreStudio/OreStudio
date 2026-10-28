@@ -28,9 +28,9 @@ The engine's log is read by one parser in ores.ore, a node writes the canonical 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Restored, adapted and green; waiting on the PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR and merge it.             |
 | Last touched | 2026-10-28                               |
 
 * Acceptance
@@ -58,7 +58,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files the branch changes against main | 33 | =git diff --stat origin/main= | 63b5356a76 |
+| =ores.ore.core.tests= | passed, 27.72s | =compass test run -- -R ores.ore.core.tests= | 63b5356a76 |
+| =ores.reporting.core.tests= | passed, 54.00s | =compass test run -- -R ores.reporting.core.tests= | 63b5356a76 |
+| =ores.compute.core.tests= | passed, 28.05s | =compass test run -- -R ores.compute.core.tests= | 63b5356a76 |
+| Test cases of the log reader | 6 | =projects/ores.reporting/core/tests/results_canonical_log_reader_tests.cpp= | 1458b3b1b5 |
 
 * Notes
 
@@ -86,3 +90,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three commits are restored on today's tree, one for each thing the stranded
+work did, and each one builds and passes its suite:
+
+- =[ore] Read the engine's log in one place= brings =engine_log= and its suite
+  into =ores.ore.core=.
+- =[compute] Write the engine's log beside a run's rows= gives the claim a
+  =logs_uri= and the node its fifth grant, and the wrapper uploads the canonical
+  rows the parser produces.
+- =[reporting] Load a run's log rows from the node= reads those rows through one
+  reader, so the service never learns the engine's format.
+
+Two faults were found while restoring and are fixed here. The claim's wording
+still said four objects, and the log reader read a doubled quote as two field
+boundaries, so a message that stated a quote lost it. The reader also had no
+suite; it has six cases now.
+
+Nothing remains on =feature/run-a-report-and-read-its-rows=.

@@ -278,3 +278,53 @@ this profile either.
 
 Until publishing is wired, a population cannot depend on a catalogue, and that
 is the next thing to understand rather than to guess at.
+
+** How a catalogue publishes, and where the run now stops
+
+The question was answered by following the path rather than the bundle table.
+A dataset publishes through three things that must all exist:
+
+1. An *artefact type* row naming the data quality artefact table, the live
+   table and the publish subject.
+2. A *publish operation*: the refdata service derives the SQL function from the
+   subject's last segment, so =refdata.v1.ops.publish_equity_underlyings_from_dq=
+   calls =ores_refdata_publish_equity_underlyings_from_dq_fn=.
+3. Membership of the bundle the profile publishes, which is =base= for the
+   reference data a tenant works from.
+
+The catalogue had the SQL function and none of the three. All three are in
+place and the catalogue publishes during provisioning; the population run now
+books equity trades.
+
+Booking then found five refusals, each a value the schema does not accept:
+
+- the accumulator's =payoff_type= and =target_type=, which are a fixed set, and
+  the split between an accumulator, which states no target, and a TaRF, which
+  must state one;
+- the digital and touch split, where a digital states an option type and a
+  strike and a touch states a barrier and neither;
+- the forward's =quantity=, which the schema requires above zero and the writer
+  never set;
+- the swap's =return_type=, which is =Total= or =Price= and not a phrase I
+  invented;
+- the constituent's kind, which is the *vocabulary* -- =equity= -- and not the
+  catalogue's =index= or =share= classification.
+
+=EquityOutperformanceOption= is excluded: it routes to the option table, and
+that table's check admits =EquityOption= and =EquityCliquetOption= only, so no
+row of that type can satisfy it. That is a defect in the check, not in the
+planner, and it is why the family books sixteen of the seventeen routed codes.
+
+** Where it stops, and why that is not another value to patch
+
+The run now fails inside the basket constituent's check:
+
+  ores_trading_basket_constituent_resolves_fn(text,text) line 7
+
+The resolver works when called by hand, and the catalogue's eleven rows belong
+to the ACME tenant. The write that triggers it runs in the trading service's
+session, whose tenant is not the catalogue's. So the refusal is correct and the
+question is who the population writes as: either the catalogue must be visible
+to that session, or the resolve must read the catalogue of the tenant the trade
+belongs to rather than of the session. That is a design question about service
+origin writes, and it is the next thing to settle.

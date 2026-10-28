@@ -150,6 +150,12 @@ export function blueprintFields(inputs: {
 }): readonly FieldSpec[] {
     return [
         {
+            field: 'name',
+            history: 'Name',
+            kind: { kind: 'text', max: 120 },
+            means: { key: 'marketdata.curveBlueprints.fields.nameMeans' },
+        },
+        {
             field: 'output_series_id',
             history: 'Output Series Id',
             kind: { kind: 'pick', choices: inputs.series },
@@ -288,34 +294,26 @@ function useFundingChoices(currency = ''): readonly {
                 },
             }),
     });
-    const ids = (configs.data?.rows ?? [])
-        .map((row) => show(row['output_series_id']))
-        .filter((id) => id !== '');
-    const uris = useQuery({
-        queryKey: ['curve-series-uris', ids.join(',')],
-        queryFn: () => curves.seriesUris(ids),
-        enabled: ids.length > 0,
-    });
-    return (configs.data?.rows ?? []).map((row) => {
-        const series = show(row['output_series_id']);
-        return {
-            value: show(row['id']),
-            label:
-                uris.data?.get(series) ??
-                `${show(row['currency_code'])} ${show(row['index_tenor'])}`,
-        };
-    });
+    return (configs.data?.rows ?? []).map((row) => ({
+        value: show(row['id']),
+        label: show(row['name']),
+    }));
 }
 
-/** The series URI of each blueprint id asked for, read in one call. */
-function useSeriesUris(ids: readonly string[]): ReadonlyMap<string, string> {
-    const wanted = ids.filter((id) => id !== '');
-    const uris = useQuery({
-        queryKey: ['curve-series-uris', wanted.join(',')],
-        queryFn: () => curves.seriesUris(wanted),
-        enabled: wanted.length > 0,
+/**
+ * One record, read only when the field that names it holds a key.
+ *
+ * A nullable reference is absent rather than nil, so there is no key to read and
+ * a request for one would ask the server for a record nobody named.
+ */
+function useNamedRecord(resource: string, key: string) {
+    const store = useRecordStore();
+    return useQuery({
+        queryKey: ['records', resource, 'key', key],
+        queryFn: () => store.record(resource, key),
+        enabled: key !== '',
+        retry: false,
     });
-    return uris.data ?? new Map();
 }
 
 /** The sets published from any blueprint, newest first, including the ones that ended. */
@@ -364,11 +362,11 @@ function usePillars(configId: string) {
  * The curve blueprints: the recipes each curve is built from, one page at a
  * time from the server, searched and filtered there.
  *
- * The list reads the series URI of each row and the pillars each holds beside
- * the page, because a blueprint has no name of its own and the two facts are
- * what tell two rows apart. A series the catalogue no longer holds is drawn as
- * its id with the sentence that says so, because a soft reference can outlive
- * the row it names.
+ * The list draws the record's own name, which the database holds, and reads the
+ * pillars each row holds beside the page so the state line can say whether a
+ * recipe has anything to build from. It parses the output series' oresmd URI
+ * nowhere: the name is a field, and the series is drawn as a URI only on the
+ * record's Details tab.
  */
 export function CurveBlueprintsPage(): ReactNode {
     const { t } = useTranslation();
@@ -410,33 +408,6 @@ export function CurveBlueprintsPage(): ReactNode {
     const source: ListSource<RecordRow> = {
         ...base,
         filters,
-        read: async (page: Parameters<typeof base.read>[0]) => {
-            const answer = await base.read(page);
-            const named = answer.rows
-                .map((row) => show(row['output_series_id']))
-                .filter((id) => id !== '');
-            /*
-             * A series that cannot be read at all is not the same fact as a row
-             * that is there: the first is the read's failure and the second is a
-             * soft reference that outlived its series, and a row says which.
-             */
-            let uris: ReadonlyMap<string, string> = new Map();
-            let read = true;
-            try {
-                uris = await curves.seriesUris(named);
-            } catch {
-                read = false;
-            }
-            return {
-                ...answer,
-                rows: answer.rows.map((row): RecordRow => {
-                    const series = show(row['output_series_id']);
-                    const uri = uris.get(series) ?? '';
-                    const state: SeriesState = uri !== '' ? 'read' : read ? 'missing' : 'unread';
-                    return { ...row, series_uri: uri, series_state: state };
-                }),
-            };
-        },
     };
     return (
         <>
@@ -454,14 +425,15 @@ export function CurveBlueprintsPage(): ReactNode {
                 onAdd={() => setAdding(true)}
                 columns={[
                     {
-                        id: 'curve',
-                        header: t('marketdata.curveBlueprints.columns.curve'),
+                        id: 'name',
+                        header: t('marketdata.curveBlueprints.columns.name'),
                         cell: (row) => (
-                            <CurveCell
+                            <NameCell
                                 row={row}
                                 stateLine={stateLine(t, row, countOf(show(row['id'])), sets)}
                             />
                         ),
+                        sort: 'name',
                     },
                     {
                         id: 'currency_code',
@@ -575,38 +547,23 @@ function useCurrencyChoices(): readonly { readonly value: string; readonly label
 }
 
 /**
- * A blueprint's first cell: the series it publishes into, or the id it names
- * when that series no longer resolves, and one line of state under it.
+ * A blueprint's first cell: its name, which the record holds, and one line of
+ * state under it.
  *
- * A soft reference is the record's to keep and not the series': the blueprint
- * still names the id, so the cell draws the id in place of the URI it cannot
- * name, and says in words that there is nothing there to open.
+ * The name is the column a person reads and searches by. The output series is
+ * not drawn here and is not parsed for a name: it belongs to Details, where it
+ * is a URI and a link.
  */
-function CurveCell({
+function NameCell({
     row,
     stateLine,
 }: {
     readonly row: RecordRow;
     readonly stateLine: string;
 }): ReactNode {
-    const { t } = useTranslation();
-    const uri = show(row['series_uri']);
-    const state = show(row['series_state']) as SeriesState | '';
     return (
         <div>
-            <span className="font-mono text-xs">
-                {uri === '' ? show(row['output_series_id']) : uri}
-            </span>
-            {state === 'missing' && (
-                <p className="text-xs text-warn">
-                    {t('marketdata.curveBlueprints.seriesMissingShort')}
-                </p>
-            )}
-            {state === 'unread' && (
-                <p className="text-xs text-warn">
-                    {t('marketdata.curveBlueprints.seriesUnreadShort')}
-                </p>
-            )}
+            <span className="font-medium">{show(row['name'])}</span>
             <p className="text-xs text-ink-faint">{stateLine}</p>
         </div>
     );
@@ -661,8 +618,9 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
     const pillars = usePillars(id);
     const sets = usePublishedSets();
     const reading = useRecord(CONFIGS, id);
+    const name = show(config['name']);
     const { tab, bar } = useRecordTabs({
-        label: id,
+        label: name,
         tabs: ['details', 'pillars', 'check', 'sets', 'history'],
     });
     const [editing, setEditing] = useState(false);
@@ -710,9 +668,9 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
                 crumbs={[
                     ...useAreaRoot('marketdata'),
                     { label: t('marketdata.curveBlueprints.title'), to: curveBlueprintPath() },
-                    { label: uri ?? id },
+                    { label: name },
                 ]}
-                title={uri ?? id}
+                title={name}
                 recordKey={[show(config['currency_code']), show(config['index_tenor'])]
                     .filter((part) => part !== '')
                     .join(' · ')}
@@ -886,7 +844,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
             )}
             {editing && (
                 <RecordDialog
-                    title={t('refdata.records.editTitle', { code: uri ?? id })}
+                    title={t('refdata.records.editTitle', { code: name })}
                     resource={CONFIGS}
                     specs={specs}
                     row={config}
@@ -896,7 +854,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
             )}
             {copying && (
                 <RecordDialog
-                    title={t('marketdata.curveBlueprints.copyTitle', { code: uri ?? id })}
+                    title={t('marketdata.curveBlueprints.copyTitle', { code: name })}
                     resource={CONFIGS}
                     specs={blueprintFields({
                         tenors: ladder.tenors,
@@ -925,7 +883,7 @@ function BlueprintBody({ config }: { readonly config: RecordRow }): ReactNode {
             {removing && (
                 <RemoveRecordDialog
                     resource={CONFIGS}
-                    title={t('refdata.records.deleteTitle', { code: uri ?? id })}
+                    title={t('refdata.records.deleteTitle', { code: name })}
                     warning={t('marketdata.curveBlueprints.removeWarning', {
                         count: String(rows.length),
                         sets: String(fed.length),
@@ -999,7 +957,7 @@ export function sequenceFor(
     ).length;
 }
 
-/** The projection blueprints that name this one as their discount curve. */
+/** The projection blueprints that name this one as their discount curve, by name. */
 function UsedBy({ configId }: { readonly configId: string }): ReactNode {
     const { t } = useTranslation();
     const store = useRecordStore();
@@ -1015,28 +973,30 @@ function UsedBy({ configId }: { readonly configId: string }): ReactNode {
                 filters: { discount_curve_config_id: configId },
             }),
     });
-    const ids = (users.data?.rows ?? []).map((row) => show(row['id']));
-    const uris = useSeriesUris(ids);
+    const rows = users.data?.rows ?? [];
     if (users.isPending) {
         return <>{t('common.loading')}</>;
     }
     if (users.isError) {
         return <>{t('marketdata.curveBlueprints.usedByUnread')}</>;
     }
-    if (ids.length === 0) {
+    if (rows.length === 0) {
         return <>{t('marketdata.curveBlueprints.usedByNone')}</>;
     }
     return (
         <span className="flex flex-wrap gap-2">
-            {ids.map((id) => (
-                <Link
-                    key={id}
-                    className="text-accent hover:text-accent-bright"
-                    to={curveBlueprintPath(id)}
-                >
-                    {uris.get(id) ?? id}
-                </Link>
-            ))}
+            {rows.map((row) => {
+                const id = show(row['id']);
+                return (
+                    <Link
+                        key={id}
+                        className="text-accent hover:text-accent-bright"
+                        to={curveBlueprintPath(id)}
+                    >
+                        {show(row['name'])}
+                    </Link>
+                );
+            })}
         </span>
     );
 }
@@ -1163,8 +1123,14 @@ function CheckTab({
     const [run, setRun] = useState<CheckRun>({ kind: 'idle' });
     const [defaultInstant] = useState(wireNow);
     const instant = asOf === '' ? defaultInstant : asOf;
+    /*
+     * A funding blueprint names no discount curve, so there is nothing to read
+     * and no read to make: asking for the record a nil id names is what failed
+     * here before the column became nullable. The check gets no discount, and
+     * the two checks that judge a projection are the ones that ask for one.
+     */
     const discountId = show(config['discount_curve_config_id']);
-    const discount = useRecord(CONFIGS, discountId);
+    const discount = useNamedRecord(CONFIGS, discountId);
     const recipe = checkRecipe({
         config,
         pillars,

@@ -4579,7 +4579,7 @@ export const en: SourceCatalogue = {
             copy: 'Copy blueprint',
             copyTitle: 'Copy {code}',
             copyNote:
-                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, and it names a series of its own: the series is what tells one blueprint from another.",
+                "The copy carries {count} pillars and this recipe's conventions. It is a new recipe with its own pillars, its own name and its own series.",
             add: 'Add blueprint',
             addTitle: 'Add a curve blueprint',
             noPillarsNotice:
@@ -4646,6 +4646,7 @@ export const en: SourceCatalogue = {
                 noSetInUse: 'No set in use since {date}',
             },
             columns: {
+                name: 'Name',
                 curve: 'Curve',
                 currency: 'Currency',
                 role: 'Role',
@@ -4701,8 +4702,10 @@ export const en: SourceCatalogue = {
                     SWAP: 'Bootstraps as a swap from spot to its end tenor.',
                     other: 'A role this screen does not know.',
                 },
+                nameMeans:
+                    'The name the blueprint is known by, such as USD-SOFR-ACME. It is typed here and stored with the record, and the screens never make one out of the output series.',
                 outputSeriesMeans:
-                    'The market series the curve is published into. It is what names the blueprint, so a desk chooses one it holds and no two blueprints claim the same series.',
+                    "The market series the curve is published into, drawn as its URI. It is the record's natural key, so a desk chooses a series it holds and no two blueprints claim the same one.",
                 usedBy: 'Used by',
                 fed: 'Sets it fed',
                 fedCount: '{count} published',

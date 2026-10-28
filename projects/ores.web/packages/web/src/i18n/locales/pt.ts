@@ -4611,7 +4611,7 @@ const pt: SourceCatalogue = {
             copy: 'Copiar a planta',
             copyTitle: 'Copiar {code}',
             copyNote:
-                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, e nomeia uma serie propria: e a serie que distingue uma planta da outra.',
+                'A copia leva {count} pilares e as convencoes desta receita. E uma receita nova com os seus proprios pilares, o seu proprio nome e a sua propria serie.',
             add: 'Adicionar planta',
             addTitle: 'Adicionar uma planta de curva',
             noPillarsNotice:
@@ -4678,6 +4678,7 @@ const pt: SourceCatalogue = {
                 noSetInUse: 'Nenhum conjunto em uso desde {date}',
             },
             columns: {
+                name: 'Nome',
                 curve: 'Curva',
                 currency: 'Moeda',
                 role: 'Papel',
@@ -4734,8 +4735,10 @@ const pt: SourceCatalogue = {
                     SWAP: 'Constroi-se como um swap do spot ao seu tenor de fim.',
                     other: 'Um papel que este ecra nao conhece.',
                 },
+                nameMeans:
+                    'O nome pelo qual a planta e conhecida, como USD-SOFR-ACME. E escrito aqui e guardado com o registo, e os ecras nunca o compoem a partir da serie de saida.',
                 outputSeriesMeans:
-                    'A serie de mercado em que a curva e publicada. E ela que nomeia a planta, por isso a mesa escolhe uma que detem e duas plantas nao reivindicam a mesma serie.',
+                    'A serie de mercado em que a curva e publicada, desenhada pelo seu URI. E a chave natural do registo, por isso a mesa escolhe uma serie que detem e duas plantas nao reivindicam a mesma.',
                 usedBy: 'Usada por',
                 fed: 'Conjuntos alimentados',
                 fedCount: '{count} publicados',

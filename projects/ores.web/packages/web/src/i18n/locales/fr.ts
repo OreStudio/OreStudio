@@ -4642,7 +4642,7 @@ const fr: SourceCatalogue = {
             copy: 'Copier le plan',
             copyTitle: 'Copier {code}',
             copyNote:
-                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, et elle nomme une série à elle : c'est la série qui distingue un plan d'un autre.",
+                "La copie reprend {count} piliers et les conventions de cette recette. C'est une nouvelle recette avec ses propres piliers, son propre nom et sa propre série.",
             add: 'Ajouter un plan',
             addTitle: 'Ajouter un plan de courbe',
             noPillarsNotice:
@@ -4709,6 +4709,7 @@ const fr: SourceCatalogue = {
                 noSetInUse: 'Aucun ensemble en usage depuis le {date}',
             },
             columns: {
+                name: 'Nom',
                 curve: 'Courbe',
                 currency: 'Devise',
                 role: 'Rôle',
@@ -4765,8 +4766,10 @@ const fr: SourceCatalogue = {
                     SWAP: 'Se construit comme un swap du spot à son tenor de fin.',
                     other: 'Un rôle que cet écran ne connaît pas.',
                 },
+                nameMeans:
+                    "Le nom sous lequel le plan est connu, tel que USD-SOFR-ACME. Il est saisi ici et stocké avec l'enregistrement, et les écrans n'en fabriquent jamais un à partir de la série de sortie.",
                 outputSeriesMeans:
-                    "La série de marché dans laquelle la courbe est publiée. C'est elle qui nomme le plan : le desk en choisit une qu'il détient et deux plans ne revendiquent pas la même série.",
+                    "La série de marché dans laquelle la courbe est publiée, dessinée par son URI. C'est la clé naturelle de l'enregistrement : le desk choisit une série qu'il détient et deux plans ne revendiquent pas la même.",
                 usedBy: 'Utilisée par',
                 fed: 'Ensembles alimentés',
                 fedCount: '{count} publiés',

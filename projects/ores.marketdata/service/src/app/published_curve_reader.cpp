@@ -358,7 +358,7 @@ get_published_curve_sets(const ores::database::context& ctx,
         "   and cp.output_series_id = $2::uuid"
         "   and cp.valid_to = ores_utility_infinity_timestamp_fn()"
         "   and cp.published_at is not null"
-        " order by cp.published_at desc, (cp.superseded_at is null) desc"
+        " order by cp.published_at desc, (cp.superseded_at is null) desc, cp.as_of desc"
         " limit $3::bigint) newest"
         " order by published_at, (superseded_at is null), as_of";
     const auto published_rows = execute_parameterized_multi_column_query(ctx,

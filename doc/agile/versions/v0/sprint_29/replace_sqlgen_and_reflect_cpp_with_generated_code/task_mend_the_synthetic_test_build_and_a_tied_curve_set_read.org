@@ -82,7 +82,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Add =as_of desc= as a last tie-break | =published_curve_reader.cpp= | Accept | Added; the order is now deterministic. |
+| 2 | The list query could tie too | =published_curve_reader.cpp= | Decline | No test shows it; it already breaks ties by =as_of= and URI. |
+| 3 | A test that publishes twice in one second on purpose | =app_published_curves_tests.cpp= | Decline | The existing case publishes twice in a row and hit the tie in 1 of 3 runs. |
+| 4 | Run =compass check= | PR body | Decline | It runs once at the end of the arc, as agreed. |
 
 * Result
 

@@ -15,17 +15,19 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Main is green across the board: every local check the gate runs, and the
+Linux, macOS and Windows CI, apart from the MSVC reflect-cpp errors, which
+the reflect-cpp removal retires.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Done; every local check passes.        |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Merge the PR.                          |
 | Last touched  | 2026-10-28                               |
 
 * Acceptance
@@ -37,7 +39,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:06FADE9D-06F3-4809-9B97-16E0415E556E][Scaffold story: Make main green after the sqlgen removal]] | DONE | 2026-10-28 | 2026-10-28 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:49C5CB14-56BF-4028-900B-6EF8383BDD9C][Fix what the checks and CI find on main]] | STARTED | 2026-10-28 | | Initial task for: Make main green after the sqlgen removal |
+| [[id:49C5CB14-56BF-4028-900B-6EF8383BDD9C][Fix what the checks and CI find on main]] | DONE | 2026-10-28 | 2026-10-28 | Initial task for: Make main green after the sqlgen removal |
 
 * Decisions
 

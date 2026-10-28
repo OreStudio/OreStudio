@@ -2,7 +2,7 @@
 :ID: FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC
 :END:
 #+title: Tracking market data identity from fixing to report
-#+description: This paper argues that ORE Studio's market data is one oresmd identity carried through five transformations, and that the chain breaks where a report reads a curve configuration document instead of the published set.
+#+description: This document argues that ORE Studio's market data is one oresmd identity carried through five transformations, and that the chain breaks where a report reads a curve configuration document instead of the published set.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:path:oresmd:publish:report:structure_note:
@@ -11,13 +11,13 @@
 
 * Abstract
 
-This paper argues that the market data of ORE Studio is a single identity, the
+This document argues that the market data of ORE Studio is a single identity, the
 oresmd series and datum, and that the identity is preserved through five
 transformations: the publication of a public fixing, the generation of a
 synthetic series calibrated from it, the subscription that carries it to a party,
 the bootstrapping of a curve that reads it, and the approval that publishes the
 curve. The identity is preserved because every stage names the same oresmd URI,
-and because the ORE key vocabulary is confined to the ORE XML boundary. The paper
+and because the ORE key vocabulary is confined to the ORE XML boundary. The document
 then shows where the chain breaks. The report path reads a curve configuration
 document, which the ORE export turns into XML, and it never reads the published
 set. The discontinuity, and not the chain, is the system's central provenance
@@ -33,7 +33,7 @@ records. What it does not hold is the argument that they are the same market
 data seen at five points, and without that argument the chain is a set of
 adjacent tables rather than a provenance.
 
-This paper supplies the argument. It states the invariant that the chain
+This document supplies the argument. It states the invariant that the chain
 preserves, it shows how each transformation preserves it, and it identifies the
 transformation that does not.
 
@@ -53,7 +53,7 @@ where ORE XML is read or written.
 The second part is critical. If the identity is preserved, the chain is
 auditable: a report can be traced to a fixing because every link names the same
 URI. If the identity is broken at any hop, the report's number is unexplained at
-that hop, whatever the records below it say. The evidence in this paper shows
+that hop, whatever the records below it say. The evidence in this document shows
 that the chain is preserved through the first five transformations and broken at
 the sixth.
 
@@ -190,19 +190,19 @@ the published curve is wrong, but that its provenance stops where the report
 begins, and the report's curve is a different record from the one the market data
 service published.
 
-Two resolutions are available, and the paper does not choose between them. The
+Two resolutions are available, and the document does not choose between them. The
 first is to make the report read the published set, with the ORE XML built from
 it; the chain then closes, and the report's curve is the published curve. The
 second is to declare the curve configuration document the authoritative input for
 a report and the published set an artefact for consumers that read market data
-directly; the chain then has two branches, and the paper must say so rather than
+directly; the chain then has two branches, and the document must say so rather than
 present one chain.
 
 * 6. Discussion: the boundary and the residual leaks
 
 The ORE boundary is legitimate. A report runs an ORE compute, and ORE consumes
 ORE XML; the conversion at the edge is the correct place for the ORE key. The
-paper's objection is not to the boundary but to the leaks across it. Four
+document's objection is not to the boundary but to the leaks across it. Four
 spellings of the ORE vocabulary remain in the runtime: the curve reader and the
 synthetic IR feed compose a pillar's series, the series classifier keys its rules
 on an ORE series key, and the oresmd codec refuses a datum that has no ORE
@@ -238,7 +238,7 @@ Third, whether a person picks a market series or a catalogue instrument that
 resolves to a provider's series is undecided; the decision names the series, and
 the catalogue remains the open alternative.
 
-Fourth, the report discontinuity has two resolutions and no decision; the paper's
+Fourth, the report discontinuity has two resolutions and no decision; the document's
 thesis is therefore a claim about the current system, not a prescription.
 
 * 8. Conclusion
@@ -249,7 +249,7 @@ is confined to the ORE XML boundary. The identity is what makes the chain
 auditable, and the chain is what a report must read if its numbers are to be
 traced to the fixings that produced them. The evidence shows that the chain is
 preserved through publication and broken at the report, and that the break is a
-design choice still to be made. The paper's contribution is the statement of the
+design choice still to be made. The document's contribution is the statement of the
 invariant, the demonstration of where it holds, and the identification of the
 one place where it does not.
 

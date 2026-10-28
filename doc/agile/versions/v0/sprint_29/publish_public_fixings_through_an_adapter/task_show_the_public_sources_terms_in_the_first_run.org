@@ -5,7 +5,7 @@
 #+description: The first-run journey shows each public publisher's terms and credit, and a publisher is enabled only when the system administrator accepts them.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ A system administrator who sets up a new installation reads the terms of each pu
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,11 +35,10 @@ A system administrator who sets up a new installation reads the terms of each pu
 
 * Acceptance
 
-- The first-run journey has a step between the administrator and ready that lists each publisher of the catalogue: its name, what it gives, its terms page as a link, the credit it asks for and whether it allows storage.
-- The administrator accepts or declines each publisher. An accepted publisher records terms_read_at, the principal who accepted and the publisher version; a declined one stays disabled.
-- The loader refuses to fetch from a publisher with no acceptance, and a test shows it.
-- A publisher whose terms change gets a new version, and the system administrator is asked again before its next load.
-- The terms can be read and changed later from the publisher catalogue, not only in the first run.
+- The first-run journey has a step between the administrator and ready that lists each public provider of the catalogue: its name, what it gives, its terms page as a link, the credit it asks for and whether it allows storage.
+- The administrator accepts or declines each provider. An acceptance records the terms version, the principal who accepted and when; a declined provider is not fetched.
+- A provider whose terms change has a new version, and the system administrator is asked again before the adapter fetches it.
+- The terms can be read and changed later from the provider's own screen, not only in the first run.
 
 * Plan
 
@@ -63,9 +62,9 @@ task and name that file in the Command column.
 
 * Notes
 
-- Raised on 2026-10-28, when the slice of [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] began. The user asked that the licences be accepted in the initial system setup rather than only recorded on a documentation page.
+- Raised on 2026-10-28, when [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] began; moved here when that task was superseded. The user asked that the licences be accepted in the initial system setup rather than only recorded on a documentation page.
 - The journey today is welcome, administrator, ready (=projects/ores.web/packages/web/src/journeys/firstRunSteps.tsx=).
-- The publisher entity, with =terms_read_at= and the credit text, comes from the loader task. This task adds who accepted, the screen and the refusal.
+- The terms columns of the provider, and the adapter's refusal, come from [[id:13EF1C37-CC1A-472C-B14C-EE80A1450294][Give every provider its terms]]. This task adds the screens.
 - The terms still to read are listed in [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]: Frankfurter's own licence, each Frankfurter provider, the US Treasury and the Bank of England.
 
 * Test Scenarios

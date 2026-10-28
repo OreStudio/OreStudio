@@ -11,7 +11,7 @@
 
 * Summary
 
-A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. The sources are the ECB euro reference rates and the Federal Reserve H.10 release for FX, read through the Frankfurter API, and the US Treasury par yield curve with the central banks' overnight rates for curves. A retrieval step reads the value that is as close to today as the source allows, stores it with the time of retrieval, and the screen shows that time. The table in "What was read, and when" says which terms were read from an official page and which were not.
+A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. For FX the sources are the daily rates of the central banks and public bodies that the Frankfurter API reaches, the ECB and the Federal Reserve H.10 among them, and for curves the US Treasury par yield curve with the central banks' overnight rates. Each publisher is a market data provider, and an adapter publishes what it published every day as a fixing tick, so a feed that starts takes the newest value. The screen shows the time of the value. The table in "What was read, and when" says which terms were read from an official page and which were not.
 
 * Detail
 
@@ -55,8 +55,8 @@ A source in the last four rows blocks the storing of its values until its terms 
 It answers the coverage gap, because one client reads the pairs that neither the ECB nor the H.10 carries. A call to =/v2/providers= lists a terms page for most providers, and some providers have none.
 
 Three rules keep the provenance honest:
-- The retrieval step asks for one provider at a time and never takes the blended rate. The blended rate is Frankfurter's own calculation, and it hides which bank the number comes from. Each stored value keeps the provider key, so the credit and the terms of that provider apply.
-- The hosted service is a convenience. The step reads the address from a setting, so a team can point it at its own Frankfurter in Docker without a change of code.
+- The adapter asks for one provider at a time and never takes the blended rate. The blended rate is Frankfurter's own calculation, and it hides which bank the number comes from. Each stored value keeps the provider key, so the credit and the terms of that provider apply.
+- The hosted service is a convenience. The adapter reads the address from a setting, so a team can point it at its own Frankfurter in Docker without a change of code.
 - Frankfurter is the route for FX only. The Treasury curve and the overnight rates are read from their own sources.
 
 What the terms say, read on 2026-10-28:
@@ -74,9 +74,9 @@ What the terms say, read on 2026-10-28:
 
 ** How a generator uses a source
 
-Each generator config points at a published quote: an item, a policy and a window for the volatility. The initial value is the latest value on or before the date of the market clock, and the volatility is the spread of the log returns over the window. The config does not load anything. A separate loader reads the public sources into the table of published quotes, and a reader returns the value with its provenance. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Published quotes are loaded once from public sources and read by the calibration]].
+Each generator config names the fixing items it may start from, with a rank, a policy and a window for the volatility. The initial value is the latest fixing on or before the date of the market clock, and the volatility is the spread of the log returns over the window. The config does not fetch anything. The public sources adapter publishes the fixings as durable ticks, and a reader returns the value with its provider and its time. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 
-A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So each ECB value is stored exactly as the ECB published it, with the credit "Source: ECB statistics". A cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from the two stored values. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
+A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So each ECB value is stored exactly as the ECB published it, with the credit "Source: ECB statistics". A pair that one publisher does not quote is usually quoted by another, so a feed takes it directly where it can. Where none does, a cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from two fixings of one publisher. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
 
 ** What this replaces
 

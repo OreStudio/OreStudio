@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE
+:END:
+#+title: Public sources publish daily fixings through an adapter
+#+description: The architecture of the public market data sources: each publisher is a provider, an adapter fetches what they published and sends it as durable fixing ticks, the ingest stores them in a class of their own, and a feed starts from the latest one.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:adapter:fixing:calibration:
+#+created: 2026-10-23
+#+updated: 2026-10-28
+
+* Summary
+
+Central banks and other public bodies publish rates every day. Each of them is a
+market data provider like Bloomberg or LSEG, with its own vendor ids and its own
+terms. One adapter, the public sources adapter, fetches what they published and
+sends it as ticks over the adapter contract, as the simulator does. The values
+are official fixings, so they are durable: the ingest keeps them in a tick class
+of their own, with no age gate and no expiry. When a synthetic feed starts, it
+reads the latest fixing on or before the date of the market clock, so a feed
+that stops and starts again takes the most recent published value. The catalogue
+starts wide, with many providers that publish the same pairs, so the case of one
+pair from several providers is exercised from the first day.
+
+* Detail
+
+** The shape
+
+#+begin_example
+ publishers (ECB, Bank of England, Bank of Canada, FRED, IMF, ...)
+        |  fetchers (Frankfurter first; Treasury and overnight rates later)
+        v
+ public sources adapter  -- announce, demand, tick, heartbeat -->  ores.marketdata
+        (backfill on start, then daily)                              | map vendor id -> item
+                                                                     | durable class: no age gate
+                                                                     v
+                                                     durable tick table (kept for good)
+                                                                     ^
+                                                                     |  latest on or before, window
+                                                     synthetic feed at start (calibration)
+#+end_example
+
+- The adapter knows nothing of stochastic processes. It publishes what it
+  fetched, in the vendor's own notation.
+- The service knows nothing of HTTP. It maps, checks, stores and delivers, as
+  for any adapter.
+- A feed never fetches. It reads the store. When no fixing is stored, the feed
+  keeps its fixed level and the screen says so.
+
+** Each publisher is a provider
+
+A publisher is a =provider= of kind =reference=, with a source of kind =live=.
+The data is real, so nothing marks it as simulated. The provider owns its vendor
+ids, and a =market_data_vendor_instrument= names each value in the publisher's
+own notation. A =market_data_mapping= maps it to an oresmd item. Nothing new is
+needed for this: it is the pattern of every vendor.
+
+The design is generic. The catalogue is data, so a new publisher is a row and a
+set of vendor ids, not code. A fetcher is code, and one fetcher serves many
+publishers: Frankfurter alone reaches 106 providers.
+
+** The item is an FX fixing
+
+A central bank's daily rate is an official fixing taken once a day, not a quote
+of the live market. Its item is an FX index, the ORE index =FX-SOURCE-CCY1-CCY2=:
+
+#+begin_example
+oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD     (FX-ECB-EUR-USD)
+oresmd://fx/EUR?type=fixing&index=fx&source=BOE&ccy=USD     (FX-BOE-EUR-USD)
+#+end_example
+
+The publisher is part of the identity, because two banks' fixings of one pair
+are two numbers taken at two times. So EUR/USD from the ECB, the Bank of England,
+the Bank of Canada and the IMF are four items. Each is a series of its own
+provider. A pair covered by several publishers is the duplicate case: the
+calibration has several fixings for one pair and chooses by a rank, and the
+screens and the demand show several providers for one underlying.
+
+The item being a fixing also keeps the durable rule apart from live FX spot.
+The tick class is keyed by the instrument type, so the fixings can be durable
+while the spot quotes stay perishable.
+
+** A durable class with its own table
+
+Today the ingest drops a tick whose vendor time is older than its age limit, and
+a tick older than the newest one of its vendor id
+(=adapter_tick_translator.cpp=). A fixing published yesterday at 16:00 CET, and
+every day of a backfill, would be dropped. The durable tier of
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] is the
+answer, and the fixings are its first class:
+
+- The age gate does not apply.
+- A backfill arrives in order, oldest first, for each vendor id, so the order
+  rule still holds.
+- Conflation is =none=: each daily value is kept.
+- The class has its own points table, of the same shape as the ticks, because
+  "a class with a different retention needs its own table". It is kept for good.
+  The volume is small: a publisher gives a few dozen rows a day.
+
+** The public sources adapter
+
+One service speaks the adapter contract for every public source. It announces,
+answers its demand set, sends a heartbeat, and publishes ticks.
+
+- *Fetchers.* A fetcher reads one access route. Frankfurter is the first. The
+  US Treasury par curve, SOFR, SONIA and €STR are later fetchers, for the
+  curves. The fetcher takes its transport as an interface, so its tests run on
+  stored responses with no network.
+- *One publisher a request.* The Frankfurter fetcher asks for one provider at a
+  time, =/v2/providers/<key>/rates=, and never for the blended rate. The blended
+  rate is Frankfurter's own sum and hides which bank the number came from.
+- *Backfill, then daily.* On start the adapter fetches the window that the
+  calibration needs for each demanded item, oldest first. After that it polls
+  each publisher once a day, after its publication time, from the last day it
+  sent.
+- *HTTPS.* The only outbound HTTP client today, in =ores.storage=, takes
+  =http://= alone. The adapter gets an HTTPS GET built on the Boost.Beast and
+  OpenSSL that the build already links.
+- *The address is a setting.* The hosted Frankfurter is a convenience. A team can
+  point the adapter at its own Frankfurter in Docker without a change of code.
+
+** Terms
+
+Every provider has terms, Bloomberg and LSEG included, so the terms are columns
+of =provider=: the terms page, the credit it asks for, whether it allows the
+values to be stored, when the terms were accepted, by whom, and the version of
+the terms. The system administrator accepts or declines each public provider in
+the first run, and again when its terms change. See the task
+[[id:4DFF1284-F24A-4815-B723-B7A22B4815E8][Show the public sources' terms in the first run]].
+
+The adapter never fetches for a provider whose terms are not accepted. A
+provider with no terms page of its own, 65 of the 106 that Frankfurter lists, is
+not offered until someone reads its own site and records what it says.
+
+** Demand
+
+The adapter answers a demand set like any adapter. The system party subscribes
+to each public provider and routes to its source, so the items it calibrates
+from are in the demand. A tenant may subscribe too, and reads the fixings
+through its own series and its entitlement, as for any source.
+
+** The reader
+
+The reader has two questions: the latest fixing of an item on or before a date,
+and the fixings of an item over a window. Each answer names the provider, the
+vendor id, the vendor time and the time it was received. It follows the snapshot
+reader that already returns the latest tick at or before an instant, on the
+durable table.
+
+The calibration is its own task: a feed's config names the fixing items it may
+start from, with a rank, and a policy (=latest_on_or_before_clock= or
+=exact:<date>=). See [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]].
+
+** Coverage at the start
+
+Frankfurter lists 106 providers, 41 of them with a terms page. Among those 41,
+USD, EUR, GBP, JPY, CHF and CAD are each quoted by six or more: the ECB, the Bank
+of England, the Bank of Canada, FRED (H.10), the IMF, the Bank of Japan, Norges
+Bank, the Czech National Bank and others. The first catalogue takes every daily
+provider of the 41 whose terms allow storage, and so covers the main pairs
+several times over. The list was read from =/v2/providers= on 2026-10-28.
+
+Three of the providers are not daily: the BIS is monthly, the US Treasury
+reporting rate quarterly, and Japan Customs weekly. They wait for the class
+policy to say how stale a monthly fixing may be.
+
+** Secrets
+
+A credential is never in a table, a log or a stored URL. A provider row holds a
+=credential_ref=, such as =env:ORES_MARKETDATA_FRED_API_KEY=, and a
+=secret_source= interface resolves it. The first implementation reads the
+service environment, as the database passwords are read. Frankfurter needs no
+key.
+
+** How this design changed
+
+- *2026-10-23: a table of its own.* The first design loaded the public values
+  into a new table, =published_quote=, with a publisher catalogue, a series
+  mapping and a fetch and load provenance: five new entities beside the market
+  data service.
+- *2026-10-28: the existing tables.* Before any of it was built, the question
+  was asked whether the existing tables carry it. The catalogue, the vendor
+  mapping and the DQ pipeline held four of the five. An H.10 dataset already
+  travels the DQ path into =market_observation= and the feeds read it as a
+  vintage.
+- *2026-10-28: an adapter.* DQ is for canned data, a snapshot that stays fixed.
+  A public source publishes every day, and a feed that starts again should take
+  the newest value. So a public source is an adapter that publishes ticks, the
+  publisher is a provider, and the values are durable fixings. The new parts
+  are the durable class, the adapter, the provider terms and the reader. DQ
+  keeps the canned vintages.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — the publishers and their terms.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] — the durable tier the fixings use.
+- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — how a tenant reads a source's ticks.

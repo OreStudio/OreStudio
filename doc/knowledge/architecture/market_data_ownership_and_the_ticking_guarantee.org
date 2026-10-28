@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:tenancy:rls:adapters:testing:
 #+created: 2026-10-24
-#+updated: 2026-10-26
+#+updated: 2026-10-28
 
 * Summary
 
@@ -33,7 +33,7 @@ On 2026-10-23 a fresh build, a new database and a provisioned Acme tenant produc
 | 4 | No test runs the real path | Tests put their rows under the system tenant. No check provisions a tenant and then waits for ticks. | [[id:51A7DF59-52C9-4F25-90FD-72D7B4755CCD][Add a provisioning to ticks smoke check]] and [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]] |
 | 5 | The simulator builds its adapters once | A source added after the start needs a restart. | [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] |
 | 6 | One copy of each tick for each party | The ingest stores a tick for every party that routes to the source: 26 pairs for 4 parties gave 104 series. The copy ties the ingest to the routes of every tenant. | [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]] |
-| 7 | An item has no single series | A vintage and a tick stream of one item are two series, one for each provider, and a read by series must guess. | The owner is the published quotes work, not a task of this plan: the reader of the published quotes reads by item. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Published quotes are loaded once from public sources and read by the calibration]]. |
+| 7 | An item has no single series | A vintage and a tick stream of one item are two series, one for each provider, and a read by series must guess. | The owner is the public sources work, not a task of this plan: the reader of the fixings reads by item. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]. |
 
 ** The target
 

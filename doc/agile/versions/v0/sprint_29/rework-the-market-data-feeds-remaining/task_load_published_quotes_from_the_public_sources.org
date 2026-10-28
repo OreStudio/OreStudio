@@ -26,11 +26,11 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded before any code: see Result. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-23                               |
 
 * Acceptance
@@ -122,3 +122,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-10-28, before any table was built. Two questions changed the
+design. Asked whether the existing tables carry published quotes, the catalogue,
+the vendor mapping and the DQ pipeline held four of the five proposed tables.
+Then the DQ path was itself set aside: DQ is for canned snapshots, and a public
+source publishes every day, so a restarted feed should take the newest value.
+
+The work continues as the story
+[[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]]:
+each publisher is a provider, one adapter publishes their rates as durable
+fixing ticks, and a feed starts from the latest one. The terms of Frankfurter
+and the ECB, read in step 1 of this task's plan, are on the sources page. The
+design and its history are in
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+

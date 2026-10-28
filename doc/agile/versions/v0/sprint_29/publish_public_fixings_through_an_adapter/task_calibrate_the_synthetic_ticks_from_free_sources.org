@@ -5,7 +5,7 @@
 #+description: Each generator config points at a published quote that sets its initial value and its volatility, and the feed screen shows where and when the value was retrieved.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+filetags: :publish_public_fixings_through_an_adapter:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr: 3678
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ The level of a synthetic price comes from a public source that anyone can check,
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Parent story | [[id:9FEC9AF7-BF8A-494B-AEF8-B0C41CFD5758][Publish public fixings through an adapter]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,11 +35,11 @@ The level of a synthetic price comes from a public source that anyone can check,
 
 * Acceptance
 
-- The task needs the published quotes of the task [[file:task_load_published_quotes_from_the_public_sources.org][Load published quotes from the public sources]]. It loads nothing itself.
-- A generator config carries =price_source= of =fixed= or =published=. For =published= it carries a quote item (an oresmd URI), a policy (=latest_on_or_before_clock= or =exact:<date>=) and a window in days for the volatility. The task drops the vintage columns.
-- A feed starts from the value that the reader returns for the item and the date of the market clock, and its volatility is the spread of the log returns over the window. A cross rate is computed from two stored values and marked derived.
-- A pair with no published quote keeps its fixed level, and the feed screen says so.
-- The feed screen shows the publisher, the source key, the valid time and the time of retrieval of the value a feed started from.
+- The task reads fixings through [[id:BB5DC80B-EC57-4029-8A8B-6A98E0EE7D6D][Read the latest fixing and a window]]. It fetches nothing itself.
+- A generator config carries =price_source= of =fixed= or =fixing=. For =fixing= it names the FX fixing items it may start from, each with a rank, a policy (=latest_on_or_before_clock= or =exact:<date>=) and a window in days for the volatility. The task drops the vintage columns.
+- A feed starts from the latest fixing of its best-ranked item that has one, on or before the date of the market clock, so a feed that stops and starts takes the newest value. Its volatility is the spread of the log returns over the window.
+- A pair with no fixing keeps its fixed level, and the feed screen says so.
+- The feed screen shows the provider, the item, the vendor time and the time received of the value a feed started from.
 - The 2016 ORE vintage and the vintage datasets calibrate no generator, and the task removes the dependency rows that required them.
 
 * Plan

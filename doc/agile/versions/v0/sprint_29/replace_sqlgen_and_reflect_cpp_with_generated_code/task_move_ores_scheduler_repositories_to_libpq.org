@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-ores-scheduler-repositories-to-libpq
-#+pr:
+#+pr: 3969
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3969][#3969]] | [scheduler] Move the scheduler repositories to libpq |
 
 * Review
 

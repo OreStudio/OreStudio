@@ -4626,6 +4626,12 @@ const pt: SourceCatalogue = {
                 'As versoes da receita e as versoes de cada pilar, da mais recente para a mais antiga, cada uma nomeada pela sua parte. Um pilar eliminado da receita nao esta neste fluxo.',
             usedByNone: 'Nenhuma projecao se desconta nesta receita.',
             usedByUnread: 'Nao foi possivel ler as projecoes.',
+            seriesMissing:
+                'A parte nao detem nenhuma serie com este id, por isso a planta nomeia uma serie que ja nao se resolve. O registo em si esta correcto; a curva nao pode ser construida enquanto a serie nao voltar.',
+            seriesMissingShort: 'A serie ja nao se resolve.',
+            seriesUnread:
+                'Nao foi possivel ler a serie que esta planta nomeia, por isso a pagina nao pode dizer se ela ainda se resolve.',
+            seriesUnreadShort: 'Nao foi possivel ler a serie.',
             filterCurrency: 'Moeda',
             filterAllCurrencies: 'Todas as moedas',
             filterRole: 'Papel',

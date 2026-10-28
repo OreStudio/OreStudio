@@ -55,6 +55,11 @@ struct market_config final {
     double tail_loading = 0.0;
 };
 
+/// The largest tail loading the market takes. At a pace of two it tilts a mixture by
+/// about seven, which already leaves the widest component carrying the variance; beyond
+/// it a mixture degenerates to one component and the loading says nothing more.
+constexpr double max_tail_loading = 10.0;
+
 /**
  * @brief Refuse numbers the clock cannot run on.
  *

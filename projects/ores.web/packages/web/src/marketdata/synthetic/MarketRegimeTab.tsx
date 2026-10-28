@@ -451,6 +451,7 @@ function MarketSettingsForm({
                                     type="number"
                                     step="any"
                                     min={key === 'jump' || key === 'tailLoading' ? 0 : undefined}
+                                    max={key === 'tailLoading' ? 10 : undefined}
                                     value={value(key)}
                                     aria-invalid={
                                         unreadable.includes(key) || (key === 'decay' && gain >= 1)

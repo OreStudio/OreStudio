@@ -544,6 +544,22 @@ describe('the market settings', () => {
         expect(response.json().message).toBe(message);
     });
 
+    it('refuses settings without a tail loading, so an old client cannot reset it', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const { tailLoading: _left, ...older } = SETTINGS;
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/market-regime/settings',
+            older,
+        );
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('refuses a speed that is not positive before the service hears of it', async () => {
         const { server, sessionId, calls } = buildTestServer({});
 

@@ -233,7 +233,10 @@ tilt of minus one, which is as far as it goes.
 The rule is variance-preserving, so it composes with the loading: the tilt sets
 the shape, and the loading sets the scale. =tail_loading= is one number for the
 market. It defaults to zero, which leaves every mixture as configured, and the
-system tenant sets it beside the market's other numbers.
+system tenant sets it beside the market's other numbers. It is refused above ten.
+At a pace of two, a loading of ten tilts by about seven, and the widest component
+already carries nearly all the variance. Beyond that, the mixture degenerates to
+one component and a larger loading changes nothing.
 
 ** The control plane
 

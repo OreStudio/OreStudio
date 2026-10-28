@@ -122,6 +122,17 @@ TEST_CASE("a zero tilt, or a component with no spread, leaves the mixture as it 
     CHECK(ores::analytics::quant::math::tilt(degenerate, 1.0).stdevs == degenerate.stdevs);
 }
 
+TEST_CASE("a component with no weight takes the tilt and carries none of the variance",
+          "[mixture_tilt]") {
+    const mixture idle{
+        .means = {0.0, 0.0, 0.0}, .stdevs = {0.001, 0.004, 0.02}, .weights = {0.8, 0.2, 0.0}};
+    const auto tilted = ores::analytics::quant::math::tilt(idle, 1.0);
+    const mixture live{.means = {0.0, 0.0}, .stdevs = {0.001, 0.004}, .weights = {0.8, 0.2}};
+    const auto without = ores::analytics::quant::math::tilt(live, 1.0);
+    CHECK(of(tilted).variance == Catch::Approx(of(idle).variance).epsilon(1e-12));
+    CHECK(of(tilted).kurtosis == Catch::Approx(of(without).kurtosis).epsilon(1e-12));
+}
+
 TEST_CASE("a mixture process with no tilt draws the path it always did", "[mixture_tilt]") {
     gaussian_mixture_model_process untouched(quiet_and_wide.means,
                                              quiet_and_wide.stdevs,
@@ -146,7 +157,8 @@ TEST_CASE("a tilted process's returns are fatter tailed with the same mean and v
     constexpr std::size_t n = 200'000;
     const auto calm = of(log_returns(0.0, n));
     const auto busy = of(log_returns(2.0 * std::log(2.0), n));
-    const auto expected = of(ores::analytics::quant::math::tilt(quiet_and_wide, 2.0 * std::log(2.0)));
+    const auto expected =
+        of(ores::analytics::quant::math::tilt(quiet_and_wide, 2.0 * std::log(2.0)));
 
     CHECK(busy.kurtosis > calm.kurtosis + 2.0);
     CHECK(busy.kurtosis == Catch::Approx(expected.kurtosis).epsilon(0.1));
@@ -154,4 +166,14 @@ TEST_CASE("a tilted process's returns are fatter tailed with the same mean and v
     // The mean is a few hundredths of a stdev; it must stay within sampling error of it.
     const double error = std::sqrt(calm.variance / static_cast<double>(n));
     CHECK(std::abs(busy.mean - calm.mean) < 4.0 * error);
+}
+
+TEST_CASE("a calm market's negative tilt thins a process's tails and holds its variance",
+          "[mixture_tilt]") {
+    // The same sample at the tilt a pinned calm market gives at a loading of two: 2 ln 0.5.
+    constexpr std::size_t n = 200'000;
+    const auto base = of(log_returns(0.0, n));
+    const auto quiet = of(log_returns(2.0 * std::log(0.5), n));
+    CHECK(quiet.kurtosis < base.kurtosis - 2.0);
+    CHECK(quiet.variance == Catch::Approx(base.variance).epsilon(0.03));
 }

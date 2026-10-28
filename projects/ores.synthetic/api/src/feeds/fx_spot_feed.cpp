@@ -225,8 +225,6 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
     // unusable gap still publishes a tick, so it advances the process by one nominal tick.
     const auto elapsed_ticks =
         context.simulated_seconds > 0.0 ? context.simulated_seconds * ticks_per_second_ : 1.0;
-    // A busy market changes the shape of the move as well as when it is seen: the mixture
-    // leans toward its wide components, with the mean and the variance held.
     process_->set_tail_tilt(context.tail_tilt);
     const auto value = std::format("{}", process_->next(elapsed_ticks));
     if (n == 1 || n % 100 == 0) {

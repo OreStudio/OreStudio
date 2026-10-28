@@ -103,7 +103,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A full replace lets an older client reset the loading | market-regime.ts | Not changed; test added | The shell echoes the current loading. The BFF's strict schema requires =tailLoading=, so a body without it is a 400. A test now covers this. |
+| 2 | An unbounded loading degenerates the mixture | operational_clock.cpp | Accept | The loading is refused above ten, with the number named. The BFF and the form carry the bound. |
+| 3 | Lines past 100 columns | handler, shell | Accept | clang-format was run on the branch's C++ files. |
+| 4 | The FX feed's comment is longer than the call needs | fx_spot_feed.cpp | Accept | The comment is removed. =set_tail_tilt= documents itself. |
+| 5 | No test for a negative tilt on the process or a zero-weight component | mixture_tilt_tests.cpp | Accept | Both tests are added. The sampled mean and variance were already checked under a tilt. |
 
 * Result
 

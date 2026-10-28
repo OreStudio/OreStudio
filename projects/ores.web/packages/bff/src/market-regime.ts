@@ -325,7 +325,7 @@ export function registerMarketRegimeRoutes(
                     jump: z.number().min(0).finite(),
                     decay: positive,
                     speed: positive,
-                    tailLoading: z.number().min(0).finite(),
+                    tailLoading: z.number().min(0).max(10).finite(),
                 })
                 .strict(),
             request.body,

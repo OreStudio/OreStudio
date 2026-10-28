@@ -466,4 +466,7 @@ TEST_CASE("a body is told the tail tilt the market's pace gives", "[tick_schedul
     auto negative = loaded;
     negative.tail_loading = -1.0;
     CHECK_THROWS_AS(scheduler.configure(negative), std::invalid_argument);
+    auto extreme = loaded;
+    extreme.tail_loading = 11.0;
+    CHECK_THROWS_AS(scheduler.configure(extreme), std::invalid_argument);
 }

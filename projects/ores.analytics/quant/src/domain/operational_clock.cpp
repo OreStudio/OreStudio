@@ -41,16 +41,21 @@ void require(bool holds, const std::string& what) {
 }
 
 double checked_calm_multiplier(const market_config& c) {
-    require(positive(c.wake_rate), std::format("wake_rate is {}; it must be positive", c.wake_rate));
-    require(positive(c.calm_rate), std::format("calm_rate is {}; it must be positive", c.calm_rate));
+    require(positive(c.wake_rate),
+            std::format("wake_rate is {}; it must be positive", c.wake_rate));
+    require(positive(c.calm_rate),
+            std::format("calm_rate is {}; it must be positive", c.calm_rate));
     require(positive(c.active_multiplier),
             std::format("active_multiplier is {}; it must be positive", c.active_multiplier));
     require(positive(c.speed), std::format("speed is {}; it must be positive", c.speed));
     require(std::isfinite(c.jump) && c.jump >= 0.0,
             std::format("jump is {}; it must be non-negative", c.jump));
     require(positive(c.decay), std::format("decay is {}; it must be positive", c.decay));
-    require(std::isfinite(c.tail_loading) && c.tail_loading >= 0.0,
-            std::format("tail_loading is {}; it must be non-negative", c.tail_loading));
+    require(std::isfinite(c.tail_loading) && c.tail_loading >= 0.0 &&
+                c.tail_loading <= max_tail_loading,
+            std::format("tail_loading is {}; it must be between 0 and {}",
+                        c.tail_loading,
+                        max_tail_loading));
     const double gain = c.jump / c.decay;
     require(gain < 1.0,
             std::format("the heat's loop gain, jump / decay, is {}; it must be below one", gain));

@@ -964,7 +964,8 @@ void synthetic_commands::process_regime_set(std::ostream& out,
                                                                  .jump = current->jump,
                                                                  .decay = current->decay,
                                                                  .speed = current->speed,
-                                                                 .tail_loading = current->tail_loading};
+                                                                 .tail_loading =
+                                                                     current->tail_loading};
     const std::map<std::string, double*> fields{{"wake_rate", &request.wake_rate},
                                                 {"calm_rate", &request.calm_rate},
                                                 {"jump", &request.jump},
@@ -1053,8 +1054,12 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                         },
                         "Set the chain's rates, the heat's jump and decay, the market speed or "
                         "the tail loading; a number left out keeps its value",
-                        {"[wake_rate=<n>]", "[calm_rate=<n>]", "[jump=<n>]", "[decay=<n>]",
-                         "[speed=<n>]", "[tail_loading=<n>]"});
+                        {"[wake_rate=<n>]",
+                         "[calm_rate=<n>]",
+                         "[jump=<n>]",
+                         "[decay=<n>]",
+                         "[speed=<n>]",
+                         "[tail_loading=<n>]"});
     regime_menu->Insert("trace",
                         [&session](std::ostream& out, std::vector<std::string> args) {
                             process_regime_trace(std::ref(out), std::ref(session), args);

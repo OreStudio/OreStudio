@@ -102,13 +102,28 @@ stored_fixings& fixing_store::stored_in(const ores::database::context& tenant_ct
 
 std::size_t fixing_store::store(std::span<const consumer> consumers,
                                 std::span<const fixing> fixings) {
+    // The last value of each index and date, in the order the dates were first sent.
+    std::vector<fixing> latest;
+    std::map<std::pair<std::string, std::chrono::year_month_day>, std::size_t> at;
+    for (const auto& f : fixings) {
+        if (!datum::oresmd_uri_codec::read_index(f.index_uri)) {
+            ++rejected_;
+            BOOST_LOG_SEV(lg(), warn) << "Rejecting a fixing of '" << f.index_uri
+                                      << "' from source '" << f.source << "': it names no index";
+            continue;
+        }
+        const auto [it, fresh] = at.try_emplace({f.index_uri, f.date}, latest.size());
+        if (fresh)
+            latest.push_back(f);
+        else
+            latest[it->second] = f;
+    }
+
     std::size_t written = 0;
     for (const auto& owner : consumers) {
         const auto tenant_ctx = ctx_.with_tenant(owner.tenant_id, "ores.marketdata.service");
-        // A date sent twice in one batch is written once, with the value sent last.
-        std::map<std::pair<boost::uuids::uuid, std::chrono::year_month_day>, std::size_t> row_of;
         std::vector<domain::market_fixing> rows;
-        for (const auto& f : fixings) {
+        for (const auto& f : latest) {
             const auto series_id = series_for(tenant_ctx, owner, f.index_uri);
             if (!adds_to(stored_in(tenant_ctx, series_id), f))
                 continue;
@@ -120,11 +135,7 @@ std::size_t fixing_store::store(std::span<const consumer> consumers,
             row.fixing_date = f.date;
             row.value = f.value;
             row.source = f.source;
-            const auto [at, fresh] = row_of.try_emplace({series_id, f.date}, rows.size());
-            if (fresh)
-                rows.push_back(std::move(row));
-            else
-                rows[at->second] = std::move(row);
+            rows.push_back(std::move(row));
         }
         if (rows.empty())
             continue;
@@ -167,6 +178,10 @@ std::uint64_t fixing_ingest::failed() const {
     return failed_.load(std::memory_order_relaxed);
 }
 
+std::uint64_t fixing_ingest::rejected() const {
+    return rejected_.load(std::memory_order_relaxed);
+}
+
 std::size_t fixing_ingest::pending() const {
     std::lock_guard lock(mu_);
     return pending_.size();
@@ -199,6 +214,7 @@ void fixing_ingest::run() {
             try {
                 stored_.fetch_add(store_.store(consumers_(source), fixings),
                                   std::memory_order_relaxed);
+                rejected_.store(store_.rejected(), std::memory_order_relaxed);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to store " << fixings.size() << " fixing(s) of source '" << source

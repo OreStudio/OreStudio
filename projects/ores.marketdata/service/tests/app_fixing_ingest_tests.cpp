@@ -124,7 +124,7 @@ TEST_CASE("a_backfill_is_stored_once_and_a_correction_adds_one_row", "[app][fixi
     CHECK(corrected->value == "1.0899");
 }
 
-TEST_CASE("a_batch_that_fails_part_way_leaves_its_fixings_to_be_stored_when_sent_again",
+TEST_CASE("a_fixing_that_names_no_index_is_rejected_and_the_rest_are_stored",
           "[app][fixing_ingest]") {
     ores::testing::scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
@@ -141,10 +141,45 @@ TEST_CASE("a_batch_that_fails_part_way_leaves_its_fixings_to_be_stored_when_sent
     owner.source_name = "public-test";
 
     const auto uri = run_index_uri();
-    const auto good = fixing_on(uri, 0, "1.0842");
-    const std::vector<fixing> poisoned{good, fixing_on("oresmd://fx/EUR?type=quote", 1, "1.0843")};
+    const std::vector<fixing> mixed{fixing_on(uri, 0, "1.0842"),
+                                    fixing_on("oresmd://fx/EUR?type=quote", 1, "1.0843"),
+                                    fixing_on(uri, 1, "1.0844")};
 
     fixing_store store(h.context());
-    CHECK_THROWS(store.store({&owner, 1}, poisoned));
-    CHECK(store.store({&owner, 1}, std::vector<fixing>{good}) == 1);
+    CHECK(store.store({&owner, 1}, mixed) == 2);
+    CHECK(store.rejected() == 1);
+}
+
+TEST_CASE("a_date_corrected_and_reverted_in_one_batch_keeps_the_value_sent_last",
+          "[app][fixing_ingest]") {
+    ores::testing::scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    auto party = ores::refdata::generators::generate_synthetic_party(gen);
+    const auto existing = ores::refdata::repository::party_repository{}.read_latest(h.context());
+    if (!existing.empty())
+        party.parent_party_id = existing.front().id;
+    ores::refdata::repository::party_repository{}.write(h.context(), party);
+
+    consumer owner;
+    owner.tenant_id = h.tenant_id();
+    owner.party_id = party.id;
+    owner.provider_code = "ore";
+    owner.source_name = "public-test";
+
+    const auto uri = run_index_uri();
+    fixing_store store(h.context());
+    REQUIRE(store.store({&owner, 1}, std::vector<fixing>{fixing_on(uri, 0, "1.0842")}) == 1);
+
+    const std::vector<fixing> corrected_then_reverted{fixing_on(uri, 0, "1.0899"),
+                                                      fixing_on(uri, 0, "1.0842")};
+    CHECK(store.store({&owner, 1}, corrected_then_reverted) == 0);
+
+    const auto series = ores::marketdata::repository::market_series_repository{}.read_latest_by_key(
+        h.context(), uri, "ore", boost::uuids::to_string(party.id));
+    REQUIRE(series.size() == 1);
+    const auto rows =
+        ores::marketdata::repository::market_fixing_repository{}.read_latest_for_series(
+            h.context(), series.front().id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().value == "1.0842");
 }

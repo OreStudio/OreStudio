@@ -112,6 +112,8 @@ via its "Verifies task" field.
 | 7 | The fixings queue is unbounded | fixing_ingest.hpp | Note | INGEST STATUS already reports fixings_pending. |
 | 8 | The member order of fixings_ matters | feed_ingest_loop.hpp | Accept | Comment says why it is last. |
 | 9 | Burst tests depend on no live service | app_feed_ingest_loop_tests.cpp | Decline | Outside this PR; the tests predate it. |
+| 10 | A date corrected and reverted in one batch keeps the wrong value | fixing_ingest.cpp | Accept | Duplicates collapse, last sent wins, before the comparison; test added. |
+| 11 | One unreadable fixing fails and drops its whole batch | fixing_ingest.cpp | Accept | Rejected up front and counted (fixings_rejected); only database errors are retried; test added; design page notes the wait blocks other sources. |
 
 * Result
 

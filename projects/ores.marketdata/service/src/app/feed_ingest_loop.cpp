@@ -934,6 +934,7 @@ void feed_ingest_loop::log_status() const {
         << " last_batch_ticks=" << last_batch_ticks_.load(std::memory_order_relaxed)
         << " last_batch_ms=" << last_batch_ms_.load(std::memory_order_relaxed)
         << " fixings_stored=" << fixings_->stored() << " fixings_failed=" << fixings_->failed()
+        << " fixings_rejected=" << fixings_->rejected()
         << " fixings_pending=" << fixings_->pending();
     if (stats_.empty()) {
         BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: no active subscriptions";

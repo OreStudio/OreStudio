@@ -95,10 +95,17 @@ public:
     /**
      * @brief Stores each fixing for each consumer, and returns the rows written.
      *
-     * What it holds in memory changes only after a write succeeds, so a failure leaves the
-     * fixings to be stored when they are sent again.
+     * A date sent twice is taken with the value sent last. A fixing whose item names no index
+     * can never be stored, so it is rejected and counted rather than failing the others. What
+     * the store holds in memory changes only after a write succeeds, so a failure of the
+     * database leaves the fixings to be stored when they are sent again.
      */
     std::size_t store(std::span<const consumer> consumers, std::span<const fixing> fixings);
+
+    /// The fixings rejected since the start, because their item names no index.
+    [[nodiscard]] std::uint64_t rejected() const {
+        return rejected_;
+    }
 
 private:
     using series_key = std::tuple<std::string, boost::uuids::uuid, std::string, std::string>;
@@ -114,6 +121,7 @@ private:
     std::map<series_key, boost::uuids::uuid> series_;
     std::map<boost::uuids::uuid, stored_fixings> stored_;
     std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
+    std::uint64_t rejected_ = 0;
 };
 
 /**
@@ -152,6 +160,8 @@ public:
     [[nodiscard]] std::uint64_t stored() const;
     /// The fixings dropped since the start, after every attempt to store them failed.
     [[nodiscard]] std::uint64_t failed() const;
+    /// The fixings rejected since the start, because their item names no index.
+    [[nodiscard]] std::uint64_t rejected() const;
     /// The fixings that wait to be stored.
     [[nodiscard]] std::size_t pending() const;
 
@@ -171,6 +181,7 @@ private:
     bool stopping_ = false;
     std::atomic<std::uint64_t> stored_{0};
     std::atomic<std::uint64_t> failed_{0};
+    std::atomic<std::uint64_t> rejected_{0};
     std::thread thread_;
 };
 

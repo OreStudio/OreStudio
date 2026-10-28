@@ -1,5 +1,5 @@
 @startuml
-title Figure 1. One identity carried through five transformations, broken at the report
+title Figure 1. Tracking one market data identity through five transformations, broken at the report
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName sans-serif
 skinparam componentStyle rectangle

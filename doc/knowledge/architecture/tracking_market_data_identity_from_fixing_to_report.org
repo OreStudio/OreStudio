@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC
 :END:
-#+title: One identity from fixing to report: provenance and publication of market data
+#+title: Tracking market data identity from fixing to report
 #+description: This paper argues that ORE Studio's market data is one oresmd identity carried through five transformations, and that the chain breaks where a report reads a curve configuration document instead of the published set.
 #+type: knowledge
 #+level: cross
@@ -162,7 +162,7 @@ See [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]
 [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and
 [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
 
-[[file:one_identity_from_fixing_to_report.png]]
+[[file:tracking_market_data_identity_from_fixing_to_report.png]]
 
 #+caption: Figure 1. The chain of transformations and its one broken link. The solid path carries one oresmd identity; the report reads a curve configuration document through ORE XML instead.
 

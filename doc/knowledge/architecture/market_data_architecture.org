@@ -153,7 +153,7 @@ Read this section to drive the service and to read what it leaves behind.
    identity, and an ORE key lives only at the ORE XML boundary.
 5. [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]]. Snapshots and cuts.
 6. [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and export]]. How an ORE market data vintage becomes observations.
-7. [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][One identity from fixing to report]]. Why the chain is auditable through publication, and where it breaks.
+7. [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]. Why the chain is auditable through publication, and where it breaks.
 
 After this section a reader is competent at starting, inspecting and reading
 every part of the service from a screen or from the shell.

@@ -29,7 +29,7 @@ import { RecordList, type ListSource } from '../refdata/RecordList.js';
 import { show } from '../refdata/records.js';
 import { useAreaParts } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
-import { Detail, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Tag } from '../ui/Primitives.js';
 
 /** The trade types the filter offers. The read model holds the catalogue's code. */
 const TYPES = [
@@ -117,9 +117,22 @@ export function TradesPage(): ReactNode {
                 onAdd={() => {
                     void navigate(PATHS.newTrade);
                 }}
+                actions={
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                            void navigate(PATHS.groupStructures);
+                        }}
+                    >
+                        {t('trading.group.open')}
+                    </Button>
+                }
                 pathOf={(row) =>
                     row.row_kind === 'structure'
-                        ? `${PATHS.structures}/${row.id}`
+                        ? `${PATHS.structures}/${encodeURIComponent(
+                              row.identifier === '' ? row.id : row.identifier,
+                          )}`
                         : `${PATHS.trades}/${row.id}`
                 }
                 columns={[

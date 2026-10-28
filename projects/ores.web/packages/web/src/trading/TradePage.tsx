@@ -466,7 +466,11 @@ export function TradePage(): ReactNode {
                                         {index > 0 ? ', ' : ''}
                                         <Link
                                             className="text-accent hover:text-accent-bright"
-                                            to={`${PATHS.structures}/${entry.structure_id}`}
+                                            to={`${PATHS.structures}/${encodeURIComponent(
+                                                entry.reference === ''
+                                                    ? entry.structure_id
+                                                    : entry.reference,
+                                            )}`}
                                         >
                                             {entry.reference === ''
                                                 ? entry.structure_id

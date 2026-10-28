@@ -19,16 +19,19 @@
  *
  */
 
+import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_identifier_protocol';
 import { subjects as memberSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_member_protocol';
+import { subjects as structureKindSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_kind_protocol';
 import { subjects as structureSubjects } from '@ores/wire-protocol/generated/trading/protocol/structure_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeIdentifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
-import { input, readAll, resultSchema, row, text } from './refdata-calls.js';
+import { input, readAll, resultSchema, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /** How many trades the add-a-leg picker offers, newest first. */
@@ -37,7 +40,23 @@ const CANDIDATE_PAGE = 200;
 /** The roles a leg may take when the structure names no template of its own. */
 const FREE_ROLES = ['leg'] as const;
 
-const structureParamsSchema = z.object({ id: z.uuid() });
+/** The parent a root states, which the store holds as the nil uuid. */
+const NO_PARENT = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * The key a structure is addressed by: its own id, or the reference the desk
+ * gave it.
+ *
+ * A person knows a deal by the reference and not by a uuid, so the address the
+ * screen shows is the reference, and the page resolves it. Both forms are
+ * accepted, because a client that already holds the id should not have to look
+ * the reference up.
+ */
+const structureKeySchema = z.object({
+    key: z.string().trim().min(1).max(64),
+});
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const legBodySchema = z.object({
     tradeId: z.uuid(),
@@ -54,13 +73,7 @@ function mustNotExist(): { readonly kind: string; readonly version: null } {
     return { kind: 'must_not_exist', version: null };
 }
 
-/**
- * Why a refused leg was refused, in the status the screen acts on.
- *
- * A leg the service declines is the caller's business: a kind it does not know,
- * a trade already in a structure, a role the structure does not offer. Only a
- * fault behind the service is the server's, and that answers 502.
- */
+/** Why a refused leg was refused, in the status the screen acts on. */
 function refusalOfLeg(result: z.infer<typeof resultSchema>): HttpFailure {
     switch (result.outcome) {
         case 'denied':
@@ -74,67 +87,222 @@ function refusalOfLeg(result: z.infer<typeof resultSchema>): HttpFailure {
     }
 }
 
-/**
- * The members of one structure.
- *
- * The store answers members by trade and not by structure, so the set is read
- * whole and narrowed here. A tenant holds as many members as it has legs, and
- * the read is bounded by the page size, which is what makes this affordable.
- */
-async function membersOf(
-    session: LiveSession,
-    structureId: string,
-): Promise<readonly Record<string, unknown>[]> {
-    const all = await readAll(session, memberSubjects.list_structure_members_request, 'members', {
+/** The structures a tenant may see. */
+async function allStructures(session: LiveSession): Promise<readonly Record<string, unknown>[]> {
+    return readAll(session, structureSubjects.list_structures_request, 'structures', {
+        filter: { id_one_of: null },
+    });
+}
+
+/** The members a tenant may see, which is every leg of every deal. */
+async function allMembers(session: LiveSession): Promise<readonly Record<string, unknown>[]> {
+    return readAll(session, memberSubjects.list_structure_members_request, 'members', {
         filter: { trade_id_one_of: null },
     });
-    return all.filter((entry) => text(entry['structure_id']) === structureId);
 }
 
-/** The references the trades of a set of legs are known by, keyed by trade. */
+/** The reference each identifier's owner carries, keyed by the owner's id. */
 async function referencesOf(
     session: LiveSession,
-    tradeIds: readonly string[],
+    owner: 'structure' | 'trade',
+    ownerIds: readonly string[],
 ): Promise<ReadonlyMap<string, string>> {
-    const labels = new Map<string, string>();
-    if (tradeIds.length === 0) {
-        return labels;
+    const references = new Map<string, string>();
+    if (ownerIds.length === 0) {
+        return references;
     }
-    const found = await readAll(
-        session,
-        tradeIdentifierSubjects.list_trade_identifiers_request,
-        'identifiers',
-        { filter: { trade_id_one_of: [...tradeIds] } },
-    );
-    for (const entry of found) {
-        const tradeId = text(entry['trade_id']);
+    const read =
+        owner === 'structure'
+            ? await readAll(
+                  session,
+                  identifierSubjects.list_structure_identifiers_request,
+                  'identifiers',
+                  { filter: { structure_id: null, structure_id_one_of: [...ownerIds] } },
+              )
+            : await readAll(
+                  session,
+                  tradeIdentifierSubjects.list_trade_identifiers_request,
+                  'identifiers',
+                  { filter: { trade_id: null, trade_id_one_of: [...ownerIds] } },
+              );
+    const column = owner === 'structure' ? 'structure_id' : 'trade_id';
+    for (const entry of read) {
+        const id = text(entry[column]);
         const value = text(entry['id_value']);
-        if (tradeId !== '' && value !== '' && !labels.has(tradeId)) {
-            labels.set(tradeId, value);
+        if (id !== '' && value !== '' && !references.has(id)) {
+            references.set(id, value);
         }
     }
-    return labels;
+    return references;
 }
 
 /**
- * The trades that may become a leg of this structure.
+ * The structure a key names, or a refusal.
  *
- * A trade is a leg of one structure at a time, so a trade already grouped
- * anywhere is not offered: a picker that offers it sets the desk up to be
- * refused. The set already grouped is read whole because the store answers
- * members by trade and not by structure.
+ * A reference is resolved against the identifiers the tenant holds. The read is
+ * made whole rather than by value because the store answers identifiers by
+ * structure and not by value; a tenant holds as many references as it has
+ * structures, which is what keeps that affordable.
  */
-async function legCandidates(
+async function resolveStructure(
     session: LiveSession,
-    structureId: string,
-): Promise<readonly Record<string, unknown>[]> {
-    const memberships = await readAll(
+    key: string,
+): Promise<Record<string, unknown>> {
+    let structureId = key;
+    if (!uuidPattern.test(key)) {
+        const identifiers = await readAll(
+            session,
+            identifierSubjects.list_structure_identifiers_request,
+            'identifiers',
+            { filter: { structure_id: null, structure_id_one_of: null } },
+        );
+        const match = identifiers.find(
+            (entry) => text(entry['id_value']).toLowerCase() === key.toLowerCase(),
+        );
+        structureId = text(match?.['structure_id']);
+        if (structureId === '') {
+            throw notFound('No structure has that reference.');
+        }
+    }
+
+    const found = await readAll(
         session,
-        memberSubjects.list_structure_members_request,
-        'members',
-        { filter: { trade_id_one_of: null } },
+        structureSubjects.list_structures_request,
+        'structures',
+        { filter: { id_one_of: [structureId] } },
     );
-    const taken = new Set(memberships.map((entry) => text(entry['trade_id'])));
+    const structure = found[0];
+    if (structure === undefined) {
+        throw notFound('No structure has that reference.');
+    }
+    return structure;
+}
+
+/** The trades a set of ids names, with the facts a tree row and a leg states. */
+async function tradesByIds(
+    session: LiveSession,
+    tradeIds: readonly string[],
+): Promise<ReadonlyMap<string, Record<string, unknown>>> {
+    if (tradeIds.length === 0) {
+        return new Map();
+    }
+    const trades = await readAll(session, tradeSubjects.list_trades_request, 'trades', {
+        filter: {
+            counterparty_id: null,
+            trade_type: null,
+            counterparty_scope: null,
+            id_one_of: [...tradeIds],
+            counterparty_id_one_of: null,
+            trade_type_one_of: null,
+            counterparty_scope_one_of: null,
+            search: null,
+        },
+    });
+    return new Map(trades.map((entry) => [text(entry['id']), entry]));
+}
+
+interface TreeNode {
+    id: string;
+    reference: string;
+    /** A structure's kind, or a trade's type on a leaf. */
+    kind: string;
+    template_code: string;
+    /** The role this node takes under its parent. */
+    role: string;
+    sequence_number: number;
+    external_version: number | null;
+    children: TreeNode[];
+}
+
+/**
+ * The tree a structure belongs to.
+ *
+ * The store holds a structure's parent as an id, so the shape is built here: the
+ * tenant's structures and members are read once, the requested structure's root
+ * is found by walking up, and the tree is assembled from that root down. The
+ * model nests one level at most, and a deeper tree would draw here without a
+ * word changing.
+ *
+ * A structure states its children as the structures naming it as parent, and its
+ * legs as the trades booked into it: the two are held in different places, so
+ * both are looked up rather than assumed.
+ */
+function assembleTree(
+    structureId: string,
+    structures: readonly Record<string, unknown>[],
+    members: readonly Record<string, unknown>[],
+    structureReferences: ReadonlyMap<string, string>,
+    tradeReferences: ReadonlyMap<string, string>,
+    trades: ReadonlyMap<string, Record<string, unknown>>,
+): TreeNode | null {
+    const byId = new Map(structures.map((entry) => [text(entry['id']), entry]));
+    if (!byId.has(structureId)) {
+        return null;
+    }
+
+    let rootId = structureId;
+    for (let step = 0; step < structures.length; step += 1) {
+        const parent = text(byId.get(rootId)?.['parent_structure_id']);
+        if (parent === '' || parent === NO_PARENT || !byId.has(parent)) {
+            break;
+        }
+        rootId = parent;
+    }
+
+    const legsOf = (id: string): readonly Record<string, unknown>[] =>
+        members.filter((member) => text(member['structure_id']) === id);
+    const childrenOf = (id: string): readonly string[] =>
+        structures
+            .filter((entry) => text(entry['parent_structure_id']) === id)
+            .map((entry) => text(entry['id']))
+            .filter((childId) => childId !== '' && childId !== NO_PARENT);
+
+    const assemble = (id: string, role: string, sequence: number): TreeNode => {
+        const row = byId.get(id);
+        return {
+            id,
+            reference: structureReferences.get(id) ?? '',
+            kind: text(row?.['kind']),
+            template_code: text(row?.['template_code']),
+            role,
+            sequence_number: sequence,
+            external_version: null,
+            children: [
+                ...childrenOf(id).map((childId) => assemble(childId, 'structure', 0)),
+                ...legsOf(id).map((member) => {
+                    const tradeId = text(member['trade_id']);
+                    const trade = trades.get(tradeId);
+                    return {
+                        id: tradeId,
+                        reference: tradeReferences.get(tradeId) ?? '',
+                        kind: text(trade?.['trade_type']),
+                        template_code: '',
+                        role: text(member['role']),
+                        sequence_number: Number(member['sequence_number'] ?? 0),
+                        external_version:
+                            trade === undefined ? null : Number(trade['external_version'] ?? 0),
+                        children: [],
+                    };
+                }),
+            ],
+        };
+    };
+
+    return assemble(rootId, '', 0);
+}
+
+
+const groupBodySchema = z.object({
+    kind: z.string().trim().min(1).max(64),
+    tradeIds: z.array(z.uuid()).min(2).max(50),
+});
+
+/** The trades no structure has grouped yet, with what a picker shows of them. */
+async function ungroupedTrades(
+    session: LiveSession,
+    limit: number,
+): Promise<readonly Record<string, unknown>[]> {
+    const taken = new Set((await allMembers(session)).map((entry) => text(entry['trade_id'])));
     const summaries = await readAll(
         session,
         summarySubjects.list_trade_summaries_request,
@@ -153,48 +321,220 @@ async function legCandidates(
                 row_kind_one_of: null,
             },
             order: { field: 'trade_date', descending: true },
-            limit: CANDIDATE_PAGE,
+            limit,
         },
     );
-    return summaries
-        .filter((entry) => text(entry['row_kind']) === 'trade' && !taken.has(text(entry['id'])))
-        .map((entry) => ({
-            id: text(entry['id']),
-            instrument_type: text(entry['instrument_type']),
-            trade_date: text(entry['trade_date']),
-            structure_id: structureId,
-        }));
+    const free = summaries.filter(
+        (entry) => text(entry['row_kind']) === 'trade' && !taken.has(text(entry['id'])),
+    );
+    const references = await referencesOf(
+        session,
+        'trade',
+        free.map((entry) => text(entry['id'])),
+    );
+    // The counterparty is what the grouping rule is about, so the picker names
+    // it: a person picks a pair that shares one, and the page says so first.
+    const counterpartyIds = [
+        ...new Set(free.map((entry) => text(entry['counterparty_id'])).filter((id) => id !== '')),
+    ];
+    const counterparties =
+        counterpartyIds.length === 0
+            ? []
+            : await readAll(
+                  session,
+                  counterpartySubjects.list_counterparties_request,
+                  'counterparties',
+                  { filter: { id_one_of: counterpartyIds } },
+              );
+    const counterpartyOf = new Map(
+        counterparties.map((entry) => [text(entry['id']), text(entry['full_name'])]),
+    );
+    return free.map((entry) => ({
+        id: text(entry['id']),
+        reference: references.get(text(entry['id'])) ?? '',
+        instrument_type: text(entry['instrument_type']),
+        counterparty_id: text(entry['counterparty_id']),
+        counterparty_name:
+            counterpartyOf.get(text(entry['counterparty_id'])) ??
+            text(entry['counterparty_id']),
+        trade_date: text(entry['trade_date']),
+    }));
 }
 
 export function registerStructureRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    server.get('/api/structures/:id', async (request) => {
-        const session = requireSession(request);
-        const { id } = input(structureParamsSchema, request.params);
 
-        const structures = await readAll(
+    /*
+     * FIXME: the tree a structure sits in is read whole, because the store
+     * answers structures by id and members by trade. A tenant with many thousand
+     * structures would want a read by parent, and this is the seam it belongs at.
+     */
+    server.get('/api/structure-kinds', async (request) => {
+        const session = requireSession(request);
+        const kinds = await readAll(
             session,
-            structureSubjects.list_structures_request,
-            'structures',
-            { filter: { id_one_of: [id] } },
+            structureKindSubjects.list_structure_kinds_request,
+            'structure_kinds',
+            { filter: { code_one_of: null } },
         );
-        const structure = structures[0];
-        if (structure === undefined) {
-            throw notFound('No structure has that id.');
+        return {
+            rows: kinds.map((entry) => ({
+                code: text(entry['code']),
+                confirms_as_whole: entry['confirms_as_whole'] === true,
+            })),
+        };
+    });
+
+    server.get('/api/ungrouped-trades', async (request) => {
+        const session = requireSession(request);
+        return { rows: await ungroupedTrades(session, CANDIDATE_PAGE) };
+    });
+
+    server.post('/api/structures', async (request, reply) => {
+        const session = requireSession(request);
+        const body = input(groupBodySchema, request.body);
+        const partyId = session.party?.id;
+        if (partyId === undefined) {
+            throw invalidRequest('A grouping is made by a party, and this session works for none.');
         }
 
-        const [identifiers, members] = await Promise.all([
-            readAll(session, identifierSubjects.list_structure_identifiers_request, 'identifiers', {
-                filter: { structure_id_one_of: [id] },
-            }),
-            membersOf(session, id),
-        ]);
-        const references = await referencesOf(
+        const summaries = await readAll(
             session,
-            members.map((member) => text(member['trade_id'])).filter((value) => value !== ''),
+            summarySubjects.list_trade_summaries_request,
+            'trade_summaries',
+            {
+                filter: {
+                    party_id: null,
+                    counterparty_id: null,
+                    book_id: null,
+                    instrument_type: null,
+                    status: null,
+                    trade_date_from: null,
+                    trade_date_to: null,
+                    search: null,
+                    row_kind: null,
+                    row_kind_one_of: null,
+                },
+            },
         );
+        const chosen = body.tradeIds.map((id) => summaries.find((entry) => text(entry['id']) === id));
+        if (chosen.some((entry) => entry === undefined)) {
+            throw invalidRequest('A trade being grouped is not one this session can read.');
+        }
+        const counterparties = new Set(
+            chosen.map((entry) => text(entry?.['counterparty_id'])).filter((id) => id !== ''),
+        );
+        if (counterparties.size !== 1) {
+            throw invalidRequest(
+                'Every trade in a structure shares one counterparty, and these do not.',
+            );
+        }
+
+        const structureId = randomUUID();
+        const written = await session.client.callAuthenticated(
+            structureSubjects.put_structure_request,
+            {
+                change: {
+                    write: {
+                        id: structureId,
+                        counterparty_id: [...counterparties][0] ?? '',
+                        kind: body.kind,
+                        template_code: '',
+                        parent_structure_id: NO_PARENT,
+                    },
+                    precondition: mustNotExist(),
+                },
+                intent: intent(),
+            },
+            z.looseObject({ result: resultSchema }),
+        );
+        if (written.result.outcome !== 'ok') {
+            throw refusalOfLeg(written.result);
+        }
+
+        /*
+         * The legs are added in the order the desk chose them, so the sequence a
+         * person reads follows the order they picked. A leg that fails is
+         * reported, and the structure stays: a half-grouped deal is visible and
+         * can be finished, which is better than a write that silently did nothing.
+         */
+        let sequence = 0;
+        for (const tradeId of body.tradeIds) {
+            sequence += 1;
+            const member = await session.client.callAuthenticated(
+                memberSubjects.put_structure_member_request,
+                {
+                    change: {
+                        write: {
+                            trade_id: tradeId,
+                            structure_id: structureId,
+                            role: FREE_ROLES[0],
+                            sequence_number: sequence,
+                        },
+                        precondition: mustNotExist(),
+                    },
+                    intent: intent(),
+                },
+                z.looseObject({ result: resultSchema }),
+            );
+            if (member.result.outcome !== 'ok') {
+                throw refusalOfLeg(member.result);
+            }
+        }
+
+        const references = await referencesOf(session, 'structure', [structureId]);
+        reply.status(201);
+        return { id: structureId, reference: references.get(structureId) ?? '' };
+    });
+
+    server.get('/api/structures/:key', async (request) => {
+        const session = requireSession(request);
+        const { key } = input(structureKeySchema, request.params);
+        const structure = await resolveStructure(session, key);
+        const structureId = text(structure['id']);
+
+        const [structures, members] = await Promise.all([
+            allStructures(session),
+            allMembers(session),
+        ]);
+        const mine = members.filter((entry) => text(entry['structure_id']) === structureId);
+        const allTradeIds = [
+            ...new Set(
+                members.map((entry) => text(entry['trade_id'])).filter((id) => id !== ''),
+            ),
+        ];
+
+        const [structureReferences, tradeReferences, trades, history] = await Promise.all([
+            referencesOf(
+                session,
+                'structure',
+                structures.map((entry) => text(entry['id'])).filter((id) => id !== ''),
+            ),
+            referencesOf(session, 'trade', allTradeIds),
+            tradesByIds(session, allTradeIds),
+            readAll(session, structureSubjects.list_structure_versions_request, 'versions', {
+                key: { id: structureId },
+                order: { field: 'version', descending: true },
+            }),
+        ]);
+
+        const legs = mine
+            .map((member) => {
+                const tradeId = text(member['trade_id']);
+                const trade = trades.get(tradeId);
+                return {
+                    trade_id: tradeId,
+                    reference: tradeReferences.get(tradeId) ?? '',
+                    role: text(member['role']),
+                    sequence_number: Number(member['sequence_number'] ?? 0),
+                    kind: text(trade?.['trade_type']),
+                    external_version:
+                        trade === undefined ? null : Number(trade['external_version'] ?? 0),
+                };
+            })
+            .sort((left, right) => left.sequence_number - right.sequence_number);
 
         const counterpartyId = text(structure['counterparty_id']);
         const counterparties =
@@ -207,58 +547,81 @@ export function registerStructureRoutes(
                       { filter: { id_one_of: [counterpartyId] } },
                   );
 
-        const legs = members
-            .map((member) => ({
-                trade_id: text(member['trade_id']),
-                reference: references.get(text(member['trade_id'])) ?? '',
-                role: text(member['role']),
-                sequence_number: Number(member['sequence_number'] ?? 0),
-            }))
-            .sort((left, right) => left.sequence_number - right.sequence_number);
-
+        const parentId = text(structure['parent_structure_id']);
         return {
             structure: {
                 ...structure,
-                counterparty_name:
-                    text(counterparties[0]?.['full_name']) || counterpartyId,
+                counterparty_name: text(counterparties[0]?.['full_name']) || counterpartyId,
             },
-            reference: text(identifiers[0]?.['id_value']),
-            identifiers,
+            reference: structureReferences.get(structureId) ?? '',
+            parent_id: parentId === NO_PARENT ? '' : parentId,
+            tree: assembleTree(
+                structureId,
+                structures,
+                members,
+                structureReferences,
+                tradeReferences,
+                trades,
+            ),
             legs,
             roles: [...FREE_ROLES],
+            history,
         };
     });
 
-    server.get('/api/structures/:id/leg-candidates', async (request) => {
+    server.get('/api/structures/:key/leg-candidates', async (request) => {
         const session = requireSession(request);
-        const { id } = input(structureParamsSchema, request.params);
-        const rows = await legCandidates(session, id);
+        const { key } = input(structureKeySchema, request.params);
+        const structure = await resolveStructure(session, key);
+
+        const taken = new Set((await allMembers(session)).map((entry) => text(entry['trade_id'])));
+        const summaries = await readAll(
+            session,
+            summarySubjects.list_trade_summaries_request,
+            'trade_summaries',
+            {
+                filter: {
+                    party_id: null,
+                    counterparty_id: null,
+                    book_id: null,
+                    instrument_type: null,
+                    status: null,
+                    trade_date_from: null,
+                    trade_date_to: null,
+                    search: null,
+                    row_kind: 'trade',
+                    row_kind_one_of: null,
+                },
+                order: { field: 'trade_date', descending: true },
+                limit: CANDIDATE_PAGE,
+            },
+        );
+        const free = summaries.filter(
+            (entry) => text(entry['row_kind']) === 'trade' && !taken.has(text(entry['id'])),
+        );
         const references = await referencesOf(
             session,
-            rows.map((entry) => text(entry['id'])),
+            'trade',
+            free.map((entry) => text(entry['id'])),
         );
         return {
-            rows: rows.map((entry) => ({
-                ...entry,
+            structure_id: text(structure['id']),
+            rows: free.map((entry) => ({
+                id: text(entry['id']),
                 reference: references.get(text(entry['id'])) ?? '',
+                instrument_type: text(entry['instrument_type']),
+                trade_date: text(entry['trade_date']),
             })),
         };
     });
 
-    server.post('/api/structures/:id/legs', async (request, reply) => {
+    server.post('/api/structures/:key/legs', async (request, reply) => {
         const session = requireSession(request);
-        const { id } = input(structureParamsSchema, request.params);
+        const { key } = input(structureKeySchema, request.params);
         const body = input(legBodySchema, request.body);
+        const structure = await resolveStructure(session, key);
+        const id = text(structure['id']);
 
-        const structures = await readAll(
-            session,
-            structureSubjects.list_structures_request,
-            'structures',
-            { filter: { id_one_of: [id] } },
-        );
-        if (structures[0] === undefined) {
-            throw notFound('No structure has that id.');
-        }
         if (!(FREE_ROLES as readonly string[]).includes(body.role)) {
             throw invalidRequest('The structure does not offer that role.');
         }
@@ -286,7 +649,9 @@ export function registerStructureRoutes(
             });
         }
 
-        const members = await membersOf(session, id);
+        const members = (await allMembers(session)).filter(
+            (entry) => text(entry['structure_id']) === id,
+        );
         const sequence =
             members.reduce(
                 (highest, member) => Math.max(highest, Number(member['sequence_number'] ?? 0)),

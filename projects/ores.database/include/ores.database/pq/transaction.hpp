@@ -79,7 +79,9 @@ public:
      * Nothing begins and nothing is set: the connection is already in the
      * transaction, with the context sqlgen set on it. Commit and rollback are
      * left to sqlgen. A borrowed connection keeps no record of what is
-     * prepared on it, so every statement runs unnamed.
+     * prepared on it, so every statement runs unnamed. A failed statement
+     * aborts the sqlgen transaction, as a failed sqlgen statement does, and
+     * the unit of work rolls it back.
      */
     [[nodiscard]] static transaction join(connection& c);
 

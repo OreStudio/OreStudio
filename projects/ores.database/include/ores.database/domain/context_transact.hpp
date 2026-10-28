@@ -20,10 +20,31 @@
 #define ORES_DATABASE_DOMAIN_CONTEXT_TRANSACT_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/unit_of_work.hpp"
 #include <utility>
 
 namespace ores::database {
+
+namespace detail {
+
+/**
+ * @brief The connection of an open sqlgen transaction.
+ *
+ * A unit of work that has committed still holds its connection, outside any
+ * transaction, so a call joined to it would run unguarded: it is refused.
+ */
+inline PGconn* open_connection_of(const context::transaction_type& open) {
+    PGconn* c = open.conn()->conn()->native_handle();
+    const auto status = c ? PQtransactionStatus(c) : PQTRANS_UNKNOWN;
+    if (status != PQTRANS_INTRANS && status != PQTRANS_INERROR)
+        throw pq::store_error("The sqlgen unit of work has no open transaction to join",
+                              "25000",
+                              pq::error_kind::refused);
+    return c;
+}
+
+}
 
 /**
  * @brief Runs @p work in one libpq transaction for the tenant, party, actor
@@ -39,7 +60,7 @@ namespace ores::database {
 template <typename Work>
 auto transact(const context& ctx, Work&& work) {
     if (const auto& open = ctx.active_transaction()) {
-        auto c = pq::connection::borrow((*open)->conn()->conn()->native_handle());
+        auto c = pq::connection::borrow(detail::open_connection_of(**open));
         auto tx = pq::transaction::join(c);
         return std::forward<Work>(work)(tx);
     }

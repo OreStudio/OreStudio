@@ -18,6 +18,7 @@
  */
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include <cassert>
 #include <charconv>
 
 namespace ores::database::pq {
@@ -104,6 +105,7 @@ connection::connection(const connection_options& options)
 }
 
 connection connection::borrow(PGconn* c) noexcept {
+    assert(c != nullptr);
     connection out;
     out.handle_ = std::unique_ptr<PGconn, connection_closer>(c, connection_closer{.owned = false});
     return out;

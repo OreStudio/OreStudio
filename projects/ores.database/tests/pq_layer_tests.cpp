@@ -378,7 +378,8 @@ TEST_CASE("a context reaches the layer through one pool that every copy shares",
     CHECK(scoped.pq_session().actor == "someone");
 }
 
-TEST_CASE("a context bound to a sqlgen unit of work reads the tenant sqlgen set", "[pq]") {
+TEST_CASE("a context re-scoped inside a sqlgen unit of work still reads the tenant sqlgen set",
+          "[pq]") {
     ores::testing::scoped_database_helper h;
     ores::database::repository::unit_of_work uow(h.context());
     const auto scoped = uow.ctx().with_tenant(random_tenant(), "someone");
@@ -387,6 +388,18 @@ TEST_CASE("a context bound to a sqlgen unit of work reads the tenant sqlgen set"
         scoped, [&](transaction& tx) { return std::get<0>(tx.query(current_tenant).at(0)); });
 
     CHECK(seen == h.context().tenant_id().to_string());
+}
+
+TEST_CASE("a call joined to a committed sqlgen unit of work is refused", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    ores::database::repository::unit_of_work uow(h.context());
+    uow.commit();
+    try {
+        ores::database::transact(uow.ctx(), [](transaction&) {});
+        FAIL("the call ran outside any transaction");
+    } catch (const store_error& e) {
+        CHECK_FALSE(e.retryable());
+    }
 }
 
 TEST_CASE("a text statement fills an entity's text fields as sqlgen did", "[pq]") {
